@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbYA3VNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYA3VNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762975AbYA3VNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756930AbYA3VGF
+	id S1756272AbYA3VNq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758613AbYA3VGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:06:05 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:51449 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758117AbYA3VFj (ORCPT
+	Wed, 30 Jan 2008 16:06:08 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:55001 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758077AbYA3VFj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 16:05:39 -0500
-Message-Id: <20080130210525.059200791@goodmis.org>
+Message-Id: <20080130210528.476351520@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:03:59 -0500
+Date: Wed, 30 Jan 2008 16:04:20 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,442 +29,825 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 02/23 -v8] Add basic support for gcc profiler instrumentation
-Content-Disposition: inline; filename=mcount-add-basic-support-for-gcc-profiler-instrum.patch
+Subject: [PATCH 23/23 -v8] Critical latency timings histogram
+Content-Disposition: inline; filename=trace-histograms.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If CONFIG_MCOUNT is selected and /proc/sys/kernel/mcount_enabled is set to a
-non-zero value the mcount routine will be called everytime we enter a kernel
-function that is not marked with the "notrace" attribute.
+This patch adds hooks into the latency tracer to give
+us histograms of interrupts off, preemption off and
+wakeup timings.
 
-The mcount routine will then call a registered function if a function
-happens to be registered.
+This code was based off of work done by Yi Yang <yyang@ch.mvista.com>
 
-[This code has been highly hacked by Steven Rostedt, so don't
- blame Arnaldo for all of this ;-) ]
+But heavily modified to work with the new tracer, and some
+clean ups by Steven Rostedt <srostedt@redhat.com>
 
-Update:
-  It is now possible to register more than one mcount function.
-  If only one mcount function is registered, that will be the
-  function that mcount calls directly. If more than one function
-  is registered, then mcount will call a function that will loop
-  through the functions to call.
+This adds the following to /debugfs/tracing
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+  latency_hist/ - root dir for historgrams.
+
+  Under latency_hist there is (depending on what's configured):
+
+    interrupt_off_latency/ - latency histograms of interrupts off.
+
+    preempt_interrupts_off_latency/ - latency histograms of
+                              preemption and/or interrupts off.
+
+    preempt_off_latency/ - latency histograms of preemption off.
+
+    wakeup_latency/ - latency histograms of wakeup timings.
+
+  Under each of the above is a file labeled:
+
+    CPU# for each possible CPU were # is the CPU number.
+
+    reset - writing into this file will reset the histogram
+            back to zeros and start again.
+
+
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- Makefile                   |    3 
- arch/x86/Kconfig           |    1 
- arch/x86/kernel/entry_32.S |   25 +++++++
- arch/x86/kernel/entry_64.S |   36 ++++++++++
- include/linux/linkage.h    |    2 
- include/linux/mcount.h     |   38 +++++++++++
- kernel/sysctl.c            |   11 +++
- lib/Kconfig.debug          |    1 
- lib/Makefile               |    2 
- lib/tracing/Kconfig        |   10 ++
- lib/tracing/Makefile       |    3 
- lib/tracing/mcount.c       |  151 +++++++++++++++++++++++++++++++++++++++++++++
- 12 files changed, 283 insertions(+)
+ lib/tracing/Kconfig         |   20 +
+ lib/tracing/Makefile        |    4 
+ lib/tracing/trace_irqsoff.c |   19 +
+ lib/tracing/trace_wakeup.c  |   21 +
+ lib/tracing/tracer_hist.c   |  514 ++++++++++++++++++++++++++++++++++++++++++++
+ lib/tracing/tracer_hist.h   |   39 +++
+ 6 files changed, 613 insertions(+), 4 deletions(-)
 
-Index: linux-mcount.git/Makefile
-===================================================================
---- linux-mcount.git.orig/Makefile	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/Makefile	2008-01-30 12:52:15.000000000 -0500
-@@ -509,6 +509,9 @@ endif
- 
- include $(srctree)/arch/$(SRCARCH)/Makefile
- 
-+ifdef CONFIG_MCOUNT
-+KBUILD_CFLAGS	+= -pg
-+endif
- ifdef CONFIG_FRAME_POINTER
- KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
- else
-Index: linux-mcount.git/arch/x86/Kconfig
-===================================================================
---- linux-mcount.git.orig/arch/x86/Kconfig	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/arch/x86/Kconfig	2008-01-30 12:52:15.000000000 -0500
-@@ -19,6 +19,7 @@ config X86_64
- config X86
- 	bool
- 	default y
-+	select HAVE_MCOUNT
- 
- config GENERIC_TIME
- 	bool
-Index: linux-mcount.git/arch/x86/kernel/entry_32.S
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/entry_32.S	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/entry_32.S	2008-01-30 12:52:15.000000000 -0500
-@@ -75,6 +75,31 @@ DF_MASK		= 0x00000400 
- NT_MASK		= 0x00004000
- VM_MASK		= 0x00020000
- 
-+#ifdef CONFIG_MCOUNT
-+.globl mcount
-+mcount:
-+	/* unlikely(mcount_enabled) */
-+	cmpl $0, mcount_enabled
-+	jnz trace
-+	ret
-+
-+trace:
-+	/* taken from glibc */
-+	pushl %eax
-+	pushl %ecx
-+	pushl %edx
-+	movl 0xc(%esp), %edx
-+	movl 0x4(%ebp), %eax
-+
-+	call   *mcount_trace_function
-+
-+	popl %edx
-+	popl %ecx
-+	popl %eax
-+
-+	ret
-+#endif
-+
- #ifdef CONFIG_PREEMPT
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
-Index: linux-mcount.git/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/entry_64.S	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/entry_64.S	2008-01-30 12:52:15.000000000 -0500
-@@ -53,6 +53,42 @@
- 
- 	.code64
- 
-+#ifdef CONFIG_MCOUNT
-+
-+ENTRY(mcount)
-+	/* unlikely(mcount_enabled) */
-+	cmpl $0, mcount_enabled
-+	jnz trace
-+	retq
-+
-+trace:
-+	/* taken from glibc */
-+	subq $0x38, %rsp
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+
-+	movq 0x38(%rsp), %rsi
-+	movq 8(%rbp), %rdi
-+
-+	call   *mcount_trace_function
-+
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $0x38, %rsp
-+
-+	retq
-+#endif
-+
- #ifndef CONFIG_PREEMPT
- #define retint_kernel retint_restore_args
- #endif	
-Index: linux-mcount.git/include/linux/linkage.h
-===================================================================
---- linux-mcount.git.orig/include/linux/linkage.h	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/include/linux/linkage.h	2008-01-30 12:52:15.000000000 -0500
-@@ -3,6 +3,8 @@
- 
- #include <asm/linkage.h>
- 
-+#define notrace __attribute__((no_instrument_function))
-+
- #ifdef __cplusplus
- #define CPP_ASMLINKAGE extern "C"
- #else
-Index: linux-mcount.git/include/linux/mcount.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/include/linux/mcount.h	2008-01-30 12:52:15.000000000 -0500
-@@ -0,0 +1,38 @@
-+#ifndef _LINUX_MCOUNT_H
-+#define _LINUX_MCOUNT_H
-+
-+#ifdef CONFIG_MCOUNT
-+extern int mcount_enabled;
-+
-+#include <linux/linkage.h>
-+
-+#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+#define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-+#define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-+
-+typedef void (*mcount_func_t)(unsigned long ip, unsigned long parent_ip);
-+
-+struct mcount_ops {
-+	mcount_func_t func;
-+	struct mcount_ops *next;
-+};
-+
-+/*
-+ * The mcount_ops must be a static and should also
-+ * be read_mostly.  These functions do modify read_mostly variables
-+ * so use them sparely. Never free an mcount_op or modify the
-+ * next pointer after it has been registered. Even after unregistering
-+ * it, the next pointer may still be used internally.
-+ */
-+int register_mcount_function(struct mcount_ops *ops);
-+int unregister_mcount_function(struct mcount_ops *ops);
-+void clear_mcount_function(void);
-+
-+extern void mcount(void);
-+
-+#else /* !CONFIG_MCOUNT */
-+# define register_mcount_function(ops) do { } while (0)
-+# define unregister_mcount_function(ops) do { } while (0)
-+# define clear_mcount_function(ops) do { } while (0)
-+#endif /* CONFIG_MCOUNT */
-+#endif /* _LINUX_MCOUNT_H */
-Index: linux-mcount.git/kernel/sysctl.c
-===================================================================
---- linux-mcount.git.orig/kernel/sysctl.c	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/kernel/sysctl.c	2008-01-30 12:52:15.000000000 -0500
-@@ -46,6 +46,7 @@
- #include <linux/nfs_fs.h>
- #include <linux/acpi.h>
- #include <linux/reboot.h>
-+#include <linux/mcount.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -514,6 +515,16 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#ifdef CONFIG_MCOUNT
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "mcount_enabled",
-+		.data		= &mcount_enabled,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+#endif
- #ifdef CONFIG_KMOD
- 	{
- 		.ctl_name	= KERN_MODPROBE,
-Index: linux-mcount.git/lib/Kconfig.debug
-===================================================================
---- linux-mcount.git.orig/lib/Kconfig.debug	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/lib/Kconfig.debug	2008-01-30 12:52:15.000000000 -0500
-@@ -562,5 +562,6 @@ config LATENCYTOP
- 	  Enable this option if you want to use the LatencyTOP tool
- 	  to find out which userspace is blocking on what kernel operations.
- 
-+source lib/tracing/Kconfig
- 
- source "samples/Kconfig"
-Index: linux-mcount.git/lib/Makefile
-===================================================================
---- linux-mcount.git.orig/lib/Makefile	2008-01-30 12:51:55.000000000 -0500
-+++ linux-mcount.git/lib/Makefile	2008-01-30 12:52:15.000000000 -0500
-@@ -67,6 +67,8 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- 
-+obj-$(CONFIG_MCOUNT) += tracing/
-+
- lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
- hostprogs-y	:= gen_crc32table
 Index: linux-mcount.git/lib/tracing/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 12:52:15.000000000 -0500
-@@ -0,0 +1,10 @@
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-30 15:55:33.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 15:56:10.000000000 -0500
+@@ -102,3 +102,23 @@ config CONTEXT_SWITCH_TRACER
+ 	  This tracer hooks into the context switch and records
+ 	  all switching of tasks.
+ 
++config INTERRUPT_OFF_HIST
++	bool "Interrupts off critical timings histogram"
++	depends on CRITICAL_IRQSOFF_TIMING
++	help
++	  This option uses the infrastructure of the critical
++	  irqs off timings to create a histogram of latencies.
 +
-+# Archs that enable MCOUNT should select HAVE_MCOUNT
-+config HAVE_MCOUNT
-+       bool
++config PREEMPT_OFF_HIST
++	bool "Preempt off critical timings histogram"
++	depends on CRITICAL_PREEMPT_TIMING
++	help
++	  This option uses the infrastructure of the critical
++	  preemption off timings to create a histogram of latencies.
 +
-+# MCOUNT itself is useless, or will just be added overhead.
-+# It needs something to register a function with it.
-+config MCOUNT
-+	bool
-+	select FRAME_POINTER
++config WAKEUP_LATENCY_HIST
++	bool "Interrupts off critical timings histogram"
++	depends on WAKEUP_TRACER
++	help
++	  This option uses the infrastructure of the wakeup tracer
++	  to create a histogram of latencies.
 Index: linux-mcount.git/lib/tracing/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/Makefile	2008-01-30 12:52:15.000000000 -0500
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_MCOUNT) += libmcount.o
+--- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-30 15:55:33.000000000 -0500
++++ linux-mcount.git/lib/tracing/Makefile	2008-01-30 15:56:10.000000000 -0500
+@@ -8,4 +8,8 @@ obj-$(CONFIG_CRITICAL_PREEMPT_TIMING) +=
+ obj-$(CONFIG_WAKEUP_TRACER) += trace_wakeup.o
+ obj-$(CONFIG_EVENT_TRACER) += trace_events.o
+ 
++obj-$(CONFIG_INTERRUPT_OFF_HIST) += tracer_hist.o
++obj-$(CONFIG_PREEMPT_OFF_HIST) += tracer_hist.o
++obj-$(CONFIG_WAKEUP_LATENCY_HIST) += tracer_hist.o
 +
-+libmcount-y := mcount.o
-Index: linux-mcount.git/lib/tracing/mcount.c
+ libmcount-y := mcount.o
+Index: linux-mcount.git/lib/tracing/trace_irqsoff.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/trace_irqsoff.c	2008-01-30 15:55:33.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_irqsoff.c	2008-01-30 15:56:11.000000000 -0500
+@@ -16,6 +16,7 @@
+ #include <linux/mcount.h>
+ 
+ #include "tracer.h"
++#include "tracer_hist.h"
+ 
+ static struct tracing_trace *tracer_trace __read_mostly;
+ static __cacheline_aligned_in_smp DEFINE_MUTEX(max_mutex);
+@@ -262,10 +263,14 @@ void notrace start_critical_timings(void
+ {
+ 	if (preempt_trace() || irq_trace())
+ 		start_critical_timing(CALLER_ADDR0, 0);
++
++	tracing_hist_preempt_start();
+ }
+ 
+ void notrace stop_critical_timings(void)
+ {
++	tracing_hist_preempt_stop(TRACE_STOP);
++
+ 	if (preempt_trace() || irq_trace())
+ 		stop_critical_timing(CALLER_ADDR0, 0);
+ }
+@@ -274,6 +279,8 @@ void notrace stop_critical_timings(void)
+ #ifdef CONFIG_LOCKDEP
+ void notrace time_hardirqs_on(unsigned long a0, unsigned long a1)
+ {
++	tracing_hist_preempt_stop(1);
++
+ 	if (!preempt_trace() && irq_trace())
+ 		stop_critical_timing(a0, a1);
+ }
+@@ -282,6 +289,8 @@ void notrace time_hardirqs_off(unsigned 
+ {
+ 	if (!preempt_trace() && irq_trace())
+ 		start_critical_timing(a0, a1);
++
++	tracing_hist_preempt_start();
+ }
+ 
+ #else /* !CONFIG_LOCKDEP */
+@@ -315,6 +324,8 @@ inline void print_irqtrace_events(struct
+  */
+ void notrace trace_hardirqs_on(void)
+ {
++	tracing_hist_preempt_stop(1);
++
+ 	if (!preempt_trace() && irq_trace())
+ 		stop_critical_timing(CALLER_ADDR0, 0);
+ }
+@@ -324,11 +335,15 @@ void notrace trace_hardirqs_off(void)
+ {
+ 	if (!preempt_trace() && irq_trace())
+ 		start_critical_timing(CALLER_ADDR0, 0);
++
++	tracing_hist_preempt_start();
+ }
+ EXPORT_SYMBOL(trace_hardirqs_off);
+ 
+ void notrace trace_hardirqs_on_caller(unsigned long caller_addr)
+ {
++	tracing_hist_preempt_stop(1);
++
+ 	if (!preempt_trace() && irq_trace())
+ 		stop_critical_timing(CALLER_ADDR0, caller_addr);
+ }
+@@ -338,6 +353,8 @@ void notrace trace_hardirqs_off_caller(u
+ {
+ 	if (!preempt_trace() && irq_trace())
+ 		start_critical_timing(CALLER_ADDR0, caller_addr);
++
++	tracing_hist_preempt_start();
+ }
+ EXPORT_SYMBOL(trace_hardirqs_off_caller);
+ 
+@@ -347,12 +364,14 @@ EXPORT_SYMBOL(trace_hardirqs_off_caller)
+ #ifdef CONFIG_CRITICAL_PREEMPT_TIMING
+ void notrace trace_preempt_on(unsigned long a0, unsigned long a1)
+ {
++	tracing_hist_preempt_stop(0);
+ 	stop_critical_timing(a0, a1);
+ }
+ 
+ void notrace trace_preempt_off(unsigned long a0, unsigned long a1)
+ {
+ 	start_critical_timing(a0, a1);
++	tracing_hist_preempt_start();
+ }
+ #endif /* CONFIG_CRITICAL_PREEMPT_TIMING */
+ 
+Index: linux-mcount.git/lib/tracing/trace_wakeup.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/trace_wakeup.c	2008-01-30 15:55:33.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_wakeup.c	2008-01-30 15:56:11.000000000 -0500
+@@ -16,6 +16,7 @@
+ #include <linux/mcount.h>
+ 
+ #include "tracer.h"
++#include "tracer_hist.h"
+ 
+ static struct tracing_trace *tracer_trace __read_mostly;
+ static int trace_enabled __read_mostly;
+@@ -55,7 +56,9 @@ static void notrace wakeup_sched_switch(
+ 	unsigned long flags;
+ 	int cpu;
+ 
+-	if (unlikely(!trace_enabled))
++	tracing_hist_wakeup_stop(next);
++
++	if (!trace_enabled)
+ 		return;
+ 
+ 	/*
+@@ -226,7 +229,8 @@ static notrace void wake_up_callback(con
+ 	struct task_struct *p;
+ 	va_list ap;
+ 
+-	if (likely(!trace_enabled) && !trace_event_enabled())
++	if (likely(!trace_enabled) &&
++	    !trace_event_enabled() && !tracing_wakeup_hist)
+ 		return;
+ 
+ 	va_start(ap, format);
+@@ -238,6 +242,7 @@ static notrace void wake_up_callback(con
+ 	va_end(ap);
+ 
+ 	trace_event_wakeup(CALLER_ADDR0, p, curr);
++	tracing_hist_wakeup_start(p, curr);
+ 
+ 	if (trace_enabled)
+ 		wakeup_check_start(tr, p, curr);
+@@ -292,7 +297,8 @@ static notrace void start_wakeup_trace(s
+ 	if (ret)
+ 		return;
+ 
+-	register_tracer_switch(&switch_ops);
++	if (!tracing_wakeup_hist)
++		register_tracer_switch(&switch_ops);
+ 	tracing_start_sched_switch();
+ 	trace_start_events();
+ 
+@@ -317,7 +323,8 @@ static notrace void stop_wakeup_trace(st
+ 	trace_enabled = 0;
+ 	tracing_stop_wakeup();
+ 	tracing_stop_sched_switch();
+-	unregister_tracer_switch(&switch_ops);
++	if (!tracing_wakeup_hist)
++		unregister_tracer_switch(&switch_ops);
+ }
+ 
+ static notrace void wakeup_trace_init(struct tracing_trace *tr)
+@@ -403,6 +410,12 @@ __init static int init_wakeup_trace(void
+ 		goto fail_deprobe;
+ 	}
+ 
++	if (tracing_wakeup_hist) {
++		register_tracer_switch(&switch_ops);
++		tracing_start_wakeup();
++		tracing_start_sched_switch();
++	}
++
+ 	return 0;
+  fail_deprobe:
+ 	marker_probe_unregister("kernel_sched_wakeup");
+Index: linux-mcount.git/lib/tracing/tracer_hist.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/mcount.c	2008-01-30 12:52:43.000000000 -0500
-@@ -0,0 +1,151 @@
++++ linux-mcount.git/lib/tracing/tracer_hist.c	2008-01-30 15:56:11.000000000 -0500
+@@ -0,0 +1,514 @@
 +/*
-+ * Infrastructure for profiling code inserted by 'gcc -pg'.
++ * lib/tracing/tracer_hist.c
 + *
-+ * Copyright (C) 2007-2008 Steven Rostedt <srostedt@redhat.com>
++ * Add support for histograms of preemption-off latency and
++ * interrupt-off latency and wakeup latency, it depends on
++ * Real-Time Preemption Support.
 + *
-+ * Originally ported from the -rt patch by:
-+ *   Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
++ *  Copyright (C) 2005 MontaVista Software, Inc.
++ *  Yi Yang <yyang@ch.mvista.com>
 + *
-+ * Based on code in the latency_tracer, that is:
++ *  Converted to work with the new latency tracer.
++ *  Copyright (C) 2008 Red Hat, Inc.
++ *    Steven Rostedt <srostedt@redhat.com>
 + *
-+ *  Copyright (C) 2004-2006 Ingo Molnar
-+ *  Copyright (C) 2004 William Lee Irwin III
 + */
-+
 +#include <linux/module.h>
-+#include <linux/mcount.h>
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++#include <linux/percpu.h>
++#include <linux/spinlock.h>
++#include <asm/atomic.h>
++#include <asm/div64.h>
++#include <asm/uaccess.h>
 +
-+/*
-+ * Since we have nothing protecting between the test of
-+ * mcount_trace_function and the call to it, we can't
-+ * set it to NULL without risking a race that will have
-+ * the kernel call the NULL pointer. Instead, we just
-+ * set the function pointer to a dummy function.
-+ */
-+notrace void dummy_mcount_tracer(unsigned long ip,
-+				 unsigned long parent_ip)
-+{
-+	/* do nothing */
-+}
++#include "tracer.h"
++#include "tracer_hist.h"
 +
-+static DEFINE_SPINLOCK(mcount_func_lock);
-+static struct mcount_ops mcount_list_end __read_mostly =
-+{
-+	.func = dummy_mcount_tracer,
++enum {
++	INTERRUPT_LATENCY = 0,
++	PREEMPT_LATENCY,
++	PREEMPT_INTERRUPT_LATENCY,
++	WAKEUP_LATENCY,
 +};
 +
-+static struct mcount_ops *mcount_list __read_mostly = &mcount_list_end;
-+mcount_func_t mcount_trace_function __read_mostly = dummy_mcount_tracer;
-+int mcount_enabled __read_mostly;
++#define MAX_ENTRY_NUM 10240
 +
-+/* mcount is defined per arch in assembly */
-+EXPORT_SYMBOL_GPL(mcount);
++struct hist_data {
++	atomic_t hist_mode; /* 0 log, 1 don't log */
++	unsigned long min_lat;
++	unsigned long avg_lat;
++	unsigned long max_lat;
++	unsigned long long beyond_hist_bound_samples;
++	unsigned long long accumulate_lat;
++	unsigned long long total_samples;
++	unsigned long long hist_array[MAX_ENTRY_NUM];
++};
 +
-+notrace void mcount_list_func(unsigned long ip, unsigned long parent_ip)
++static char *latency_hist_dir_root = "latency_hist";
++
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++static DEFINE_PER_CPU(struct hist_data, interrupt_off_hist);
++static char *interrupt_off_hist_dir = "interrupt_off_latency";
++#endif
++
++#ifdef CONFIG_PREEMPT_OFF_HIST
++static DEFINE_PER_CPU(struct hist_data, preempt_off_hist);
++static char *preempt_off_hist_dir = "preempt_off_latency";
++#endif
++
++#if defined(CONFIG_PREEMPT_OFF_HIST) && defined(CONFIG_INTERRUPT_OFF_HIST)
++static DEFINE_PER_CPU(struct hist_data, preempt_irqs_off_hist);
++static char *preempt_irqs_off_hist_dir = "preempt_interrupts_off_latency";
++#endif
++
++#ifdef CONFIG_WAKEUP_LATENCY_HIST
++static DEFINE_PER_CPU(struct hist_data, wakeup_latency_hist);
++static char *wakeup_latency_hist_dir = "wakeup_latency";
++#endif
++
++static inline u64 u64_div(u64 x, u64 y)
 +{
-+	struct mcount_ops *op = mcount_list;
-+
-+	/* in case someone actually ports this to alpha! */
-+	read_barrier_depends();
-+
-+	while (op != &mcount_list_end) {
-+		/* silly alpha */
-+		read_barrier_depends();
-+		op->func(ip, parent_ip);
-+		op = op->next;
-+	};
++	do_div(x, y);
++	return x;
 +}
 +
-+/**
-+ * register_mcount_function - register a function for profiling
-+ * @ops - ops structure that holds the function for profiling.
-+ *
-+ * Register a function to be called by all functions in the
-+ * kernel.
-+ *
-+ * Note: @ops->func and all the functions it calls must be labeled
-+ *       with "notrace", otherwise it will go into a
-+ *       recursive loop.
-+ */
-+int register_mcount_function(struct mcount_ops *ops)
++void notrace latency_hist(int latency_type, int cpu, unsigned long latency)
 +{
-+	unsigned long flags;
++	struct hist_data *my_hist;
 +
-+	spin_lock_irqsave(&mcount_func_lock, flags);
-+	ops->next = mcount_list;
-+	/*
-+	 * We are entering ops into the mcount_list but another
-+	 * CPU might be walking that list. We need to make sure
-+	 * the ops->next pointer is valid before another CPU sees
-+	 * the ops pointer included into the mcount_list.
-+	 */
-+	smp_wmb();
-+	mcount_list = ops;
-+	/*
-+	 * For one func, simply call it directly.
-+	 * For more than one func, call the chain.
-+	 */
-+	if (ops->next == &mcount_list_end)
-+		mcount_trace_function = ops->func;
++	if ((cpu < 0) || (cpu >= NR_CPUS) || (latency_type < INTERRUPT_LATENCY)
++			|| (latency_type > WAKEUP_LATENCY) || (latency < 0))
++		return;
++
++	switch (latency_type) {
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++	case INTERRUPT_LATENCY:
++		my_hist = &per_cpu(interrupt_off_hist, cpu);
++		break;
++#endif
++
++#ifdef CONFIG_PREEMPT_OFF_HIST
++	case PREEMPT_LATENCY:
++		my_hist = &per_cpu(preempt_off_hist, cpu);
++		break;
++#endif
++
++#if defined(CONFIG_PREEMPT_OFF_HIST) && defined(CONFIG_INTERRUPT_OFF_HIST)
++	case PREEMPT_INTERRUPT_LATENCY:
++		my_hist = &per_cpu(preempt_irqs_off_hist, cpu);
++		break;
++#endif
++
++#ifdef CONFIG_WAKEUP_LATENCY_HIST
++	case WAKEUP_LATENCY:
++		my_hist = &per_cpu(wakeup_latency_hist, cpu);
++		break;
++#endif
++	default:
++		return;
++	}
++
++	if (atomic_read(&my_hist->hist_mode) == 0)
++		return;
++
++	if (latency >= MAX_ENTRY_NUM)
++		my_hist->beyond_hist_bound_samples++;
 +	else
-+		mcount_trace_function = mcount_list_func;
-+	spin_unlock_irqrestore(&mcount_func_lock, flags);
++		my_hist->hist_array[latency]++;
 +
++	if (latency < my_hist->min_lat)
++		my_hist->min_lat = latency;
++	else if (latency > my_hist->max_lat)
++		my_hist->max_lat = latency;
++
++	my_hist->total_samples++;
++	my_hist->accumulate_lat += latency;
++	my_hist->avg_lat = (unsigned long) u64_div(my_hist->accumulate_lat,
++						  my_hist->total_samples);
++	return;
++}
++
++static void *l_start(struct seq_file *m, loff_t *pos)
++{
++	loff_t *index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
++	loff_t index = *pos;
++	struct hist_data *my_hist = m->private;
++
++	if (!index_ptr)
++		return NULL;
++
++	if (index == 0) {
++		atomic_dec(&my_hist->hist_mode);
++		seq_printf(m, "#Minimum latency: %lu microseconds.\n"
++			   "#Average latency: %lu microseconds.\n"
++			   "#Maximum latency: %lu microseconds.\n"
++			   "#Total samples: %llu\n"
++			   "#There are %llu samples greater or equal"
++			   " than %d microseconds\n"
++			   "#usecs\t%16s\n"
++			   , my_hist->min_lat
++			   , my_hist->avg_lat
++			   , my_hist->max_lat
++			   , my_hist->total_samples
++			   , my_hist->beyond_hist_bound_samples
++			   , MAX_ENTRY_NUM, "samples");
++	}
++	if (index >= MAX_ENTRY_NUM)
++		return NULL;
++
++	*index_ptr = index;
++	return index_ptr;
++}
++
++static void *l_next(struct seq_file *m, void *p, loff_t *pos)
++{
++	loff_t *index_ptr = p;
++	struct hist_data *my_hist = m->private;
++
++	if (++*pos >= MAX_ENTRY_NUM) {
++		atomic_inc(&my_hist->hist_mode);
++		return NULL;
++	}
++	*index_ptr = *pos;
++	return index_ptr;
++}
++
++static void l_stop(struct seq_file *m, void *p)
++{
++	kfree(p);
++}
++
++static int l_show(struct seq_file *m, void *p)
++{
++	int index = *(loff_t *) p;
++	struct hist_data *my_hist = m->private;
++
++	seq_printf(m, "%5d\t%16llu\n", index, my_hist->hist_array[index]);
 +	return 0;
 +}
 +
-+/**
-+ * unregister_mcount_function - unresgister a function for profiling.
-+ * @ops - ops structure that holds the function to unregister
-+ *
-+ * Unregister a function that was added to be called by mcount profiling.
-+ */
-+int unregister_mcount_function(struct mcount_ops *ops)
++static struct seq_operations latency_hist_seq_op = {
++	.start = l_start,
++	.next  = l_next,
++	.stop  = l_stop,
++	.show  = l_show
++};
++
++static int latency_hist_open(struct inode *inode, struct file *file)
++{
++	int ret;
++
++	ret = seq_open(file, &latency_hist_seq_op);
++	if (!ret) {
++		struct seq_file *seq = file->private_data;
++		seq->private = inode->i_private;
++	}
++	return ret;
++}
++
++static struct file_operations latency_hist_fops = {
++	.open = latency_hist_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = seq_release,
++};
++
++static void hist_reset(struct hist_data *hist)
++{
++	atomic_dec(&hist->hist_mode);
++
++	memset(hist->hist_array, 0, sizeof(hist->hist_array));
++	hist->beyond_hist_bound_samples = 0UL;
++	hist->min_lat = 0xFFFFFFFFUL;
++	hist->max_lat = 0UL;
++	hist->total_samples = 0UL;
++	hist->accumulate_lat = 0UL;
++	hist->avg_lat = 0UL;
++
++	atomic_inc(&hist->hist_mode);
++}
++
++ssize_t latency_hist_reset(struct file *file, const char __user *a,
++			   size_t size, loff_t *off)
++{
++	int cpu;
++	struct hist_data *hist;
++	int latency_type = (long)file->private_data;
++
++	switch (latency_type) {
++
++#ifdef CONFIG_WAKEUP_LATENCY_HIST
++	case WAKEUP_LATENCY:
++		for_each_online_cpu(cpu) {
++			hist = &per_cpu(wakeup_latency_hist, cpu);
++			hist_reset(hist);
++		}
++		break;
++#endif
++
++#ifdef CONFIG_PREEMPT_OFF_HIST
++	case PREEMPT_LATENCY:
++		for_each_online_cpu(cpu) {
++			hist = &per_cpu(preempt_off_hist, cpu);
++			hist_reset(hist);
++		}
++		break;
++#endif
++
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++	case INTERRUPT_LATENCY:
++		for_each_online_cpu(cpu) {
++			hist = &per_cpu(interrupt_off_hist, cpu);
++			hist_reset(hist);
++		}
++		break;
++#endif
++	}
++
++	return size;
++}
++
++static struct file_operations latency_hist_reset_fops = {
++	.open = tracing_open_generic,
++	.write = latency_hist_reset,
++};
++
++#if defined(CONFIG_INTERRUPT_OFF_HIST) || defined(CONFIG_PREEMPT_OFF_HIST)
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++static DEFINE_PER_CPU(cycles_t, hist_irqsoff_start);
++static DEFINE_PER_CPU(int, hist_irqsoff_tracing);
++#endif
++#ifdef CONFIG_PREEMPT_OFF_HIST
++static DEFINE_PER_CPU(cycles_t, hist_preemptoff_start);
++static DEFINE_PER_CPU(int, hist_preemptoff_tracing);
++#endif
++#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
++static DEFINE_PER_CPU(cycles_t, hist_preemptirqsoff_start);
++static DEFINE_PER_CPU(int, hist_preemptirqsoff_tracing);
++#endif
++
++notrace void tracing_hist_preempt_start(void)
++{
++	cycle_t start;
++	int cpu;
++
++	start = now();
++	cpu = smp_processor_id();
++
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++	if (!per_cpu(hist_irqsoff_tracing, cpu) &&
++	    irqs_disabled()) {
++		per_cpu(hist_irqsoff_tracing, cpu) = 1;
++		per_cpu(hist_irqsoff_start, cpu) = start;
++	}
++#endif
++
++#ifdef CONFIG_PREEMPT_OFF_HIST
++	if (!per_cpu(hist_preemptoff_tracing, cpu) &&
++	    preempt_count()) {
++		per_cpu(hist_preemptoff_tracing, cpu) = 1;
++		per_cpu(hist_preemptoff_start, cpu) = start;
++	}
++#endif
++
++#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
++	if (!per_cpu(hist_preemptirqsoff_tracing, cpu) &&
++	    (preempt_count() || irqs_disabled())) {
++		per_cpu(hist_preemptirqsoff_tracing, cpu) = 1;
++		per_cpu(hist_preemptirqsoff_start, cpu) = start;
++	}
++#endif
++}
++
++notrace void tracing_hist_preempt_stop(int irqs_on)
++{
++	long latency;
++	cycle_t start;
++	cycle_t stop;
++	int cpu;
++
++	stop = now();
++	cpu = smp_processor_id();
++
++	/* irqs_on == TRACE_STOP if we must stop tracing. */
++
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++	if (per_cpu(hist_irqsoff_tracing, cpu) && irqs_on) {
++		per_cpu(hist_irqsoff_tracing, cpu) = 0;
++		start = per_cpu(hist_irqsoff_start, cpu);
++		latency = (long)cycles_to_usecs(stop - start);
++		latency_hist(INTERRUPT_LATENCY, smp_processor_id(), latency);
++	}
++#endif
++
++#ifdef CONFIG_PREEMPT_OFF_HIST
++	if (per_cpu(hist_preemptoff_tracing, cpu) &&
++	    (!preempt_count() || irqs_on == TRACE_STOP)) {
++		per_cpu(hist_preemptoff_tracing, cpu) = 0;
++		start = per_cpu(hist_preemptoff_start, cpu);
++		latency = (long)cycles_to_usecs(stop - start);
++		latency_hist(PREEMPT_LATENCY, smp_processor_id(), latency);
++	}
++#endif
++
++#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
++	if (per_cpu(hist_preemptirqsoff_tracing, cpu) &&
++	    ((!preempt_count() && irqs_on) || irqs_on == TRACE_STOP)) {
++		per_cpu(hist_preemptirqsoff_tracing, cpu) = 0;
++		start = per_cpu(hist_preemptirqsoff_start, cpu);
++		latency = (long)cycles_to_usecs(stop - start);
++		latency_hist(PREEMPT_INTERRUPT_LATENCY,
++			     smp_processor_id(), latency);
++	}
++#endif
++}
++#endif
++
++#ifdef CONFIG_WAKEUP_LATENCY_HIST
++int tracing_wakeup_hist __read_mostly = 1;
++
++static unsigned wakeup_prio = (unsigned)-1 ;
++static struct task_struct *wakeup_task;
++static cycle_t wakeup_start;
++static DEFINE_SPINLOCK(wakeup_lock);
++
++notrace void tracing_hist_wakeup_start(struct task_struct *p,
++				       struct task_struct *curr)
 +{
 +	unsigned long flags;
-+	struct mcount_ops **p;
-+	int ret = 0;
 +
-+	spin_lock_irqsave(&mcount_func_lock, flags);
++	if (likely(!rt_task(p)) ||
++	    p->prio >= wakeup_prio ||
++	    p->prio >= curr->prio)
++		return;
 +
-+	/*
-+	 * If we are the only function, then the mcount pointer is
-+	 * pointing directly to that function.
-+	 */
-+	if (mcount_list == ops && ops->next == &mcount_list_end) {
-+		mcount_trace_function = dummy_mcount_tracer;
-+		mcount_list = &mcount_list_end;
-+		goto out;
-+	}
++	spin_lock_irqsave(&wakeup_lock, flags);
++	if (wakeup_task)
++		put_task_struct(wakeup_task);
 +
-+	for (p = &mcount_list; *p != &mcount_list_end; p = &(*p)->next)
-+		if (*p == ops)
-+			break;
-+
-+	if (*p != ops) {
-+		ret = -1;
-+		goto out;
-+	}
-+
-+	*p = (*p)->next;
-+
-+	/* If we only have one func left, then call that directly */
-+	if (mcount_list->next == &mcount_list_end)
-+		mcount_trace_function = mcount_list->func;
-+
-+ out:
-+	spin_unlock_irqrestore(&mcount_func_lock, flags);
-+
-+	return 0;
++	get_task_struct(p);
++	wakeup_task = p;
++	wakeup_prio = p->prio;
++	wakeup_start = now();
++	spin_unlock_irqrestore(&wakeup_lock, flags);
 +}
 +
-+/**
-+ * clear_mcount_function - reset the mcount function
-+ *
-+ * This NULLs the mcount function and in essence stops
-+ * tracing.  There may be lag
-+ */
-+void clear_mcount_function(void)
++notrace void tracing_hist_wakeup_stop(struct task_struct *next)
 +{
-+	mcount_trace_function = dummy_mcount_tracer;
++	unsigned long flags;
++	long latency;
++	cycle_t stop;
++
++	if (next != wakeup_task)
++		return;
++
++	stop = now();
++
++	spin_lock_irqsave(&wakeup_lock, flags);
++	if (wakeup_task != next)
++		goto out;
++
++	latency = (long)cycles_to_usecs(stop - wakeup_start);
++
++	latency_hist(WAKEUP_LATENCY, smp_processor_id(), latency);
++
++	put_task_struct(wakeup_task);
++	wakeup_task = NULL;
++	wakeup_prio = (unsigned)-1;
++ out:
++	spin_unlock_irqrestore(&wakeup_lock, flags);
++
 +}
++#endif
++
++static __init int latency_hist_init(void)
++{
++	struct dentry *latency_hist_root = NULL;
++	struct dentry *dentry;
++	struct dentry *entry;
++	int i = 0, len = 0;
++	struct hist_data *my_hist;
++	char name[64];
++
++	dentry = tracing_init_dentry();
++
++	latency_hist_root =
++		debugfs_create_dir(latency_hist_dir_root, dentry);
++
++#ifdef CONFIG_INTERRUPT_OFF_HIST
++	dentry = debugfs_create_dir(interrupt_off_hist_dir,
++				    latency_hist_root);
++	for_each_possible_cpu(i) {
++		len = sprintf(name, "CPU%d", i);
++		name[len] = '\0';
++		entry = debugfs_create_file(name, 0444, dentry,
++					    &per_cpu(interrupt_off_hist, i),
++					    &latency_hist_fops);
++		my_hist = &per_cpu(interrupt_off_hist, i);
++		atomic_set(&my_hist->hist_mode, 1);
++		my_hist->min_lat = 0xFFFFFFFFUL;
++	}
++	entry = debugfs_create_file("reset", 0444, dentry,
++				    (void *)INTERRUPT_LATENCY,
++				    &latency_hist_reset_fops);
++#endif
++
++#ifdef CONFIG_PREEMPT_OFF_HIST
++	dentry = debugfs_create_dir(preempt_off_hist_dir,
++				    latency_hist_root);
++	for_each_possible_cpu(i) {
++		len = sprintf(name, "CPU%d", i);
++		name[len] = '\0';
++		entry = debugfs_create_file(name, 0444, dentry,
++					    &per_cpu(preempt_off_hist, i),
++					    &latency_hist_fops);
++		my_hist = &per_cpu(preempt_off_hist, i);
++		atomic_set(&my_hist->hist_mode, 1);
++		my_hist->min_lat = 0xFFFFFFFFUL;
++	}
++	entry = debugfs_create_file("reset", 0444, dentry,
++				    (void *)PREEMPT_LATENCY,
++				    &latency_hist_reset_fops);
++#endif
++
++#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
++	dentry = debugfs_create_dir(preempt_irqs_off_hist_dir,
++				    latency_hist_root);
++	for_each_possible_cpu(i) {
++		len = sprintf(name, "CPU%d", i);
++		name[len] = '\0';
++		entry = debugfs_create_file(name, 0444, dentry,
++					    &per_cpu(preempt_off_hist, i),
++					    &latency_hist_fops);
++		my_hist = &per_cpu(preempt_irqs_off_hist, i);
++		atomic_set(&my_hist->hist_mode, 1);
++		my_hist->min_lat = 0xFFFFFFFFUL;
++	}
++	entry = debugfs_create_file("reset", 0444, dentry,
++				    (void *)PREEMPT_INTERRUPT_LATENCY,
++				    &latency_hist_reset_fops);
++#endif
++
++#ifdef CONFIG_WAKEUP_LATENCY_HIST
++	dentry = debugfs_create_dir(wakeup_latency_hist_dir,
++				    latency_hist_root);
++	for_each_possible_cpu(i) {
++		len = sprintf(name, "CPU%d", i);
++		name[len] = '\0';
++		entry = debugfs_create_file(name, 0444, dentry,
++					    &per_cpu(wakeup_latency_hist, i),
++					    &latency_hist_fops);
++		my_hist = &per_cpu(wakeup_latency_hist, i);
++		atomic_set(&my_hist->hist_mode, 1);
++		my_hist->min_lat = 0xFFFFFFFFUL;
++	}
++	entry = debugfs_create_file("reset", 0444, dentry,
++				    (void *)WAKEUP_LATENCY,
++				    &latency_hist_reset_fops);
++#endif
++	return 0;
++
++}
++
++__initcall(latency_hist_init);
+Index: linux-mcount.git/lib/tracing/tracer_hist.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/tracer_hist.h	2008-01-30 15:56:11.000000000 -0500
+@@ -0,0 +1,39 @@
++/*
++ * lib/tracing/tracer_hist.h
++ *
++ * Add support for histograms of preemption-off latency and
++ * interrupt-off latency and wakeup latency, it depends on
++ * Real-Time Preemption Support.
++ *
++ *  Copyright (C) 2005 MontaVista Software, Inc.
++ *  Yi Yang <yyang@ch.mvista.com>
++ *
++ *  Converted to work with the new latency tracer.
++ *  Copyright (C) 2008 Red Hat, Inc.
++ *    Steven Rostedt <srostedt@redhat.com>
++ *
++ */
++#ifndef _LIB_TRACING_TRACER_HIST_H_
++#define _LIB_TRACING_TRACER_HIST_H_
++
++#if defined(CONFIG_INTERRUPT_OFF_HIST) || defined(CONFIG_PREEMPT_OFF_HIST)
++# define TRACE_STOP 2
++void tracing_hist_preempt_start(void);
++void tracing_hist_preempt_stop(int irqs_on);
++#else
++# define tracing_hist_preempt_start() do { } while (0)
++# define tracing_hist_preempt_stop(irqs_off) do { } while (0)
++#endif
++
++#ifdef CONFIG_WAKEUP_LATENCY_HIST
++void tracing_hist_wakeup_start(struct task_struct *p,
++			       struct task_struct *curr);
++void tracing_hist_wakeup_stop(struct task_struct *next);
++extern int tracing_wakeup_hist;
++#else
++# define tracing_hist_wakeup_start(p, curr) do { } while (0)
++# define tracing_hist_wakeup_stop(next) do { } while (0)
++# define tracing_wakeup_hist 0
++#endif
++
++#endif /* ifndef _LIB_TRACING_TRACER_HIST_H_ */
 
 -- 
