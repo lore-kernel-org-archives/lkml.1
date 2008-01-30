@@ -1,77 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYA3Q33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYA3QcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbYA3Q33 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 11:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYA3Q3V
+	id S1758794AbYA3QcX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 11:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYA3QcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 11:29:21 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11066 "EHLO mga11.intel.com"
+	Wed, 30 Jan 2008 11:32:08 -0500
+Received: from mga03.intel.com ([143.182.124.21]:48838 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753311AbYA3Q3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 11:29:20 -0500
+	id S1751544AbYA3QcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 11:32:06 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,278,1199692800"; 
-   d="scan'208";a="294377255"
-Message-ID: <47A0A5B0.8090605@intel.com>
-Date: Wed, 30 Jan 2008 08:28:32 -0800
+   d="scan'208";a="373078719"
+Message-ID: <47A0A481.3000504@intel.com>
+Date: Wed, 30 Jan 2008 08:23:29 -0800
 From: "Kok, Auke" <auke-jan.h.kok@intel.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>, Jeff Garzik <jeff@garzik.org>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       auke-jan.h.kok@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, john.ronciak@intel.com,
-       e1000-devel@lists.sourceforge.net, venkatesh.pallipadi@intel.com
-Subject: Re: [PATCH 1/1] Net: e100, fix iomap mem accesses
-References: <479F9E14.1070700@intel.com> <1201643356-28221-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1201643356-28221-1-git-send-email-jirislaby@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       akpm <akpm@linux-foundation.org>, NetDev <netdev@vger.kernel.org>
+Subject: Re: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over
+ to e1000e"
+References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com> <47A04C07.1040200@garzik.org>
+In-Reply-To: <47A04C07.1040200@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jan 2008 16:29:19.0596 (UTC) FILETIME=[43850AC0:01C8635D]
+X-OriginalArrivalTime: 30 Jan 2008 16:24:17.0948 (UTC) FILETIME=[8FB935C0:01C8635C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Patch against netdev-2.6 follows.
-> --
-> writeX functions are not permitted on iomap-ped space change to iowriteX,
-> also pci_unmap pci_map-ped space on exit (instead of iounmap).
+Jeff Garzik wrote:
+> Linus Torvalds wrote:
+>>
+>> On Tue, 29 Jan 2008, Randy Dunlap wrote:
+>>> Andrew was concerned about this when the driver was in -mm.
+>>> He asked for a patch that would set E1000E to same value as E1000
+>>> and I supplied that.  Auke acked it IIRC.  Other people vetoed it.  :(
+>>
+>> Yeah, I've been discussing with Jeff and the gang.
+>>
+>> I think we have agreed on a solution where the ID's show up in the old
+>> driver if the new driver is not enabled at all.
+>>
+>> (And as a side note: it turns out that the problem I experienced
+>> didn't come from the new e1000e driver after all, so I'll be removing
+>> the EXPERIMENTAL flag again).
+>>
+>> So I'd suggest the final patch be something like this, but I'm sendign
+>> it out just as an example of how we could solve this, not necessarily
+>> as a final patch.
+>>
+>> Jeff, Auke, would something like this be acceptable? It makes it very
+>> obvious in the driver table which entries are for the PCIE versions
+>> that would be handled by the E1000E driver if it is enabled..
+>>
+>> Untested, but as mentioned, this is more of a "this looks maintainable
+>> and like it should solve the issues" rather than anything I was
+>> planning on committing now.
+>>
+>>         Linus
+>> ---
+>>  drivers/net/Kconfig            |    5 ++-
+>>  drivers/net/e1000/e1000_main.c |   60
+>> ++++++++++++++++++++++------------------
+>>  2 files changed, 37 insertions(+), 28 deletions(-)
+>>
+>> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+>> index 5a2d1dd..6c57540 100644
+>> --- a/drivers/net/Kconfig
+>> +++ b/drivers/net/Kconfig
+>> @@ -1992,7 +1992,7 @@ config E1000_DISABLE_PACKET_SPLIT
+>>  
+>>  config E1000E
+>>      tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+>> -    depends on PCI && EXPERIMENTAL
+>> +    depends on PCI
+>>      ---help---
+>>        This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+>>        ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+>> @@ -2009,6 +2009,9 @@ config E1000E
+>>        To compile this driver as a module, choose M here. The module
+>>        will be called e1000e.
+>>  
+>> +config E1000E_ENABLED
+>> +    def_bool E1000E != n
+>> +
+>>  config IP1000
+>>      tristate "IP1000 Gigabit Ethernet support"
+>>      depends on PCI && EXPERIMENTAL
+>> diff --git a/drivers/net/e1000/e1000_main.c
+>> b/drivers/net/e1000/e1000_main.c
+>> index 3111af6..8c87940 100644
+>> --- a/drivers/net/e1000/e1000_main.c
+>> +++ b/drivers/net/e1000/e1000_main.c
+>> @@ -47,6 +47,12 @@ static const char e1000_copyright[] = "Copyright
+>> (c) 1999-2006 Intel Corporation
+>>   * Macro expands to...
+>>   *   {PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
+>>   */
+>> +#ifdef CONFIG_E1000E_ENABLED
+>> +  #define PCIE(x) +#else
+>> +  #define PCIE(x) x,
+>> +#endif
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> ---
->  drivers/net/e100.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> index 51cf577..47548ef 100644
-> --- a/drivers/net/e100.c
-> +++ b/drivers/net/e100.c
-> @@ -1904,7 +1904,7 @@ static void e100_rx_clean(struct nic *nic, unsigned int *work_done,
->  
->  	if(restart_required) {
->  		// ack the rnr?
-> -		writeb(stat_ack_rnr, &nic->csr->scb.stat_ack);
-> +		iowrite8(stat_ack_rnr, &nic->csr->scb.stat_ack);
->  		e100_start_receiver(nic, rx_to_start);
->  		if(work_done)
->  			(*work_done)++;
-> @@ -2706,7 +2706,7 @@ static void __devexit e100_remove(struct pci_dev *pdev)
->  		struct nic *nic = netdev_priv(netdev);
->  		unregister_netdev(netdev);
->  		e100_free(nic);
-> -		iounmap(nic->csr);
-> +		pci_iounmap(pdev, nic->csr);
->  		free_netdev(netdev);
->  		pci_release_regions(pdev);
->  		pci_disable_device(pdev);
+> Patch gets my ACK, if you like, though an improvement would be to have
+> your Kconfig logic activate CONFIG_E1000_PCIEX.  Then future janitors
+> could come along and disable unused code in addition to PCI IDs.
 
-
-Acked-By: Auke Kok <auke-jan.h.kok@intel.com>
-
-Jeff, feel free to merge in upstream-fixes.
-
-Cheers,
+Ack from my side as well, allthough I hope that this code will not live long as I
+would love to start taking out pci-e code out of e1000. If we merge this patch
+then I suggest that we don't do that until for at least a whole cycle, since it
+does not make much sense otherwise.
 
 Auke
-
