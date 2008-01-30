@@ -1,115 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYA3F05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbYA3FfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYA3F05 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 00:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYA3F0t
+	id S1755736AbYA3FfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 00:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbYA3Fev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 00:26:49 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:20715 "EHLO c60.cesmail.net"
+	Wed, 30 Jan 2008 00:34:51 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:34642 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752987AbYA3F0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 00:26:48 -0500
-Subject: Re: ndiswrapper and GPL-only symbols redux
-From: Pavel Roskin <proski@gnu.org>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-In-Reply-To: <20080130050721.GB22444@dallas.jonmasters.org>
-References: <1201641765.18773.35.camel@dv> <20080129224529.4b8016c3@core>
-	 <1201651006.23553.8.camel@dv> <p73bq746lml.fsf@bingen.suse.de>
-	 <20080130050721.GB22444@dallas.jonmasters.org>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 00:26:45 -0500
-Message-Id: <1201670805.4382.4.camel@rd>
+	id S1753155AbYA3Feu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 00:34:50 -0500
+Date: Wed, 30 Jan 2008 06:34:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       romieu@fr.zoreil.com, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD FAILURE]2.6.24-git6 build failure on sis190 ethernet driver
+Message-ID: <20080130053451.GA18641@uranus.ravnborg.org>
+References: <479FF1F0.10907@linux.vnet.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479FF1F0.10907@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-30 at 05:07 +0000, Jon Masters wrote:
-> *). Add a new taint?
-> *). Move it later?
+On Wed, Jan 30, 2008 at 09:11:36AM +0530, Kamalesh Babulal wrote:
+> Hi,
 > 
-> It's all trivial, but a policy should be established for the future.
+> The 2.6.24-git6 kernel build fails on various x86_64 machines with the build failure
+> 
+> drivers/net/sis190.c:329: error: sis190_pci_tbl causes a section type conflict
+> make[2]: *** [drivers/net/sis190.o] Error 1
+> 
+> # gcc --version (machine1)
+> gcc (GCC) 4.1.1 20070105 (Red Hat 4.1.1-52)
+> 
+> # gcc --version (machine2)
+> gcc (GCC) 4.1.1 20060525 (Red Hat 4.1.1-1)
 
-I'd prefer a new taint.  It's less likely to break.  It provides more
-information in the stack dumps.  It makes it clear the difference
-ndiswrapper and driverloader.
+Hi Kamalesh
 
-Here's the patch:
----
+I know another patch is circulating, but please try the following.
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index b570402..0a5e024 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -1556,7 +1556,7 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
+ static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
+ 						   struct net_device *dev)
+ {
+-	static const u16 __devinitdata ids[] = { 0x0965, 0x0966, 0x0968 };
++	static const u16 __devinitconst ids[] = { 0x0965, 0x0966, 0x0968 };
+ 	struct sis190_private *tp = netdev_priv(dev);
+ 	struct pci_dev *isa_bridge;
+ 	u8 reg, tmp8;
 
-Introduce a new taint flag for ndiswrapper
+It is the better fix if you can confirm it working.
+The section conflict issued by gcc happens because we try to
+mix const and non-const data in the same section.
 
-Although ndiswrapper loads proprietary code, it's under GPL itself.
-Introduce a different taint flag for this case, so that ndiswrapper
-retains access to GPL-only symbols.
-
-Add comments to show the difference between driverloader and
-ndiswrapper.
-
-Signed-off-by: Pavel Roskin <proski@gnu.org>
----
-
- include/linux/kernel.h |    1 +
- kernel/module.c        |    5 ++++-
- kernel/panic.c         |    2 ++
- 3 files changed, 7 insertions(+), 1 deletions(-)
-
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index a7283c9..861a6ae 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -240,6 +240,7 @@ extern enum system_states {
- #define TAINT_BAD_PAGE			(1<<5)
- #define TAINT_USER			(1<<6)
- #define TAINT_DIE			(1<<7)
-+#define TAINT_BLOB_WRAPPER		(1<<8)
- 
- extern void dump_stack(void) __cold;
- 
-diff --git a/kernel/module.c b/kernel/module.c
-index f6a4e72..a64380c 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1925,8 +1925,11 @@ static struct module *load_module(void __user *umod,
- 	/* Set up license info based on the info section */
- 	set_license(mod, get_modinfo(sechdrs, infoindex, "license"));
- 
-+	/* GPL, but may load proprietary code */
- 	if (strcmp(mod->name, "ndiswrapper") == 0)
--		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
-+		add_taint_module(mod, TAINT_BLOB_WRAPPER);
-+
-+	/* Wrongly claims to be under GPL */
- 	if (strcmp(mod->name, "driverloader") == 0)
- 		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
- 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index da4d6ba..b040812 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -152,6 +152,7 @@ EXPORT_SYMBOL(panic);
-  *  'M' - System experienced a machine check exception.
-  *  'B' - System has hit bad_page.
-  *  'U' - Userspace-defined naughtiness.
-+ *  'W' - Wrapper for untrusted binary blobs has been loaded.
-  *
-  *	The string is overwritten by the next call to print_taint().
-  */
-@@ -162,6 +163,7 @@ const char *print_tainted(void)
- 	if (tainted) {
- 		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c",
- 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
-+			tainted & TAINT_BLOB_WRAPPER ? 'W' : ' ',
- 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
- 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
- 			tainted & TAINT_FORCED_RMMOD ? 'R' : ' ',
-
--- 
-Regards,
-Pavel Roskin
+	Sam
