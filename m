@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbYA3AQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYA3ATz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757877AbYA3AQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYA3AQg
+	id S1756668AbYA3ATz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYA3ATo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:16:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:54594 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756950AbYA3AQe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:16:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=ACPy37tmosiuD4F6Ne3ARPmKcKV4SMpfqQcQDIVk/+CwE31OheNdYqfHs6eW4GJTdTYYTxnu++tc+TWlQSsXHPjF1pkF064TwRGvPuHTl4DRXBnwyG0YZx4vNPD3L7D+vdl3bEHfsacNRr2cBKaDUSAMqJxyFVkYWxHnlRP5XhQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 0/32] ide-tape redux v1
-Date: Wed, 30 Jan 2008 01:29:55 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1201423312-2460-1-git-send-email-bbpetkov@yahoo.de> <200801272045.40712.bzolnier@gmail.com> <20080128054343.GB3074@gollum.tnic>
-In-Reply-To: <20080128054343.GB3074@gollum.tnic>
+	Tue, 29 Jan 2008 19:19:44 -0500
+Received: from rtr.ca ([76.10.145.34]:3116 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752723AbYA3ATn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 19:19:43 -0500
+Message-ID: <479FC29A.1000207@rtr.ca>
+Date: Tue, 29 Jan 2008 19:19:38 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801300129.56003.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
+       Richard Heck <rgheck@bobjweil.com>,
+       Daniel Barkalow <barkalow@iabervon.org>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+References: <200801272122.21823.gene.heskett@gmail.com> <200801291204.44671.gene.heskett@gmail.com> <20080129185445.1c7d3a83@core> <200801291741.50192.gene.heskett@gmail.com>
+In-Reply-To: <200801291741.50192.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008, Borislav Petkov wrote:
-> Hi Bart,
-> 
-> [...]
-> 
-> > > the BKL in idetape_write_release() with finer-grained locking etc, probably also
-> > > some pipeline improvements, removal of OnStream support, etc. but that'll come
-> > > later.
-> > 
-> > On-Stream support has been long gone but it seems that deprecation
-> > warning etc. managed to survive.
-> > 
-> > w.r.t. to the pipeline-mode: it should be pipelined into /dev/null
-> > 
-> > rationale:
-> > - it is _very_ complex
-> > - causes errors to be deferred till the next user-space access
-> > - direct I/O using blk_rq_map_user() will offer superior performance
-> > 
-> > the only question is whether to remove it...
-> 
-> Well, on the one hand, since the driver is only being maintained we should not
-> remove code that works. Also, i don't know how many users ide-tape really has
-> but, would it be worth the trouble at all? Because if nobody's using it, we
-> could just as well pipe the whole thing into /dev/null.. On the other hand, the
+Gene Heskett wrote:
+>
+> I doubt libata has that capability now, or ever will, cuz these ide/atapi 
+> devices are generally dumber than rocks about that.  But any device claiming 
+> to be scsi-II is supposed to be able to do those sorts of things while the 
+> cpu is off crunching numbers for BOINC or whatever.
+..
 
-This may be the other alternative... [ there is always libata PATA... ]
+The CD/DVD drives all all "MMC" devices internally, which means they speak
+a SCSI command protocol.  Regardless of the electrical or optical interface.
 
-If you want to give ide-tape removal a try, go ahead (I suggest starting
-with adding warning printk() and keeping patch in -mm for some time)...
+Linux is software, and the software protocol is exactly the same for them,
+no matter what the cable/bus type happens to be.
 
-> pipelining part _is_ kinda big and, right, it is not that straightfoward to
-> look at it and know what it actually does - it truly is a student project :)
-
-I have pipelining code figured out to some degree but reworking it is a rather
-low-prio on my TODO list...
-
-[...]
-
-> Anyway, resending #23 to you in a private mail.
-
-Thanks.
-
-Bart
+Cheers
