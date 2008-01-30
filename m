@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbYA3JQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbYA3JQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbYA3JQE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 04:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbYA3JNv
+	id S1759071AbYA3JQa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 04:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbYA3JNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 04:13:51 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:40311 "EHLO
+	Wed, 30 Jan 2008 04:13:53 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:63544 "EHLO
 	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754564AbYA3JNq (ORCPT
+	with ESMTP id S1754707AbYA3JNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 04:13:46 -0500
+	Wed, 30 Jan 2008 04:13:47 -0500
 X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="47623407"
+   d="scan'208";a="47623408"
 From: Bryan Wu <bryan.wu@analog.com>
 To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
+Cc: linux-kernel@vger.kernel.org,
+       Mike Frysinger <michael.frysinger@analog.com>,
        Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 5/6] [Blackfin] SPI driver: Fix bug SPI_write should not return until complete bit is set.
-Date: Wed, 30 Jan 2008 17:13:40 +0800
-Message-Id: <1201684421-26124-6-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 6/6] [Blackfin] SPI driver: use simpler comment headers and strip out information that is maintained in the scm's log
+Date: Wed, 30 Jan 2008 17:13:41 +0800
+Message-Id: <1201684421-26124-7-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
 References: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
@@ -26,77 +27,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+From: Mike Frysinger <michael.frysinger@analog.com>
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/spi/spi_bfin5xx.c |   22 ++++++++++------------
- 1 files changed, 10 insertions(+), 12 deletions(-)
+ drivers/spi/spi_bfin5xx.c |   32 +++-----------------------------
+ 1 files changed, 3 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index c5d4d77..9f12639 100644
+index 9f12639..6338235 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -278,16 +278,16 @@ static void u8_writer(struct driver_data *drv_data)
- 	dev_dbg(&drv_data->pdev->dev,
- 		"cr8-s is 0x%x\n", read_STAT(drv_data));
+@@ -1,37 +1,11 @@
+ /*
+- * File:	drivers/spi/bfin5xx_spi.c
+- * Maintainer:
+- *		Bryan Wu <bryan.wu@analog.com>
+- * Original Author:
+- *		Luke Yang (Analog Devices Inc.)
+- *
+- * Created:	March. 10th 2006
+- * Description:	SPI controller driver for Blackfin BF5xx
+- * Bugs:	Enter bugs at http://blackfin.uclinux.org/
+- *
+- * Modified:
+- *	March 10, 2006  bfin5xx_spi.c Created. (Luke Yang)
+- *      August 7, 2006  added full duplex mode (Axel Weiss & Luke Yang)
+- *      July  17, 2007  add support for BF54x SPI0 controller (Bryan Wu)
+- *      July  30, 2007  add platfrom_resource interface to support multi-port
+- *                      SPI controller (Bryan Wu)
++ * Blackfin On-Chip SPI Driver
+  *
+  * Copyright 2004-2007 Analog Devices Inc.
+  *
+- * This program is free software ;  you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation ;  either version 2, or (at your option)
+- * any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY ;  without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
++ * Enter bugs at http://blackfin.uclinux.org/
+  *
+- * You should have received a copy of the GNU General Public License
+- * along with this program ;  see the file COPYING.
+- * If not, write to the Free Software Foundation,
+- * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ * Licensed under the GPL-2 or later.
+  */
  
--	/* poll for SPI completion before start */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
--
- 	while (drv_data->tx < drv_data->tx_end) {
- 		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
- 		while (read_STAT(drv_data) & BIT_STAT_TXS)
- 			cpu_relax();
- 		++drv_data->tx;
- 	}
-+
-+	/* poll for SPI completion before return */
-+	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
-+		cpu_relax();
- }
- 
- static void u8_cs_chg_writer(struct driver_data *drv_data)
-@@ -398,32 +398,30 @@ static void u16_writer(struct driver_data *drv_data)
- 	dev_dbg(&drv_data->pdev->dev,
- 		"cr16 is 0x%x\n", read_STAT(drv_data));
- 
--	/* poll for SPI completion before start */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
--
- 	while (drv_data->tx < drv_data->tx_end) {
- 		write_TDBR(drv_data, (*(u16 *) (drv_data->tx)));
- 		while ((read_STAT(drv_data) & BIT_STAT_TXS))
- 			cpu_relax();
- 		drv_data->tx += 2;
- 	}
-+
-+	/* poll for SPI completion before return */
-+	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
-+		cpu_relax();
- }
- 
- static void u16_cs_chg_writer(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
- 
--	/* poll for SPI completion before start */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
--
- 	while (drv_data->tx < drv_data->tx_end) {
- 		cs_active(drv_data, chip);
- 
- 		write_TDBR(drv_data, (*(u16 *) (drv_data->tx)));
- 		while ((read_STAT(drv_data) & BIT_STAT_TXS))
- 			cpu_relax();
-+		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
-+			cpu_relax();
- 
- 		cs_deactive(drv_data, chip);
- 
+ #include <linux/init.h>
 -- 
 1.5.3.4
