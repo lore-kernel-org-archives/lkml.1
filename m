@@ -1,76 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYA3JT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYA3JZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYA3JT6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 04:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYA3JS2
+	id S1757045AbYA3JZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 04:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYA3JZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 04:18:28 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:15373 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbYA3JSY (ORCPT
+	Wed, 30 Jan 2008 04:25:29 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54401 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752870AbYA3JZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 04:18:24 -0500
-X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="47623616"
-From: Bryan Wu <bryan.wu@analog.com>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 3/3] [MTD/NAND] Blackfin NFC driver: fix ECC caculating bug when NAND Flash chip page size is 512 bytes
-Date: Wed, 30 Jan 2008 17:18:18 +0800
-Message-Id: <1201684698-26936-4-git-send-email-bryan.wu@analog.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1201684698-26936-1-git-send-email-bryan.wu@analog.com>
-References: <1201684698-26936-1-git-send-email-bryan.wu@analog.com>
+	Wed, 30 Jan 2008 04:25:24 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: paulmck@linux.vnet.ibm.com
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
+References: <20080129164019.GA2060@tv-sign.ru>
+	<m1ir1cgfmm.fsf@ebiederm.dsl.xmission.com>
+	<20080130050048.GH12073@linux.vnet.ibm.com>
+Date: Wed, 30 Jan 2008 02:20:02 -0700
+In-Reply-To: <20080130050048.GH12073@linux.vnet.ibm.com> (Paul E. McKenney's
+	message of "Tue, 29 Jan 2008 21:00:48 -0800")
+Message-ID: <m163xbhdq5.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/mtd/nand/bf5xx_nand.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-diff --git a/drivers/mtd/nand/bf5xx_nand.c b/drivers/mtd/nand/bf5xx_nand.c
-index 2fe9678..7d6ac6a 100644
---- a/drivers/mtd/nand/bf5xx_nand.c
-+++ b/drivers/mtd/nand/bf5xx_nand.c
-@@ -293,7 +293,6 @@ static int bf5xx_nand_calculate_ecc(struct mtd_info *mtd,
- 	u16 ecc0, ecc1;
- 	u32 code[2];
- 	u8 *p;
--	int bytes = 3, i;
- 
- 	/* first 4 bytes ECC code for 256 page size */
- 	ecc0 = bfin_read_NFC_ECC0();
-@@ -303,19 +302,24 @@ static int bf5xx_nand_calculate_ecc(struct mtd_info *mtd,
- 
- 	dev_dbg(info->device, "returning ecc 0x%08x\n", code[0]);
- 
-+	/* first 3 bytes in ecc_code for 256 page size */
-+	p = (u8 *) code;
-+	memcpy(ecc_code, p, 3);
-+
- 	/* second 4 bytes ECC code for 512 page size */
- 	if (page_size == 512) {
- 		ecc0 = bfin_read_NFC_ECC2();
- 		ecc1 = bfin_read_NFC_ECC3();
- 		code[1] = (ecc0 & 0x3FF) | ((ecc1 & 0x3FF) << 11);
--		bytes = 6;
-+
-+		/* second 3 bytes in ecc_code for second 256
-+		 * bytes of 512 page size
-+		 */
-+		p = (u8 *) (code + 1);
-+		memcpy((ecc_code + 3), p, 3);
- 		dev_dbg(info->device, "returning ecc 0x%08x\n", code[1]);
- 	}
- 
--	p = (u8 *)code;
--	for (i = 0; i < bytes; i++)
--		ecc_code[i] = p[i];
--
- 	return 0;
- }
- 
--- 
-1.5.3.4
+> On Tue, Jan 29, 2008 at 08:24:17PM -0700, Eric W. Biederman wrote:
+>> Oleg Nesterov <oleg@tv-sign.ru> writes:
+>> 
+>> > With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply
+> rcu_read_lock(),
+>> > but find_pid_ns()->hlist_for_each_entry_rcu() should be safe under tasklist.
+>> >
+>> > Usually it is, detach_pid() is always called under
+> write_lock(tasklist_lock),
+>> > but copy_process() calls free_pid() lockless.
+>> >
+>> > "#ifdef CONFIG_PREEMPT_RCU" is added mostly as documentation, perhaps it is
+>> > too ugly and should be removed.
+>> >
+>> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>> >
+>> > --- MM/kernel/fork.c~PR_RCU	2008-01-27 17:09:47.000000000 +0300
+>> > +++ MM/kernel/fork.c	2008-01-29 19:23:44.000000000 +0300
+>> > @@ -1335,8 +1335,19 @@ static struct task_struct *copy_process(
+>> >  	return p;
+>> >  
+>> >  bad_fork_free_pid:
+>> > -	if (pid != &init_struct_pid)
+>> > +	if (pid != &init_struct_pid) {
+>> > +#ifdef CONFIG_PREEMPT_RCU
+>> > +		/*
+>> > +		 * read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+>> > +		 * make sure find_pid() is safe under read_lock(tasklist).
+>> > +		 */
+>> > +		write_lock_irq(&tasklist_lock);
+>> > +#endif
+>> >  		free_pid(pid);
+>> > +#ifdef CONFIG_PREEMPT_RCU
+>> > +		write_unlock_irq(&tasklist_lock);
+>> > +#endif
+>> > +	}
+>> >  bad_fork_cleanup_namespaces:
+>> >  	exit_task_namespaces(p);
+>> >  bad_fork_cleanup_keys:
+>> 
+>> Ok. I believe I see what problem you are trying to fix.  That
+>> a pid returned from find_pid might disappear if we are not rcu
+>> protected.
+>> 
+>> This patch in the simplest form is wrong because it is confusing.
+>> 
+>> We currently appear to have two options.
+>> 1) Force all pid hash table access and pid accesses that
+>>    do not get a count to be covered under rcu_read_lock.
+>> 2) To modify the locking requirements for free_pid to require
+>>    the tasklist_lock.
+>> 
+>>    However this second approach is horribly brittle, as it
+>>    will break if we ever have intermediate entries in the
+>>    hash table protected by pidmap_lock.
+>> 
+>> Using the tasklist_lock to still guarantee we see the list, the entire
+>> list, and exactly the list for proper implementation of kill to
+>> process groups and sessions still seems sane.
+>> 
+>> So let's just remove the guarantee of find_pid being usable with
+>> just the tasklist_lock held.
+>
+> Makes sense to me -- it is totally permissible to hold rcu_read_lock()
+> across update code.  ;-)
+
+Let me rephrase so it is clear.
+
+When dealing with pids there is exactly one case where we need
+to take read_lock(&tasklist_lock);
+
+Posix (and sanely handling corner cases) requires that when we send a
+signal to a process group or a session we have a snapshot in time view
+of the entire group.  In particular this allows us to send SIGKILL to
+every member of the group and to have the entire group die.
+
+For all other cases (like /proc) we can safely and simply use the
+rcu_read_lock and it improves scalability.
+
+So for those cases where we are sending a signal to multiple processes
+it looks like we need to go in and change the code to say:
+
+read_lock(&tasklist_lock);
+rcu_read_lock();
+...
+rcu_read_unlock();
+read_unlock(&tasklist_lock);
+
+Which is all sane, and should be correct and maintainable in the
+future and is relatively easy to understand.
+
+Of course if we start with find_get_pid and then later do put_pid we
+are also fine.  The current code is a little extra confused right now
+because we have not completed the pid namespace conversion.  Although
+we are getting quite close.
+
+Eric
+
+
