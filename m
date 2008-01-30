@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYA3C7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYA3DAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbYA3C7s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYA3C71
+	id S1756130AbYA3DAQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYA3C77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:59:27 -0500
-Received: from mx2.suse.de ([195.135.220.15]:36792 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751692AbYA3C70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:59:26 -0500
-From: Andi Kleen <ak@suse.de>
-To: Yinghai Lu <Yinghai.Lu@sun.com>
-Subject: Re: [PATCH 4/4] x86_64: increse MAX_EARLY_RES for NODE_DATA and bootmap
-Date: Wed, 30 Jan 2008 03:57:54 +0100
-User-Agent: KMail/1.9.1
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200801291113.35974.yinghai.lu@sun.com> <200801291116.31729.yinghai.lu@sun.com>
-In-Reply-To: <200801291116.31729.yinghai.lu@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 Jan 2008 21:59:59 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:42758 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbYA3C76 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 21:59:58 -0500
+Date: Wed, 30 Jan 2008 11:59:43 +0900 (JST)
+Message-Id: <20080130.115943.85421886.usui@mxm.nes.nec.co.jp>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, magnus.damm@gmail.com
+Subject: Re: [PATCH] Fix NUMA emulation for x86_64
+From: Minoru Usui <usui@mxm.nes.nec.co.jp>
+In-Reply-To: <20080125104107.GS23708@elte.hu>
+References: <20080125.171613.41631926.usui@mxm.nes.nec.co.jp>
+	<20080125104107.GS23708@elte.hu>
+X-fingerprint: 588C 0511 30A4 1BE0 551B  7210 8433 0B28 D5CC 723D
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801300357.54924.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 January 2008 20:16, Yinghai Lu wrote:
-> [PATCH 4/4] x86_64: increse MAX_EARLY_RES for NODE_DATA and bootmap
->
-> otherise early_node_mem will use up these for 8 nodes system
+>>>>> ">" == Ingo Molnar <mingo@elte.hu> writes:
 
-Yes this was the problem with my early_reserve node bootmem patch.
-It adds a node limit.
+    >> * Minoru Usui <usui@mxm.nes.nec.co.jp> wrote:
 
-But even with increasing the limit is far too small. Probably best to not 
-use the patch. In theory it should not have been needed anyways because
-there is no need to reserve here because there are no interfering users.
+    >> I found a small bug of NUMA emulation code for x86_64. 
+    >> (CONFIG_NUMA_EMU) If machine is non-NUMA, find_node_by_addr() should 
+    >> return NUMA_NO_NODE, but current implementation code returns existent 
+    >> maximum NUMA node number + 1. This is not existent NUMA node number.
+    >> 
+    >> However, this behaviour does not affect NUMA emulation fortunately, 
+    >> because acpi_fake_nodes() that is caller of find_node_by_addr() gets 
+    >> pxm (proximity domain) by node_to_pxm() from non-existent NUMA node 
+    >> number that was returned by find_node_by_addr(). node_to_pxm() returns 
+    >> PXM_INVAL that means illegal or non-existent NUMA node number.
 
-Whatever your problem is it needs to be solved differently.
+    >> thanks, i have applied your fix to x86.git.
 
--Andi
+    >> It seems this does not need to be backported to v2.6.24.1 because 
+    >> node_to_pxm() masked the bad effects of this bug, right?
 
+    >> 	Ingo
 
+I think this bug is not urgency.
+If you mean that it's not necessary to release 2.6.24.1 only for this
+bug, I think so.
