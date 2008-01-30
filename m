@@ -1,54 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYA3SPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYA3SSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723AbYA3SPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYA3SPb
+	id S1757447AbYA3SSF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:18:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYA3SRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:15:31 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:52107 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751482AbYA3SPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:15:30 -0500
-Date: Wed, 30 Jan 2008 13:15:30 -0500
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
-       Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080130181530.GA26259@csclub.uwaterloo.ca>
-References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv> <20080130002514.GA1802@does.not.exist> <1201658555.24898.27.camel@dv> <20080130175435.GA29368@does.not.exist>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130175435.GA29368@does.not.exist>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 30 Jan 2008 13:17:54 -0500
+Received: from waste.org ([66.93.16.53]:43060 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751306AbYA3SRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:17:53 -0500
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+From: Matt Mackall <mpm@selenic.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Nick Piggin <npiggin@suse.de>,
+       riel <riel@redhat.com>, Lennart Poettering <mztabzr@0pointer.de>
+In-Reply-To: <1201714139.28547.237.camel@lappy>
+References: <1201714139.28547.237.camel@lappy>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 12:15:59 -0600
+Message-Id: <1201716959.4037.17.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 07:54:35PM +0200, Adrian Bunk wrote:
-> The GPL might only talk about distribution.
-> 
-> But copyright law is not restricted to copying of work.
-> 
-> IANAL, and I don't know abou the laws in other countries, but at least 
-> in Germany modifications of a copyrighted work require the permission of 
-> the copyright holder.
-> 
-> It's e.g. a not so uncommon problem that someone wants to modify a 30 or 
-> 80 years old building, and since the original contract with the 
-> architect did not grant the owner of the building the rights to modify 
-> it he needs to ask the architect (or the architect's heirs) who has the 
-> (nontransferable) copyright on the building for the permission to modify 
-> the building. [1]
 
-Germany does seem to be an odd case that really makes it very difficult
-to do perfectly reasonable, desirable and sane things.  I am not even
-sure the GPL necesarily makes sense under German copyright law.  I am
-not German so I haven't had to deal with it.
+On Wed, 2008-01-30 at 18:28 +0100, Peter Zijlstra wrote:
+> Subject: mm: MADV_WILLNEED implementation for anonymous memory
+> 
+> Implement MADV_WILLNEED for anonymous pages by walking the page tables and
+> starting asynchonous swap cache reads for all encountered swap pages.
+> 
+> Doing so required a modification to the page table walking library functions.
+> Previously ->pte_entry() could be called while holding a kmap_atomic, to
+> overcome this problem the pte walker is changed to copy batches of the pmd
+> and iterate them.
 
---
-Len Sorensen
+That's a pretty reasonable approach. My original approach was to buffer
+a page worth of PTEs with all the attendant malloc annoyances. Then
+Andrew and I came up with another fix a bit ago by effectively doing a
+batch of size 1: mapping and immediately unmapping per PTE. That's
+basically a no-op on !HIGHPTE but could potentially be expensive in the
+HIGHPTE case. Your approach might be a good complexity/performance
+middle ground.
+
+Unfortunately, I think we only implemented our fix in one of the
+relevant places: the /proc/pid/pagemap code hooks a callback at the pte
+table level and then does its own walk across the table. Perhaps I
+should refactor this so that it hooks in at the pte entry level of the
+walker instead.
+
+> +/*
+> + * Much of the complication here is to work around CONFIG_HIGHPTE which needs
+> + * to kmap the pmd. So copy batches of ptes from the pmd and iterate over
+> + * those.
+> + */
+> +#define WALK_BATCH_SIZE	32
+> +
+>  static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  			  const struct mm_walk *walk, void *private)
+>  {
+>  	pte_t *pte;
+> +	pte_t ptes[WALK_BATCH_SIZE];
+> +	unsigned long start;
+> +	unsigned int i;
+>  	int err = 0;
+>  
+> -	pte = pte_offset_map(pmd, addr);
+>  	do {
+> -		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
+> -		if (err)
+> -		       break;
+> -	} while (pte++, addr += PAGE_SIZE, addr != end);
+> +		start = addr;
+>  
+> -	pte_unmap(pte);
+> +		pte = pte_offset_map(pmd, addr);
+> +		for (i = 0; i < WALK_BATCH_SIZE && addr != end;
+> +				i++, pte++, addr += PAGE_SIZE)
+> +			ptes[i] = *pte;
+
+Looks like this could be:
+
+		for (i = 0; i < WALK_BATCH_SIZE && addr + i * PAGE_SIZE != end; i++)
+			ptes[i] = pte[i];
+
+> +		pte_unmap(pte);
+> +
+> +		for (i = 0, pte = ptes, addr = start;
+> +				i < WALK_BATCH_SIZE && addr != end;
+> +				i++, pte++, addr += PAGE_SIZE) {
+> +			err = walk->pte_entry(pte, addr, addr + PAGE_SIZE,
+> +					private);
+		for (i = 0; i < WALK_BATCH_SIZE && addr != end;
+			i++, addr+= PAGE_SIZE) {
+			err = walk->pte_entry(ptes[i], addr, addr + PAGE_SIZE,
+				private);
+
+And we can ditch start.
+
+Also, one wonders if setting batch size to 1 will then convince the
+compiler to collapse this into a more trivial loop in the !HIGHPTE case.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
