@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbYA3NIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbYA3NJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759142AbYA3NIj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbYA3NIb
+	id S1759679AbYA3NJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbYA3NJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:08:31 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:60916 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbYA3NIa (ORCPT
+	Wed, 30 Jan 2008 08:09:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:43839 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754195AbYA3NJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:08:30 -0500
-Date: Wed, 30 Jan 2008 08:08:16 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 02/22 -v7] Add basic support for gcc profiler instrumentation
-In-Reply-To: <1201682801.28547.162.camel@lappy>
-Message-ID: <Pine.LNX.4.58.0801300806100.29020@gandalf.stny.rr.com>
-References: <20080130031521.258552785@goodmis.org>  <20080130031840.337019504@goodmis.org>
- <1201682801.28547.162.camel@lappy>
+	Wed, 30 Jan 2008 08:09:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EtrDCest58UC+vRrV7RRG4NzO7xXXXNp12YuWKnfI84ufVDobdURp6/8Yj5Bp99g8dpEgNd8Qm4bQyoEjLoBrUNMed5oyO5AUVtfUElmEOfk2qjrjl0scYYc9CGOeeOLnbBcG3DILDD/+NhNj66cNhj9yCjbRzrMgLftWh/L/iE=
+Message-ID: <47A076EB.9020401@gmail.com>
+Date: Wed, 30 Jan 2008 14:08:59 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
+       Mike Frysinger <michael.frysinger@analog.com>
+Subject: Re: [PATCH 1/1] [Blackfin] char driver for Blackfin on-chip OTP memory
+References: <1201689401-2892-1-git-send-email-bryan.wu@analog.com> <47A058B3.6000009@gmail.com> <200801300739.21344.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200801300739.21344.rgetz@blackfin.uclinux.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/30/2008 01:39 PM, Robin Getz wrote:
+> On Wed 30 Jan 2008 06:00, Jiri Slaby pondered:
+>> On 01/30/2008 11:36 AM, Bryan Wu wrote:
+>>> From: Mike Frysinger <michael.frysinger@analog.com>
+>>>
+>>> initial char driver for otp memory
+>>> (only read supported atm ... needs real examples/docs for write support)
+>>>
+>>> Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+>>> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> 
+>>> +	bfin_otp_class = class_create(THIS_MODULE, "otp");
+>>> +	device_create(bfin_otp_class, NULL, bfin_otp_dev_node, "otp");
+>> Anyway, wouldn't be easier/better to use misc.c functionality here 
+>> (misc_register() et al.)?
+> 
+> OTP (one time programmable) memory are not registers, they are small blocks 
+> (8k bytes) of non violate on chip memory, for storing things that you don't 
+> want other people to look at via a PCB level probe. (like keys), or things 
+> that are just helpful - like MAC addresses.
 
-
-On Wed, 30 Jan 2008, Peter Zijlstra wrote:
-
->
-> On Tue, 2008-01-29 at 22:15 -0500, Steven Rostedt wrote:
->
-> > +int register_mcount_function(struct mcount_ops *ops)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&mcount_func_lock, flags);
-> > +	ops->next = mcount_list;
-> > +	/* must have next seen before we update the list pointer */
-> > +	smp_wmb();
->
-> That comment does not explain which race it closes; this is esp
-> important as there is no paired barrier to give hints.
-
-OK, fair enough. I'll explain it a bit more.
-
-How's this:
-
- /*
-  * We are entering ops into the mcount_list but another
-  * CPU might be walking that list. We need to make sure
-  * the ops->next pointer is valid before another CPU sees
-  * the ops pointer included into the mcount_list.
-  */
-
--- Steve
-
->
-> > +	mcount_list = ops;
-> > +	/*
-> > +	 * For one func, simply call it directly.
-> > +	 * For more than one func, call the chain.
-> > +	 */
-> > +	if (ops->next == &mcount_list_end)
-> > +		mcount_trace_function = ops->func;
-> > +	else
-> > +		mcount_trace_function = mcount_list_func;
-> > +	spin_unlock_irqrestore(&mcount_func_lock, flags);
-> > +
-> > +	return 0;
-> > +}
->
->
->
+Sorry, misc_register() allows you to get rid of the chrdev initialization 
+including class creation. Maybe I'm not understanding what you are trying to 
+explain me?
