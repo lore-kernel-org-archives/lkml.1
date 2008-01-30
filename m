@@ -1,132 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764730AbYA3SLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764835AbYA3SL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764730AbYA3SLk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYA3SJu
+	id S1764835AbYA3SL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758251AbYA3SJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:09:50 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47121 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753531AbYA3SJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:09:43 -0500
-Message-Id: <20080130180940.227087000@sgi.com>
+	Wed, 30 Jan 2008 13:09:51 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59565 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752818AbYA3SJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:09:42 -0500
+Message-Id: <20080130180940.921597000@sgi.com>
 References: <20080130180940.022172000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 10:09:41 -0800
+Date: Wed, 30 Jan 2008 10:09:46 -0800
 From: travis@sgi.com
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
        Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
        Thomas Gleixner <tglx@linutronix.de>
 Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
-       Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org,
-       linux-ia64@vger.kernel.org
-Subject: [PATCH 1/6] modules: Fold percpu_modcopy into module.c linux-2.6.git
-Content-Disposition: inline; filename=fold-percpu_modcopy
+       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [PATCH 6/6] s390: Use generic percpu linux-2.6.git
+Content-Disposition: inline; filename=s390_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-percpu_modcopy() is defined multiple times in arch files. However, the only
-user is module.c. Put a static definition into module.c and remove
-the definitions from the arch files.
+Change s390 percpu.h to use asm-generic/percpu.h
 
 Based on latest linux-2.6.git
 
-Cc: Andi Kleen <ak@suse.de>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linuxppc-dev@ozlabs.org
-Cc: linux-ia64@vger.kernel.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
 linux-2.6.git:
   - added back in missing pieces from x86.git merge
 ---
- arch/ia64/kernel/module.c    |   11 -----------
- include/asm-ia64/percpu.h    |    5 -----
- include/asm-powerpc/percpu.h |    9 ---------
- include/asm-s390/percpu.h    |    9 ---------
- 4 files changed, 34 deletions(-)
+ include/asm-s390/percpu.h |   33 +++++++++------------------------
+ 1 file changed, 9 insertions(+), 24 deletions(-)
 
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -940,14 +940,3 @@ module_arch_cleanup (struct module *mod)
- 	if (mod->arch.core_unw_table)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
- }
--
--#ifdef CONFIG_SMP
--void
--percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
--{
--	unsigned int i;
--	for_each_possible_cpu(i) {
--		memcpy(pcpudst + per_cpu_offset(i), src, size);
--	}
--}
--#endif /* CONFIG_SMP */
---- a/include/asm-ia64/percpu.h
-+++ b/include/asm-ia64/percpu.h
-@@ -22,10 +22,6 @@
- #define DECLARE_PER_CPU(type, name)				\
- 	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- 
--/*
-- * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
-- * external routine, to avoid include-hell.
-- */
- #ifdef CONFIG_SMP
- 
- extern unsigned long __per_cpu_offset[NR_CPUS];
-@@ -38,7 +34,6 @@ DECLARE_PER_CPU(unsigned long, local_per
- #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
- #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
- 
--extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
- extern void setup_per_cpu_areas (void);
- extern void *per_cpu_init(void);
- 
---- a/include/asm-powerpc/percpu.h
-+++ b/include/asm-powerpc/percpu.h
-@@ -21,15 +21,6 @@
- #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
- #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
- 
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset(__i),		\
--		       (src), (size));				\
--} while (0)
--
- extern void setup_per_cpu_areas(void);
- 
- #else /* ! SMP */
 --- a/include/asm-s390/percpu.h
 +++ b/include/asm-s390/percpu.h
-@@ -39,15 +39,6 @@ extern unsigned long __per_cpu_offset[NR
- #define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
- #define per_cpu_offset(x) (__per_cpu_offset[x])
+@@ -13,40 +13,25 @@
+  */
+ #if defined(__s390x__) && defined(MODULE)
  
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset[__i],		\
--		       (src), (size));				\
--} while (0)
+-#define __reloc_hide(var,offset) (*({			\
++#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
+ 	extern int simple_identifier_##var(void);	\
+ 	unsigned long *__ptr;				\
+-	asm ( "larl %0,per_cpu__"#var"@GOTENT"		\
+-	    : "=a" (__ptr) : "X" (per_cpu__##var) );	\
+-	(typeof(&per_cpu__##var))((*__ptr) + (offset));	}))
++	asm ( "larl %0, %1@GOTENT"		\
++	    : "=a" (__ptr) : "X" (ptr) );		\
++	(typeof(ptr))((*__ptr) + (offset));	}))
+ 
+ #else
+ 
+-#define __reloc_hide(var, offset) (*({				\
++#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
+ 	extern int simple_identifier_##var(void);		\
+ 	unsigned long __ptr;					\
+-	asm ( "" : "=a" (__ptr) : "0" (&per_cpu__##var) );	\
+-	(typeof(&per_cpu__##var)) (__ptr + (offset)); }))
++	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
++	(typeof(ptr)) (__ptr + (offset)); }))
+ 
+ #endif
+ 
+-#ifdef CONFIG_SMP
++#define __my_cpu_offset S390_lowcore.percpu_offset
+ 
+-extern unsigned long __per_cpu_offset[NR_CPUS];
 -
- #else /* ! SMP */
+-#define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+-#define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+-#define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#else /* ! SMP */
+-
+-#define __get_cpu_var(var) __reloc_hide(var,0)
+-#define __raw_get_cpu_var(var) __reloc_hide(var,0)
+-#define per_cpu(var,cpu) __reloc_hide(var,0)
+-
+-#endif /* SMP */
+-
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
++#include <asm-generic/percpu.h>
  
- #define __get_cpu_var(var) __reloc_hide(var,0)
+ #endif /* __ARCH_S390_PERCPU__ */
 
 -- 
