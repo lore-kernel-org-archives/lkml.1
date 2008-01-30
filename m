@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbYA3Kd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYA3Keu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760045AbYA3Kd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 05:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759759AbYA3KdE
+	id S1758892AbYA3Keu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 05:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbYA3Kek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 05:33:04 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:21365 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759389AbYA3KdB (ORCPT
+	Wed, 30 Jan 2008 05:34:40 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53906 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755308AbYA3Kej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 05:33:01 -0500
-Date: Wed, 30 Jan 2008 11:32:57 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver-core : get_device before create/remove sysfs
- files
-Message-ID: <20080130113257.53555fee@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080130015625.GA3058@darkstar.te-china.tietoenator.com>
-References: <20080130015625.GA3058@darkstar.te-china.tietoenator.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Wed, 30 Jan 2008 05:34:39 -0500
+Subject: hrtimers and lockdep (was: Re: 2.6.24-rc6: possible recursive
+	locking detected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080114212741.GA2263@tv-sign.ru>
+References: <alpine.DEB.0.999999.0801032349190.4821@sheep.housecafe.de>
+	 <200801040006.47979.rjw@sisk.pl> <20080104083049.GC22803@elte.hu>
+	 <20080105071205.GA28936@gondor.apana.org.au>
+	 <1199552016.31975.41.camel@lappy> <1199552476.31975.45.camel@lappy>
+	 <20080107172239.GA14880@tv-sign.ru> <20080107174908.GB14880@tv-sign.ru>
+	 <1200241927.7999.38.camel@lappy>  <20080114212741.GA2263@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 11:34:32 +0100
+Message-Id: <1201689272.28547.204.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 09:56:25 +0800,
-Dave Young <hidave.darkstar@gmail.com> wrote:
+( trimmed CC list )
 
-> get dev reference before create/remove sysfiles, errno fixes as well.
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-> 
-> ---
-> drivers/base/core.c |   12 ++++++++----
-> 1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff -upr a/drivers/base/core.c b/drivers/base/core.c
-> --- a/drivers/base/core.c	2008-01-30 09:49:56.000000000 +0800
-> +++ b/drivers/base/core.c	2008-01-30 09:49:56.000000000 +0800
-> @@ -414,7 +414,7 @@ struct kset *devices_kset;
->   */
->  int device_create_file(struct device *dev, struct device_attribute *attr)
->  {
-> -	int error = 0;
-> +	int error = -ENODEV;
+Sorry for the delay, this message seems to have gotten lost in my
+inbox :-/
 
-Uhm... why?
+On Tue, 2008-01-15 at 00:27 +0300, Oleg Nesterov wrote:
+> On 01/13, Peter Zijlstra wrote:
 
->  	if (get_device(dev)) {
->  		error = sysfs_create_file(&dev->kobj, &attr->attr);
->  		put_device(dev);
-> @@ -442,9 +442,11 @@ void device_remove_file(struct device *d
->   */
->  int device_create_bin_file(struct device *dev, struct bin_attribute *attr)
->  {
-> -	int error = -EINVAL;
-> -	if (dev)
-> +	int error = -ENODEV;
-> +	if (get_device(dev)) {
->  		error = sysfs_create_bin_file(&dev->kobj, attr);
-> +		put_device(dev);
-> +	}
+> Offtopic question. Why do we have so many lockdep stuff in timer.c and hrtimer.c ?
+> We never lock 2 bases at the same time, except in migrate_timers(). We can kill
+> double_spin_lock() and base_lock_keys[] and just use spin_lock_nested in
+> migrate_timers(), no?
 
-Why do we need to grab a reference here? If the calling site doesn't
-hold unto a reference already, something is seriously broken.
+Lets ask Thomas.. :-)
 
->  	return error;
->  }
->  EXPORT_SYMBOL_GPL(device_create_bin_file);
-> @@ -456,8 +458,10 @@ EXPORT_SYMBOL_GPL(device_create_bin_file
->   */
->  void device_remove_bin_file(struct device *dev, struct bin_attribute *attr)
->  {
-> -	if (dev)
-> +	if (get_device(dev)) {
->  		sysfs_remove_bin_file(&dev->kobj, attr);
-> +		put_device(dev);
-> +	}
-
-Dito.
-
->  }
->  EXPORT_SYMBOL_GPL(device_remove_bin_file);
