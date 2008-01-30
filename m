@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYA3Tqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbYA3TrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbYA3Tqq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:46:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbYA3Tqg
+	id S1760637AbYA3TrQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYA3Tq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:46:36 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56660 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752720AbYA3Tqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:46:34 -0500
-Date: Wed, 30 Jan 2008 20:46:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Mike Travis <travis@sgi.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130194616.GA19426@elte.hu>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
+	Wed, 30 Jan 2008 14:46:56 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:53163 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756100AbYA3Tqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:46:55 -0500
+From: akepner@sgi.com
+Date: Wed, 30 Jan 2008 11:45:28 -0800
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] dma/ia64: update ia64 machvecs
+Message-ID: <20080130194528.GX30022@sgi.com>
+References: <20080130055212.GT30022@sgi.com> <1201713958.3292.27.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
-	_SUMMARY_
+In-Reply-To: <1201713958.3292.27.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Luck, Tony <tony.luck@intel.com> wrote:
-
-> > This is only defined for !__ASSEMBLY__
+On Wed, Jan 30, 2008 at 11:25:58AM -0600, James Bottomley wrote:
+> In general, the patches look reasonable to me.  Just an observation:
 > 
-> Some place in there.  The CONFIG_SMP=n path in ia64 makes quite 
-> radical changes ... rather than putting all the per-cpu stuff into the 
-> top 64K of address space and providing a per-cpu TLB mapping for that 
-> range to a different physical address ... it just makes all the 
-> per-cpu stuff link as ordinary variables in .data.  The error messages 
-> indicate that some of the new code is unaware of this.
+> On Tue, 2008-01-29 at 21:52 -0800, akepner@sgi.com wrote:
+> > diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
+> > index e69de29..31af292 100644
+> > --- a/include/linux/dma-attrs.h
+> > +++ b/include/linux/dma-attrs.h
+> > @@ -0,0 +1,48 @@
+> > +#ifndef _DMA_ATTR_H
+> > +#define _DMA_ATTR_H
+> > +#ifdef ARCH_USES_DMA_ATTRS
+> > +
+> > +enum dma_attr {
+> > +       DMA_ATTR_BARRIER,
+> > +       DMA_ATTR_FOO,
+> > +       DMA_ATTR_GOO,
+> > +       DMA_ATTR_MAX,
+> > +};
+> > +
+> 
+> 
+> The attribute names (DMA_ATTR_...) are going to have to live somewhere
+> outside of the #ifdef ARCH_USES_DMA_ATTRS otherwise we'll get compile
+> failures of drivers using attributes on architectures that don't support
+> them.
 
-ah, that was the vital clue. The patch below makes the small memory 
-model only defined on SMP, and makes the config build/link fine here. 
-Does this build and boot on your box?
+Right. Thanks for catching that.
 
-	Ingo
+> 
+> Secondly, DMA_ATTR_BARRIER doesn't quite sound right.  What you're
+> actually doing is trying to prescribe strict ordering, so shouldn't this
+> be something like DMA_ATTR_STRICT_ORDERING (and perhaps with a
+> corresponding DMA_ATTR_RELAXED_ORDERING for the PCIe case).  
 
------------->
-Subject: ia64: build fix #3
-From: Ingo Molnar <mingo@elte.hu>
+OK, I'll reconsider the names here.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-ia64/percpu.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> ... also,
+> strike the DMA_ATTR_FOO and DMA_ATTR_GOO since they have no plausible
+> meaning.
+> 
 
-Index: linux-x86.q/include/asm-ia64/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-ia64/percpu.h
-+++ linux-x86.q/include/asm-ia64/percpu.h
-@@ -15,12 +15,12 @@
- 
- #include <linux/threads.h>
- 
-+#ifdef CONFIG_SMP
-+
- #ifdef HAVE_MODEL_SMALL_ATTRIBUTE
- # define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
- #endif
- 
--#ifdef CONFIG_SMP
--
- #define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
- 
- extern void *per_cpu_init(void);
+Yeah, I realized only after sending that I'd forgotten to 
+remove these. 
+
+-- 
+Arthur
 
