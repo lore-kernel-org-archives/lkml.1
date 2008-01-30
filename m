@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbYA3SpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbYA3Spe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763288AbYA3SpI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:45:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYA3Sox
+	id S1762811AbYA3Spe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763805AbYA3SpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:44:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37564 "EHLO mx3.mail.elte.hu"
+	Wed, 30 Jan 2008 13:45:06 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:60591 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753586AbYA3Sow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:44:52 -0500
-Date: Wed, 30 Jan 2008 19:44:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: arch/x86/kernel/test_nx.c compile error
-Message-ID: <20080130184432.GA31485@elte.hu>
-References: <20080130182537.GD29368@does.not.exist> <20080130184218.GB27168@elte.hu>
+	id S1763746AbYA3SpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:45:04 -0500
+Date: Wed, 30 Jan 2008 20:45:38 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
+       Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
+Subject: Re: ndiswrapper and GPL-only symbols redux
+Message-ID: <20080130184538.GE29368@does.not.exist>
+References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv> <20080130002514.GA1802@does.not.exist> <1201658555.24898.27.camel@dv> <20080130175435.GA29368@does.not.exist> <20080130181530.GA26259@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080130184218.GB27168@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080130181530.GA26259@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 30, 2008 at 01:15:30PM -0500, Lennart Sorensen wrote:
+> On Wed, Jan 30, 2008 at 07:54:35PM +0200, Adrian Bunk wrote:
+> > The GPL might only talk about distribution.
+> > 
+> > But copyright law is not restricted to copying of work.
+> > 
+> > IANAL, and I don't know abou the laws in other countries, but at least 
+> > in Germany modifications of a copyrighted work require the permission of 
+> > the copyright holder.
+> > 
+> > It's e.g. a not so uncommon problem that someone wants to modify a 30 or 
+> > 80 years old building, and since the original contract with the 
+> > architect did not grant the owner of the building the rights to modify 
+> > it he needs to ask the architect (or the architect's heirs) who has the 
+> > (nontransferable) copyright on the building for the permission to modify 
+> > the building. [1]
+> 
+> Germany does seem to be an odd case that really makes it very difficult
+> to do perfectly reasonable, desirable and sane things.  I am not even
+> sure the GPL necesarily makes sense under German copyright law.  I am
+> not German so I haven't had to deal with it.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+http://www.jbb.de/judgment_dc_munich_gpl.pdf
+http://www.jbb.de/judgment_dc_frankfurt_gpl.pdf
 
-> does the patch below help?
+> Len Sorensen
 
-uhm, the one below instead.
+cu
+Adrian
 
-	Ingo
+-- 
 
------------->
-Subject: x86: fix arch/x86/kernel/test_nx.c modular build bug
-From: Ingo Molnar <mingo@elte.hu>
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-fix this modular build bug:
-
->   CC [M]  arch/x86/kernel/test_nx.o
-> {standard input}: Assembler messages:
-> {standard input}:58: Error: cannot represent relocation type BFD_RELOC_64
-> {standard input}:59: Error: cannot represent relocation type BFD_RELOC_64
-> make[2]: *** [arch/x86/kernel/test_nx.o] Error 1
-> make[1]: *** [arch/x86/kernel] Error 2
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/test_nx.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-Index: linux-x86.q/arch/x86/kernel/test_nx.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/test_nx.c
-+++ linux-x86.q/arch/x86/kernel/test_nx.c
-@@ -91,8 +91,13 @@ static noinline int test_address(void *a
- 		".previous\n"
- 		".section __ex_table,\"a\"\n"
- 		"       .align 8\n"
-+#ifdef CONFIG_X86_32
-+		"	.long 0b\n"
-+		"	.long 2b\n"
-+#endif
- 		"	.quad 0b\n"
- 		"	.quad 2b\n"
-+#else
- 		".previous\n"
- 		: [rslt] "=r" (result)
- 		: [fake_code] "r" (address), [zero] "r" (0UL), "0" (result)
