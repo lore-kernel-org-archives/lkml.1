@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYA3AQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbYA3AQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbYA3AQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYA3AQY
+	id S1757877AbYA3AQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYA3AQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:16:24 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:42950 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbYA3AQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:16:23 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [PATCH] linux/types.h: always export 64bit aligned defines
-Date: Tue, 29 Jan 2008 19:16:20 -0500
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       David Woodhouse <dwmw2@infradead.org>
-References: <200801260423.21860.vapier@gentoo.org> <20080127213319.01026b19.akpm@linux-foundation.org> <Pine.LNX.4.64.0801292030190.14907@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0801292030190.14907@fbirervta.pbzchgretzou.qr>
+	Tue, 29 Jan 2008 19:16:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:54594 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756950AbYA3AQe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 19:16:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=ACPy37tmosiuD4F6Ne3ARPmKcKV4SMpfqQcQDIVk/+CwE31OheNdYqfHs6eW4GJTdTYYTxnu++tc+TWlQSsXHPjF1pkF064TwRGvPuHTl4DRXBnwyG0YZx4vNPD3L7D+vdl3bEHfsacNRr2cBKaDUSAMqJxyFVkYWxHnlRP5XhQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 0/32] ide-tape redux v1
+Date: Wed, 30 Jan 2008 01:29:55 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1201423312-2460-1-git-send-email-bbpetkov@yahoo.de> <200801272045.40712.bzolnier@gmail.com> <20080128054343.GB3074@gollum.tnic>
+In-Reply-To: <20080128054343.GB3074@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2312289.to8OfNz048";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Disposition: inline
+Message-Id: <200801300129.56003.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801291916.21133.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2312289.to8OfNz048
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Monday 28 January 2008, Borislav Petkov wrote:
+> Hi Bart,
+> 
+> [...]
+> 
+> > > the BKL in idetape_write_release() with finer-grained locking etc, probably also
+> > > some pipeline improvements, removal of OnStream support, etc. but that'll come
+> > > later.
+> > 
+> > On-Stream support has been long gone but it seems that deprecation
+> > warning etc. managed to survive.
+> > 
+> > w.r.t. to the pipeline-mode: it should be pipelined into /dev/null
+> > 
+> > rationale:
+> > - it is _very_ complex
+> > - causes errors to be deferred till the next user-space access
+> > - direct I/O using blk_rq_map_user() will offer superior performance
+> > 
+> > the only question is whether to remove it...
+> 
+> Well, on the one hand, since the driver is only being maintained we should not
+> remove code that works. Also, i don't know how many users ide-tape really has
+> but, would it be worth the trouble at all? Because if nobody's using it, we
+> could just as well pipe the whole thing into /dev/null.. On the other hand, the
 
-On Tuesday 29 January 2008, Jan Engelhardt wrote:
-> On Jan 27 2008 21:33, Andrew Morton wrote:
-> >On Sat, 26 Jan 2008 04:23:21 -0500 Mike Frysinger <vapier@gentoo.org>=20
-wrote:
-> >> Some kernel headers exported to userspace rely on these 64bit
-> >> aligned defines. However, they are hidden behind
-> >> __KERNEL_STRICT_NAMES at the moment which means most of the time,
-> >> they're never actually available.
->
-> Wrong way.
+This may be the other alternative... [ there is always libata PATA... ]
 
-i'm thinking the right way, i just may not have expressed it completely=20
-clearly ...
+If you want to give ide-tape removal a try, go ahead (I suggest starting
+with adding warning printk() and keeping patch in -mm for some time)...
 
-> They are inside #ifndef __KERNEL_STRICT_NAMES, so=20
-> they _are_ available to userspace.
+> pipelining part _is_ kinda big and, right, it is not that straightfoward to
+> look at it and know what it actually does - it truly is a student project :)
 
-for all practical purposes, they are not.  glibc will define=20
-__KERNEL_STRICT_NAMES because (like a sane C lib), it defines all of the=20
-basic types that the kernel also defines.
-=2Dmike
+I have pipelining code figured out to some degree but reworking it is a rather
+low-prio on my TODO list...
 
---nextPart2312289.to8OfNz048
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+[...]
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+> Anyway, resending #23 to you in a private mail.
 
-iQIVAwUAR5/B1UFjO5/oN/WBAQLDmQ/+J7nUBUsh1R1DqLr4zvFBXlVFDshohYol
-ASYir1qR65dz6C7eitE5U5mRO//vgEM4JKu4rajydadrgssn3En1zUophFiJ8obs
-N1Ac/l/oRGGLKFWQ6CcwdC5ULbt2JLXTI2w0ymkemrsBn/scHXes5eyyB9xCP/mm
-ccKkriXx6HqdJmT9fwRL04tw0XcJOEohiHJ7h7ariYtmAHYFcN/336LJtbraGgTg
-gTE+DCVN9DX/ga9LY6tE2gfHl8bQenf5H1xm7K/aSgonguZBtR/liAsz5DQ+3Q7f
-ah8Nl0wGe+9tYImN8YHDMRUyqB/kiDOtic+ge7ZFSTgRRUhQ1bCCSniSqNKqOtXI
-GECnFCGQPtg+d88Z8QkrXdR6kfRQDqvmR8GhVASI1U0wv9TfRR/PJeAbjZn5KvuV
-S8kFhjUV9G9Dg9NtZTlbuheqUucqS9/DOU3FuWTWwR0oTjT43sGRaXsUAz8piJNw
-99L2Uje7xETGkIGdXsanyHWxPxvDhDhIgXUEiC8EHKJqbo5pXr2/KBTOF3Z/WzCN
-0XOPhZeZe0ONmLifuk5RK3DSfnmHbCVvRVGLz6xDpeEz5IdnAsZMOIYKn2jw/Wlm
-gvlaHrrmI7j1ypOSWg1nimNKCcuKDP+Ylwm8wifSWMwPlSs66CBjDcINYWrNlNrs
-Y2mMR5jjRfs=
-=YuYA
------END PGP SIGNATURE-----
+Thanks.
 
---nextPart2312289.to8OfNz048--
+Bart
