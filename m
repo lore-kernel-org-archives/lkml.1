@@ -1,114 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762095AbYA3XoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764149AbYA3Xom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762095AbYA3XoN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 18:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYA3Xnq
+	id S1764149AbYA3Xom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 18:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbYA3Xo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 18:43:46 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:34355 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753492AbYA3Xno (ORCPT
+	Wed, 30 Jan 2008 18:44:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48700 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754326AbYA3Xo2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 18:43:44 -0500
-Date: Wed, 30 Jan 2008 15:50:17 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] x86_64: make bootmap_start page align v5
-In-reply-to: <200801301523.36785.yinghai.lu@sun.com>
-To: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Message-id: <200801301550.18513.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200801291113.35974.yinghai.lu@sun.com>
- <200801301215.51645.yinghai.lu@sun.com> <200801301523.36785.yinghai.lu@sun.com>
+	Wed, 30 Jan 2008 18:44:28 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Regression] 2.6.24-git8 (and earlier): Multiple processes stuck in D states after logout from KDE
+Date: Thu, 31 Jan 2008 00:42:07 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200801302338.25365.rjw@sisk.pl>
+In-Reply-To: <200801302338.25365.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801310042.07910.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 January 2008 03:23:35 pm Yinghai Lu wrote:
-> [PATCH] x86_64: make bootmap_start page align v5
+Update.
 
-Ingo,
+On Wednesday, 30 of January 2008, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> Recently I've been observing problems with unmounting the /home fs on reboot
+> and/or shutdown on two test boxes.
+> 
+> After some more investigation I've found that this is due to some KDE processes
+> stuck in D states after their owner has logged out.
+> 
+> This happens 100% of the time if there's a suspend/resume cycle before the user
+> logs out (ie. the user logs into KDE, works for some time, suspends the box to
+> RAM and resmes one or more times and then logs out).  Still, I also observe the
+> symptoms on a box that's never suspended.
+> 
+> I'm not sure how to debug this, so please advise.
 
-Please consider to apply
-v5:
-or
-v4:  http://lkml.org/lkml/2008/1/30/377
-it makes bootmap page alignment
-or
-v2: http://lkml.org/lkml/2008/1/29/349
-it makes NODE_DATA and bootmap page alignement
+After reverting:
 
-just pick one.
+commit 37bb6cb4097e29ffee970065b74499cbf10603a3
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Jan 25 21:08:32 2008 +0100
 
-YH
+    hrtimer: unlock hrtimer_wakeup
 
-v5:
-Bootmem setup node 0 0000000000000000-0000000828000000
-  NODE_DATA [000000000008b000 - 0000000000091fff]
-  bootmap [0000000000d9d000 -  0000000000ea1fff] pages 105
-Bootmem setup node 1 0000000828000000-0000001028000000
-  NODE_DATA [0000000828000000 - 0000000828006fff]
-  bootmap [0000000828007000 -  0000000828106fff] pages 100
-Bootmem setup node 2 0000001028000000-0000001828000000
-  NODE_DATA [0000001028000000 - 0000001028006fff]
-  bootmap [0000001028007000 -  0000001028106fff] pages 100
-Bootmem setup node 3 0000001828000000-0000002028000000
-  NODE_DATA [0000001828000000 - 0000001828006fff]
-  bootmap [0000001828007000 -  0000001828106fff] pages 100
-early res: 0 [0-1000) BIOS data page
-early res: 1 [6000-8000) SMP_TRAMPOLINE
-early res: 2 [200000-d9c274) TEXT DATA BSS
-early res: 3 [7e6f4000-7fff3a26) RAMDISK
-early res: 4 [99800-9d800) EBDA
-early res: 5 [8000-8a000) PGTABLE
-early res: 6 [8a000-8a88b) MEMNODEMAP
+I no longer get processes in the D state, but there still is a problem with
+artswrapper (this is an openSUSE 10.3 system, x86-64).  Namely,
+after a suspend/resume cycle and logging out/logging in the user,
+artswrapper gets stuck somewhere, apparently in the running (R) state.
+For this reason it blocks any subsequent attempts to suspend.
 
-v4:
-Bootmem setup node 0 0000000000000000-0000000828000000
-  NODE_DATA [000000000008a88b - 000000000009188a]
-  bootmap [0000000000d9d000 -  0000000000ea1fff] pages 105
-Bootmem setup node 1 0000000828000000-0000001028000000
-  NODE_DATA [0000000828000000 - 0000000828006fff]
-  bootmap [0000000828007000 -  0000000828106fff] pages 100
-Bootmem setup node 2 0000001028000000-0000001828000000
-  NODE_DATA [0000001028000000 - 0000001028006fff]
-  bootmap [0000001028007000 -  0000001028106fff] pages 100
-Bootmem setup node 3 0000001828000000-0000002028000000
-  NODE_DATA [0000001828000000 - 0000001828006fff]
-  bootmap [0000001828007000 -  0000001828106fff] pages 100
-early res: 0 [0-1000) BIOS data page
-early res: 1 [6000-8000) SMP_TRAMPOLINE
-early res: 2 [200000-d9c274) TEXT DATA BSS
-early res: 3 [7e6f4000-7fff3a26) RAMDISK
-early res: 4 [99800-9d800) EBDA
-early res: 5 [8000-8a000) PGTABLE
-early res: 6 [8a000-8a88b) MEMNODEMAP
+Here's the relevant trace (from show_state()):
 
-v2:
-Bootmem setup node 0 0000000000000000-0000000828000000
-  NODE_DATA [000000000008b000 - 0000000000091fff]
-  bootmap [0000000000d9d000 -  0000000000ea1fff] pages 105
-Bootmem setup node 1 0000000828000000-0000001028000000
-  NODE_DATA [0000000828000000 - 0000000828006fff]
-  bootmap [0000000828007000 -  0000000828106fff] pages 100
-Bootmem setup node 2 0000001028000000-0000001828000000
-  NODE_DATA [0000001028000000 - 0000001028006fff]
-  bootmap [0000001028007000 -  0000001028106fff] pages 100
-Bootmem setup node 3 0000001828000000-0000002028000000
-  NODE_DATA [0000001828000000 - 0000001828006fff]
-  bootmap [0000001828007000 -  0000001828106fff] pages 100
-early res: 0 [0-1000) BIOS data page
-early res: 1 [6000-8000) SMP_TRAMPOLINE
-early res: 2 [200000-d9c274) TEXT DATA BSS
-early res: 3 [7e6f4000-7fff3a26) RAMDISK
-early res: 4 [99800-9d800) EBDA
-early res: 5 [8000-8a000) PGTABLE
-early res: 6 [8a000-8a88b) MEMNODEMAP
+[  522.474919] artswrapper   R  running task        0  4805      1
+[  522.474922]  ffff810074cd1f70 0000000000000082 0000000000000296 ffff810074cd1ed8
+[  522.474926]  ffffffff80311769 ffff810074cd1f20 ffffffff80701240 ffffffff80701240
+[  522.474930]  ffffffff80701240 ffffffff80701240 ffffffff80701240 ffffffff80701240
+[  522.474933] Call Trace:
+[  522.474940]  [<ffffffff80311769>] ? __up_read+0x8f/0x97
+[  522.474963]  [<ffffffff8020c5cf>] retint_careful+0xd/0x21
 
+where, according to gdb,
 
+(gdb) l *__up_read+0x8f
+0xffffffff80311769 is in __up_read (/home/rafael/src/linux-2.6/lib/rwsem-spinlock.c:273).
+268
+269             if (--sem->activity == 0 && !list_empty(&sem->wait_list))
+270                     sem = __rwsem_wake_one_writer(sem);
+271
+272             spin_unlock_irqrestore(&sem->wait_lock, flags);
+273     }
+274
+275     /*
+276      * release a write lock on the semaphore
+277      */
+
+What gives?
+
+Rafael
