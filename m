@@ -1,61 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbYA3Qet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbYA3Qf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759142AbYA3Qet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 11:34:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYA3Qej
+	id S1756252AbYA3Qf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 11:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759167AbYA3QfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 11:34:39 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:46005 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751492AbYA3Qei (ORCPT
+	Wed, 30 Jan 2008 11:35:06 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:53017 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752948AbYA3QfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 11:34:38 -0500
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rdreier@cisco.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <adazluoe2t3.fsf@cisco.com> <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
-	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 10:34:31 -0600
-Message-Id: <1201710871.3292.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Wed, 30 Jan 2008 11:35:01 -0500
+Message-ID: <47A0A3AF.5050005@linux.vnet.ibm.com>
+Date: Wed, 30 Jan 2008 21:49:59 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [BUILD FAILURE] 2.6.24-git7 section type conflict at various drivers
+ on powerpc
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Wed, 2008-01-30 at 09:38 +0100, Bart Van Assche wrote:
-> On Jan 30, 2008 12:32 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> >
-> > iSER has parameters to limit the maximum size of RDMA (it needs to
-> > repeat RDMA with a poor configuration)?
-> 
-> Please specify which parameters you are referring to. As you know I
-> had already repeated my tests with ridiculously high values for the
-> following iSER parameters: FirstBurstLength, MaxBurstLength and
-> MaxRecvDataSegmentLength (16 MB, which is more than the 1 MB block
-> size specified to dd).
+Following are the different build failure with 2.6.24-git7 kernel on the powerpc
 
-the 1Mb block size is a bit of a red herring.  Unless you've
-specifically increased the max_sector_size and are using an sg_chain
-converted driver, on x86 the maximum possible transfer accumulation is
-0.5MB.
+drivers/net/typhoon.c:181: error: typhoon_card_info causes a section type conflict
+make[2]: *** [drivers/net/typhoon.o] Error 1
 
-I certainly don't rule out that increasing the transfer size up from
-0.5MB might be the way to improve STGT efficiency, since at an 1GB/s
-theoretical peak, that's roughly 2000 context switches per I/O; however,
-It doesn't look like you've done anything that will overcome the block
-layer limitations.
+drivers/net/natsemi.c:259: error: natsemi_pci_info causes a section type conflict
+make[2]: *** [drivers/net/natsemi.o] Error 1
 
-James
+drivers/net/bnx2.c:95: error: board_info causes a section type conflict
+make[2]: *** [drivers/net/bnx2.o] Error 1
+
+drivers/net/via-velocity.c:454: error: velocity_id_table causes a section type conflict
+make[2]: *** [drivers/net/via-velocity.o] Error 1
 
 
+Following are warning with section mismatch CONFIG_DEBUG_SECTION_MISMATCH enabled,
+
+WARNING: kernel/built-in.o(.text+0x423f4): Section mismatch in reference from the function .enable_nonboot_cpus() to the function .cpuinit.text:._cpu_up()
+The function  .enable_nonboot_cpus() references
+the function __cpuinit ._cpu_up().
+This is often because .enable_nonboot_cpus lacks a __cpuinit 
+annotation or the annotation of ._cpu_up is wrong.
+
+WARNING: drivers/net/ibm_newemac/ibm_newemac.o(.devinit.text+0x1bb4): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.tah_detach()
+The function __devinit .emac_probe() references
+a function __devexit .tah_detach().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.tah_detach() so it may be used outside an exit section.
+
+WARNING: drivers/net/ibm_newemac/ibm_newemac.o(.devinit.text+0x1bd0): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.rgmii_detach()
+The function __devinit .emac_probe() references
+a function __devexit .rgmii_detach().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.rgmii_detach() so it may be used outside an exit section.
+
+WARNING: drivers/net/ibm_newemac/ibm_newemac.o(.devinit.text+0x1bec): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.zmii_detach()
+The function __devinit .emac_probe() references
+a function __devexit .zmii_detach().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.zmii_detach() so it may be used outside an exit section.
+
+WARNING: drivers/net/ibm_newemac/ibm_newemac.o(.devinit.text+0x1bfc): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.mal_unregister_commac()
+The function __devinit .emac_probe() references
+a function __devexit .mal_unregister_commac().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.mal_unregister_commac() so it may be used outside an exit section.
+
+  LD      drivers/net/ibm_newemac/built-in.o
+WARNING: drivers/net/ibm_newemac/built-in.o(.devinit.text+0x1bb4): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.tah_detach()
+The function __devinit .emac_probe() references
+a function __devexit .tah_detach().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.tah_detach() so it may be used outside an exit section.
+
+WARNING: drivers/net/ibm_newemac/built-in.o(.devinit.text+0x1bd0): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.rgmii_detach()
+The function __devinit .emac_probe() references
+a function __devexit .rgmii_detach().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.rgmii_detach() so it may be used outside an exit section.
+
+WARNING: drivers/net/ibm_newemac/built-in.o(.devinit.text+0x1bec): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.zmii_detach()
+The function __devinit .emac_probe() references
+a function __devexit .zmii_detach().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.zmii_detach() so it may be used outside an exit section.
+
+WARNING: drivers/net/ibm_newemac/built-in.o(.devinit.text+0x1bfc): Section mismatch in reference from the function .emac_probe() to the function .devexit.text:.mal_unregister_commac()
+The function __devinit .emac_probe() references
+a function __devexit .mal_unregister_commac().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+.mal_unregister_commac() so it may be used outside an exit section.
+
+WARNING: drivers/net/mlx4/mlx4_core.o(.text+0x6cf8): Section mismatch in reference from the function .mlx4_init_icm() to the function .devinit.text:.mlx4_init_cmpt_table()
+The function  .mlx4_init_icm() references
+the function __devinit .mlx4_init_cmpt_table().
+This is often because .mlx4_init_icm lacks a __devinit 
+annotation or the annotation of .mlx4_init_cmpt_table is wrong.
+
+WARNING: drivers/net/mlx4/mlx4_core.o(.text+0x728c): Section mismatch in reference from the function .mlx4_init_hca() to the function .devinit.text:.mlx4_load_fw()
+The function  .mlx4_init_hca() references
+the function __devinit .mlx4_load_fw().
+This is often because .mlx4_init_hca lacks a __devinit 
+annotation or the annotation of .mlx4_load_fw is wrong.
+
+WARNING: drivers/net/mlx4/mlx4_core.o(.text+0x7c98): Section mismatch in reference from the function .__mlx4_init_one() to the function .devinit.text:.mlx4_enable_msi_x()
+The function  .__mlx4_init_one() references
+the function __devinit .mlx4_enable_msi_x().
+This is often because .__mlx4_init_one lacks a __devinit 
+annotation or the annotation of .mlx4_enable_msi_x is wrong.
+
+WARNING: drivers/net/mlx4/mlx4_core.o(.text+0x97ac): Section mismatch in reference from the function .mlx4_init_mr_table() to the function .devinit.text:.mlx4_buddy_init()
+The function  .mlx4_init_mr_table() references
+the function __devinit .mlx4_buddy_init().
+This is often because .mlx4_init_mr_table lacks a __devinit 
+annotation or the annotation of .mlx4_buddy_init is wrong.
+
+  LD      drivers/net/mlx4/built-in.o
+WARNING: drivers/net/mlx4/built-in.o(.text+0x6cf8): Section mismatch in reference from the function .mlx4_init_icm() to the function .devinit.text:.mlx4_init_cmpt_table()
+The function  .mlx4_init_icm() references
+the function __devinit .mlx4_init_cmpt_table().
+This is often because .mlx4_init_icm lacks a __devinit 
+annotation or the annotation of .mlx4_init_cmpt_table is wrong.
+
+WARNING: drivers/net/mlx4/built-in.o(.text+0x728c): Section mismatch in reference from the function .mlx4_init_hca() to the function .devinit.text:.mlx4_load_fw()
+The function  .mlx4_init_hca() references
+the function __devinit .mlx4_load_fw().
+This is often because .mlx4_init_hca lacks a __devinit 
+annotation or the annotation of .mlx4_load_fw is wrong.
+
+WARNING: drivers/net/mlx4/built-in.o(.text+0x7c98): Section mismatch in reference from the function .__mlx4_init_one() to the function .devinit.text:.mlx4_enable_msi_x()
+The function  .__mlx4_init_one() references
+the function __devinit .mlx4_enable_msi_x().
+This is often because .__mlx4_init_one lacks a __devinit 
+annotation or the annotation of .mlx4_enable_msi_x is wrong.
+
+WARNING: drivers/net/mlx4/built-in.o(.text+0x97ac): Section mismatch in reference from the function .mlx4_init_mr_table() to the function .devinit.text:.mlx4_buddy_init()
+The function  .mlx4_init_mr_table() references
+the function __devinit .mlx4_buddy_init().
+This is often because .mlx4_init_mr_table lacks a __devinit 
+annotation or the annotation of .mlx4_buddy_init is wrong.
+
+WARNING: drivers/net/tokenring/built-in.o(.text+0x4d64): Section mismatch in reference from the function .olympic_open() to the function .devinit.text:.olympic_init()
+The function  .olympic_open() references
+the function __devinit .olympic_init().
+This is often because .olympic_open lacks a __devinit 
+annotation or the annotation of .olympic_init is wrong.
+
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
