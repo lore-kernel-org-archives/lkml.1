@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbYA3Tp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761339AbYA3Tpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758459AbYA3Tp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYA3TpT
+	id S1761339AbYA3Tpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYA3Tpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:45:19 -0500
-Received: from stinky.trash.net ([213.144.137.162]:59680 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbYA3TpS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:45:18 -0500
-Message-ID: <47A0D3AA.1010504@trash.net>
-Date: Wed, 30 Jan 2008 20:44:42 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Wed, 30 Jan 2008 14:45:34 -0500
+Received: from hydra.gt.owl.de ([195.71.99.218]:38969 "EHLO hydra.gt.owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757369AbYA3Tpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:45:33 -0500
+Date: Wed, 30 Jan 2008 20:42:40 +0100
+From: Florian Lohoff <flo@rfc822.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24] bcm203x bluetooth dongle does not work
+Message-ID: <20080130194240.GA2709@paradigm.rfc822.org>
+References: <20080130164920.GA15071@paradigm.rfc822.org> <1201714432.6218.101.camel@violet>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [RCU]: preemptible RCU: sparse annotations
-Content-Type: multipart/mixed;
- boundary="------------070809080007070905080300"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BXVAT5kNtrzKuDFl"
+Content-Disposition: inline
+In-Reply-To: <1201714432.6218.101.camel@violet>
+Organization: rfc822 - pure communication
+X-SpiderMe: mh-200801302039@listme.rfc822.org
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070809080007070905080300
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Annotate rcu_read_lock/rcu_read_unlock for sparse.
+--BXVAT5kNtrzKuDFl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Jan 30, 2008 at 06:33:52PM +0100, Marcel Holtmann wrote:
+> we moved away from using a timer and using a workqueue now. It wrote the
+> patch to use a workqueue and tested that it works. Starting with 2.6.19
+> we the usage of a workqueue is default. Can you verify that non of the
+> kernels 2.6.19-2.6.23 are working. We might have missed a change inside
+> the USB subsystem within the 2.6.24 timeframe.
 
+My tests were on 2.6.24 which does not work as described. Newer
+kernels dont boot due to crash in ide-cd so i cant test ...
 
---------------070809080007070905080300
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+Flo
+--=20
+Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+	Those who would give up a little freedom to get a little=20
+          security shall soon have neither - Benjamin Franklin
 
-[RCU]: preemptible RCU: sparse annotations
+--BXVAT5kNtrzKuDFl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-index ece8eb3..60c2a03 100644
---- a/include/linux/rcupreempt.h
-+++ b/include/linux/rcupreempt.h
-@@ -46,8 +46,8 @@
- #define rcu_bh_qsctr_inc(cpu)
- #define call_rcu_bh(head, rcu) call_rcu(head, rcu)
- 
--extern void __rcu_read_lock(void);
--extern void __rcu_read_unlock(void);
-+extern void __rcu_read_lock(void)	__acquires(RCU);
-+extern void __rcu_read_unlock(void)	__releases(RCU);
- extern int rcu_pending(int cpu);
- extern int rcu_needs_cpu(int cpu);
- 
+iD8DBQFHoNMwUaz2rXW+gJcRAk1uAJ0SOpM+LpKczkYZfaDbZh7VhtIV/QCfZvWH
+sDu5sHumxQMF/BKOyI9kI2k=
+=5ZgO
+-----END PGP SIGNATURE-----
 
---------------070809080007070905080300--
+--BXVAT5kNtrzKuDFl--
