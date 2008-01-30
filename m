@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760929AbYA3LyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbYA3L53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760929AbYA3LyQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 06:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYA3LyB
+	id S1761285AbYA3L53 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 06:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbYA3L5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 06:54:01 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:9600 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbYA3LyA (ORCPT
+	Wed, 30 Jan 2008 06:57:19 -0500
+Received: from mail.southpole.se ([193.12.106.18]:44186 "EHLO
+	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753206AbYA3L5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 06:54:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SOnt1pGpzThPw46Pn7wYy5wYjEvi/jcqWdEG323t/icEp0EfoVuUStIaJoOHaXcJ6QWAlY/2tZKL3pv+7jvkY3dq9mVrXg7DGyl7P0x81tNLEzfdA/2j04IXZDGRX52T2YVnJAeN87vOtavdNqlUDmjpN7GJjjw3+mS13FK2mOw=
-Message-ID: <87a5b0800801300353l196b39bekad6af6ccdbd49d5b@mail.gmail.com>
-Date: Wed, 30 Jan 2008 11:53:59 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "Bryan Wu" <bryan.wu@analog.com>
-Subject: Re: [PATCH 1/1] [INPUT] keypad driver: Added support for OpenCores Keyboard Controller
-Cc: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, "Javier Herrero" <jherrero@hvsistemas.es>
-In-Reply-To: <1201686610-31458-1-git-send-email-bryan.wu@analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1201686610-31458-1-git-send-email-bryan.wu@analog.com>
+	Wed, 30 Jan 2008 06:57:18 -0500
+From: Jonas Bonn <jonas@southpole.se>
+To: netdev@vger.kernel.org, romieu@fr.zoreil.com, linux-kernel@vger.kernel.org
+Cc: Jonas Bonn <jonas@southpole.se>
+Subject: [PATCH] [SIS190] Use _devinitconst for const data
+Date: Wed, 30 Jan 2008 12:57:16 +0100
+Message-Id: <1201694236-5007-1-git-send-email-jonas@southpole.se>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <20080130112559.GA21346@uranus.ravnborg.org>
+References: <20080130112559.GA21346@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 9:50 AM, Bryan Wu <bryan.wu@analog.com> wrote:
+This fixes build error as gcc complains about a "section type conflict"
+due to the mixing of const and non-const data in same section.
+---
+ drivers/net/sis190.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> +config KEYBOARD_OPENCORES
-> +       tristate "OpenCores Keyboard Controller"
-> +       help
-> +         Say Y here if you want to use the OpenCores Keyboard Controller
-> +         http://www.opencores.org/projects.cgi/web/keyboardcontroller/overview
-> +
-> +         To comile this driver as a module, choose M here. the
-> +         module will be called opencores-kbd.
-> +
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index b570402..f84c02e 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -326,7 +326,7 @@ static const struct {
+ 	{ "SiS 191 PCI Gigabit Ethernet adapter" },
+ };
+ 
+-static struct pci_device_id sis190_pci_tbl[] __devinitdata = {
++static struct pci_device_id sis190_pci_tbl[] __devinitconst = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0190), 0, 0, 0 },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0191), 0, 0, 1 },
+ 	{ 0, },
+@@ -1556,7 +1556,7 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
+ static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
+ 						  struct net_device *dev)
+ {
+-	static const u16 __devinitdata ids[] = { 0x0965, 0x0966, 0x0968 };
++	static u16 __devinitconst ids[] = { 0x0965, 0x0966, 0x0968 };
+ 	struct sis190_private *tp = netdev_priv(dev);
+ 	struct pci_dev *isa_bridge;
+ 	u8 reg, tmp8;
+-- 
+1.5.3.8
 
-Typo, "comile" should be "compile" here.
+
