@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYA3I1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYA3I3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbYA3I1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 03:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYA3I1L
+	id S1756170AbYA3I3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 03:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYA3I3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 03:27:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41789 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbYA3I1K (ORCPT
+	Wed, 30 Jan 2008 03:29:32 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:12543 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbYA3I3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 03:27:10 -0500
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20080130005912.GC7233@v2.random>
-References: <20080128202923.849058104@sgi.com>
-	 <20080129162004.GL7233@v2.random>
-	 <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
-	 <20080129211759.GV7233@v2.random>
-	 <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
-	 <20080129220212.GX7233@v2.random>
-	 <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
-	 <20080130000039.GA7233@v2.random> <20080130000559.GB7233@v2.random>
-	 <Pine.LNX.4.64.0801291621380.28027@schroedinger.engr.sgi.com>
-	 <20080130005912.GC7233@v2.random>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 09:26:22 +0100
-Message-Id: <1201681582.28547.160.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Wed, 30 Jan 2008 03:29:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lAJRD64JMGxTAS6q82WwUZjduO5H+JLQe3T4NXUWM7EzpeyQjcBTMsUq3h0WNkkudz6HeY/+bMsvgo6Zv34l+0kODuRBIL5cgLRlraeJNcOD0r9djlKsQ7TU8F+Phbi7ju3ssXiv/bKCdK8n3LelG3ZasBRxE24TOPKsUS0CRXQ=
+Message-ID: <e2e108260801300029r1a949353k73b30f1f28db0bc9@mail.gmail.com>
+Date: Wed, 30 Jan 2008 09:29:27 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1201639331.3069.58.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 29, 2008 9:42 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> > As an SCST user, I would like to see the SCST kernel code integrated
+> > in the mainstream kernel because of its excellent performance on an
+> > InfiniBand network. Since the SCST project comprises about 14 KLOC,
+> > reviewing the SCST code will take considerable time. Who will do this
+> > reviewing work ? And with regard to the comments made by the
+> > reviewers: Vladislav, do you have the time to carry out the
+> > modifications requested by the reviewers ? I expect a.o. that
+> > reviewers will ask to move SCST's configuration pseudofiles from
+> > procfs to sysfs.
+>
+> The two target architectures perform essentially identical functions, so
+> there's only really room for one in the kernel.  Right at the moment,
+> it's STGT.  Problems in STGT come from the user<->kernel boundary which
+> can be mitigated in a variety of ways.  The fact that the figures are
+> pretty much comparable on non IB networks shows this.
 
-On Wed, 2008-01-30 at 01:59 +0100, Andrea Arcangeli wrote:
-> On Tue, Jan 29, 2008 at 04:22:46PM -0800, Christoph Lameter wrote:
-> > That is only partially true. pte are created wronly in order to track 
-> > dirty state these days. The first write will lead to a fault that switches 
-> > the pte to writable. When the page undergoes writeback the page again 
-> > becomes write protected. Thus our need to effectively deal with 
-> > page_mkclean.
-> 
-> Well I was talking about anonymous memory.
+Are you saying that users who need an efficient iSCSI implementation
+should switch to OpenSolaris ? The OpenSolaris COMSTAR project involves
+the migration of the existing OpenSolaris iSCSI target daemon from
+userspace to their kernel. The OpenSolaris developers are
+spending time on this because they expect a significant performance
+improvement.
 
-Just to be absolutely clear on this (I lost track of what exactly we are
-talking about here), nonlinear mappings no not do the dirty accounting,
-and are not allowed on a backing store that would require dirty
-accounting.
+> I really need a whole lot more evidence than at worst a 20% performance
+> difference on IB to pull one implementation out and replace it with
+> another.  Particularly as there's no real evidence that STGT can't be
+> tweaked to recover the 20% even on IB.
 
+My measurements on a 1 GB/s InfiniBand network have shown that the current
+SCST implementation is able to read data via direct I/O at a rate of 811 GB/s
+(via SRP) and that the current STGT implementation is able to transfer data at a
+rate of 589 MB/s (via iSER). That's a performance difference of 38%.
 
+And even more important, the I/O latency of SCST is significantly
+lower than that
+of STGT. This is very important for database workloads -- the I/O pattern caused
+by database software is close to random I/O, and database software needs low
+latency I/O in order to run efficiently.
 
+In the thread with the title "Performance of SCST versus STGT" on the
+SCST-devel /
+STGT-devel mailing lists not only the raw performance numbers were discussed but
+also which further performance improvements are possible. It became clear that
+the SCST performance can be improved further by implementing a well known
+optimization (zero-copy I/O). Fujita Tomonori explained in the same
+thread that it is
+possible to improve the performance of STGT further, but that this would require
+a lot of effort (implementing asynchronous I/O in the kernel and also
+implementing
+a new caching mechanism using pre-registered buffers).
+
+See also:
+http://sourceforge.net/mailarchive/forum.php?forum_name=scst-devel&viewmonth=200801&viewday=17
+
+Bart Van Assche.
