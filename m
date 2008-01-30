@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYA3DTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYA3DTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYA3DTH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 22:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYA3DSt
+	id S1755968AbYA3DTb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYA3DSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 22:18:49 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:60202 "EHLO
+	Tue, 29 Jan 2008 22:18:50 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:60209 "EHLO
 	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbYA3DSr (ORCPT
+	with ESMTP id S1752821AbYA3DSr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jan 2008 22:18:47 -0500
-Message-Id: <20080130031840.178601437@goodmis.org>
+Message-Id: <20080130031842.451635926@goodmis.org>
 References: <20080130031521.258552785@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 22:15:22 -0500
+Date: Tue, 29 Jan 2008 22:15:36 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,117 +29,193 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 01/22 -v7] printk - dont wakeup klogd with interrupts disabled
-Content-Disposition: inline; filename=printk-no-klogd-on-rq-locked.patch
+Subject: [PATCH 15/22 -v7] trace generic call to schedule switch
+Content-Disposition: inline; filename=trace-sched-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This patch is added to the series since the wakeup timings trace
-  may lockup without it. ]
-
-I thought that one could place a printk anywhere without worrying.
-But it seems that it is not wise to place a printk where the runqueue
-lock is held.
-
-I just spent two hours debugging why some of my code was locking up,
-to find that the lockup was caused by some debugging printk's that
-I had in the scheduler.  The printk's were only in rare paths so
-they shouldn't be too much of a problem, but after I hit the printk
-the system locked up.
-
-Thinking that it was locking up on my code I went looking down the
-wrong path. I finally found (after examining an NMI dump) that
-the lockup happened because printk was trying to wakeup the klogd
-daemon, which caused a deadlock when the try_to_wakeup code tries
-to grab the runqueue lock.
-
-This patch adds a runqueue_is_locked interface in sched.c for other
-files to see if the current runqueue lock is held. This is used
-in printk to determine whether it is safe or not to wakeup the klogd.
-
-And with this patch, my code ran fine ;-)
+This patch adds hooks into the schedule switch tracing to
+allow other latency traces to hook into the schedule switches.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/sched.h |    2 ++
- kernel/printk.c       |   14 ++++++++++----
- kernel/sched.c        |   18 ++++++++++++++++++
- 3 files changed, 30 insertions(+), 4 deletions(-)
+ lib/tracing/trace_sched_switch.c |  123 +++++++++++++++++++++++++++++++++------
+ lib/tracing/tracer.h             |   14 ++++
+ 2 files changed, 119 insertions(+), 18 deletions(-)
 
-Index: linux-mcount.git/kernel/printk.c
+Index: linux-mcount.git/lib/tracing/tracer.h
 ===================================================================
---- linux-mcount.git.orig/kernel/printk.c	2008-01-29 17:02:10.000000000 -0500
-+++ linux-mcount.git/kernel/printk.c	2008-01-29 17:25:40.000000000 -0500
-@@ -590,9 +590,11 @@ static int have_callable_console(void)
-  * @fmt: format string
-  *
-  * This is printk().  It can be called from any context.  We want it to work.
-- * Be aware of the fact that if oops_in_progress is not set, we might try to
-- * wake klogd up which could deadlock on runqueue lock if printk() is called
-- * from scheduler code.
-+ *
-+ * Note: if printk() is called with the runqueue lock held, it will not wake
-+ * up the klogd. This is to avoid a deadlock from calling printk() in schedule
-+ * with the runqueue lock held and having the wake_up grab the runqueue lock
-+ * as well.
-  *
-  * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
-  * call the console drivers.  If we fail to get the semaphore we place the output
-@@ -1001,7 +1003,11 @@ void release_console_sem(void)
- 	console_locked = 0;
- 	up(&console_sem);
- 	spin_unlock_irqrestore(&logbuf_lock, flags);
--	if (wake_klogd)
-+	/*
-+	 * If we try to wake up klogd while printing with the runqueue lock
-+	 * held, this will deadlock.
-+	 */
-+	if (wake_klogd && !runqueue_is_locked())
- 		wake_up_klogd();
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-29 12:35:27.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-29 14:22:15.000000000 -0500
+@@ -113,4 +113,18 @@ static inline notrace cycle_t now(void)
+ 	return get_monotonic_cycles();
  }
- EXPORT_SYMBOL(release_console_sem);
-Index: linux-mcount.git/include/linux/sched.h
-===================================================================
---- linux-mcount.git.orig/include/linux/sched.h	2008-01-29 17:02:10.000000000 -0500
-+++ linux-mcount.git/include/linux/sched.h	2008-01-29 17:25:40.000000000 -0500
-@@ -222,6 +222,8 @@ extern void sched_init_smp(void);
- extern void init_idle(struct task_struct *idle, int cpu);
- extern void init_idle_bootup_task(struct task_struct *idle);
  
-+extern int runqueue_is_locked(void);
++#ifdef CONFIG_CONTEXT_SWITCH_TRACER
++typedef void (*tracer_switch_func_t)(void *private,
++				     struct task_struct *prev,
++				     struct task_struct *next);
++struct tracer_switch_ops {
++	tracer_switch_func_t func;
++	void *private;
++	struct tracer_switch_ops *next;
++};
 +
- extern cpumask_t nohz_cpu_mask;
- #if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ)
- extern int select_nohz_load_balancer(int cpu);
-Index: linux-mcount.git/kernel/sched.c
++extern int register_tracer_switch(struct tracer_switch_ops *ops);
++extern int unregister_tracer_switch(struct tracer_switch_ops *ops);
++#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
++
+ #endif /* _LINUX_MCOUNT_TRACER_H */
+Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
 ===================================================================
---- linux-mcount.git.orig/kernel/sched.c	2008-01-29 16:59:15.000000000 -0500
-+++ linux-mcount.git/kernel/sched.c	2008-01-29 17:25:40.000000000 -0500
-@@ -621,6 +621,24 @@ unsigned long rt_needs_cpu(int cpu)
- # define const_debug static const
- #endif
+--- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-29 12:35:40.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-29 14:24:35.000000000 -0500
+@@ -18,33 +18,21 @@ static struct tracing_trace *tracer_trac
+ static int trace_enabled __read_mostly;
+ static atomic_t sched_ref;
+ int tracing_sched_switch_enabled __read_mostly;
++static DEFINE_SPINLOCK(sched_switch_func_lock);
  
-+/**
-+ * runqueue_is_locked
-+ *
-+ * Returns true if the current cpu runqueue is locked.
-+ * This interface allows printk to be called with the runqueue lock
-+ * held and know whether or not it is OK to wake up the klogd.
-+ */
-+int runqueue_is_locked(void)
+-static notrace void sched_switch_callback(const struct marker *mdata,
+-					  void *private_data,
+-					  const char *format, ...)
++static void notrace sched_switch_func(void *private,
++				      struct task_struct *prev,
++				      struct task_struct *next)
+ {
+-	struct tracing_trace **p = mdata->private;
+-	struct tracing_trace *tr = *p;
++	struct tracing_trace **ptr = private;
++	struct tracing_trace *tr = *ptr;
+ 	struct tracing_trace_cpu *data;
+-	struct task_struct *prev;
+-	struct task_struct *next;
+ 	unsigned long flags;
+-	va_list ap;
+ 	int cpu;
+ 
+-	if (!atomic_read(&sched_ref))
+-		return;
+-
+-	tracing_record_cmdline(current);
+-
+ 	if (!trace_enabled)
+ 		return;
+ 
+-	va_start(ap, format);
+-	prev = va_arg(ap, typeof(prev));
+-	next = va_arg(ap, typeof(next));
+-	va_end(ap);
+-
+ 	raw_local_irq_save(flags);
+ 	cpu = raw_smp_processor_id();
+ 	data = tr->data[cpu];
+@@ -57,6 +45,105 @@ static notrace void sched_switch_callbac
+ 	raw_local_irq_restore(flags);
+ }
+ 
++static struct tracer_switch_ops sched_switch_ops __read_mostly =
 +{
-+	int cpu = get_cpu();
-+	struct rq *rq = cpu_rq(cpu);
-+	int ret;
++	.func = sched_switch_func,
++	.private = &tracer_trace,
++};
 +
-+	ret = spin_is_locked(&rq->lock);
-+	put_cpu();
-+	return ret;
++static tracer_switch_func_t tracer_switch_func __read_mostly =
++	sched_switch_func;
++
++static struct tracer_switch_ops *tracer_switch_func_ops __read_mostly =
++	&sched_switch_ops;
++
++static void notrace sched_switch_func_loop(void *private,
++					   struct task_struct *prev,
++					   struct task_struct *next)
++{
++	struct tracer_switch_ops *ops = tracer_switch_func_ops;
++
++	for (; ops != NULL; ops = ops->next)
++		ops->func(ops->private, prev, next);
 +}
 +
- /*
-  * Debugging: various feature bits
-  */
++notrace int register_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++	ops->next = tracer_switch_func_ops;
++	smp_wmb();
++	tracer_switch_func_ops = ops;
++
++	if (ops->next == &sched_switch_ops)
++		tracer_switch_func = sched_switch_func_loop;
++
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++notrace int unregister_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++	struct tracer_switch_ops **p = &tracer_switch_func_ops;
++	int ret;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++
++	/*
++	 * If the sched_switch is the only one left, then
++	 *  only call that function.
++	 */
++	if (*p == ops && ops->next == &sched_switch_ops) {
++		tracer_switch_func = sched_switch_func;
++		tracer_switch_func_ops = &sched_switch_ops;
++		goto out;
++	}
++
++	for (; *p != &sched_switch_ops; p = &(*p)->next)
++		if (*p == ops)
++			break;
++
++	if (*p != ops) {
++		ret = -1;
++		goto out;
++	}
++
++	*p = (*p)->next;
++
++ out:
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++static notrace void sched_switch_callback(const struct marker *mdata,
++					  void *private_data,
++					  const char *format, ...)
++{
++	struct task_struct *prev;
++	struct task_struct *next;
++	va_list ap;
++
++	if (!atomic_read(&sched_ref))
++		return;
++
++	tracing_record_cmdline(current);
++
++	va_start(ap, format);
++	prev = va_arg(ap, typeof(prev));
++	next = va_arg(ap, typeof(next));
++	va_end(ap);
++
++	/*
++	 * If tracer_switch_func only points to the local
++	 * switch func, it still needs the ptr passed to it.
++	 */
++	tracer_switch_func(mdata->private, prev, next);
++}
++
+ static notrace void sched_switch_reset(struct tracing_trace *tr)
+ {
+ 	int cpu;
 
 -- 
