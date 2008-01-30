@@ -1,90 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYA3VGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbYA3VGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbYA3VGR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbYA3VFb
+	id S1759396AbYA3VGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:06:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758063AbYA3VFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:05:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:25275 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757891AbYA3VF2 (ORCPT
+	Wed, 30 Jan 2008 16:05:38 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:54866 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757987AbYA3VFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 16:05:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=GHVBKujTHhsqjNyd6YFkMNDO2GgGwmIezyFmreQ7IWp4SKx62QAGyobrE5HqwCqCVir4a3KnyPD0PnkVA2UDNHKKC0h84soqRO1c34IWfxop9fsKUr197MgNi/l/OYLKLBoAiE9bgXIv5z/gs41FsgWOPMkrx/BrcMkus0tFV/k=
+	Wed, 30 Jan 2008 16:05:34 -0500
+Message-Id: <20080130210527.174032223@goodmis.org>
+References: <20080130210357.927754294@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 30 Jan 2008 16:04:12 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jan Kara <jack@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH 03/10] udf: udf_CS0toNLS cleanup
-Date: Wed, 30 Jan 2008 22:03:53 +0100
-Message-Id: <1201727040-6769-4-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com>
-References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com>
-From: marcin.slusarz@gmail.com
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 15/23 -v8] Generic command line storage
+Content-Disposition: inline; filename=trace-generic-cmdline.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- fix error handling - always zero output variable
-- don't zero explicitely fields zeroed by memset
-- mark "in" paramater as const
+Saving the comm of tasks for each trace is very expensive.
+This patch includes in the context switch hook, a way to
+store the last 100 command lines of tasks. This table is
+examined when a trace is to be printed.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Jan Kara <jack@suse.cz>
+Note: The comm may be destroyed if other traces are performed.
+Later (TBD) patches may simply store this information in the trace
+itself.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- fs/udf/unicode.c |   19 ++++++++-----------
- 1 files changed, 8 insertions(+), 11 deletions(-)
+ lib/tracing/Kconfig              |    1 
+ lib/tracing/trace_function.c     |    2 
+ lib/tracing/trace_sched_switch.c |    5 +
+ lib/tracing/tracer.c             |  108 ++++++++++++++++++++++++++++++++++++---
+ lib/tracing/tracer.h             |    3 -
+ 5 files changed, 111 insertions(+), 8 deletions(-)
 
-diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
-index f4e54e5..d068d33 100644
---- a/fs/udf/unicode.c
-+++ b/fs/udf/unicode.c
-@@ -248,35 +248,32 @@ error_out:
+Index: linux-mcount.git/lib/tracing/Kconfig
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-30 15:32:33.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 15:33:38.000000000 -0500
+@@ -18,6 +18,7 @@ config FUNCTION_TRACER
+ 	depends on DEBUG_KERNEL && HAVE_MCOUNT
+ 	select MCOUNT
+ 	select TRACING
++	select CONTEXT_SWITCH_TRACER
+ 	help
+ 	  Use profiler instrumentation, adding -pg to CFLAGS. This will
+ 	  insert a call to an architecture specific __mcount routine,
+Index: linux-mcount.git/lib/tracing/trace_function.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/trace_function.c	2008-01-30 15:18:18.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_function.c	2008-01-30 15:33:38.000000000 -0500
+@@ -29,10 +29,12 @@ static notrace void start_function_trace
+ {
+ 	function_reset(tr);
+ 	tracing_start_function_trace();
++	tracing_start_sched_switch();
  }
  
- static int udf_CS0toNLS(struct nls_table *nls, struct ustr *utf_o,
--			struct ustr *ocu_i)
-+			const struct ustr *ocu_i)
+ static notrace void stop_function_trace(struct tracing_trace *tr)
  {
--	uint8_t *ocu;
--	uint32_t c;
-+	const uint8_t *ocu;
- 	uint8_t cmp_id, ocu_len;
- 	int i;
++	tracing_stop_sched_switch();
+ 	tracing_stop_function_trace();
+ }
  
--	ocu = ocu_i->u_name;
+Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-30 15:32:34.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-30 15:33:38.000000000 -0500
+@@ -33,6 +33,11 @@ static notrace void sched_switch_callbac
+ 	va_list ap;
+ 	int cpu;
  
- 	ocu_len = ocu_i->u_len;
--	cmp_id = ocu_i->u_cmpID;
--	utf_o->u_len = 0;
++	if (!atomic_read(&sched_ref))
++		return;
++
++	tracing_record_cmdline(current);
++
+ 	if (!trace_enabled)
+ 		return;
+ 
+Index: linux-mcount.git/lib/tracing/tracer.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-30 15:32:34.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.c	2008-01-30 15:33:38.000000000 -0500
+@@ -172,6 +172,87 @@ void tracing_stop_function_trace(void)
+ 	unregister_mcount_function(&trace_ops);
+ }
+ 
++#define SAVED_CMDLINES 128
++static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
++static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
++static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
++static int cmdline_idx;
++static DEFINE_SPINLOCK(trace_cmdline_lock);
++atomic_t trace_record_cmdline_disabled;
++
++static void trace_init_cmdlines(void)
++{
++	memset(&map_pid_to_cmdline, -1, sizeof(map_pid_to_cmdline));
++	memset(&map_cmdline_to_pid, -1, sizeof(map_cmdline_to_pid));
++	cmdline_idx = 0;
++}
++
++notrace void trace_stop_cmdline_recording(void);
++
++static void notrace trace_save_cmdline(struct task_struct *tsk)
++{
++	unsigned map;
++	unsigned idx;
++
++	if (!tsk->pid || unlikely(tsk->pid > PID_MAX_DEFAULT))
++		return;
++
++	/*
++	 * It's not the end of the world if we don't get
++	 * the lock, but we also don't want to spin
++	 * nor do we want to disable interrupts,
++	 * so if we miss here, then better luck next time.
++	 */
++	if (!spin_trylock(&trace_cmdline_lock))
++		return;
++
++	idx = map_pid_to_cmdline[tsk->pid];
++	if (idx >= SAVED_CMDLINES) {
++		idx = (cmdline_idx + 1) % SAVED_CMDLINES;
++
++		map = map_cmdline_to_pid[idx];
++		if (map <= PID_MAX_DEFAULT)
++			map_pid_to_cmdline[map] = (unsigned)-1;
++
++		map_pid_to_cmdline[tsk->pid] = idx;
++
++		cmdline_idx = idx;
++	}
++
++	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
++
++	spin_unlock(&trace_cmdline_lock);
++}
++
++static notrace char *trace_find_cmdline(int pid)
++{
++	char *cmdline = "<...>";
++	unsigned map;
++
++	if (!pid)
++		return "<idle>";
++
++	if (pid > PID_MAX_DEFAULT)
++		goto out;
++
++	map = map_pid_to_cmdline[pid];
++	if (map >= SAVED_CMDLINES)
++		goto out;
++
++	cmdline = saved_cmdlines[map];
++
++ out:
++	return cmdline;
++}
++
++void tracing_record_cmdline(struct task_struct *tsk)
++{
++	if (atomic_read(&trace_record_cmdline_disabled))
++		return;
++
++	trace_save_cmdline(tsk);
++}
++
+ static inline notrace struct tracing_entry *
+ tracing_get_trace_entry(struct tracing_trace *tr,
+ 			struct tracing_trace_cpu *data)
+@@ -213,7 +294,6 @@ tracing_generic_entry_update(struct trac
+ 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
+ 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
+ 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
+-	memcpy(entry->comm, tsk->comm, TASK_COMM_LEN);
+ }
+ 
+ notrace void tracing_function_trace(struct tracing_trace *tr,
+@@ -369,6 +449,8 @@ static void *s_start(struct seq_file *m,
+ 	if (!current_trace || current_trace != iter->trace)
+ 		return NULL;
+ 
++	atomic_inc(&trace_record_cmdline_disabled);
++
+ 	/* let the tracer grab locks here if needed */
+ 	if (current_trace->start)
+ 		current_trace->start(iter);
+@@ -396,6 +478,8 @@ static void s_stop(struct seq_file *m, v
+ {
+ 	struct tracing_iterator *iter = m->private;
+ 
++	atomic_dec(&trace_record_cmdline_disabled);
++
+ 	/* let the tracer release locks here if needed */
+ 	if (current_trace && current_trace == iter->trace && iter->trace->stop)
+ 		iter->trace->stop(iter);
+@@ -524,8 +608,11 @@ static void notrace
+ lat_print_generic(struct seq_file *m, struct tracing_entry *entry, int cpu)
+ {
+ 	int hardirq, softirq;
++	char *comm;
++
++	comm = trace_find_cmdline(entry->pid);
+ 
+-	seq_printf(m, "%8.8s-%-5d ", entry->comm, entry->pid);
++	seq_printf(m, "%8.8s-%-5d ", comm, entry->pid);
+ 	seq_printf(m, "%d", cpu);
+ 	seq_printf(m, "%c%c",
+ 		   (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
+@@ -577,6 +664,7 @@ print_lat_fmt(struct seq_file *m, struct
+ 	struct tracing_entry *next_entry = find_next_entry(iter, NULL);
+ 	unsigned long abs_usecs;
+ 	unsigned long rel_usecs;
++	char *comm;
+ 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
+ 	int verbose = !!(trace_flags & TRACE_ITER_VERBOSE);
+ 	int S;
+@@ -587,9 +675,10 @@ print_lat_fmt(struct seq_file *m, struct
+ 	abs_usecs = cycles_to_usecs(entry->t - iter->tr->time_start);
+ 
+ 	if (verbose) {
++		comm = trace_find_cmdline(entry->pid);
+ 		seq_printf(m, "%16s %5d %d %d %08x %08x [%08lx]"
+ 			   " %ld.%03ldms (+%ld.%03ldms): ",
+-			   entry->comm,
++			   comm,
+ 			   entry->pid, cpu, entry->flags,
+ 			   entry->preempt_count, trace_idx,
+ 			   cycles_to_usecs(entry->t),
+@@ -609,12 +698,14 @@ print_lat_fmt(struct seq_file *m, struct
+ 	case TRACE_CTX:
+ 		S = entry->ctx.prev_state < sizeof(state_to_char) ?
+ 			state_to_char[entry->ctx.prev_state] : 'X';
+-		seq_printf(m, " %d:%d:%c --> %d:%d\n",
++		comm = trace_find_cmdline(entry->ctx.next_pid);
++		seq_printf(m, " %d:%d:%c --> %d:%d %s\n",
+ 			   entry->ctx.prev_pid,
+ 			   entry->ctx.prev_prio,
+ 			   S,
+ 			   entry->ctx.next_pid,
+-			   entry->ctx.next_prio);
++			   entry->ctx.next_prio,
++			   comm);
+ 		break;
+ 	}
+ }
+@@ -627,15 +718,18 @@ static void notrace print_trace_fmt(stru
+ 	unsigned long secs;
+ 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
+ 	unsigned long long t;
++	char *comm;
+ 	int S;
+ 
++	comm = trace_find_cmdline(iter->ent->pid);
++
+ 	t = cycles_to_usecs(entry->t);
+ 	usec_rem = do_div(t, 1000000ULL);
+ 	secs = (unsigned long)t;
+ 
+ 	seq_printf(m, "[%5lu.%06lu] ", secs, usec_rem);
+ 	seq_printf(m, "CPU %d: ", iter->cpu);
+-	seq_printf(m, "%s:%d ", entry->comm,
++	seq_printf(m, "%s:%d ", comm,
+ 		   entry->pid);
+ 	switch (entry->type) {
+ 	case TRACE_FN:
+@@ -1189,6 +1283,8 @@ __init static int tracer_alloc_buffers(v
+ 
+ 	tracer_init_debugfs();
+ 
++	trace_init_cmdlines();
++
+ 	register_trace(&disable_trace);
+ 
+ 	return 0;
+Index: linux-mcount.git/lib/tracing/tracer.h
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-30 15:32:34.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-30 15:33:38.000000000 -0500
+@@ -25,7 +25,6 @@ struct tracing_entry {
+ 	char preempt_count; /* assumes PREEMPT_MASK is 8 bits or less */
+ 	int pid;
+ 	cycle_t t;
+-	char comm[TASK_COMM_LEN];
+ 	union {
+ 		struct tracing_function fn;
+ 		struct tracing_sched_switch ctx;
+@@ -98,7 +97,7 @@ void tracing_sched_switch_trace(struct t
+ 				struct task_struct *prev,
+ 				struct task_struct *next,
+ 				unsigned long flags);
 -
- 	if (ocu_len == 0) {
- 		memset(utf_o, 0, sizeof(struct ustr));
--		utf_o->u_cmpID = 0;
--		utf_o->u_len = 0;
- 		return 0;
- 	}
++void tracing_record_cmdline(struct task_struct *tsk);
  
--	if ((cmp_id != 8) && (cmp_id != 16)) {
-+	cmp_id = ocu_i->u_cmpID;
-+	if (cmp_id != 8 && cmp_id != 16) {
-+		memset(utf_o, 0, sizeof(struct ustr));
- 		printk(KERN_ERR "udf: unknown compression code (%d) stri=%s\n",
- 		       cmp_id, ocu_i->u_name);
- 		return 0;
- 	}
- 
-+	ocu = ocu_i->u_name;
-+	utf_o->u_len = 0;
- 	for (i = 0; (i < ocu_len) && (utf_o->u_len <= (UDF_NAME_LEN - 3));) {
- 		/* Expand OSTA compressed Unicode to Unicode */
--		c = ocu[i++];
-+		uint32_t c = ocu[i++];
- 		if (cmp_id == 16)
- 			c = (c << 8) | ocu[i++];
- 
--- 
-1.5.3.7
+ void tracing_start_function_trace(void);
+ void tracing_stop_function_trace(void);
 
+-- 
