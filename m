@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbYA3S4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbYA3S73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762865AbYA3S4Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYA3S4Q
+	id S1759448AbYA3S73 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbYA3S7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:56:16 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:42147 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753719AbYA3S4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:56:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CHoVp1c3q4zsIS7cOp87ZLWijcZvnaPVQDJZjFohC0nOtjfqJfTSqijfRgyYNa2pvh5Fg3fO1oyVxzzKFZ+YsZ83KPR1Dkof8GkDQaVmwoCFWszkynvJb2+xf0Y6ssFBdKB4A3CEnc+8L5Zomxm1IxWqrDbwFi6ebyLCXeapSog=  ;
-X-YMail-OSG: wYHzFOEVM1mJh1q_MaP42mqF9VR2nfD0OCVZcNuK_RSHBY_7
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: at91sam9260 wakeup on serial port
-Date: Wed, 30 Jan 2008 10:56:12 -0800
-User-Agent: KMail/1.9.6
-Cc: michael <trimarchi@gandalf.sssup.it>, linux-kernel@vger.kernel.org,
-       Andrew Victor <linux@maxim.org.za>
-References: <479DB934.6090806@gandalf.sssup.it> <200801291944.53591.david-b@pacbell.net> <20080130124754.70f5b218@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080130124754.70f5b218@dhcp-252-066.norway.atmel.com>
+	Wed, 30 Jan 2008 13:59:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56466 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752907AbYA3S7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:59:19 -0500
+Date: Wed, 30 Jan 2008 19:59:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: arch/x86/kernel/test_nx.c compile error
+Message-ID: <20080130185903.GA3029@elte.hu>
+References: <20080130182537.GD29368@does.not.exist> <20080130184218.GB27168@elte.hu> <20080130184432.GA31485@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801301056.13186.david-b@pacbell.net>
+In-Reply-To: <20080130184432.GA31485@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 January 2008, Haavard Skinnemoen wrote:
-> On Tue, 29 Jan 2008 19:44:53 -0800
-> David Brownell <david-b@pacbell.net> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > does the patch below help?
 > 
-> > On Monday 28 January 2008, Haavard Skinnemoen wrote:
-> > > 
-> > > > What will AVR32 (AP7) need to do, when it supports system sleep states?
-> > > 
-> > > Not sure. The PIOs seem to require a clock in order to detect a pin
-> > > change, so I don't think we can enter very deep sleep states if we want
-> > > to be woken up by the USART.
-> > 
-> > Right; if no DMA is pending, then the HSB matrix clock can be idled, DRAM put
-> > into self-refresh, and most peripherals can issue wakeups ... AP7 "Frozen"
-> > state, very analagous to AT91 "standby" on Linux.  UARTs and GPIOs can wake.
-> 
-> Yeah, although the nasty thing about UARTs is that you never know when
-> DMA really is idle.
+> uhm, the one below instead.
 
-If the UART isn't open, its DMA should be inactive.  :)
+or this ...
 
-Also, after suspend() it should normally be inactive.
-(That latter is somewhat platform-specific.)
+	Ingo
 
+------------->
+Subject: x86: fix arch/x86/kernel/test_nx.c modular build bug
+From: Ingo Molnar <mingo@elte.hu>
 
-> > The closest analogue to the AT91 support would map /sys/power/state:
-> > 
-> > 	standby --> to AP7 "Frozen"
-> > 	mem --> to AP7 "Stop"
-> 
-> Yes, that looks reasonable. We can also do something in between by
-> stopping most peripherals and busses. For example, keep one peripheral
-> bus and one USART running from OSC0 with everything else stopped.
+fix this modular build bug:
 
-Wouldn't that just be a variant of "Frozen"?  The clock API should
-be fully capable of disabling unused clocks, PLLs, and oscillators
-when the platform supports it.  It's common for lots of clocks to be
-disable even in non-suspended system states.
+>   CC [M]  arch/x86/kernel/test_nx.o
+> {standard input}: Assembler messages:
+> {standard input}:58: Error: cannot represent relocation type BFD_RELOC_64
+> {standard input}:59: Error: cannot represent relocation type BFD_RELOC_64
+> make[2]: *** [arch/x86/kernel/test_nx.o] Error 1
+> make[1]: *** [arch/x86/kernel] Error 2
 
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/test_nx.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-> I think we need some chip- or family-specific sleep code that knows how
-> to enter a given power state. But the specifics about how to wake the
-> system up must necessarily be board-specific (or even run-time
-> configurable.)
-
-The sysfs wakeup attributes are the runtiime config mechanism for all
-events associated with a single device.
-
-- Dave
+Index: linux-x86.q/arch/x86/kernel/test_nx.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/test_nx.c
++++ linux-x86.q/arch/x86/kernel/test_nx.c
+@@ -91,8 +91,13 @@ static noinline int test_address(void *a
+ 		".previous\n"
+ 		".section __ex_table,\"a\"\n"
+ 		"       .align 8\n"
++#ifdef CONFIG_X86_32
++		"	.long 0b\n"
++		"	.long 2b\n"
++#else
+ 		"	.quad 0b\n"
+ 		"	.quad 2b\n"
++#endif
+ 		".previous\n"
+ 		: [rslt] "=r" (result)
+ 		: [fake_code] "r" (address), [zero] "r" (0UL), "0" (result)
