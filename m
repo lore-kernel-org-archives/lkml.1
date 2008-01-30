@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYA3Afy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYA3AgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYA3Afy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYA3Afp
+	id S1755374AbYA3AgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYA3AgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:35:45 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:59511 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752408AbYA3Afo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:35:44 -0500
-Date: Tue, 29 Jan 2008 16:35:44 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jack Steiner <steiner@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080130002804.GA13840@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801291634300.28027@schroedinger.engr.sgi.com>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
- <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
- <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
- <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
- <20080130000039.GA7233@v2.random> <Pine.LNX.4.64.0801291620170.28027@schroedinger.engr.sgi.com>
- <20080130002804.GA13840@sgi.com>
+	Tue, 29 Jan 2008 19:36:04 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45348 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYA3AgB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 19:36:01 -0500
+Date: Wed, 30 Jan 2008 01:35:58 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jon Masters <jonathan@jonmasters.org>
+cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>
+Subject: Re: ndiswrapper and GPL-only symbols redux
+In-Reply-To: <1201652420.2271.91.camel@perihelion>
+Message-ID: <Pine.LNX.4.64.0801300129270.14907@fbirervta.pbzchgretzou.qr>
+References: <1201641765.18773.35.camel@dv> <1201652420.2271.91.camel@perihelion>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008, Jack Steiner wrote:
 
-> > That is true for your implementation and to address Robin's issues. Jack: 
-> > Is that true for the GRU?
-> 
-> I'm not sure I understand the question. The GRU never (currently) takes
-> a reference on a page. It has no mechanism for tracking pages that
-> were exported to the external TLBs.
+On Jan 29 2008 19:20, Jon Masters wrote:
+>On Tue, 2008-01-29 at 16:22 -0500, Pavel Roskin wrote:
+>> 
+>> It have come to my attention that a patch has been committed to the
+>> kernel with the explicit purpose of tainting ndiswrapper - the kernel
+>> module allowing Windows NDIS drivers for Ethernet and Wireless cards to
+>> be used by the kernel.
+>> 
+>> That's the commit in question:
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0aa5bd52d0c49ca56d24584c646e6544ccbb3dc9
+>
+>Yup. There was (what I thought was) a bug in the existing logic (an
+>explicit match on "ndiswrapper", and a setting of the global kernel
+>taint flags) and I corrected it to do what I thought it was actually
+>intending to do, but hadn't been. Was I mistaken? What's the point of
+>setting the global taint if we don't know why we set that?
 
-Thats what I was looking for. Thanks. KVM takes a refcount and so does 
-XPmem.
+ftr, as a by-stander, I perceived the past discussions as a lack of
+trust from other kernel developers that Ndiswrapper will always set
+the taint flags correctly. (ndiswrapper code does not go through lkml
+review so the magic line might just change between tarballs.)
 
+>> - ndiswrapper is licensed under GPL
+>
+>Yes it is. But I thought the existing code was intending to taint the
+>kernel (that's what it does), so it would really help to identify why it
+>tainted the kernel, by calling add_taint_module instead of add_taint. I
+>didn't put the existing match in there...don't shoot the messenger :)
+>
+>> - ndiswrapper needs GPL-only symbols
+>
+>Another fix would be for ndiswrapper to explicitly set the taint when it
+>loads a tainted driver? Or do we just want to go back to globally
+>"tainting" the kernel without assigning the blame to any module?
+
+I think the global taint flag is always needed because you never know
+what the proprietary module actually did to our memory. Unloading
+the driver and ndiswrapper should retain some sort of taintedness
+should it oops much later.
