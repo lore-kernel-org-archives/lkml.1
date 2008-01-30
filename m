@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYA3Uxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYA3Uzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbYA3Uxv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:53:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYA3Uxm
+	id S1754643AbYA3Uzr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYA3Uzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:53:42 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:63739 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbYA3Uxl convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jan 2008 15:55:39 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53843 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750932AbYA3Uzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:53:41 -0500
-From: Guenter Kukkukk <linux@kukkukk.com>
-Organization: EfM
-To: samba-technical@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove smbfs
-Date: Wed, 30 Jan 2008 21:52:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-References: <20080128220835.GF8767@does.not.exist> <Pine.LNX.4.64.0801301923450.13036@fbirervta.pbzchgretzou.qr> <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com>
-In-Reply-To: <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com>
+	Wed, 30 Jan 2008 15:55:38 -0500
+Date: Wed, 30 Jan 2008 12:55:36 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jack Steiner <steiner@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080130202918.GB11324@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801301251160.32559@schroedinger.engr.sgi.com>
+References: <20080129211759.GV7233@v2.random>
+ <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
+ <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
+ <20080130000039.GA7233@v2.random> <Pine.LNX.4.64.0801291620170.28027@schroedinger.engr.sgi.com>
+ <20080130002804.GA13840@sgi.com> <20080130133720.GM7233@v2.random>
+ <20080130144305.GA25193@sgi.com> <Pine.LNX.4.64.0801301140320.30568@schroedinger.engr.sgi.com>
+ <20080130202918.GB11324@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801302152.52115.linux@kukkukk.com>
-X-Provags-ID: V01U2FsdGVkX1+Jdc2zP8D/eFDyv06ypAokHwTbqg38aWT96WX
- MabOf55MGz5X2qEey9da6KojYjE99ebwj9YcGYVFVCyhcQ7KsE
- KRPBptNHCdnQ2IqW66xzPHplm0ZdyWd
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 30. Januar 2008 schrieb Steve French:
-> I have mounted to Windows98 a few months ago with no problems (other
-> than a few restrictions like you can't set the file times via utimes).
->  For mounts to Windows98 note that you have to specify the server
-> netbios name on the mount (since it is not the same as the DNS name).
-> In your example your would need to specify "servernetbiosname=WIN98"
-> in the mount options (until mount.cifs autoretries with
-> servernetbiosname assumed to be the beginning of the UNC name - note
-> that later servers have a dummy netbios name that is used so this
-> mount option is only needed for OS/2 and Win9x).
+On Wed, 30 Jan 2008, Jack Steiner wrote:
+
+> > Seems that we cannot rely on the invalidate_ranges for correctness at all?
+> > We need to have invalidate_page() always. invalidate_range() is only an 
+> > optimization.
+> > 
 > 
-> I will try mounts to Windows98 again.
-> 
+> I don't understand your point "an optimization". How would invalidate_range
+> as currently defined be correctly used?
 
-being not able to set the file times via utimes is a _major_
-missing feature in cifs, so
+We are changing definitions. The original patch by Andrea calls 
+invalidate_page for each pte that is cleared. So strictly you would not 
+need an invalidate_range.
 
-  cp -p /client/file /server
+> It _looks_ like it would work only if xpmem/gru/etc takes a refcnt on
+> the page & drops it when invalidate_range is called. That may work (not sure)
+> for xpmem but not for the GRU.
 
-does not work regarding servers like win9x/me and os/2.
-The source time stamps are not transfered to the server!
-The current local time on the server is set instead for
-all time stamps. 
-The reason is a missing implementation of legacy versions of
-  setfileinfo
-  setpathinfo
+The refcount is not necessary if we adopt Andrea's approach of a callback 
+on the clearing of each pte. At that point the page is still guaranteed to 
+exist. If we do the range_invalidate later (as in V3) then the page may 
+have been released (see sys_remap_file_pages() f.e.) before we zap the GRU 
+ptes. So there will be a time when the GRU may write to a page that has 
+been freed and used for another purpose.
 
-I had that already working months ago, but it never made it
-upstream ...
+Taking a refcount on the page defers the free until the range_invalidate 
+runs.
 
-Possibly we could give it a 2nd try?
+I would prefer a solution that does not require taking refcounts (pins) 
+for establishing an external pte and for release (like what the GRU does).
 
-Cheers, Günter
+If we could effectively determine that there are no external ptes in a 
+range then the invalidate_page() call may return immediately. Maybe it is 
+then effective to do these gazillions of invalidate_page() calls when a 
+process terminates or an remap is performed.
+
