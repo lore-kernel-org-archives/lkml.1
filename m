@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbYA3Spe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbYA3St7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762811AbYA3Spe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763805AbYA3SpG
+	id S1758115AbYA3St7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYA3Stt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:45:06 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:60591 "EHLO smtp5.pp.htv.fi"
+	Wed, 30 Jan 2008 13:49:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46215 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763746AbYA3SpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:45:04 -0500
-Date: Wed, 30 Jan 2008 20:45:38 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
-       Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080130184538.GE29368@does.not.exist>
-References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv> <20080130002514.GA1802@does.not.exist> <1201658555.24898.27.camel@dv> <20080130175435.GA29368@does.not.exist> <20080130181530.GA26259@csclub.uwaterloo.ca>
+	id S1750904AbYA3Str (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:49:47 -0500
+Date: Wed, 30 Jan 2008 19:49:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Mike Travis <travis@sgi.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130184920.GA32212@elte.hu>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080130181530.GA26259@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 01:15:30PM -0500, Lennart Sorensen wrote:
-> On Wed, Jan 30, 2008 at 07:54:35PM +0200, Adrian Bunk wrote:
-> > The GPL might only talk about distribution.
-> > 
-> > But copyright law is not restricted to copying of work.
-> > 
-> > IANAL, and I don't know abou the laws in other countries, but at least 
-> > in Germany modifications of a copyrighted work require the permission of 
-> > the copyright holder.
-> > 
-> > It's e.g. a not so uncommon problem that someone wants to modify a 30 or 
-> > 80 years old building, and since the original contract with the 
-> > architect did not grant the owner of the building the rights to modify 
-> > it he needs to ask the architect (or the architect's heirs) who has the 
-> > (nontransferable) copyright on the building for the permission to modify 
-> > the building. [1]
+
+* Luck, Tony <tony.luck@intel.com> wrote:
+
+> > Could you check the patch below? With this applied to latest -git, 
+> > ia64 buils fine for me in a cross-compiling environment. (but i dont 
+> > know whether it boots ...)
 > 
-> Germany does seem to be an odd case that really makes it very difficult
-> to do perfectly reasonable, desirable and sane things.  I am not even
-> sure the GPL necesarily makes sense under German copyright law.  I am
-> not German so I haven't had to deal with it.
+> Uni-processor build still fails with this patch (config is 
+> arch/ia64/configs/tiger_defconfig with CONFIG_SMP switched from =y to 
+> =n).
 
-http://www.jbb.de/judgment_dc_munich_gpl.pdf
-http://www.jbb.de/judgment_dc_frankfurt_gpl.pdf
+could you try the full patchset that Travis has just sent and which i've 
+put into x86.git, you can pull it from:
 
-> Len Sorensen
+    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-cu
-Adrian
+it's a fixes only tree, ontop of Linus-very-latest. Head 4b9e425c25f84. 
+[pull from ssh://master.kernel.org if it's not on git.kernel.org yet, 
+uploaded it this very minute.]
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
