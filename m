@@ -1,170 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYA3CeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYA3Cn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756969AbYA3CeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYA3CeO
+	id S1755230AbYA3Cn7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYA3Cnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:34:14 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:14131 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbYA3CeM (ORCPT
+	Tue, 29 Jan 2008 21:43:49 -0500
+Received: from [211.102.241.196] ([211.102.241.196]:33688 "EHLO mail.yuvad.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753107AbYA3Cns convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:34:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aLV0IOpJXe2TMAw8RqdN/STMvNWZ2p6nwVgR/VnufE+Yknup5MUMx/73OxFh//Z55i3cJOaGh80BjWYrCWUHkxWddOLMaZySliBEHfXUIHb9HwKlb3yB6u8b2cux0vl4DqwOGnSdUbEc9ALEHe7EvGpMnr1S5ge5F5ld7cXA3Ds=
-Subject: Re: [PATCH] x86: Add a list for custom page fault handlers.
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jan Beulich <jbeulich@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1201660102.8837.9.camel@brick>
-References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
-	 <1201660102.8837.9.camel@brick>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 18:34:13 -0800
-Message-Id: <1201660453.8837.13.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 21:43:48 -0500
+From: "Mao Rui" <maorui@yuvad.com>
+To: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: RE: SATA DOM is not identified by ata_piix module
+Date: Wed, 30 Jan 2008 10:42:12 +0800
+Message-ID: <071501c862e9$c0bf1770$7740a8c0@cmaorui2>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <00da01c85999$0856e540$7740a8c0@cmaorui2>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Thread-Index: AchXZ9P+lznWGrtKQ+WaInNR7zRNBwBjvoRQAnyzKtA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Paalanen <pq@iki.fi>
+Hmm... Does anybody own this bug?
 
-Provides kernel modules a way to register custom page fault handlers.
-On every page fault, except those handled in vmalloc_fault(), this will
-call a list of registered functions. The functions may handle the fault
-and force do_page_fault() to return immediately.
+Best regards,
 
-This functionality is similar to the now removed page fault notifiers.
-Custom page fault handlers are used by debugging and reverse engineering
-tools. Mmio-trace is one such tool and a patch to add it into the tree
-will follow.
+Mao Rui
 
-The custom page fault handlers are called from the exact same points in
-do_page_fault() as the page fault notifiers were.
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Sorry, attached the wrong version to my last message missing the
-kdebug.h hunk.  This is still just a straight port to current x86.git.
-
- arch/x86/Kconfig.debug   |    9 ++++++++
- arch/x86/mm/fault.c      |   51 ++++++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/kdebug.h |    8 +++++++
- 3 files changed, 68 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 2e1e3af..9b44bc5 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -225,4 +225,13 @@ config CPA_DEBUG
- 	help
- 	  Do change_page_attr self tests at boot.
- 
-+config PAGE_FAULT_HANDLERS
-+	bool "Custom page fault handlers"
-+	depends on DEBUG_KERNEL
-+	help
-+	  Allow the use of custom page fault handlers. A kernel module may
-+	  register a function that is called on every page fault not handled
-+	  for vmalloc. Custom handlers are used by some debugging and reverse
-+	  engineering tools.
-+
- endmenu
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index e28cc52..c6c8164 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -49,6 +49,54 @@
- #define PF_RSVD		(1<<3)
- #define PF_INSTR	(1<<4)
- 
-+#ifdef CONFIG_PAGE_FAULT_HANDLERS
-+static HLIST_HEAD(pf_handlers); /* protected by RCU */
-+static DEFINE_SPINLOCK(pf_handlers_writer);
-+
-+void register_page_fault_handler(struct pf_handler *new_pfh)
-+{
-+	spin_lock(&pf_handlers_writer);
-+	hlist_add_head_rcu(&new_pfh->hlist, &pf_handlers);
-+	spin_unlock(&pf_handlers_writer);
-+}
-+EXPORT_SYMBOL_GPL(register_page_fault_handler);
-+
-+void unregister_page_fault_handler(struct pf_handler *old_pfh)
-+{
-+	might_sleep();
-+	spin_lock(&pf_handlers_writer);
-+	hlist_del_rcu(&old_pfh->hlist);
-+	spin_unlock(&pf_handlers_writer);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(unregister_page_fault_handler);
-+#endif
-+
-+/* returns non-zero if do_page_fault() should return */
-+static int handle_custom_pf(struct pt_regs *regs, unsigned long error_code,
-+			    unsigned long address)
-+{
-+#ifdef CONFIG_PAGE_FAULT_HANDLERS
-+	int ret = 0;
-+	struct pf_handler *cur;
-+	struct hlist_node *ncur;
-+
-+	if (hlist_empty(&pf_handlers))
-+		return 0;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(cur, ncur, &pf_handlers, hlist) {
-+		ret = cur->handler(regs, error_code, address);
-+		if (ret)
-+			break;
-+	}
-+	rcu_read_unlock();
-+	return ret;
-+#else
-+	return 0;
-+#endif
-+}
-+
- static inline int notify_page_fault(struct pt_regs *regs)
- {
- #ifdef CONFIG_KPROBES
-@@ -588,6 +636,9 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	if (notify_page_fault(regs))
- 		return;
- 
-+	if (handle_custom_pf(regs, error_code, address))
-+		return;
-+
- 	/*
- 	 * We fault-in kernel-space virtual memory on-demand. The
- 	 * 'reference' page table is init_mm.pgd.
-diff --git a/include/asm-x86/kdebug.h b/include/asm-x86/kdebug.h
-index dd442a1..ba03368 100644
---- a/include/asm-x86/kdebug.h
-+++ b/include/asm-x86/kdebug.h
-@@ -35,4 +35,12 @@ extern void dump_pagetable(unsigned long);
- extern unsigned long oops_begin(void);
- extern void oops_end(unsigned long, struct pt_regs *, int signr);
- 
-+struct pf_handler {
-+	struct hlist_node hlist;
-+	int (*handler)(struct pt_regs *regs, unsigned long error_code,
-+		       unsigned long address);
-+};
-+
-+extern void register_page_fault_handler(struct pf_handler *new_pfh);
-+extern void unregister_page_fault_handler(struct pf_handler *old_pfh);
- #endif
--- 
-1.5.4.rc4.1142.gf5a97
-
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Mao Rui
+> Sent: Friday, January 18, 2008 2:12 PM
+> To: 'Alan Cox'
+> Cc: linux-kernel@vger.kernel.org
+> Subject: RE: SATA DOM is not identified by ata_piix module
+> 
+> I tried to nail down when the problem was introduced. I compiled some
+> official kernel release. Here is the result.
+> 2.6.17.14   IDE -- Failed   SATA -- passed
+> 2.6.18   IDE -- Failed   SATA -- failed
+> 2.6.18.8   IDE -- Failed   SATA -- failed
+> 2.6.24-rc7-git6  IDE -- passed   SATA DOM -- failed
+> linux-2.6.24-rc8-git1   IDE -- passed    SATA -- failed
+> All IDE failed reason is xfermode error, and all SATA failure is IDENTIFY
+> error.
+> 
+> As you can find out, the failure of SATA DOM was introduced from kernel
+> 2.6.18.
+> 
+> I'm not good at low level driver programming, so I cannot find out the
+root
+> cause by myself. But if Alan or someone else needs more info or wants to
+> test the patch, I'm glad to do it in my platform.
+> 
+> Best regards,
+> Mao Rui
+> 
+> > -----Original Message-----
+> > From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
+> > Sent: Tuesday, January 15, 2008 7:02 PM
+> > To: Mao Rui
+> > Cc: linux-kernel@vger.kernel.org
+> > Subject: Re: SATA DOM is not identified by ata_piix module
+> >
+> > On Tue, 15 Jan 2008 18:11:25 +0800
+> > "Mao Rui" <maorui@yuvad.com> wrote:
+> >
+> > > Hi,
+> > >
+> > > I have a PQI Turbo SATA DOM. It works well under Windows. I installed
+it
+> in
+> > > a SuperMicro motherboard, Intel 5000P chipset. The OS is Ubuntu 7.04,
+> kernel
+> > > 2.6.20-15. But the DOM is not appeared as a device node, and I found
+> several
+> > > error messages in kernel log.
+> >
+> > Generally it is a good idea to report problems with vendor built kernels
+> > to the vendor and their support, especially one that is 3 releases
+behind.
+> > They have a much better idea what is in that kernel and who else has
+seen
+> > problems.
+> >
+> > > [   67.124299] ata2.00: qc timeout (cmd 0x91)
+> > > [   67.124306] ata2.00: failed to IDENTIFY (INIT_DEV_PARAMS failed,
+> > > err_mask=0x4)
+> >
+> > We issued commands, it didn't respond. That could be a libata problem
+but
+> > actually looks more like an IRQ routing problem.
+> >
+> > > Actually I also have a PQI IDE DOM, it have same error with Ubuntu
+7.04
+> /
+> >
+> > The PQI DOM is a bit odd, it is however known to work with libata at
+> > least for the PATA one, and the versions which don't understand
+> > SET_XFER_MODE to work with current kernels. (Your failure mode isn't the
+> > SET_XFER_MODE one - it hasn't got that far).
+> >
+> > Alan
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 
