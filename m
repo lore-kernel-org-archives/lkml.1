@@ -1,20 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764959AbYA3UPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbYA3UPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764959AbYA3UPG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbYA3UDP
+	id S933258AbYA3UPm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762889AbYA3UDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:03:15 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40771 "EHLO smtp6.pp.htv.fi"
+	Wed, 30 Jan 2008 15:03:08 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51755 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755968AbYA3UDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:03:05 -0500
-Date: Wed, 30 Jan 2008 22:03:39 +0200
+	id S1758711AbYA3UCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:02:04 -0500
+Date: Wed, 30 Jan 2008 22:02:39 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jgarzik@redhat.com>
+To: Surjit Reang <surjit.reang@neterion.com>,
+       Sreenivasa Honnur <sreenivasa.honnur@neterion.com>,
+       Ramkrishna Vepa <ram.vepa@neterion.com>, santosh.rastapur@neterion.com,
+       sivakumar.subramani@neterion.com
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] net/sunqe.c section fix
-Message-ID: <20080130200339.GO29368@does.not.exist>
+Subject: [2.6 patch] make s2io.c:init_tti() static
+Message-ID: <20080130200239.GX29368@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,53 +26,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following section mismatch:
-
-<--  snip  -->
-
-...
-WARNING: drivers/net/sunqe.o(.devinit.text+0x4): Section mismatch in reference from the function qec_sbus_probe() to the function .init.text:qec_ether_init()
-...
-
-<--  snip  -->
+This patch makes the needlessly global init_tti() static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/net/sunqe.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-bee65cb0dd698bbda02b1087bffed51e3a2488cb 
-diff --git a/drivers/net/sunqe.c b/drivers/net/sunqe.c
-index ff23c64..e811331 100644
---- a/drivers/net/sunqe.c
-+++ b/drivers/net/sunqe.c
-@@ -747,7 +747,7 @@ static inline void qec_init_once(struct sunqec *qecp, struct sbus_dev *qsdev)
- 		    qecp->gregs + GLOB_RSIZE);
- }
+1e8c2b07be955b181814e4c24366517a66557908 
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+index 5fab7d7..bc94e84 100644
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -1088,7 +1088,7 @@ static int s2io_print_pci_mode(struct s2io_nic *nic)
+  *  '-1' on failure
+  */
  
--static u8 __init qec_get_burst(struct device_node *dp)
-+static u8 __devinit qec_get_burst(struct device_node *dp)
+-int init_tti(struct s2io_nic *nic, int link)
++static int init_tti(struct s2io_nic *nic, int link)
  {
- 	u8 bsizes, bsizes_more;
- 
-@@ -767,7 +767,7 @@ static u8 __init qec_get_burst(struct device_node *dp)
- 	return bsizes;
- }
- 
--static struct sunqec * __init get_qec(struct sbus_dev *child_sdev)
-+static struct sunqec * __devinit get_qec(struct sbus_dev *child_sdev)
- {
- 	struct sbus_dev *qec_sdev = child_sdev->parent;
- 	struct sunqec *qecp;
-@@ -823,7 +823,7 @@ fail:
- 	return NULL;
- }
- 
--static int __init qec_ether_init(struct sbus_dev *sdev)
-+static int __devinit qec_ether_init(struct sbus_dev *sdev)
- {
- 	static unsigned version_printed;
- 	struct net_device *dev;
+ 	struct XENA_dev_config __iomem *bar0 = nic->bar0;
+ 	register u64 val64 = 0;
 
