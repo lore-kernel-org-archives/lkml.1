@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbYA3DXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbYA3DYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbYA3DXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 22:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYA3DTP
+	id S1758612AbYA3DYJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYA3DTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 22:19:15 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:50738 "EHLO
+	Tue, 29 Jan 2008 22:19:17 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:50744 "EHLO
 	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYA3DSw (ORCPT
+	with ESMTP id S1753750AbYA3DSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jan 2008 22:18:52 -0500
-Message-Id: <20080130031840.666434420@goodmis.org>
+Message-Id: <20080130031840.829420571@goodmis.org>
 References: <20080130031521.258552785@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 22:15:25 -0500
+Date: Tue, 29 Jan 2008 22:15:26 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,69 +29,131 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 04/22 -v7] x86_64: notrace annotations
-Content-Disposition: inline; filename=mcount-add-x86_64-notrace-annotations.patch
+Subject: [PATCH 05/22 -v7] add notrace annotations to vsyscall.
+Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add "notrace" annotation to x86_64 specific files.
+Add the notrace annotations to some of the vsyscall functions.
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/head64.c     |    2 +-
- arch/x86/kernel/setup64.c    |    4 ++--
- arch/x86/kernel/smpboot_64.c |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/vsyscall_64.c  |    3 ++-
+ arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
+ arch/x86/vdso/vgetcpu.c        |    3 ++-
+ include/asm-x86/vsyscall.h     |    3 ++-
+ 4 files changed, 14 insertions(+), 10 deletions(-)
 
-Index: linux-mcount.git/arch/x86/kernel/head64.c
+Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/head64.c	2008-01-25 21:46:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/head64.c	2008-01-25 21:47:05.000000000 -0500
-@@ -46,7 +46,7 @@ static void __init copy_bootdata(char *r
- 	}
+--- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-25 21:47:06.000000000 -0500
+@@ -42,7 +42,8 @@
+ #include <asm/topology.h>
+ #include <asm/vgtod.h>
+ 
+-#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
++#define __vsyscall(nr) \
++		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
+ #define __syscall_clobber "r11","rcx","memory"
+ #define __pa_vsymbol(x)			\
+ 	({unsigned long v;  		\
+Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-25 21:47:06.000000000 -0500
+@@ -24,7 +24,7 @@
+ 
+ #define gtod vdso_vsyscall_gtod_data
+ 
+-static long vdso_fallback_gettime(long clock, struct timespec *ts)
++notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
+ {
+ 	long ret;
+ 	asm("syscall" : "=a" (ret) :
+@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
+ 	return ret;
  }
  
--void __init x86_64_start_kernel(char * real_mode_data)
-+notrace void __init x86_64_start_kernel(char *real_mode_data)
+-static inline long vgetns(void)
++notrace static inline long vgetns(void)
  {
- 	int i;
+ 	long v;
+ 	cycles_t (*vread)(void);
+@@ -41,7 +41,7 @@ static inline long vgetns(void)
+ 	return (v * gtod->clock.mult) >> gtod->clock.shift;
+ }
  
-Index: linux-mcount.git/arch/x86/kernel/setup64.c
+-static noinline int do_realtime(struct timespec *ts)
++notrace static noinline int do_realtime(struct timespec *ts)
+ {
+ 	unsigned long seq, ns;
+ 	do {
+@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
+ }
+ 
+ /* Copy of the version in kernel/time.c which we cannot directly access */
+-static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
++notrace static void
++vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
+ {
+ 	while (nsec >= NSEC_PER_SEC) {
+ 		nsec -= NSEC_PER_SEC;
+@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
+ 	ts->tv_nsec = nsec;
+ }
+ 
+-static noinline int do_monotonic(struct timespec *ts)
++notrace static noinline int do_monotonic(struct timespec *ts)
+ {
+ 	unsigned long seq, ns, secs;
+ 	do {
+@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
+ 	return 0;
+ }
+ 
+-int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
++notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
+ {
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
+ 		switch (clock) {
+@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
+ int clock_gettime(clockid_t, struct timespec *)
+ 	__attribute__((weak, alias("__vdso_clock_gettime")));
+ 
+-int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
++notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
+ {
+ 	long ret;
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
+Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/setup64.c	2008-01-25 21:46:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/setup64.c	2008-01-25 21:47:05.000000000 -0500
-@@ -114,7 +114,7 @@ void __init setup_per_cpu_areas(void)
- 	}
- } 
+--- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-25 21:47:06.000000000 -0500
+@@ -13,7 +13,8 @@
+ #include <asm/vgtod.h>
+ #include "vextern.h"
  
--void pda_init(int cpu)
-+notrace void pda_init(int cpu)
- { 
- 	struct x8664_pda *pda = cpu_pda(cpu);
- 
-@@ -197,7 +197,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist
-  * 'CPU state barrier', nothing should get across.
-  * A lot of state is already set up in PDA init.
-  */
--void __cpuinit cpu_init (void)
-+notrace void __cpuinit cpu_init(void)
+-long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
++notrace long
++__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
  {
- 	int cpu = stack_smp_processor_id();
- 	struct tss_struct *t = &per_cpu(init_tss, cpu);
-Index: linux-mcount.git/arch/x86/kernel/smpboot_64.c
+ 	unsigned int dummy, p;
+ 
+Index: linux-mcount.git/include/asm-x86/vsyscall.h
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/smpboot_64.c	2008-01-25 21:46:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/smpboot_64.c	2008-01-25 21:47:05.000000000 -0500
-@@ -317,7 +317,7 @@ static inline void set_cpu_sibling_map(i
- /*
-  * Setup code on secondary processor (after comming out of the trampoline)
-  */
--void __cpuinit start_secondary(void)
-+notrace __cpuinit void start_secondary(void)
- {
- 	/*
- 	 * Dont put anything before smp_callin(), SMP
+--- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-25 21:47:06.000000000 -0500
+@@ -24,7 +24,8 @@ enum vsyscall_num {
+ 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
+ #define __section_vsyscall_clock __attribute__ \
+ 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
+-#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
++#define __vsyscall_fn \
++	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
+ 
+ #define VGETCPU_RDTSCP	1
+ #define VGETCPU_LSL	2
 
 -- 
