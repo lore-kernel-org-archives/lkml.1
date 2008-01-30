@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763726AbYA3RbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbYA3Rd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763726AbYA3RbA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYA3Rav
+	id S1762156AbYA3Rd6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYA3Rdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:30:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50159 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756059AbYA3Rau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:30:50 -0500
-Date: Wed, 30 Jan 2008 18:30:48 +0100
-From: Andi Kleen <ak@suse.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: ioremap_xxx() with EXEC enabled
-Message-ID: <20080130173048.GA9812@bingen.suse.de>
-References: <1201685530.17912.11.camel@caritas-dev.intel.com> <20080130074540.031b6799@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130074540.031b6799@laptopd505.fenrus.org>
+	Wed, 30 Jan 2008 12:33:50 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:41635 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753688AbYA3Rdt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 12:33:49 -0500
+Subject: Re: [2.6.24] bcm203x bluetooth dongle does not work
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Florian Lohoff <flo@rfc822.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080130164920.GA15071@paradigm.rfc822.org>
+References: <20080130164920.GA15071@paradigm.rfc822.org>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 18:33:52 +0100
+Message-Id: <1201714432.6218.101.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 07:45:40AM -0800, Arjan van de Ven wrote:
-> On Wed, 30 Jan 2008 17:32:10 +0800
-> "Huang, Ying" <ying.huang@intel.com> wrote:
-> 
-> > Hi,
-> > 
-> > On i386, EFI may need to map EFI runtime code area as EXEC enabled
-> > with ioremap(). But, I found that the memory are mapped as EXEC
-> > disabled when mapped with ioremap() now. I think we may need a method
-> > to map memory area as EXEC enabled with ioremap_xxx(). Some possible
-> > interface schemes for mapping as EXEC enabled are as follow:
-> > 
-> > - Interface scheme 1:
-> 
-> scheme 3:
-> 
-> set_memory_x(... )
+Hi Florian,
 
-On i386 EFI is unlikely to be in the direct mapping ...
+> after trying around with my ancient bcm2033 bluetooth dongle i found it
+> not working in 2.6.24 - I debugged udev and found it loading the
+> firmware correctly but the device seems to have problems disconnecting.
+> 
+> I found an Ubuntu bug which mentions a patch which supposed to be
+> 2.6.20 material. It still applies and fixes my problem:
+> 
+> Ubuntu Bug:
+> 	https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.20/+bug/85247
+> 
+> Patch:
+> 	http://launchpadlibrarian.net/7058766/bcm203x-2.6.20-backport.diff
+> 
+> So it seems this patch never went in but most likely should.
 
--Andi
+we moved away from using a timer and using a workqueue now. It wrote the
+patch to use a workqueue and tested that it works. Starting with 2.6.19
+we the usage of a workqueue is default. Can you verify that non of the
+kernels 2.6.19-2.6.23 are working. We might have missed a change inside
+the USB subsystem within the 2.6.24 timeframe.
+
+Regards
+
+Marcel
+
 
