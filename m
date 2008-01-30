@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbYA3REG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbYA3REh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760394AbYA3REG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYA3RDy
+	id S1763256AbYA3REh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbYA3REZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:03:54 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:64232 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbYA3RDx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:03:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=vdgpMDlT3EF5VGVL0CTVFFSICVp4+F6/7wobqf70A7iPdM2nxY05fUckdXXHN3ZgVPrLXoUlGtHnSA9Hzh2I1ihTR0uXtZvui4DH7PM5x0k02eUCUXeeuRabDqat8lvi4/D+O3h74qdYQbjI5YmqSXGrxo0pVizD+y+PcNhxAFc=
-Message-ID: <386072610801300903w13b3ea61j434b59a098a45a25@mail.gmail.com>
-Date: Thu, 31 Jan 2008 01:03:52 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Bernd Schmidt" <bernds_cb1@t-online.de>
-Subject: Re: [PATCH 1/1] [NOMMU]: Dont use kobjsize on the area belonging to a VMA
-Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <47A075CD.6050800@t-online.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 12:04:25 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:32875 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbYA3REY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 12:04:24 -0500
+Date: Wed, 30 Jan 2008 18:04:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD FAILURE] 2.6.24-git7 section type conflict at various drivers on powerpc
+Message-ID: <20080130170417.GA24386@uranus.ravnborg.org>
+References: <47A0A3AF.5050005@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1201688708-2152-1-git-send-email-bryan.wu@analog.com>
-	 <47A075CD.6050800@t-online.de>
+In-Reply-To: <47A0A3AF.5050005@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 9:04 PM, Bernd Schmidt <bernds_cb1@t-online.de> wrote:
-> Bryan Wu wrote:
-> > From: Bernd Schmidt <bernd.schmidt@analog.com>
-> >
-> > Dont use kobjsize on the area belonging to a VMA, as it's allocated with
-> > get_free_pages.
->
-> As far as I remember, that's the case only in our tree with the patches
-> in nommu.c.  So this patch probably shouldn't go upstream yet.
->
+On Wed, Jan 30, 2008 at 09:49:59PM +0530, Kamalesh Babulal wrote:
+> Hi,
+> 
+> Following are the different build failure with 2.6.24-git7 kernel on the powerpc
+> 
+> drivers/net/typhoon.c:181: error: typhoon_card_info causes a section type conflict
+> make[2]: *** [drivers/net/typhoon.o] Error 1
+> 
+> drivers/net/natsemi.c:259: error: natsemi_pci_info causes a section type conflict
+> make[2]: *** [drivers/net/natsemi.o] Error 1
+> 
+> drivers/net/bnx2.c:95: error: board_info causes a section type conflict
+> make[2]: *** [drivers/net/bnx2.o] Error 1
+> 
+> drivers/net/via-velocity.c:454: error: velocity_id_table causes a section type conflict
+> make[2]: *** [drivers/net/via-velocity.o] Error 1
 
-Oh, I picked up a wrong one. Could you please tell me which nommu.c
-pathes does this one depends on?
-I am sorting out all our nommu changes and try to send them out.
+A quick look told me that they are all caused by const data
+annotated with __devinitdata.
+Try replacing all annotations of const variables
+from __devinitdata to __devinitconst.
 
-Thanks
--Bryan
+	Sam
