@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYA3JgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYA3Jgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761204AbYA3JgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 04:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbYA3Jaq
+	id S1759386AbYA3Jgw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 04:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbYA3Jb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 04:30:46 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:40738 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756908AbYA3JaX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 04:30:23 -0500
-X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="47624092"
-From: Bryan Wu <bryan.wu@analog.com>
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 11/12] [Blackfin] serial driver: ADSP-BF52x arch/mach support
-Date: Wed, 30 Jan 2008 17:30:11 +0800
-Message-Id: <1201685412-29095-12-git-send-email-bryan.wu@analog.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1201685412-29095-1-git-send-email-bryan.wu@analog.com>
-References: <1201685412-29095-1-git-send-email-bryan.wu@analog.com>
+	Wed, 30 Jan 2008 04:31:29 -0500
+Received: from mga02.intel.com ([134.134.136.20]:63289 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759378AbYA3Jb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 04:31:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,276,1199692800"; 
+   d="scan'208";a="255816997"
+Subject: ioremap_xxx() with EXEC enabled
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 30 Jan 2008 17:32:10 +0800
+Message-Id: <1201685530.17912.11.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 30 Jan 2008 09:31:11.0631 (UTC) FILETIME=[D9ED61F0:01C86322]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+Hi,
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/serial/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On i386, EFI may need to map EFI runtime code area as EXEC enabled with
+ioremap(). But, I found that the memory are mapped as EXEC disabled when
+mapped with ioremap() now. I think we may need a method to map memory
+area as EXEC enabled with ioremap_xxx(). Some possible interface schemes
+for mapping as EXEC enabled are as follow:
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index d7e1996..27fffa4 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -667,7 +667,7 @@ config UART0_RTS_PIN
- 
- config SERIAL_BFIN_UART1
- 	bool "Enable UART1"
--	depends on SERIAL_BFIN && (BF534 || BF536 || BF537 || BF54x)
-+	depends on SERIAL_BFIN && (BF52x || BF53x || BF54x)
- 	help
- 	  Enable UART1
- 
--- 
-1.5.3.4
+- Interface scheme 1:
+
+ioremap_cache_exec()
+ioremap_uncache_exec()
+
+- Interface scheme 2:
+
+enum ioremap_mode {
+	IOR_MODE_UNCACHED,
+	IOR_MODE_CACHED,
+};
+
+enum ioremap_xmode {
+	IOR_XMODE_UNEXEC,
+	IOR_XMODE_EXEC,
+};
+
+void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+			enum ioremap_mode mode,
+			enum ioremap_xmode xmode);
+
+
+Which one do you think is better? Or we should use some other interface
+or method?
+
+Best Regards,
+Huang Ying
+
