@@ -1,123 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbYA3VD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYA3VEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbYA3VD6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYA3VDu
+	id S1756516AbYA3VEn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYA3VEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:03:50 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:21542 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbYA3VDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 16:03:49 -0500
-Message-ID: <47A0E632.8010804@msgid.tls.msk.ru>
-Date: Thu, 31 Jan 2008 00:03:46 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: hibernate/suspend-to-disk: to turn power or not?
-References: <47A0CD90.5080208@msgid.tls.msk.ru> <200801302112.41446.bonbons@linux-vserver.org>
-In-Reply-To: <200801302112.41446.bonbons@linux-vserver.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 30 Jan 2008 16:04:34 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:52248 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbYA3VEd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 16:04:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=Sl+NSUXlnWpR54g4arb5GJZx4+Ww2To+8yDuTPIwY0dDeiRUV4nZYUbBQ5/Be4+z87lQpMgDnQdYDegyLVsi+Qo30WhYYxodQxHOwONpYFcFiUY5evm16H6Z9wwSAioIkiiOp6kc71PXBvN9rBkp8ClE+NF+gOOVJh/Fd/S2law=
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Jan Kara <jack@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH 00/10] udf: cleanups
+Date: Wed, 30 Jan 2008 22:03:50 +0100
+Message-Id: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: git-send-email 1.5.3.7
+From: marcin.slusarz@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bruno Prémont wrote:
-> On Wednesday 30 January 2008 20:18:40 you wrote:
->> I'm trying to "glue" hibernation and UPS control
->> together, and have a question.
->>
->> When the system power comes off an UPS (Uninterruptable
->> Power Supply I mean), it's probably a good idea to turn
->> the UPS off when shutting the system down or hibernating.
->
-> This depends on how you can turn the UPS back on...
+Hi
 
-Most UPSes has an option to turn themselves on when the
-power returns (except of very dumb ones).
+This patchset contains various UDF fs cleanups.
 
-> If pushing the button manually is not an issue or the UPS
-> can still be controlled remotely (e.g. via network) when
-> being off it doesn't matter.
+[PATCH 01/10] udf: udf_CS0toUTF8 cleanup
+[PATCH 02/10] udf: fix udf_build_ustr
+[PATCH 03/10] udf: udf_CS0toNLS cleanup
+[PATCH 04/10] udf: constify crc
+[PATCH 05/10] udf: simple cleanup of truncate.c
+[PATCH 06/10] udf: truncate: create function for updating of Allocation Ext Descriptor
+[PATCH 07/10] udf: replace all adds to little endians variables with le*_add_cpu
+[PATCH 08/10] udf: simplify __udf_read_inode
+[PATCH 09/10] udf: replace udf_*_offset macros with functions
+[PATCH 10/10] udf: constify udf_bitmap_lookup array
 
-It does not matter really.
+ fs/udf/balloc.c          |   13 +---
+ fs/udf/crc.c             |    4 -
+ fs/udf/ialloc.c          |   12 +---
+ fs/udf/inode.c           |   68 +++++++++---------------
+ fs/udf/super.c           |    2 
+ fs/udf/truncate.c        |  132 ++++++++++++++++++++---------------------------
+ fs/udf/udfdecl.h         |   33 +++++++----
+ fs/udf/unicode.c         |   58 ++++++++------------
+ include/linux/udf_fs_i.h |    4 -
+ 9 files changed, 142 insertions(+), 184 deletions(-)
 
-[]
->> returns.  Now, when we shutting down a system, we
->> need to turn the UPS *before* powering down the
->> system but *after* the shutdown procedure has been
->> completed.  This is done by replacing poweroff with
->> halt, and ordering the UPS to turn itself off after
->> a small delay (needed for the poweroff command to
->> complete) - this way, system will be on but in a
->> safe-to-powercut mode, and in order to turn it
->> back on only the UPS has to be turned on.
->
-> All systems I've seen that provide such an option in the BIOS
-> list three possible actions on power-back:
-> - remain off
-> - go back to previous state
-> - boot
+This patchset depends on udf and byteorder patches (all in -mm).
 
-Or sometimes a subset of the 3 - like "always off or return to
-previous state".  But this does not matter again - I'm not
-asking about how to control the power-on feature, or how to
-control a particular UPS, -- instead, I'm asking how to hook
-up something into the hibernate path, to the very end of it,
-to do whatever is needed, and/or how to control whether after
-the hibernate is complete the kernel should turn the system
-off or not.
-
-> In your case it's possibly easier to choose the option to
-> always boot when power comes back.
-
-Whatever works and is most suitable given the particular
-situation.  It doesn't really matter here.
-
-[]
-> Can you configure your UPS to poweroff when load on its output
-> drops below a given threshold? (I know that such a feature
-> exists on master-slave power outlets where all slave outlets
-> are powered only when the master outlet has a sufficient load)
-
-Certain models can be configured this way.  But the question
-stands still, because many models can't be programmed this way.
-
-What's needed is to run something at the end of hibernate
-process, nothing more nothing less.
-
-> Another path may be to dig into hibernate via kexec:
->   http://kerneltrap.org/node/11756
-
-Well.. that might work after all.  It doesn't work
-with vanilla kernel, does it?  I mean, I can get
-*my* system to work as I like it to work, but it
-can't work on another Linux system...
-
->> P.S.  Surprisingly, there's NO software that works
->> with UPSes and implements even the basic shutdown
->> process completely (not even mentioning hibernation).
->> Most common is just to turn the system off without
->> touching the UPS.  Yes it will work (till the UPS
->> will run out of battery), but how about servers which
->> should be up-n-running, ie. which should restart
->> automatically?..  Oh well.
->
-> Can't the UPS software trigger scripts or be controlled
-> using scripts?
-
-In some cases it can, but usually in a very limited way.
-It's just like no one wrote good software about this
-topic... ;)  Or good scripts, for that matter.  That's
-exactly what I'm trying to do, and certain questions
-(like this one) pops up.
-
-Thanks.
-
-/mjt
+Marcin Slusarz
