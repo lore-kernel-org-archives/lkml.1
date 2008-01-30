@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYA3Uep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762292AbYA3Uf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbYA3Uep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYA3Ueh
+	id S1762292AbYA3Uf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759961AbYA3Ueu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:34:37 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63815 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752535AbYA3Uef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:34:35 -0500
-Date: Wed, 30 Jan 2008 21:34:22 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: michael <trimarchi@gandalf.sssup.it>, linux-kernel@vger.kernel.org,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: at91sam9260 wakeup on serial port
-Message-ID: <20080130213422.504b6d53@siona>
-In-Reply-To: <200801301056.13186.david-b@pacbell.net>
-References: <479DB934.6090806@gandalf.sssup.it>
-	<200801291944.53591.david-b@pacbell.net>
-	<20080130124754.70f5b218@dhcp-252-066.norway.atmel.com>
-	<200801301056.13186.david-b@pacbell.net>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Jan 2008 15:34:50 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:33707 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758919AbYA3Ueq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:34:46 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] make b43_mac_{enable,suspend}() static
+Date: Wed, 30 Jan 2008 21:31:18 +0100
+User-Agent: KMail/1.9.6
+Cc: "John W. Linville" <linville@tuxdriver.com>, stefano.brivio@polimi.it,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080130200247.GA29368@does.not.exist>
+In-Reply-To: <20080130200247.GA29368@does.not.exist>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801302131.19330.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 10:56:12 -0800
-David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 30 January 2008, Haavard Skinnemoen wrote:
-> > Yeah, although the nasty thing about UARTs is that you never know when
-> > DMA really is idle.
+On Wednesday 30 January 2008 21:02:47 Adrian Bunk wrote:
+> b43_mac_{enable,suspend}() can now become static.
 > 
-> If the UART isn't open, its DMA should be inactive.  :)
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+Acked-by: Michael Buesch <mb@bu3sch.de>
+
+> ---
 > 
-> Also, after suspend() it should normally be inactive.
-> (That latter is somewhat platform-specific.)
-
-True, but can a closed or suspended UART wake the system? I guess it
-could if it's really a GPIO interrupt that triggers the wakeup :-)
-
-> > > The closest analogue to the AT91 support would map /sys/power/state:
-> > > 
-> > > 	standby --> to AP7 "Frozen"
-> > > 	mem --> to AP7 "Stop"
-> > 
-> > Yes, that looks reasonable. We can also do something in between by
-> > stopping most peripherals and busses. For example, keep one peripheral
-> > bus and one USART running from OSC0 with everything else stopped.
+>  drivers/net/wireless/b43/main.c |    4 ++--
+>  drivers/net/wireless/b43/main.h |    3 ---
+>  2 files changed, 2 insertions(+), 5 deletions(-)
 > 
-> Wouldn't that just be a variant of "Frozen"?  The clock API should
-> be fully capable of disabling unused clocks, PLLs, and oscillators
-> when the platform supports it.  It's common for lots of clocks to be
-> disable even in non-suspended system states.
-
-Yes, indeed. I was just pointing out that "Frozen" doesn't necessarily
-mean what the datasheet says -- we can disable a lot of clocks manually.
-
-> > I think we need some chip- or family-specific sleep code that knows how
-> > to enter a given power state. But the specifics about how to wake the
-> > system up must necessarily be board-specific (or even run-time
-> > configurable.)
+> e2a91b00d125ed4b60bdf9e37f550aed23d84747 
+> diff --git a/drivers/net/wireless/b43/main.c b/drivers/net/wireless/b43/main.c
+> index 88d2c15..360515c 100644
+> --- a/drivers/net/wireless/b43/main.c
+> +++ b/drivers/net/wireless/b43/main.c
+> @@ -2042,7 +2042,7 @@ static void b43_gpio_cleanup(struct b43_wldev *dev)
+>  }
+>  
+>  /* http://bcm-specs.sipsolutions.net/EnableMac */
+> -void b43_mac_enable(struct b43_wldev *dev)
+> +static void b43_mac_enable(struct b43_wldev *dev)
+>  {
+>  	dev->mac_suspended--;
+>  	B43_WARN_ON(dev->mac_suspended < 0);
+> @@ -2066,7 +2066,7 @@ void b43_mac_enable(struct b43_wldev *dev)
+>  }
+>  
+>  /* http://bcm-specs.sipsolutions.net/SuspendMAC */
+> -void b43_mac_suspend(struct b43_wldev *dev)
+> +static void b43_mac_suspend(struct b43_wldev *dev)
+>  {
+>  	int i;
+>  	u32 tmp;
+> diff --git a/drivers/net/wireless/b43/main.h b/drivers/net/wireless/b43/main.h
+> index 2d52d9d..4397f49 100644
+> --- a/drivers/net/wireless/b43/main.h
+> +++ b/drivers/net/wireless/b43/main.h
+> @@ -102,9 +102,6 @@ void b43_dummy_transmission(struct b43_wldev *dev);
+>  
+>  void b43_wireless_core_reset(struct b43_wldev *dev, u32 flags);
+>  
+> -void b43_mac_suspend(struct b43_wldev *dev);
+> -void b43_mac_enable(struct b43_wldev *dev);
+> -
+>  void b43_controller_restart(struct b43_wldev *dev, const char *reason);
+>  
+>  #define B43_PS_ENABLED	(1 << 0)	/* Force enable hardware power saving */
 > 
-> The sysfs wakeup attributes are the runtiime config mechanism for all
-> events associated with a single device.
+> 
+> 
 
-Right. I'm not all that familiar with the power management mechanisms
-in the kernel yet, but this thread has made a few things much clearer.
 
-Haavard
+
+-- 
+Greetings Michael.
