@@ -1,53 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYA3FEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYA3FE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbYA3FEm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 00:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYA3FEe
+	id S1755658AbYA3FE4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 00:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYA3FEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 00:04:34 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:58685 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbYA3FEd (ORCPT
+	Wed, 30 Jan 2008 00:04:40 -0500
+Received: from hu-out-0506.google.com ([72.14.214.231]:39233 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbYA3FEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 00:04:33 -0500
-Date: Wed, 30 Jan 2008 05:04:24 +0000
-From: Jon Masters <jonathan@jonmasters.org>
-To: Pavel Roskin <proski@gnu.org>
-Cc: Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080130050424.GA22444@dallas.jonmasters.org>
-References: <1201641765.18773.35.camel@dv> <1201652420.2271.91.camel@perihelion> <1201657701.24898.14.camel@dv>
+	Wed, 30 Jan 2008 00:04:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=iVcEvZgstkKgjgxJlaPyKp/6wW9Y6fgmSuM8XuAK1R72IUWJrFkDjnNsRTVszcdoe1D2wM+xpDpEf7apfgEJBE0O6H3/ewj49DZs4xF0iKMNIWU5jR5JxkUx/3jgaxjk0mYIlLp+vft4fPNXNX0RYJ8RCtcx6qhDXCKfBeau1nY=
+Date: Wed, 30 Jan 2008 06:03:47 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, rdreier@cisco.com, nai.xia@gmail.com,
+       flo@rfc822.org, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       j-nomura@ce.jp.nec.com, Borislav Petkov <bbpetkov@yahoo.de>
+Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 &&
+	-g8561b089
+Message-ID: <20080130050347.GC10609@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, rdreier@cisco.com,
+	nai.xia@gmail.com, flo@rfc822.org, linux-kernel@vger.kernel.org,
+	jens.axboe@oracle.com, j-nomura@ce.jp.nec.com,
+	Borislav Petkov <bbpetkov@yahoo.de>
+References: <200801292201.45718.nai.xia@gmail.com> <adar6g0e0g2.fsf@cisco.com> <20080129.182356.70224412.k-ueda@ct.jp.nec.com> <200801300058.33284.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1201657701.24898.14.camel@dv>
-User-Agent: Mutt/1.5.11
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: jcm@dallas.jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200801300058.33284.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 08:48:21PM -0500, Pavel Roskin wrote:
-> On Tue, 2008-01-29 at 19:20 -0500, Jon Masters wrote:
+On Wed, Jan 30, 2008 at 12:58:33AM +0100, Bartlomiej Zolnierkiewicz wrote:
 > 
-> > Yes it is. But I thought the existing code was intending to taint the
-> > kernel (that's what it does), so it would really help to identify why it
-> > tainted the kernel, by calling add_taint_module instead of add_taint. I
-> > didn't put the existing match in there...don't shoot the messenger :)
+> Hi,
 > 
-> So, it's the same thing as in year 2006.  Good intentions, unexpected
-> side effects, and a long discussion.
+> On Wednesday 30 January 2008, Kiyoshi Ueda wrote:
+> > Hi Bart, 
+> > 
+> > On Tue, 29 Jan 2008 14:22:53 -0800, Roland Dreier wrote:
+> > > Hi, I saw the same BUG from ide-cd on one of my systems.  I applied
+> > > the debugging patch to replace the BUG with blk_dump_rq_flags(), and I
+> > > got the output below (full boot log and .config attached to this
+> > > email).
+> > > 
+> > > Please let me know if there's anything else that would help debug the
+> > > problem.
+> > 
+> > Thank you for the information, Roland.
+> > 
+> >  
+> > > [    4.072271] Uniform CD-ROM driver Revision: 3.20
+> > > [    4.098236] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> > > [    4.100269]
+> > > [    4.100269] sector 1949759, nr/cnr 0/0
+> > > [    4.100269] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d8
+> > > [    4.100269] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > > [    4.101005] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> > > [    4.104269]
+> > > [    4.104269] sector 1949759, nr/cnr 0/0
+> > > [    4.104269] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d2
+> > > [    4.104269] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > > [    4.109203] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> > > [    4.112270]
+> > > [    4.112270] sector 1949759, nr/cnr 0/0
+> > > [    4.112270] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d8
+> > > [    4.112270] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > > [    4.112945] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> > > [    4.116270]
+> > > [    4.116270] sector 1949759, nr/cnr 0/0
+> > > [    4.116270] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d2
+> > > [    4.116270] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > 
+> > Bart,
+> > This means that the rq still has a bio even after DRQ_STAT is cleared.
+> > The original ide-cd code was calling only end_that_request_last() there.
+> > So I thought that the rq should have no bio when DRQ_STAT is cleared,
+> > otherwise the bio leaks.
+> > 
+> > Was my understanding wrong and is that correct behavior in ide-cd?
+> 
+> Added Borislav to cc:.
+> 
+> PS I'm extremely busy with "real-life" (unfortunately IDE hacking is not
+> my paid job) and the friday is the earliest date on which I would be able
+> to look in detail into this problem and other outstanding IDE stuff, sorry.
 
-I wouldn't quite say that. I wasn't going to comment, but...personally,
-I actually disagree with the assertions that ndiswrapper isn't causing
-proprietary code to link against GPL functions in the kernel (how is
-an NDIS implementation any different than a shim layer provided to
-load a graphics driver?), but I wasn't trying to make that point.
-
-Rusty - shall we just move the taint to post symbol resolution?
-
-Jon.
+Same here, will be able to look into it tomorrow. In the meantime, can someone
+direct me the full BUG() output?
+-- 
+Regards/Gruﬂ,
+    Boris.
