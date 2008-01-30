@@ -1,35 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760422AbYA3OIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbYA3OJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760422AbYA3OIe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 09:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761372AbYA3OHv
+	id S1761077AbYA3OJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 09:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761743AbYA3OIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 09:07:51 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:49045 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761301AbYA3OHs (ORCPT
+	Wed, 30 Jan 2008 09:08:21 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51512
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761678AbYA3OIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 09:07:48 -0500
-Message-ID: <47A084B0.1000301@tiscali.nl>
-Date: Wed, 30 Jan 2008 15:07:44 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: mchan@broadcom.com, lkml <linux-kernel@vger.kernel.org>
-CC: netdev@vger.kernel.org
-Subject: [drivers/net/bnx2.c] ADVERTISE_1000XPSE_ASYM
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Jan 2008 09:08:18 -0500
+Date: Wed, 30 Jan 2008 06:08:37 -0800 (PST)
+Message-Id: <20080130.060837.234640790.davem@davemloft.net>
+To: ballen@gravity.phys.uwm.edu
+Cc: linux-kernel@vger.kernel.org, henning.fehrmann@aei.mpg.de,
+       carsten.aulbert@aei.mpg.de, bruce.allen@aei.mpg.de
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.63.0801300736040.10711@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
+	<p73ve5b5u5v.fsf@bingen.suse.de>
+	<Pine.LNX.4.63.0801300736040.10711@trinity.phys.uwm.edu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In drivers/net/bnx2.c:1285: it reads in function bnx2_setup_remote_phy():
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+Date: Wed, 30 Jan 2008 07:38:56 -0600 (CST)
 
-if (pause_adv & (ADVERTISE_1000XPSE_ASYM | ADVERTISE_1000XPSE_ASYM))
+> Wilco.  Just subscribing now.
 
-Note that the two are the same and this is therefore equivalent to
-
-if (pause_adv & ADVERTISE_1000XPSE_ASYM)
-
-This appears to be incorrect, was maybe '| ADVERTISE_1000XPAUSE' intended?
+You don't need to subscribe to any list at vger.kernel.org in order to
+post a message to it.
