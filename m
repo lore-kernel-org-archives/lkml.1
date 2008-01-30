@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762697AbYA3RII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYA3RKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762697AbYA3RII (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbYA3RH4
+	id S1761968AbYA3RKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYA3RKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:07:56 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:53958 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754262AbYA3RHz (ORCPT
+	Wed, 30 Jan 2008 12:10:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58919 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbYA3RKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:07:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uIpFBOA6+gadzlj76dN1jCxXAFrEFLfEdirRVyuBZv7iN4tgIfv6kKL/sgh1DVyTtx/3nekk4Ucb8u1oyM89jAb27LwsIEuQuOXu9xgDyO/xlPOpZHL456btKCjSB9AXx/ZMeD2hiOfclFDcgLBsxcAh30T7itb/d38YJSFdUkA=
-Message-ID: <386072610801300907t5c0ee532tbe5696d48dad6b5c@mail.gmail.com>
-Date: Thu, 31 Jan 2008 01:07:52 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Will Newton" <will.newton@gmail.com>
-Subject: Re: [PATCH 1/1] [INPUT] keypad driver: Added support for OpenCores Keyboard Controller
-Cc: "Bryan Wu" <bryan.wu@analog.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       "Javier Herrero" <jherrero@hvsistemas.es>
-In-Reply-To: <87a5b0800801300353l196b39bekad6af6ccdbd49d5b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Jan 2008 12:10:40 -0500
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <20080130153749.GN7233@v2.random>
+References: <20080130022909.677301714@sgi.com>
+	 <20080130022944.236370194@sgi.com>  <20080130153749.GN7233@v2.random>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 18:10:32 +0100
+Message-Id: <1201713032.28547.234.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1201686610-31458-1-git-send-email-bryan.wu@analog.com>
-	 <87a5b0800801300353l196b39bekad6af6ccdbd49d5b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 7:53 PM, Will Newton <will.newton@gmail.com> wrote:
-> On Jan 30, 2008 9:50 AM, Bryan Wu <bryan.wu@analog.com> wrote:
->
-> > +config KEYBOARD_OPENCORES
-> > +       tristate "OpenCores Keyboard Controller"
-> > +       help
-> > +         Say Y here if you want to use the OpenCores Keyboard Controller
-> > +         http://www.opencores.org/projects.cgi/web/keyboardcontroller/overview
-> > +
-> > +         To comile this driver as a module, choose M here. the
-> > +         module will be called opencores-kbd.
-> > +
->
-> Typo, "comile" should be "compile" here.
->
 
-Thanks, fix it now. I will update this patch soon.
+On Wed, 2008-01-30 at 16:37 +0100, Andrea Arcangeli wrote:
+> On Tue, Jan 29, 2008 at 06:29:10PM -0800, Christoph Lameter wrote:
+> > +void mmu_notifier_release(struct mm_struct *mm)
+> > +{
+> > +	struct mmu_notifier *mn;
+> > +	struct hlist_node *n, *t;
+> > +
+> > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
+> > +		rcu_read_lock();
+> > +		hlist_for_each_entry_safe_rcu(mn, n, t,
+> > +					  &mm->mmu_notifier.head, hlist) {
+> > +			hlist_del_rcu(&mn->hlist);
+> 
+> This will race and kernel crash against mmu_notifier_register in
+> SMP. You should resurrect the per-mmu_notifier_head lock in my last
+> patch (except it can be converted from a rwlock_t to a regular
+> spinlock_t) and drop the mmap_sem from
+> mmu_notifier_register/unregister.
 
--Bryan
+Agreed, sorry for this oversight.
+
