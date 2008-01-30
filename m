@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764120AbYA3SyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764193AbYA3SzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764120AbYA3SyZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbYA3SyN
+	id S1764193AbYA3SzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYA3Syz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:54:13 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:33014 "EHLO smtp5.pp.htv.fi"
+	Wed, 30 Jan 2008 13:54:55 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:3280 "EHLO MMS3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbYA3SyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:54:12 -0500
-Date: Wed, 30 Jan 2008 20:54:46 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Giridhar Pemmasani <pgiri@yahoo.com>, Pavel Roskin <proski@gnu.org>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, rms@gnu.org
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080130185446.GF29368@does.not.exist>
-References: <20080129225701.GS8767@does.not.exist> <754585.89171.qm@web32403.mail.mud.yahoo.com> <20080130175447.GB29368@does.not.exist> <47A0C138.2070807@nortel.com>
+	id S1752744AbYA3Syx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:54:53 -0500
+X-Server-Uuid: 20144BB6-FB76-4F11-80B6-E6B2900CA0D7
+Subject: Re: [drivers/net/bnx2.c] ADVERTISE_1000XPSE_ASYM
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Roel Kluin" <12o3l@tiscali.nl>, davem@davemloft.net
+cc: "lkml" <linux-kernel@vger.kernel.org>, "netdev" <netdev@vger.kernel.org>
+In-Reply-To: <47A084B0.1000301@tiscali.nl>
+References: <47A084B0.1000301@tiscali.nl>
+Date: Wed, 30 Jan 2008 10:51:10 -0800
+Message-ID: <1201719070.7190.4.camel@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47A0C138.2070807@nortel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6BBE184539O1610443-11-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 12:26:00PM -0600, Chris Friesen wrote:
-> Adrian Bunk wrote:
->
->> IANAL, but I have serious doubts whether putting some glue layer 
->> between the GPL'ed code and the code with a not GPL compatible licence 
->> is really a legally effictive way of circumventing the GPL.
->
-> It may depend on the details of the "code with a not GPL compatible  
-> licence".
->
-> It's pretty hard to argue that a binary driver written for another OS is  
-> a derivative work of the linux kernel.
+On Wed, 2008-01-30 at 15:07 +0100, Roel Kluin wrote:
+> In drivers/net/bnx2.c:1285: it reads in function bnx2_setup_remote_phy():
+> 
+> if (pause_adv & (ADVERTISE_1000XPSE_ASYM | ADVERTISE_1000XPSE_ASYM))
+> 
+> Note that the two are the same and this is therefore equivalent to
+> 
+> if (pause_adv & ADVERTISE_1000XPSE_ASYM)
+> 
+> This appears to be incorrect, was maybe '| ADVERTISE_1000XPAUSE' intended?
+> 
 
-Read the paragraph starting with "These requirements apply to the 
-modified work as a whole." of the GPLv2.
+Thanks for catching this.  The patch below will fix it.
 
-IANAL, and I would therefore ask a lawyer whether, and if yes under 
-which circumstances, shipping a binary driver written for another OS
-dynamically linked into the Linux kernel would not be a criminal offense.
+[BNX2]: Fix ASYM PAUSE advertisement for remote PHY.
 
-> Chris
+We were checking for the ASYM_PAUSE bit for 1000Base-X twice instead
+checking for both the 1000Base-X bit and the 10/100/1000Base-T bit.
+The purpose of the logic is to tell the firmware that ASYM_PAUSE is
+set on either the Serdes or Copper interface.
 
-cu
-Adrian
+Problem was discovered by Roel Kluin <12o3l@tiscali.nl>
 
--- 
+Signed-off-by: Michael Chan <mchan@broadcom.com>
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+index be7e8f8..77400ad 100644
+--- a/drivers/net/bnx2.c
++++ b/drivers/net/bnx2.c
+@@ -1429,7 +1429,7 @@ bnx2_setup_remote_phy(struct bnx2 *bp, u8 port)
+ 
+ 	if (pause_adv & (ADVERTISE_1000XPAUSE | ADVERTISE_PAUSE_CAP))
+ 		speed_arg |= BNX2_NETLINK_SET_LINK_FC_SYM_PAUSE;
+-	if (pause_adv & (ADVERTISE_1000XPSE_ASYM | ADVERTISE_1000XPSE_ASYM))
++	if (pause_adv & (ADVERTISE_1000XPSE_ASYM | ADVERTISE_PAUSE_ASYM))
+ 		speed_arg |= BNX2_NETLINK_SET_LINK_FC_ASYM_PAUSE;
+ 
+ 	if (port == PORT_TP)
+
 
