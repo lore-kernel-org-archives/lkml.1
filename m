@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbYA3Jh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbYA3JiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbYA3Jh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 04:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760017AbYA3Jcm
+	id S1760773AbYA3JiO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 04:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760981AbYA3Jf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 04:32:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54457 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758377AbYA3Jcj (ORCPT
+	Wed, 30 Jan 2008 04:35:59 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40322 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760959AbYA3Jf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 04:32:39 -0500
-Subject: Re: [PATCH 17/22 -v7] mcount tracer for wakeup latency timings.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20080130031842.783183063@goodmis.org>
-References: <20080130031521.258552785@goodmis.org>
-	 <20080130031842.783183063@goodmis.org>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 10:31:09 +0100
-Message-Id: <1201685469.28547.172.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Wed, 30 Jan 2008 04:35:56 -0500
+Message-ID: <47A0441E.7050304@linux.vnet.ibm.com>
+Date: Wed, 30 Jan 2008 15:02:14 +0530
+From: Ciju Rajan K <ciju@linux.vnet.ibm.com>
+Reply-To: ciju@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: William Lee Irwin III <wli@holomorphy.com>, aglitke <agl@us.ibm.com>
+Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as
+ root
+References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain> <20071114220038.GD1806@holomorphy.com> <474F05C0.9040002@linux.vnet.ibm.com> <20071129231121.GA31637@holomorphy.com> <479F3EFB.4070204@linux.vnet.ibm.com>
+In-Reply-To: <479F3EFB.4070204@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ciju Rajan K wrote:
+> William Lee Irwin III wrote:
+>> On Fri, Nov 30, 2007 at 12:02:32AM +0530, Ciju Rajan K wrote:
+>>>   I tested your patch. But that is not solving the problem.
+>>>   If the code change to user_shm_lock() is not a good solution, could 
+>>> you please suggest a method so that the normal user is able to 
+>>> allocate the huge pages, if his gid is added to 
+>>> /proc/sys/vm/hugetlb_shm_group
+>>
+>> The patch I posted resolves a race unrelated to your issue. Raising your
+>> locked memory limits should not be difficult. /etc/limits.conf or similar
+>> should set it up for you. You can also change the default rlimit in the
+>> kernel and compile it with default limits elevated to what you want your
+>> unprivileged process to have to start with if you're truly having lots
+>> of trouble getting userspace to set the default limits properly. I'd
+>> look in include/asm-generic/resource.h
+>>
+>>
+>> -- wli
+> 
+> Hi Wli,
+> 
+> The documentation available in the kernel for huge pages does not talk
+> about the issue associated with locked memory limit. I think it would be
+> helpful to the users if we mention about this in the documentation. I
+> am attaching a small documentation patch.
+> 
+> Thanks
+> Ciju
+> 
+> Signed-off-by: Ciju Rajan (ciju@linux.vnet.ibm.com)
+> ---
+> --- Documentation/vm/hugetlbpage.txt.orig       2008-01-24 
+> 16:42:40.000000000 +0530
+> +++ Documentation/vm/hugetlbpage.txt    2008-01-29 19:36:45.000000000 +0530
+> @@ -108,6 +108,18 @@ a supplementary group and system admin n
+>  applications to use any combination of mmaps and shm* calls, though the
+>  mount of filesystem will be required for using mmap calls.
+> 
+> +Note: The default locked limit in the kernel is just 32KB. If the normal
+> +user whose gid is present in the file /proc/sys/vm/hugetlb_shm_group needs
+> +more memory than this, the default limit must be increased. If pam is 
+> installed
+> +on your system, resource limits can be configured by installing lines 
+> similar
+> +to the following in /etc/security/limits.conf:
+> +
+> +@hugegroup      soft    memlock         2097152
+> +@hugegroup      hard    memlock         2097152
+> +
+> +Otherwise, you may manipulate the locked limit command directly with 
+> 'ulimit'.
+> +See its man page for more information.
+> +
+>  *******************************************************************
+> 
+>  /*
+> 
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+Wli,
+  Can this patch be included in the hugepage documentation?
 
-On Tue, 2008-01-29 at 22:15 -0500, Steven Rostedt wrote:
-
-> +static void notrace __wakeup_reset(struct tracing_trace *tr)
-> +{
-> +	struct tracing_trace_cpu *data;
-> +	int cpu;
-> +
-> +	assert_spin_locked(&wakeup_lock);
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		data = tr->data[cpu];
-> +		tracing_reset(data);
-> +	}
-> +
-> +	wakeup_cpu = -1;
-> +	wakeup_prio = -1;
-> +	if (wakeup_task) {
-> +		put_task_struct(wakeup_task);
-> +		tracing_stop_function_trace();
-> +	}
-> +
-> +	wakeup_task = NULL;
-> +
-> +	/*
-> +	 * Don't let the trace_enabled = 1 show up before
-> +	 * the wakeup_task is reset.
-> +	 */
-> +	smp_wmb();
-> +}
-
-Another un-balanced barrier.
-
+Thanks
+Ciju
