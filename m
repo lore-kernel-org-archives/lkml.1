@@ -1,133 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYA3JZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757688AbYA3J11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbYA3JZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 04:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYA3JZ3
+	id S1757688AbYA3J11 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 04:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYA3J1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 04:25:29 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54401 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbYA3JZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 04:25:24 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: paulmck@linux.vnet.ibm.com
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
-References: <20080129164019.GA2060@tv-sign.ru>
-	<m1ir1cgfmm.fsf@ebiederm.dsl.xmission.com>
-	<20080130050048.GH12073@linux.vnet.ibm.com>
-Date: Wed, 30 Jan 2008 02:20:02 -0700
-In-Reply-To: <20080130050048.GH12073@linux.vnet.ibm.com> (Paul E. McKenney's
-	message of "Tue, 29 Jan 2008 21:00:48 -0800")
-Message-ID: <m163xbhdq5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 Jan 2008 04:27:12 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:58359 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751227AbYA3J1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 04:27:08 -0500
+Date: Wed, 30 Jan 2008 10:27:06 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       Shannon Nelson <shannon.nelson@intel.com>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [RFC v2 2/5] dmaengine: Add slave DMA interface
+Message-ID: <20080130102706.15c88346@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <200801292330.05874.david-b@pacbell.net>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
+	<200801292330.05874.david-b@pacbell.net>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+On Tue, 29 Jan 2008 23:30:05 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-> On Tue, Jan 29, 2008 at 08:24:17PM -0700, Eric W. Biederman wrote:
->> Oleg Nesterov <oleg@tv-sign.ru> writes:
->> 
->> > With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply
-> rcu_read_lock(),
->> > but find_pid_ns()->hlist_for_each_entry_rcu() should be safe under tasklist.
->> >
->> > Usually it is, detach_pid() is always called under
-> write_lock(tasklist_lock),
->> > but copy_process() calls free_pid() lockless.
->> >
->> > "#ifdef CONFIG_PREEMPT_RCU" is added mostly as documentation, perhaps it is
->> > too ugly and should be removed.
->> >
->> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
->> >
->> > --- MM/kernel/fork.c~PR_RCU	2008-01-27 17:09:47.000000000 +0300
->> > +++ MM/kernel/fork.c	2008-01-29 19:23:44.000000000 +0300
->> > @@ -1335,8 +1335,19 @@ static struct task_struct *copy_process(
->> >  	return p;
->> >  
->> >  bad_fork_free_pid:
->> > -	if (pid != &init_struct_pid)
->> > +	if (pid != &init_struct_pid) {
->> > +#ifdef CONFIG_PREEMPT_RCU
->> > +		/*
->> > +		 * read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
->> > +		 * make sure find_pid() is safe under read_lock(tasklist).
->> > +		 */
->> > +		write_lock_irq(&tasklist_lock);
->> > +#endif
->> >  		free_pid(pid);
->> > +#ifdef CONFIG_PREEMPT_RCU
->> > +		write_unlock_irq(&tasklist_lock);
->> > +#endif
->> > +	}
->> >  bad_fork_cleanup_namespaces:
->> >  	exit_task_namespaces(p);
->> >  bad_fork_cleanup_keys:
->> 
->> Ok. I believe I see what problem you are trying to fix.  That
->> a pid returned from find_pid might disappear if we are not rcu
->> protected.
->> 
->> This patch in the simplest form is wrong because it is confusing.
->> 
->> We currently appear to have two options.
->> 1) Force all pid hash table access and pid accesses that
->>    do not get a count to be covered under rcu_read_lock.
->> 2) To modify the locking requirements for free_pid to require
->>    the tasklist_lock.
->> 
->>    However this second approach is horribly brittle, as it
->>    will break if we ever have intermediate entries in the
->>    hash table protected by pidmap_lock.
->> 
->> Using the tasklist_lock to still guarantee we see the list, the entire
->> list, and exactly the list for proper implementation of kill to
->> process groups and sessions still seems sane.
->> 
->> So let's just remove the guarantee of find_pid being usable with
->> just the tasklist_lock held.
->
-> Makes sense to me -- it is totally permissible to hold rcu_read_lock()
-> across update code.  ;-)
+> On Tuesday 29 January 2008, Haavard Skinnemoen wrote:
+> > @@ -297,6 +356,13 @@ struct dma_device {
+> >         struct dma_async_tx_descriptor *(*device_prep_dma_interrupt)(
+> >                 struct dma_chan *chan);
+> >  
+> > +       struct dma_slave_descriptor *(*device_prep_slave)(
+> > +               struct dma_chan *chan, dma_addr_t mem_addr,
+> > +               enum dma_slave_direction direction,
+> > +               enum dma_slave_width reg_width,
+> > +               size_t len, unsigned long flags);
+> 
+> That isn't enough options!  Check out arch/arm/plat-omap/dma.c (and
+> maybe OMAP5912 DMA docs [1] for not-very-recent specs) as one example.
+> You'll see more options that drivers need to use, including:
+> 
+>  - DMA priority and arbitration
+>  - Burst size, packing/unpacking support (for optimized memory access)
+>  - Multiple DMA quanta (not just reg_width, but also frames and blocks)
+>  - Multiple synch modes (per element/"width", frame, or block)
+>  - Multiple addressing modes:   pre-index, post-index, double-index, ...
+>  - Both descriptor-based and register based transfers
+>  - ... lots more ...
 
-Let me rephrase so it is clear.
+Ok, I didn't bother to check the specs, as I think your main argument
+is that these options vary from controller to controller, so we need to
+make this extensible.
 
-When dealing with pids there is exactly one case where we need
-to take read_lock(&tasklist_lock);
+Not all options are specific to DMA slave transfers either, although
+most of them are probably more important in this context.
 
-Posix (and sanely handling corner cases) requires that when we send a
-signal to a process group or a session we have a snapshot in time view
-of the entire group.  In particular this allows us to send SIGKILL to
-every member of the group and to have the entire group die.
+Descriptor-based vs. register-based transfers sounds like something the
+DMA engine driver is free to decide on its own.
 
-For all other cases (like /proc) we can safely and simply use the
-rcu_read_lock and it improves scalability.
+> Example:  USB tends to use one packet per "frame" and have the DMA
+> request signal mean "give me the next frame".  It's sometimes been
+> very important to use use the tuning options to avoid some on-chip
+> race conditions for transfers that cross lots of internal busses and
+> clock domains, and to have special handling for aborting transfers
+> and handling "short RX" packets.
 
-So for those cases where we are sending a signal to multiple processes
-it looks like we need to go in and change the code to say:
+Is it enough to set these options on a per-channel basis, or do they
+have to be per-transfer?
 
-read_lock(&tasklist_lock);
-rcu_read_lock();
-...
-rcu_read_unlock();
-read_unlock(&tasklist_lock);
+> I wonder whether a unified programming interface is the right way
+> to approach peripheral DMA support, given such variability.  The DMAC
+> from Synopsys that you're working with has some of those options, but
+> not all of them... and other DMA controllers have their own oddities.
 
-Which is all sane, and should be correct and maintainable in the
-future and is relatively easy to understand.
+Yes, but I still think it's worthwhile to have a common interface to
+common functionality. Drivers for hardware that does proper flow
+control won't need to mess with priority and arbitration settings
+anyway, although they could do it in order to tweak performance. So a
+plain "write this memory block to the TX register of this slave"
+interface will be useful in many cases.
 
-Of course if we start with find_get_pid and then later do put_pid we
-are also fine.  The current code is a little extra confused right now
-because we have not completed the pid namespace conversion.  Although
-we are getting quite close.
+> For memcpy() acceleration, sure -- there shouldn't be much scope for
+> differences.  Source, destination, bytecount ... go!  (Not that it's
+> anywhere *near* that quick in the current interface.)
 
-Eric
+Well, I can imagine copying scatterlists may be useful too. Also, some
+controllers support "stride" (or "scatter-gather", as Synopsys calls
+it), which can be useful for framebuffer bitblt acceleration, for
+example.
 
+> For peripheral DMA, maybe it should be a "core plus subclasses"
+> approach so that platform drivers can make use hardware-specific
+> knowledge (SOC-specific peripheral drivers using SOC-specific DMA),
+> sharing core code for dma-memcpy() and DMA channel housekeeping.
 
+I mostly agree, but I think providing basic DMA slave transfers only
+through extensions will cause maintenance nightmares for the drivers
+using it. But I suppose we could have something along the lines of
+"core plus standard subclasses plus SOC-specific subclasses"...
+
+We already have something along those lines through the capabilities
+mask, taking care of the "standard subclasses" part. How about we add
+some kind of type ID to struct dma_device so that a driver can use
+container_of() to get at the extended bits if it recognizes the type?
+
+Haavard
