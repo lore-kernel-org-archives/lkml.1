@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763364AbYA3VgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYA3Vjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763364AbYA3VgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbYA3VgK
+	id S1756247AbYA3Vjb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYA3VjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:36:10 -0500
-Received: from crca.org.au ([67.207.131.56]:36400 "EHLO crca.org.au"
+	Wed, 30 Jan 2008 16:39:19 -0500
+Received: from lixom.net ([66.141.50.11]:48301 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759537AbYA3VgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 16:36:09 -0500
-X-Greylist: delayed 579 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 16:36:09 EST
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <47A0EB65.1020505@nigel.suspend2.net>
-Date: Thu, 31 Jan 2008 08:25:57 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1751480AbYA3VjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 16:39:18 -0500
+Date: Wed, 30 Jan 2008 15:39:26 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>, anton@samba.org,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       "Luck, Tony" <tony.luck@intel.com>, sparclinux@vger.kernel.org,
+       linux-ia64@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [powerpc changes] Re: x86/non-x86: percpu, node ids, apic ids
+	x86.git fixup
+Message-ID: <20080130213926.GA22841@lixom.net>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <20080130184920.GA32212@elte.hu> <20080130191302.GA20008@lixom.net> <20080130212558.GA12409@elte.hu>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: hibernate/suspend-to-disk: to turn power or not?
-References: <47A0CD90.5080208@msgid.tls.msk.ru>
-In-Reply-To: <47A0CD90.5080208@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080130212558.GA12409@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-Michael Tokarev wrote:
-> I'm trying to "glue" hibernation and UPS control
-> together, and have a question.
+On Wed, Jan 30, 2008 at 10:25:58PM +0100, Ingo Molnar wrote:
 > 
-> When the system power comes off an UPS (Uninterruptable
-> Power Supply I mean), it's probably a good idea to turn
-> the UPS off when shutting the system down or hibernating.
+> * Olof Johansson <olof@lixom.net> wrote:
 > 
-> Even with shutdown (not related to hibernating) there's
-> an interesting twist: modern systems can remember the
-> previous on/off status when the power gets cut and
-> restores - BIOS-controlled option that allows the
-> system to automatically start when the input power
-> returns.  Now, when we shutting down a system, we
-> need to turn the UPS *before* powering down the
-> system but *after* the shutdown procedure has been
-> completed.  This is done by replacing poweroff with
-> halt, and ordering the UPS to turn itself off after
-> a small delay (needed for the poweroff command to
-> complete) - this way, system will be on but in a
-> safe-to-powercut mode, and in order to turn it
-> back on only the UPS has to be turned on.
+> > > could you try the full patchset that Travis has just sent and which 
+> > > i've put into x86.git, you can pull it from:
+> > 
+> > Looks ok for powerpc so far, I haven't gotten through all defconfigs 
+> > yet but the first ones that failed before build now. pasemi_defconfig 
+> > boots as well.
 > 
-> But the question comes as how to control the UPS when
-> we replace shutdown with hibernation.  Ideally I want
-> to send some commands to the UPS after hibernation has
-> been completed (since I don't know how much time it
-> will require to hibernate), but before the machine
-> will be turned off by the kernel.  Or at the very least,
-> to be able to stop the kernel turning the machine off
-> after hibernation process is complete - this way,
-> I can order the UPS to turn the power off after some
-> delay and hope hibernation process will finish when
-> the UPS will finally cut the power (not all UPSes
-> are able to do timely shutdown like this).
+> could the PowerPC maintainers please Ack the following patch (attached 
+> below):
 > 
-> What's my way here?
+>   Subject: POWERPC: use generic per cpu
+>   From: travis@sgi.com
+> 
+> so that we can push this fix upstream ASAP?
 
-That should be doable. How is your UPS connected? Presumably, with some 
-modifications to the appropriate driver, we could send the commands when 
-we're ready to shutdown. It would probably be useful whether or not your 
-hibernating (if not, sending the commands could always be made an option).
+> Subject: POWERPC: use generic per cpu
+> From: travis@sgi.com
+> 
+> Powerpc has a way to determine the address of the per cpu area of the
+> currently executing processor via the paca and the array of per cpu
+> offsets is avoided by looking up the per cpu area from the remote
+> paca's (copying x86_64).
+> 
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Regards,
+Paul is at LCA, I'm not sure if he's reading email. Looks good to me so:
 
-Nigel
+Acked-by: Olof Johansson <olof@lixom.net>
 
+
+-Olof
