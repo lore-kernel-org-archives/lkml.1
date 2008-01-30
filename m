@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbYA3ULs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932668AbYA3UMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932588AbYA3ULs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761210AbYA3UCt
+	id S932668AbYA3UMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762470AbYA3UCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:02:49 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51802 "EHLO smtp4.pp.htv.fi"
+	Wed, 30 Jan 2008 15:02:55 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:37652 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758904AbYA3UCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:02:43 -0500
-Date: Wed, 30 Jan 2008 22:03:17 +0200
+	id S1762223AbYA3UCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:02:49 -0500
+Date: Wed, 30 Jan 2008 22:03:24 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] hvc_rtas_init() must be __init
-Message-ID: <20080130200317.GH29368@does.not.exist>
+To: davem@davemloft.net
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sparc64/kernel/pci_sun4v.c section fixes
+Message-ID: <20080130200324.GJ29368@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -28,7 +28,7 @@ This patch fixes the following section mismatch:
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.text+0x2fbca8): Section mismatch in reference from the function .hvc_rtas_init() to the function .devinit.text:.hvc_alloc()
+WARNING: vmlinux.o(.text+0x39be4): Section mismatch in reference from the function probe_existing_entries() to the function .init.text:page_in_phys_avail()
 ...
 
 <--  snip  -->
@@ -36,18 +36,33 @@ WARNING: vmlinux.o(.text+0x2fbca8): Section mismatch in reference from the funct
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-1cc00c4ad5c881db2fc256ced43f3b5ce5c76e1c 
-diff --git a/drivers/char/hvc_rtas.c b/drivers/char/hvc_rtas.c
-index bb09413..88590d0 100644
---- a/drivers/char/hvc_rtas.c
-+++ b/drivers/char/hvc_rtas.c
-@@ -76,7 +76,7 @@ static struct hv_ops hvc_rtas_get_put_ops = {
- 	.put_chars = hvc_rtas_write_console,
- };
+
+ arch/sparc64/kernel/pci_sun4v.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+5a836480057dcc064ae02a69ae4bb2b7698e333f 
+diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
+index 1aa8e04..87c5cf5 100644
+--- a/arch/sparc64/kernel/pci_sun4v.c
++++ b/arch/sparc64/kernel/pci_sun4v.c
+@@ -625,8 +625,8 @@ static void __init pci_sun4v_scan_bus(struct pci_pbm_info *pbm)
+ 	/* XXX register error interrupt handlers XXX */
+ }
  
--static int hvc_rtas_init(void)
-+static int __init hvc_rtas_init(void)
+-static unsigned long probe_existing_entries(struct pci_pbm_info *pbm,
+-					    struct iommu *iommu)
++static unsigned long __init probe_existing_entries(struct pci_pbm_info *pbm,
++						   struct iommu *iommu)
  {
- 	struct hvc_struct *hp;
+ 	struct iommu_arena *arena = &iommu->arena;
+ 	unsigned long i, cnt = 0;
+@@ -653,7 +653,7 @@ static unsigned long probe_existing_entries(struct pci_pbm_info *pbm,
+ 	return cnt;
+ }
  
+-static void pci_sun4v_iommu_init(struct pci_pbm_info *pbm)
++static void __init pci_sun4v_iommu_init(struct pci_pbm_info *pbm)
+ {
+ 	struct iommu *iommu = pbm->iommu;
+ 	struct property *prop;
 
