@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764433AbYA3TI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764638AbYA3TIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764433AbYA3TI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764183AbYA3TH7
+	id S1764638AbYA3TIq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764293AbYA3TIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:07:59 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:9984 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764035AbYA3TH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:07:57 -0500
-Date: Wed, 30 Jan 2008 20:07:53 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Oliver Neukum <oliver@neukum.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-Message-ID: <20080130190752.GW15220@kernel.dk>
-References: <20080129143109.GW15220@kernel.dk> <20080129183910.GI15220@kernel.dk> <20080129191024.GO14375@one-eyed-alien.net> <1201635195.3069.36.camel@localhost.localdomain> <20080129193520.GQ15220@kernel.dk> <20080129194543.GR15220@kernel.dk> <Pine.LNX.4.64.0801301125350.26562@vixen.sonytel.be> <20080130103803.GN15220@kernel.dk> <1201703915.3292.1.camel@localhost.localdomain> <20080130180613.GU15220@kernel.dk>
+	Wed, 30 Jan 2008 14:08:16 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:45949 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764283AbYA3TIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:08:15 -0500
+Date: Wed, 30 Jan 2008 11:08:13 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+In-Reply-To: <20080130180207.GU26420@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801301104080.27491@schroedinger.engr.sgi.com>
+References: <20080130022909.677301714@sgi.com> <20080130022944.236370194@sgi.com>
+ <20080130180207.GU26420@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130180613.GU15220@kernel.dk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30 2008, Jens Axboe wrote:
-> On Wed, Jan 30 2008, James Bottomley wrote:
-> > On Wed, 2008-01-30 at 11:38 +0100, Jens Axboe wrote:
-> > > On Wed, Jan 30 2008, Geert Uytterhoeven wrote:
-> > > > On Tue, 29 Jan 2008, Jens Axboe wrote:
-> > > > > On Tue, Jan 29 2008, Jens Axboe wrote:
-> > > > > > On Tue, Jan 29 2008, James Bottomley wrote:
-> > > > > > > On Tue, 2008-01-29 at 11:10 -0800, Matthew Dharm wrote:
-> > > > > > > > For some reason, usb_sg_init is boned during auto-sense.
-> > > > > > > 
-> > > > > > > OK, that's implicating the scsi_eh_prep_cmnd() in the auto sense
-> > > > > > > code ... that was also an update in 2.6.24
-> > > > > > 
-> > > > > > yeah, already found the bug - it's assuming ->request_buffer holds the
-> > > > > > sglist, oops. Preparing a fix.
-> > > > > 
-> > > > > ok here goes, this saves and restores the sg table correctly. it also
-> > > > > fixes the usb bug for me.
-> > > > 
-> > > > I can confirm this patch fixes the errors I was seeing with current
-> > > > linux-2.6.git for the USB memory card readers in a Dell TFT connected
-> > > > to a PS3.
-> > > 
-> > > James, we need a fix for this pushed asap. So either we should merge the
-> > > below now, or push the bidi patchset that also fixes this. It all
-> > > depends on when you want to merge the bidi patches...
-> > 
-> > The SCSI patch set (including the bidirectional pieces) is waiting in
-> > scsi-misc ... just for forms sake, could you confirm that it actually
-> > fixes the problem and I'll push it.
-> 
-> Certainly, I'll give it a spin tonight.
+On Wed, 30 Jan 2008, Robin Holt wrote:
 
-Confirmed, pulling your scsi-misc branch into current -git makes the
-problem go away as well.
+> Index: git-linus/mm/mmu_notifier.c
+> ===================================================================
+> --- git-linus.orig/mm/mmu_notifier.c	2008-01-30 11:43:45.000000000 -0600
+> +++ git-linus/mm/mmu_notifier.c	2008-01-30 11:56:08.000000000 -0600
+> @@ -99,3 +99,8 @@ void mmu_rmap_notifier_unregister(struct
+>  }
+>  EXPORT_SYMBOL(mmu_rmap_notifier_unregister);
+>  
+> +void mmu_rmap_export_page(struct page *page)
+> +{
+> +	SetPageExternalRmap(page);
+> +}
+> +EXPORT_SYMBOL(mmu_rmap_export_page);
 
--- 
-Jens Axboe
+Then mmu_rmap_export_page would have to be called before the subsystem 
+establishes the rmap entry for the page. Could we do all PageExternalRmap 
+modifications under Pagelock?
+
 
