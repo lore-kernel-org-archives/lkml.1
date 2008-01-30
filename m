@@ -1,105 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbYA3KpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYA3KxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759783AbYA3KpU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 05:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbYA3KpI
+	id S1758131AbYA3KxI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 05:53:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYA3Kwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 05:45:08 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:58966 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbYA3KpF (ORCPT
+	Wed, 30 Jan 2008 05:52:54 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:34250 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752166AbYA3Kwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 05:45:05 -0500
-X-Auth-Info: J2bfPm3v8fRAxGjymP6dzAg0QCd2eW0to1j9tdeCzew=
-X-Auth-Info: WH2vdZ+4ecSS7neXJi7+LgMSw+q1c+gJrR73WUXAlJ0=
-X-Auth-Info: WH2vdZ+4ecSS7neXJi7+LgMSw+q1c+gJrR73WUXAlJ0=
-X-Auth-Info: WH2vdZ+4ecSS7neXJi7+LgMSw+q1c+gJrR73WUXAlJ0=
-X-Auth-Info: WH2vdZ+4ecSS7neXJi7+LgMSw+q1c+gJrR73WUXAlJ0=
-X-Auth-Info: WH2vdZ+4ecSS7neXJi7+LgMSw+q1c+gJrR73WUXAlJ0=
-X-Auth-Info: WH2vdZ+4ecSS7neXJi7+LgMSw+q1c+gJrR73WUXAlJ0=
-Message-ID: <47A0552D.20605@grandegger.com>
-Date: Wed, 30 Jan 2008 11:45:01 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Wed, 30 Jan 2008 05:52:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=qan1vsquR1XcplkVrEN3fBQdAO8gwvpGgZpvx6iyWNuwlreRHIi3Jngl3ncYcYN1+GAbhLXAILCZip/5L+OI8kCDLFYT1TZ8Ymsir4egTSFq5e+ABtrV1d88NdtY9aKVT4zTnR01om9CYRjc4uycLfawU5O3XfBTMRrN/84KTIw=  ;
+X-YMail-OSG: DuSI0mcVM1keYjbwIwNQIlKLTuTw5Z_FVn.kIx1HVUNQxuYyXZx_Fzrx6gKCWuC.w9A3A88T1g--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [RFC v2 2/5] dmaengine: Add slave DMA interface
+Date: Wed, 30 Jan 2008 02:52:49 -0800
+User-Agent: KMail/1.9.6
+Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       Shannon Nelson <shannon.nelson@intel.com>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com> <200801292330.05874.david-b@pacbell.net> <20080130102706.15c88346@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080130102706.15c88346@dhcp-252-066.norway.atmel.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU issue?
-References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com> <479DF0A1.3000906@pengutronix.de> <479DF711.5090406@grandegger.com> <479F186A.4020004@pengutronix.de> <479F2C3C.1020203@grandegger.com> <20080130010716.GB16069@linux.vnet.ibm.com> <47A032E9.4080105@grandegger.com> <20080130102255.GA24890@linux.vnet.ibm.com>
-In-Reply-To: <20080130102255.GA24890@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.94.4.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200801300252.50344.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Wed, Jan 30, 2008 at 09:18:49AM +0100, Wolfgang Grandegger wrote:
->> Paul E. McKenney wrote:
->>> On Tue, Jan 29, 2008 at 02:38:04PM +0100, Wolfgang Grandegger wrote:
->>>> Luotao Fu wrote:
->>>>> Hi,
->>>>>
->>>>> Wolfgang Grandegger wrote:
->>>>> ..........
->>>>>> Do you still get high latencies with:
->>>>>>
->>>>>>   CONFIG_PREEMPT_RCU_BOOST=y
->>>>>>   CONFIG_RCU_TRACE=y
->>>>>>   CONFIG_NO_HZ is not set
->>>>>>
->>>>>> With this setting I have not yet realized latencies > 150us. Could you
->>>>>> please give it a try? If I change one of the parameters above, latency
->>>>>> increases in short time.
->>>>> I played through some combination of the RCU options and can back your
->>>>> observation this time: With the rcu Tracer or the priority boost turned
->>>>> off I also could measure reliably extraordinory high latencies. If they
->>>>> are both turned on, no high latencies could be measured. Turning on the
->>>>> dynamic ticker however doesn't seem to cause high latencies during my
->>>>> test runs. Seemed like an rcu issue here.
->>>> I'm just making a long test run on my TQM5200 module with my good
->>>> settings. After more than 4.5 hours under load, cyclictest shows a
->>>> maximum latency of 177 us. I'm going to re-check the effect of CONFIG_NO_HZ.
->>>>
->>>>> Further such results only appear if the target board is booted with
->>>>> nfsrootfs. (As I already have mentioned several times before), which
->>>>> leads my suspection to rcu usage in nfs implementation. In this case
->>>>> this problem might even be platformindependent. I'd have to do some
->>>>> tests on one of our arm boards later to test this. Since there're no
->>>>> reports like this for other architecture as powerpc till now, I doubt
->>>>> quite if this is verifiable.
->>>> It's also my suspicion that the high latencies are related to the RCU
->>>> usage in the network layer, where it's heavily used. What is really
->>>> wired is that switching off CONFIG_RCU_TRACE has a negative impact on
->>>> the latency. As I see it, it just adds some trace points, but I might
->>>> have missed something.
->>> I would expect that CONFIG_RCU_TRACE=n (as in "no" rather than "module")
->>> would have low latencies rather than high latencies.  So I am quite
->>> surprised by your result.  I will dig into this more.
->> Thanks a lot. To be clear. I need "CONFIG_PREEMPT_RCU_BOOST=y" *and*
->> "CONFIG_RCU_TRACE=y" to achieve reasonable latencies below 180us. With
->> CONFIG_PREEMPT_RCU_BOOST or CONFIG_RCU_TRACE not set or
->> CONFIG_RCU_TRACE=m is rmeasure latencies up to 600us within a minute or so.
+On Wednesday 30 January 2008, Haavard Skinnemoen wrote:
+> Ok, I didn't bother to check the specs, as I think your main argument
+> is that these options vary from controller to controller, so we need to
+> make this extensible.
 > 
-> OK, thank you for the confirmation.
+> Not all options are specific to DMA slave transfers either, although
+> most of them are probably more important in this context.
+
+Right ...
+
+
+> Descriptor-based vs. register-based transfers sounds like something the
+> DMA engine driver is free to decide on its own.
+
+Not entirely.  The current interface has "dma_async_tx_descriptor"
+wired pretty thoroughly into the call structure -- hard to avoid.
+(And where's the "dma_async_rx_descriptor", since that's only TX??
+Asymmetry like that is usually not a healthy sign.)  The engine is
+not free to avoid those descriptors ...
+
+And consider that many DMA transfers can often be started (after
+cache synch operations) by writing less than half a dozen registers:
+source address, destination address, params, length, enable.  Being
+wildly generous, let's call that a couple dozen instructions, including
+saving "what to do when it's done".  The current framework requires
+several calls just to fill descriptors ... burning lots more than that
+many instructions even before getting around to the Real Work!  (So I
+was getting at low DMA overheads there, more than any particular way
+to talk to the controller.)
+
+ 
+> > Example:  USB tends to use one packet per "frame" and have the DMA
+> > request signal mean "give me the next frame".  It's sometimes been
+> > very important to use use the tuning options to avoid some on-chip
+> > race conditions for transfers that cross lots of internal busses and
+> > clock domains, and to have special handling for aborting transfers
+> > and handling "short RX" packets.
 > 
-> The large latencies were from cyclictest, correct?  Did other tests
-> also show these latencies?  In either case, could you please send the
-> exact command line you used to run the test?
+> Is it enough to set these options on a per-channel basis, or do they
+> have to be per-transfer?
 
-Yes, I used "$ cyclictest -n -t1 -p80 -i1000" to measure the latency. So
-far, I have not done other tests. Any recommendation?
-As no-rt load I used "while ls; do ls /bin; done" in one telnet window
-and "while ./hackbench 10; do ./calibrator 400 32M cali; sleep 30; done"
-in another. But already "while ls; do ls /bin; done" is enough to
-trigger the high latencies quickly. Note also, that I work on a root
-files-ystem mounted via NFS resulting in a lot of network traffic and
-utilization.
+Some depend on the buffer alignment and size, so "per-transfer" is the
+norm.  Of course, if there aren't many channels, the various clients
+may need to recycle them a lot ... which means lots of setup anyway.
 
-Thanks,
+That particular hardware has enough of the "logical" channels that each
+driver gets its own; one level of arbitration involves assigning those
+to underlying "physical" channels.
 
-Wolfgang.
+
+> > I wonder whether a unified programming interface is the right way
+> > to approach peripheral DMA support, given such variability.  The DMAC
+> > from Synopsys that you're working with has some of those options, but
+> > not all of them... and other DMA controllers have their own oddities.
+> 
+> Yes, but I still think it's worthwhile to have a common interface to
+> common functionality. Drivers for hardware that does proper flow
+> control won't need to mess with priority and arbitration settings
+> anyway, although they could do it in order to tweak performance.
+
+I wouldn't assume that systems have that much overcapacity on
+their critical I/O paths.  I've certainly seen systems tune those
+busses down in speed ... you might describe the "why" as "tweaking
+battery performance", which wasn't at all an optional stage of the
+system development process.
+
+
+> So a 
+> plain "write this memory block to the TX register of this slave"
+> interface will be useful in many cases.
+
+That's a fair place to start.  Although in my limited experience,
+drivers won't stay there.  I have one particular headache in mind,
+where the licensed IP has been glued to at least four different
+DMA controllers.  None of them act similarly -- sanely? -- enough
+to share much DMA interface code.  Initiation has little quirks;
+termination has bigger ones; transfer aborts... sigh
+
+Heck, you've seen similar stuff yourself with the MCI driver.
+AVR32 and AT91 have different DMA models.  You chose to have
+them use different drivers...
+
+
+> > For memcpy() acceleration, sure -- there shouldn't be much scope for
+> > differences.  Source, destination, bytecount ... go!  (Not that it's
+> > anywhere *near* that quick in the current interface.)
+> 
+> Well, I can imagine copying scatterlists may be useful too. Also, some
+> controllers support "stride" (or "scatter-gather", as Synopsys calls
+> it), which can be useful for framebuffer bitblt acceleration, for
+> example.
+
+The OMAP1 DMA controller supports that.  There were also some
+framebuffer-specific DMA options.  ;)
+
+ 
+> > For peripheral DMA, maybe it should be a "core plus subclasses"
+> > approach so that platform drivers can make use hardware-specific
+> > knowledge (SOC-specific peripheral drivers using SOC-specific DMA),
+> > sharing core code for dma-memcpy() and DMA channel housekeeping.
+> 
+> I mostly agree, but I think providing basic DMA slave transfers only
+> through extensions will cause maintenance nightmares for the drivers
+> using it. 
+
+See above ... if you've got a driver that's got to cope with
+different DMA engines, those may be inescapable.
+
+
+> But I suppose we could have something along the lines of 
+> "core plus standard subclasses plus SOC-specific subclasses"...
+
+That seems like one layer too many!
+
+
+> We already have something along those lines through the capabilities
+> mask, taking care of the "standard subclasses" part. How about we add
+> some kind of type ID to struct dma_device so that a driver can use
+> container_of() to get at the extended bits if it recognizes the type?
+
+That would seem to be needed if the interface isn't going to become
+a least-common-denominator approach -- or a kitchen-sink.
+
+- Dave
+
+
+> 
+> Haavard
+> 
+
+
