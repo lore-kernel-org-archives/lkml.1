@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932668AbYA3UMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764170AbYA3UMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932668AbYA3UMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762470AbYA3UCz
+	id S1764170AbYA3UMn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762354AbYA3UC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:02:55 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:37652 "EHLO smtp5.pp.htv.fi"
+	Wed, 30 Jan 2008 15:02:56 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51819 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762223AbYA3UCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:02:49 -0500
-Date: Wed, 30 Jan 2008 22:03:24 +0200
+	id S1755036AbYA3UCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:02:52 -0500
+Date: Wed, 30 Jan 2008 22:03:27 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: davem@davemloft.net
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sparc64/kernel/pci_sun4v.c section fixes
-Message-ID: <20080130200324.GJ29368@does.not.exist>
+To: davem@davemloft.net, Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] block/sunvdc.c:print_version() must be __devinit
+Message-ID: <20080130200327.GK29368@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,12 +23,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following section mismatch:
+This patch fixes the following section mismatches:
 
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.text+0x39be4): Section mismatch in reference from the function probe_existing_entries() to the function .init.text:page_in_phys_avail()
+WARNING: drivers/block/sunvdc.o(.text+0xf0): Section mismatch in reference from the function print_version() to the variable .devinit.data:version
+WARNING: drivers/block/sunvdc.o(.text+0xf8): Section mismatch in reference from the function print_version() to the variable .devinit.data:version
 ...
 
 <--  snip  -->
@@ -36,33 +37,18 @@ WARNING: vmlinux.o(.text+0x39be4): Section mismatch in reference from the functi
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- arch/sparc64/kernel/pci_sun4v.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-5a836480057dcc064ae02a69ae4bb2b7698e333f 
-diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
-index 1aa8e04..87c5cf5 100644
---- a/arch/sparc64/kernel/pci_sun4v.c
-+++ b/arch/sparc64/kernel/pci_sun4v.c
-@@ -625,8 +625,8 @@ static void __init pci_sun4v_scan_bus(struct pci_pbm_info *pbm)
- 	/* XXX register error interrupt handlers XXX */
- }
+302ffded3690214f130c66a7343ad23a1fb7dbbc 
+diff --git a/drivers/block/sunvdc.c b/drivers/block/sunvdc.c
+index 66e3015..a8de037 100644
+--- a/drivers/block/sunvdc.c
++++ b/drivers/block/sunvdc.c
+@@ -732,7 +732,7 @@ static struct vio_driver_ops vdc_vio_ops = {
+ 	.handshake_complete	= vdc_handshake_complete,
+ };
  
--static unsigned long probe_existing_entries(struct pci_pbm_info *pbm,
--					    struct iommu *iommu)
-+static unsigned long __init probe_existing_entries(struct pci_pbm_info *pbm,
-+						   struct iommu *iommu)
+-static void print_version(void)
++static void __devinit print_version(void)
  {
- 	struct iommu_arena *arena = &iommu->arena;
- 	unsigned long i, cnt = 0;
-@@ -653,7 +653,7 @@ static unsigned long probe_existing_entries(struct pci_pbm_info *pbm,
- 	return cnt;
- }
+ 	static int version_printed;
  
--static void pci_sun4v_iommu_init(struct pci_pbm_info *pbm)
-+static void __init pci_sun4v_iommu_init(struct pci_pbm_info *pbm)
- {
- 	struct iommu *iommu = pbm->iommu;
- 	struct property *prop;
 
