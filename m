@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYA3D32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYA3D3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbYA3D32 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 22:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759046AbYA3D2h
+	id S1758723AbYA3D3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:29:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbYA3D2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 22:28:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56598 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbYA3DZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 22:25:54 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <479901A8.3000706@oracle.com>
-References: <479901A8.3000706@oracle.com> <20080123172038.11107.86025.stgit@warthog.procyon.org.uk> <20080123172246.11107.62216.stgit@warthog.procyon.org.uk>
-To: chuck.lever@oracle.com, Trond.Myklebust@netapp.com
-Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 24/27] NFS: Use local caching [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 30 Jan 2008 03:25:01 +0000
-Message-ID: <18686.1201663501@redhat.com>
+	Tue, 29 Jan 2008 22:28:38 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42521 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754489AbYA3DZ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 22:25:56 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
+References: <20080129164019.GA2060@tv-sign.ru>
+Date: Tue, 29 Jan 2008 20:24:17 -0700
+In-Reply-To: <20080129164019.GA2060@tv-sign.ru> (Oleg Nesterov's message of
+	"Tue, 29 Jan 2008 19:40:19 +0300")
+Message-ID: <m1ir1cgfmm.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-Chuck Lever <chuck.lever@oracle.com> wrote:
+> With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+> but find_pid_ns()->hlist_for_each_entry_rcu() should be safe under tasklist.
+>
+> Usually it is, detach_pid() is always called under write_lock(tasklist_lock),
+> but copy_process() calls free_pid() lockless.
+>
+> "#ifdef CONFIG_PREEMPT_RCU" is added mostly as documentation, perhaps it is
+> too ugly and should be removed.
+>
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>
+> --- MM/kernel/fork.c~PR_RCU	2008-01-27 17:09:47.000000000 +0300
+> +++ MM/kernel/fork.c	2008-01-29 19:23:44.000000000 +0300
+> @@ -1335,8 +1335,19 @@ static struct task_struct *copy_process(
+>  	return p;
+>  
+>  bad_fork_free_pid:
+> -	if (pid != &init_struct_pid)
+> +	if (pid != &init_struct_pid) {
+> +#ifdef CONFIG_PREEMPT_RCU
+> +		/*
+> +		 * read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+> +		 * make sure find_pid() is safe under read_lock(tasklist).
+> +		 */
+> +		write_lock_irq(&tasklist_lock);
+> +#endif
+>  		free_pid(pid);
+> +#ifdef CONFIG_PREEMPT_RCU
+> +		write_unlock_irq(&tasklist_lock);
+> +#endif
+> +	}
+>  bad_fork_cleanup_namespaces:
+>  	exit_task_namespaces(p);
+>  bad_fork_cleanup_keys:
 
-> This patch really ought to be broken into more manageable atomic
-> changes to make it easier to review, and to provide more fine-grained
-> explanation and rationalization for each specific change via
-> individual patch descriptions.
+Ok. I believe I see what problem you are trying to fix.  That
+a pid returned from find_pid might disappear if we are not rcu
+protected.
 
-Hmmm....  I broke the patch up as Trond stipulated - at least, I thought I
-had.
+This patch in the simplest form is wrong because it is confusing.
 
-In many ways this request doesn't make sense.  You can't do NFS caching
-without all the appropriate bits, so logically they should be one patch.
-Breaking it up won't help git-bisect since the option to enable all this is
-the last (or nearly last) patch.
+We currently appear to have two options.
+1) Force all pid hash table access and pid accesses that
+   do not get a count to be covered under rcu_read_lock.
+2) To modify the locking requirements for free_pid to require
+   the tasklist_lock.
 
-However, I can do it (when I get back from LCA next week).
+   However this second approach is horribly brittle, as it
+   will break if we ever have intermediate entries in the
+   hash table protected by pidmap_lock.
 
-> This should no longer be necessary.  The latest mount.nfs subcommand
-> from nfs-utils supports text-based mounts when running on kernels
-> 2.6.23 and later.
+Using the tasklist_lock to still guarantee we see the list, the entire
+list, and exactly the list for proper implementation of kill to
+process groups and sessions still seems sane.
 
-Okay.  I'll update my patches to reflect this.  Note, however, I've got
-someone reporting a bug that seems to show otherwise.  I'll have to
-investigate this more next week.
+So let's just remove the guarantee of find_pid being usable with
+just the tasklist_lock held.
 
-> I hope you intend to provide updates to nfs(5) that describe the new
-> mount options you introduce in this and later patches.  You don't
-> mention it, but I assume that "nofsc" is the default behavior.
+Eric
 
-I should make SteveD do that, the options was his idea:-)  But I'll deal with
-it.
-
-> Add comments like this in a separate clean up patch.
-
-????
-
-> A suggestion: fs/nfs/fsc-index.c might be a better name.
-
-If you wish, though I'd prefer to use a name that isn't like to clash with a
-name that's going to appear in fs/fscache/ (or include/linux/ - I'd really
-like to rename fs/nfs/fscache.h as dealing with two fscache.h's is annoying.
-
-> > +struct nfs_fh_auxdata {
-> > +	struct timespec	i_mtime;
-> > +	struct timespec	i_ctime;
-> > +	loff_t		i_size;
-> > +};
-> 
-> It might be useful to explain here why you need to supplement the
-> mtime, ctime, and size fields that already exist in an NFS inode.
-
-Supplement?  I don't understand.
-
-> > +		key->port = clp->cl_addr.sin_port;
-> 
-> Not sure why you are using the server's port here.  In almost every
-> case the server side port number will be 2049, so it really doesn't
-> add any uniquification.
-
-The reason lies is "in almost every case".  It's possible to configure it
-such that a server is running two separate NFS servers on different ports.
-
-> If you're going for the client side port number, that changes after
-> every connection, so it would be useless to identify a cache after a
-> reboot (or even after the connection idles out!).
-
-I'm going for the server side port number.  Using the client side port number
-would be silly.
-
-> I strongly recommend you use the existing IPv6 address conversion
-> macros for this instead of open-coding yet another way of mapping an
-> IPv4 address to an IPv6 address.
-> 
-> However, since AF_INET6 support is being introduced in the NFS client
-> in 2.6.24, I recommend you take a look at these source files after
-> Trond has pushed his NFS_ALL for 2.6.24.
-
-I'll look at them.
-
-> See below: the NFS cache-related stats should be added to nfs_iostats.
-
-I believe I asked Trond, but I'll check.
-
-I've got to move, so I'll deal with the rest of your email later.
-
-David
+diff --git a/include/linux/pid.h b/include/linux/pid.h
+index e29a900..0ffb8cc 100644
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -100,8 +100,7 @@ struct pid_namespace;
+ extern struct pid_namespace init_pid_ns;
+ 
+ /*
+- * look up a PID in the hash table. Must be called with the tasklist_lock
+- * or rcu_read_lock() held.
++ * look up a PID in the hash table. Must be called with the rcu_read_lock() held.
+  *
+  * find_pid_ns() finds the pid in the namespace specified
+  * find_pid() find the pid by its global id, i.e. in the init namespace
