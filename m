@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbYA3PoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbYA3Pqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758785AbYA3PoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 10:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYA3PoJ
+	id S1758522AbYA3Pqo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 10:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYA3Pqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 10:44:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58820 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754036AbYA3PoH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 10:44:07 -0500
-Date: Wed, 30 Jan 2008 07:42:49 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-       Tony Camuso <tcamuso@redhat.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-Message-ID: <20080130074249.36caa4c3@laptopd505.fenrus.org>
-In-Reply-To: <20080130151538.GA1036@jurassic.park.msu.ru>
-References: <478CD8A5.5090608@myri.com>
-	<20080115174643.GB28238@kroah.com>
-	<20080115175641.GE18741@parisc-linux.org>
-	<20080119165809.GB11553@colo.lackof.org>
-	<479E1FA6.1030708@redhat.com>
-	<20080128204431.GA15227@kroah.com>
-	<20080128190505.5f5b1ccc@laptopd505.fenrus.org>
-	<20080129031804.GF20198@parisc-linux.org>
-	<20080129131955.GC10761@kroah.com>
-	<20080130034555.GA17537@parisc-linux.org>
-	<20080130151538.GA1036@jurassic.park.msu.ru>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Wed, 30 Jan 2008 10:46:35 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:63249 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751482AbYA3Pqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 10:46:34 -0500
+Date: Wed, 30 Jan 2008 16:46:31 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: michael <trimarchi@gandalf.sssup.it>
+Cc: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
+       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
+       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
+Message-ID: <20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <47A09723.7020000@gandalf.sssup.it>
+References: <20080129224316.GA23155@gandalf.sssup.it>
+	<479FB2D7.4020804@gandalf.sssup.it>
+	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
+	<47A051A7.7030004@gandalf.sssup.it>
+	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
+	<47A09723.7020000@gandalf.sssup.it>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 18:15:39 +0300
-Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
+On Wed, 30 Jan 2008 16:26:27 +0100
+michael <trimarchi@gandalf.sssup.it> wrote:
 
-> On Tue, Jan 29, 2008 at 08:45:55PM -0700, Matthew Wilcox wrote:
-> > On Tue, Jan 29, 2008 at 05:19:55AM -0800, Greg KH wrote:
-> > > Matthew, with Arjan's patch, is anything that currently works now
-> > > broken?  Why do you feel it is somehow "wrong"?
-> > 
-> > lspci is broken.  It used to be able to access extended config
-> > space, and now can't unless it is patched to know about the sysfs
-> > flag to enable it.
+> > I have no idea. Could you post some more specifics about what you
+> > modified, for example a diff?
+> >
+> >     
 > 
-> There is also likely damage to Xorg for the very same reason.
->
+> ...
+> /* The interrupt handler does not take the lock */
+> spin_lock_irqsave(&port->lock, flags);
+> atmel_tx_chars(port);
+> spin_unlock_irqrestore(&port->lock, flags);
 
-Xorg doesn't do pci express ..
-(newer ones actually have gotten out of the "do the PCI layer ourselves" business entirely)
+Sorry, this isn't going to work.
 
-> Ivan.
+Please post a diff with the changes you did to the driver, and whatever
+output you got when it crashed.
 
+It's really difficult to help you when I don't know (a) what code
+you're actually running, or (b) anything about the crash.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> The atmel_tx_chars using the serial device registers like the interrupt 
+> routine
+> and so I think that it is possible to have interference during send 
+> operation.
+
+No, it's only called from the tasklet, and the interrupt handler doesn't
+touch the TX data register. There shouldn't be any need to disable
+interrupts around the call to atmel_tx_chars(). In fact, this may very
+well be the cause of the overruns you're seeing.
+
+Haavard
