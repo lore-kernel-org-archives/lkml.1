@@ -1,71 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbYA3OjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbYA3OnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932115AbYA3OjL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 09:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYA3Oiy
+	id S1761163AbYA3OnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 09:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbYA3OnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 09:38:54 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34156 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753164AbYA3Oiw (ORCPT
+	Wed, 30 Jan 2008 09:43:06 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:33221 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756032AbYA3OnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 09:38:52 -0500
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Oliver Neukum <oliver@neukum.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20080130103803.GN15220@kernel.dk>
-References: <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk>
-	 <200801291531.39825.oliver@neukum.org> <20080129143109.GW15220@kernel.dk>
-	 <20080129183910.GI15220@kernel.dk>
-	 <20080129191024.GO14375@one-eyed-alien.net>
-	 <1201635195.3069.36.camel@localhost.localdomain>
-	 <20080129193520.GQ15220@kernel.dk> <20080129194543.GR15220@kernel.dk>
-	 <Pine.LNX.4.64.0801301125350.26562@vixen.sonytel.be>
-	 <20080130103803.GN15220@kernel.dk>
+	Wed, 30 Jan 2008 09:43:05 -0500
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080130175439.1AFD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080108210002.638347207@redhat.com>
+	 <20080130121152.1AF1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080130175439.1AFD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Content-Type: text/plain
-Date: Wed, 30 Jan 2008 08:38:35 -0600
-Message-Id: <1201703915.3292.1.camel@localhost.localdomain>
+Organization: HP/OSLO
+Date: Wed, 30 Jan 2008 09:29:42 -0500
+Message-Id: <1201703382.5459.3.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-30 at 11:38 +0100, Jens Axboe wrote:
-> On Wed, Jan 30 2008, Geert Uytterhoeven wrote:
-> > On Tue, 29 Jan 2008, Jens Axboe wrote:
-> > > On Tue, Jan 29 2008, Jens Axboe wrote:
-> > > > On Tue, Jan 29 2008, James Bottomley wrote:
-> > > > > On Tue, 2008-01-29 at 11:10 -0800, Matthew Dharm wrote:
-> > > > > > For some reason, usb_sg_init is boned during auto-sense.
-> > > > > 
-> > > > > OK, that's implicating the scsi_eh_prep_cmnd() in the auto sense
-> > > > > code ... that was also an update in 2.6.24
-> > > > 
-> > > > yeah, already found the bug - it's assuming ->request_buffer holds the
-> > > > sglist, oops. Preparing a fix.
-> > > 
-> > > ok here goes, this saves and restores the sg table correctly. it also
-> > > fixes the usb bug for me.
-> > 
-> > I can confirm this patch fixes the errors I was seeing with current
-> > linux-2.6.git for the USB memory card readers in a Dell TFT connected
-> > to a PS3.
+On Wed, 2008-01-30 at 17:57 +0900, KOSAKI Motohiro wrote:
+> Hi Rik, Lee
 > 
-> James, we need a fix for this pushed asap. So either we should merge the
-> below now, or push the bidi patchset that also fixes this. It all
-> depends on when you want to merge the bidi patches...
+> I found number of scan pages calculation bug.
+> 
+> 1. wrong calculation order
+> 
+> 	ap *= rotate_sum / (zone->recent_rotated_anon + 1);
+> 
+>    when recent_rotated_anon = 100 and recent_rotated_file = 0,
+>    
+>      rotate_sum / (zone->recent_rotated_anon + 1)
+>    = 100 / 101
+>    = 0
+> 
+>    at that time, ap become 0.
+> 
+> 2. wrong fraction omission
+> 
+> 	nr[l] = zone->nr_scan[l] * percent[file] / 100;
+> 
+> 	when percent is very small,
+> 	nr[l] become 0.
+> 
+> Test Result:
+> (1) $ ./hackbench 150 process 1000
+> (2) # sync; echo 3 > /proc/sys/vm/drop_caches
+>     $ dd if=tmp10G of=/dev/null
+>     $ ./hackbench 150 process 1000
+> 
+> rvr-split-lru + revert patch of previous mail
+>  	(1) 83.014
+> 	(2) 717.009
+> 
+> rvr-split-lru + revert patch of previous mail + below patch
+> 	(1) 61.965
+> 	(2) 85.444 !!
+> 
+> 
+> Now, We got 1000% performance improvement against 2.6.24-rc8-mm1 :)
+> 
+> 
+> 
+> - kosaki
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-The SCSI patch set (including the bidirectional pieces) is waiting in
-scsi-misc ... just for forms sake, could you confirm that it actually
-fixes the problem and I'll push it.
+<snip>
 
-James
+Kosaki-san:
+
+Rik is currently out on holiday and I've been traveling.  Just getting
+back to rebasing to 24-rc8-mm1.  Thank you for your efforts in testing
+and tracking down the regressions.  I will add your fixes into my tree
+and try them out and let you know.  Rik mentioned to me that he has a
+fix for the "get_scan_ratio()" calculation that is causing us to OOM
+kill prematurely--i.e., when we still have lots of swap space to evict
+swappable anon.  I don't know if it's similar to what you have posted.
+Have to wait and see what he says.  Meantime, we'll try your patches.
+
+Again, thank you.
+
+Regards,
+Lee
+
 
 
