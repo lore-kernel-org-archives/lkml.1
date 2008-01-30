@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbYA3KIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbYA3KNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325AbYA3KIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 05:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYA3KIE
+	id S1757712AbYA3KNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 05:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYA3KNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 05:08:04 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49235 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750964AbYA3KIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 05:08:01 -0500
-Date: Wed, 30 Jan 2008 11:08:00 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND] jbd: Remove useless loop in
-	journal_write_commit_record()
-Message-ID: <20080130100800.GB16140@duck.suse.cz>
+	Wed, 30 Jan 2008 05:13:32 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:42377 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754579AbYA3KNb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 05:13:31 -0500
+Date: Wed, 30 Jan 2008 11:13:23 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: linux-kbuild@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: kbuild: Spelling/grammar fixes for config DEBUG_SECTION_MISMATCH
+Message-ID: <Pine.LNX.4.64.0801301112550.26678@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1508965004-1201688003=:26678"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-  resending the patch just in case you've missed it.
+---584349381-1508965004-1201688003=:26678
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+kbuild: Spelling/grammar fixes for config DEBUG_SECTION_MISMATCH
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
+ lib/Kconfig.debug |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Commit block was intended to have several copies of the header. But
-due to a bug it never had them and actually, nobody checks that. So
-just remove the useless loop.
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -90,19 +90,19 @@ config DEBUG_SECTION_MISMATCH
+ 	  most likely result in an oops.
+ 	  In the code functions and variables are annotated with
+ 	  __init, __devinit etc. (see full list in include/linux/init.h)
+-	  which result in the code/data being placed in specific sections.
+-	  The section mismatch anaylsis are always done after a full
++	  which results in the code/data being placed in specific sections.
++	  The section mismatch analysis is always done after a full
+ 	  kernel build but enabling this options will in addition
+ 	  do the following:
+ 	  - Add the option -fno-inline-functions-called-once to gcc
+ 	    When inlining a function annotated __init in a non-init
+ 	    function we would loose the section information and thus
+ 	    the analysis would not catch the illegal reference.
+-	    This options tell gcc to inline less but will also
++	    This option tells gcc to inline less but will also
+ 	    result in a larger kernel.
+ 	  - Run the section mismatch analysis for each module/built-in.o
+ 	    When we run the section mismatch analysis on vmlinux.o we
+-	    looses valueable information about where the mismatch was
++	    loose valueable information about where the mismatch was
+ 	    introduced.
+ 	    Running the analysis for each module/built-in.o file
+ 	    will tell where the mismatch happens much closer to the
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+With kind regards,
 
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index 610264b..b54948f 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -104,7 +104,8 @@ static int journal_write_commit_record(journal_t *journal,
- {
- 	struct journal_head *descriptor;
- 	struct buffer_head *bh;
--	int i, ret;
-+	journal_header_t *header;
-+	int ret;
- 	int barrier_done = 0;
- 
- 	if (is_journal_aborted(journal))
-@@ -116,13 +117,10 @@ static int journal_write_commit_record(journal_t *journal,
- 
- 	bh = jh2bh(descriptor);
- 
--	/* AKPM: buglet - add `i' to tmp! */
--	for (i = 0; i < bh->b_size; i += 512) {
--		journal_header_t *tmp = (journal_header_t*)bh->b_data;
--		tmp->h_magic = cpu_to_be32(JFS_MAGIC_NUMBER);
--		tmp->h_blocktype = cpu_to_be32(JFS_COMMIT_BLOCK);
--		tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
--	}
-+	header = (journal_header_t*)(bh->b_data);
-+	header->h_magic = cpu_to_be32(JFS_MAGIC_NUMBER);
-+	header->h_blocktype = cpu_to_be32(JFS_COMMIT_BLOCK);
-+	header->h_sequence = cpu_to_be32(commit_transaction->t_tid);
- 
- 	JBUFFER_TRACE(descriptor, "write commit block");
- 	set_buffer_dirty(bh);
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-1508965004-1201688003=:26678--
