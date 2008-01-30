@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933616AbYA3VVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbYA3VVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933616AbYA3VVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765482AbYA3VNb
+	id S933718AbYA3VVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbYA3VRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:13:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48208 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758455AbYA3VN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 16:13:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: hibernate/suspend-to-disk: to turn power or not?
-Date: Wed, 30 Jan 2008 22:11:10 +0100
+	Wed, 30 Jan 2008 16:17:07 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:50215 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932744AbYA3VRE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 16:17:04 -0500
+From: Guenter Kukkukk <linux@kukkukk.com>
+Organization: EfM
+To: samba-technical@lists.samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove smbfs
+Date: Wed, 30 Jan 2008 22:16:13 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <47A0CD90.5080208@msgid.tls.msk.ru>
-In-Reply-To: <47A0CD90.5080208@msgid.tls.msk.ru>
+References: <20080128220835.GF8767@does.not.exist>
+In-Reply-To: <20080128220835.GF8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200801302211.10622.rjw@sisk.pl>
+Message-Id: <200801302216.13788.linux@kukkukk.com>
+X-Provags-ID: V01U2FsdGVkX19RmD6z3wQkZhMyQ/vnp1yaTYeWz+CpL4OROc+
+ 8RPZUE478nB0Va+h8j4ZInYhrVMLXYwCPJmEcV/2X5eOolplbv
+ aYCssPlBzh8KpYOjcFL+iFrqxSktt7m
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 30 of January 2008, Michael Tokarev wrote:
-> I'm trying to "glue" hibernation and UPS control
-> together, and have a question.
+Am Montag, 28. Januar 2008 schrieb Adrian Bunk:
+> I remember that there were some small things missing in CIFS for 
+> completely replacing the unmaintained smbfs when we discussed removing 
+> smbfs back in 2005 due to smbfs being unmaintained.
 > 
-> When the system power comes off an UPS (Uninterruptable
-> Power Supply I mean), it's probably a good idea to turn
-> the UPS off when shutting the system down or hibernating.
+> CIFS has improved since, smbfs is still unmaintained, and it's becoming 
+> time to finally remove smbfs.
 > 
-> Even with shutdown (not related to hibernating) there's
-> an interesting twist: modern systems can remember the
-> previous on/off status when the power gets cut and
-> restores - BIOS-controlled option that allows the
-> system to automatically start when the input power
-> returns.  Now, when we shutting down a system, we
-> need to turn the UPS *before* powering down the
-> system but *after* the shutdown procedure has been
-> completed.  This is done by replacing poweroff with
-> halt, and ordering the UPS to turn itself off after
-> a small delay (needed for the poweroff command to
-> complete) - this way, system will be on but in a
-> safe-to-powercut mode, and in order to turn it
-> back on only the UPS has to be turned on.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> But the question comes as how to control the UPS when
-> we replace shutdown with hibernation.  Ideally I want
-> to send some commands to the UPS after hibernation has
-> been completed (since I don't know how much time it
-> will require to hibernate), but before the machine
-> will be turned off by the kernel.  Or at the very least,
-> to be able to stop the kernel turning the machine off
-> after hibernation process is complete - this way,
-> I can order the UPS to turn the power off after some
-> delay and hope hibernation process will finish when
-> the UPS will finally cut the power (not all UPSes
-> are able to do timely shutdown like this).
-> 
-> What's my way here?
 
-If your box hibernates and resumes correctly in the shutdown mode (ie.
-basically without ACPI assistance), you can use s2disk for hibernation and
-modify it to switch off the UPS instead of powering off the box.
+"... unmaintained smbfs ..." is not quite right, see
+   http://lkml.org/lkml/2007/11/6/94
+Before removing it now completely, drop
+  Jeff Layton <jlayton@redhat.com>
+a note.
+Afaik, Redhat still has customers which rely on smbfs.
 
-Greetings,
-Rafael
+In addition, cifs cannot completely replace smbfs atm.
+Even todays sold NAS-boxes (often running anchient 
+samba-2.x.x) work only with smbfs on the client side.
+Cheers, Günter 
+
