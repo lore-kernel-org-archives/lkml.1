@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbYA3SBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763749AbYA3SCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbYA3SBt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYA3SBm
+	id S1763749AbYA3SCY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:02:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYA3SCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:01:42 -0500
-Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:36250 "EHLO
-	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753406AbYA3SBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:01:41 -0500
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 13:01:41 EST
-X-Authority-Analysis: v=1.0 c=1 a=EouV8EeEjs0A:10 a=RXvFtDA4TIRRQeNwqcoA:9
- a=cYd9i9LoYStH_cM11VfqqIzvLNwA:4 a=BgJWR2bEJjkA:10
-Subject: Re: [BUILD FAILURE] 2.6.24-git7 section type conflict at various
-	drivers on powerpc
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 11:57:31 -0600
-Message-Id: <1201715851.7154.15.camel@popeye>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 13:02:12 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46194 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759201AbYA3SCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:02:10 -0500
+Date: Wed, 30 Jan 2008 12:02:07 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+Message-ID: <20080130180207.GU26420@sgi.com>
+References: <20080130022909.677301714@sgi.com> <20080130022944.236370194@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080130022944.236370194@sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please note that this does not appear to be just a issue with the
-powerpc build - I get the following failure whiole building a generic
-x86 2.6.24-git7 kernel.
+Back to one of Andrea's points from a couple days ago, I think we still
+have a problem with the PageExternalRmap page flag.
 
-drivers/net/sis190.c:329: error: sis190_pci_tbl causes a section type
-conflict
+If I had two drivers with external rmap implementations, there is no way
+I can think of for a simple flag to coordinate a single page being
+exported and maintained by the two.
 
-I suspect that you are ahead of me and alrealy knew this but I get into
-trouble every time I make an assumption like that.
+Since the intended use seems to point in the direction of the external
+rmap must be maintained consistent with the all pages the driver has
+exported and the driver will already need to handle cases where the page
+does not appear in its rmap, I would propose the setting and clearing
+should be handled in the mmu_notifier code.
 
-Chris
+This is the first of two patches.  This one is intended as an addition
+to patch 1/6.  I will post the other shortly under the patch 3/6 thread.
 
+
+Index: git-linus/include/linux/mmu_notifier.h
+===================================================================
+--- git-linus.orig/include/linux/mmu_notifier.h	2008-01-30 11:43:45.000000000 -0600
++++ git-linus/include/linux/mmu_notifier.h	2008-01-30 11:44:35.000000000 -0600
+@@ -146,6 +146,7 @@ static inline void mmu_notifier_head_ini
+ 
+ extern void mmu_rmap_notifier_register(struct mmu_rmap_notifier *mrn);
+ extern void mmu_rmap_notifier_unregister(struct mmu_rmap_notifier *mrn);
++extern void mmu_rmap_export_page(struct page *page);
+ 
+ extern struct hlist_head mmu_rmap_notifier_list;
+ 
+Index: git-linus/mm/mmu_notifier.c
+===================================================================
+--- git-linus.orig/mm/mmu_notifier.c	2008-01-30 11:43:45.000000000 -0600
++++ git-linus/mm/mmu_notifier.c	2008-01-30 11:56:08.000000000 -0600
+@@ -99,3 +99,8 @@ void mmu_rmap_notifier_unregister(struct
+ }
+ EXPORT_SYMBOL(mmu_rmap_notifier_unregister);
+ 
++void mmu_rmap_export_page(struct page *page)
++{
++	SetPageExternalRmap(page);
++}
++EXPORT_SYMBOL(mmu_rmap_export_page);
