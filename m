@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYA3RKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760398AbYA3RQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761968AbYA3RKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYA3RKl
+	id S1760398AbYA3RQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYA3RQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:10:41 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58919 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbYA3RKk (ORCPT
+	Wed, 30 Jan 2008 12:16:09 -0500
+Received: from mga01.intel.com ([192.55.52.88]:55359 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbYA3RQH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:10:40 -0500
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20080130153749.GN7233@v2.random>
-References: <20080130022909.677301714@sgi.com>
-	 <20080130022944.236370194@sgi.com>  <20080130153749.GN7233@v2.random>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 18:10:32 +0100
-Message-Id: <1201713032.28547.234.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 12:16:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,278,1199692800"; 
+   d="scan'208";a="510588130"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Date: Wed, 30 Jan 2008 09:13:25 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080130161036.GA12293@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Thread-Index: AchjWy82XxGcV+9xRNeLoOJjxguJ+AACAqhA
+References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Mike Travis" <travis@sgi.com>
+Cc: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
+       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
+       <linux-ia64@vger.kernel.org>, <sparclinux@vger.kernel.org>
+X-OriginalArrivalTime: 30 Jan 2008 17:13:28.0956 (UTC) FILETIME=[6EA94BC0:01C86363]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > > This broke powerpc (and presumably ia64 and sparc64) in current 
+> > > linux-2.6.git:
+> > 
+> > I'm generating a "fixup patch" right now...
+>
+> thanks! Sorry about that: we cross-built on ARM but not on SMP non-x86 
+> platforms so this dependency/breakage went unnoticed.
 
-On Wed, 2008-01-30 at 16:37 +0100, Andrea Arcangeli wrote:
-> On Tue, Jan 29, 2008 at 06:29:10PM -0800, Christoph Lameter wrote:
-> > +void mmu_notifier_release(struct mm_struct *mm)
-> > +{
-> > +	struct mmu_notifier *mn;
-> > +	struct hlist_node *n, *t;
-> > +
-> > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
-> > +		rcu_read_lock();
-> > +		hlist_for_each_entry_safe_rcu(mn, n, t,
-> > +					  &mm->mmu_notifier.head, hlist) {
-> > +			hlist_del_rcu(&mn->hlist);
-> 
-> This will race and kernel crash against mmu_notifier_register in
-> SMP. You should resurrect the per-mmu_notifier_head lock in my last
-> patch (except it can be converted from a rwlock_t to a regular
-> spinlock_t) and drop the mmap_sem from
-> mmu_notifier_register/unregister.
+Yes ... all ia64 builds (UP and SMP) are broken at the moment. Please
+Cc: me with the fixup patch.
 
-Agreed, sorry for this oversight.
+Thanks
 
+-Tony
