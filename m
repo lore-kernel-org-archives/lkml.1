@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762077AbYA3W5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYA3XBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762077AbYA3W5p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 17:57:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYA3W5g
+	id S1758062AbYA3XBI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 18:01:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761170AbYA3XAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 17:57:36 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46326 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752066AbYA3W5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 17:57:35 -0500
-Date: Thu, 31 Jan 2008 00:58:10 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Guenter Kukkukk <linux@kukkukk.com>, samba-technical@lists.samba.org,
-       linux-kernel@vger.kernel.org, sfrench@samba.org
-Subject: Re: [2.6 patch] remove smbfs
-Message-ID: <20080130225810.GU29368@does.not.exist>
-References: <20080128220835.GF8767@does.not.exist> <200801302216.13788.linux@kukkukk.com> <20080130174103.17ff8197@tleilax.poochiereds.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080130174103.17ff8197@tleilax.poochiereds.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 30 Jan 2008 18:00:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40644 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760889AbYA3XAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 18:00:44 -0500
+Date: Wed, 30 Jan 2008 15:00:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udf: Compilation fixes
+Message-Id: <20080130150009.f1d2d162.akpm@linux-foundation.org>
+In-Reply-To: <20080130150737.GE16140@duck.suse.cz>
+References: <20080130150737.GE16140@duck.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 05:41:03PM -0500, Jeff Layton wrote:
-> On Wed, 30 Jan 2008 22:16:13 +0100
-> Guenter Kukkukk <linux@kukkukk.com> wrote:
+On Wed, 30 Jan 2008 16:07:37 +0100
+Jan Kara <jack@suse.cz> wrote:
+
+>   Hi,
 > 
-> > Am Montag, 28. Januar 2008 schrieb Adrian Bunk:
-> > > I remember that there were some small things missing in CIFS for 
-> > > completely replacing the unmaintained smbfs when we discussed
-> > > removing smbfs back in 2005 due to smbfs being unmaintained.
-> > > 
-> > > CIFS has improved since, smbfs is still unmaintained, and it's
-> > > becoming time to finally remove smbfs.
-> > > 
-> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > 
-> > 
-> > "... unmaintained smbfs ..." is not quite right, see
-> >    http://lkml.org/lkml/2007/11/6/94
-> > Before removing it now completely, drop
-> >   Jeff Layton <jlayton@redhat.com>
-> > a note.
-> > Afaik, Redhat still has customers which rely on smbfs.
-> > 
+>   the patch below makes UDF compile in -mm kernel (against 2.6.24-rc8-mm1).
+> Please apply.
 > 
-> Some of our older products use smbfs, but our newer stuff (RHEL5 and
-> up) have smbfs disabled. Fedora has had smbfs disabled for quite some
-> time as well. I've heard very few complaints (though maybe they're just
-> not getting to me).
+> 									Honza
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
+> ---
 > 
-> I have no problem with targeting smbfs for removal, but I thought
-> Andrew had an unofficial policy that we should first mark things to be
-> deprecated, and then remove them 2 releases later. That seems like a
-> sensible policy to me. If we mark it deprecated in 2.6.25 then we can
-> remove it after 2.6.26 is released.
+> Make UDF compile - fixes fallout from previous cleanup patches.
 > 
-> It might not even hurt to have a nice loud printk when the smbfs
-> module is plugged in to warn users that it's slated to be removed,
-> and that they should move to CIFS as soon as possible.
-
-Andrew has this with a target date of December 2006 (sic) for the 
-removal buried in -mm...
-
-> > In addition, cifs cannot completely replace smbfs atm.
-> > Even todays sold NAS-boxes (often running anchient 
-> > samba-2.x.x) work only with smbfs on the client side.
+> Signed-off-by: Jan Kara <jack@suse.cz>
 > 
-> It would be ideal if someone were to report these problems as bugs. I
-> remember some of those in the past, but haven't heard of any cases of
-> that sort of thing for some time. When I have, Steve has generally
-> been very good about tracking down the cause and fixing it.
+> diff -rupX /home/jack/.kerndiffexclude linux-2.6.24-rc8-mm1-1-udf_fpos_fix/fs/udf/ialloc.c linux-2.6.24-rc8-mm1-2-udf_add_entry_fix/fs/udf/ialloc.c
 
-More exactly, one of the main advantages of removing redundant code like 
-smbfs is that people are finally forced to report their bugs.
+Please prefer to put not-for-the-changelog text after the "^---" rather
+than prior to the changelog.
 
-> Cheers,
+When fixing compile errors and warnings, please always quote the compiler
+output so we can see what is being fixed.
 
-cu
-Adrian
+This patch doesn't apply to my tree and UDF presently compiles OK.  And it
+compiled OK in 2.6.24-rc8-mm1 so I am at a loss to know what's going on
+here.
 
--- 
+Please check http://userweb.kernel.org/~akpm/mmotm/ with your mysteryconfig
+and see if we still need any fixes.   Beware that this mmotm snapshot is full
+of git conflicts which I haven't bothered fixing (because they're different each
+time I pull the trees).  But UDF compiles OK.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
