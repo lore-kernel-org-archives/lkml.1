@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYA3AgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751227AbYA3Aht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbYA3AgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYA3AgE
+	id S1751227AbYA3Aht (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYA3Ahl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:36:04 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45348 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYA3AgB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:36:01 -0500
-Date: Wed, 30 Jan 2008 01:35:58 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jon Masters <jonathan@jonmasters.org>
-cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-In-Reply-To: <1201652420.2271.91.camel@perihelion>
-Message-ID: <Pine.LNX.4.64.0801300129270.14907@fbirervta.pbzchgretzou.qr>
-References: <1201641765.18773.35.camel@dv> <1201652420.2271.91.camel@perihelion>
+	Tue, 29 Jan 2008 19:37:41 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:59648 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751244AbYA3Ahk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 19:37:40 -0500
+Message-ID: <479FC6D2.7040707@gandalf.sssup.it>
+Date: Wed, 30 Jan 2008 01:37:38 +0100
+From: michael <trimarchi@gandalf.sssup.it>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+CC: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       Andrew Victor <linux@maxim.org.za>
+Subject: Re: at91sam9260 wakeup on serial port
+References: <479DB934.6090806@gandalf.sssup.it>	<20080128145615.1d756025@dhcp-252-066.norway.atmel.com>	<200801281021.57317.david-b@pacbell.net> <20080128195114.33d7616d@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080128195114.33d7616d@dhcp-252-066.norway.atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jan 29 2008 19:20, Jon Masters wrote:
->On Tue, 2008-01-29 at 16:22 -0500, Pavel Roskin wrote:
->> 
->> It have come to my attention that a patch has been committed to the
->> kernel with the explicit purpose of tainting ndiswrapper - the kernel
->> module allowing Windows NDIS drivers for Ethernet and Wireless cards to
->> be used by the kernel.
->> 
->> That's the commit in question:
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0aa5bd52d0c49ca56d24584c646e6544ccbb3dc9
+Hi,
+> On Mon, 28 Jan 2008 10:21:57 -0800
+> David Brownell <david-b@pacbell.net> wrote:
 >
->Yup. There was (what I thought was) a bug in the existing logic (an
->explicit match on "ndiswrapper", and a setting of the global kernel
->taint flags) and I corrected it to do what I thought it was actually
->intending to do, but hadn't been. Was I mistaken? What's the point of
->setting the global taint if we don't know why we set that?
+> There's a separate WAKE_N pin that is completely asynchronous, so with
+> some external logic, we can probably wake up the CPU all the way from
+> Static mode if a given input state is present. But that's definitely
+> "board specific" territory, and starting the oscillators take a _long_
+> time on the AP7000 (especially the 32 kHz, but then again, it barely
+> consumes any power, so we might as well keep it running and keep the
+> RTC going as well.)
+>   
+Maybe is possible to create a generic device based on the gpio to provide
+wakeup solutions on suspend-ram state to the peripherals
+that registered to him
 
-ftr, as a by-stander, I perceived the past discussions as a lack of
-trust from other kernel developers that Ndiswrapper will always set
-the taint flags correctly. (ndiswrapper code does not go through lkml
-review so the magic line might just change between tarballs.)
+serial->register_gpio_wakeup             x_driver->register_gpio_wakeup 
+          
 
->> - ndiswrapper is licensed under GPL
->
->Yes it is. But I thought the existing code was intending to taint the
->kernel (that's what it does), so it would really help to identify why it
->tainted the kernel, by calling add_taint_module instead of add_taint. I
->didn't put the existing match in there...don't shoot the messenger :)
->
->> - ndiswrapper needs GPL-only symbols
->
->Another fix would be for ndiswrapper to explicitly set the taint when it
->loads a tainted driver? Or do we just want to go back to globally
->"tainting" the kernel without assigning the blame to any module?
+serial->suspend                          x_driver
+    |                                        |
+    |                                        |
+    \------> gpio_power->suspend <-----------/
 
-I think the global taint flag is always needed because you never know
-what the proprietary module actually did to our memory. Unloading
-the driver and ndiswrapper should retain some sort of taintedness
-should it oops much later.
+serial->resume                           x_driver
+    |                                        |
+    |                                        |
+    \------> gpio_power->resume <------------/
+
+               |----request_irq n1
+gpio_power-----|----request_irq n2
+               |----request_irq n3
+
+Create an attribute on the sysfs to add a wakeup reason to the user space.
+
+Regards Michael
+
