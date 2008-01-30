@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932372AbYA3UKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbYA3ULc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932372AbYA3UKx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759741AbYA3UCM
+	id S932411AbYA3ULc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762190AbYA3UCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:02:12 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40712 "EHLO smtp6.pp.htv.fi"
+	Wed, 30 Jan 2008 15:02:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47484 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759584AbYA3UCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:02:08 -0500
-Date: Wed, 30 Jan 2008 22:02:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Joe Perches <joe@perches.com>, Auke Kok <auke-jan.h.kok@intel.com>,
-       Jeff Garzik <jeff@garzik.org>, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, john.ronciak@intel.com
-Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] e1000e/ethtool.c: make a function static
-Message-ID: <20080130200243.GY29368@does.not.exist>
+	id S1761210AbYA3UCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:02:41 -0500
+Date: Wed, 30 Jan 2008 21:02:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Mike Travis <travis@sgi.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130200221.GA28073@elte.hu>
+References: <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com> <20080130194616.GA19426@elte.hu> <1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global reg_pattern_test_array() static.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+* Luck, Tony <tony.luck@intel.com> wrote:
 
----
-ed72e457f06311390d9a9e51a00c904939466aff 
-diff --git a/drivers/net/e1000e/ethtool.c b/drivers/net/e1000e/ethtool.c
-index 6d9c27f..a2034cf 100644
---- a/drivers/net/e1000e/ethtool.c
-+++ b/drivers/net/e1000e/ethtool.c
-@@ -690,8 +690,8 @@ err_setup:
- 	return err;
- }
- 
--bool reg_pattern_test_array(struct e1000_adapter *adapter, u64 *data,
--			    int reg, int offset, u32 mask, u32 write)
-+static bool reg_pattern_test_array(struct e1000_adapter *adapter, u64 *data,
-+				   int reg, int offset, u32 mask, u32 write)
- {
- 	int i;
- 	u32 read;
+> > ah, that was the vital clue. The patch below makes the small memory 
+> > model only defined on SMP, and makes the config build/link fine here. 
+> > Does this build and boot on your box?
+> 
+> I applied this on top of the git pull from
+>  git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+> 
+> and I see see a build problem for SMP=n :-(
 
+could you send the .config you are using?
+
+	Ingo
