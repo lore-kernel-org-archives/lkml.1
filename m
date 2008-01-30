@@ -1,71 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYA3PZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbYA3P0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYA3PZv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 10:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYA3PZn
+	id S1758337AbYA3P0t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 10:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYA3P0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 10:25:43 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:35909 "EHLO sssup.it"
+	Wed, 30 Jan 2008 10:26:41 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:35970 "EHLO sssup.it"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750825AbYA3PZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 10:25:43 -0500
-Message-ID: <47A096F0.4000606@gandalf.sssup.it>
-Date: Wed, 30 Jan 2008 16:25:36 +0100
+	id S1752145AbYA3P0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 10:26:40 -0500
+Message-ID: <47A09723.7020000@gandalf.sssup.it>
+Date: Wed, 30 Jan 2008 16:26:27 +0100
 From: michael <trimarchi@gandalf.sssup.it>
 User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: Remy Bohmer <linux@bohmer.net>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>, fabio@gandalf.sssup.it,
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+CC: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
        Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
        Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
        linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-References: <20080129224316.GA23155@gandalf.sssup.it>	 <479FB2D7.4020804@gandalf.sssup.it>	 <20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	 <3efb10970801300221h601261edy33cf89dac5abde78@mail.gmail.com>	 <20080130113434.2519f77c@dhcp-252-066.norway.atmel.com> <3efb10970801300305g693a8371u36011426d3a13b3e@mail.gmail.com>
-In-Reply-To: <3efb10970801300305g693a8371u36011426d3a13b3e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20080129224316.GA23155@gandalf.sssup.it>	<479FB2D7.4020804@gandalf.sssup.it>	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	<47A051A7.7030004@gandalf.sssup.it> <20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
-> A few questions arise here to me:
-> * What serial port is used here? (DBGU, or something else)
-> * No DMA was used, was flow-control enabled? (cannot with DBGU)
-> * If some other UART, why not using DMA?
+> On Wed, 30 Jan 2008 11:29:59 +0100
+> michael <trimarchi@gandalf.sssup.it> wrote:
+>   
+>>> Now, _that_ is strange. I can't see anything that needs protection
+>>> across that call; in fact, I think we can lock a lot less than what we
+>>> currently do.
+>>>
+>>>   
+>>>       
+>> I explain it bad:
+>> - with spin_lock the system seems, there is no problem with Valuntary 
+>> Preeption and
+>> Preemptible Kernel
+>> - with full preemption  it runs but the serial line can't be used for 
+>> receiving at
+>> high bit rate (using lrz)
+>>     
+>
+> ...but if you drop the spinlock across the call to
+> tty_flip_buffer_push, you get an Oops?
+>
+> Could you post the Oops?
 >
 >   
-DBGU, so no flow control
-> Notice that the DBGU has no flow control, and just a 1 byte FIFO (thus
-> no fifo at all).
-> At high speeds (e.g. >=115200) it is _likely_ that you will miss
-> characters, nothing can prevent that. DBGU should only be used at
-> lower speeds, or just as text console. 115200 is running fine here as
-> text-console.
+So this code
+
+/*
+* Drop the lock here since it might end up calling
+* uart_start(), which takes the lock.
+*/
+spin_unlock(&port->lock);
+
+tty_flip_buffer_push(port->info->tty);
+
+spin_lock(&port->lock);
+
+Works with:
+CONFIG_PREEMPT_RT=y
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_SOFTIRQS=y
+CONFIG_PREEMPT_HARDIRQS=y
+CONFIG_PREEMPT_BKL=y
+
+but crash with:
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT_DESKTOP is not set
+# CONFIG_PREEMPT_RT is not set
+CONFIG_PREEMPT_SOFTIRQS=y
+# CONFIG_PREEMPT_HARDIRQS is not set
+# CONFIG_PREEMPT_BKL is not set
+CONFIG_CLASSIC_RCU=y
+
+Seems to work in the last config if I comment the spin_lock & 
+spin_unlock call.
+/*
+* Drop the lock here since it might end up calling
+* uart_start(), which takes the lock.
+
+spin_unlock(&port->lock); */
+
+tty_flip_buffer_push(port->info->tty);
+
+/* spin_lock(&port->lock); */
+
+It is not readable because I can't compile it with debugging information 
+(poor memory system)
+>>>> Complete Preemption (Real-Time) ok but the serials is just unusable due
+>>>> to too many overruns (just using lrz)
+>>>>     
+>>>>         
+>>> Is it worse than before? IIRC Remy mentioned something about
+>>> IRQF_NODELAY being the reason for moving all this code to softirq
+>>> context in the first place; does the interrupt handler run in hardirq
+>>> context?
+>>>
+>>>   
+>>>       
+>> In the complete preemption yes.
+>>     
+>
+> Which question did you answer "yes" to? That it's worse than before or
+> that the interrupt handler runs in hardirq context (i.e. IRQF_NODELAY)?
+>
 >   
-Overrun are admitted using DBGU and UART1..n without flow control,
-but with the old version of the driver I can send a file using lrz
-and with the new and full preemption is impossible.
-> I would not expect that the behaviour is worse than without the
-> patchset, because without it it does not work at all on Preempt-RT,
-> but also: there was done much more in interrupt context previously, so
-> the chance of buffer overruns was much more likely in the old
-> situation.
-> The real interrupt handler (doing the reading from the fifo) must be
-> as short as possible, to be able to keep up with the data flow.
+The interrupt handler run in IRQF_NODELAY context.
+>>> I think you're right. Can you change it and see if it helps?
+>>>
+>>>   
+>>>       
+>> I just change it because I have corruption on receiving buffer. All
+>> my test are done with this fix
+>>     
 >
-> A simple calculation: 115200bps results in approx. 11520 bytes per second.
-> This means that the interrupt handler must be capable of handling each
-> byte on DBGU within 87us. With a worst case interrupt latency of about
-> 85us, and average between 2us and 54us (on Preempt-RT and AT91RM9200),
-> you can simply understand that this will not match, how good/fast the
-> interrupt handling will ever be.
+> Ok.
 >
-> So, I suggest to either use flow-control, or DMA for bulkdata... (thus not DBGU)
+>   
+>>> I guess I didn't test it thoroughly enough with DMA
+>>> disabled...slub_debug ought to catch such things, but not until we
+>>> receive enough data to actually overflow the buffer.
+>>>
+>>>   
+>>>       
+>> I just test it I don't have
+>> buffer overflow.
+>>     
 >
-> Kind Regards,
+> No, I'd expect your allocation fix to take care of that. Or did you by
+> any chance test without the fix and with slub_debug enabled?
 >
-> Remy
+>   
+I just meant that the buffer never fills up to its size.
+>> I protect with a spinlock the access to the register when we sending
+>> from the tasklet. It is correct?
+>>     
+>
+> I have no idea. Could you post some more specifics about what you
+> modified, for example a diff?
 >
 >   
 
+...
+/* The interrupt handler does not take the lock */
+spin_lock_irqsave(&port->lock, flags);
+atmel_tx_chars(port);
+spin_unlock_irqrestore(&port->lock, flags);
+
+spin_lock(&port->lock);
+...
+
+The atmel_tx_chars using the serial device registers like the interrupt 
+routine
+and so I think that it is possible to have interference during send 
+operation.
+
+> Most of the tasklet is already protected by the spinlock, so you must
+> be careful to avoid any lock recursion.
+>
+> Haavard
+>
+>   
+Regards Michael
