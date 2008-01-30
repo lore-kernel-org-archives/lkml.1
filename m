@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762808AbYA3VLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYA3VLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762808AbYA3VLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbYA3VF4
+	id S1762021AbYA3VLn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbYA3VF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:05:56 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:51419 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758050AbYA3VFh (ORCPT
+	Wed, 30 Jan 2008 16:05:57 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:39663 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbYA3VFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 16:05:37 -0500
-Message-Id: <20080130210528.149582393@goodmis.org>
+	Wed, 30 Jan 2008 16:05:38 -0500
+Message-Id: <20080130210527.338001311@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:04:18 -0500
+Date: Wed, 30 Jan 2008 16:04:13 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,187 +29,206 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 21/23 -v8] Add markers to various events
-Content-Disposition: inline; filename=tracer-add-event-markers.patch
+Subject: [PATCH 16/23 -v8] trace generic call to schedule switch
+Content-Disposition: inline; filename=trace-sched-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds markers to various events in the kernel.
-(interrupts, task activation and hrtimers)
+This patch adds hooks into the schedule switch tracing to
+allow other latency traces to hook into the schedule switches.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/apic_32.c  |    2 ++
- arch/x86/kernel/irq_32.c   |    1 +
- arch/x86/kernel/irq_64.c   |    2 ++
- arch/x86/kernel/traps_32.c |    2 ++
- arch/x86/kernel/traps_64.c |    2 ++
- arch/x86/mm/fault_32.c     |    3 +++
- arch/x86/mm/fault_64.c     |    3 +++
- kernel/hrtimer.c           |    7 +++++++
- kernel/sched.c             |   11 +++++++++++
- 9 files changed, 33 insertions(+)
+ lib/tracing/trace_sched_switch.c |  135 +++++++++++++++++++++++++++++++++------
+ lib/tracing/tracer.h             |   14 ++++
+ 2 files changed, 131 insertions(+), 18 deletions(-)
 
-Index: linux-mcount.git/arch/x86/kernel/apic_32.c
+Index: linux-mcount.git/lib/tracing/tracer.h
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/apic_32.c	2008-01-30 15:10:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/apic_32.c	2008-01-30 15:54:06.000000000 -0500
-@@ -581,6 +581,8 @@ notrace fastcall void smp_apic_timer_int
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-30 15:33:38.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-30 15:34:21.000000000 -0500
+@@ -113,4 +113,18 @@ static inline notrace cycle_t now(void)
+ 	return get_monotonic_cycles();
+ }
+ 
++#ifdef CONFIG_CONTEXT_SWITCH_TRACER
++typedef void (*tracer_switch_func_t)(void *private,
++				     struct task_struct *prev,
++				     struct task_struct *next);
++struct tracer_switch_ops {
++	tracer_switch_func_t func;
++	void *private;
++	struct tracer_switch_ops *next;
++};
++
++extern int register_tracer_switch(struct tracer_switch_ops *ops);
++extern int unregister_tracer_switch(struct tracer_switch_ops *ops);
++#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
++
+ #endif /* _LINUX_MCOUNT_TRACER_H */
+Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-30 15:33:38.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-30 15:34:21.000000000 -0500
+@@ -18,34 +18,22 @@ static struct tracing_trace *tracer_trac
+ static int trace_enabled __read_mostly;
+ static atomic_t sched_ref;
+ int tracing_sched_switch_enabled __read_mostly;
++static DEFINE_SPINLOCK(sched_switch_func_lock);
+ 
+-static notrace void sched_switch_callback(const struct marker *mdata,
+-					  void *private_data,
+-					  const char *format, ...)
++static void notrace sched_switch_func(void *private,
++				      struct task_struct *prev,
++				      struct task_struct *next)
  {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
+-	struct tracing_trace **p = mdata->private;
+-	struct tracing_trace *tr = *p;
++	struct tracing_trace **ptr = private;
++	struct tracing_trace *tr = *ptr;
+ 	struct tracing_trace_cpu *data;
+-	struct task_struct *prev;
+-	struct task_struct *next;
+ 	unsigned long flags;
+ 	long disabled;
+-	va_list ap;
+ 	int cpu;
  
-+	trace_mark(arch_apic_timer, "ip %lx", regs->eip);
-+
- 	/*
- 	 * NOTE! We'd better ACK the irq immediately,
- 	 * because timer handling can be slow.
-Index: linux-mcount.git/arch/x86/kernel/irq_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/irq_32.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/irq_32.c	2008-01-30 15:54:06.000000000 -0500
-@@ -85,6 +85,7 @@ fastcall unsigned int do_IRQ(struct pt_r
+-	if (!atomic_read(&sched_ref))
+-		return;
+-
+-	tracing_record_cmdline(current);
+-
+ 	if (!trace_enabled)
+ 		return;
  
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
-+	trace_mark(arch_do_irq, "ip %lx irq %d", regs->eip, irq);
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
- 	/* Debugging check for stack overflow: is there less than 1KB free? */
- 	{
-Index: linux-mcount.git/arch/x86/kernel/irq_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/irq_64.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/irq_64.c	2008-01-30 15:54:06.000000000 -0500
-@@ -149,6 +149,8 @@ asmlinkage unsigned int do_IRQ(struct pt
- 	irq_enter();
- 	irq = __get_cpu_var(vector_irq)[vector];
- 
-+	trace_mark(arch_do_irq, "ip %lx irq %d", regs->rip, irq);
-+
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
- 	stack_overflow_check(regs);
- #endif
-Index: linux-mcount.git/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/traps_32.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/traps_32.c	2008-01-30 15:54:06.000000000 -0500
-@@ -769,6 +769,8 @@ fastcall __kprobes void do_nmi(struct pt
- 
- 	nmi_enter();
- 
-+	trace_mark(arch_do_nmi, "ip %lx flags %lx", regs->eip, regs->eflags);
-+
- 	cpu = smp_processor_id();
- 
- 	++nmi_count(cpu);
-Index: linux-mcount.git/arch/x86/kernel/traps_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/traps_64.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/traps_64.c	2008-01-30 15:54:06.000000000 -0500
-@@ -782,6 +782,8 @@ asmlinkage __kprobes void default_do_nmi
- 
- 	cpu = smp_processor_id();
- 
-+	trace_mark(arch_do_nmi, "ip %lx flags %lx", regs->rip, regs->eflags);
-+
- 	/* Only the BSP gets external NMIs from the system.  */
- 	if (!cpu)
- 		reason = get_nmi_reason();
-Index: linux-mcount.git/arch/x86/mm/fault_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/mm/fault_32.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/arch/x86/mm/fault_32.c	2008-01-30 15:54:06.000000000 -0500
-@@ -311,6 +311,9 @@ fastcall void __kprobes do_page_fault(st
- 	/* get the address */
-         address = read_cr2();
- 
-+	trace_mark(arch_do_page_fault, "ip %lx err %lx addr %lx",
-+		   regs->eip, error_code, address);
-+
- 	tsk = current;
- 
- 	si_code = SEGV_MAPERR;
-Index: linux-mcount.git/arch/x86/mm/fault_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/mm/fault_64.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/arch/x86/mm/fault_64.c	2008-01-30 15:54:06.000000000 -0500
-@@ -316,6 +316,9 @@ asmlinkage void __kprobes do_page_fault(
- 	/* get the address */
- 	address = read_cr2();
- 
-+	trace_mark(arch_do_page_fault, "ip %lx err %lx addr %lx",
-+		   regs->rip, error_code, address);
-+
- 	info.si_code = SEGV_MAPERR;
- 
- 
-Index: linux-mcount.git/kernel/hrtimer.c
-===================================================================
---- linux-mcount.git.orig/kernel/hrtimer.c	2008-01-30 14:35:48.000000000 -0500
-+++ linux-mcount.git/kernel/hrtimer.c	2008-01-30 15:54:06.000000000 -0500
-@@ -709,6 +709,8 @@ static void enqueue_hrtimer(struct hrtim
- 	struct hrtimer *entry;
- 	int leftmost = 1;
- 
-+	trace_mark(kernel_hrtimer_enqueue,
-+		   "expires %p timer %p", &timer->expires, timer);
- 	/*
- 	 * Find the right place in the rbtree:
- 	 */
-@@ -1130,6 +1132,7 @@ void hrtimer_interrupt(struct clock_even
- 
-  retry:
- 	now = ktime_get();
-+	trace_mark(kernel_hrtimer_interrupt, "now %p", &now);
- 
- 	expires_next.tv64 = KTIME_MAX;
- 
-@@ -1168,6 +1171,10 @@ void hrtimer_interrupt(struct clock_even
- 				continue;
- 			}
- 
-+			trace_mark(kernel_hrtimer_interrupt_expire,
-+				   "expires %p timer %p",
-+				   &timer->expires, timer);
-+
- 			__run_hrtimer(timer);
- 		}
- 		spin_unlock(&cpu_base->lock);
-Index: linux-mcount.git/kernel/sched.c
-===================================================================
---- linux-mcount.git.orig/kernel/sched.c	2008-01-30 15:46:44.000000000 -0500
-+++ linux-mcount.git/kernel/sched.c	2008-01-30 15:54:06.000000000 -0500
-@@ -90,6 +90,11 @@ unsigned long long __attribute__((weak))
- #define PRIO_TO_NICE(prio)	((prio) - MAX_RT_PRIO - 20)
- #define TASK_NICE(p)		PRIO_TO_NICE((p)->static_prio)
- 
-+#define __PRIO(prio) \
-+	((prio) <= 99 ? 199 - (prio) : (prio) - 120)
-+
-+#define PRIO(p) __PRIO((p)->prio)
-+
- /*
-  * 'User priority' is the nice value converted to something we
-  * can work with better when scaling various scheduler parameters,
-@@ -1372,6 +1377,9 @@ static void activate_task(struct rq *rq,
- 	if (p->state == TASK_UNINTERRUPTIBLE)
- 		rq->nr_uninterruptible--;
- 
-+	trace_mark(kernel_sched_activate_task,
-+		   "pid %d prio %d nr_running %ld",
-+		   p->pid, PRIO(p), rq->nr_running);
- 	enqueue_task(rq, p, wakeup);
- 	inc_nr_running(p, rq);
- }
-@@ -1385,6 +1393,9 @@ static void deactivate_task(struct rq *r
- 		rq->nr_uninterruptible++;
- 
- 	dequeue_task(rq, p, sleep);
-+	trace_mark(kernel_sched_deactivate_task,
-+		   "pid %d prio %d nr_running %ld",
-+		   p->pid, PRIO(p), rq->nr_running);
- 	dec_nr_running(p, rq);
+-	va_start(ap, format);
+-	prev = va_arg(ap, typeof(prev));
+-	next = va_arg(ap, typeof(next));
+-	va_end(ap);
+-
+ 	raw_local_irq_save(flags);
+ 	cpu = raw_smp_processor_id();
+ 	data = tr->data[cpu];
+@@ -58,6 +46,117 @@ static notrace void sched_switch_callbac
+ 	raw_local_irq_restore(flags);
  }
  
++static struct tracer_switch_ops sched_switch_ops __read_mostly =
++{
++	.func = sched_switch_func,
++	.private = &tracer_trace,
++};
++
++static tracer_switch_func_t tracer_switch_func __read_mostly =
++	sched_switch_func;
++
++static struct tracer_switch_ops *tracer_switch_func_ops __read_mostly =
++	&sched_switch_ops;
++
++static void notrace sched_switch_func_loop(void *private,
++					   struct task_struct *prev,
++					   struct task_struct *next)
++{
++	struct tracer_switch_ops *ops = tracer_switch_func_ops;
++
++	/* take care of alpha acting funny */
++	read_barrier_depends();
++
++	for (; ops != NULL; ops = ops->next) {
++		/* silly alpha */
++		read_barrier_depends();
++		ops->func(ops->private, prev, next);
++	}
++}
++
++notrace int register_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++	ops->next = tracer_switch_func_ops;
++	/*
++	 * We are entering ops into the switch list but another
++	 * CPU might be walking that list. We need to make sure
++	 * the ops->next pointer is valid before another CPU sees
++	 * the ops pointer included into the switch list.
++	 */
++	smp_wmb();
++	tracer_switch_func_ops = ops;
++
++	if (ops->next == &sched_switch_ops)
++		tracer_switch_func = sched_switch_func_loop;
++
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++notrace int unregister_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++	struct tracer_switch_ops **p = &tracer_switch_func_ops;
++	int ret;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++
++	/*
++	 * If the sched_switch is the only one left, then
++	 *  only call that function.
++	 */
++	if (*p == ops && ops->next == &sched_switch_ops) {
++		tracer_switch_func = sched_switch_func;
++		tracer_switch_func_ops = &sched_switch_ops;
++		goto out;
++	}
++
++	for (; *p != &sched_switch_ops; p = &(*p)->next)
++		if (*p == ops)
++			break;
++
++	if (*p != ops) {
++		ret = -1;
++		goto out;
++	}
++
++	*p = (*p)->next;
++
++ out:
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++static notrace void sched_switch_callback(const struct marker *mdata,
++					  void *private_data,
++					  const char *format, ...)
++{
++	struct task_struct *prev;
++	struct task_struct *next;
++	va_list ap;
++
++	if (!atomic_read(&sched_ref))
++		return;
++
++	tracing_record_cmdline(current);
++
++	va_start(ap, format);
++	prev = va_arg(ap, typeof(prev));
++	next = va_arg(ap, typeof(next));
++	va_end(ap);
++
++	/*
++	 * If tracer_switch_func only points to the local
++	 * switch func, it still needs the ptr passed to it.
++	 */
++	tracer_switch_func(mdata->private, prev, next);
++}
++
+ static notrace void sched_switch_reset(struct tracing_trace *tr)
+ {
+ 	int cpu;
 
 -- 
