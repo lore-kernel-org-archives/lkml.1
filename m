@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYA3ATz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbYA3AVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756668AbYA3ATz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYA3ATo
+	id S1755645AbYA3AVF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:21:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYA3AUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:19:44 -0500
-Received: from rtr.ca ([76.10.145.34]:3116 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbYA3ATn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:19:43 -0500
-Message-ID: <479FC29A.1000207@rtr.ca>
-Date: Tue, 29 Jan 2008 19:19:38 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 29 Jan 2008 19:20:53 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:39497 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752965AbYA3AUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 19:20:52 -0500
+Date: Tue, 29 Jan 2008 16:20:50 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080130000039.GA7233@v2.random>
+Message-ID: <Pine.LNX.4.64.0801291620170.28027@schroedinger.engr.sgi.com>
+References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
+ <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
+ <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
+ <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
+ <20080130000039.GA7233@v2.random>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
-       Richard Heck <rgheck@bobjweil.com>,
-       Daniel Barkalow <barkalow@iabervon.org>, Zan Lynx <zlynx@acm.org>,
-       Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-References: <200801272122.21823.gene.heskett@gmail.com> <200801291204.44671.gene.heskett@gmail.com> <20080129185445.1c7d3a83@core> <200801291741.50192.gene.heskett@gmail.com>
-In-Reply-To: <200801291741.50192.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
->
-> I doubt libata has that capability now, or ever will, cuz these ide/atapi 
-> devices are generally dumber than rocks about that.  But any device claiming 
-> to be scsi-II is supposed to be able to do those sorts of things while the 
-> cpu is off crunching numbers for BOINC or whatever.
-..
+On Wed, 30 Jan 2008, Andrea Arcangeli wrote:
 
-The CD/DVD drives all all "MMC" devices internally, which means they speak
-a SCSI command protocol.  Regardless of the electrical or optical interface.
+> > invalidate_range after populate allows access to memory for which ptes 
+> > were zapped and the refcount was released.
+> 
+> The last refcount is released by the invalidate_range itself.
 
-Linux is software, and the software protocol is exactly the same for them,
-no matter what the cable/bus type happens to be.
+That is true for your implementation and to address Robin's issues. Jack: 
+Is that true for the GRU?
 
-Cheers
