@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYA3Iyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbYA3IzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbYA3Iyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 03:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbYA3Iww
+	id S1758657AbYA3IzV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 03:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbYA3Iwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 03:52:52 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:51389 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755245AbYA3Iws (ORCPT
+	Wed, 30 Jan 2008 03:52:53 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:47051 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755745AbYA3Iwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 03:52:48 -0500
+	Wed, 30 Jan 2008 03:52:39 -0500
 X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="47621982"
+   d="scan'208";a="61202555"
 From: Bryan Wu <bryan.wu@analog.com>
 To: jeff@garzik.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Mike Frysinger <michael.frysinger@analog.com>,
+Cc: linux-kernel@vger.kernel.org, Alexey Demin <bf53x@ya.ru>,
        Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 4/8] [Blackfin] EMAC driver: use simpler comment headers and strip out information that is maintained in the scm's log
-Date: Wed, 30 Jan 2008 16:52:24 +0800
-Message-Id: <1201683148-23931-5-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 7/8] [Blackfin] EMAC driver: fix bug - invalidate data cache of new_skb->data range when cache is WB
+Date: Wed, 30 Jan 2008 16:52:27 +0800
+Message-Id: <1201683148-23931-8-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1201683148-23931-1-git-send-email-bryan.wu@analog.com>
 References: <1201683148-23931-1-git-send-email-bryan.wu@analog.com>
@@ -27,101 +26,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <michael.frysinger@analog.com>
+From: Alexey Demin <bf53x@ya.ru>
 
-Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+It prevents overwritting new data from DMA.
+
+Signed-off-by: Alexey Demin <bf53x@ya.ru>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/net/bfin_mac.c |   32 ++++----------------------------
- drivers/net/bfin_mac.h |   31 ++++---------------------------
- 2 files changed, 8 insertions(+), 55 deletions(-)
+ drivers/net/bfin_mac.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-index c6586cd..ed935e1 100644
+index f2368b7..0a17fb4 100644
 --- a/drivers/net/bfin_mac.c
 +++ b/drivers/net/bfin_mac.c
-@@ -1,35 +1,11 @@
- /*
-- * File:	drivers/net/bfin_mac.c
-- * Based on:
-- * Maintainer:
-- * 		Bryan Wu <bryan.wu@analog.com>
-+ * Blackfin On-Chip MAC Driver
-  *
-- * Original author:
-- * 		Luke Yang <luke.yang@analog.com>
-+ * Copyright 2004-2007 Analog Devices Inc.
-  *
-- * Created:
-- * Description:
-+ * Enter bugs at http://blackfin.uclinux.org/
-  *
-- * Modified:
-- * 		2006-12-19 Aidan Williams, multicast hash support
-- *		Copyright 2004-2006 Analog Devices Inc.
-- *
-- * Bugs:	Enter bugs at http://blackfin.uclinux.org/
-- *
-- * This program is free software ;  you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation ;  either version 2, or (at your option)
-- * any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY ;  without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program ;  see the file COPYING.
-- * If not, write to the Free Software Foundation,
-- * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ * Licensed under the GPL-2 or later.
-  */
+@@ -651,6 +651,12 @@ static void bf537mac_rx(struct net_device *dev)
+ 	current_rx_ptr->skb = new_skb;
+ 	current_rx_ptr->desc_a.start_addr = (unsigned long)new_skb->data - 2;
  
- #include <linux/init.h>
-diff --git a/drivers/net/bfin_mac.h b/drivers/net/bfin_mac.h
-index 5970ea7..f774d5a 100644
---- a/drivers/net/bfin_mac.h
-+++ b/drivers/net/bfin_mac.h
-@@ -1,34 +1,11 @@
- /*
-- * File:	drivers/net/bfin_mac.c
-- * Based on:
-- * Maintainer:
-- * 		Bryan Wu <bryan.wu@analog.com>
-+ * Blackfin On-Chip MAC Driver
-  *
-- * Original author:
-- * 		Luke Yang <luke.yang@analog.com>
-+ * Copyright 2004-2007 Analog Devices Inc.
-  *
-- * Created:
-- * Description:
-+ * Enter bugs at http://blackfin.uclinux.org/
-  *
-- * Modified:
-- *		Copyright 2004-2006 Analog Devices Inc.
-- *
-- * Bugs:	Enter bugs at http://blackfin.uclinux.org/
-- *
-- * This program is free software ;  you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation ;  either version 2, or (at your option)
-- * any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY ;  without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program ;  see the file COPYING.
-- * If not, write to the Free Software Foundation,
-- * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ * Licensed under the GPL-2 or later.
-  */
- 
- #define BFIN_MAC_CSUM_OFFLOAD
++	/* Invidate the data cache of skb->data range when it is write back
++	 * cache. It will prevent overwritting the new data from DMA
++	 */
++	blackfin_dcache_invalidate_range((unsigned long)new_skb->head,
++					 (unsigned long)new_skb->end);
++
+ 	len = (unsigned short)((current_rx_ptr->status.status_word) & RX_FRLEN);
+ 	skb_put(skb, len);
+ 	blackfin_dcache_invalidate_range((unsigned long)skb->head,
 -- 
 1.5.3.4
