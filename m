@@ -1,120 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYA3QcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbYA3Qet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYA3QcX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 11:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYA3QcI
+	id S1759142AbYA3Qet (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 11:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYA3Qej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 11:32:08 -0500
-Received: from mga03.intel.com ([143.182.124.21]:48838 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751544AbYA3QcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 11:32:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,278,1199692800"; 
-   d="scan'208";a="373078719"
-Message-ID: <47A0A481.3000504@intel.com>
-Date: Wed, 30 Jan 2008 08:23:29 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       akpm <akpm@linux-foundation.org>, NetDev <netdev@vger.kernel.org>
-Subject: Re: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over
- to e1000e"
-References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com> <47A04C07.1040200@garzik.org>
-In-Reply-To: <47A04C07.1040200@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Jan 2008 11:34:39 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46005 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751492AbYA3Qei (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 11:34:38 -0500
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rdreier@cisco.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <adazluoe2t3.fsf@cisco.com> <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 10:34:31 -0600
+Message-Id: <1201710871.3292.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jan 2008 16:24:17.0948 (UTC) FILETIME=[8FB935C0:01C8635C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Linus Torvalds wrote:
->>
->> On Tue, 29 Jan 2008, Randy Dunlap wrote:
->>> Andrew was concerned about this when the driver was in -mm.
->>> He asked for a patch that would set E1000E to same value as E1000
->>> and I supplied that.  Auke acked it IIRC.  Other people vetoed it.  :(
->>
->> Yeah, I've been discussing with Jeff and the gang.
->>
->> I think we have agreed on a solution where the ID's show up in the old
->> driver if the new driver is not enabled at all.
->>
->> (And as a side note: it turns out that the problem I experienced
->> didn't come from the new e1000e driver after all, so I'll be removing
->> the EXPERIMENTAL flag again).
->>
->> So I'd suggest the final patch be something like this, but I'm sendign
->> it out just as an example of how we could solve this, not necessarily
->> as a final patch.
->>
->> Jeff, Auke, would something like this be acceptable? It makes it very
->> obvious in the driver table which entries are for the PCIE versions
->> that would be handled by the E1000E driver if it is enabled..
->>
->> Untested, but as mentioned, this is more of a "this looks maintainable
->> and like it should solve the issues" rather than anything I was
->> planning on committing now.
->>
->>         Linus
->> ---
->>  drivers/net/Kconfig            |    5 ++-
->>  drivers/net/e1000/e1000_main.c |   60
->> ++++++++++++++++++++++------------------
->>  2 files changed, 37 insertions(+), 28 deletions(-)
->>
->> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
->> index 5a2d1dd..6c57540 100644
->> --- a/drivers/net/Kconfig
->> +++ b/drivers/net/Kconfig
->> @@ -1992,7 +1992,7 @@ config E1000_DISABLE_PACKET_SPLIT
->>  
->>  config E1000E
->>      tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
->> -    depends on PCI && EXPERIMENTAL
->> +    depends on PCI
->>      ---help---
->>        This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
->>        ethernet family of adapters. For PCI or PCI-X e1000 adapters,
->> @@ -2009,6 +2009,9 @@ config E1000E
->>        To compile this driver as a module, choose M here. The module
->>        will be called e1000e.
->>  
->> +config E1000E_ENABLED
->> +    def_bool E1000E != n
->> +
->>  config IP1000
->>      tristate "IP1000 Gigabit Ethernet support"
->>      depends on PCI && EXPERIMENTAL
->> diff --git a/drivers/net/e1000/e1000_main.c
->> b/drivers/net/e1000/e1000_main.c
->> index 3111af6..8c87940 100644
->> --- a/drivers/net/e1000/e1000_main.c
->> +++ b/drivers/net/e1000/e1000_main.c
->> @@ -47,6 +47,12 @@ static const char e1000_copyright[] = "Copyright
->> (c) 1999-2006 Intel Corporation
->>   * Macro expands to...
->>   *   {PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
->>   */
->> +#ifdef CONFIG_E1000E_ENABLED
->> +  #define PCIE(x) +#else
->> +  #define PCIE(x) x,
->> +#endif
+
+On Wed, 2008-01-30 at 09:38 +0100, Bart Van Assche wrote:
+> On Jan 30, 2008 12:32 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> >
+> > iSER has parameters to limit the maximum size of RDMA (it needs to
+> > repeat RDMA with a poor configuration)?
 > 
-> Patch gets my ACK, if you like, though an improvement would be to have
-> your Kconfig logic activate CONFIG_E1000_PCIEX.  Then future janitors
-> could come along and disable unused code in addition to PCI IDs.
+> Please specify which parameters you are referring to. As you know I
+> had already repeated my tests with ridiculously high values for the
+> following iSER parameters: FirstBurstLength, MaxBurstLength and
+> MaxRecvDataSegmentLength (16 MB, which is more than the 1 MB block
+> size specified to dd).
 
-Ack from my side as well, allthough I hope that this code will not live long as I
-would love to start taking out pci-e code out of e1000. If we merge this patch
-then I suggest that we don't do that until for at least a whole cycle, since it
-does not make much sense otherwise.
+the 1Mb block size is a bit of a red herring.  Unless you've
+specifically increased the max_sector_size and are using an sg_chain
+converted driver, on x86 the maximum possible transfer accumulation is
+0.5MB.
 
-Auke
+I certainly don't rule out that increasing the transfer size up from
+0.5MB might be the way to improve STGT efficiency, since at an 1GB/s
+theoretical peak, that's roughly 2000 context switches per I/O; however,
+It doesn't look like you've done anything that will overcome the block
+layer limitations.
+
+James
+
+
