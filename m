@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYA3A7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYA3BHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbYA3A7Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbYA3A7P
+	id S1754192AbYA3BHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 20:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYA3BHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:59:15 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57094
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbYA3A7O (ORCPT
+	Tue, 29 Jan 2008 20:07:21 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:47228 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbYA3BHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:59:14 -0500
-Date: Wed, 30 Jan 2008 01:59:12 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080130005912.GC7233@v2.random>
-References: <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com> <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com> <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com> <20080130000039.GA7233@v2.random> <20080130000559.GB7233@v2.random> <Pine.LNX.4.64.0801291621380.28027@schroedinger.engr.sgi.com>
+	Tue, 29 Jan 2008 20:07:19 -0500
+Date: Tue, 29 Jan 2008 17:07:16 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU issue?
+Message-ID: <20080130010716.GB16069@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com> <479DF0A1.3000906@pengutronix.de> <479DF711.5090406@grandegger.com> <479F186A.4020004@pengutronix.de> <479F2C3C.1020203@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801291621380.28027@schroedinger.engr.sgi.com>
+In-Reply-To: <479F2C3C.1020203@grandegger.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 04:22:46PM -0800, Christoph Lameter wrote:
-> That is only partially true. pte are created wronly in order to track 
-> dirty state these days. The first write will lead to a fault that switches 
-> the pte to writable. When the page undergoes writeback the page again 
-> becomes write protected. Thus our need to effectively deal with 
-> page_mkclean.
+On Tue, Jan 29, 2008 at 02:38:04PM +0100, Wolfgang Grandegger wrote:
+> Luotao Fu wrote:
+> > Hi,
+> > 
+> > Wolfgang Grandegger wrote:
+> > ..........
+> >> Do you still get high latencies with:
+> >>
+> >>   CONFIG_PREEMPT_RCU_BOOST=y
+> >>   CONFIG_RCU_TRACE=y
+> >>   CONFIG_NO_HZ is not set
+> >>
+> >> With this setting I have not yet realized latencies > 150us. Could you
+> >> please give it a try? If I change one of the parameters above, latency
+> >> increases in short time.
+> > 
+> > I played through some combination of the RCU options and can back your
+> > observation this time: With the rcu Tracer or the priority boost turned
+> > off I also could measure reliably extraordinory high latencies. If they
+> > are both turned on, no high latencies could be measured. Turning on the
+> > dynamic ticker however doesn't seem to cause high latencies during my
+> > test runs. Seemed like an rcu issue here.
+> 
+> I'm just making a long test run on my TQM5200 module with my good
+> settings. After more than 4.5 hours under load, cyclictest shows a
+> maximum latency of 177 us. I'm going to re-check the effect of CONFIG_NO_HZ.
+> 
+> > Further such results only appear if the target board is booted with
+> > nfsrootfs. (As I already have mentioned several times before), which
+> > leads my suspection to rcu usage in nfs implementation. In this case
+> > this problem might even be platformindependent. I'd have to do some
+> > tests on one of our arm boards later to test this. Since there're no
+> > reports like this for other architecture as powerpc till now, I doubt
+> > quite if this is verifiable.
+> 
+> It's also my suspicion that the high latencies are related to the RCU
+> usage in the network layer, where it's heavily used. What is really
+> wired is that switching off CONFIG_RCU_TRACE has a negative impact on
+> the latency. As I see it, it just adds some trace points, but I might
+> have missed something.
 
-Well I was talking about anonymous memory.
+I would expect that CONFIG_RCU_TRACE=n (as in "no" rather than "module")
+would have low latencies rather than high latencies.  So I am quite
+surprised by your result.  I will dig into this more.
+
+							Thanx, Paul
