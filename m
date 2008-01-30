@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763091AbYA3Tuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbYA3Twh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763091AbYA3Tuh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYA3Tu2
+	id S1762047AbYA3Twh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYA3Tw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:50:28 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:35366 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753279AbYA3Tu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:50:27 -0500
-Date: Wed, 30 Jan 2008 11:50:26 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080130182506.GQ7233@v2.random>
-Message-ID: <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
-References: <20080129162004.GL7233@v2.random>
- <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
- <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
- <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
- <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
- <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
- <20080130182506.GQ7233@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Jan 2008 14:52:28 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:18873 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755150AbYA3Tw1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:52:27 -0500
+Date: Wed, 30 Jan 2008 11:51:08 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: gregkh <greg@kroah.com>, akpm <akpm@linux-foundation.org>,
+       torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] docbook: fix drivers/base/class warning
+Message-Id: <20080130115108.2df9ade6.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008, Andrea Arcangeli wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> XPMEM requires with invalidate_range (sleepy) +
-> before_invalidate_range (sleepy). invalidate_all should also be called
-> before_release (both sleepy).
-> 
-> It sounds we need full overlap of information provided by
-> invalidate_page and invalidate_range to fit all three models (the
-> opposite of the zero objective that current V3 is taking). And the
-> swap will be handled only by invalidate_page either through linux rmap
-> or external rmap (with the latter that can sleep so it's ok for you,
-> the former not). GRU can safely use the either the linux rmap notifier
-> or the external rmap notifier equally well, because when try_to_unmap
-> is called the page is locked and obviously pinned by the VM itself.
+Fix kernel-doc empty line warning:
+Warning(linux-2.6.24-git8//drivers/base/class.c:866): bad line:
 
-So put the invalidate_page() callbacks in everywhere.
-
-Then we have 
-
-invalidate_range_start(mm)
-
-and
-
-invalidate_range_finish(mm, start, end)
-
-in addition to the invalidate rmap_notifier?
-
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- include/linux/mmu_notifier.h |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/base/class.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/include/linux/mmu_notifier.h
-===================================================================
---- linux-2.6.orig/include/linux/mmu_notifier.h	2008-01-30 11:49:02.000000000 -0800
-+++ linux-2.6/include/linux/mmu_notifier.h	2008-01-30 11:49:57.000000000 -0800
-@@ -69,10 +69,13 @@ struct mmu_notifier_ops {
- 	/*
- 	 * lock indicates that the function is called under spinlock.
- 	 */
--	void (*invalidate_range)(struct mmu_notifier *mn,
-+	void (*invalidate_range_begin)(struct mmu_notifier *mn,
- 				 struct mm_struct *mm,
--				 unsigned long start, unsigned long end,
- 				 int lock);
-+
-+	void (*invalidate_range_end)(struct mmu_notifier *mn,
-+				 struct mm_struct *mm,
-+				 unsigned long start, unsigned long end);
- };
- 
- struct mmu_rmap_notifier_ops;
+--- linux-2.6.24-git8.orig/drivers/base/class.c
++++ linux-2.6.24-git8/drivers/base/class.c
+@@ -863,7 +863,7 @@ EXPORT_SYMBOL_GPL(class_for_each_device)
+  * The callback should return 0 if the device doesn't match and non-zero
+  * if it does.  If the callback returns non-zero, this function will
+  * return to the caller and not iterate over any more devices.
+-
++ *
+  * Note, you will need to drop the reference with put_device() after use.
+  *
+  * We hold class->sem in this function, so it can not be
