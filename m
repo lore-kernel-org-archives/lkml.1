@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbYA3Pqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbYA3PrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758522AbYA3Pqo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 10:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYA3Pqf
+	id S1760472AbYA3PrI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 10:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbYA3Pqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 10:46:35 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63249 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751482AbYA3Pqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 10:46:34 -0500
-Date: Wed, 30 Jan 2008 16:46:31 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: michael <trimarchi@gandalf.sssup.it>
-Cc: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-Message-ID: <20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <47A09723.7020000@gandalf.sssup.it>
-References: <20080129224316.GA23155@gandalf.sssup.it>
-	<479FB2D7.4020804@gandalf.sssup.it>
-	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
-	<47A051A7.7030004@gandalf.sssup.it>
-	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
-	<47A09723.7020000@gandalf.sssup.it>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Wed, 30 Jan 2008 10:46:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57366 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbYA3Pqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 10:46:48 -0500
+Date: Wed, 30 Jan 2008 07:45:40 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ioremap_xxx() with EXEC enabled
+Message-ID: <20080130074540.031b6799@laptopd505.fenrus.org>
+In-Reply-To: <1201685530.17912.11.camel@caritas-dev.intel.com>
+References: <1201685530.17912.11.camel@caritas-dev.intel.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 16:26:27 +0100
-michael <trimarchi@gandalf.sssup.it> wrote:
+On Wed, 30 Jan 2008 17:32:10 +0800
+"Huang, Ying" <ying.huang@intel.com> wrote:
 
-> > I have no idea. Could you post some more specifics about what you
-> > modified, for example a diff?
-> >
-> >     
+> Hi,
 > 
-> ...
-> /* The interrupt handler does not take the lock */
-> spin_lock_irqsave(&port->lock, flags);
-> atmel_tx_chars(port);
-> spin_unlock_irqrestore(&port->lock, flags);
+> On i386, EFI may need to map EFI runtime code area as EXEC enabled
+> with ioremap(). But, I found that the memory are mapped as EXEC
+> disabled when mapped with ioremap() now. I think we may need a method
+> to map memory area as EXEC enabled with ioremap_xxx(). Some possible
+> interface schemes for mapping as EXEC enabled are as follow:
+> 
+> - Interface scheme 1:
 
-Sorry, this isn't going to work.
+scheme 3:
 
-Please post a diff with the changes you did to the driver, and whatever
-output you got when it crashed.
-
-It's really difficult to help you when I don't know (a) what code
-you're actually running, or (b) anything about the crash.
-
-> The atmel_tx_chars using the serial device registers like the interrupt 
-> routine
-> and so I think that it is possible to have interference during send 
-> operation.
-
-No, it's only called from the tasklet, and the interrupt handler doesn't
-touch the TX data register. There shouldn't be any need to disable
-interrupts around the call to atmel_tx_chars(). In fact, this may very
-well be the cause of the overruns you're seeing.
-
-Haavard
+set_memory_x(... )
