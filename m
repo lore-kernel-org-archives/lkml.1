@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbYA3NAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYA3NHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758165AbYA3NAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbYA3NAF
+	id S1757521AbYA3NHW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbYA3NHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:00:05 -0500
-Received: from hs-out-0708.google.com ([64.233.178.244]:46703 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753584AbYA3NAD (ORCPT
+	Wed, 30 Jan 2008 08:07:09 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37769 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754461AbYA3NHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:00:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bBBarfPkEXQ2CYowXEVaFpiC7zTsfduX49eJtsF3WMZeImBSQ54nO84pjvisLMXVi+PcwEhPXweKBRDvLJ33YXHEES8gVcbRKOfAkTyWuRd32YmCZfRbp2zNo4tm23fA6TyHNFkCsWPOSdi9ygCWjzNk2HJdSQIwiisUlAP3sJw=
-Message-ID: <851fc09e0801300500p3efe8602yd3219e44856486f9@mail.gmail.com>
-Date: Wed, 30 Jan 2008 21:00:00 +0800
-From: "huang ying" <huang.ying.caritas@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: ioremap_xxx() with EXEC enabled
-Cc: "Huang, Ying" <ying.huang@intel.com>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <200801301059.40568.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 08:07:08 -0500
+Date: Wed, 30 Jan 2008 13:06:56 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>, trivial@kernel.org,
+       linux-fsdevel@vger.kernel.org, apw@shadowen.org, rdunlap@xenotime.net,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 8/9] bfs: remove multiple assignments
+Message-ID: <20080130130656.GI27894@ZenIV.linux.org.uk>
+References: <1201296027-6900-1-git-send-email-dmitri.vorobiev@gmail.com> <1201296027-6900-9-git-send-email-dmitri.vorobiev@gmail.com> <Pine.LNX.4.61.0801261833270.1966@ginsburg.homenet> <479BC6E5.5000409@gmail.com> <479D7DEB.7070806@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1201685530.17912.11.camel@caritas-dev.intel.com>
-	 <200801301059.40568.ak@suse.de>
+In-Reply-To: <479D7DEB.7070806@austin.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 5:59 PM, Andi Kleen <ak@suse.de> wrote:
-> On Wednesday 30 January 2008 10:32, Huang, Ying wrote:
-> > Hi,
+On Mon, Jan 28, 2008 at 01:02:03AM -0600, Joel Schopp wrote:
+> >>>-    inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
+> >>>+    inode->i_mtime = CURRENT_TIME_SEC;
+> >>>+    inode->i_atime = CURRENT_TIME_SEC;
+> >>>+    inode->i_ctime = CURRENT_TIME_SEC;
+> >>multiple assignments like "x = y = z = value;" can potentially
+> >>(depending on the compiler and arch) be faster than "x = value; y =
+> >>value; z=value;"
+> >>
+> >>I am surprized that this script complains about them as it is a
+> >>perfectly valid thing to do in C.
 > >
-> > On i386, EFI may need to map EFI runtime code area as EXEC enabled with
-> > ioremap(). But, I found that the memory are mapped as EXEC disabled when
-> > mapped with ioremap() now. I think we may need a method to map memory
-> > area as EXEC enabled with ioremap_xxx(). Some possible interface schemes
-> > for mapping as EXEC enabled are as follow:
->
-> Does __ioremap(..., PAGE_KERNEL_EXEC) not work?
+> >I think it seems wise to ask the maintainers of checkpatch.pl to
+> >comment on that. I'm Cc:ing them now.
+> >
+> 
+> There are plenty of things that are valid to do in C that don't make for 
+> maintainable code.  These scripts are designed to make your code easier for 
+> real people to review and maintain.
 
-The the last parameter of the current implementation of __ioremap() in
-x86 git is  enum ioremap_mode (IOR_MODE_UNCACHED and IOR_MODE_CACHED),
-not the flags like before. So this does not work.
-
-Best Regards,
-Huang Ying
+Except that in this case the new variant is not equivalent to the old one...
