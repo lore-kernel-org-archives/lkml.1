@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYA3NiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbYA3Nii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYA3NiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbYA3Nhn
+	id S1755577AbYA3Nii (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:38:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYA3Ni1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:37:43 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45188 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755133AbYA3Nhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:37:41 -0500
-Date: Wed, 30 Jan 2008 14:37:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Jonas Bonn <jonas@southpole.se>, netdev@vger.kernel.org,
-       romieu@fr.zoreil.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [SIS190] Constify data marked as __devinitdata
-Message-ID: <20080130133742.GA22198@uranus.ravnborg.org>
-References: <1201690388-9052-1-git-send-email-jonas@southpole.se> <Pine.LNX.4.64.0801301220570.15249@fbirervta.pbzchgretzou.qr> <20080130112559.GA21346@uranus.ravnborg.org> <Pine.LNX.4.64.0801301429230.15249@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801301429230.15249@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 Jan 2008 08:38:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:33705 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753440AbYA3Ni0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 08:38:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=hHbI8Av9psJglG3g9Yo2xHtzXGm09OSb1nGkT1AZ4VeunSpX97v1/TPov30bNYg16hXmUbOQ9tk5/wpVqxjXGNUcyezVmWByRI67/IsfQ5M+73TvMgKvHGPwGVkbbi5HI3CIIqrf3RrJ7dnGF4FYYBk2I6pnxd61VjuIGAZu3VQ=
+Message-ID: <47A07DCE.5010808@gmail.com>
+Date: Wed, 30 Jan 2008 14:38:22 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
+       Mike Frysinger <michael.frysinger@analog.com>
+Subject: Re: [PATCH 1/1] [Blackfin] char driver for Blackfin on-chip OTP memory
+References: <1201689401-2892-1-git-send-email-bryan.wu@analog.com>	 <47A058B3.6000009@gmail.com> <8bd0f97a0801300519g22c5b66fjcba22a027e7043cc@mail.gmail.com>
+In-Reply-To: <8bd0f97a0801300519g22c5b66fjcba22a027e7043cc@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 02:31:05PM +0100, Jan Engelhardt wrote:
+On 01/30/2008 02:19 PM, Mike Frysinger wrote:
+> On Jan 30, 2008 6:00 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> On 01/30/2008 11:36 AM, Bryan Wu wrote:
+>>> +     ret = cdev_add(&bfin_otp_cdev, bfin_otp_dev_node, 1);
+>>> +     if (ret) {
+>>> +             unregister_chrdev_region(bfin_otp_dev_node, 1);
+>>> +             printk(KERN_ERR PFX "unable to register char device\n");
+>>> +             return ret;
+>>> +     }
+>>> +
+>>> +     bfin_otp_class = class_create(THIS_MODULE, "otp");
+>>> +     device_create(bfin_otp_class, NULL, bfin_otp_dev_node, "otp");
+>> Anyway, wouldn't be easier/better to use misc.c functionality here
+>> (misc_register() et al.)?
 > 
-> On Jan 30 2008 12:25, Sam Ravnborg wrote:
-> >
-> >We have just introduced __initconst, __cpuinitconst, __meminitconst
-> >for const data.
-> >So the patch is wrong.
-> 
-> Oh joy, more tags. Is it actually possible to combine const
-> with __devinitconst now?
-> 
-> static const uint16_t foo[] __devinitconst = { ... };
+> probably ... i just didnt want to statically allocate a number in the
+> range that would be Blackfin specific ...
 
-Yes, try it.
+MISC_DYNAMIC_MINOR is definitely your friend ;).
 
-	Sam
