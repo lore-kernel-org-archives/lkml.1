@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbYA3Ca4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYA3CbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbYA3Ca4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYA3C3u
+	id S1756712AbYA3CbW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYA3C3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:29:50 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:40836 "EHLO relay.sgi.com"
+	Tue, 29 Jan 2008 21:29:51 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:40833 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753090AbYA3C3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753245AbYA3C3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jan 2008 21:29:46 -0500
-Message-Id: <20080130022944.927685001@sgi.com>
-References: <20080130022909.677301714@sgi.com>
+Message-Id: <20080130022909.677301714@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 18:29:13 -0800
+Date: Tue, 29 Jan 2008 18:29:09 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: Andrea Arcangeli <andrea@qumranet.com>
 Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
@@ -22,77 +21,74 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 4/6] MMU notifier: invalidate_page callbacks using Linux rmaps
-Content-Disposition: inline; filename=mmu_invalidate_page_callbacks
+Subject: [patch 0/6] [RFC] MMU Notifiers V3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These notifiers here use the Linux rmaps to perform the callbacks.
-In order to walk the rmaps locks must be held. Callbacks can therefore
-only operate in an atomic context.
+This is a patchset implementing MMU notifier callbacks based on Andrea's
+earlier work. These are needed if Linux pages are referenced from something
+else than tracked by the rmaps of the kernel. The known immediate users are
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+KVM (establishes a refcount to the page. External references called spte)
 
----
- mm/rmap.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+GRU (simple TLB shootdown without refcount. Has its own pagetable/tlb)
 
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c	2008-01-29 16:58:25.000000000 -0800
-+++ linux-2.6/mm/rmap.c	2008-01-29 16:58:39.000000000 -0800
-@@ -285,7 +285,8 @@ static int page_referenced_one(struct pa
- 	if (!pte)
- 		goto out;
- 
--	if (ptep_clear_flush_young(vma, address, pte))
-+	if (ptep_clear_flush_young(vma, address, pte) |
-+	    mmu_notifier_age_page(mm, address))
- 		referenced++;
- 
- 	/* Pretend the page is referenced if the task has the
-@@ -435,6 +436,7 @@ static int page_mkclean_one(struct page 
- 
- 		flush_cache_page(vma, address, pte_pfn(*pte));
- 		entry = ptep_clear_flush(vma, address, pte);
-+		mmu_notifier(invalidate_page, mm, address);
- 		entry = pte_wrprotect(entry);
- 		entry = pte_mkclean(entry);
- 		set_pte_at(mm, address, pte, entry);
-@@ -680,7 +682,8 @@ static int try_to_unmap_one(struct page 
- 	 * skipped over this mm) then we should reactivate it.
- 	 */
- 	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
--			(ptep_clear_flush_young(vma, address, pte)))) {
-+			(ptep_clear_flush_young(vma, address, pte) |
-+				mmu_notifier_age_page(mm, address)))) {
- 		ret = SWAP_FAIL;
- 		goto out_unmap;
- 	}
-@@ -688,6 +691,7 @@ static int try_to_unmap_one(struct page 
- 	/* Nuke the page table entry. */
- 	flush_cache_page(vma, address, page_to_pfn(page));
- 	pteval = ptep_clear_flush(vma, address, pte);
-+	mmu_notifier(invalidate_page, mm, address);
- 
- 	/* Move the dirty bit to the physical page now the pte is gone. */
- 	if (pte_dirty(pteval))
-@@ -812,12 +816,14 @@ static void try_to_unmap_cluster(unsigne
- 		page = vm_normal_page(vma, address, *pte);
- 		BUG_ON(!page || PageAnon(page));
- 
--		if (ptep_clear_flush_young(vma, address, pte))
-+		if (ptep_clear_flush_young(vma, address, pte) |
-+		    mmu_notifier_age_page(mm, address))
- 			continue;
- 
- 		/* Nuke the page table entry. */
- 		flush_cache_page(vma, address, pte_pfn(*pte));
- 		pteval = ptep_clear_flush(vma, address, pte);
-+		mmu_notifier(invalidate_page, mm, address);
- 
- 		/* If nonlinear, store the file page offset in the pte. */
- 		if (page->index != linear_page_index(vma, address))
+XPmem (uses its own reverse mappings and refcount. Remote ptes, Needs
+	to sleep when sending messages)
+
+Issues:
+
+- Feedback from uses of the callbacks for KVM, RDMA, XPmem and GRU
+  Early tests with the GRU were successful.
+
+- Pages may be freed before the external mapping are torn down
+  through invalidate_range() if no refcount on the page is taken.
+  There is the chance that page content may be visible after
+  they have been reallocated (mainly an issue for the GRU that
+  takes no refcount).
+
+- invalidate_range() callbacks are sometimes called under i_mmap_lock.
+  These need to be dealt with or XPmem needs to be able to work around
+  these.
+
+- filemap_xip.c does not follow conventions for Rmap callbacks.
+  We could depends on XIP support not being active to avoid the issue.
+
+Things that we leave as is:
+
+- RCU quiescent periods are required on registering and unregistering
+  notifiers to guarantee visibility to other processors.
+  Currently only mmu_notifier_release() does the correct thing.
+  It is up to the user to provide RCU quiescent periods for
+  register/unregister functions if they are called outside of the
+  ->release method.
+
+Andrea's mmu_notifier #4 -> RFC V1
+
+- Merge subsystem rmap based with Linux rmap based approach
+- Move Linux rmap based notifiers out of macro
+- Try to account for what locks are held while the notifiers are
+  called.
+- Develop a patch sequence that separates out the different types of
+  hooks so that we can review their use.
+- Avoid adding include to linux/mm_types.h
+- Integrate RCU logic suggested by Peter.
+
+V1->V2:
+- Improve RCU support
+- Use mmap_sem for mmu_notifier register / unregister
+- Drop invalidate_page from COW, mm/fremap.c and mm/rmap.c since we
+  already have invalidate_range() callbacks there.
+- Clean compile for !MMU_NOTIFIER
+- Isolate filemap_xip strangeness into its own diff
+- Pass a the flag to invalidate_range to indicate if a spinlock
+  is held.
+- Add invalidate_all()
+
+V2->V3:
+- Further RCU fixes
+- Fixes from Andrea to fixup aging and move invalidate_range() in do_wp_page
+  and sys_remap_file_pages() after the pte clearing.
 
 -- 
