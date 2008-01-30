@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYA3HKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYA3HRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYA3HKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 02:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbYA3HKF
+	id S1756597AbYA3HRU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 02:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYA3HRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 02:10:05 -0500
-Received: from swsoft-msk-nat.sw.ru ([195.214.232.10]:53950 "EHLO iris.sw.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753582AbYA3HKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 02:10:03 -0500
-X-Greylist: delayed 1795 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 02:10:03 EST
-From: "Denis V. Lunev" <den@openvz.org>
-To: greg@kroah.com, davem@davemloft.net
-Cc: randy.dunlap@oracle.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH] Debugfs compile fix.
-Date: Wed, 30 Jan 2008 09:40:00 +0300
-Message-Id: <1201675200-9310-1-git-send-email-den@openvz.org>
-X-Mailer: git-send-email 1.5.3.7
+	Wed, 30 Jan 2008 02:17:08 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:43284 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751764AbYA3HRG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 02:17:06 -0500
+Date: Wed, 30 Jan 2008 02:11:23 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 update
+Message-ID: <20080130071123.GF21944@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1JJjMo-00011j-EU@closure.thunk.org> <20080129125307.GF6774@mit.edu> <Pine.LNX.4.64.0801292250110.14907@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801292250110.14907@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Debugfs is not compiled without CONFIG_SYSFS in net-2.6 tree. Move
-kobject_create_and_add under appropriate ifdef. The fix looks correct
-from a first glance, but may be the dependency should be added into
-the Kconfig.
+On Tue, Jan 29, 2008 at 10:54:03PM +0100, Jan Engelhardt wrote:
+> 
+> On Jan 29 2008 07:53, Theodore Tso wrote:
+> >
+> >>fwiw, diffstat is confused by git's diff output; you need to use
+> >>'diffstat -p1'
+> 
+> I am seeing normal behavior:
+>
+> 22:52 sovereign:~/linux > git diff HEAD | diffstat
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
----
- fs/debugfs/inode.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+That's because you are doing a diff stat of changes that haven't been
+checked in yet.  I was doing a "git log -p origin.. | diffstat -p1",
+and in that incantation you definitely do need the -p1 to diffstat.
 
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index d26e282..61cc937 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -432,9 +432,11 @@ static int __init debugfs_init(void)
- {
- 	int retval;
- 
-+#ifdef CONFIG_SYSFS
- 	debug_kobj = kobject_create_and_add("debug", kernel_kobj);
- 	if (!debug_kobj)
- 		return -EINVAL;
-+#endif
- 
- 	retval = register_filesystem(&debug_fs_type);
- 	if (retval)
--- 
-1.5.3.rc5
-
+       	    		    	       	  - Ted
