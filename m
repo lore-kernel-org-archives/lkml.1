@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933147AbYA3UOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764959AbYA3UPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933147AbYA3UOj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757674AbYA3UDN
+	id S1764959AbYA3UPG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:15:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbYA3UDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:03:13 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51842 "EHLO smtp4.pp.htv.fi"
+	Wed, 30 Jan 2008 15:03:15 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40771 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762908AbYA3UDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:03:04 -0500
-Date: Wed, 30 Jan 2008 22:03:36 +0200
+	id S1755968AbYA3UDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:03:05 -0500
+Date: Wed, 30 Jan 2008 22:03:39 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: davem@davemloft.net, James.Bottomley@HansenPartnership.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] scsi/qlogicpti.c section fixes
-Message-ID: <20080130200336.GN29368@does.not.exist>
+To: Jeff Garzik <jgarzik@redhat.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] net/sunqe.c section fix
+Message-ID: <20080130200339.GO29368@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,17 +23,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following section mismatches:
+This patch fixes the following section mismatch:
 
 <--  snip  -->
 
 ...
-WARNING: drivers/scsi/qlogicpti.o(.devexit.text+0x8): Section mismatch in reference from the function qpti_sbus_remove() to the function .init.text:qpti_chain_del()
-WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x56c): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_map_regs()
-WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x580): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_register_irq()
-WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x594): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_get_scsi_id()
-WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x5b8): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_map_queues()
-WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x780): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_chain_add()
+WARNING: drivers/net/sunqe.o(.devinit.text+0x4): Section mismatch in reference from the function qec_sbus_probe() to the function .init.text:qec_ether_init()
 ...
 
 <--  snip  -->
@@ -42,66 +37,39 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/scsi/qlogicpti.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/sunqe.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-3d89831963c0b6f62b24fc4b9dfe1c10d7f90d1b 
-diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
-index 65455ab..4a1cf63 100644
---- a/drivers/scsi/qlogicpti.c
-+++ b/drivers/scsi/qlogicpti.c
-@@ -651,7 +651,7 @@ static int qlogicpti_verify_tmon(struct qlogicpti *qpti)
- 
- static irqreturn_t qpti_intr(int irq, void *dev_id);
- 
--static void __init qpti_chain_add(struct qlogicpti *qpti)
-+static void __devinit qpti_chain_add(struct qlogicpti *qpti)
- {
- 	spin_lock_irq(&qptichain_lock);
- 	if (qptichain != NULL) {
-@@ -667,7 +667,7 @@ static void __init qpti_chain_add(struct qlogicpti *qpti)
- 	spin_unlock_irq(&qptichain_lock);
+bee65cb0dd698bbda02b1087bffed51e3a2488cb 
+diff --git a/drivers/net/sunqe.c b/drivers/net/sunqe.c
+index ff23c64..e811331 100644
+--- a/drivers/net/sunqe.c
++++ b/drivers/net/sunqe.c
+@@ -747,7 +747,7 @@ static inline void qec_init_once(struct sunqec *qecp, struct sbus_dev *qsdev)
+ 		    qecp->gregs + GLOB_RSIZE);
  }
  
--static void __init qpti_chain_del(struct qlogicpti *qpti)
-+static void __devexit qpti_chain_del(struct qlogicpti *qpti)
+-static u8 __init qec_get_burst(struct device_node *dp)
++static u8 __devinit qec_get_burst(struct device_node *dp)
  {
- 	spin_lock_irq(&qptichain_lock);
- 	if (qptichain == qpti) {
-@@ -682,7 +682,7 @@ static void __init qpti_chain_del(struct qlogicpti *qpti)
- 	spin_unlock_irq(&qptichain_lock);
+ 	u8 bsizes, bsizes_more;
+ 
+@@ -767,7 +767,7 @@ static u8 __init qec_get_burst(struct device_node *dp)
+ 	return bsizes;
  }
  
--static int __init qpti_map_regs(struct qlogicpti *qpti)
-+static int __devinit qpti_map_regs(struct qlogicpti *qpti)
+-static struct sunqec * __init get_qec(struct sbus_dev *child_sdev)
++static struct sunqec * __devinit get_qec(struct sbus_dev *child_sdev)
  {
- 	struct sbus_dev *sdev = qpti->sdev;
- 
-@@ -705,7 +705,7 @@ static int __init qpti_map_regs(struct qlogicpti *qpti)
- 	return 0;
+ 	struct sbus_dev *qec_sdev = child_sdev->parent;
+ 	struct sunqec *qecp;
+@@ -823,7 +823,7 @@ fail:
+ 	return NULL;
  }
  
--static int __init qpti_register_irq(struct qlogicpti *qpti)
-+static int __devinit qpti_register_irq(struct qlogicpti *qpti)
+-static int __init qec_ether_init(struct sbus_dev *sdev)
++static int __devinit qec_ether_init(struct sbus_dev *sdev)
  {
- 	struct sbus_dev *sdev = qpti->sdev;
- 
-@@ -730,7 +730,7 @@ fail:
- 	return -1;
- }
- 
--static void __init qpti_get_scsi_id(struct qlogicpti *qpti)
-+static void __devinit qpti_get_scsi_id(struct qlogicpti *qpti)
- {
- 	qpti->scsi_id = prom_getintdefault(qpti->prom_node,
- 					   "initiator-id",
-@@ -783,7 +783,7 @@ static void qpti_get_clock(struct qlogicpti *qpti)
- /* The request and response queues must each be aligned
-  * on a page boundary.
-  */
--static int __init qpti_map_queues(struct qlogicpti *qpti)
-+static int __devinit qpti_map_queues(struct qlogicpti *qpti)
- {
- 	struct sbus_dev *sdev = qpti->sdev;
- 
+ 	static unsigned version_printed;
+ 	struct net_device *dev;
 
