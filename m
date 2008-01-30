@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761482AbYA3Sbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYA3SfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761482AbYA3Sbi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbYA3Sb1
+	id S1757495AbYA3SfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYA3SfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:31:27 -0500
-Received: from mga11.intel.com ([192.55.52.93]:24742 "EHLO mga11.intel.com"
+	Wed, 30 Jan 2008 13:35:08 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35378 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbYA3SbZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:31:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,278,1199692800"; 
-   d="scan'208";a="510637221"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1752595AbYA3SfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:35:07 -0500
+From: Andi Kleen <ak@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: ioremap_xxx() with EXEC enabled
+Date: Wed, 30 Jan 2008 19:35:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+References: <1201685530.17912.11.camel@caritas-dev.intel.com> <20080130173048.GA9812@bingen.suse.de> <20080130094427.720fdae7@laptopd505.fenrus.org>
+In-Reply-To: <20080130094427.720fdae7@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Wed, 30 Jan 2008 10:31:12 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080130180623.GA24881@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Thread-Index: AchjauAic66eOOtIQGu262fDOchLhwAAi0xw
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Mike Travis" <travis@sgi.com>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       <linux-ia64@vger.kernel.org>, <sparclinux@vger.kernel.org>
-X-OriginalArrivalTime: 30 Jan 2008 18:31:13.0206 (UTC) FILETIME=[4AC55D60:01C8636E]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801301935.39069.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Could you check the patch below? With this applied to latest -git, ia64 
-> buils fine for me in a cross-compiling environment. (but i dont know 
-> whether it boots ...)
 
-Uni-processor build still fails with this patch (config is arch/ia64/configs/tiger_defconfig
-with CONFIG_SMP switched from =y to =n).
+> 1) 32 bit EFI is totally irrelevant.
 
-arch/ia64/kernel/built-in.o(.text+0x5012): In function `show_interrupts':
-: relocation truncated to fit: IMM22 per_cpu__kstat
-arch/ia64/kernel/built-in.o(.text+0x53e1): In function `__bind_irq_vector':
-: relocation truncated to fit: IMM22 per_cpu__vector_irq
-arch/ia64/kernel/built-in.o(.text+0x5612): In function `__clear_irq_vector':
-: relocation truncated to fit: IMM22 per_cpu__vector_irq
-arch/ia64/kernel/built-in.o(.text+0x5a81): In function `__setup_vector_irq':
-: relocation truncated to fit: IMM22 per_cpu__vector_irq
-arch/ia64/kernel/built-in.o(.text+0x6231): In function `ia64_handle_irq':
-: relocation truncated to fit: IMM22 per_cpu____irq_regs
-arch/ia64/kernel/built-in.o(.text+0x6272): In function `ia64_handle_irq':
-: relocation truncated to fit: IMM22 per_cpu__vector_irq
-arch/ia64/kernel/built-in.o(.text+0x7b81): In function `cpu_idle_wait':
-: relocation truncated to fit: IMM22 .text
-arch/ia64/kernel/built-in.o(.text+0x7e21): In function `cpu_idle':
-: relocation truncated to fit: IMM22 .text
-arch/ia64/kernel/built-in.o(.text+0x7fd1): In function `ia64_save_extra':
-: relocation truncated to fit: IMM22 per_cpu__pfm_syst_info
-arch/ia64/kernel/built-in.o(.text+0x8071): In function `ia64_load_extra':
-: relocation truncated to fit: IMM22 per_cpu__pfm_syst_info
-arch/ia64/kernel/built-in.o(.text+0x95c0): In function `pfm_write_ibr_dbr':
-: additional relocation overflows omitted from the output
-ld: final link failed: Nonrepresentable section on output
-make: *** [.tmp_vmlinux1] Error 1
+Apparently not to the original poster. And some Apple x86 users might 
+also disagree.
 
-SMP build (config zx1_defconfig) builds ok and boots ok too.
+On x86-64 BTW while they could still rely on end_pfn_mapped and
+it being direct mapped Venki's PAT patchkit removes that so ioremap
+would be needed there too 
 
--Tony
+> 2) set_memory_ and set_pages_ API is not restricted to direct mapping.
+> That's why they take a virtual address / struct page
+
+If there is no direct mapping what page tables should they change?
+Surely you're not suggesting they should walk all vmalloc areas and switch
+them over. I don't think this is correct.
+
+-Andi
