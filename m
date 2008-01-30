@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYA3AtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbYA3Aub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbYA3AtT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbYA3AtI
+	id S1754402AbYA3Aub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYA3AuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:49:08 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:43559 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750758AbYA3AtG (ORCPT
+	Tue, 29 Jan 2008 19:50:19 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:46901 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbYA3AuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:49:06 -0500
-Subject: Re: ndiswrapper and GPL-only symbols redux
-From: Jon Masters <jonathan@jonmasters.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-In-Reply-To: <Pine.LNX.4.64.0801300129270.14907@fbirervta.pbzchgretzou.qr>
-References: <1201641765.18773.35.camel@dv>
-	 <1201652420.2271.91.camel@perihelion>
-	 <Pine.LNX.4.64.0801300129270.14907@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Tue, 29 Jan 2008 19:48:14 -0500
-Message-Id: <1201654094.2271.105.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 29 Jan 2008 19:50:11 -0500
+To: linux-kernel@vger.kernel.org
+Subject: Re: task blocked in sync_buffer from ext3_free_branches
+X-Message-Flag: Warning: May contain useful information
+References: <aday7a8cg24.fsf@cisco.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 29 Jan 2008 16:49:54 -0800
+In-Reply-To: <aday7a8cg24.fsf@cisco.com> (Roland Dreier's message of "Tue, 29 Jan 2008 16:28:35 -0800")
+Message-ID: <adatzkwcf2l.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 30 Jan 2008 00:49:54.0421 (UTC) FILETIME=[0741E250:01C862DA]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Actually this appears to be the bug that Jens fixed with this patch,
+and with that patch my system seems fine as well:
 
-On Wed, 2008-01-30 at 01:35 +0100, Jan Engelhardt wrote:
-> On Jan 29 2008 19:20, Jon Masters wrote:
-
-> >Another fix would be for ndiswrapper to explicitly set the taint when it
-> >loads a tainted driver? Or do we just want to go back to globally
-> >"tainting" the kernel without assigning the blame to any module?
-> 
-> I think the global taint flag is always needed because you never know
-> what the proprietary module actually did to our memory. Unloading
-> the driver and ndiswrapper should retain some sort of taintedness
-> should it oops much later.
-
-It will. The module taint variant also sets the global taint. But it
-helps to know why you set that if you oops now and get a list of
-modules. Yeah, we know about ndiswrapper, I just mean in general.
-
-Man, that'll teach me to send one-liners without checking the entire
-history of LWN stories beforehand. I'm going to the gym to escape :)
-
-Jon.
-
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index b201d16..9603684 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1275,9 +1275,13 @@ static void as_merged_requests(struct request_queue *q, struct request *req,
+ 			 * Don't copy here but swap, because when anext is
+ 			 * removed below, it must contain the unused context
+ 			 */
+-			double_spin_lock(&rioc->lock, &nioc->lock, rioc < nioc);
+-			swap_io_context(&rioc, &nioc);
+-			double_spin_unlock(&rioc->lock, &nioc->lock, rioc < nioc);
++			if (rioc != nioc) {
++				double_spin_lock(&rioc->lock, &nioc->lock,
++								rioc < nioc);
++				swap_io_context(&rioc, &nioc);
++				double_spin_unlock(&rioc->lock, &nioc->lock,
++								rioc < nioc);
++			}
+ 		}
+ 	}
+ 
 
