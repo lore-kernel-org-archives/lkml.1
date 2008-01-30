@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYA3JOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYA3JPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbYA3JOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 04:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbYA3JNt
+	id S1758646AbYA3JPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 04:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbYA3JNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 04:13:49 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:56219 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbYA3JNp (ORCPT
+	Wed, 30 Jan 2008 04:13:50 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:32402 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753943AbYA3JNp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 04:13:45 -0500
 X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="61203870"
+   d="scan'208";a="47623404"
 From: Bryan Wu <bryan.wu@analog.com>
 To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 1/6] [Blackfin] SPI driver: remove useless return status check in restore_state function pointed by Michael.
-Date: Wed, 30 Jan 2008 17:13:36 +0800
-Message-Id: <1201684421-26124-2-git-send-email-bryan.wu@analog.com>
+Cc: linux-kernel@vger.kernel.org, Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 3/6] [Blackfin] SPI driver: fix bug - PBX cannot work with this SPI framework driver
+Date: Wed, 30 Jan 2008 17:13:38 +0800
+Message-Id: <1201684421-26124-4-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
 References: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
@@ -27,53 +25,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: Michael Hennerich <michael.hennerich@analog.com>
+PBX 2 SPI device need cs change per word and this regression is due to commit
+
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/spi/spi_bfin5xx.c |   15 ++-------------
- 1 files changed, 2 insertions(+), 13 deletions(-)
+ drivers/spi/spi_bfin5xx.c |   40 ++++++++++++----------------------------
+ 1 files changed, 12 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 7ef39a6..8fd1365 100644
+index c3f9ed4..ceb5b53 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -223,10 +223,9 @@ static void cs_deactive(struct driver_data *drv_data, struct chip_data *chip)
- #define MAX_SPI_SSEL	7
- 
- /* stop controller and re-config current chip*/
--static int restore_state(struct driver_data *drv_data)
-+static void restore_state(struct driver_data *drv_data)
+@@ -294,16 +294,14 @@ static void u8_cs_chg_writer(struct driver_data *drv_data)
  {
  	struct chip_data *chip = drv_data->cur_chip;
--	int ret = 0;
  
- 	/* Clear status and disable clock */
- 	write_STAT(drv_data, BIT_STAT_CLR);
-@@ -239,13 +238,6 @@ static int restore_state(struct driver_data *drv_data)
+-	/* poll for SPI completion before start */
+-	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
+-		cpu_relax();
+-
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		cs_active(drv_data, chip);
  
- 	bfin_spi_enable(drv_data);
- 	cs_active(drv_data, chip);
+ 		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
+ 		while (read_STAT(drv_data) & BIT_STAT_TXS)
+ 			cpu_relax();
++		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
++			cpu_relax();
+ 
+ 		cs_deactive(drv_data, chip);
+ 
+@@ -342,31 +340,20 @@ static void u8_cs_chg_reader(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
+ 
+-	/* poll for SPI completion before start */
+-	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
+-		cpu_relax();
 -
--	if (ret)
--		dev_dbg(&drv_data->pdev->dev,
--			": request chip select number %d failed\n",
--			chip->chip_select_num);
+-	/* clear TDBR buffer before read(else it will be shifted out) */
+-	write_TDBR(drv_data, 0xFFFF);
++	while (drv_data->rx < drv_data->rx_end) {
++		cs_active(drv_data, chip);
++		read_RDBR(drv_data);	/* kick off */
+ 
+-	cs_active(drv_data, chip);
+-	dummy_read(drv_data);
++		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
++			cpu_relax();
++		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
++			cpu_relax();
+ 
+-	while (drv_data->rx < drv_data->rx_end - 1) {
++		*(u8 *) (drv_data->rx) = read_SHAW(drv_data);
+ 		cs_deactive(drv_data, chip);
+ 
+-		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
+-			cpu_relax();
+-		cs_active(drv_data, chip);
+-		*(u8 *) (drv_data->rx) = read_RDBR(drv_data);
+ 		++drv_data->rx;
+ 	}
+-	cs_deactive(drv_data, chip);
 -
--	return ret;
+-	while (!(read_STAT(drv_data) & BIT_STAT_RXS))
+-		cpu_relax();
+-	*(u8 *) (drv_data->rx) = read_SHAW(drv_data);
+-	++drv_data->rx;
  }
  
- /* used to kick off transfer in rx mode */
-@@ -978,10 +970,7 @@ static void pump_messages(struct work_struct *work)
+ static void u8_duplex(struct driver_data *drv_data)
+@@ -392,15 +379,12 @@ static void u8_cs_chg_duplex(struct driver_data *drv_data)
+ {
+ 	struct chip_data *chip = drv_data->cur_chip;
  
- 	/* Setup the SSP using the per chip configuration */
- 	drv_data->cur_chip = spi_get_ctldata(drv_data->cur_msg->spi);
--	if (restore_state(drv_data)) {
--		spin_unlock_irqrestore(&drv_data->lock, flags);
--		return;
--	};
-+	restore_state(drv_data);
+-	/* poll for SPI completion before start */
+-	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
+-		cpu_relax();
+-
+ 	while (drv_data->rx < drv_data->rx_end) {
+ 		cs_active(drv_data, chip);
  
- 	list_del_init(&drv_data->cur_msg->queue);
- 
+ 		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
+-		while (read_STAT(drv_data) & BIT_STAT_TXS)
++
++		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
+ 			cpu_relax();
+ 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
+ 			cpu_relax();
 -- 
 1.5.3.4
