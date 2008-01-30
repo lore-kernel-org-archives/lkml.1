@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbYA3Tt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763091AbYA3Tuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761903AbYA3Tt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbYA3Ttr
+	id S1763091AbYA3Tuh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYA3Tu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:49:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57577 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754196AbYA3Ttq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:49:46 -0500
-Date: Wed, 30 Jan 2008 20:49:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Mike Travis <travis@sgi.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130194921.GA19916@elte.hu>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com> <20080130194616.GA19426@elte.hu>
+	Wed, 30 Jan 2008 14:50:28 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:35366 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753279AbYA3Tu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:50:27 -0500
+Date: Wed, 30 Jan 2008 11:50:26 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080130182506.GQ7233@v2.random>
+Message-ID: <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
+References: <20080129162004.GL7233@v2.random>
+ <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
+ <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
+ <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
+ <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
+ <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
+ <20080130182506.GQ7233@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130194616.GA19426@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Jan 2008, Andrea Arcangeli wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Some place in there.  The CONFIG_SMP=n path in ia64 makes quite 
-> > radical changes ... rather than putting all the per-cpu stuff into 
-> > the top 64K of address space and providing a per-cpu TLB mapping for 
-> > that range to a different physical address ... it just makes all the 
-> > per-cpu stuff link as ordinary variables in .data.  The error 
-> > messages indicate that some of the new code is unaware of this.
+> XPMEM requires with invalidate_range (sleepy) +
+> before_invalidate_range (sleepy). invalidate_all should also be called
+> before_release (both sleepy).
 > 
-> ah, that was the vital clue. The patch below makes the small memory 
-> model only defined on SMP, and makes the config build/link fine here. 
-> Does this build and boot on your box?
+> It sounds we need full overlap of information provided by
+> invalidate_page and invalidate_range to fit all three models (the
+> opposite of the zero objective that current V3 is taking). And the
+> swap will be handled only by invalidate_page either through linux rmap
+> or external rmap (with the latter that can sleep so it's ok for you,
+> the former not). GRU can safely use the either the linux rmap notifier
+> or the external rmap notifier equally well, because when try_to_unmap
+> is called the page is locked and obviously pinned by the VM itself.
 
-if this works for you then could you please send me your Acked-by as 
-well, for this and the other ia64 changes, so that we can send these to 
-Linus ASAP?
+So put the invalidate_page() callbacks in everywhere.
 
-	Ingo
+Then we have 
+
+invalidate_range_start(mm)
+
+and
+
+invalidate_range_finish(mm, start, end)
+
+in addition to the invalidate rmap_notifier?
+
+---
+ include/linux/mmu_notifier.h |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/include/linux/mmu_notifier.h
+===================================================================
+--- linux-2.6.orig/include/linux/mmu_notifier.h	2008-01-30 11:49:02.000000000 -0800
++++ linux-2.6/include/linux/mmu_notifier.h	2008-01-30 11:49:57.000000000 -0800
+@@ -69,10 +69,13 @@ struct mmu_notifier_ops {
+ 	/*
+ 	 * lock indicates that the function is called under spinlock.
+ 	 */
+-	void (*invalidate_range)(struct mmu_notifier *mn,
++	void (*invalidate_range_begin)(struct mmu_notifier *mn,
+ 				 struct mm_struct *mm,
+-				 unsigned long start, unsigned long end,
+ 				 int lock);
++
++	void (*invalidate_range_end)(struct mmu_notifier *mn,
++				 struct mm_struct *mm,
++				 unsigned long start, unsigned long end);
+ };
+ 
+ struct mmu_rmap_notifier_ops;
