@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYA3VNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761482AbYA3VOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbYA3VNq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:13:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758613AbYA3VGI
+	id S1761482AbYA3VOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbYA3VGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:06:08 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:55001 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758077AbYA3VFj (ORCPT
+	Wed, 30 Jan 2008 16:06:11 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:39712 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758084AbYA3VFj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 16:05:39 -0500
-Message-Id: <20080130210528.476351520@goodmis.org>
+Message-Id: <20080130210527.661347090@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:04:20 -0500
+Date: Wed, 30 Jan 2008 16:04:15 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,825 +29,750 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 23/23 -v8] Critical latency timings histogram
-Content-Disposition: inline; filename=trace-histograms.patch
+Subject: [PATCH 18/23 -v8] mcount tracer for wakeup latency timings.
+Content-Disposition: inline; filename=mcount-trace-wakeup-latency.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds hooks into the latency tracer to give
-us histograms of interrupts off, preemption off and
-wakeup timings.
+This patch adds hooks to trace the wake up latency of the highest
+priority waking task.
 
-This code was based off of work done by Yi Yang <yyang@ch.mvista.com>
+  "wakeup" is added to /debugfs/tracing/available_tracers
 
-But heavily modified to work with the new tracer, and some
-clean ups by Steven Rostedt <srostedt@redhat.com>
+Also added to /debugfs/tracing
 
-This adds the following to /debugfs/tracing
+  tracing_max_latency
+     holds the current max latency for the wakeup
 
-  latency_hist/ - root dir for historgrams.
+  wakeup_thresh
+     if set to other than zero, a log will be recorded
+     for every wakeup that takes longer than the number
+     entered in here (usecs for all counters)
+     (deletes previous trace)
 
-  Under latency_hist there is (depending on what's configured):
+Examples:
 
-    interrupt_off_latency/ - latency histograms of interrupts off.
+  (with mcount_enabled = 0)
 
-    preempt_interrupts_off_latency/ - latency histograms of
-                              preemption and/or interrupts off.
+============
+preemption latency trace v1.1.5 on 2.6.24-rc8
+--------------------------------------------------------------------
+ latency: 26 us, #2/2, CPU#1 | (M:rt VP:0, KP:0, SP:0 HP:0 #P:2)
+    -----------------
+    | task: migration/0-3 (uid:0 nice:-5 policy:1 rt_prio:99)
+    -----------------
 
-    preempt_off_latency/ - latency histograms of preemption off.
+                 _------=> CPU#            
+                / _-----=> irqs-off        
+               | / _----=> need-resched    
+               || / _---=> hardirq/softirq 
+               ||| / _--=> preempt-depth   
+               |||| /                      
+               |||||     delay             
+   cmd     pid ||||| time  |   caller      
+      \   /    |||||   \   |   /           
+   quilt-8551  0d..3    0us+: wake_up_process+0x15/0x17 <ffffffff80233e80> (sched_exec+0xc9/0x100 <ffffffff80235343>)
+   quilt-8551  0d..4   26us : sched_switch_callback+0x73/0x81 <ffffffff80338d2f> (schedule+0x483/0x6d5 <ffffffff8048b3ee>)
 
-    wakeup_latency/ - latency histograms of wakeup timings.
 
-  Under each of the above is a file labeled:
+vim:ft=help
+============
 
-    CPU# for each possible CPU were # is the CPU number.
+    
+  (with mcount_enabled = 1)
 
-    reset - writing into this file will reset the histogram
-            back to zeros and start again.
+============
+preemption latency trace v1.1.5 on 2.6.24-rc8
+--------------------------------------------------------------------
+ latency: 36 us, #45/45, CPU#0 | (M:rt VP:0, KP:0, SP:0 HP:0 #P:2)
+    -----------------
+    | task: migration/1-5 (uid:0 nice:-5 policy:1 rt_prio:99)
+    -----------------
 
+                 _------=> CPU#            
+                / _-----=> irqs-off        
+               | / _----=> need-resched    
+               || / _---=> hardirq/softirq 
+               ||| / _--=> preempt-depth   
+               |||| /                      
+               |||||     delay             
+   cmd     pid ||||| time  |   caller      
+      \   /    |||||   \   |   /           
+    bash-10653 1d..3    0us : wake_up_process+0x15/0x17 <ffffffff80233e80> (sched_exec+0xc9/0x100 <ffffffff80235343>)
+    bash-10653 1d..3    1us : try_to_wake_up+0x271/0x2e7 <ffffffff80233dcf> (sub_preempt_count+0xc/0x7a <ffffffff8023309e>)
+    bash-10653 1d..2    2us : try_to_wake_up+0x296/0x2e7 <ffffffff80233df4> (update_rq_clock+0x9/0x20 <ffffffff802303f3>)
+    bash-10653 1d..2    2us : update_rq_clock+0x1e/0x20 <ffffffff80230408> (__update_rq_clock+0xc/0x90 <ffffffff80230366>)
+    bash-10653 1d..2    3us : __update_rq_clock+0x1b/0x90 <ffffffff80230375> (sched_clock+0x9/0x29 <ffffffff80214529>)
+    bash-10653 1d..2    4us : try_to_wake_up+0x2a6/0x2e7 <ffffffff80233e04> (activate_task+0xc/0x3f <ffffffff8022ffca>)
+    bash-10653 1d..2    4us : activate_task+0x2d/0x3f <ffffffff8022ffeb> (enqueue_task+0xe/0x66 <ffffffff8022ff66>)
+    bash-10653 1d..2    5us : enqueue_task+0x5b/0x66 <ffffffff8022ffb3> (enqueue_task_rt+0x9/0x3c <ffffffff80233351>)
+    bash-10653 1d..2    6us : try_to_wake_up+0x2ba/0x2e7 <ffffffff80233e18> (check_preempt_wakeup+0x12/0x99 <ffffffff80234f84>)
+[...]
+    bash-10653 1d..5   33us : tracing_record_cmdline+0xcf/0xd4 <ffffffff80338aad> (_spin_unlock+0x9/0x33 <ffffffff8048d3ec>)
+    bash-10653 1d..5   34us : _spin_unlock+0x19/0x33 <ffffffff8048d3fc> (sub_preempt_count+0xc/0x7a <ffffffff8023309e>)
+    bash-10653 1d..4   35us : wakeup_sched_switch+0x65/0x2ff <ffffffff80339f66> (_spin_lock_irqsave+0xc/0xa9 <ffffffff8048d08b>)
+    bash-10653 1d..4   35us : _spin_lock_irqsave+0x19/0xa9 <ffffffff8048d098> (add_preempt_count+0xe/0x77 <ffffffff8023311a>)
+    bash-10653 1d..4   36us : sched_switch_callback+0x73/0x81 <ffffffff80338d2f> (schedule+0x483/0x6d5 <ffffffff8048b3ee>)
+
+
+vim:ft=help
+============
+
+The [...] was added here to not waste your email box space.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/Kconfig         |   20 +
- lib/tracing/Makefile        |    4 
- lib/tracing/trace_irqsoff.c |   19 +
- lib/tracing/trace_wakeup.c  |   21 +
- lib/tracing/tracer_hist.c   |  514 ++++++++++++++++++++++++++++++++++++++++++++
- lib/tracing/tracer_hist.h   |   39 +++
- 6 files changed, 613 insertions(+), 4 deletions(-)
+ lib/tracing/Kconfig        |   14 +
+ lib/tracing/Makefile       |    1 
+ lib/tracing/trace_wakeup.c |  377 +++++++++++++++++++++++++++++++++++++++++++++
+ lib/tracing/tracer.c       |  127 +++++++++++++++
+ lib/tracing/tracer.h       |    5 
+ 5 files changed, 523 insertions(+), 1 deletion(-)
 
 Index: linux-mcount.git/lib/tracing/Kconfig
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-30 15:55:33.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 15:56:10.000000000 -0500
-@@ -102,3 +102,23 @@ config CONTEXT_SWITCH_TRACER
- 	  This tracer hooks into the context switch and records
- 	  all switching of tasks.
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-30 15:33:38.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 15:38:44.000000000 -0500
+@@ -9,6 +9,9 @@ config MCOUNT
+ 	bool
+ 	select FRAME_POINTER
  
-+config INTERRUPT_OFF_HIST
-+	bool "Interrupts off critical timings histogram"
-+	depends on CRITICAL_IRQSOFF_TIMING
-+	help
-+	  This option uses the infrastructure of the critical
-+	  irqs off timings to create a histogram of latencies.
++config TRACER_MAX_TRACE
++	bool
 +
-+config PREEMPT_OFF_HIST
-+	bool "Preempt off critical timings histogram"
-+	depends on CRITICAL_PREEMPT_TIMING
+ config TRACING
+         bool
+ 	select DEBUG_FS
+@@ -25,6 +28,17 @@ config FUNCTION_TRACER
+ 	  that the debugging mechanism using this facility will hook by
+ 	  providing a set of inline routines.
+ 
++config WAKEUP_TRACER
++	bool "Trace wakeup latencies"
++	depends on DEBUG_KERNEL
++	select TRACING
++	select CONTEXT_SWITCH_TRACER
++	select TRACER_MAX_TRACE
 +	help
-+	  This option uses the infrastructure of the critical
-+	  preemption off timings to create a histogram of latencies.
++	  This tracer adds hooks into scheduling to time the latency
++	  of the highest priority task tasks to be scheduled in
++	  after it has worken up.
 +
-+config WAKEUP_LATENCY_HIST
-+	bool "Interrupts off critical timings histogram"
-+	depends on WAKEUP_TRACER
-+	help
-+	  This option uses the infrastructure of the wakeup tracer
-+	  to create a histogram of latencies.
+ config CONTEXT_SWITCH_TRACER
+ 	bool "Trace process context switches"
+ 	depends on DEBUG_KERNEL
 Index: linux-mcount.git/lib/tracing/Makefile
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-30 15:55:33.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Makefile	2008-01-30 15:56:10.000000000 -0500
-@@ -8,4 +8,8 @@ obj-$(CONFIG_CRITICAL_PREEMPT_TIMING) +=
- obj-$(CONFIG_WAKEUP_TRACER) += trace_wakeup.o
- obj-$(CONFIG_EVENT_TRACER) += trace_events.o
+--- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-30 15:32:34.000000000 -0500
++++ linux-mcount.git/lib/tracing/Makefile	2008-01-30 15:38:44.000000000 -0500
+@@ -3,5 +3,6 @@ obj-$(CONFIG_MCOUNT) += libmcount.o
+ obj-$(CONFIG_TRACING) += tracer.o
+ obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
++obj-$(CONFIG_WAKEUP_TRACER) += trace_wakeup.o
  
-+obj-$(CONFIG_INTERRUPT_OFF_HIST) += tracer_hist.o
-+obj-$(CONFIG_PREEMPT_OFF_HIST) += tracer_hist.o
-+obj-$(CONFIG_WAKEUP_LATENCY_HIST) += tracer_hist.o
-+
  libmcount-y := mcount.o
-Index: linux-mcount.git/lib/tracing/trace_irqsoff.c
-===================================================================
---- linux-mcount.git.orig/lib/tracing/trace_irqsoff.c	2008-01-30 15:55:33.000000000 -0500
-+++ linux-mcount.git/lib/tracing/trace_irqsoff.c	2008-01-30 15:56:11.000000000 -0500
-@@ -16,6 +16,7 @@
- #include <linux/mcount.h>
- 
- #include "tracer.h"
-+#include "tracer_hist.h"
- 
- static struct tracing_trace *tracer_trace __read_mostly;
- static __cacheline_aligned_in_smp DEFINE_MUTEX(max_mutex);
-@@ -262,10 +263,14 @@ void notrace start_critical_timings(void
- {
- 	if (preempt_trace() || irq_trace())
- 		start_critical_timing(CALLER_ADDR0, 0);
-+
-+	tracing_hist_preempt_start();
- }
- 
- void notrace stop_critical_timings(void)
- {
-+	tracing_hist_preempt_stop(TRACE_STOP);
-+
- 	if (preempt_trace() || irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, 0);
- }
-@@ -274,6 +279,8 @@ void notrace stop_critical_timings(void)
- #ifdef CONFIG_LOCKDEP
- void notrace time_hardirqs_on(unsigned long a0, unsigned long a1)
- {
-+	tracing_hist_preempt_stop(1);
-+
- 	if (!preempt_trace() && irq_trace())
- 		stop_critical_timing(a0, a1);
- }
-@@ -282,6 +289,8 @@ void notrace time_hardirqs_off(unsigned 
- {
- 	if (!preempt_trace() && irq_trace())
- 		start_critical_timing(a0, a1);
-+
-+	tracing_hist_preempt_start();
- }
- 
- #else /* !CONFIG_LOCKDEP */
-@@ -315,6 +324,8 @@ inline void print_irqtrace_events(struct
-  */
- void notrace trace_hardirqs_on(void)
- {
-+	tracing_hist_preempt_stop(1);
-+
- 	if (!preempt_trace() && irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, 0);
- }
-@@ -324,11 +335,15 @@ void notrace trace_hardirqs_off(void)
- {
- 	if (!preempt_trace() && irq_trace())
- 		start_critical_timing(CALLER_ADDR0, 0);
-+
-+	tracing_hist_preempt_start();
- }
- EXPORT_SYMBOL(trace_hardirqs_off);
- 
- void notrace trace_hardirqs_on_caller(unsigned long caller_addr)
- {
-+	tracing_hist_preempt_stop(1);
-+
- 	if (!preempt_trace() && irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, caller_addr);
- }
-@@ -338,6 +353,8 @@ void notrace trace_hardirqs_off_caller(u
- {
- 	if (!preempt_trace() && irq_trace())
- 		start_critical_timing(CALLER_ADDR0, caller_addr);
-+
-+	tracing_hist_preempt_start();
- }
- EXPORT_SYMBOL(trace_hardirqs_off_caller);
- 
-@@ -347,12 +364,14 @@ EXPORT_SYMBOL(trace_hardirqs_off_caller)
- #ifdef CONFIG_CRITICAL_PREEMPT_TIMING
- void notrace trace_preempt_on(unsigned long a0, unsigned long a1)
- {
-+	tracing_hist_preempt_stop(0);
- 	stop_critical_timing(a0, a1);
- }
- 
- void notrace trace_preempt_off(unsigned long a0, unsigned long a1)
- {
- 	start_critical_timing(a0, a1);
-+	tracing_hist_preempt_start();
- }
- #endif /* CONFIG_CRITICAL_PREEMPT_TIMING */
- 
 Index: linux-mcount.git/lib/tracing/trace_wakeup.c
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/trace_wakeup.c	2008-01-30 15:55:33.000000000 -0500
-+++ linux-mcount.git/lib/tracing/trace_wakeup.c	2008-01-30 15:56:11.000000000 -0500
-@@ -16,6 +16,7 @@
- #include <linux/mcount.h>
- 
- #include "tracer.h"
-+#include "tracer_hist.h"
- 
- static struct tracing_trace *tracer_trace __read_mostly;
- static int trace_enabled __read_mostly;
-@@ -55,7 +56,9 @@ static void notrace wakeup_sched_switch(
- 	unsigned long flags;
- 	int cpu;
- 
--	if (unlikely(!trace_enabled))
-+	tracing_hist_wakeup_stop(next);
-+
-+	if (!trace_enabled)
- 		return;
- 
- 	/*
-@@ -226,7 +229,8 @@ static notrace void wake_up_callback(con
- 	struct task_struct *p;
- 	va_list ap;
- 
--	if (likely(!trace_enabled) && !trace_event_enabled())
-+	if (likely(!trace_enabled) &&
-+	    !trace_event_enabled() && !tracing_wakeup_hist)
- 		return;
- 
- 	va_start(ap, format);
-@@ -238,6 +242,7 @@ static notrace void wake_up_callback(con
- 	va_end(ap);
- 
- 	trace_event_wakeup(CALLER_ADDR0, p, curr);
-+	tracing_hist_wakeup_start(p, curr);
- 
- 	if (trace_enabled)
- 		wakeup_check_start(tr, p, curr);
-@@ -292,7 +297,8 @@ static notrace void start_wakeup_trace(s
- 	if (ret)
- 		return;
- 
--	register_tracer_switch(&switch_ops);
-+	if (!tracing_wakeup_hist)
-+		register_tracer_switch(&switch_ops);
- 	tracing_start_sched_switch();
- 	trace_start_events();
- 
-@@ -317,7 +323,8 @@ static notrace void stop_wakeup_trace(st
- 	trace_enabled = 0;
- 	tracing_stop_wakeup();
- 	tracing_stop_sched_switch();
--	unregister_tracer_switch(&switch_ops);
-+	if (!tracing_wakeup_hist)
-+		unregister_tracer_switch(&switch_ops);
- }
- 
- static notrace void wakeup_trace_init(struct tracing_trace *tr)
-@@ -403,6 +410,12 @@ __init static int init_wakeup_trace(void
- 		goto fail_deprobe;
- 	}
- 
-+	if (tracing_wakeup_hist) {
-+		register_tracer_switch(&switch_ops);
-+		tracing_start_wakeup();
-+		tracing_start_sched_switch();
-+	}
-+
- 	return 0;
-  fail_deprobe:
- 	marker_probe_unregister("kernel_sched_wakeup");
-Index: linux-mcount.git/lib/tracing/tracer_hist.c
-===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/tracer_hist.c	2008-01-30 15:56:11.000000000 -0500
-@@ -0,0 +1,514 @@
++++ linux-mcount.git/lib/tracing/trace_wakeup.c	2008-01-30 15:38:44.000000000 -0500
+@@ -0,0 +1,377 @@
 +/*
-+ * lib/tracing/tracer_hist.c
++ * trace task wakeup timings
 + *
-+ * Add support for histograms of preemption-off latency and
-+ * interrupt-off latency and wakeup latency, it depends on
-+ * Real-Time Preemption Support.
++ * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
 + *
-+ *  Copyright (C) 2005 MontaVista Software, Inc.
-+ *  Yi Yang <yyang@ch.mvista.com>
++ * Based on code from the latency_tracer, that is:
 + *
-+ *  Converted to work with the new latency tracer.
-+ *  Copyright (C) 2008 Red Hat, Inc.
-+ *    Steven Rostedt <srostedt@redhat.com>
-+ *
++ *  Copyright (C) 2004-2006 Ingo Molnar
++ *  Copyright (C) 2004 William Lee Irwin III
 + */
 +#include <linux/module.h>
++#include <linux/fs.h>
 +#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+#include <linux/percpu.h>
-+#include <linux/spinlock.h>
-+#include <asm/atomic.h>
-+#include <asm/div64.h>
-+#include <asm/uaccess.h>
++#include <linux/kallsyms.h>
++#include <linux/uaccess.h>
++#include <linux/mcount.h>
 +
 +#include "tracer.h"
-+#include "tracer_hist.h"
 +
-+enum {
-+	INTERRUPT_LATENCY = 0,
-+	PREEMPT_LATENCY,
-+	PREEMPT_INTERRUPT_LATENCY,
-+	WAKEUP_LATENCY,
-+};
++static struct tracing_trace *tracer_trace __read_mostly;
++static int trace_enabled __read_mostly;
 +
-+#define MAX_ENTRY_NUM 10240
-+
-+struct hist_data {
-+	atomic_t hist_mode; /* 0 log, 1 don't log */
-+	unsigned long min_lat;
-+	unsigned long avg_lat;
-+	unsigned long max_lat;
-+	unsigned long long beyond_hist_bound_samples;
-+	unsigned long long accumulate_lat;
-+	unsigned long long total_samples;
-+	unsigned long long hist_array[MAX_ENTRY_NUM];
-+};
-+
-+static char *latency_hist_dir_root = "latency_hist";
-+
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+static DEFINE_PER_CPU(struct hist_data, interrupt_off_hist);
-+static char *interrupt_off_hist_dir = "interrupt_off_latency";
-+#endif
-+
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+static DEFINE_PER_CPU(struct hist_data, preempt_off_hist);
-+static char *preempt_off_hist_dir = "preempt_off_latency";
-+#endif
-+
-+#if defined(CONFIG_PREEMPT_OFF_HIST) && defined(CONFIG_INTERRUPT_OFF_HIST)
-+static DEFINE_PER_CPU(struct hist_data, preempt_irqs_off_hist);
-+static char *preempt_irqs_off_hist_dir = "preempt_interrupts_off_latency";
-+#endif
-+
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+static DEFINE_PER_CPU(struct hist_data, wakeup_latency_hist);
-+static char *wakeup_latency_hist_dir = "wakeup_latency";
-+#endif
-+
-+static inline u64 u64_div(u64 x, u64 y)
-+{
-+	do_div(x, y);
-+	return x;
-+}
-+
-+void notrace latency_hist(int latency_type, int cpu, unsigned long latency)
-+{
-+	struct hist_data *my_hist;
-+
-+	if ((cpu < 0) || (cpu >= NR_CPUS) || (latency_type < INTERRUPT_LATENCY)
-+			|| (latency_type > WAKEUP_LATENCY) || (latency < 0))
-+		return;
-+
-+	switch (latency_type) {
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+	case INTERRUPT_LATENCY:
-+		my_hist = &per_cpu(interrupt_off_hist, cpu);
-+		break;
-+#endif
-+
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+	case PREEMPT_LATENCY:
-+		my_hist = &per_cpu(preempt_off_hist, cpu);
-+		break;
-+#endif
-+
-+#if defined(CONFIG_PREEMPT_OFF_HIST) && defined(CONFIG_INTERRUPT_OFF_HIST)
-+	case PREEMPT_INTERRUPT_LATENCY:
-+		my_hist = &per_cpu(preempt_irqs_off_hist, cpu);
-+		break;
-+#endif
-+
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+	case WAKEUP_LATENCY:
-+		my_hist = &per_cpu(wakeup_latency_hist, cpu);
-+		break;
-+#endif
-+	default:
-+		return;
-+	}
-+
-+	if (atomic_read(&my_hist->hist_mode) == 0)
-+		return;
-+
-+	if (latency >= MAX_ENTRY_NUM)
-+		my_hist->beyond_hist_bound_samples++;
-+	else
-+		my_hist->hist_array[latency]++;
-+
-+	if (latency < my_hist->min_lat)
-+		my_hist->min_lat = latency;
-+	else if (latency > my_hist->max_lat)
-+		my_hist->max_lat = latency;
-+
-+	my_hist->total_samples++;
-+	my_hist->accumulate_lat += latency;
-+	my_hist->avg_lat = (unsigned long) u64_div(my_hist->accumulate_lat,
-+						  my_hist->total_samples);
-+	return;
-+}
-+
-+static void *l_start(struct seq_file *m, loff_t *pos)
-+{
-+	loff_t *index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
-+	loff_t index = *pos;
-+	struct hist_data *my_hist = m->private;
-+
-+	if (!index_ptr)
-+		return NULL;
-+
-+	if (index == 0) {
-+		atomic_dec(&my_hist->hist_mode);
-+		seq_printf(m, "#Minimum latency: %lu microseconds.\n"
-+			   "#Average latency: %lu microseconds.\n"
-+			   "#Maximum latency: %lu microseconds.\n"
-+			   "#Total samples: %llu\n"
-+			   "#There are %llu samples greater or equal"
-+			   " than %d microseconds\n"
-+			   "#usecs\t%16s\n"
-+			   , my_hist->min_lat
-+			   , my_hist->avg_lat
-+			   , my_hist->max_lat
-+			   , my_hist->total_samples
-+			   , my_hist->beyond_hist_bound_samples
-+			   , MAX_ENTRY_NUM, "samples");
-+	}
-+	if (index >= MAX_ENTRY_NUM)
-+		return NULL;
-+
-+	*index_ptr = index;
-+	return index_ptr;
-+}
-+
-+static void *l_next(struct seq_file *m, void *p, loff_t *pos)
-+{
-+	loff_t *index_ptr = p;
-+	struct hist_data *my_hist = m->private;
-+
-+	if (++*pos >= MAX_ENTRY_NUM) {
-+		atomic_inc(&my_hist->hist_mode);
-+		return NULL;
-+	}
-+	*index_ptr = *pos;
-+	return index_ptr;
-+}
-+
-+static void l_stop(struct seq_file *m, void *p)
-+{
-+	kfree(p);
-+}
-+
-+static int l_show(struct seq_file *m, void *p)
-+{
-+	int index = *(loff_t *) p;
-+	struct hist_data *my_hist = m->private;
-+
-+	seq_printf(m, "%5d\t%16llu\n", index, my_hist->hist_array[index]);
-+	return 0;
-+}
-+
-+static struct seq_operations latency_hist_seq_op = {
-+	.start = l_start,
-+	.next  = l_next,
-+	.stop  = l_stop,
-+	.show  = l_show
-+};
-+
-+static int latency_hist_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+
-+	ret = seq_open(file, &latency_hist_seq_op);
-+	if (!ret) {
-+		struct seq_file *seq = file->private_data;
-+		seq->private = inode->i_private;
-+	}
-+	return ret;
-+}
-+
-+static struct file_operations latency_hist_fops = {
-+	.open = latency_hist_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = seq_release,
-+};
-+
-+static void hist_reset(struct hist_data *hist)
-+{
-+	atomic_dec(&hist->hist_mode);
-+
-+	memset(hist->hist_array, 0, sizeof(hist->hist_array));
-+	hist->beyond_hist_bound_samples = 0UL;
-+	hist->min_lat = 0xFFFFFFFFUL;
-+	hist->max_lat = 0UL;
-+	hist->total_samples = 0UL;
-+	hist->accumulate_lat = 0UL;
-+	hist->avg_lat = 0UL;
-+
-+	atomic_inc(&hist->hist_mode);
-+}
-+
-+ssize_t latency_hist_reset(struct file *file, const char __user *a,
-+			   size_t size, loff_t *off)
-+{
-+	int cpu;
-+	struct hist_data *hist;
-+	int latency_type = (long)file->private_data;
-+
-+	switch (latency_type) {
-+
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+	case WAKEUP_LATENCY:
-+		for_each_online_cpu(cpu) {
-+			hist = &per_cpu(wakeup_latency_hist, cpu);
-+			hist_reset(hist);
-+		}
-+		break;
-+#endif
-+
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+	case PREEMPT_LATENCY:
-+		for_each_online_cpu(cpu) {
-+			hist = &per_cpu(preempt_off_hist, cpu);
-+			hist_reset(hist);
-+		}
-+		break;
-+#endif
-+
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+	case INTERRUPT_LATENCY:
-+		for_each_online_cpu(cpu) {
-+			hist = &per_cpu(interrupt_off_hist, cpu);
-+			hist_reset(hist);
-+		}
-+		break;
-+#endif
-+	}
-+
-+	return size;
-+}
-+
-+static struct file_operations latency_hist_reset_fops = {
-+	.open = tracing_open_generic,
-+	.write = latency_hist_reset,
-+};
-+
-+#if defined(CONFIG_INTERRUPT_OFF_HIST) || defined(CONFIG_PREEMPT_OFF_HIST)
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+static DEFINE_PER_CPU(cycles_t, hist_irqsoff_start);
-+static DEFINE_PER_CPU(int, hist_irqsoff_tracing);
-+#endif
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+static DEFINE_PER_CPU(cycles_t, hist_preemptoff_start);
-+static DEFINE_PER_CPU(int, hist_preemptoff_tracing);
-+#endif
-+#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
-+static DEFINE_PER_CPU(cycles_t, hist_preemptirqsoff_start);
-+static DEFINE_PER_CPU(int, hist_preemptirqsoff_tracing);
-+#endif
-+
-+notrace void tracing_hist_preempt_start(void)
-+{
-+	cycle_t start;
-+	int cpu;
-+
-+	start = now();
-+	cpu = smp_processor_id();
-+
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+	if (!per_cpu(hist_irqsoff_tracing, cpu) &&
-+	    irqs_disabled()) {
-+		per_cpu(hist_irqsoff_tracing, cpu) = 1;
-+		per_cpu(hist_irqsoff_start, cpu) = start;
-+	}
-+#endif
-+
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+	if (!per_cpu(hist_preemptoff_tracing, cpu) &&
-+	    preempt_count()) {
-+		per_cpu(hist_preemptoff_tracing, cpu) = 1;
-+		per_cpu(hist_preemptoff_start, cpu) = start;
-+	}
-+#endif
-+
-+#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
-+	if (!per_cpu(hist_preemptirqsoff_tracing, cpu) &&
-+	    (preempt_count() || irqs_disabled())) {
-+		per_cpu(hist_preemptirqsoff_tracing, cpu) = 1;
-+		per_cpu(hist_preemptirqsoff_start, cpu) = start;
-+	}
-+#endif
-+}
-+
-+notrace void tracing_hist_preempt_stop(int irqs_on)
-+{
-+	long latency;
-+	cycle_t start;
-+	cycle_t stop;
-+	int cpu;
-+
-+	stop = now();
-+	cpu = smp_processor_id();
-+
-+	/* irqs_on == TRACE_STOP if we must stop tracing. */
-+
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+	if (per_cpu(hist_irqsoff_tracing, cpu) && irqs_on) {
-+		per_cpu(hist_irqsoff_tracing, cpu) = 0;
-+		start = per_cpu(hist_irqsoff_start, cpu);
-+		latency = (long)cycles_to_usecs(stop - start);
-+		latency_hist(INTERRUPT_LATENCY, smp_processor_id(), latency);
-+	}
-+#endif
-+
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+	if (per_cpu(hist_preemptoff_tracing, cpu) &&
-+	    (!preempt_count() || irqs_on == TRACE_STOP)) {
-+		per_cpu(hist_preemptoff_tracing, cpu) = 0;
-+		start = per_cpu(hist_preemptoff_start, cpu);
-+		latency = (long)cycles_to_usecs(stop - start);
-+		latency_hist(PREEMPT_LATENCY, smp_processor_id(), latency);
-+	}
-+#endif
-+
-+#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
-+	if (per_cpu(hist_preemptirqsoff_tracing, cpu) &&
-+	    ((!preempt_count() && irqs_on) || irqs_on == TRACE_STOP)) {
-+		per_cpu(hist_preemptirqsoff_tracing, cpu) = 0;
-+		start = per_cpu(hist_preemptirqsoff_start, cpu);
-+		latency = (long)cycles_to_usecs(stop - start);
-+		latency_hist(PREEMPT_INTERRUPT_LATENCY,
-+			     smp_processor_id(), latency);
-+	}
-+#endif
-+}
-+#endif
-+
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+int tracing_wakeup_hist __read_mostly = 1;
-+
-+static unsigned wakeup_prio = (unsigned)-1 ;
 +static struct task_struct *wakeup_task;
-+static cycle_t wakeup_start;
++static int wakeup_cpu;
++static unsigned wakeup_prio = -1;
++
 +static DEFINE_SPINLOCK(wakeup_lock);
 +
-+notrace void tracing_hist_wakeup_start(struct task_struct *p,
++static void notrace __wakeup_reset(struct tracing_trace *tr);
++/*
++ * Should this new latency be reported/recorded?
++ */
++static int notrace report_latency(cycle_t delta)
++{
++	if (tracing_thresh) {
++		if (delta < tracing_thresh)
++			return 0;
++	} else {
++		if (delta <= tracing_max_latency)
++			return 0;
++	}
++	return 1;
++}
++
++static void notrace wakeup_sched_switch(void *private,
++					struct task_struct *prev,
++					struct task_struct *next)
++{
++	struct tracing_trace **ptr = private;
++	struct tracing_trace *tr = *ptr;
++	struct tracing_trace_cpu *data;
++	unsigned long latency = 0, t0 = 0, t1 = 0;
++	cycle_t T0, T1, delta;
++	unsigned long flags;
++	int cpu;
++
++	if (unlikely(!trace_enabled))
++		return;
++
++	/*
++	 * When we start a new trace, we set wakeup_task to NULL
++	 * and then set trace_enabled = 1. We want to make sure
++	 * that another CPU does not see the trace_enabled = 1
++	 * and the wakeup_task with an older task, that might
++	 * actually be the same as next.
++	 */
++	smp_rmb();
++
++	if (next != wakeup_task)
++		return;
++
++	/* The task we are waitng for is waking up */
++	data = tr->data[wakeup_cpu];
++
++	if (unlikely(!data) || unlikely(!data->trace) ||
++	    unlikely(atomic_read(&data->disabled)))
++		return;
++
++	spin_lock_irqsave(&wakeup_lock, flags);
++
++	/* disable local data, not wakeup_cpu data */
++	cpu = raw_smp_processor_id();
++	atomic_inc(&tr->data[cpu]->disabled);
++
++	/* We could race with grabbing wakeup_lock */
++	if (unlikely(!trace_enabled || next != wakeup_task))
++		goto out;
++
++	tracing_function_trace(tr, data, CALLER_ADDR1, CALLER_ADDR2, flags);
++
++	/*
++	 * usecs conversion is slow so we try to delay the conversion
++	 * as long as possible:
++	 */
++	T0 = data->preempt_timestamp;
++	T1 = now();
++	delta = T1-T0;
++
++	if (!report_latency(delta))
++		goto out;
++
++	latency = cycles_to_usecs(delta);
++
++	tracing_max_latency = delta;
++	t0 = cycles_to_usecs(T0);
++	t1 = cycles_to_usecs(T1);
++
++	update_max_tr(tr, wakeup_task, wakeup_cpu);
++
++	if (tracing_thresh)
++		printk(KERN_WARNING "(%16s-%-5d|#%d): %lu us wakeup latency "
++		       "violates %lu us threshold.\n"
++		       " => started at timestamp %lu: ",
++				wakeup_task->comm, wakeup_task->pid,
++				raw_smp_processor_id(),
++				latency, cycles_to_usecs(tracing_thresh), t0);
++	else
++		printk(KERN_WARNING "(%16s-%-5d|#%d): new %lu us maximum "
++		       "wakeup latency.\n => started at timestamp %lu: ",
++				wakeup_task->comm, wakeup_task->pid,
++				cpu, latency, t0);
++
++	printk(KERN_CONT "   ended at timestamp %lu: ", t1);
++	dump_stack();
++	t1 = cycles_to_usecs(now());
++	printk(KERN_CONT "   dump-end timestamp %lu\n\n", t1);
++
++out:
++	__wakeup_reset(tr);
++	atomic_dec(&tr->data[cpu]->disabled);
++	spin_unlock_irqrestore(&wakeup_lock, flags);
++
++}
++
++static struct tracer_switch_ops switch_ops __read_mostly = {
++	.func = wakeup_sched_switch,
++	.private = &tracer_trace,
++};
++
++static void notrace __wakeup_reset(struct tracing_trace *tr)
++{
++	struct tracing_trace_cpu *data;
++	int cpu;
++
++	assert_spin_locked(&wakeup_lock);
++
++	for_each_possible_cpu(cpu) {
++		data = tr->data[cpu];
++		tracing_reset(data);
++	}
++
++	wakeup_cpu = -1;
++	wakeup_prio = -1;
++	if (wakeup_task) {
++		put_task_struct(wakeup_task);
++		tracing_stop_function_trace();
++	}
++
++	wakeup_task = NULL;
++}
++
++static void notrace wakeup_reset(struct tracing_trace *tr)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&wakeup_lock, flags);
++	__wakeup_reset(tr);
++	spin_unlock_irqrestore(&wakeup_lock, flags);
++}
++
++static notrace void wakeup_check_start(struct tracing_trace *tr,
++				       struct task_struct *p,
 +				       struct task_struct *curr)
 +{
 +	unsigned long flags;
++	long disabled;
++	int cpu = smp_processor_id();
 +
 +	if (likely(!rt_task(p)) ||
 +	    p->prio >= wakeup_prio ||
 +	    p->prio >= curr->prio)
 +		return;
 +
-+	spin_lock_irqsave(&wakeup_lock, flags);
-+	if (wakeup_task)
-+		put_task_struct(wakeup_task);
-+
-+	get_task_struct(p);
-+	wakeup_task = p;
-+	wakeup_prio = p->prio;
-+	wakeup_start = now();
-+	spin_unlock_irqrestore(&wakeup_lock, flags);
-+}
-+
-+notrace void tracing_hist_wakeup_stop(struct task_struct *next)
-+{
-+	unsigned long flags;
-+	long latency;
-+	cycle_t stop;
-+
-+	if (next != wakeup_task)
-+		return;
-+
-+	stop = now();
-+
-+	spin_lock_irqsave(&wakeup_lock, flags);
-+	if (wakeup_task != next)
++	disabled = atomic_inc_return(&tr->data[cpu]->disabled);
++	if (unlikely(disabled != 1))
 +		goto out;
 +
-+	latency = (long)cycles_to_usecs(stop - wakeup_start);
++	/* interrupts should be off from try_to_wake_up */
++	spin_lock(&wakeup_lock);
 +
-+	latency_hist(WAKEUP_LATENCY, smp_processor_id(), latency);
++	/* check for races. */
++	if (!trace_enabled || p->prio >= wakeup_prio)
++		goto out_locked;
 +
-+	put_task_struct(wakeup_task);
-+	wakeup_task = NULL;
-+	wakeup_prio = (unsigned)-1;
++	/* reset the trace */
++	__wakeup_reset(tr);
++
++	wakeup_cpu = task_cpu(p);
++	wakeup_prio = p->prio;
++
++	wakeup_task = p;
++	get_task_struct(wakeup_task);
++
++	local_save_flags(flags);
++
++	tr->data[wakeup_cpu]->preempt_timestamp = now();
++	tracing_start_function_trace();
++	tracing_function_trace(tr, tr->data[wakeup_cpu],
++			       CALLER_ADDR1, CALLER_ADDR2, flags);
++
++
++ out_locked:
++	spin_unlock(&wakeup_lock);
 + out:
-+	spin_unlock_irqrestore(&wakeup_lock, flags);
-+
++	atomic_dec(&tr->data[cpu]->disabled);
 +}
-+#endif
 +
-+static __init int latency_hist_init(void)
++static notrace void wake_up_callback(const struct marker *mdata,
++				     void *private_data,
++				     const char *format, ...)
 +{
-+	struct dentry *latency_hist_root = NULL;
-+	struct dentry *dentry;
-+	struct dentry *entry;
-+	int i = 0, len = 0;
-+	struct hist_data *my_hist;
-+	char name[64];
++	struct tracing_trace **ptr = mdata->private;
++	struct tracing_trace *tr = *ptr;
++	struct task_struct *curr;
++	struct task_struct *p;
++	va_list ap;
 +
-+	dentry = tracing_init_dentry();
++	if (likely(!trace_enabled))
++		return;
 +
-+	latency_hist_root =
-+		debugfs_create_dir(latency_hist_dir_root, dentry);
++	va_start(ap, format);
 +
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+	dentry = debugfs_create_dir(interrupt_off_hist_dir,
-+				    latency_hist_root);
-+	for_each_possible_cpu(i) {
-+		len = sprintf(name, "CPU%d", i);
-+		name[len] = '\0';
-+		entry = debugfs_create_file(name, 0444, dentry,
-+					    &per_cpu(interrupt_off_hist, i),
-+					    &latency_hist_fops);
-+		my_hist = &per_cpu(interrupt_off_hist, i);
-+		atomic_set(&my_hist->hist_mode, 1);
-+		my_hist->min_lat = 0xFFFFFFFFUL;
-+	}
-+	entry = debugfs_create_file("reset", 0444, dentry,
-+				    (void *)INTERRUPT_LATENCY,
-+				    &latency_hist_reset_fops);
-+#endif
++	/* now get the meat: "p %p rq->curr %p" */
++	p = va_arg(ap, typeof(p));
++	curr = va_arg(ap, typeof(curr));
 +
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+	dentry = debugfs_create_dir(preempt_off_hist_dir,
-+				    latency_hist_root);
-+	for_each_possible_cpu(i) {
-+		len = sprintf(name, "CPU%d", i);
-+		name[len] = '\0';
-+		entry = debugfs_create_file(name, 0444, dentry,
-+					    &per_cpu(preempt_off_hist, i),
-+					    &latency_hist_fops);
-+		my_hist = &per_cpu(preempt_off_hist, i);
-+		atomic_set(&my_hist->hist_mode, 1);
-+		my_hist->min_lat = 0xFFFFFFFFUL;
-+	}
-+	entry = debugfs_create_file("reset", 0444, dentry,
-+				    (void *)PREEMPT_LATENCY,
-+				    &latency_hist_reset_fops);
-+#endif
++	va_end(ap);
 +
-+#if defined(CONFIG_INTERRUPT_OFF_HIST) && defined(CONFIG_PREEMPT_OFF_HIST)
-+	dentry = debugfs_create_dir(preempt_irqs_off_hist_dir,
-+				    latency_hist_root);
-+	for_each_possible_cpu(i) {
-+		len = sprintf(name, "CPU%d", i);
-+		name[len] = '\0';
-+		entry = debugfs_create_file(name, 0444, dentry,
-+					    &per_cpu(preempt_off_hist, i),
-+					    &latency_hist_fops);
-+		my_hist = &per_cpu(preempt_irqs_off_hist, i);
-+		atomic_set(&my_hist->hist_mode, 1);
-+		my_hist->min_lat = 0xFFFFFFFFUL;
-+	}
-+	entry = debugfs_create_file("reset", 0444, dentry,
-+				    (void *)PREEMPT_INTERRUPT_LATENCY,
-+				    &latency_hist_reset_fops);
-+#endif
-+
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+	dentry = debugfs_create_dir(wakeup_latency_hist_dir,
-+				    latency_hist_root);
-+	for_each_possible_cpu(i) {
-+		len = sprintf(name, "CPU%d", i);
-+		name[len] = '\0';
-+		entry = debugfs_create_file(name, 0444, dentry,
-+					    &per_cpu(wakeup_latency_hist, i),
-+					    &latency_hist_fops);
-+		my_hist = &per_cpu(wakeup_latency_hist, i);
-+		atomic_set(&my_hist->hist_mode, 1);
-+		my_hist->min_lat = 0xFFFFFFFFUL;
-+	}
-+	entry = debugfs_create_file("reset", 0444, dentry,
-+				    (void *)WAKEUP_LATENCY,
-+				    &latency_hist_reset_fops);
-+#endif
-+	return 0;
-+
++	wakeup_check_start(tr, p, curr);
 +}
 +
-+__initcall(latency_hist_init);
-Index: linux-mcount.git/lib/tracing/tracer_hist.h
++static notrace void start_wakeup_trace(struct tracing_trace *tr)
++{
++	int ret;
++
++	ret = marker_arm("kernel_sched_wakeup");
++	if (ret) {
++		pr_info("wakeup trace: Couldn't arm probe"
++			" kernel_sched_wakeup\n");
++		return;
++	}
++
++	ret = marker_arm("kernel_sched_wakeup_new");
++	if (ret) {
++		pr_info("wakeup trace: Couldn't arm probe"
++			" kernel_sched_wakeup_new\n");
++		goto out;
++	}
++
++	register_tracer_switch(&switch_ops);
++	tracing_start_sched_switch();
++
++	wakeup_reset(tr);
++
++	/*
++	 * Don't let the trace_enabled = 1 show up before
++	 * the wakeup_task is reset. This may be overkill since
++	 * wakeup_reset does a spin_unlock after setting the
++	 * wakeup_task to NULL, but I want to be safe.
++	 * This is a slow path anyway.
++	 */
++	smp_wmb();
++
++	trace_enabled = 1;
++
++	return;
++
++ out:
++	marker_disarm("kernel_sched_wakeup");
++}
++
++static notrace void stop_wakeup_trace(struct tracing_trace *tr)
++{
++	trace_enabled = 0;
++	tracing_stop_sched_switch();
++	unregister_tracer_switch(&switch_ops);
++	marker_disarm("kernel_sched_wakeup");
++	marker_disarm("kernel_sched_wakeup_new");
++}
++
++static notrace void wakeup_trace_init(struct tracing_trace *tr)
++{
++	tracer_trace = tr;
++
++	if (tr->ctrl)
++		start_wakeup_trace(tr);
++}
++
++static notrace void wakeup_trace_reset(struct tracing_trace *tr)
++{
++	if (tr->ctrl) {
++		stop_wakeup_trace(tr);
++		/* make sure we put back any tasks we are tracing */
++		wakeup_reset(tr);
++	}
++}
++
++static void wakeup_trace_ctrl_update(struct tracing_trace *tr)
++{
++	if (tr->ctrl)
++		start_wakeup_trace(tr);
++	else
++		stop_wakeup_trace(tr);
++}
++
++static void notrace wakeup_trace_open(struct tracing_iterator *iter)
++{
++	/* stop the trace while dumping */
++	if (iter->tr->ctrl)
++		stop_wakeup_trace(iter->tr);
++}
++
++static void notrace wakeup_trace_close(struct tracing_iterator *iter)
++{
++	/* forget about any processes we were recording */
++	if (iter->tr->ctrl)
++		start_wakeup_trace(iter->tr);
++}
++
++static struct trace_types_struct wakeup_trace __read_mostly =
++{
++	.name = "wakeup",
++	.init = wakeup_trace_init,
++	.reset = wakeup_trace_reset,
++	.open = wakeup_trace_open,
++	.close = wakeup_trace_close,
++	.ctrl_update = wakeup_trace_ctrl_update,
++	.print_max = 1,
++};
++
++__init static int init_wakeup_trace(void)
++{
++	int ret;
++
++	ret = register_trace(&wakeup_trace);
++	if (ret)
++		return ret;
++
++	ret = marker_probe_register("kernel_sched_wakeup",
++				    "p %p rq->curr %p",
++				    wake_up_callback,
++				    &tracer_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup\n");
++		goto fail;
++	}
++
++	ret = marker_probe_register("kernel_sched_wakeup_new",
++				    "p %p rq->curr %p",
++				    wake_up_callback,
++				    &tracer_trace);
++	if (ret) {
++		pr_info("wakeup trace: Couldn't add marker"
++			" probe to kernel_sched_wakeup_new\n");
++		goto fail_deprobe;
++	}
++
++	return 0;
++ fail_deprobe:
++	marker_probe_unregister("kernel_sched_wakeup");
++ fail:
++	unregister_trace(&wakeup_trace);
++	return 0;
++}
++
++device_initcall(init_wakeup_trace);
+Index: linux-mcount.git/lib/tracing/tracer.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/tracer_hist.h	2008-01-30 15:56:11.000000000 -0500
-@@ -0,0 +1,39 @@
+--- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-30 15:33:38.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.c	2008-01-30 15:38:44.000000000 -0500
+@@ -28,8 +28,13 @@
+ 
+ #include "tracer.h"
+ 
++unsigned long tracing_max_latency __read_mostly = (cycle_t)ULONG_MAX;
++unsigned long tracing_thresh __read_mostly;
++
+ static struct tracing_trace tracer_trace __read_mostly;
+ static DEFINE_PER_CPU(struct tracing_trace_cpu, tracer_trace_cpu);
++static struct tracing_trace max_tr __read_mostly;
++static DEFINE_PER_CPU(struct tracing_trace_cpu, max_data);
+ static int trace_enabled __read_mostly;
+ static unsigned long trace_nr_entries = (65536UL);
+ 
+@@ -64,6 +69,43 @@ enum trace_flag_type {
+ 	TRACE_FLAG_SOFTIRQ		= 0x08,
+ };
+ 
 +/*
-+ * lib/tracing/tracer_hist.h
-+ *
-+ * Add support for histograms of preemption-off latency and
-+ * interrupt-off latency and wakeup latency, it depends on
-+ * Real-Time Preemption Support.
-+ *
-+ *  Copyright (C) 2005 MontaVista Software, Inc.
-+ *  Yi Yang <yyang@ch.mvista.com>
-+ *
-+ *  Converted to work with the new latency tracer.
-+ *  Copyright (C) 2008 Red Hat, Inc.
-+ *    Steven Rostedt <srostedt@redhat.com>
-+ *
++ * Copy the new maximum trace into the separate maximum-trace
++ * structure. (this way the maximum trace is permanently saved,
++ * for later retrieval via /debugfs/tracing/latency_trace)
 + */
-+#ifndef _LIB_TRACING_TRACER_HIST_H_
-+#define _LIB_TRACING_TRACER_HIST_H_
++void update_max_tr(struct tracing_trace *tr, struct task_struct *tsk, int cpu)
++{
++	struct tracing_trace_cpu *data = tr->data[cpu];
++	void *save_trace;
++	int i;
 +
-+#if defined(CONFIG_INTERRUPT_OFF_HIST) || defined(CONFIG_PREEMPT_OFF_HIST)
-+# define TRACE_STOP 2
-+void tracing_hist_preempt_start(void);
-+void tracing_hist_preempt_stop(int irqs_on);
-+#else
-+# define tracing_hist_preempt_start() do { } while (0)
-+# define tracing_hist_preempt_stop(irqs_off) do { } while (0)
++	max_tr.cpu = cpu;
++	max_tr.time_start = data->preempt_timestamp;
++
++
++	/* clear out all the previous traces */
++	for_each_possible_cpu(i) {
++		data = tr->data[i];
++		save_trace = max_tr.data[i]->trace;
++		memcpy(max_tr.data[i], data, sizeof(*data));
++		data->trace = save_trace;
++	}
++
++	data = max_tr.data[cpu];
++	data->saved_latency = tracing_max_latency;
++
++	memcpy(data->comm, tsk->comm, TASK_COMM_LEN);
++	data->pid = tsk->pid;
++	data->uid = tsk->uid;
++	data->nice = tsk->static_prio - 20 - MAX_RT_PRIO;
++	data->policy = tsk->policy;
++	data->rt_priority = tsk->rt_priority;
++
++	/* record this tasks comm */
++	tracing_record_cmdline(current);
++}
++
+ int register_trace(struct trace_types_struct *type)
+ {
+ 	struct trace_types_struct *t;
+@@ -813,7 +855,10 @@ __tracing_open(struct inode *inode, stru
+ 	}
+ 
+ 	mutex_lock(&trace_types_lock);
+-	iter->tr = inode->i_private;
++	if (current_trace && current_trace->print_max)
++		iter->tr = &max_tr;
++	else
++		iter->tr = inode->i_private;
+ 	iter->trace = current_trace;
+ 	iter->pos = -1;
+ 
+@@ -1169,6 +1214,50 @@ static ssize_t tracing_set_trace_write(s
+ 	return cnt;
+ }
+ 
++static ssize_t tracing_max_lat_read(struct file *filp, char __user *ubuf,
++				    size_t cnt, loff_t *ppos)
++{
++	unsigned long *ptr = filp->private_data;
++	char buf[64];
++	int r;
++
++	r = snprintf(buf, 64, "%ld\n",
++		     *ptr == (unsigned long)-1 ? -1 : cycles_to_usecs(*ptr));
++	if (r > 64)
++		r = 64;
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t tracing_max_lat_write(struct file *filp,
++				     const char __user *ubuf,
++				     size_t cnt, loff_t *ppos)
++{
++	long *ptr = filp->private_data;
++	long val;
++	char buf[64];
++
++	if (cnt > 63)
++		cnt = 63;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	val = simple_strtoul(buf, NULL, 10);
++
++	*ptr = usecs_to_cycles(val);
++
++	return cnt;
++}
++
++static struct file_operations tracing_max_lat_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_max_lat_read,
++	.write = tracing_max_lat_write,
++};
++
+ static struct file_operations tracing_ctrl_fops = {
+ 	.open = tracing_open_generic,
+ 	.read = tracing_ctrl_read,
+@@ -1237,6 +1326,19 @@ static __init void tracer_init_debugfs(v
+ 				    &tracer_trace, &set_tracer_fops);
+ 	if (!entry)
+ 		pr_warning("Could not create debugfs 'trace' entry\n");
++
++	entry = debugfs_create_file("tracing_max_latency", 0644, d_tracer,
++				    &tracing_max_latency,
++				    &tracing_max_lat_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'tracing_max_latency' entry\n");
++
++	entry = debugfs_create_file("tracing_thresh", 0644, d_tracer,
++				    &tracing_thresh, &tracing_max_lat_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'tracing_threash' entry\n");
+ }
+ 
+ /* dummy trace to disable tracing */
+@@ -1260,6 +1362,8 @@ __init static int tracer_alloc_buffers(v
+ 
+ 	for_each_possible_cpu(i) {
+ 		tracer_trace.data[i] = &per_cpu(tracer_trace_cpu, i);
++		max_tr.data[i] = &per_cpu(max_data, i);
++
+ 		array = (struct tracing_entry *)
+ 			  __get_free_pages(GFP_KERNEL, order);
+ 		if (array == NULL) {
+@@ -1268,6 +1372,18 @@ __init static int tracer_alloc_buffers(v
+ 			goto free_buffers;
+ 		}
+ 		tracer_trace.data[i]->trace = array;
++
++/* Only allocate if we are actually using the max trace */
++#ifdef CONFIG_TRACER_MAX_TRACE
++		array = (struct tracing_entry *)
++			  __get_free_pages(GFP_KERNEL, order);
++		if (array == NULL) {
++			printk(KERN_ERR "wakeup tracer: failed to allocate"
++			       " %ld bytes for trace buffer!\n", size);
++			goto free_buffers;
++		}
++		max_tr.data[i]->trace = array;
 +#endif
+ 	}
+ 
+ 	/*
+@@ -1275,6 +1391,7 @@ __init static int tracer_alloc_buffers(v
+ 	 * round up a bit.
+ 	 */
+ 	tracer_trace.entries = size / TRACING_ENTRY_SIZE;
++	max_tr.entries = tracer_trace.entries;
+ 
+ 	pr_info("tracer: %ld bytes allocated for %ld",
+ 		size, trace_nr_entries);
+@@ -1297,6 +1414,14 @@ __init static int tracer_alloc_buffers(v
+ 			free_pages((unsigned long)data->trace, order);
+ 			data->trace = NULL;
+ 		}
 +
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+void tracing_hist_wakeup_start(struct task_struct *p,
-+			       struct task_struct *curr);
-+void tracing_hist_wakeup_stop(struct task_struct *next);
-+extern int tracing_wakeup_hist;
-+#else
-+# define tracing_hist_wakeup_start(p, curr) do { } while (0)
-+# define tracing_hist_wakeup_stop(next) do { } while (0)
-+# define tracing_wakeup_hist 0
++#ifdef CONFIG_TRACER_MAX_TRACE
++		data = max_tr.data[i];
++		if (data && data->trace) {
++			free_pages((unsigned long)data->trace, order);
++			data->trace = NULL;
++		}
 +#endif
+ 	}
+ 	return -ENOMEM;
+ }
+Index: linux-mcount.git/lib/tracing/tracer.h
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-30 15:34:21.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-30 15:38:44.000000000 -0500
+@@ -69,6 +69,7 @@ struct trace_types_struct {
+ 	void (*stop)(struct tracing_iterator *iter);
+ 	void (*ctrl_update)(struct tracing_trace *tr);
+ 	struct trace_types_struct *next;
++	int print_max;
+ };
+ 
+ struct tracing_iterator {
+@@ -107,6 +108,10 @@ void tracing_start_sched_switch(void);
+ void tracing_stop_sched_switch(void);
+ 
+ extern int tracing_sched_switch_enabled;
++extern unsigned long tracing_max_latency;
++extern unsigned long tracing_thresh;
 +
-+#endif /* ifndef _LIB_TRACING_TRACER_HIST_H_ */
++void update_max_tr(struct tracing_trace *tr, struct task_struct *tsk, int cpu);
+ 
+ static inline notrace cycle_t now(void)
+ {
 
 -- 
