@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764721AbYA3UOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933147AbYA3UOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764721AbYA3UOE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbYA3UDG
+	id S933147AbYA3UOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757674AbYA3UDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:03:06 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40765 "EHLO smtp6.pp.htv.fi"
+	Wed, 30 Jan 2008 15:03:13 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51842 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762889AbYA3UC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:02:57 -0500
-Date: Wed, 30 Jan 2008 22:03:32 +0200
+	id S1762908AbYA3UDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:03:04 -0500
+Date: Wed, 30 Jan 2008 22:03:36 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: davem@davemloft.net, Jeff Garzik <jgarzik@redhat.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/net/sunvnet.c:print_version() must be __devinit
-Message-ID: <20080130200332.GL29368@does.not.exist>
+To: davem@davemloft.net, James.Bottomley@HansenPartnership.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] scsi/qlogicpti.c section fixes
+Message-ID: <20080130200336.GN29368@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -28,8 +28,12 @@ This patch fixes the following section mismatches:
 <--  snip  -->
 
 ...
-WARNING: drivers/net/sunvnet.o(.text+0x220): Section mismatch in reference from the function print_version() to the variable .devinit.data:version
-WARNING: drivers/net/sunvnet.o(.text+0x228): Section mismatch in reference from the function print_version() to the variable .devinit.data:version
+WARNING: drivers/scsi/qlogicpti.o(.devexit.text+0x8): Section mismatch in reference from the function qpti_sbus_remove() to the function .init.text:qpti_chain_del()
+WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x56c): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_map_regs()
+WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x580): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_register_irq()
+WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x594): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_get_scsi_id()
+WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x5b8): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_map_queues()
+WARNING: drivers/scsi/qlogicpti.o(.devinit.text+0x780): Section mismatch in reference from the function qpti_sbus_probe() to the function .init.text:qpti_chain_add()
 ...
 
 <--  snip  -->
@@ -37,18 +41,67 @@ WARNING: drivers/net/sunvnet.o(.text+0x228): Section mismatch in reference from 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-f865222179806c4475cd79c2fb92ec622f88da3f 
-diff --git a/drivers/net/sunvnet.c b/drivers/net/sunvnet.c
-index 4a0035f..6415ce1 100644
---- a/drivers/net/sunvnet.c
-+++ b/drivers/net/sunvnet.c
-@@ -1130,7 +1130,7 @@ static struct vio_driver_ops vnet_vio_ops = {
- 	.handshake_complete	= vnet_handshake_complete,
- };
+
+ drivers/scsi/qlogicpti.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+3d89831963c0b6f62b24fc4b9dfe1c10d7f90d1b 
+diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
+index 65455ab..4a1cf63 100644
+--- a/drivers/scsi/qlogicpti.c
++++ b/drivers/scsi/qlogicpti.c
+@@ -651,7 +651,7 @@ static int qlogicpti_verify_tmon(struct qlogicpti *qpti)
  
--static void print_version(void)
-+static void __devinit print_version(void)
+ static irqreturn_t qpti_intr(int irq, void *dev_id);
+ 
+-static void __init qpti_chain_add(struct qlogicpti *qpti)
++static void __devinit qpti_chain_add(struct qlogicpti *qpti)
  {
- 	static int version_printed;
+ 	spin_lock_irq(&qptichain_lock);
+ 	if (qptichain != NULL) {
+@@ -667,7 +667,7 @@ static void __init qpti_chain_add(struct qlogicpti *qpti)
+ 	spin_unlock_irq(&qptichain_lock);
+ }
+ 
+-static void __init qpti_chain_del(struct qlogicpti *qpti)
++static void __devexit qpti_chain_del(struct qlogicpti *qpti)
+ {
+ 	spin_lock_irq(&qptichain_lock);
+ 	if (qptichain == qpti) {
+@@ -682,7 +682,7 @@ static void __init qpti_chain_del(struct qlogicpti *qpti)
+ 	spin_unlock_irq(&qptichain_lock);
+ }
+ 
+-static int __init qpti_map_regs(struct qlogicpti *qpti)
++static int __devinit qpti_map_regs(struct qlogicpti *qpti)
+ {
+ 	struct sbus_dev *sdev = qpti->sdev;
+ 
+@@ -705,7 +705,7 @@ static int __init qpti_map_regs(struct qlogicpti *qpti)
+ 	return 0;
+ }
+ 
+-static int __init qpti_register_irq(struct qlogicpti *qpti)
++static int __devinit qpti_register_irq(struct qlogicpti *qpti)
+ {
+ 	struct sbus_dev *sdev = qpti->sdev;
+ 
+@@ -730,7 +730,7 @@ fail:
+ 	return -1;
+ }
+ 
+-static void __init qpti_get_scsi_id(struct qlogicpti *qpti)
++static void __devinit qpti_get_scsi_id(struct qlogicpti *qpti)
+ {
+ 	qpti->scsi_id = prom_getintdefault(qpti->prom_node,
+ 					   "initiator-id",
+@@ -783,7 +783,7 @@ static void qpti_get_clock(struct qlogicpti *qpti)
+ /* The request and response queues must each be aligned
+  * on a page boundary.
+  */
+-static int __init qpti_map_queues(struct qlogicpti *qpti)
++static int __devinit qpti_map_queues(struct qlogicpti *qpti)
+ {
+ 	struct sbus_dev *sdev = qpti->sdev;
  
 
