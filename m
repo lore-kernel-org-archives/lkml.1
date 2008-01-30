@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763748AbYA3Rj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYA3Rp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763748AbYA3Rj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYA3Rjt
+	id S1759916AbYA3Rp3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYA3RpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:39:49 -0500
-Received: from rn-out-0910.google.com ([64.233.170.185]:47638 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbYA3Rjs (ORCPT
+	Wed, 30 Jan 2008 12:45:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51380 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbYA3RpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:39:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=rrjxfz1g+eagofwvfMkSkU0L2hnYHX6Ntb6ohK46UXcJDVlZk47jjqKdYKIzvbka1SCbJ46Y4PR/DiZ/tyZ2Xro2X6RxzDw0AjBICHobtYh/LwiQWKEywpMGsZ3ZaeBLxJFcwnaiZ+C6UNOc0wJuD0OJUt7/TxY7kLivH/aJ3T0=
-Message-ID: <e9c3a7c20801300939w7b73f5a6ld73bde8c3fada569@mail.gmail.com>
-Date: Wed, 30 Jan 2008 10:39:47 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [RFC v2 0/5] dmaengine: Slave DMA interface and example users
-Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       "Shannon Nelson" <shannon.nelson@intel.com>, kernel@avr32linux.org,
-       "Francis Moreau" <francis.moro@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       "Pierre Ossman" <drzeus-list@drzeus.cx>
-In-Reply-To: <20080130095641.39eaad13@dhcp-252-066.norway.atmel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Jan 2008 12:45:18 -0500
+Date: Wed, 30 Jan 2008 09:44:27 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <ak@suse.de>
+Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: ioremap_xxx() with EXEC enabled
+Message-ID: <20080130094427.720fdae7@laptopd505.fenrus.org>
+In-Reply-To: <20080130173048.GA9812@bingen.suse.de>
+References: <1201685530.17912.11.camel@caritas-dev.intel.com>
+	<20080130074540.031b6799@laptopd505.fenrus.org>
+	<20080130173048.GA9812@bingen.suse.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-	 <20080129215453.1e3758ab@siona>
-	 <200801292256.14553.david-b@pacbell.net>
-	 <20080130095641.39eaad13@dhcp-252-066.norway.atmel.com>
-X-Google-Sender-Auth: 0c56858c08168685
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 1:56 AM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> On Tue, 29 Jan 2008 22:56:14 -0800
-> David Brownell <david-b@pacbell.net> wrote:
->
-> > On Tuesday 29 January 2008, Haavard Skinnemoen wrote:
-> > >
-> > > Btw, there's one issue I forgot to mention: I believe the DMA Engine
-> > > framework is currently misusing the DMA mapping API, and this patchset
-> > > makes things worse.
-> > >
-> > > Currently, the async_tx bits of the API do the required calls to
-> > > dma_map_single() and/or dma_map_page(), but they rely on the driver to
-> > > do the unmapping. This is problematic ...
-> > >
-> > > How do we solve this?
-> >
-> > How about:  for peripheral DMA, don't let the engine see anything
-> > except dma_addr_t values.
->
-> I don't think it does, but the dma_addr_t value is enough to call
-> dma_unmap_single() and dma_unmap_page().
+On Wed, 30 Jan 2008 18:30:48 +0100
+Andi Kleen <ak@suse.de> wrote:
 
-Right, dma_addr_t values are all the driver sees in the current scheme.
+> On Wed, Jan 30, 2008 at 07:45:40AM -0800, Arjan van de Ven wrote:
+> > On Wed, 30 Jan 2008 17:32:10 +0800
+> > "Huang, Ying" <ying.huang@intel.com> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > On i386, EFI may need to map EFI runtime code area as EXEC enabled
+> > > with ioremap(). But, I found that the memory are mapped as EXEC
+> > > disabled when mapped with ioremap() now. I think we may need a
+> > > method to map memory area as EXEC enabled with ioremap_xxx().
+> > > Some possible interface schemes for mapping as EXEC enabled are
+> > > as follow:
+> > > 
+> > > - Interface scheme 1:
+> > 
+> > scheme 3:
+> > 
+> > set_memory_x(... )
+> 
+> On i386 EFI is unlikely to be in the direct mapping ...
 
->
-> > The engine needs to be able to dma_alloc_coherent() memory too,
-> > which is pre-mapped.
->
-> Right, which is another argument for not doing any unmapping in the DMA
-> engine driver. We really need to push this responsibility to the client.
->
+1) 32 bit EFI is totally irrelevant.
+2) set_memory_ and set_pages_ API is not restricted to direct mapping. That's why they take a virtual address / struct page
 
-Agreed, the issue is how to do this without requiring an
-interrupt+callback sequence for each transaction or requiring the
-client to carry per transaction unmap-data.  For example NET_DMA never
-sees a dma_addr_t and assumes that all it needs to care about is the
-last transaction in a sequence.  Since it is alive for the duration of
-a transaction, we could put unmap data in dma_async_tx_descriptor
-along with an unmap function pointer since dma_unmap* routines have an
-equal number of parameters.  But I just got through making this
-structure smaller so maybe there is a better way.
+> 
+> -Andi
+> 
 
---
-Dan
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
