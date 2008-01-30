@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYA3Tng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbYA3Tp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbYA3Tng (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbYA3Tn3
+	id S1758459AbYA3Tp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYA3TpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:43:29 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:37583 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753542AbYA3Tn2 (ORCPT
+	Wed, 30 Jan 2008 14:45:19 -0500
+Received: from stinky.trash.net ([213.144.137.162]:59680 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbYA3TpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:43:28 -0500
-Date: Wed, 30 Jan 2008 14:43:27 -0500
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
-       Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080130194327.GC26257@csclub.uwaterloo.ca>
-References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv> <20080130002514.GA1802@does.not.exist> <1201658555.24898.27.camel@dv> <20080130175435.GA29368@does.not.exist> <20080130181530.GA26259@csclub.uwaterloo.ca> <20080130184538.GE29368@does.not.exist>
+	Wed, 30 Jan 2008 14:45:18 -0500
+Message-ID: <47A0D3AA.1010504@trash.net>
+Date: Wed, 30 Jan 2008 20:44:42 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130184538.GE29368@does.not.exist>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [RCU]: preemptible RCU: sparse annotations
+Content-Type: multipart/mixed;
+ boundary="------------070809080007070905080300"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 08:45:38PM +0200, Adrian Bunk wrote:
-> http://www.jbb.de/judgment_dc_munich_gpl.pdf
-> http://www.jbb.de/judgment_dc_frankfurt_gpl.pdf
+This is a multi-part message in MIME format.
+--------------070809080007070905080300
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Good point.  They seem to be the place that actually has enforced the
-GPL.
+Annotate rcu_read_lock/rcu_read_unlock for sparse.
 
---
-Len Sorensen
+
+
+--------------070809080007070905080300
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[RCU]: preemptible RCU: sparse annotations
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+index ece8eb3..60c2a03 100644
+--- a/include/linux/rcupreempt.h
++++ b/include/linux/rcupreempt.h
+@@ -46,8 +46,8 @@
+ #define rcu_bh_qsctr_inc(cpu)
+ #define call_rcu_bh(head, rcu) call_rcu(head, rcu)
+ 
+-extern void __rcu_read_lock(void);
+-extern void __rcu_read_unlock(void);
++extern void __rcu_read_lock(void)	__acquires(RCU);
++extern void __rcu_read_unlock(void)	__releases(RCU);
+ extern int rcu_pending(int cpu);
+ extern int rcu_needs_cpu(int cpu);
+ 
+
+--------------070809080007070905080300--
