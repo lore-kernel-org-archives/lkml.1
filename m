@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbYA3D0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYA3D0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbYA3D0G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 22:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbYA3DT0
+	id S1759206AbYA3D0d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbYA3DT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 22:19:26 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:53704 "EHLO
+	Tue, 29 Jan 2008 22:19:29 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:53706 "EHLO
 	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018AbYA3DS4 (ORCPT
+	with ESMTP id S1754046AbYA3DS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jan 2008 22:18:56 -0500
-Message-Id: <20080130031842.616059573@goodmis.org>
+Message-Id: <20080130031841.482792335@goodmis.org>
 References: <20080130031521.258552785@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 22:15:37 -0500
+Date: Tue, 29 Jan 2008 22:15:30 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,45 +29,164 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 16/22 -v7] Add marker in try_to_wake_up
-Content-Disposition: inline; filename=add-markers-to-wakeup.patch
+Subject: [PATCH 09/22 -v7] add notrace annotations to timing events
+Content-Disposition: inline; filename=mcount-add-time-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add markers into the wakeup code, to allow the tracer to
-record wakeup timings.
+This patch adds notrace annotations to timer functions
+that will be used by tracing. This helps speed things up and
+also keeps the ugliness of printing these functions down.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/sched.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/x86/kernel/apic_32.c     |    2 +-
+ arch/x86/kernel/hpet.c        |    2 +-
+ arch/x86/kernel/time_32.c     |    2 +-
+ arch/x86/kernel/tsc_32.c      |    2 +-
+ arch/x86/kernel/tsc_64.c      |    4 ++--
+ arch/x86/lib/delay_32.c       |    6 +++---
+ drivers/clocksource/acpi_pm.c |    8 ++++----
+ 7 files changed, 13 insertions(+), 13 deletions(-)
 
-Index: linux-mcount.git/kernel/sched.c
+Index: linux-mcount.git/arch/x86/kernel/apic_32.c
 ===================================================================
---- linux-mcount.git.orig/kernel/sched.c	2008-01-25 21:47:21.000000000 -0500
-+++ linux-mcount.git/kernel/sched.c	2008-01-25 21:47:30.000000000 -0500
-@@ -1885,6 +1885,10 @@ static int try_to_wake_up(struct task_st
+--- linux-mcount.git.orig/arch/x86/kernel/apic_32.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/apic_32.c	2008-01-29 11:49:47.000000000 -0500
+@@ -577,7 +577,7 @@ static void local_apic_timer_interrupt(v
+  *   interrupt as well. Thus we cannot inline the local irq ... ]
+  */
  
- out_activate:
- #endif /* CONFIG_SMP */
-+	trace_mark(kernel_sched_wakeup,
-+		   "p %p rq->curr %p",
-+		   p, rq->curr);
-+
- 	schedstat_inc(p, se.nr_wakeups);
- 	if (sync)
- 		schedstat_inc(p, se.nr_wakeups_sync);
-@@ -2026,6 +2030,10 @@ void fastcall wake_up_new_task(struct ta
- 		p->sched_class->task_new(rq, p);
- 		inc_nr_running(p, rq);
- 	}
-+	trace_mark(kernel_sched_wakeup_new,
-+		   "p %p rq->curr %p",
-+		   p, rq->curr);
-+
- 	check_preempt_curr(rq, p);
- #ifdef CONFIG_SMP
- 	if (p->sched_class->task_wake_up)
+-void fastcall smp_apic_timer_interrupt(struct pt_regs *regs)
++notrace fastcall void smp_apic_timer_interrupt(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+ 
+Index: linux-mcount.git/arch/x86/kernel/hpet.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/hpet.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/hpet.c	2008-01-29 11:49:47.000000000 -0500
+@@ -295,7 +295,7 @@ static int hpet_legacy_next_event(unsign
+ /*
+  * Clock source related code
+  */
+-static cycle_t read_hpet(void)
++static notrace cycle_t read_hpet(void)
+ {
+ 	return (cycle_t)hpet_readl(HPET_COUNTER);
+ }
+Index: linux-mcount.git/arch/x86/kernel/time_32.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/time_32.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/time_32.c	2008-01-29 11:49:47.000000000 -0500
+@@ -122,7 +122,7 @@ static int set_rtc_mmss(unsigned long no
+ 
+ int timer_ack;
+ 
+-unsigned long profile_pc(struct pt_regs *regs)
++notrace unsigned long profile_pc(struct pt_regs *regs)
+ {
+ 	unsigned long pc = instruction_pointer(regs);
+ 
+Index: linux-mcount.git/arch/x86/kernel/tsc_32.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/tsc_32.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/tsc_32.c	2008-01-29 11:49:47.000000000 -0500
+@@ -269,7 +269,7 @@ core_initcall(cpufreq_tsc);
+ 
+ static unsigned long current_tsc_khz = 0;
+ 
+-static cycle_t read_tsc(void)
++static notrace cycle_t read_tsc(void)
+ {
+ 	cycle_t ret;
+ 
+Index: linux-mcount.git/arch/x86/kernel/tsc_64.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/tsc_64.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/tsc_64.c	2008-01-29 11:49:47.000000000 -0500
+@@ -248,13 +248,13 @@ __setup("notsc", notsc_setup);
+ 
+ 
+ /* clock source code: */
+-static cycle_t read_tsc(void)
++static notrace cycle_t read_tsc(void)
+ {
+ 	cycle_t ret = (cycle_t)get_cycles_sync();
+ 	return ret;
+ }
+ 
+-static cycle_t __vsyscall_fn vread_tsc(void)
++static notrace cycle_t __vsyscall_fn vread_tsc(void)
+ {
+ 	cycle_t ret = (cycle_t)get_cycles_sync();
+ 	return ret;
+Index: linux-mcount.git/arch/x86/lib/delay_32.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/lib/delay_32.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/arch/x86/lib/delay_32.c	2008-01-29 11:49:47.000000000 -0500
+@@ -24,7 +24,7 @@
+ #endif
+ 
+ /* simple loop based delay: */
+-static void delay_loop(unsigned long loops)
++static notrace void delay_loop(unsigned long loops)
+ {
+ 	int d0;
+ 
+@@ -39,7 +39,7 @@ static void delay_loop(unsigned long loo
+ }
+ 
+ /* TSC based delay: */
+-static void delay_tsc(unsigned long loops)
++static notrace void delay_tsc(unsigned long loops)
+ {
+ 	unsigned long bclock, now;
+ 
+@@ -72,7 +72,7 @@ int read_current_timer(unsigned long *ti
+ 	return -1;
+ }
+ 
+-void __delay(unsigned long loops)
++notrace void __delay(unsigned long loops)
+ {
+ 	delay_fn(loops);
+ }
+Index: linux-mcount.git/drivers/clocksource/acpi_pm.c
+===================================================================
+--- linux-mcount.git.orig/drivers/clocksource/acpi_pm.c	2008-01-29 11:35:35.000000000 -0500
++++ linux-mcount.git/drivers/clocksource/acpi_pm.c	2008-01-29 11:49:47.000000000 -0500
+@@ -30,13 +30,13 @@
+  */
+ u32 pmtmr_ioport __read_mostly;
+ 
+-static inline u32 read_pmtmr(void)
++static inline notrace u32 read_pmtmr(void)
+ {
+ 	/* mask the output to 24 bits */
+ 	return inl(pmtmr_ioport) & ACPI_PM_MASK;
+ }
+ 
+-u32 acpi_pm_read_verified(void)
++notrace u32 acpi_pm_read_verified(void)
+ {
+ 	u32 v1 = 0, v2 = 0, v3 = 0;
+ 
+@@ -56,12 +56,12 @@ u32 acpi_pm_read_verified(void)
+ 	return v2;
+ }
+ 
+-static cycle_t acpi_pm_read_slow(void)
++static notrace cycle_t acpi_pm_read_slow(void)
+ {
+ 	return (cycle_t)acpi_pm_read_verified();
+ }
+ 
+-static cycle_t acpi_pm_read(void)
++static notrace cycle_t acpi_pm_read(void)
+ {
+ 	return (cycle_t)read_pmtmr();
+ }
 
 -- 
