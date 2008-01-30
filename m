@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764685AbYA3VKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbYA3VKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764685AbYA3VKb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbYA3VFx
+	id S1761777AbYA3VKv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbYA3VFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:05:53 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:49547 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758037AbYA3VFh (ORCPT
+	Wed, 30 Jan 2008 16:05:54 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:51422 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758052AbYA3VFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 16:05:37 -0500
-Message-Id: <20080130210526.199808932@goodmis.org>
+Message-Id: <20080130210525.547283853@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:04:06 -0500
+Date: Wed, 30 Jan 2008 16:04:02 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,164 +29,131 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 09/23 -v8] add notrace annotations to timing events
-Content-Disposition: inline; filename=mcount-add-time-notrace-annotations.patch
+Subject: [PATCH 05/23 -v8] add notrace annotations to vsyscall.
+Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds notrace annotations to timer functions
-that will be used by tracing. This helps speed things up and
-also keeps the ugliness of printing these functions down.
+Add the notrace annotations to some of the vsyscall functions.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/apic_32.c     |    2 +-
- arch/x86/kernel/hpet.c        |    2 +-
- arch/x86/kernel/time_32.c     |    2 +-
- arch/x86/kernel/tsc_32.c      |    2 +-
- arch/x86/kernel/tsc_64.c      |    4 ++--
- arch/x86/lib/delay_32.c       |    6 +++---
- drivers/clocksource/acpi_pm.c |    8 ++++----
- 7 files changed, 13 insertions(+), 13 deletions(-)
+ arch/x86/kernel/vsyscall_64.c  |    3 ++-
+ arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
+ arch/x86/vdso/vgetcpu.c        |    3 ++-
+ include/asm-x86/vsyscall.h     |    3 ++-
+ 4 files changed, 14 insertions(+), 10 deletions(-)
 
-Index: linux-mcount.git/arch/x86/kernel/apic_32.c
+Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/apic_32.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/apic_32.c	2008-01-30 15:10:16.000000000 -0500
-@@ -577,7 +577,7 @@ static void local_apic_timer_interrupt(v
-  *   interrupt as well. Thus we cannot inline the local irq ... ]
-  */
+--- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-30 14:35:51.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-30 14:47:08.000000000 -0500
+@@ -42,7 +42,8 @@
+ #include <asm/topology.h>
+ #include <asm/vgtod.h>
  
--void fastcall smp_apic_timer_interrupt(struct pt_regs *regs)
-+notrace fastcall void smp_apic_timer_interrupt(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
- 
-Index: linux-mcount.git/arch/x86/kernel/hpet.c
+-#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
++#define __vsyscall(nr) \
++		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
+ #define __syscall_clobber "r11","rcx","memory"
+ #define __pa_vsymbol(x)			\
+ 	({unsigned long v;  		\
+Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/hpet.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/hpet.c	2008-01-30 15:10:16.000000000 -0500
-@@ -295,7 +295,7 @@ static int hpet_legacy_next_event(unsign
- /*
-  * Clock source related code
-  */
--static cycle_t read_hpet(void)
-+static notrace cycle_t read_hpet(void)
- {
- 	return (cycle_t)hpet_readl(HPET_COUNTER);
- }
-Index: linux-mcount.git/arch/x86/kernel/time_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/time_32.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/time_32.c	2008-01-30 15:10:17.000000000 -0500
-@@ -122,7 +122,7 @@ static int set_rtc_mmss(unsigned long no
- 
- int timer_ack;
- 
--unsigned long profile_pc(struct pt_regs *regs)
-+notrace unsigned long profile_pc(struct pt_regs *regs)
- {
- 	unsigned long pc = instruction_pointer(regs);
- 
-Index: linux-mcount.git/arch/x86/kernel/tsc_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/tsc_32.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/tsc_32.c	2008-01-30 15:10:17.000000000 -0500
-@@ -269,7 +269,7 @@ core_initcall(cpufreq_tsc);
- 
- static unsigned long current_tsc_khz = 0;
- 
--static cycle_t read_tsc(void)
-+static notrace cycle_t read_tsc(void)
- {
- 	cycle_t ret;
- 
-Index: linux-mcount.git/arch/x86/kernel/tsc_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/tsc_64.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/tsc_64.c	2008-01-30 15:10:17.000000000 -0500
-@@ -248,13 +248,13 @@ __setup("notsc", notsc_setup);
- 
- 
- /* clock source code: */
--static cycle_t read_tsc(void)
-+static notrace cycle_t read_tsc(void)
- {
- 	cycle_t ret = (cycle_t)get_cycles_sync();
- 	return ret;
- }
- 
--static cycle_t __vsyscall_fn vread_tsc(void)
-+static notrace cycle_t __vsyscall_fn vread_tsc(void)
- {
- 	cycle_t ret = (cycle_t)get_cycles_sync();
- 	return ret;
-Index: linux-mcount.git/arch/x86/lib/delay_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/lib/delay_32.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/lib/delay_32.c	2008-01-30 15:10:17.000000000 -0500
+--- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-30 14:35:51.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-30 14:47:08.000000000 -0500
 @@ -24,7 +24,7 @@
- #endif
  
- /* simple loop based delay: */
--static void delay_loop(unsigned long loops)
-+static notrace void delay_loop(unsigned long loops)
+ #define gtod vdso_vsyscall_gtod_data
+ 
+-static long vdso_fallback_gettime(long clock, struct timespec *ts)
++notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
  {
- 	int d0;
- 
-@@ -39,7 +39,7 @@ static void delay_loop(unsigned long loo
+ 	long ret;
+ 	asm("syscall" : "=a" (ret) :
+@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
+ 	return ret;
  }
  
- /* TSC based delay: */
--static void delay_tsc(unsigned long loops)
-+static notrace void delay_tsc(unsigned long loops)
+-static inline long vgetns(void)
++notrace static inline long vgetns(void)
  {
- 	unsigned long bclock, now;
- 
-@@ -72,7 +72,7 @@ int read_current_timer(unsigned long *ti
- 	return -1;
+ 	long v;
+ 	cycles_t (*vread)(void);
+@@ -41,7 +41,7 @@ static inline long vgetns(void)
+ 	return (v * gtod->clock.mult) >> gtod->clock.shift;
  }
  
--void __delay(unsigned long loops)
-+notrace void __delay(unsigned long loops)
+-static noinline int do_realtime(struct timespec *ts)
++notrace static noinline int do_realtime(struct timespec *ts)
  {
- 	delay_fn(loops);
+ 	unsigned long seq, ns;
+ 	do {
+@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
  }
-Index: linux-mcount.git/drivers/clocksource/acpi_pm.c
+ 
+ /* Copy of the version in kernel/time.c which we cannot directly access */
+-static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
++notrace static void
++vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
+ {
+ 	while (nsec >= NSEC_PER_SEC) {
+ 		nsec -= NSEC_PER_SEC;
+@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
+ 	ts->tv_nsec = nsec;
+ }
+ 
+-static noinline int do_monotonic(struct timespec *ts)
++notrace static noinline int do_monotonic(struct timespec *ts)
+ {
+ 	unsigned long seq, ns, secs;
+ 	do {
+@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
+ 	return 0;
+ }
+ 
+-int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
++notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
+ {
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
+ 		switch (clock) {
+@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
+ int clock_gettime(clockid_t, struct timespec *)
+ 	__attribute__((weak, alias("__vdso_clock_gettime")));
+ 
+-int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
++notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
+ {
+ 	long ret;
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
+Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
 ===================================================================
---- linux-mcount.git.orig/drivers/clocksource/acpi_pm.c	2008-01-30 14:35:50.000000000 -0500
-+++ linux-mcount.git/drivers/clocksource/acpi_pm.c	2008-01-30 15:10:17.000000000 -0500
-@@ -30,13 +30,13 @@
-  */
- u32 pmtmr_ioport __read_mostly;
+--- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-30 14:35:51.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-30 14:47:08.000000000 -0500
+@@ -13,7 +13,8 @@
+ #include <asm/vgtod.h>
+ #include "vextern.h"
  
--static inline u32 read_pmtmr(void)
-+static inline notrace u32 read_pmtmr(void)
+-long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
++notrace long
++__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
  {
- 	/* mask the output to 24 bits */
- 	return inl(pmtmr_ioport) & ACPI_PM_MASK;
- }
+ 	unsigned int dummy, p;
  
--u32 acpi_pm_read_verified(void)
-+notrace u32 acpi_pm_read_verified(void)
- {
- 	u32 v1 = 0, v2 = 0, v3 = 0;
+Index: linux-mcount.git/include/asm-x86/vsyscall.h
+===================================================================
+--- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-30 14:35:51.000000000 -0500
++++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-30 14:47:08.000000000 -0500
+@@ -24,7 +24,8 @@ enum vsyscall_num {
+ 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
+ #define __section_vsyscall_clock __attribute__ \
+ 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
+-#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
++#define __vsyscall_fn \
++	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
  
-@@ -56,12 +56,12 @@ u32 acpi_pm_read_verified(void)
- 	return v2;
- }
- 
--static cycle_t acpi_pm_read_slow(void)
-+static notrace cycle_t acpi_pm_read_slow(void)
- {
- 	return (cycle_t)acpi_pm_read_verified();
- }
- 
--static cycle_t acpi_pm_read(void)
-+static notrace cycle_t acpi_pm_read(void)
- {
- 	return (cycle_t)read_pmtmr();
- }
+ #define VGETCPU_RDTSCP	1
+ #define VGETCPU_LSL	2
 
 -- 
