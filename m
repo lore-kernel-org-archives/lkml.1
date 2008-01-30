@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbYA3KZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760268AbYA3K1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762229AbYA3KZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 05:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757860AbYA3KZN
+	id S1760268AbYA3K1i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 05:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYA3K13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 05:25:13 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:50920 "EHLO
+	Wed, 30 Jan 2008 05:27:29 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:12728 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755403AbYA3KZL (ORCPT
+	with ESMTP id S1752166AbYA3K12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 05:25:11 -0500
+	Wed, 30 Jan 2008 05:27:28 -0500
 X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="61207256"
+   d="scan'208";a="61207338"
 From: Bryan Wu <bryan.wu@analog.com>
-To: linux-kernel@vger.kernel.org
-Cc: Bernd Schmidt <bernd.schmidt@analog.com>, Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 1/1] [NOMMU]: Dont use kobjsize on the area belonging to a VMA
-Date: Wed, 30 Jan 2008 18:25:08 +0800
-Message-Id: <1201688708-2152-1-git-send-email-bryan.wu@analog.com>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
+       Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 1/1] [MTD] chips: add a new INTEL ID to kernel cfi driver.
+Date: Wed, 30 Jan 2008 18:27:24 +0800
+Message-Id: <1201688844-2318-1-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bernd Schmidt <bernd.schmidt@analog.com>
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-Dont use kobjsize on the area belonging to a VMA, as it's allocated with
-get_free_pages.
-
-Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- fs/proc/task_nommu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/mtd/chips/cfi_cmdset_0001.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
-index 1932c2c..1d0513e 100644
---- a/fs/proc/task_nommu.c
-+++ b/fs/proc/task_nommu.c
-@@ -76,7 +76,7 @@ unsigned long task_vsize(struct mm_struct *mm)
- 	down_read(&mm->mmap_sem);
- 	for (tbp = mm->context.vmlist; tbp; tbp = tbp->next) {
- 		if (tbp->vma)
--			vsize += kobjsize((void *) tbp->vma->vm_start);
-+			vsize += tbp->vma->vm_end - tbp->vma->vm_start;
- 	}
- 	up_read(&mm->mmap_sem);
- 	return vsize;
-@@ -93,7 +93,7 @@ int task_statm(struct mm_struct *mm, int *shared, int *text,
- 		size += kobjsize(tbp);
- 		if (tbp->vma) {
- 			size += kobjsize(tbp->vma);
--			size += kobjsize((void *) tbp->vma->vm_start);
-+			size += tbp->vma->vm_end - tbp->vma->vm_start;
- 		}
- 	}
+diff --git a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
+index 1707f98..a833618 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0001.c
++++ b/drivers/mtd/chips/cfi_cmdset_0001.c
+@@ -246,6 +246,7 @@ static struct cfi_fixup cfi_fixup_table[] = {
+ 	{ CFI_MFR_ST, 0x00ba, /* M28W320CT */ fixup_st_m28w320ct, NULL },
+ 	{ CFI_MFR_ST, 0x00bb, /* M28W320CB */ fixup_st_m28w320cb, NULL },
+ 	{ MANUFACTURER_INTEL, 0x891c,	      fixup_use_powerup_lock, NULL, },
++	{ MANUFACTURER_INTEL, 0x891f,	      fixup_use_powerup_lock, NULL, },
+ 	{ 0, 0, NULL, NULL }
+ };
  
 -- 
 1.5.3.4
