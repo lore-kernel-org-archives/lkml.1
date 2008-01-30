@@ -1,133 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYA3FYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYA3F05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYA3FYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 00:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYA3FYn
+	id S1756116AbYA3F05 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 00:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYA3F0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 00:24:43 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:41834 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbYA3FYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 00:24:42 -0500
-Date: Tue, 29 Jan 2008 21:23:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>, auke-jan.h.kok@intel.com,
-       jeff@garzik.org, davem@davemloft.net, akpm <akpm@linux-foundation.org>
-Subject: Re: Mostly revert
- "e1000/e1000e: Move PCI-Express device IDs over to e1000e"
-Message-Id: <20080129212314.91b9bb5b.randy.dunlap@oracle.com>
-In-Reply-To: <200801292359.m0TNxb75011826@hera.kernel.org>
-References: <200801292359.m0TNxb75011826@hera.kernel.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 30 Jan 2008 00:26:49 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:20715 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752987AbYA3F0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 00:26:48 -0500
+Subject: Re: ndiswrapper and GPL-only symbols redux
+From: Pavel Roskin <proski@gnu.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>
+In-Reply-To: <20080130050721.GB22444@dallas.jonmasters.org>
+References: <1201641765.18773.35.camel@dv> <20080129224529.4b8016c3@core>
+	 <1201651006.23553.8.camel@dv> <p73bq746lml.fsf@bingen.suse.de>
+	 <20080130050721.GB22444@dallas.jonmasters.org>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 00:26:45 -0500
+Message-Id: <1201670805.4382.4.camel@rd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008 23:59:37 GMT Linux Kernel Mailing List wrote:
-
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5b10ca19ea4859d3884d10a3eb8495de92089792
-> Commit:     5b10ca19ea4859d3884d10a3eb8495de92089792
-> Parent:     9e97198dbf318be7958b57900d05b37c7e09ad7c
-> Author:     Linus Torvalds <torvalds@linux-foundation.org>
-> AuthorDate: Wed Jan 30 09:54:54 2008 +1100
-> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> CommitDate: Wed Jan 30 09:54:54 2008 +1100
+On Wed, 2008-01-30 at 05:07 +0000, Jon Masters wrote:
+> *). Add a new taint?
+> *). Move it later?
 > 
->     Mostly revert "e1000/e1000e: Move PCI-Express device IDs over to e1000e"
->     
->     The new e1000e driver is apparently not yet suitable for general use, so
->     mark it experimental, and re-instate all the PCI-Express device IDs in
->     the old and stable e1000 driver so that people (namely me) can continue
->     to use a driver that actually works.
->     
->     Auke & co have been appraised of the situation.
->     
->     Cc: Auke Kok <auke-jan.h.kok@intel.com>
->     Cc: Jeff Garzik <jeff@garzik.org>
->     Cc: David Miller <davem@davemloft.net>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> It's all trivial, but a policy should be established for the future.
 
-Andrew was concerned about this when the driver was in -mm.
-He asked for a patch that would set E1000E to same value as E1000
-and I supplied that.  Auke acked it IIRC.  Other people vetoed it.  :(
+I'd prefer a new taint.  It's less likely to break.  It provides more
+information in the stack dumps.  It makes it clear the difference
+ndiswrapper and driverloader.
 
-
-> ---
->  drivers/net/Kconfig            |    2 +-
->  drivers/net/e1000/e1000_main.c |   27 +++++++++++++++++++++++++++
->  2 files changed, 28 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index af40ff4..5a2d1dd 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -1992,7 +1992,7 @@ config E1000_DISABLE_PACKET_SPLIT
->  
->  config E1000E
->  	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
-> -	depends on PCI
-> +	depends on PCI && EXPERIMENTAL
->  	---help---
->  	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
->  	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
-> diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-> index 7f5b2ae..3111af6 100644
-> --- a/drivers/net/e1000/e1000_main.c
-> +++ b/drivers/net/e1000/e1000_main.c
-> @@ -73,6 +73,14 @@ static struct pci_device_id e1000_pci_tbl[] = {
->  	INTEL_E1000_ETHERNET_DEVICE(0x1026),
->  	INTEL_E1000_ETHERNET_DEVICE(0x1027),
->  	INTEL_E1000_ETHERNET_DEVICE(0x1028),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x1049),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x104A),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x104B),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x104C),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x104D),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x105E),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x105F),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x1060),
->  	INTEL_E1000_ETHERNET_DEVICE(0x1075),
->  	INTEL_E1000_ETHERNET_DEVICE(0x1076),
->  	INTEL_E1000_ETHERNET_DEVICE(0x1077),
-> @@ -81,9 +89,28 @@ static struct pci_device_id e1000_pci_tbl[] = {
->  	INTEL_E1000_ETHERNET_DEVICE(0x107A),
->  	INTEL_E1000_ETHERNET_DEVICE(0x107B),
->  	INTEL_E1000_ETHERNET_DEVICE(0x107C),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x107D),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x107E),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x107F),
->  	INTEL_E1000_ETHERNET_DEVICE(0x108A),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x108B),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x108C),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x1096),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x1098),
->  	INTEL_E1000_ETHERNET_DEVICE(0x1099),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x109A),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10A4),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10A5),
->  	INTEL_E1000_ETHERNET_DEVICE(0x10B5),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10B9),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10BA),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10BB),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10BC),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10C4),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10C5),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10D5),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10D9),
-> +	INTEL_E1000_ETHERNET_DEVICE(0x10DA),
->  	/* required last entry */
->  	{0,}
->  };
-
+Here's the patch:
 ---
-~Randy
+
+Introduce a new taint flag for ndiswrapper
+
+Although ndiswrapper loads proprietary code, it's under GPL itself.
+Introduce a different taint flag for this case, so that ndiswrapper
+retains access to GPL-only symbols.
+
+Add comments to show the difference between driverloader and
+ndiswrapper.
+
+Signed-off-by: Pavel Roskin <proski@gnu.org>
+---
+
+ include/linux/kernel.h |    1 +
+ kernel/module.c        |    5 ++++-
+ kernel/panic.c         |    2 ++
+ 3 files changed, 7 insertions(+), 1 deletions(-)
+
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index a7283c9..861a6ae 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -240,6 +240,7 @@ extern enum system_states {
+ #define TAINT_BAD_PAGE			(1<<5)
+ #define TAINT_USER			(1<<6)
+ #define TAINT_DIE			(1<<7)
++#define TAINT_BLOB_WRAPPER		(1<<8)
+ 
+ extern void dump_stack(void) __cold;
+ 
+diff --git a/kernel/module.c b/kernel/module.c
+index f6a4e72..a64380c 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1925,8 +1925,11 @@ static struct module *load_module(void __user *umod,
+ 	/* Set up license info based on the info section */
+ 	set_license(mod, get_modinfo(sechdrs, infoindex, "license"));
+ 
++	/* GPL, but may load proprietary code */
+ 	if (strcmp(mod->name, "ndiswrapper") == 0)
+-		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
++		add_taint_module(mod, TAINT_BLOB_WRAPPER);
++
++	/* Wrongly claims to be under GPL */
+ 	if (strcmp(mod->name, "driverloader") == 0)
+ 		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
+ 
+diff --git a/kernel/panic.c b/kernel/panic.c
+index da4d6ba..b040812 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -152,6 +152,7 @@ EXPORT_SYMBOL(panic);
+  *  'M' - System experienced a machine check exception.
+  *  'B' - System has hit bad_page.
+  *  'U' - Userspace-defined naughtiness.
++ *  'W' - Wrapper for untrusted binary blobs has been loaded.
+  *
+  *	The string is overwritten by the next call to print_taint().
+  */
+@@ -162,6 +163,7 @@ const char *print_tainted(void)
+ 	if (tainted) {
+ 		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c",
+ 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
++			tainted & TAINT_BLOB_WRAPPER ? 'W' : ' ',
+ 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
+ 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
+ 			tainted & TAINT_FORCED_RMMOD ? 'R' : ' ',
+
+-- 
+Regards,
+Pavel Roskin
