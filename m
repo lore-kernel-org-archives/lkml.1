@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbYA3MnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYA3Mo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbYA3MnU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 07:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYA3MnM
+	id S1756056AbYA3Mo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 07:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYA3MoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 07:43:12 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:57181 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751452AbYA3MnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 07:43:11 -0500
-Date: Wed, 30 Jan 2008 13:43:09 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Remy Bohmer" <linux@bohmer.net>
-Cc: michael <trimarchi@gandalf.sssup.it>, fabio@gandalf.sssup.it,
-       "Andrew Victor" <linux@maxim.org.za>,
-       "Chip Coldwell" <coldwell@redhat.com>,
-       "Marc Pignat" <marc.pignat@hevs.ch>,
-       "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-Message-ID: <20080130134309.3806d57a@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <3efb10970801300305g693a8371u36011426d3a13b3e@mail.gmail.com>
-References: <20080129224316.GA23155@gandalf.sssup.it>
-	<479FB2D7.4020804@gandalf.sssup.it>
-	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
-	<3efb10970801300221h601261edy33cf89dac5abde78@mail.gmail.com>
-	<20080130113434.2519f77c@dhcp-252-066.norway.atmel.com>
-	<3efb10970801300305g693a8371u36011426d3a13b3e@mail.gmail.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 07:44:19 -0500
+Received: from web52004.mail.re2.yahoo.com ([206.190.49.251]:28903 "HELO
+	web52004.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753053AbYA3MoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 07:44:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=wwuCW/HNGs2dNQidgbL4qaGledAqugFa/bpBpAJtyuegH+U3mpyBcAQ3Bw4ZbDx/4FVWh3iHD9s3tZOWFf+crju3ggVT62PT6JkfwHEZ8IwU6HNot8eXtg8g7fapFV4NUZZ2DJn6XAwIIlkBe6R6dygWAt/WbQigPdwlIqUKJyw=;
+X-YMail-OSG: K1_QzioVM1kHFMu8svaIVYyVpG28ZzSKcbkn3vSQm_Em7dEJ6abi3vGph9mk452wWpxt3Rb9h.2LtxtSZ0abTntXL2_FietX0N6oFGxSL9f3J0V.CZzAMBClagtkEsQ_Z2TVFFiOuD1FtA--
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.162
+Date: Wed, 30 Jan 2008 04:44:17 -0800 (PST)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: ARP Bug?
+To: jengelh@computergmbh.de
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <67062.74127.qm@web52004.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 12:05:40 +0100
-"Remy Bohmer" <linux@bohmer.net> wrote:
+Jan Engelhardt:
 
-> > > I believe I have to look at the latest set of patches, and try to find
-> > > any regressions. Do you have a location somewhere where I can download
-> > > the latest versions? Or do I need to dig through LKML to find the
-> > > latest... ;-)  
-> > They are in -mm. You were Cc'ed I think...  
-> 
-> Yes, I saw them, but I did not know if there were any updates in the
-> mean time, because I had seen some discussions, which confused me a
-> bit about the current status of the complete set.
+>On Jan 30 2008 04:29, Matti Linnanvuori wrote:
+>Jan Engelhardt:
+>>> If you have the same subnet on multiple interfaces, only the
+>>> first interface will be served.
+>>
+>>Does that comply with the standard?
+>
+>What standard?
 
-There's been one update, atmel_serial-add-dma-support-fix.patch, which
-you were also Cc'ed on.
+ARP standard. I think it is RFC 826:
+An Ethernet Address Resolution Protocol
 
-Haavard
+
+
+      ____________________________________________________________________________________
+Never miss a thing.  Make Yahoo your home page. 
+http://www.yahoo.com/r/hs
