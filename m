@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbYA3AW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbYA3AYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbYA3AW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:22:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYA3AWs
+	id S1753502AbYA3AYw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbYA3AYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:22:48 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53174 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754758AbYA3AWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:22:47 -0500
-Date: Tue, 29 Jan 2008 16:22:46 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080130000559.GB7233@v2.random>
-Message-ID: <Pine.LNX.4.64.0801291621380.28027@schroedinger.engr.sgi.com>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
- <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
- <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
- <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
- <20080130000039.GA7233@v2.random> <20080130000559.GB7233@v2.random>
+	Tue, 29 Jan 2008 19:24:44 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:56413 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752356AbYA3AYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 19:24:43 -0500
+Date: Wed, 30 Jan 2008 02:25:14 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Pavel Roskin <proski@gnu.org>
+Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
+Subject: Re: ndiswrapper and GPL-only symbols redux
+Message-ID: <20080130002514.GA1802@does.not.exist>
+References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1201650267.18773.118.camel@dv>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008, Andrea Arcangeli wrote:
-
-> On Wed, Jan 30, 2008 at 01:00:39AM +0100, Andrea Arcangeli wrote:
-> > get_user_pages, regular linux writes don't fault unless it's
-> > explicitly writeprotect, which is mandatory in a few archs, x86 not).
+On Tue, Jan 29, 2008 at 06:44:27PM -0500, Pavel Roskin wrote:
+> On Wed, 2008-01-30 at 00:57 +0200, Adrian Bunk wrote:
+> > On Tue, Jan 29, 2008 at 04:22:45PM -0500, Pavel Roskin wrote:
+> > > Hello!
+> > > 
+> > > It have come to my attention that a patch has been committed to the
+> > > kernel with the explicit purpose of tainting ndiswrapper - the kernel
+> > > module allowing Windows NDIS drivers for Ethernet and Wireless cards to
+> > > be used by the kernel.
+> > >...
+> > > Just to reiterate some points from the old discussion:
+> > >...
+> > > - no copyright violation is involved, as Windows drivers are not derived
+> > > from Linux sources
+> > >...
+> > 
+> > It is interesting that someone posting with an @gnu.org address claims
+> > that dynamic linking of not GPLv2 compatible code into GPLv2 code was
+> > not a copyright violation.
 > 
-> actually get_user_pages doesn't fault either but it calls into
-> set_page_dirty, however get_user_pages (unlike a userland-write) at
-> least requires mmap_sem in read mode and the PT lock as serialization,
-> userland writes don't, they just go ahead and mark the pte in hardware
-> w/o faults. Anyway anonymous memory these days always mapped with
-> dirty bit set regardless, even for read-faults, after Nick finally
-> rightfully cleaned up the zero-page trick.
+> No, I'm representing myself only.  I don't think you represent all
+> kernel developers when posting from the kernel.org address.
 
-That is only partially true. pte are created wronly in order to track 
-dirty state these days. The first write will lead to a fault that switches 
-the pte to writable. When the page undergoes writeback the page again 
-becomes write protected. Thus our need to effectively deal with 
-page_mkclean.
+I'm not using my @kernel.org address except for kernel issues and I'm 
+not using a company address in linux-kernel discussions.
+
+Mailing lists of a project or a company are something completely 
+different from using a project or company address outside of the 
+project.
+
+> I'm actually surprised that you are raising this issue.  If the
+> motivation to ban ndiswrapper is based on the copyright law, doesn't it
+> meant that we have DRM in the kernel now?  Is Linux going to enforce
+> copyright laws across the world?
+> 
+> > Is it an official statement of the FSF that such linking is considered 
+> > legal?
+> 
+> Absolutely not.
+> 
+> > (RMS added to Cc)
+> 
+> I, for one, would welcome an informed position of the FSF.  It may have
+> interesting implications for Wine, ReactOS, mplayer, qemu, Java and many
+> other programs loading non-free compiled code at the run time.
+
+Wine is licenced under the terms of the LGPL.
+
+ReactOS is licenced under the terms of the GPL with a licence 
+exception for runtime linking of non-free modules.
+
+QEMU is licenced under the terms of the GPL with a licence exception for 
+runtime linking with libqemu.a.
+
+GNU classpath (and libgcj) are licenced under the terms of the GPL with 
+a licence exception for runtime linking with it.
+
+As you can see, all of the above explicitely address this issue.
+
+The only program from your list that has a fishy licencing is mplayer.
+
+> Regards,
+> Pavel Roskin
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
