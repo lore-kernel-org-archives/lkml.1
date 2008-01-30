@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYA3Hfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYA3Hi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbYA3Hfd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 02:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYA3HfZ
+	id S1757189AbYA3Hi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 02:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYA3Hiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 02:35:25 -0500
-Received: from mga11.intel.com ([192.55.52.93]:9690 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754263AbYA3HfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 02:35:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,276,1199692800"; 
-   d="scan'208";a="510349363"
-Subject: Re: [PATCH 2.6.24] x86: add sysfs interface for cpuid module
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: tglx@linutronix.de, hpa@zytor.com, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080129084435.GA8962@uranus.ravnborg.org>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
-	 <1201562058.12722.9.camel@yangyi-dev.bj.intel.com>
-	 <20080129084435.GA8962@uranus.ravnborg.org>
-Content-Type: text/plain
-Organization: Intel
-Date: Wed, 30 Jan 2008 06:22:43 +0800
-Message-Id: <1201645363.12722.38.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 02:38:50 -0500
+Received: from edna.telenet-ops.be ([195.130.132.58]:45416 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752870AbYA3Hiu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 02:38:50 -0500
+Date: Wed, 30 Jan 2008 08:38:47 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: ndiswrapper and GPL-only symbols redux
+In-Reply-To: <yw1x4pcw3zu9.fsf@mansr.com>
+Message-ID: <Pine.LNX.4.64.0801300836030.12371@anakin>
+References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist>
+ <yw1x8x2843kt.fsf@mansr.com> <20080130003519.GB1802@does.not.exist>
+ <yw1x4pcw3zu9.fsf@mansr.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-517969928-1201678727=:12371"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-29 at 09:44 +0100, Sam Ravnborg wrote:
-> > +
-> > +static struct notifier_block __cpuinitdata cpuid_sysfs_cpu_notifier = {
-> > +	.notifier_call = cpuid_sysfs_cpu_callback,
-> > +};
-> Data is annotated _cpuintidata
-> 
-> but
-> 
-> > +
-> Data is annotated _cpuintidata
-> 
-> > @@ -217,11 +445,14 @@ static void __exit cpuid_exit(void)
-> >  {
-> >  	int cpu = 0;
-> >  
-> > -	for_each_online_cpu(cpu)
-> > +	for_each_online_cpu(cpu) {
-> >  		cpuid_device_destroy(cpu);
-> > +		remove_cpuid_sysfs(cpu);
-> > +	}
-> >  	class_destroy(cpuid_class);
-> >  	unregister_chrdev(CPUID_MAJOR, "cpu/cpuid");
-> >  	unregister_hotcpu_notifier(&cpuid_class_cpu_notifier);
-> > +	unregister_hotcpu_notifier(&cpuid_sysfs_cpu_notifier);
-> 
-> used in an __exit function.
-> 
-> You should have seen a Section mismatch warning for this.
-> The right fix is to annotate the cpuid_sysfs_cpu_notifier
-> with __initdata_refok (soon to be named __refdata)
-> Or even better to declare it const and use _refconst.
-I think __cpuinitdata is different from __initdata, i have tested it
-by insmod, rmmod, echo 0/1 > /sys/devices/system/cpu/cpu1/online
-repeatly, it hasn't any issue.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> 
-> 	Sam
+---1463808512-517969928-1201678727=:12371
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
+On Wed, 30 Jan 2008, Måns Rullgård wrote:
+> Adrian Bunk <bunk@kernel.org> writes:
+> > On Tue, Jan 29, 2008 at 11:25:22PM +0000, Måns Rullgård wrote:
+> >> As long as you don't distribute /proc/kcore, I can't see how the GPL
+> >> would have any say in the matter.  The Windows drivers are (unrelated
+> >> violations aside) clearly not derived from GPL code.
+> >
+> > Someone might sell a laptop with Linux installed?
+> 
+> Not a problem, unless it is booted when sold.  Even that might not be
+> a problem, since it would be a matter of transferring ownership of a
+> single copy, not creating and distributing new copies, and the GPL
+> does is only concerned with the latter.
+
+Interesting... I never heard about this `transferring ownership of a
+single copy not involving GPL'.
+
+Note that some lawyers claim that at trade shows, you should not hand over
+a demo device running GPLed code to any interested party, as it would be
+distribution...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808512-517969928-1201678727=:12371--
