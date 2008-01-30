@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbYA3Nle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbYA3Nlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbYA3Nle (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYA3NlM
+	id S1757070AbYA3Nlw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbYA3Nlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:41:12 -0500
-Received: from mail.southpole.se ([193.12.106.18]:55949 "EHLO
-	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754474AbYA3NlK (ORCPT
+	Wed, 30 Jan 2008 08:41:36 -0500
+Received: from wx-out-0506.google.com ([66.249.82.233]:6040 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759904AbYA3Nle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:41:10 -0500
-From: Jonas Bonn <jonas@southpole.se>
-To: netdev@vger.kernel.org, romieu@fr.zoreil.com, linux-kernel@vger.kernel.org
-Cc: Jonas Bonn <jonas@southpole.se>
-Subject: [PATCH] [SIS190] Use __devinitconst for const devinit data
-Date: Wed, 30 Jan 2008 14:41:05 +0100
-Message-Id: <1201700465-11036-1-git-send-email-jonas@southpole.se>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <20080130133742.GA22198@uranus.ravnborg.org>
-References: <20080130133742.GA22198@uranus.ravnborg.org>
+	Wed, 30 Jan 2008 08:41:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dJgUnKKqv7iHksvWhoiwmNHiSY2Ii0Hs+1z7wid0GKOHIW1ajhieLodAncrVIeUA0bLcg/cO7npto0BDZIHAk4VngaW3iULhmuOM+ekxqS1jIdFNrjdEXJSGSxwKYW+MHQjcLmDCh7fiJhjZw3Ec+0TXG0VufNqTSzHEx63UCMQ=
+Message-ID: <8bd0f97a0801300541k1f4b1e79ica144e445ba3c6c2@mail.gmail.com>
+Date: Wed, 30 Jan 2008 08:41:33 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] [Blackfin] char driver for Blackfin on-chip OTP memory
+Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
+       "Mike Frysinger" <michael.frysinger@analog.com>
+In-Reply-To: <47A07DCE.5010808@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1201689401-2892-1-git-send-email-bryan.wu@analog.com>
+	 <47A058B3.6000009@gmail.com>
+	 <8bd0f97a0801300519g22c5b66fjcba22a027e7043cc@mail.gmail.com>
+	 <47A07DCE.5010808@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mixing const and __section was previously not allowed.  New __devinitconst tag
-allows this.
+On Jan 30, 2008 8:38 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 01/30/2008 02:19 PM, Mike Frysinger wrote:
+> > On Jan 30, 2008 6:00 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> >> On 01/30/2008 11:36 AM, Bryan Wu wrote:
+> >>> +     ret = cdev_add(&bfin_otp_cdev, bfin_otp_dev_node, 1);
+> >>> +     if (ret) {
+> >>> +             unregister_chrdev_region(bfin_otp_dev_node, 1);
+> >>> +             printk(KERN_ERR PFX "unable to register char device\n");
+> >>> +             return ret;
+> >>> +     }
+> >>> +
+> >>> +     bfin_otp_class = class_create(THIS_MODULE, "otp");
+> >>> +     device_create(bfin_otp_class, NULL, bfin_otp_dev_node, "otp");
+> >> Anyway, wouldn't be easier/better to use misc.c functionality here
+> >> (misc_register() et al.)?
+> >
+> > probably ... i just didnt want to statically allocate a number in the
+> > range that would be Blackfin specific ...
+>
+> MISC_DYNAMIC_MINOR is definitely your friend ;).
 
-This fixes a gcc "section type mismatch" build error.
----
- drivers/net/sis190.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
-index b570402..d3126a9 100644
---- a/drivers/net/sis190.c
-+++ b/drivers/net/sis190.c
-@@ -326,7 +326,7 @@ static const struct {
- 	{ "SiS 191 PCI Gigabit Ethernet adapter" },
- };
- 
--static struct pci_device_id sis190_pci_tbl[] __devinitdata = {
-+static const struct pci_device_id sis190_pci_tbl[] __devinitconst = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0190), 0, 0, 0 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0191), 0, 0, 1 },
- 	{ 0, },
-@@ -1556,7 +1556,7 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
- static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
- 						  struct net_device *dev)
- {
--	static const u16 __devinitdata ids[] = { 0x0965, 0x0966, 0x0968 };
-+	static const u16 __devinitconst ids[] = { 0x0965, 0x0966, 0x0968 };
- 	struct sis190_private *tp = netdev_priv(dev);
- 	struct pci_dev *isa_bridge;
- 	u8 reg, tmp8;
--- 
-1.5.3.8
-
-
+ah, great ... i'll check it out then, thanks
+-mike
