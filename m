@@ -1,91 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764045AbYA3S7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbYA3TFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764045AbYA3S7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760440AbYA3S7c
+	id S1759687AbYA3TFQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYA3TFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:59:32 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36251 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760161AbYA3S7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:59:30 -0500
-Date: Wed, 30 Jan 2008 21:00:04 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: arch/x86/kernel/test_nx.c compile error
-Message-ID: <20080130190004.GG29368@does.not.exist>
-References: <20080130182537.GD29368@does.not.exist> <20080130184218.GB27168@elte.hu> <20080130184432.GA31485@elte.hu>
+	Wed, 30 Jan 2008 14:05:03 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52151 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbYA3TFB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:05:01 -0500
+Date: Wed, 30 Jan 2008 20:05:00 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Steve French <smfrench@gmail.com>
+cc: Adrian Bunk <bunk@kernel.org>, sfrench@samba.org,
+       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove smbfs
+In-Reply-To: <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0801302003560.13036@fbirervta.pbzchgretzou.qr>
+References: <20080128220835.GF8767@does.not.exist> 
+ <Pine.LNX.4.64.0801301923450.13036@fbirervta.pbzchgretzou.qr>
+ <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080130184432.GA31485@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 07:44:32PM +0100, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > does the patch below help?
-> 
-> uhm, the one below instead.
-> 
-> 	Ingo
-> 
-> ------------>
-> Subject: x86: fix arch/x86/kernel/test_nx.c modular build bug
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> fix this modular build bug:
-> 
-> >   CC [M]  arch/x86/kernel/test_nx.o
-> > {standard input}: Assembler messages:
-> > {standard input}:58: Error: cannot represent relocation type BFD_RELOC_64
-> > {standard input}:59: Error: cannot represent relocation type BFD_RELOC_64
-> > make[2]: *** [arch/x86/kernel/test_nx.o] Error 1
-> > make[1]: *** [arch/x86/kernel] Error 2
-> 
-> Reported-by: Adrian Bunk <bunk@kernel.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/test_nx.c |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> Index: linux-x86.q/arch/x86/kernel/test_nx.c
-> ===================================================================
-> --- linux-x86.q.orig/arch/x86/kernel/test_nx.c
-> +++ linux-x86.q/arch/x86/kernel/test_nx.c
-> @@ -91,8 +91,13 @@ static noinline int test_address(void *a
->  		".previous\n"
->  		".section __ex_table,\"a\"\n"
->  		"       .align 8\n"
-> +#ifdef CONFIG_X86_32
-> +		"	.long 0b\n"
-> +		"	.long 2b\n"
-> +#endif
->  		"	.quad 0b\n"
->  		"	.quad 2b\n"
-> +#else
->...
 
-You don't test whether your patches compile?  ;-)
+On Jan 30 2008 12:53, Steve French wrote:
+>I have mounted to Windows98 a few months ago with no problems (other
+>than a few restrictions like you can't set the file times via utimes).
+> For mounts to Windows98 note that you have to specify the server
+>netbios name on the mount (since it is not the same as the DNS name).
+>In your example your would need to specify "servernetbiosname=WIN98"
+>in the mount options (until mount.cifs autoretries with
+>servernetbiosname assumed to be the beginning of the UNC name - note
+>that later servers have a dummy netbios name that is used so this
+>mount option is only needed for OS/2 and Win9x).
 
-After the obvious fix it compiled.
+Ok that works. I had tried "netbiosname" but not "servernetbiosname"
+(only fuzzy memories from the last win98 encounter and the suggestion
+to use netbiossomething).
 
-Why wasn't this issue found before it entered Linus' tree?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+I think servernetbiosname should implicitly be assumed to be the
+same as the //hostpart/ when it's not explicitly specified, no?
