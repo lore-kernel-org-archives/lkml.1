@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYA3UAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbYA3UBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbYA3UAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYA3UAg
+	id S1757835AbYA3UBw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYA3UBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:00:36 -0500
-Received: from mga02.intel.com ([134.134.136.20]:51902 "EHLO mga02.intel.com"
+	Wed, 30 Jan 2008 15:01:30 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51700 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbYA3UAf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:00:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,279,1199692800"; 
-   d="scan'208";a="255884250"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1750904AbYA3UB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:01:28 -0500
+Date: Wed, 30 Jan 2008 22:02:02 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: jgarzik@pobox.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] ata_piix.c:piix_init_one() must be __devinit
+Message-ID: <20080130200202.GH29368@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Wed, 30 Jan 2008 12:00:31 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080130194616.GA19426@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Thread-Index: AchjeW+qgdyfWhf8R3SW1ot3jnLWpgAARA5A
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com> <20080130194616.GA19426@elte.hu>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Mike Travis" <travis@sgi.com>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       <linux-ia64@vger.kernel.org>, <sparclinux@vger.kernel.org>
-X-OriginalArrivalTime: 30 Jan 2008 20:00:31.0913 (UTC) FILETIME=[C4CF2990:01C8637A]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ah, that was the vital clue. The patch below makes the small memory 
-> model only defined on SMP, and makes the config build/link fine here. 
-> Does this build and boot on your box?
+This patch fixes the following section mismatches:
 
-I applied this on top of the git pull from
- git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+<--  snip  -->
 
-and I see see a build problem for SMP=n :-(
+...
+WARNING: drivers/ata/built-in.o(.text+0x15072): Section mismatch in reference from the function piix_init_one() to the function .devinit.text:piix_init_sata_map()
+WARNING: drivers/ata/built-in.o(.text+0x150dd): Section mismatch in reference from the function piix_init_one() to the function .devinit.text:piix_init_pcs()
+WARNING: drivers/ata/built-in.o(.text+0x150e5): Section mismatch in reference from the function piix_init_one() to the function .devinit.text:piix_init_sidpr()
+WARNING: drivers/ata/built-in.o(.text+0x15107): Section mismatch in reference from the function piix_init_one() to the function .devinit.text:piix_check_450nx_errata()
+...
 
--Tony
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+222e97f95d38ce7cb41980671cc4383df28b5f7a 
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index a65c8ae..7a3b9ef 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -1595,7 +1595,8 @@ static void piix_iocfg_bit18_quirk(struct pci_dev *pdev)
+  *	Zero on success, or -ERRNO value.
+  */
+ 
+-static int piix_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
++static int __devinit piix_init_one(struct pci_dev *pdev,
++				   const struct pci_device_id *ent)
+ {
+ 	static int printed_version;
+ 	struct device *dev = &pdev->dev;
+
