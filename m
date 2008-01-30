@@ -1,101 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbYA3K5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYA3LAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbYA3K5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 05:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758825AbYA3K5V
+	id S1758825AbYA3LAZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 06:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYA3LAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 05:57:21 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46468 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758731AbYA3K5T (ORCPT
+	Wed, 30 Jan 2008 06:00:11 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:56591 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbYA3LAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 05:57:19 -0500
-Date: Wed, 30 Jan 2008 02:57:16 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU issue?
-Message-ID: <20080130105715.GE24890@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com> <479DF0A1.3000906@pengutronix.de> <479DF711.5090406@grandegger.com> <479F186A.4020004@pengutronix.de> <479F2C3C.1020203@grandegger.com> <20080130010716.GB16069@linux.vnet.ibm.com> <47A032E9.4080105@grandegger.com> <20080130102255.GA24890@linux.vnet.ibm.com> <47A0552D.20605@grandegger.com>
+	Wed, 30 Jan 2008 06:00:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=wgFG8b1Yyu4K4yxl83PtKkHWbjvkQd5J4yWPfMD05LG6r2Vk5ZLX9iYbGlOf6leY0o6K/IXPCiuanI47tbtIVW2jANSXhv4IyoRf/h8bNAPEl/ueuL7TFhm4BV+om0oHU4cHHaVMbPCbW+j0QrBfPTnFACEI9XafJXKwcBSLmdo=
+Message-ID: <47A058B3.6000009@gmail.com>
+Date: Wed, 30 Jan 2008 12:00:03 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A0552D.20605@grandegger.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bryan Wu <bryan.wu@analog.com>
+CC: linux-kernel@vger.kernel.org,
+       Mike Frysinger <michael.frysinger@analog.com>
+Subject: Re: [PATCH 1/1] [Blackfin] char driver for Blackfin on-chip OTP memory
+References: <1201689401-2892-1-git-send-email-bryan.wu@analog.com>
+In-Reply-To: <1201689401-2892-1-git-send-email-bryan.wu@analog.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 11:45:01AM +0100, Wolfgang Grandegger wrote:
-> Paul E. McKenney wrote:
-> > On Wed, Jan 30, 2008 at 09:18:49AM +0100, Wolfgang Grandegger wrote:
-> >> Paul E. McKenney wrote:
-> >>> On Tue, Jan 29, 2008 at 02:38:04PM +0100, Wolfgang Grandegger wrote:
-> >>>> Luotao Fu wrote:
-> >>>>> Hi,
-> >>>>>
-> >>>>> Wolfgang Grandegger wrote:
-> >>>>> ..........
-> >>>>>> Do you still get high latencies with:
-> >>>>>>
-> >>>>>>   CONFIG_PREEMPT_RCU_BOOST=y
-> >>>>>>   CONFIG_RCU_TRACE=y
-> >>>>>>   CONFIG_NO_HZ is not set
-> >>>>>>
-> >>>>>> With this setting I have not yet realized latencies > 150us. Could you
-> >>>>>> please give it a try? If I change one of the parameters above, latency
-> >>>>>> increases in short time.
-> >>>>> I played through some combination of the RCU options and can back your
-> >>>>> observation this time: With the rcu Tracer or the priority boost turned
-> >>>>> off I also could measure reliably extraordinory high latencies. If they
-> >>>>> are both turned on, no high latencies could be measured. Turning on the
-> >>>>> dynamic ticker however doesn't seem to cause high latencies during my
-> >>>>> test runs. Seemed like an rcu issue here.
-> >>>> I'm just making a long test run on my TQM5200 module with my good
-> >>>> settings. After more than 4.5 hours under load, cyclictest shows a
-> >>>> maximum latency of 177 us. I'm going to re-check the effect of CONFIG_NO_HZ.
-> >>>>
-> >>>>> Further such results only appear if the target board is booted with
-> >>>>> nfsrootfs. (As I already have mentioned several times before), which
-> >>>>> leads my suspection to rcu usage in nfs implementation. In this case
-> >>>>> this problem might even be platformindependent. I'd have to do some
-> >>>>> tests on one of our arm boards later to test this. Since there're no
-> >>>>> reports like this for other architecture as powerpc till now, I doubt
-> >>>>> quite if this is verifiable.
-> >>>> It's also my suspicion that the high latencies are related to the RCU
-> >>>> usage in the network layer, where it's heavily used. What is really
-> >>>> wired is that switching off CONFIG_RCU_TRACE has a negative impact on
-> >>>> the latency. As I see it, it just adds some trace points, but I might
-> >>>> have missed something.
-> >>> I would expect that CONFIG_RCU_TRACE=n (as in "no" rather than "module")
-> >>> would have low latencies rather than high latencies.  So I am quite
-> >>> surprised by your result.  I will dig into this more.
-> >> Thanks a lot. To be clear. I need "CONFIG_PREEMPT_RCU_BOOST=y" *and*
-> >> "CONFIG_RCU_TRACE=y" to achieve reasonable latencies below 180us. With
-> >> CONFIG_PREEMPT_RCU_BOOST or CONFIG_RCU_TRACE not set or
-> >> CONFIG_RCU_TRACE=m is rmeasure latencies up to 600us within a minute or so.
-> > 
-> > OK, thank you for the confirmation.
-> > 
-> > The large latencies were from cyclictest, correct?  Did other tests
-> > also show these latencies?  In either case, could you please send the
-> > exact command line you used to run the test?
+On 01/30/2008 11:36 AM, Bryan Wu wrote:
+> From: Mike Frysinger <michael.frysinger@analog.com>
 > 
-> Yes, I used "$ cyclictest -n -t1 -p80 -i1000" to measure the latency. So
-> far, I have not done other tests. Any recommendation?
-> As no-rt load I used "while ls; do ls /bin; done" in one telnet window
-> and "while ./hackbench 10; do ./calibrator 400 32M cali; sleep 30; done"
-> in another. But already "while ls; do ls /bin; done" is enough to
-> trigger the high latencies quickly. Note also, that I work on a root
-> files-ystem mounted via NFS resulting in a lot of network traffic and
-> utilization.
+> initial char driver for otp memory
+> (only read supported atm ... needs real examples/docs for write support)
+> 
+> Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> ---
+>  drivers/char/Kconfig    |   28 +++++++
+>  drivers/char/Makefile   |    1 +
+>  drivers/char/bfin-otp.c |  203 +++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 232 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/char/bfin-otp.c
+> 
+[...]
+> diff --git a/drivers/char/bfin-otp.c b/drivers/char/bfin-otp.c
+> new file mode 100644
+> index 0000000..896a987
+> --- /dev/null
+> +++ b/drivers/char/bfin-otp.c
+> @@ -0,0 +1,203 @@
+> +/*
+> + * Blackfin On-Chip OTP Memory Interface
+> + *  Supports BF52x/BF54x
+> + *
+> + * Copyright 2007-2008 Analog Devices Inc.
+> + *
+> + * Enter bugs at http://blackfin.uclinux.org/
+> + *
+> + * Licensed under the GPL-2 or later.
+> + */
+> +
+> +#include <linux/cdev.h>
+> +#include <linux/device.h>
+> +#include <linux/errno.h>
+> +#include <linux/fs.h>
+> +#include <linux/init.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/types.h>
+> +
+> +#include <asm/blackfin.h>
+> +#include <asm/uaccess.h>
+> +
+> +#define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
+> +#define stampit() stamp("here i am")
+> +
+> +#define DRIVER_NAME "bfin-otp"
+> +#define PFX DRIVER_NAME ": "
+> +
+> +DEFINE_MUTEX(bfin_otp_lock);
 
-I have to ask...
+static?
 
-Did you see large latencies when -not- running on NFS?
+> +
+> +/* OTP Boot ROM functions */
+> +#define _BOOTROM_OTP_COMMAND           0xEF000018
+> +#define _BOOTROM_OTP_READ              0xEF00001A
+> +#define _BOOTROM_OTP_WRITE             0xEF00001C
+[...]
+> +/**
+> + *	bfin_otp_init - Initialize module
+> + *
+> + *	Registers the device and notifier handler. Actual device
+> + *	initialization is handled by bfin_otp_open().
+> + */
+> +static int __init bfin_otp_init(void)
+> +{
+> +	int ret;
+> +
+> +	stampit();
+> +
+> +	ret = alloc_chrdev_region(&bfin_otp_dev_node, 0, 1, "otp");
+> +	if (ret) {
+> +		printk(KERN_ERR PFX "unable to get a char device\n");
+> +		return ret;
+> +	}
+> +
+> +	cdev_init(&bfin_otp_cdev, &bfin_otp_fops);
+> +	bfin_otp_cdev.owner = THIS_MODULE;
+> +	bfin_otp_cdev.ops = &bfin_otp_fops;
 
-							Thanx, Paul
+You don't need to set the fops again.
+
+> +
+> +	ret = cdev_add(&bfin_otp_cdev, bfin_otp_dev_node, 1);
+> +	if (ret) {
+> +		unregister_chrdev_region(bfin_otp_dev_node, 1);
+> +		printk(KERN_ERR PFX "unable to register char device\n");
+> +		return ret;
+> +	}
+> +
+> +	bfin_otp_class = class_create(THIS_MODULE, "otp");
+> +	device_create(bfin_otp_class, NULL, bfin_otp_dev_node, "otp");
+
+Anyway, wouldn't be easier/better to use misc.c functionality here 
+(misc_register() et al.)?
+
+> +
+> +	printk(KERN_INFO PFX "initialized\n");
+> +
+> +	return 0;
+> +}
