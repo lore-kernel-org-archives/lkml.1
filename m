@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbYA3VJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYA3VJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbYA3VJP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbYA3VFs
+	id S1764074AbYA3VJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbYA3VFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:05:48 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:49525 "EHLO
+	Wed, 30 Jan 2008 16:05:50 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:49546 "EHLO
 	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755908AbYA3VFh (ORCPT
+	with ESMTP id S1758001AbYA3VFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 16:05:37 -0500
-Message-Id: <20080130210525.867564678@goodmis.org>
+Message-Id: <20080130210526.364099265@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:04:04 -0500
+Date: Wed, 30 Jan 2008 16:04:07 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,61 +27,98 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [PATCH 07/23 -v8] initialize the clock source to jiffies clock.
-Content-Disposition: inline; filename=initialize-clocksource-to-jiffies.patch
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 10/23 -v8] mcount tracer add preempt_enable/disable notrace macros
+Content-Disposition: inline; filename=mcount-preempt-notrace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latency tracer can call clocksource_read very early in bootup and
-before the clock source variable has been initialized. This results in a
-crash at boot up (even before earlyprintk is initialized). Since the
-clock->read variable points to NULL.
+The tracer may need to call preempt_enable and disable functions
+for time keeping and such. The trace gets ugly when we see these
+functions show up for all traces. To make the output cleaner
+this patch adds preempt_enable_notrace and preempt_disable_notrace
+to be used by tracer (and debugging) functions.
 
-This patch simply initializes the clock to use clocksource_jiffies, so
-that any early user of clocksource_read will not crash.
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: John Stultz <johnstul@us.ibm.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/clocksource.h |    3 +++
- kernel/time/timekeeping.c   |    9 +++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ include/linux/clocksource.h |    5 +++--
+ include/linux/preempt.h     |   32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 2 deletions(-)
 
 Index: linux-mcount.git/include/linux/clocksource.h
 ===================================================================
---- linux-mcount.git.orig/include/linux/clocksource.h	2008-01-30 15:06:14.000000000 -0500
-+++ linux-mcount.git/include/linux/clocksource.h	2008-01-30 15:08:29.000000000 -0500
-@@ -273,6 +273,9 @@ extern struct clocksource* clocksource_g
- extern void clocksource_change_rating(struct clocksource *cs, int rating);
- extern void clocksource_resume(void);
+--- linux-mcount.git.orig/include/linux/clocksource.h	2008-01-30 15:09:16.000000000 -0500
++++ linux-mcount.git/include/linux/clocksource.h	2008-01-30 15:11:07.000000000 -0500
+@@ -197,7 +197,8 @@ clocksource_get_basecycles(struct clocks
+ 	int num;
+ 	cycle_t now, offset;
  
-+/* used to initialize clock */
-+extern struct clocksource clocksource_jiffies;
-+
- #ifdef CONFIG_GENERIC_TIME_VSYSCALL
- extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
- extern void update_vsyscall_tz(void);
-Index: linux-mcount.git/kernel/time/timekeeping.c
-===================================================================
---- linux-mcount.git.orig/kernel/time/timekeeping.c	2008-01-30 15:06:14.000000000 -0500
-+++ linux-mcount.git/kernel/time/timekeeping.c	2008-01-30 15:08:29.000000000 -0500
-@@ -53,8 +53,13 @@ static inline void update_xtime_cache(u6
- 	timespec_add_ns(&xtime_cache, nsec);
+-	preempt_disable();
++	/* This code is used for tracing. */
++	preempt_disable_notrace();
+ 	num = cs->base_num;
+ 	/* base_num is shared, and some archs are wacky */
+ 	smp_read_barrier_depends();
+@@ -205,7 +206,7 @@ clocksource_get_basecycles(struct clocks
+ 	offset = (now - cs->base[num].cycle_base_last);
+ 	offset &= cs->mask;
+ 	offset += cs->base[num].cycle_base;
+-	preempt_enable();
++	preempt_enable_notrace();
+ 
+ 	return offset;
  }
+Index: linux-mcount.git/include/linux/preempt.h
+===================================================================
+--- linux-mcount.git.orig/include/linux/preempt.h	2008-01-30 14:35:50.000000000 -0500
++++ linux-mcount.git/include/linux/preempt.h	2008-01-30 15:11:07.000000000 -0500
+@@ -52,6 +52,34 @@ do { \
+ 	preempt_check_resched(); \
+ } while (0)
  
--static struct clocksource *clock; /* pointer to current clocksource */
--
-+/*
-+ * pointer to current clocksource
-+ *  Just in case we use clocksource_read before we initialize
-+ *  the actual clock source. Instead of calling a NULL read pointer
-+ *  we return jiffies.
-+ */
-+static struct clocksource *clock = &clocksource_jiffies;
++/* For debugging and tracer internals only! */
++#define add_preempt_count_notrace(val)			\
++	do { preempt_count() += (val); } while (0)
++#define sub_preempt_count_notrace(val)			\
++	do { preempt_count() -= (val); } while (0)
++#define inc_preempt_count_notrace() add_preempt_count_notrace(1)
++#define dec_preempt_count_notrace() sub_preempt_count_notrace(1)
++
++#define preempt_disable_notrace() \
++do { \
++	inc_preempt_count_notrace(); \
++	barrier(); \
++} while (0)
++
++#define preempt_enable_no_resched_notrace() \
++do { \
++	barrier(); \
++	dec_preempt_count_notrace(); \
++} while (0)
++
++/* preempt_check_resched is OK to trace */
++#define preempt_enable_notrace() \
++do { \
++	preempt_enable_no_resched_notrace(); \
++	barrier(); \
++	preempt_check_resched(); \
++} while (0)
++
+ #else
  
- #ifdef CONFIG_GENERIC_TIME
- /**
+ #define preempt_disable()		do { } while (0)
+@@ -59,6 +87,10 @@ do { \
+ #define preempt_enable()		do { } while (0)
+ #define preempt_check_resched()		do { } while (0)
+ 
++#define preempt_disable_notrace()		do { } while (0)
++#define preempt_enable_no_resched_notrace()	do { } while (0)
++#define preempt_enable_notrace()		do { } while (0)
++
+ #endif
+ 
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
 
 -- 
