@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbYA3Nhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYA3Nh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754372AbYA3Nhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYA3NhI
+	id S1756318AbYA3Nh5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYA3Nhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:37:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:33222 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbYA3NhG (ORCPT
+	Wed, 30 Jan 2008 08:37:39 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:50442
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754841AbYA3Nhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:37:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Ck0KMKQCZE5huMLmO9lGINPkgQ3XeTPqZ59Gv01kDILSY4mGXWcJ+TU2knxFxyPl9YE6oR+KiWK1ddNIN6fjRfjVnNoW3Ys/4bGTi26AS8uV5DsJN0kFKrPCxgflh0OH2DHwhZcbGL2RWe/j8yrRf5RC9QC4hZGIJyiSuqs6yX8=
-Message-ID: <47A07D76.6010605@gmail.com>
-Date: Wed, 30 Jan 2008 16:36:54 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	Wed, 30 Jan 2008 08:37:33 -0500
+Date: Wed, 30 Jan 2008 14:37:20 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080130133720.GM7233@v2.random>
+References: <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com> <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com> <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com> <20080130000039.GA7233@v2.random> <Pine.LNX.4.64.0801291620170.28027@schroedinger.engr.sgi.com> <20080130002804.GA13840@sgi.com>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Joel Schopp <jschopp@austin.ibm.com>,
-       Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>, trivial@kernel.org,
-       linux-fsdevel@vger.kernel.org, apw@shadowen.org, rdunlap@xenotime.net,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 8/9] bfs: remove multiple assignments
-References: <1201296027-6900-1-git-send-email-dmitri.vorobiev@gmail.com> <1201296027-6900-9-git-send-email-dmitri.vorobiev@gmail.com> <Pine.LNX.4.61.0801261833270.1966@ginsburg.homenet> <479BC6E5.5000409@gmail.com> <479D7DEB.7070806@austin.ibm.com> <20080130130656.GI27894@ZenIV.linux.org.uk>
-In-Reply-To: <20080130130656.GI27894@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080130002804.GA13840@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Mon, Jan 28, 2008 at 01:02:03AM -0600, Joel Schopp wrote:
->>>>> -    inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
->>>>> +    inode->i_mtime = CURRENT_TIME_SEC;
->>>>> +    inode->i_atime = CURRENT_TIME_SEC;
->>>>> +    inode->i_ctime = CURRENT_TIME_SEC;
->>>> multiple assignments like "x = y = z = value;" can potentially
->>>> (depending on the compiler and arch) be faster than "x = value; y =
->>>> value; z=value;"
->>>>
->>>> I am surprized that this script complains about them as it is a
->>>> perfectly valid thing to do in C.
->>> I think it seems wise to ask the maintainers of checkpatch.pl to
->>> comment on that. I'm Cc:ing them now.
->>>
->> There are plenty of things that are valid to do in C that don't make for 
->> maintainable code.  These scripts are designed to make your code easier for 
->> real people to review and maintain.
+On Tue, Jan 29, 2008 at 06:28:05PM -0600, Jack Steiner wrote:
+> On Tue, Jan 29, 2008 at 04:20:50PM -0800, Christoph Lameter wrote:
+> > On Wed, 30 Jan 2008, Andrea Arcangeli wrote:
+> > 
+> > > > invalidate_range after populate allows access to memory for which ptes 
+> > > > were zapped and the refcount was released.
+> > > 
+> > > The last refcount is released by the invalidate_range itself.
+> > 
+> > That is true for your implementation and to address Robin's issues. Jack: 
+> > Is that true for the GRU?
 > 
-> Except that in this case the new variant is not equivalent to the old one...
+> I'm not sure I understand the question. The GRU never (currently) takes
+> a reference on a page. It has no mechanism for tracking pages that
+> were exported to the external TLBs.
 
-Yes, you're right. In fact, I felt like sending yet another version
-of these patches, but this gets preempted all the time by "the other things".
-
-Dmitri
+If you don't have a pin, then things like invalidate_range in
+remap_file_pages can't be safe as writes through the external TLBs can
+keep going on pages in the freelist. For you to be safe w/o a
+page-pin, you need to return in the direction of invalidate_page
+inside ptep_clear_flush (or anyway before
+page_cache_release/__free_page/put_page...). You're generally not safe
+with any invalidate_range that may run after the page pointed by the
+pte has been freed (or can be freed by the VM anytime because of being
+unpinned cache).
