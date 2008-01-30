@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762587AbYA3Sm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763505AbYA3Sms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762587AbYA3Sm1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYA3SmQ
+	id S1763505AbYA3Sms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYA3Smg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:42:16 -0500
-Received: from [212.12.190.71] ([212.12.190.71]:47567 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754642AbYA3SmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:42:15 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-Date: Wed, 30 Jan 2008 21:39:22 +0300
-User-Agent: KMail/1.5
-Cc: Jan Kara <jack@suse.cz>, Chris Snook <csnook@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200801242336.00340.a1426z@gawab.com> <200801300904.48299.a1426z@gawab.com> <200801300929.21778.chris.mason@oracle.com>
-In-Reply-To: <200801300929.21778.chris.mason@oracle.com>
+	Wed, 30 Jan 2008 13:42:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33056 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753620AbYA3Smf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:42:35 -0500
+Date: Wed, 30 Jan 2008 19:42:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: arch/x86/kernel/test_nx.c compile error
+Message-ID: <20080130184218.GB27168@elte.hu>
+References: <20080130182537.GD29368@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801302139.22281.a1426z@gawab.com>
+In-Reply-To: <20080130182537.GD29368@does.not.exist>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Wednesday 30 January 2008, Al Boldi wrote:
-> > Jan Kara wrote:
-> > > > Chris Snook wrote:
-> > > > > Al Boldi wrote:
-> > > > > > This RFC proposes to introduce a tunable which allows to disable
-> > > > > > fsync and changes ordered into writeback writeout on a
-> > > > > > per-process basis like this:
-> > > > > >
-> > > > > >       echo 1 > /proc/`pidof process`/softsync
-> > > > >
-> > > > > This is basically a kernel workaround for stupid app behavior.
-> > > >
-> > > > Exactly right to some extent, but don't forget the underlying
-> > > > data=ordered starvation problem, which looks like a genuinely deep
-> > > > problem maybe related to blockIO.
-> > >
-> > >   It is a problem with the way how ext3 does fsync (at least that's
-> > > what we ended up with in that konqueror problem)... It has to flush
-> > > the current transaction which means that app doing fsync() has to wait
-> > > till all dirty data of all files on the filesystem are written (if we
-> > > are in ordered mode). And that takes quite some time... There are
-> > > possibilities how to avoid that but especially with freshly created
-> > > files, it's tough and I don't see a way how to do it without some
-> > > fundamental changes to JBD.
-> >
-> > Ok, but keep in mind that this starvation occurs even in the absence of
-> > fsync, as the benchmarks show.
-> >
-> > And, a quick test of successive 1sec delayed syncs shows no hangs until
-> > about 1 minute (~180mb) of db-writeout activity, when the sync abruptly
-> > hangs for minutes on end, and io-wait shows almost 100%.
->
-> Do you see this on older kernels as well?  The first thing we need to
-> understand is if this particular stall is new.
 
-2.6.24,22,19 and 2.4.32 show the same problem.
+* Adrian Bunk <bunk@kernel.org> wrote:
 
+> ...
+>   CC [M]  arch/x86/kernel/test_nx.o
+> {standard input}: Assembler messages:
+> {standard input}:58: Error: cannot represent relocation type BFD_RELOC_64
+> {standard input}:59: Error: cannot represent relocation type BFD_RELOC_64
+> make[2]: *** [arch/x86/kernel/test_nx.o] Error 1
+> make[1]: *** [arch/x86/kernel] Error 2
+> make: *** [sub-make] Error 2
 
-Thanks!
+does the patch below help?
 
---
-Al
+	Ingo
 
+-------------->
+Subject: x86: fix arch/x86/kernel/test_nx.c modular build bug
+From: Ingo Molnar <mingo@elte.hu>
+
+fix this modular build bug:
+
+>   CC [M]  arch/x86/kernel/test_nx.o
+> {standard input}: Assembler messages:
+> {standard input}:58: Error: cannot represent relocation type BFD_RELOC_64
+> {standard input}:59: Error: cannot represent relocation type BFD_RELOC_64
+> make[2]: *** [arch/x86/kernel/test_nx.o] Error 1
+> make[1]: *** [arch/x86/kernel] Error 2
+
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/test_nx.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: linux-x86.q/arch/x86/kernel/test_nx.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/test_nx.c
++++ linux-x86.q/arch/x86/kernel/test_nx.c
+@@ -91,8 +91,13 @@ static noinline int test_address(void *a
+ 		".previous\n"
+ 		".section __ex_table,\"a\"\n"
+ 		"       .align 8\n"
++#ifdef CONFIG_X86_32
++		"	.long 0b\n"
++		"	.long 2b\n"
++#endif
+ 		"	.quad 0b\n"
+ 		"	.quad 2b\n"
++#else
+ 		".previous\n"
+ 		: [rslt] "=r" (result)
+ 		: [fake_code] "r" (address), [zero] "r" (0UL), "0" (result)
