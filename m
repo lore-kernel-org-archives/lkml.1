@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbYA3S0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYA3S2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760104AbYA3S0k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYA3S0b
+	id S1756261AbYA3S2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYA3S17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:26:31 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:42436 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752002AbYA3S0a (ORCPT
+	Wed, 30 Jan 2008 13:27:59 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56637 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbYA3S17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:26:30 -0500
-Message-ID: <47A0C138.2070807@nortel.com>
-Date: Wed, 30 Jan 2008 12:26:00 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
+	Wed, 30 Jan 2008 13:27:59 -0500
+Date: Wed, 30 Jan 2008 19:27:57 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
 To: Adrian Bunk <bunk@kernel.org>
-CC: Giridhar Pemmasani <pgiri@yahoo.com>, Pavel Roskin <proski@gnu.org>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, rms@gnu.org
-Subject: Re: ndiswrapper and GPL-only symbols redux
-References: <20080129225701.GS8767@does.not.exist> <754585.89171.qm@web32403.mail.mud.yahoo.com> <20080130175447.GB29368@does.not.exist>
-In-Reply-To: <20080130175447.GB29368@does.not.exist>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jan 2008 18:26:04.0866 (UTC) FILETIME=[92FC6A20:01C8636D]
+cc: sfrench@samba.org, samba-technical@lists.samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove smbfs
+In-Reply-To: <20080128220835.GF8767@does.not.exist>
+Message-ID: <Pine.LNX.4.64.0801301923450.13036@fbirervta.pbzchgretzou.qr>
+References: <20080128220835.GF8767@does.not.exist>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
 
-> IANAL, but I have serious doubts whether putting some glue layer between 
-> the GPL'ed code and the code with a not GPL compatible licence is really 
-> a legally effictive way of circumventing the GPL.
+On Jan 29 2008 00:08, Adrian Bunk wrote:
+>
+>I remember that there were some small things missing in CIFS for 
+>completely replacing the unmaintained smbfs when we discussed removing 
+>smbfs back in 2005 due to smbfs being unmaintained.
+>
+>CIFS has improved since, smbfs is still unmaintained, and it's becoming 
+>time to finally remove smbfs.
 
-It may depend on the details of the "code with a not GPL compatible 
-licence".
+Negative. CIFS as of 2.6.24-rc7 still does not support Windows 98,
+or at least, the mount command I tried was not the right one:
 
-It's pretty hard to argue that a binary driver written for another OS is 
-a derivative work of the linux kernel.
+	mount -t cifs //WIN98/c /mnt -o guest,sec=none
 
-Chris
+(It is a test share with a null password open for anyone.) I am running
+out of options..
+
+	CIFS VFS: cifs_mount failed w/return code = -2
