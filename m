@@ -1,142 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYA3D3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYA3D32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbYA3D3E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 22:29:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758268AbYA3D2f
+	id S1760155AbYA3D32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759046AbYA3D2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 22:28:35 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44556 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754526AbYA3DZs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 22:25:48 -0500
-Date: Wed, 30 Jan 2008 12:25:41 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20080108210002.638347207@redhat.com>
-References: <20080108205939.323955454@redhat.com> <20080108210002.638347207@redhat.com>
-Message-Id: <20080130121152.1AF1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Tue, 29 Jan 2008 22:28:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56598 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755650AbYA3DZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 22:25:54 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <479901A8.3000706@oracle.com>
+References: <479901A8.3000706@oracle.com> <20080123172038.11107.86025.stgit@warthog.procyon.org.uk> <20080123172246.11107.62216.stgit@warthog.procyon.org.uk>
+To: chuck.lever@oracle.com, Trond.Myklebust@netapp.com
+Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 24/27] NFS: Use local caching [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 30 Jan 2008 03:25:01 +0000
+Message-ID: <18686.1201663501@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rik, Lee
 
-I tested new hackbench on rvr split LRU patch.
-   http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+Chuck Lever <chuck.lever@oracle.com> wrote:
 
-method of test
+> This patch really ought to be broken into more manageable atomic
+> changes to make it easier to review, and to provide more fine-grained
+> explanation and rationalization for each specific change via
+> individual patch descriptions.
 
-(1) $ ./hackbench 150 process 1000
-(2) # sync; echo 3 > /proc/sys/vm/drop_caches
-    $ dd if=tmp10G of=/dev/null
-    $ ./hackbench 150 process 1000
+Hmmm....  I broke the patch up as Trond stipulated - at least, I thought I
+had.
 
-test machine
-	CPU: Itanium2 x4 (logical 8cpu)
-	MEM: 8GB
+In many ways this request doesn't make sense.  You can't do NFS caching
+without all the appropriate bits, so logically they should be one patch.
+Breaking it up won't help git-bisect since the option to enable all this is
+the last (or nearly last) patch.
 
-A. vanilla 2.6.24-rc8-mm1
-	(1) 127.540
-	(2) 727.548
+However, I can do it (when I get back from LCA next week).
 
-B. 2.6.24-rc8-mm1 + split-lru-patch-series
-	(1) 92.730
-	(2) 758.369
+> This should no longer be necessary.  The latest mount.nfs subcommand
+> from nfs-utils supports text-based mounts when running on kernels
+> 2.6.23 and later.
 
-   comment:
-    (1) active/inactive anon ratio improve performance significant.
-    (2) incorrect page activation reduce performance.
+Okay.  I'll update my patches to reflect this.  Note, however, I've got
+someone reporting a bug that seems to show otherwise.  I'll have to
+investigate this more next week.
 
+> I hope you intend to provide updates to nfs(5) that describe the new
+> mount options you introduce in this and later patches.  You don't
+> mention it, but I assume that "nofsc" is the default behavior.
 
-I investigate reason and found reason is [05/19] change.
-I tested a bit porton reverted split-lru-patch-series again.
+I should make SteveD do that, the options was his idea:-)  But I'll deal with
+it.
 
-C. 2.6.24-rc8-mm1 + split-lru-patch-series + my-revert-patch
- 	(1) 83.014
-	(2) 717.009
+> Add comments like this in a separate clean up patch.
 
+????
 
-Of course, We need reintroduce this portion after new page LRU
-(aka LRU for used only page).
-but now is too early.
+> A suggestion: fs/nfs/fsc-index.c might be a better name.
 
-I hope this patch series merge to -mm ASAP.
-therefore, I hope remove any corner case regression.
+If you wish, though I'd prefer to use a name that isn't like to clash with a
+name that's going to appear in fs/fscache/ (or include/linux/ - I'd really
+like to rename fs/nfs/fscache.h as dealing with two fscache.h's is annoying.
 
-Thanks!
+> > +struct nfs_fh_auxdata {
+> > +	struct timespec	i_mtime;
+> > +	struct timespec	i_ctime;
+> > +	loff_t		i_size;
+> > +};
+> 
+> It might be useful to explain here why you need to supplement the
+> mtime, ctime, and size fields that already exist in an NFS inode.
 
+Supplement?  I don't understand.
 
-- kosaki
+> > +		key->port = clp->cl_addr.sin_port;
+> 
+> Not sure why you are using the server's port here.  In almost every
+> case the server side port number will be 2049, so it really doesn't
+> add any uniquification.
 
+The reason lies is "in almost every case".  It's possible to configure it
+such that a server is running two separate NFS servers on different ports.
 
+> If you're going for the client side port number, that changes after
+> every connection, so it would be useless to identify a cache after a
+> reboot (or even after the connection idles out!).
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+I'm going for the server side port number.  Using the client side port number
+would be silly.
 
----
- mm/vmscan.c |   26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+> I strongly recommend you use the existing IPv6 address conversion
+> macros for this instead of open-coding yet another way of mapping an
+> IPv4 address to an IPv6 address.
+> 
+> However, since AF_INET6 support is being introduced in the NFS client
+> in 2.6.24, I recommend you take a look at these source files after
+> Trond has pushed his NFS_ALL for 2.6.24.
 
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c       2008-01-29 15:59:17.000000000 +0900
-+++ b/mm/vmscan.c       2008-01-30 11:53:42.000000000 +0900
-@@ -247,6 +247,27 @@
-        return ret;
- }
+I'll look at them.
 
-+/* Called without lock on whether page is mapped, so answer is unstable */
-+static inline int page_mapping_inuse(struct page *page)
-+{
-+       struct address_space *mapping;
-+
-+       /* Page is in somebody's page tables. */
-+       if (page_mapped(page))
-+               return 1;
-+
-+       /* Be more reluctant to reclaim swapcache than pagecache */
-+       if (PageSwapCache(page))
-+               return 1;
-+
-+       mapping = page_mapping(page);
-+       if (!mapping)
-+               return 0;
-+
-+       /* File is mmap'd by somebody? */
-+       return mapping_mapped(mapping);
-+}
-+
- static inline int is_page_cache_freeable(struct page *page)
- {
-        return page_count(page) - !!PagePrivate(page) == 2;
-@@ -515,7 +536,8 @@
+> See below: the NFS cache-related stats should be added to nfs_iostats.
 
-                referenced = page_referenced(page, 1, sc->mem_cgroup);
-                /* In active use or really unfreeable?  Activate it. */
--               if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
-+               if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
-+                                       referenced && page_mapping_inuse(page))
-                        goto activate_locked;
+I believe I asked Trond, but I'll check.
 
- #ifdef CONFIG_SWAP
-@@ -550,6 +572,8 @@
-                }
+I've got to move, so I'll deal with the rest of your email later.
 
-                if (PageDirty(page)) {
-+                       if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
-+                               goto keep_locked;
-                        if (!may_enter_fs) {
-                                sc->nr_io_pages++;
-                                goto keep_locked;
-
-
-
-
-
+David
