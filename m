@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbYA3Tbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYA3TdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757252AbYA3Tbc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYA3TbW
+	id S1757919AbYA3TdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYA3TdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:31:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36071 "EHLO mx3.mail.elte.hu"
+	Wed, 30 Jan 2008 14:33:11 -0500
+Received: from waste.org ([66.93.16.53]:39595 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750904AbYA3TbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:31:20 -0500
-Date: Wed, 30 Jan 2008 20:30:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130193039.GB11506@elte.hu>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A0CD4B.5040706@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
-	_SUMMARY_
+	id S1752720AbYA3TdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:33:10 -0500
+Subject: Re: [PATCH] Improve Documentation/stable_api_nonsense.txt
+From: Matt Mackall <mpm@selenic.com>
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <20080129141419.GG12172@zakalwe.fi>
+References: <20080128230959.AA1A32BC98@zakalwe.fi>
+	 <20080129044805.GA1718@kroah.com> <20080129104018.GF12172@zakalwe.fi>
+	 <20080129131500.GA10761@kroah.com>  <20080129141419.GG12172@zakalwe.fi>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 13:32:58 -0600
+Message-Id: <1201721578.4037.39.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Travis <travis@sgi.com> wrote:
+On Tue, 2008-01-29 at 16:14 +0200, Heikki Orsila wrote:
 
-> Could this be a problem with:
+> > > Imo,
+> > > "same exact C compiler" is just bad language, because C compilers are 
+> > > always "exact". "exactly same C compiler" would do.
+> > 
+> > No, "exactly same C compiler" doesn't parse well in English.
 > 
-> #ifdef HAVE_MODEL_SMALL_ATTRIBUTE
-> # define PER_CPU_ATTRIBUTES     __attribute__((__model__ (__small__)))
-> #endif
-> 
-> This is only defined for !__ASSEMBLY__
+> "Same exact C compiler" does not mean what you try to say.
 
-nope, moving that per the patch below did not resolve the link problems.
+Actually, it does. It is perfectly idiomatic English.
 
-	Ingo
+"Use the exact same C compiler." -> OK, idiomatic
+"Use the same exact C compiler." -> OK, idiomatic
+"Use the exactly same C compiler." -> very awkward
+"Use exactly the same C compiler." -> formally correct
 
--------------->
-Subject: ia64: build fix #3
-From: Ingo Molnar <mingo@elte.hu>
+http://www.bartleby.com/68/24/2324.html
+-- 
+Mathematics is the supreme nostalgia of our time.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-ia64/percpu.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-x86.q/include/asm-ia64/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-ia64/percpu.h
-+++ linux-x86.q/include/asm-ia64/percpu.h
-@@ -8,6 +8,10 @@
- 
- #define PERCPU_ENOUGH_ROOM PERCPU_PAGE_SIZE
- 
-+#ifdef HAVE_MODEL_SMALL_ATTRIBUTE
-+# define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
-+#endif
-+
- #ifdef __ASSEMBLY__
- # define THIS_CPU(var)	(per_cpu__##var)  /* use this to mark accesses to per-CPU variables... */
- #else /* !__ASSEMBLY__ */
-@@ -15,10 +19,6 @@
- 
- #include <linux/threads.h>
- 
--#ifdef HAVE_MODEL_SMALL_ATTRIBUTE
--# define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
--#endif
--
- #ifdef CONFIG_SMP
- 
- #define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
