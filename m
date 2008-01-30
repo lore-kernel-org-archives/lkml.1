@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYA3BHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYA3BJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbYA3BHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 20:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYA3BHV
+	id S1754583AbYA3BJx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 20:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYA3BJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 20:07:21 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:47228 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbYA3BHT (ORCPT
+	Tue, 29 Jan 2008 20:09:45 -0500
+Received: from agrajag.mansr.com ([78.86.181.102]:44420 "EHLO mail.mansr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbYA3BJp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 20:07:19 -0500
-Date: Tue, 29 Jan 2008 17:07:16 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU issue?
-Message-ID: <20080130010716.GB16069@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com> <479DF0A1.3000906@pengutronix.de> <479DF711.5090406@grandegger.com> <479F186A.4020004@pengutronix.de> <479F2C3C.1020203@grandegger.com>
+	Tue, 29 Jan 2008 20:09:45 -0500
+X-Greylist: delayed 1416 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jan 2008 20:09:44 EST
+To: Adrian Bunk <bunk@kernel.org>
+Cc: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ndiswrapper and GPL-only symbols redux
+References: <1201641765.18773.35.camel@dv>
+	<20080129225701.GS8767@does.not.exist> <yw1x8x2843kt.fsf@mansr.com>
+	<20080130003519.GB1802@does.not.exist>
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Date: Wed, 30 Jan 2008 00:46:06 +0000
+In-Reply-To: <20080130003519.GB1802@does.not.exist> (Adrian Bunk's message of "Wed, 30 Jan 2008 02:35:19 +0200")
+Message-ID: <yw1x4pcw3zu9.fsf@mansr.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (Educational Television, linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479F2C3C.1020203@grandegger.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 02:38:04PM +0100, Wolfgang Grandegger wrote:
-> Luotao Fu wrote:
-> > Hi,
-> > 
-> > Wolfgang Grandegger wrote:
-> > ..........
-> >> Do you still get high latencies with:
-> >>
-> >>   CONFIG_PREEMPT_RCU_BOOST=y
-> >>   CONFIG_RCU_TRACE=y
-> >>   CONFIG_NO_HZ is not set
-> >>
-> >> With this setting I have not yet realized latencies > 150us. Could you
-> >> please give it a try? If I change one of the parameters above, latency
-> >> increases in short time.
-> > 
-> > I played through some combination of the RCU options and can back your
-> > observation this time: With the rcu Tracer or the priority boost turned
-> > off I also could measure reliably extraordinory high latencies. If they
-> > are both turned on, no high latencies could be measured. Turning on the
-> > dynamic ticker however doesn't seem to cause high latencies during my
-> > test runs. Seemed like an rcu issue here.
-> 
-> I'm just making a long test run on my TQM5200 module with my good
-> settings. After more than 4.5 hours under load, cyclictest shows a
-> maximum latency of 177 us. I'm going to re-check the effect of CONFIG_NO_HZ.
-> 
-> > Further such results only appear if the target board is booted with
-> > nfsrootfs. (As I already have mentioned several times before), which
-> > leads my suspection to rcu usage in nfs implementation. In this case
-> > this problem might even be platformindependent. I'd have to do some
-> > tests on one of our arm boards later to test this. Since there're no
-> > reports like this for other architecture as powerpc till now, I doubt
-> > quite if this is verifiable.
-> 
-> It's also my suspicion that the high latencies are related to the RCU
-> usage in the network layer, where it's heavily used. What is really
-> wired is that switching off CONFIG_RCU_TRACE has a negative impact on
-> the latency. As I see it, it just adds some trace points, but I might
-> have missed something.
+Adrian Bunk <bunk@kernel.org> writes:
 
-I would expect that CONFIG_RCU_TRACE=n (as in "no" rather than "module")
-would have low latencies rather than high latencies.  So I am quite
-surprised by your result.  I will dig into this more.
+> On Tue, Jan 29, 2008 at 11:25:22PM +0000, Måns Rullgård wrote:
+>> Adrian Bunk <bunk@kernel.org> writes:
+>> 
+>> > On Tue, Jan 29, 2008 at 04:22:45PM -0500, Pavel Roskin wrote:
+>> >> Hello!
+>> >> 
+>> >> It have come to my attention that a patch has been committed to the
+>> >> kernel with the explicit purpose of tainting ndiswrapper - the kernel
+>> >> module allowing Windows NDIS drivers for Ethernet and Wireless cards to
+>> >> be used by the kernel.
+>> >>...
+>> >> Just to reiterate some points from the old discussion:
+>> >>...
+>> >> - no copyright violation is involved, as Windows drivers are not derived
+>> >> from Linux sources
+>> >>...
+>> >
+>> > It is interesting that someone posting with an @gnu.org address claims
+>> > that dynamic linking of not GPLv2 compatible code into GPLv2 code was
+>> > not a copyright violation.
+>> 
+>> As long as you don't distribute /proc/kcore, I can't see how the GPL
+>> would have any say in the matter.  The Windows drivers are (unrelated
+>> violations aside) clearly not derived from GPL code.
+>
+> Someone might sell a laptop with Linux installed?
 
-							Thanx, Paul
+Not a problem, unless it is booted when sold.  Even that might not be
+a problem, since it would be a matter of transferring ownership of a
+single copy, not creating and distributing new copies, and the GPL
+does is only concerned with the latter.
+
+-- 
+Måns Rullgård
+mans@mansr.com
