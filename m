@@ -1,38 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbYA3OJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762406AbYA3OKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761077AbYA3OJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 09:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761743AbYA3OIV
+	id S1762406AbYA3OKH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 09:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762212AbYA3OJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 09:08:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51512
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761678AbYA3OIS (ORCPT
+	Wed, 30 Jan 2008 09:09:23 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:37560 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762202AbYA3OJT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 09:08:18 -0500
-Date: Wed, 30 Jan 2008 06:08:37 -0800 (PST)
-Message-Id: <20080130.060837.234640790.davem@davemloft.net>
-To: ballen@gravity.phys.uwm.edu
-Cc: linux-kernel@vger.kernel.org, henning.fehrmann@aei.mpg.de,
-       carsten.aulbert@aei.mpg.de, bruce.allen@aei.mpg.de
-Subject: Re: e1000 full-duplex TCP performance well below wire speed
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.63.0801300736040.10711@trinity.phys.uwm.edu>
-References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
-	<p73ve5b5u5v.fsf@bingen.suse.de>
-	<Pine.LNX.4.63.0801300736040.10711@trinity.phys.uwm.edu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 09:09:19 -0500
+Date: Wed, 30 Jan 2008 09:09:12 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 02/22 -v7] Add basic support for gcc profiler instrumentation
+In-Reply-To: <Pine.LNX.4.58.0801300806100.29020@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0801300856330.29020@gandalf.stny.rr.com>
+References: <20080130031521.258552785@goodmis.org>  <20080130031840.337019504@goodmis.org>
+ <1201682801.28547.162.camel@lappy> <Pine.LNX.4.58.0801300806100.29020@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bruce Allen <ballen@gravity.phys.uwm.edu>
-Date: Wed, 30 Jan 2008 07:38:56 -0600 (CST)
 
-> Wilco.  Just subscribing now.
+Paul,
 
-You don't need to subscribe to any list at vger.kernel.org in order to
-post a message to it.
+Peter and I are having a discussion on craziness of archs and memory
+barriers. You seem to understand crazy archs pretty well, and we would
+like some advice. :-)
+
+See below:
+
+On Wed, 30 Jan 2008, Steven Rostedt wrote:
+
+>
+>
+> On Wed, 30 Jan 2008, Peter Zijlstra wrote:
+>
+> >
+> > On Tue, 2008-01-29 at 22:15 -0500, Steven Rostedt wrote:
+> >
+> > > +int register_mcount_function(struct mcount_ops *ops)
+> > > +{
+> > > +	unsigned long flags;
+> > > +
+> > > +	spin_lock_irqsave(&mcount_func_lock, flags);
+> > > +	ops->next = mcount_list;
+> > > +	/* must have next seen before we update the list pointer */
+> > > +	smp_wmb();
+> >
+> > That comment does not explain which race it closes; this is esp
+> > important as there is no paired barrier to give hints.
+>
+> OK, fair enough. I'll explain it a bit more.
+>
+> How's this:
+>
+>  /*
+>   * We are entering ops into the mcount_list but another
+>   * CPU might be walking that list. We need to make sure
+>   * the ops->next pointer is valid before another CPU sees
+>   * the ops pointer included into the mcount_list.
+>   */
+>
+
+The above is my new comment. But Peter says that it's still not good
+enough and that all write memory barriers need read barriers. Let me
+explain the situation here.
+
+We have a single link list called mcount_list that is walked when more
+than one function is registered by mcount. Mcount is called at the start
+of all C functions that are not annotated with "notrace". When more than
+one function is registered, mcount calls a loop function that does the
+following:
+
+notrace void mcount_list_func(unsigned long ip, unsigned long parent_ip)
+{
+        struct mcount_ops *op = mcount_list;
+
+        while (op != &mcount_list_end) {
+                op->func(ip, parent_ip);
+                op = op->next;
+        };
+}
+
+A registered function must already have a "func" filled, and the mcount
+register code takes care of "next".  It is documented that the calling
+function should "never" change next and always expect that the func can be
+called after it is unregistered. That's not the issue here.
+
+The issue is how to insert the ops into the list. I've done the following,
+as you can see in the code this text is inserted between.
+
+   ops->next = mcount_list;
+   smp_wmb();
+   mcount_list = ops;
+
+The read side pair is the reading of ops to ops->next, which should imply
+a smp_rmb() just by the logic. But Peter tells me things like alpha is
+crazy enough to do better than that! Thus, I'm asking you.
+
+Can some arch have a reader where it receives ops->next before it received
+ops? This seems to me to be a phsyic arch, to know where ops->next is
+before it knows ops!
+
+Remember, that the ops that is being registered, is not viewable by any
+other CPU until mcount_list = ops. I don't see the need for a read barrier
+in this case. But I could very well be wrong.
+
+Help!
+
+-- Steve
+
+
+>
+> >
+> > > +	mcount_list = ops;
+> > > +	/*
+> > > +	 * For one func, simply call it directly.
+> > > +	 * For more than one func, call the chain.
+> > > +	 */
+> > > +	if (ops->next == &mcount_list_end)
+> > > +		mcount_trace_function = ops->func;
+> > > +	else
+> > > +		mcount_trace_function = mcount_list_func;
+> > > +	spin_unlock_irqrestore(&mcount_func_lock, flags);
+> > > +
+> > > +	return 0;
+> > > +}
+> >
+> >
+> >
+>
