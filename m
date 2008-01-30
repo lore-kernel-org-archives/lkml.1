@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYA3DpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYA3DqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbYA3DpJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 22:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYA3Do5
+	id S1755893AbYA3DqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 22:46:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYA3Dp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 22:44:57 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:35348 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752594AbYA3Do4 (ORCPT
+	Tue, 29 Jan 2008 22:45:59 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:33212 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752745AbYA3Dp6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 22:44:56 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=zt/hqk3xMYHBZQaIpEkoIVBawssC96vKX+jiLcjAhhmJLbMfJA2kdfqy9zCqQ6yu4bnAirGK1nlvT9BgzK/YrlgtknKBMokBd63p5hnMmNq7SR/uWenc9FSALPGhqbzRMJQvv9x4Rj0zRPR3sgcQ2vIGEC0p0UKTDPlYST1mVR0=  ;
-X-YMail-OSG: RwItHuUVM1kAJTglP1wzLrVdDxueI2OR.A2YojbWMC_2Lqh0P9jpJtPQgpZTqs3KqdOcvt.t0g--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: at91sam9260 wakeup on serial port
-Date: Tue, 29 Jan 2008 19:44:53 -0800
-User-Agent: KMail/1.9.6
-Cc: michael <trimarchi@gandalf.sssup.it>, linux-kernel@vger.kernel.org,
-       Andrew Victor <linux@maxim.org.za>
-References: <479DB934.6090806@gandalf.sssup.it> <200801281021.57317.david-b@pacbell.net> <20080128195114.33d7616d@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080128195114.33d7616d@dhcp-252-066.norway.atmel.com>
+	Tue, 29 Jan 2008 22:45:58 -0500
+Date: Tue, 29 Jan 2008 20:45:55 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <greg@kroah.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Tony Camuso <tcamuso@redhat.com>,
+       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
+Message-ID: <20080130034555.GA17537@parisc-linux.org>
+References: <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <20080119165809.GB11553@colo.lackof.org> <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com> <20080128190505.5f5b1ccc@laptopd505.fenrus.org> <20080129031804.GF20198@parisc-linux.org> <20080129131955.GC10761@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801291944.53591.david-b@pacbell.net>
+In-Reply-To: <20080129131955.GC10761@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008, Haavard Skinnemoen wrote:
+On Tue, Jan 29, 2008 at 05:19:55AM -0800, Greg KH wrote:
+> On Mon, Jan 28, 2008 at 08:18:04PM -0700, Matthew Wilcox wrote:
+> > I'm more optimistic because we've so severely restricted the use of
+> > mmconf after these patches that it's unlikely to cause problems.  I also
+> > hear Vista is now using mmconf, so fewer implementations are going to
+> > be buggy at this point.
 > 
-> > What will AVR32 (AP7) need to do, when it supports system sleep states?
+> Hahahaha, oh, that's a good one...
+
+Thanks Greg.  What happened to "Can't we all try to get along"?
+
+> But what about the thousands of implementations out there that are
+> buggy?
 > 
-> Not sure. The PIOs seem to require a clock in order to detect a pin
-> change, so I don't think we can enter very deep sleep states if we want
-> to be woken up by the USART.
+> I'm with Arjan here, I'm very skeptical.
 
-Right; if no DMA is pending, then the HSB matrix clock can be idled, DRAM put
-into self-refresh, and most peripherals can issue wakeups ... AP7 "Frozen"
-state, very analagous to AT91 "standby" on Linux.  UARTs and GPIOs can wake.
+Maybe I'm insufficiently imaginative.  Can you come up with a plausible
+way in which the two patches I posted will succumb to bugs?  After those
+patches we only use mmconf if:
 
-Deeper sleep states -- "standby" with clocks running, "stop" with all
-except 32K (and RTC) off, "static" with no clocks at all -- can only
-wake from WAKE_N and external interrupts; and RTC except in "static".
-I suspect "stop" and "static" might want to use the on-chip SRAMs so
-they don't need to change DRAM timings while they fiddle with clocks.
+ 1. conf1 has failed to work
+OR
+ 2. user has compiled their own kernel without support for conf1
+OR
+ 3. kernel probes config space 0x100 to see if it can access extended
+    config space (requires the device to be PCIe or PCI-X2)
+OR
+ 4. root attempts to lspci -xxxx or lspci -v
+OR
+ 5. device driver tries to access extended config space
 
-The closest analogue to the AT91 support would map /sys/power/state:
+With Arjan's patch, I believe only case 3 changes.  In cases 4 and 5,
+either lspci or the device driver will jump through the hoop to enable
+access to extended config space.
 
-	standby --> to AP7 "Frozen"
-	mem --> to AP7 "Stop"
+> Matthew, with Arjan's patch, is anything that currently works now
+> broken?  Why do you feel it is somehow "wrong"?
 
-Except that there could be no GPIO wakeups from "mem" ... so the $SUBJECT
-patch wouldn't be useful on AVR32 (just AT91), unless USARTn.RXD is wired
-up to one of those special wake-capable pins (extremely board-specific).
+lspci is broken.  It used to be able to access extended config space, and
+now can't unless it is patched to know about the sysfs flag to enable it.
 
+If you're determined to implement something to disable extended config
+space by default, it can be done in a much better way than Arjan's patch
+-- less code (both source and object).
 
-> There's a separate WAKE_N pin that is completely asynchronous, so with
-> some external logic, we can probably wake up the CPU all the way from
-> Static mode if a given input state is present. But that's definitely
-> "board specific" territory, and starting the oscillators take a _long_
-> time on the AP7000 (especially the 32 kHz, but then again, it barely
-> consumes any power, so we might as well keep it running and keep the
-> RTC going as well.)
-
-I'd think the support of any "deeper" state for "mem" sleep would not
-be entirely board specific ... when the RTC alarm is set, any board
-should be able to use states other than "static".  But otherwise, no
-board could enter those states unless WAKE_N or an external IRQ are
-doing something useful (like being hooked up to a button).
-
-Matching those few "deep wake" events to a given device would imply
-board-specific glue code.
-
-
-> So on AP7000, I think we'll just need to keep clocking the USART and
-> let it generate the interrupt that wakes up the rest of the system.
-
-For "standby" sleep state, yes -- map to at most AVR32 "Frozen" state.
-That'd be a good first step for PM support.
-
-- Dave
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
