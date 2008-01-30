@@ -1,106 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYA3COg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYA3CXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYA3COg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYA3CO1
+	id S1754827AbYA3CXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYA3CXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:14:27 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54491 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbYA3CO0 (ORCPT
+	Tue, 29 Jan 2008 21:23:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:31496 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbYA3CXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:14:26 -0500
-Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
-From: john stultz <johnstul@us.ibm.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <Pine.LNX.4.64.0801290439480.17507@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0801251349120.17507@scrub.home>
-	 <1201573686.6766.13.camel@localhost>
-	 <Pine.LNX.4.64.0801290439480.17507@scrub.home>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 18:14:23 -0800
-Message-Id: <1201659263.6766.40.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 21:23:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=pBtMvRMl+6E8DdQ3UV7yJRWfFHgVsz2IVYuX0u/Dcm0r3ltfu4ErgaFtkxyfIUFlFkzO22dTXW/nb5NX0sp7doku5x+jVh0LNDlrLtWVw623FQs/ucpSg5lb9cN2wa1AWq3I7Ls1Keay9trdkZ04HJGAFrUQ2ZG8yAzwlxkaYp0=
+Date: Wed, 30 Jan 2008 10:23:54 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: marcel@holtmann.org
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: [PATCH retry] bluetooth : add conn add/del workqueues to avoid
+	connection fail
+Message-ID: <20080130022354.GA3132@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-01-29 at 05:02 +0100, Roman Zippel wrote:
-> Hi,
-> 
-> On Mon, 28 Jan 2008, john stultz wrote:
-> 
-> > Regardless, current_tick_length() really is the base interval we're
-> > using in the error accumulation loop, so it seems the cleanest interface
-> > to use (just to avoid redundancy at least) when establishing the
-> > clocksource's interval length. Or do you not agree?
-> 
-> I see, what you need to use in timex.h for !CONFIG_NO_HZ is:
-> 
-> #define NTP_INTERVAL_LENGTH ((s64)LATCH * NSEC_PER_SEC) / (s64)CLOCK_TICK_RATE)
-> 
-> this calculates the base length of a clock tick in nsec.
-> 
-> current_tick_length() would only work during boot. If you switch clocks 
-> later, it would include random adjustments specific to the old clock.
+The bluetooth hci_conn sysfs add/del executed in the default workqueue.
+If the del_conn is executed after the new add_conn with same target,
+add_conn will failed with warning of "same kobject name".
 
-Ah. Good point. How about the following, tested on x86_64 both with and
-without CONFIG_NO_HZ?
+Here add btaddconn & btdelconn workqueues,
+flush the btdelconn workqueue in the add_conn function to avoid the issue.
 
-Thanks for the review and feedback!
--john
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-
-
-Correct NTP drift caused by using inconsistent NTP_INTERVAL_LENGTHs in
-clocksource initialization and error accumulation. This corrects a
-280ppm drift seen on some systems using acpi_pm, and affects other
-clocksources as well (likely to a lesser degree).
-
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-
-Index: linux/include/linux/timex.h
-===================================================================
---- linux.orig/include/linux/timex.h
-+++ linux/include/linux/timex.h
-@@ -231,7 +231,13 @@ static inline int ntp_synced(void)
- #else
- #define NTP_INTERVAL_FREQ  (HZ)
+---
+diff -upr a/net/bluetooth/hci_sysfs.c b/net/bluetooth/hci_sysfs.c
+--- a/net/bluetooth/hci_sysfs.c	2008-01-30 10:14:27.000000000 +0800
++++ b/net/bluetooth/hci_sysfs.c	2008-01-30 10:14:14.000000000 +0800
+@@ -12,6 +12,8 @@
+ #undef  BT_DBG
+ #define BT_DBG(D...)
  #endif
--#define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
-+
-+#define CLOCK_TICK_OVERFLOW	(LATCH * HZ - CLOCK_TICK_RATE)
-+#define CLOCK_TICK_ADJUST	(((s64)CLOCK_TICK_OVERFLOW * NSEC_PER_SEC) / \
-+					(s64)CLOCK_TICK_RATE)
-+
-+/* Because using NSEC_PER_SEC would be too easy */
-+#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC*NSEC_PER_USEC*USER_HZ)+CLOCK_TICK_ADJUST)/NTP_INTERVAL_FREQ)
++static struct workqueue_struct *btaddconn;
++static struct workqueue_struct *btdelconn;
  
- /* Returns how long ticks are at present, in ns / 2^(SHIFT_SCALE-10). */
- extern u64 current_tick_length(void);
-Index: linux/kernel/time/ntp.c
-===================================================================
---- linux.orig/kernel/time/ntp.c
-+++ linux/kernel/time/ntp.c
-@@ -43,10 +43,6 @@ long time_freq;				/* frequency offset (
- static long time_reftime;		/* time at last adjustment (s)	*/
- long time_adjust;
- 
--#define CLOCK_TICK_OVERFLOW	(LATCH * HZ - CLOCK_TICK_RATE)
--#define CLOCK_TICK_ADJUST	(((s64)CLOCK_TICK_OVERFLOW * NSEC_PER_SEC) / \
--					(s64)CLOCK_TICK_RATE)
--
- static void ntp_update_frequency(void)
+ static inline char *typetostr(int type)
  {
- 	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
-
-
+@@ -279,6 +281,7 @@ static void add_conn(struct work_struct 
+ 	struct hci_conn *conn = container_of(work, struct hci_conn, work);
+ 	int i;
+ 
++	flush_workqueue(btdelconn);
+ 	if (device_add(&conn->dev) < 0) {
+ 		BT_ERR("Failed to register connection device");
+ 		return;
+@@ -313,6 +316,7 @@ void hci_conn_add_sysfs(struct hci_conn 
+ 
+ 	INIT_WORK(&conn->work, add_conn);
+ 
++	queue_work(btaddconn, &conn->work);
+ 	schedule_work(&conn->work);
+ }
+ 
+@@ -349,6 +353,7 @@ void hci_conn_del_sysfs(struct hci_conn 
+ 
+ 	INIT_WORK(&conn->work, del_conn);
+ 
++	queue_work(btdelconn, &conn->work);
+ 	schedule_work(&conn->work);
+ }
+ 
+@@ -398,31 +403,52 @@ int __init bt_sysfs_init(void)
+ {
+ 	int err;
+ 
++	btaddconn = create_singlethread_workqueue("btaddconn");
++	if (!btaddconn) {
++		err = -ENOMEM;
++		goto out;
++	}
++	btdelconn = create_singlethread_workqueue("btdelconn");
++	if (!btdelconn) {
++		err = -ENOMEM;
++		goto out_del;
++	}
++
+ 	bt_platform = platform_device_register_simple("bluetooth", -1, NULL, 0);
+-	if (IS_ERR(bt_platform))
+-		return PTR_ERR(bt_platform);
++	if (IS_ERR(bt_platform)) {
++		err = PTR_ERR(bt_platform);
++		goto out_platform;
++	}
+ 
+ 	err = bus_register(&bt_bus);
+-	if (err < 0) {
+-		platform_device_unregister(bt_platform);
+-		return err;
+-	}
++	if (err < 0)
++		goto out_bus;
+ 
+ 	bt_class = class_create(THIS_MODULE, "bluetooth");
+ 	if (IS_ERR(bt_class)) {
+-		bus_unregister(&bt_bus);
+-		platform_device_unregister(bt_platform);
+-		return PTR_ERR(bt_class);
++		err = PTR_ERR(bt_class);
++		goto out_class;
+ 	}
+ 
+ 	return 0;
++
++out_class:
++	bus_unregister(&bt_bus);
++out_bus:
++	platform_device_unregister(bt_platform);
++out_platform:
++	destroy_workqueue(btdelconn);
++out_del:
++	destroy_workqueue(btaddconn);
++out:
++	return err;
+ }
+ 
+ void bt_sysfs_cleanup(void)
+ {
++	destroy_workqueue(btaddconn);
++	destroy_workqueue(btdelconn);
+ 	class_destroy(bt_class);
+-
+ 	bus_unregister(&bt_bus);
+-
+ 	platform_device_unregister(bt_platform);
+ }
