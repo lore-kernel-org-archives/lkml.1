@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbYA3ORy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbYA3OSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbYA3ORy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 09:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761106AbYA3OR2
+	id S1762280AbYA3OSe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 09:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760382AbYA3OSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 09:17:28 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:58274 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761337AbYA3OR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 09:17:26 -0500
-Date: Wed, 30 Jan 2008 17:20:14 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
+	Wed, 30 Jan 2008 09:18:01 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42476 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763436AbYA3OR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 09:17:58 -0500
+Subject: Re: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <mszeredi@suse.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
-Message-ID: <20080130142014.GA2164@tv-sign.ru>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, ebiederm@xmission.com, mingo@elte.hu,
+       paulmck@linux.vnet.ibm.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080129150209.663538cb.akpm@linux-foundation.org>
+References: <20080129164019.GA2060@tv-sign.ru>
+	 <20080129150209.663538cb.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 15:17:33 +0100
+Message-Id: <1201702653.28547.219.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix ->vm_file accounting, mmap_region() may do do_munmap().
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+On Tue, 2008-01-29 at 15:02 -0800, Andrew Morton wrote:
+> On Tue, 29 Jan 2008 19:40:19 +0300
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+> 
+> I'm suspecting that we have other code which assumes that read_lock, write_lock
+> and spin_lock imply rcu_read_lock().
+> 
+> I wonder if there are any sane runtime checks we can put in there to find
+> such problems.
 
---- MM/mm/fremap.c~RFP	2007-10-25 16:22:12.000000000 +0400
-+++ MM/mm/fremap.c	2008-01-30 16:56:39.000000000 +0300
-@@ -192,8 +192,10 @@ asmlinkage long sys_remap_file_pages(uns
- 			unsigned long addr;
- 
- 			flags &= MAP_NONBLOCK;
-+			get_file(vma->vm_file);
- 			addr = mmap_region(vma->vm_file, start, size,
- 					flags, vma->vm_flags, pgoff, 1);
-+			fput(vma->vm_file);
- 			if (IS_ERR_VALUE(addr)) {
- 				err = addr;
- 			} else {
+I have a lockdep annotation that finds rcu_dereference() usages outside
+of rcu_read_lock().
+
+Trouble is the amazing amount of output, I haven't come round to going
+through it and annotation the false positives (think rcu safe library
+routines called from contexts where the rcu capability is not used).
+
+
 
