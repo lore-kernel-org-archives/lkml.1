@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbYA3VP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761891AbYA3VQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932421AbYA3VP4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYA3VGS
+	id S1761891AbYA3VQa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbYA3VGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:06:18 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:51470 "EHLO
+	Wed, 30 Jan 2008 16:06:21 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:51493 "EHLO
 	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757987AbYA3VFk (ORCPT
+	with ESMTP id S1754607AbYA3VFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 16:05:40 -0500
-Message-Id: <20080130210527.828045640@goodmis.org>
+	Wed, 30 Jan 2008 16:05:41 -0500
+Message-Id: <20080130210526.531902339@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:04:16 -0500
+Date: Wed, 30 Jan 2008 16:04:08 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,491 +29,322 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 19/23 -v8] Trace irq disabled critical timings
-Content-Disposition: inline; filename=mcount-tracer-latency-trace-irqs-off.patch
+Subject: [PATCH 11/23 -v8] mcount based trace in the form of a header file library
+Content-Disposition: inline; filename=mcount-function-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds latency tracing for critical timings
-(how long interrupts are disabled for).
+This is a simple trace that uses the mcount infrastructure. It is
+designed to be fast and small, and easy to use. It is useful to
+record things that happen over a very short period of time, and
+not to analyze the system in general.
 
- "irqsoff" is added to /debugfs/tracing/available_tracers
+An interface is added to the debugfs
 
-Note:
-  tracing_max_latency
-    also holds the max latency for irqsoff (in usecs).
-   (default to large number so one must start latency tracing)
+  /debugfs/tracing/
 
-  tracing_thresh
-    threshold (in usecs) to always print out if irqs off
-    is detected to be longer than stated here.
-    If irq_thresh is non-zero, then max_irq_latency
-    is ignored.
+This patch adds the following files:
 
-Here's an example of a trace with mcount_enabled = 0
+  available_tracers
+     list of available tracers. Currently only "function" is
+     available.
 
-=======
-preemption latency trace v1.1.5 on 2.6.24-rc7
+  current_tracer
+     The trace that is currently active. Empty on start up.
+     To switch to a tracer simply echo one of the tracers that
+     are listed in available_tracers:
+
+      echo function > /debugfs/tracing/current_tracer
+
+     To disable the tracer:
+
+       echo disable > /debugfs/tracing/current_tracer
+
+
+  trace_ctrl
+     echoing "1" into this file starts the mcount function tracing
+      (if sysctl kernel.mcount_enabled=1)
+     echoing "0" turns it off.
+
+  latency_trace
+      This file is readonly and holds the result of the trace.
+
+  trace
+      This file outputs a easier to read version of the trace.
+
+  iter_ctrl
+      Controls the way the output of traces look.
+      So far there's two controls:
+        echoing in "symonly" will only show the kallsyms variables
+            without the addresses (if kallsyms was configured)
+        echoing in "verbose" will change the output to show
+            a lot more data, but not very easy to understand by
+            humans.
+        echoing in "nosymonly" turns off symonly.
+        echoing in "noverbose" turns off verbose.
+
+The output of the function_trace file is as follows
+
+  "echo noverbose > /debugfs/tracing/iter_ctrl"
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
 --------------------------------------------------------------------
- latency: 100 us, #3/3, CPU#1 | (M:rt VP:0, KP:0, SP:0 HP:0 #P:2)
+ latency: 0 us, #419428/4361791, CPU#1 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
     -----------------
-    | task: swapper-0 (uid:0 nice:0 policy:0 rt_prio:0)
+    | task: -0 (uid:0 nice:0 policy:0 rt_prio:0)
     -----------------
- => started at: _spin_lock_irqsave+0x2a/0xb7
- => ended at:   _spin_unlock_irqrestore+0x32/0x5f
 
-                 _------=> CPU#            
-                / _-----=> irqs-off        
-               | / _----=> need-resched    
-               || / _---=> hardirq/softirq 
-               ||| / _--=> preempt-depth   
-               |||| /                      
-               |||||     delay             
-   cmd     pid ||||| time  |   caller      
-      \   /    |||||   \   |   /           
- swapper-0     1d.s3    0us+: _spin_lock_irqsave+0x2a/0xb7 (e1000_update_stats+0x47/0x64c [e1000])
- swapper-0     1d.s3  100us : _spin_unlock_irqrestore+0x32/0x5f (e1000_update_stats+0x641/0x64c [e1000])
- swapper-0     1d.s3  100us : trace_hardirqs_on_caller+0x75/0x89 (_spin_unlock_irqrestore+0x32/0x5f)
+                 _------=> CPU#
+                / _-----=> irqs-off
+               | / _----=> need-resched
+               || / _---=> hardirq/softirq
+               ||| / _--=> preempt-depth
+               |||| /
+               |||||     delay
+   cmd     pid ||||| time  |   caller
+      \   /    |||||   \   |   /
+ swapper-0     0d.h. 1595128us+: set_normalized_timespec+0x8/0x2d <c043841d> (ktime_get_ts+0x4a/0x4e <c04499d4>)
+ swapper-0     0d.h. 1595131us+: _spin_lock+0x8/0x18 <c0630690> (hrtimer_interrupt+0x6e/0x1b0 <c0449c56>)
 
+Or with verbose turned on:
 
-vim:ft=help
-=======
+  "echo verbose > /debugfs/tracing/iter_ctrl"
 
-
-And this is a trace with mcount_enabled == 1
-
-
-=======
-preemption latency trace v1.1.5 on 2.6.24-rc7
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
 --------------------------------------------------------------------
- latency: 102 us, #12/12, CPU#1 | (M:rt VP:0, KP:0, SP:0 HP:0 #P:2)
+ latency: 0 us, #419428/4361791, CPU#1 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
     -----------------
-    | task: swapper-0 (uid:0 nice:0 policy:0 rt_prio:0)
+    | task: -0 (uid:0 nice:0 policy:0 rt_prio:0)
     -----------------
- => started at: _spin_lock_irqsave+0x2a/0xb7
- => ended at:   _spin_unlock_irqrestore+0x32/0x5f
 
-                 _------=> CPU#            
-                / _-----=> irqs-off        
-               | / _----=> need-resched    
-               || / _---=> hardirq/softirq 
-               ||| / _--=> preempt-depth   
-               |||| /                      
-               |||||     delay             
-   cmd     pid ||||| time  |   caller      
-      \   /    |||||   \   |   /           
- swapper-0     1dNs3    0us+: _spin_lock_irqsave+0x2a/0xb7 (e1000_update_stats+0x47/0x64c [e1000])
- swapper-0     1dNs3   46us : e1000_read_phy_reg+0x16/0x225 [e1000] (e1000_update_stats+0x5e2/0x64c [e1000])
- swapper-0     1dNs3   46us : e1000_swfw_sync_acquire+0x10/0x99 [e1000] (e1000_read_phy_reg+0x49/0x225 [e1000])
- swapper-0     1dNs3   46us : e1000_get_hw_eeprom_semaphore+0x12/0xa6 [e1000] (e1000_swfw_sync_acquire+0x36/0x99 [e1000])
- swapper-0     1dNs3   47us : __const_udelay+0x9/0x47 (e1000_read_phy_reg+0x116/0x225 [e1000])
- swapper-0     1dNs3   47us+: __delay+0x9/0x50 (__const_udelay+0x45/0x47)
- swapper-0     1dNs3   97us : preempt_schedule+0xc/0x84 (__delay+0x4e/0x50)
- swapper-0     1dNs3   98us : e1000_swfw_sync_release+0xc/0x55 [e1000] (e1000_read_phy_reg+0x211/0x225 [e1000])
- swapper-0     1dNs3   99us+: e1000_put_hw_eeprom_semaphore+0x9/0x35 [e1000] (e1000_swfw_sync_release+0x50/0x55 [e1000])
- swapper-0     1dNs3  101us : _spin_unlock_irqrestore+0xe/0x5f (e1000_update_stats+0x641/0x64c [e1000])
- swapper-0     1dNs3  102us : _spin_unlock_irqrestore+0x32/0x5f (e1000_update_stats+0x641/0x64c [e1000])
- swapper-0     1dNs3  102us : trace_hardirqs_on_caller+0x75/0x89 (_spin_unlock_irqrestore+0x32/0x5f)
+         swapper     0 0 9 00000000 00000000 [f3675f41] 1595.128ms (+0.003ms): set_normalized_timespec+0x8/0x2d <c043841d> (ktime_get_ts+0x4a/0x4e <c04499d4>)
+         swapper     0 0 9 00000000 00000001 [f3675f45] 1595.131ms (+0.003ms): _spin_lock+0x8/0x18 <c0630690> (hrtimer_interrupt+0x6e/0x1b0 <c0449c56>)
+         swapper     0 0 9 00000000 00000002 [f3675f48] 1595.135ms (+0.003ms): _spin_lock+0x8/0x18 <c0630690> (hrtimer_interrupt+0x6e/0x1b0 <c0449c56>)
 
 
-vim:ft=help
-=======
+The "trace" file is not affected by the verbose mode, but is by the symonly.
+
+ echo "nosymonly" > /debugfs/tracing/iter_ctrl
+
+tracer:
+[   81.479967] CPU 0: bash:3154 register_mcount_function+0x5f/0x66 <ffffffff80337a4d> <-- _spin_unlock_irqrestore+0xe/0x5a <ffffffff8048cc8f>
+[   81.479967] CPU 0: bash:3154 _spin_unlock_irqrestore+0x3e/0x5a <ffffffff8048ccbf> <-- sub_preempt_count+0xc/0x7a <ffffffff80233d7b>
+[   81.479968] CPU 0: bash:3154 sub_preempt_count+0x30/0x7a <ffffffff80233d9f> <-- in_lock_functions+0x9/0x24 <ffffffff8025a75d>
+[   81.479968] CPU 0: bash:3154 vfs_write+0x11d/0x155 <ffffffff8029a043> <-- dnotify_parent+0x12/0x78 <ffffffff802d54fb>
+[   81.479968] CPU 0: bash:3154 dnotify_parent+0x2d/0x78 <ffffffff802d5516> <-- _spin_lock+0xe/0x70 <ffffffff8048c910>
+[   81.479969] CPU 0: bash:3154 _spin_lock+0x1b/0x70 <ffffffff8048c91d> <-- add_preempt_count+0xe/0x77 <ffffffff80233df7>
+[   81.479969] CPU 0: bash:3154 add_preempt_count+0x3e/0x77 <ffffffff80233e27> <-- in_lock_functions+0x9/0x24 <ffffffff8025a75d>
+
+
+ echo "symonly" > /debugfs/tracing/iter_ctrl
+
+tracer:
+[   81.479913] CPU 0: bash:3154 register_mcount_function+0x5f/0x66 <-- _spin_unlock_irqrestore+0xe/0x5a
+[   81.479913] CPU 0: bash:3154 _spin_unlock_irqrestore+0x3e/0x5a <-- sub_preempt_count+0xc/0x7a
+[   81.479913] CPU 0: bash:3154 sub_preempt_count+0x30/0x7a <-- in_lock_functions+0x9/0x24
+[   81.479914] CPU 0: bash:3154 vfs_write+0x11d/0x155 <-- dnotify_parent+0x12/0x78
+[   81.479914] CPU 0: bash:3154 dnotify_parent+0x2d/0x78 <-- _spin_lock+0xe/0x70
+[   81.479914] CPU 0: bash:3154 _spin_lock+0x1b/0x70 <-- add_preempt_count+0xe/0x77
+[   81.479914] CPU 0: bash:3154 add_preempt_count+0x3e/0x77 <-- in_lock_functions+0x9/0x24
 
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 ---
- arch/x86/kernel/process_64.c  |    3 
- arch/x86/lib/thunk_64.S       |   18 +
- include/asm-x86/irqflags_32.h |    4 
- include/asm-x86/irqflags_64.h |    4 
- include/linux/irqflags.h      |   37 ++-
- include/linux/mcount.h        |   31 ++-
- kernel/fork.c                 |    2 
- kernel/lockdep.c              |   16 +
- lib/tracing/Kconfig           |   18 +
- lib/tracing/Makefile          |    1 
- lib/tracing/trace_irqsoff.c   |  416 ++++++++++++++++++++++++++++++++++++++++++
- lib/tracing/tracer.c          |   59 ++++-
- lib/tracing/tracer.h          |    2 
- 13 files changed, 576 insertions(+), 35 deletions(-)
+ lib/Makefile                 |    1 
+ lib/tracing/Kconfig          |   15 
+ lib/tracing/Makefile         |    3 
+ lib/tracing/trace_function.c |   72 ++
+ lib/tracing/tracer.c         | 1165 +++++++++++++++++++++++++++++++++++++++++++
+ lib/tracing/tracer.h         |   96 +++
+ 6 files changed, 1352 insertions(+)
 
-Index: linux-mcount.git/arch/x86/kernel/process_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/process_64.c	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/process_64.c	2008-01-30 15:39:29.000000000 -0500
-@@ -233,7 +233,10 @@ void cpu_idle (void)
- 			 */
- 			local_irq_disable();
- 			enter_idle();
-+			/* Don't trace irqs off for idle */
-+			stop_critical_timings();
- 			idle();
-+			start_critical_timings();
- 			/* In many cases the interrupt that ended idle
- 			   has already called exit_idle. But some idle
- 			   loops can be woken up without interrupt. */
-Index: linux-mcount.git/arch/x86/lib/thunk_64.S
-===================================================================
---- linux-mcount.git.orig/arch/x86/lib/thunk_64.S	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/arch/x86/lib/thunk_64.S	2008-01-30 15:39:30.000000000 -0500
-@@ -47,8 +47,22 @@
- 	thunk __up_wakeup,__up
- 
- #ifdef CONFIG_TRACE_IRQFLAGS
--	thunk trace_hardirqs_on_thunk,trace_hardirqs_on
--	thunk trace_hardirqs_off_thunk,trace_hardirqs_off
-+	/* put return address in rdi (arg1) */
-+	.macro thunk_ra name,func
-+	.globl \name
-+\name:
-+	CFI_STARTPROC
-+	SAVE_ARGS
-+	/* SAVE_ARGS pushs 9 elements */
-+	/* the next element would be the rip */
-+	movq 9*8(%rsp), %rdi
-+	call \func
-+	jmp  restore
-+	CFI_ENDPROC
-+	.endm
-+
-+	thunk_ra trace_hardirqs_on_thunk,trace_hardirqs_on_caller
-+	thunk_ra trace_hardirqs_off_thunk,trace_hardirqs_off_caller
- #endif
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
-Index: linux-mcount.git/include/asm-x86/irqflags_32.h
-===================================================================
---- linux-mcount.git.orig/include/asm-x86/irqflags_32.h	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/include/asm-x86/irqflags_32.h	2008-01-30 15:39:30.000000000 -0500
-@@ -139,9 +139,9 @@ static inline int raw_irqs_disabled(void
- static inline void trace_hardirqs_fixup_flags(unsigned long flags)
- {
- 	if (raw_irqs_disabled_flags(flags))
--		trace_hardirqs_off();
-+		__trace_hardirqs_off();
- 	else
--		trace_hardirqs_on();
-+		__trace_hardirqs_on();
- }
- 
- static inline void trace_hardirqs_fixup(void)
-Index: linux-mcount.git/include/asm-x86/irqflags_64.h
-===================================================================
---- linux-mcount.git.orig/include/asm-x86/irqflags_64.h	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/include/asm-x86/irqflags_64.h	2008-01-30 15:39:30.000000000 -0500
-@@ -120,9 +120,9 @@ static inline int raw_irqs_disabled(void
- static inline void trace_hardirqs_fixup_flags(unsigned long flags)
- {
- 	if (raw_irqs_disabled_flags(flags))
--		trace_hardirqs_off();
-+		__trace_hardirqs_off();
- 	else
--		trace_hardirqs_on();
-+		__trace_hardirqs_on();
- }
- 
- static inline void trace_hardirqs_fixup(void)
-Index: linux-mcount.git/include/linux/irqflags.h
-===================================================================
---- linux-mcount.git.orig/include/linux/irqflags.h	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/include/linux/irqflags.h	2008-01-30 15:39:30.000000000 -0500
-@@ -12,10 +12,21 @@
- #define _LINUX_TRACE_IRQFLAGS_H
- 
- #ifdef CONFIG_TRACE_IRQFLAGS
--  extern void trace_hardirqs_on(void);
--  extern void trace_hardirqs_off(void);
-+# include <linux/mcount.h>
-+  extern void trace_hardirqs_on_caller(unsigned long ip);
-+  extern void trace_hardirqs_off_caller(unsigned long ip);
-   extern void trace_softirqs_on(unsigned long ip);
-   extern void trace_softirqs_off(unsigned long ip);
-+  extern void trace_hardirqs_on(void);
-+  extern void trace_hardirqs_off(void);
-+  static inline void notrace __trace_hardirqs_on(void)
-+  {
-+	trace_hardirqs_on_caller(CALLER_ADDR0);
-+  }
-+  static inline void notrace __trace_hardirqs_off(void)
-+  {
-+	trace_hardirqs_off_caller(CALLER_ADDR0);
-+  }
- # define trace_hardirq_context(p)	((p)->hardirq_context)
- # define trace_softirq_context(p)	((p)->softirq_context)
- # define trace_hardirqs_enabled(p)	((p)->hardirqs_enabled)
-@@ -28,6 +39,8 @@
- #else
- # define trace_hardirqs_on()		do { } while (0)
- # define trace_hardirqs_off()		do { } while (0)
-+# define __trace_hardirqs_on()		do { } while (0)
-+# define __trace_hardirqs_off()		do { } while (0)
- # define trace_softirqs_on(ip)		do { } while (0)
- # define trace_softirqs_off(ip)		do { } while (0)
- # define trace_hardirq_context(p)	0
-@@ -41,24 +54,32 @@
- # define INIT_TRACE_IRQFLAGS
- #endif
- 
-+#ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
-+ extern void stop_critical_timings(void);
-+ extern void start_critical_timings(void);
-+#else
-+# define stop_critical_timings() do { } while (0)
-+# define start_critical_timings() do { } while (0)
-+#endif
-+
- #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
- 
- #include <asm/irqflags.h>
- 
- #define local_irq_enable() \
--	do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0)
-+	do { __trace_hardirqs_on(); raw_local_irq_enable(); } while (0)
- #define local_irq_disable() \
--	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
-+	do { raw_local_irq_disable(); __trace_hardirqs_off(); } while (0)
- #define local_irq_save(flags) \
--	do { raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
-+	do { raw_local_irq_save(flags); __trace_hardirqs_off(); } while (0)
- 
- #define local_irq_restore(flags)				\
- 	do {							\
- 		if (raw_irqs_disabled_flags(flags)) {		\
- 			raw_local_irq_restore(flags);		\
--			trace_hardirqs_off();			\
-+			__trace_hardirqs_off();			\
- 		} else {					\
--			trace_hardirqs_on();			\
-+			__trace_hardirqs_on();			\
- 			raw_local_irq_restore(flags);		\
- 		}						\
- 	} while (0)
-@@ -76,7 +97,7 @@
- #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
- #define safe_halt()						\
- 	do {							\
--		trace_hardirqs_on();				\
-+		__trace_hardirqs_on();				\
- 		raw_safe_halt();				\
- 	} while (0)
- 
-Index: linux-mcount.git/include/linux/mcount.h
-===================================================================
---- linux-mcount.git.orig/include/linux/mcount.h	2008-01-30 14:36:01.000000000 -0500
-+++ linux-mcount.git/include/linux/mcount.h	2008-01-30 15:39:30.000000000 -0500
-@@ -6,10 +6,6 @@ extern int mcount_enabled;
- 
- #include <linux/linkage.h>
- 
--#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
--#define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
--#define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
--
- typedef void (*mcount_func_t)(unsigned long ip, unsigned long parent_ip);
- 
- struct mcount_ops {
-@@ -35,4 +31,31 @@ extern void mcount(void);
- # define unregister_mcount_function(ops) do { } while (0)
- # define clear_mcount_function(ops) do { } while (0)
- #endif /* CONFIG_MCOUNT */
-+
-+
-+#ifdef CONFIG_FRAME_POINTER
-+/* TODO: need to fix this for ARM */
-+# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+# define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-+# define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-+# define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
-+# define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
-+# define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
-+#else
-+# define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+# define CALLER_ADDR1 0UL
-+# define CALLER_ADDR2 0UL
-+# define CALLER_ADDR3 0UL
-+# define CALLER_ADDR4 0UL
-+# define CALLER_ADDR5 0UL
-+#endif
-+
-+#ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
-+  extern void notrace time_hardirqs_on(unsigned long a0, unsigned long a1);
-+  extern void notrace time_hardirqs_off(unsigned long a0, unsigned long a1);
-+#else
-+# define time_hardirqs_on(a0, a1)		do { } while (0)
-+# define time_hardirqs_off(a0, a1)		do { } while (0)
-+#endif
-+
- #endif /* _LINUX_MCOUNT_H */
-Index: linux-mcount.git/kernel/fork.c
-===================================================================
---- linux-mcount.git.orig/kernel/fork.c	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/kernel/fork.c	2008-01-30 15:39:30.000000000 -0500
-@@ -1036,7 +1036,7 @@ static struct task_struct *copy_process(
- 
- 	rt_mutex_init_task(p);
- 
--#ifdef CONFIG_TRACE_IRQFLAGS
-+#if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_LOCKDEP)
- 	DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
- 	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
- #endif
-Index: linux-mcount.git/kernel/lockdep.c
-===================================================================
---- linux-mcount.git.orig/kernel/lockdep.c	2008-01-30 14:35:49.000000000 -0500
-+++ linux-mcount.git/kernel/lockdep.c	2008-01-30 15:39:30.000000000 -0500
-@@ -39,6 +39,7 @@
- #include <linux/irqflags.h>
- #include <linux/utsname.h>
- #include <linux/hash.h>
-+#include <linux/mcount.h>
- 
- #include <asm/sections.h>
- 
-@@ -2009,7 +2010,7 @@ void early_boot_irqs_on(void)
- /*
-  * Hardirqs will be enabled:
-  */
--void trace_hardirqs_on(void)
-+void notrace trace_hardirqs_on_caller(unsigned long a0)
- {
- 	struct task_struct *curr = current;
- 	unsigned long ip;
-@@ -2050,14 +2051,19 @@ void trace_hardirqs_on(void)
- 	curr->hardirq_enable_ip = ip;
- 	curr->hardirq_enable_event = ++curr->irq_events;
- 	debug_atomic_inc(&hardirqs_on_events);
-+	time_hardirqs_on(CALLER_ADDR0, a0);
- }
-+EXPORT_SYMBOL(trace_hardirqs_on_caller);
- 
-+void notrace trace_hardirqs_on(void) {
-+	trace_hardirqs_on_caller(CALLER_ADDR0);
-+}
- EXPORT_SYMBOL(trace_hardirqs_on);
- 
- /*
-  * Hardirqs were disabled:
-  */
--void trace_hardirqs_off(void)
-+void notrace trace_hardirqs_off_caller(unsigned long a0)
- {
- 	struct task_struct *curr = current;
- 
-@@ -2075,9 +2081,15 @@ void trace_hardirqs_off(void)
- 		curr->hardirq_disable_ip = _RET_IP_;
- 		curr->hardirq_disable_event = ++curr->irq_events;
- 		debug_atomic_inc(&hardirqs_off_events);
-+		time_hardirqs_off(CALLER_ADDR0, a0);
- 	} else
- 		debug_atomic_inc(&redundant_hardirqs_off);
- }
-+EXPORT_SYMBOL(trace_hardirqs_off_caller);
-+
-+void notrace trace_hardirqs_off(void) {
-+	trace_hardirqs_off_caller(CALLER_ADDR0);
-+}
- 
- EXPORT_SYMBOL(trace_hardirqs_off);
- 
 Index: linux-mcount.git/lib/tracing/Kconfig
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-30 15:38:44.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 15:39:30.000000000 -0500
-@@ -28,6 +28,24 @@ config FUNCTION_TRACER
- 	  that the debugging mechanism using this facility will hook by
- 	  providing a set of inline routines.
- 
-+config CRITICAL_IRQSOFF_TIMING
-+	bool "Interrupts-off critical section latency timing"
-+	default n
-+	depends on TRACE_IRQFLAGS_SUPPORT
-+	depends on GENERIC_TIME
-+	select TRACE_IRQFLAGS
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-30 14:36:01.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-30 15:18:18.000000000 -0500
+@@ -8,3 +8,18 @@ config HAVE_MCOUNT
+ config MCOUNT
+ 	bool
+ 	select FRAME_POINTER
++
++config TRACING
++        bool
++	select DEBUG_FS
++
++config FUNCTION_TRACER
++	bool "Profiler instrumentation based tracer"
++	depends on DEBUG_KERNEL && HAVE_MCOUNT
++	select MCOUNT
 +	select TRACING
-+	select TRACER_MAX_TRACE
 +	help
-+	  This option measures the time spent in irqs-off critical
-+	  sections, with microsecond accuracy.
-+
-+	  The default measurement method is a maximum search, which is
-+	  disabled by default and can be runtime (re-)started
-+	  via:
-+
-+	      echo 0 > /debugfs/tracing/tracing_max_latency
-+
- config WAKEUP_TRACER
- 	bool "Trace wakeup latencies"
- 	depends on DEBUG_KERNEL
++	  Use profiler instrumentation, adding -pg to CFLAGS. This will
++	  insert a call to an architecture specific __mcount routine,
++	  that the debugging mechanism using this facility will hook by
++	  providing a set of inline routines.
 Index: linux-mcount.git/lib/tracing/Makefile
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-30 15:38:44.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Makefile	2008-01-30 15:39:30.000000000 -0500
-@@ -3,6 +3,7 @@ obj-$(CONFIG_MCOUNT) += libmcount.o
- obj-$(CONFIG_TRACING) += tracer.o
- obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
-+obj-$(CONFIG_CRITICAL_IRQSOFF_TIMING) += trace_irqsoff.o
- obj-$(CONFIG_WAKEUP_TRACER) += trace_wakeup.o
+--- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-30 14:36:01.000000000 -0500
++++ linux-mcount.git/lib/tracing/Makefile	2008-01-30 15:18:18.000000000 -0500
+@@ -1,3 +1,6 @@
+ obj-$(CONFIG_MCOUNT) += libmcount.o
  
++obj-$(CONFIG_TRACING) += tracer.o
++obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
++
  libmcount-y := mcount.o
-Index: linux-mcount.git/lib/tracing/trace_irqsoff.c
+Index: linux-mcount.git/lib/tracing/tracer.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/trace_irqsoff.c	2008-01-30 15:39:30.000000000 -0500
-@@ -0,0 +1,416 @@
++++ linux-mcount.git/lib/tracing/tracer.c	2008-01-30 15:18:18.000000000 -0500
+@@ -0,0 +1,1165 @@
 +/*
-+ * trace irqs off criticall timings
++ * ring buffer based mcount tracer
 + *
 + * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
 + *
-+ * From code in the latency_tracer, that is:
++ * Originally taken from the RT patch by:
++ *    Arnaldo Carvalho de Melo <acme@redhat.com>
 + *
++ * Based on code from the latency_tracer, that is:
 + *  Copyright (C) 2004-2006 Ingo Molnar
 + *  Copyright (C) 2004 William Lee Irwin III
 + */
-+#include <linux/module.h>
++
 +#include <linux/fs.h>
++#include <linux/gfp.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/linkage.h>
++#include <linux/seq_file.h>
++#include <linux/percpu.h>
++#include <linux/ctype.h>
 +#include <linux/debugfs.h>
 +#include <linux/kallsyms.h>
++#include <linux/utsrelease.h>
 +#include <linux/uaccess.h>
++#include <linux/hardirq.h>
 +#include <linux/mcount.h>
 +
 +#include "tracer.h"
 +
-+static struct tracing_trace *tracer_trace __read_mostly;
-+static __cacheline_aligned_in_smp DEFINE_MUTEX(max_mutex);
++static struct tracing_trace tracer_trace __read_mostly;
++static DEFINE_PER_CPU(struct tracing_trace_cpu, tracer_trace_cpu);
 +static int trace_enabled __read_mostly;
++static unsigned long trace_nr_entries = (65536UL);
 +
-+/*
-+ * Sequence count - we record it when starting a measurement and
-+ * skip the latency if the sequence has changed - some other section
-+ * did a maximum and could disturb our measurement with serial console
-+ * printouts, etc. Truly coinciding maximum latencies should be rare
-+ * and what happens together happens separately as well, so this doesnt
-+ * decrease the validity of the maximum found:
-+ */
-+static __cacheline_aligned_in_smp unsigned long max_sequence;
++static struct trace_types_struct *trace_types __read_mostly;
++static struct trace_types_struct *current_trace __read_mostly;
++static int max_tracer_type_len;
++
++static DEFINE_MUTEX(trace_types_lock);
++
++static int __init set_nr_entries(char *str)
++{
++	if (!str)
++		return 0;
++	trace_nr_entries = simple_strtoul(str, &str, 0);
++	return 1;
++}
++__setup("trace_entries=", set_nr_entries);
++
++enum trace_type {
++	__TRACE_FIRST_TYPE = 0,
++
++	TRACE_FN,
++
++	__TRACE_LAST_TYPE
++};
++
++enum trace_flag_type {
++	TRACE_FLAG_IRQS_OFF		= 0x01,
++	TRACE_FLAG_NEED_RESCHED		= 0x02,
++	TRACE_FLAG_HARDIRQ		= 0x04,
++	TRACE_FLAG_SOFTIRQ		= 0x08,
++};
++
++int register_trace(struct trace_types_struct *type)
++{
++	struct trace_types_struct *t;
++	int len;
++	int ret = 0;
++
++	if (!type->name) {
++		pr_info("Tracer must have a name\n");
++		return -1;
++	}
++
++	mutex_lock(&trace_types_lock);
++	for (t = trace_types; t; t = t->next) {
++		if (strcmp(type->name, t->name) == 0) {
++			/* already found */
++			pr_info("Trace %s already registered\n",
++				type->name);
++			ret = -1;
++			goto out;
++		}
++	}
++
++	type->next = trace_types;
++	trace_types = type;
++	len = strlen(type->name);
++	if (len > max_tracer_type_len)
++		max_tracer_type_len = len;
++ out:
++	mutex_unlock(&trace_types_lock);
++
++	return ret;
++}
++
++void unregister_trace(struct trace_types_struct *type)
++{
++	struct trace_types_struct **t;
++	int len;
++
++	mutex_lock(&trace_types_lock);
++	for (t = &trace_types; *t; t = &(*t)->next) {
++		if (*t == type)
++			goto found;
++	}
++	pr_info("Trace %s not registered\n", type->name);
++	goto out;
++
++ found:
++	*t = (*t)->next;
++	if (strlen(type->name) != max_tracer_type_len)
++		goto out;
++
++	max_tracer_type_len = 0;
++	for (t = &trace_types; *t; t = &(*t)->next) {
++		len = strlen((*t)->name);
++		if (len > max_tracer_type_len)
++			max_tracer_type_len = len;
++	}
++ out:
++	mutex_unlock(&trace_types_lock);
++}
++
++void notrace tracing_reset(struct tracing_trace_cpu *data)
++{
++	data->trace_idx = 0;
++	atomic_set(&data->underrun, 0);
++}
 +
 +#ifdef CONFIG_MCOUNT
-+/* irqsoff uses its own function trace to keep the overhead down */
-+static void notrace irqsoff_trace_call(unsigned long ip,
-+				       unsigned long parent_ip)
++static void notrace function_trace_call(unsigned long ip,
++					unsigned long parent_ip)
 +{
-+	struct tracing_trace *tr = tracer_trace;
++	struct tracing_trace *tr = &tracer_trace;
 +	struct tracing_trace_cpu *data;
 +	unsigned long flags;
 +	long disabled;
 +	int cpu;
 +
-+	if (likely(!trace_enabled))
++	if (unlikely(!trace_enabled))
 +		return;
 +
-+	local_save_flags(flags);
-+
-+	if (!irqs_disabled_flags(flags))
-+		return;
-+
++	raw_local_irq_save(flags);
 +	cpu = raw_smp_processor_id();
 +	data = tr->data[cpu];
 +	disabled = atomic_inc_return(&data->disabled);
@@ -522,468 +353,1206 @@ Index: linux-mcount.git/lib/tracing/trace_irqsoff.c
 +		tracing_function_trace(tr, data, ip, parent_ip, flags);
 +
 +	atomic_dec(&data->disabled);
++	raw_local_irq_restore(flags);
 +}
 +
 +static struct mcount_ops trace_ops __read_mostly =
 +{
-+	.func = irqsoff_trace_call,
++	.func = function_trace_call,
 +};
-+#endif /* CONFIG_MCOUNT */
++#endif
 +
-+/*
-+ * Should this new latency be reported/recorded?
-+ */
-+static int notrace report_latency(cycle_t delta)
++void tracing_start_function_trace(void)
 +{
-+	if (tracing_thresh) {
-+		if (delta < tracing_thresh)
-+			return 0;
++	register_mcount_function(&trace_ops);
++}
++
++void tracing_stop_function_trace(void)
++{
++	unregister_mcount_function(&trace_ops);
++}
++
++static inline notrace struct tracing_entry *
++tracing_get_trace_entry(struct tracing_trace *tr,
++			struct tracing_trace_cpu *data)
++{
++	unsigned long idx, idx_next;
++	struct tracing_entry *entry;
++
++	idx = data->trace_idx;
++	idx_next = idx + 1;
++
++	if (unlikely(idx_next >= tr->entries)) {
++		atomic_inc(&data->underrun);
++		idx_next = 0;
++	}
++
++	data->trace_idx = idx_next;
++
++	if (unlikely(idx_next != 0 && atomic_read(&data->underrun)))
++		atomic_inc(&data->underrun);
++
++	entry = data->trace + idx * TRACING_ENTRY_SIZE;
++
++	return entry;
++}
++
++static inline notrace void
++tracing_generic_entry_update(struct tracing_entry *entry,
++			     unsigned long flags)
++{
++	struct task_struct *tsk = current;
++	unsigned long pc;
++
++	pc = preempt_count();
++
++	entry->preempt_count = pc & 0xff;
++	entry->pid	 = tsk->pid;
++	entry->t	 = now();
++	entry->flags = (irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_OFF : 0) |
++		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
++		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
++		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
++	memcpy(entry->comm, tsk->comm, TASK_COMM_LEN);
++}
++
++notrace void tracing_function_trace(struct tracing_trace *tr,
++				    struct tracing_trace_cpu *data,
++				    unsigned long ip,
++				    unsigned long parent_ip,
++				    unsigned long flags)
++{
++	struct tracing_entry *entry;
++
++	entry = tracing_get_trace_entry(tr, data);
++	tracing_generic_entry_update(entry, flags);
++	entry->type	    = TRACE_FN;
++	entry->fn.ip	    = ip;
++	entry->fn.parent_ip = parent_ip;
++}
++
++enum trace_iterator {
++	TRACE_ITER_SYM_ONLY	= 1,
++	TRACE_ITER_VERBOSE	= 2,
++};
++
++/* These must match the bit postions above */
++static const char *trace_options[] = {
++	"symonly",
++	"verbose",
++	NULL
++};
++
++static unsigned trace_flags;
++
++enum trace_file_type {
++	TRACE_FILE_LAT_FMT	= 1,
++};
++
++static struct tracing_entry *tracing_entry_idx(struct tracing_trace *tr,
++					       unsigned long idx,
++					       int cpu)
++{
++	struct tracing_entry *array = tr->data[cpu]->trace;
++	unsigned long underrun;
++
++	if (idx >= tr->entries)
++		return NULL;
++
++	underrun = atomic_read(&tr->data[cpu]->underrun);
++	if (underrun)
++		idx = ((underrun - 1) + idx) % tr->entries;
++	else if (idx >= tr->data[cpu]->trace_idx)
++		return NULL;
++
++	return &array[idx];
++}
++
++static struct notrace tracing_entry *
++find_next_entry(struct tracing_iterator *iter, int *ent_cpu)
++{
++	struct tracing_trace *tr = iter->tr;
++	struct tracing_entry *ent, *next = NULL;
++	int next_cpu = -1;
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		if (!tr->data[cpu]->trace)
++			continue;
++		ent = tracing_entry_idx(tr, iter->next_idx[cpu], cpu);
++		if (ent && (!next || next->t > ent->t)) {
++			next = ent;
++			next_cpu = cpu;
++		}
++	}
++
++	if (ent_cpu)
++		*ent_cpu = next_cpu;
++
++	return next;
++}
++
++static void *find_next_entry_inc(struct tracing_iterator *iter)
++{
++	struct tracing_entry *next;
++	int next_cpu = -1;
++
++	next = find_next_entry(iter, &next_cpu);
++
++	if (next) {
++		iter->next_idx[next_cpu]++;
++		iter->idx++;
++	}
++	iter->ent = next;
++	iter->cpu = next_cpu;
++
++	return next ? iter : NULL;
++}
++
++static void notrace *
++s_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct tracing_iterator *iter = m->private;
++	void *ent;
++	void *last_ent = iter->ent;
++	int i = (int)*pos;
++
++	(*pos)++;
++
++	/* can't go backwards */
++	if (iter->idx > i)
++		return NULL;
++
++	if (iter->idx < 0)
++		ent = find_next_entry_inc(iter);
++	else
++		ent = iter;
++
++	while (ent && iter->idx < i)
++		ent = find_next_entry_inc(iter);
++
++	iter->pos = *pos;
++
++	if (last_ent && !ent)
++		seq_puts(m, "\n\nvim:ft=help\n");
++
++	return ent;
++}
++
++static void *s_start(struct seq_file *m, loff_t *pos)
++{
++	struct tracing_iterator *iter = m->private;
++	void *p = NULL;
++	loff_t l = 0;
++	int i;
++
++	mutex_lock(&trace_types_lock);
++
++	if (!current_trace || current_trace != iter->trace)
++		return NULL;
++
++	/* let the tracer grab locks here if needed */
++	if (current_trace->start)
++		current_trace->start(iter);
++
++	if (*pos != iter->pos) {
++		iter->ent = NULL;
++		iter->cpu = 0;
++		iter->idx = -1;
++
++		for (i = 0; i < NR_CPUS; i++)
++			iter->next_idx[i] = 0;
++
++		for (p = iter; p && l < *pos; p = s_next(m, p, &l))
++			;
++
 +	} else {
-+		if (delta <= tracing_max_latency)
++		l = *pos;
++		p = s_next(m, p, &l);
++	}
++
++	return p;
++}
++
++static void s_stop(struct seq_file *m, void *p)
++{
++	struct tracing_iterator *iter = m->private;
++
++	/* let the tracer release locks here if needed */
++	if (current_trace && current_trace == iter->trace && iter->trace->stop)
++		iter->trace->stop(iter);
++
++	mutex_unlock(&trace_types_lock);
++}
++
++#ifdef CONFIG_KALLSYMS
++static void seq_print_symbol(struct seq_file *m,
++			     const char *fmt, unsigned long address)
++{
++	char buffer[KSYM_SYMBOL_LEN];
++
++	sprint_symbol(buffer, address);
++	seq_printf(m, fmt, buffer);
++}
++#else
++# define seq_print_symbol(m, fmt, address) do { } while (0)
++#endif
++
++#ifndef CONFIG_64BIT
++# define IP_FMT "%08lx"
++#else
++# define IP_FMT "%016lx"
++#endif
++
++static void notrace seq_print_ip_sym(struct seq_file *m,
++				     unsigned long ip, int sym_only)
++{
++	if (!ip) {
++		seq_printf(m, "0");
++		return;
++	}
++
++	seq_print_symbol(m, "%s", ip);
++	if (!sym_only)
++		seq_printf(m, " <" IP_FMT ">", ip);
++}
++
++static void notrace print_help_header(struct seq_file *m)
++{
++	seq_puts(m, "                 _------=> CPU#            \n");
++	seq_puts(m, "                / _-----=> irqs-off        \n");
++	seq_puts(m, "               | / _----=> need-resched    \n");
++	seq_puts(m, "               || / _---=> hardirq/softirq \n");
++	seq_puts(m, "               ||| / _--=> preempt-depth   \n");
++	seq_puts(m, "               |||| /                      \n");
++	seq_puts(m, "               |||||     delay             \n");
++	seq_puts(m, "   cmd     pid ||||| time  |   caller      \n");
++	seq_puts(m, "      \\   /    |||||   \\   |   /           \n");
++}
++
++static void notrace print_trace_header(struct seq_file *m,
++				       struct tracing_iterator *iter)
++{
++	struct tracing_trace *tr = iter->tr;
++	struct tracing_trace_cpu *data = tr->data[tr->cpu];
++	struct trace_types_struct *type = current_trace;
++	unsigned long underruns = 0;
++	unsigned long underrun;
++	unsigned long entries   = 0;
++	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
++	int cpu;
++	const char *name = "preemption";
++
++	if (type)
++		name = type->name;
++
++	for_each_possible_cpu(cpu) {
++		if (tr->data[cpu]->trace) {
++			underrun = atomic_read(&tr->data[cpu]->underrun);
++			if (underrun) {
++				underruns += underrun;
++				entries += tr->entries;
++			} else
++				entries += tr->data[cpu]->trace_idx;
++		}
++	}
++
++	seq_printf(m, "%s latency trace v1.1.5 on %s\n",
++		   name, UTS_RELEASE);
++	seq_puts(m, "-----------------------------------"
++		 "---------------------------------\n");
++	seq_printf(m, " latency: %lu us, #%lu/%lu, CPU#%d |"
++		   " (M:%s VP:%d, KP:%d, SP:%d HP:%d",
++		   cycles_to_usecs(data->saved_latency),
++		   entries,
++		   (entries + underruns),
++		   tr->cpu,
++#if defined(CONFIG_PREEMPT_NONE)
++		   "server",
++#elif defined(CONFIG_PREEMPT_VOLUNTARY)
++		   "desktop",
++#elif defined(CONFIG_PREEMPT_DESKTOP)
++		   "preempt",
++#else
++		   "unknown",
++#endif
++		   /* These are reserved for later use */
++		   0, 0, 0, 0);
++#ifdef CONFIG_SMP
++	seq_printf(m, " #P:%d)\n", num_online_cpus());
++#else
++	seq_puts(m, ")\n");
++#endif
++	seq_puts(m, "    -----------------\n");
++	seq_printf(m, "    | task: %.16s-%d "
++		   "(uid:%d nice:%ld policy:%ld rt_prio:%ld)\n",
++		   data->comm, data->pid, data->uid, data->nice,
++		   data->policy, data->rt_priority);
++	seq_puts(m, "    -----------------\n");
++
++	if (data->critical_start) {
++		seq_puts(m, " => started at: ");
++		seq_print_ip_sym(m, data->critical_start, sym_only);
++		seq_puts(m, "\n => ended at:   ");
++		seq_print_ip_sym(m, data->critical_end, sym_only);
++		seq_puts(m, "\n");
++	}
++
++	seq_puts(m, "\n");
++}
++
++
++static void notrace
++lat_print_generic(struct seq_file *m, struct tracing_entry *entry, int cpu)
++{
++	int hardirq, softirq;
++
++	seq_printf(m, "%8.8s-%-5d ", entry->comm, entry->pid);
++	seq_printf(m, "%d", cpu);
++	seq_printf(m, "%c%c",
++		   (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
++		   ((entry->flags & TRACE_FLAG_NEED_RESCHED) ? 'N' : '.'));
++
++	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
++	softirq = entry->flags & TRACE_FLAG_SOFTIRQ;
++	if (hardirq && softirq)
++		seq_putc(m, 'H');
++	else {
++		if (hardirq)
++			seq_putc(m, 'h');
++		else {
++			if (softirq)
++				seq_putc(m, 's');
++			else
++				seq_putc(m, '.');
++		}
++	}
++
++	if (entry->preempt_count)
++		seq_printf(m, "%x", entry->preempt_count);
++	else
++		seq_puts(m, ".");
++}
++
++unsigned long preempt_mark_thresh = 100;
++
++static void notrace
++lat_print_timestamp(struct seq_file *m, unsigned long long abs_usecs,
++		    unsigned long rel_usecs)
++{
++	seq_printf(m, " %4lldus", abs_usecs);
++	if (rel_usecs > preempt_mark_thresh)
++		seq_puts(m, "!: ");
++	else if (rel_usecs > 1)
++		seq_puts(m, "+: ");
++	else
++		seq_puts(m, " : ");
++}
++
++static void notrace
++print_lat_fmt(struct seq_file *m, struct tracing_iterator *iter,
++	      unsigned int trace_idx, int cpu)
++{
++	struct tracing_entry *entry = iter->ent;
++	struct tracing_entry *next_entry = find_next_entry(iter, NULL);
++	unsigned long abs_usecs;
++	unsigned long rel_usecs;
++	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
++	int verbose = !!(trace_flags & TRACE_ITER_VERBOSE);
++
++	if (!next_entry)
++		next_entry = entry;
++	rel_usecs = cycles_to_usecs(next_entry->t - entry->t);
++	abs_usecs = cycles_to_usecs(entry->t - iter->tr->time_start);
++
++	if (verbose) {
++		seq_printf(m, "%16s %5d %d %d %08x %08x [%08lx]"
++			   " %ld.%03ldms (+%ld.%03ldms): ",
++			   entry->comm,
++			   entry->pid, cpu, entry->flags,
++			   entry->preempt_count, trace_idx,
++			   cycles_to_usecs(entry->t),
++			   abs_usecs/1000,
++			   abs_usecs % 1000, rel_usecs/1000, rel_usecs % 1000);
++	} else {
++		lat_print_generic(m, entry, cpu);
++		lat_print_timestamp(m, abs_usecs, rel_usecs);
++	}
++	switch (entry->type) {
++	case TRACE_FN:
++		seq_print_ip_sym(m, entry->fn.ip, sym_only);
++		seq_puts(m, " (");
++		seq_print_ip_sym(m, entry->fn.parent_ip, sym_only);
++		seq_puts(m, ")\n");
++		break;
++	}
++}
++
++static void notrace print_trace_fmt(struct seq_file *m,
++				    struct tracing_iterator *iter)
++{
++	struct tracing_entry *entry = iter->ent;
++	unsigned long usec_rem;
++	unsigned long secs;
++	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
++	unsigned long long t;
++
++	t = cycles_to_usecs(entry->t);
++	usec_rem = do_div(t, 1000000ULL);
++	secs = (unsigned long)t;
++
++	seq_printf(m, "[%5lu.%06lu] ", secs, usec_rem);
++	seq_printf(m, "CPU %d: ", iter->cpu);
++	seq_printf(m, "%s:%d ", entry->comm,
++		   entry->pid);
++	switch (entry->type) {
++	case TRACE_FN:
++		seq_print_ip_sym(m, entry->fn.ip, sym_only);
++		if (entry->fn.parent_ip) {
++			seq_printf(m, " <-- ");
++			seq_print_ip_sym(m, entry->fn.parent_ip,
++					 sym_only);
++		}
++		break;
++	}
++	seq_printf(m, "\n");
++}
++
++static int trace_empty(struct tracing_iterator *iter)
++{
++	struct tracing_trace_cpu *data;
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		data = iter->tr->data[cpu];
++
++		if (data->trace &&
++		    (data->trace_idx ||
++		     atomic_read(&data->underrun)))
 +			return 0;
 +	}
 +	return 1;
 +}
 +
-+static void notrace
-+check_critical_timing(struct tracing_trace *tr,
-+		      struct tracing_trace_cpu *data,
-+		      unsigned long parent_ip,
-+		      int cpu)
++static int s_show(struct seq_file *m, void *v)
 +{
-+	unsigned long latency, t0, t1;
-+	cycle_t T0, T1, T2, delta;
-+	unsigned long flags;
-+
-+	/*
-+	 * usecs conversion is slow so we try to delay the conversion
-+	 * as long as possible:
-+	 */
-+	T0 = data->preempt_timestamp;
-+	T1 = now();
-+	delta = T1-T0;
-+
-+	local_save_flags(flags);
-+
-+	if (!report_latency(delta))
-+		goto out;
-+
-+	tracing_function_trace(tr, data, CALLER_ADDR0, parent_ip, flags);
-+	/*
-+	 * Update the timestamp, because the trace entry above
-+	 * might change it (it can only get larger so the latency
-+	 * is fair to be reported):
-+	 */
-+	T2 = now();
-+
-+	delta = T2-T0;
-+
-+	latency = cycles_to_usecs(delta);
-+
-+	if (data->critical_sequence != max_sequence ||
-+	    !mutex_trylock(&max_mutex))
-+		goto out;
-+
-+	tracing_max_latency = delta;
-+	t0 = cycles_to_usecs(T0);
-+	t1 = cycles_to_usecs(T1);
-+
-+	data->critical_end = parent_ip;
-+
-+	update_max_tr_single(tr, current, cpu);
-+
-+	if (tracing_thresh)
-+		printk(KERN_WARNING "(%16s-%-5d|#%d): %lu us critical section "
-+		       "violates %lu us threshold.\n"
-+		       " => started at timestamp %lu: ",
-+				current->comm, current->pid,
-+				raw_smp_processor_id(),
-+				latency, cycles_to_usecs(tracing_thresh), t0);
-+	else
-+		printk(KERN_WARNING "(%16s-%-5d|#%d):"
-+		       " new %lu us maximum-latency "
-+		       "critical section.\n => started at timestamp %lu: ",
-+				current->comm, current->pid,
-+				raw_smp_processor_id(),
-+				latency, t0);
-+
-+	print_symbol(KERN_CONT "<%s>\n", data->critical_start);
-+	printk(KERN_CONT " =>   ended at timestamp %lu: ", t1);
-+	print_symbol(KERN_CONT "<%s>\n", data->critical_end);
-+	dump_stack();
-+	t1 = cycles_to_usecs(now());
-+	printk(KERN_CONT " =>   dump-end timestamp %lu\n\n", t1);
-+
-+	max_sequence++;
-+
-+	mutex_unlock(&max_mutex);
-+
-+out:
-+	data->critical_sequence = max_sequence;
-+	data->preempt_timestamp = now();
-+	tracing_reset(data);
-+	tracing_function_trace(tr, data, CALLER_ADDR0, parent_ip, flags);
-+}
-+
-+static inline void notrace
-+start_critical_timing(unsigned long ip, unsigned long parent_ip)
-+{
-+	int cpu;
-+	struct tracing_trace *tr = tracer_trace;
-+	struct tracing_trace_cpu *data;
-+	unsigned long flags;
-+
-+	if (likely(!trace_enabled))
-+		return;
-+
-+	cpu = raw_smp_processor_id();
-+	data = tr->data[cpu];
-+
-+	if (unlikely(!data) || unlikely(!data->trace) ||
-+	    data->critical_start || atomic_read(&data->disabled))
-+		return;
-+
-+	atomic_inc(&data->disabled);
-+
-+	data->critical_sequence = max_sequence;
-+	data->preempt_timestamp = now();
-+	data->critical_start = parent_ip;
-+	tracing_reset(data);
-+
-+	local_save_flags(flags);
-+	tracing_function_trace(tr, data, ip, parent_ip, flags);
-+
-+	atomic_dec(&data->disabled);
-+}
-+
-+static inline void notrace
-+stop_critical_timing(unsigned long ip, unsigned long parent_ip)
-+{
-+	int cpu;
-+	struct tracing_trace *tr = tracer_trace;
-+	struct tracing_trace_cpu *data;
-+	unsigned long flags;
-+
-+	if (likely(!trace_enabled))
-+		return;
-+
-+	cpu = raw_smp_processor_id();
-+	data = tr->data[cpu];
-+
-+	if (unlikely(!data) || unlikely(!data->trace) ||
-+	    !data->critical_start || atomic_read(&data->disabled))
-+		return;
-+
-+	atomic_inc(&data->disabled);
-+	local_save_flags(flags);
-+	tracing_function_trace(tr, data, ip, parent_ip, flags);
-+	check_critical_timing(tr, data, parent_ip, cpu);
-+	data->critical_start = 0;
-+	atomic_dec(&data->disabled);
-+}
-+
-+void notrace start_critical_timings(void)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		start_critical_timing(CALLER_ADDR0, 0);
-+}
-+
-+void notrace stop_critical_timings(void)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		stop_critical_timing(CALLER_ADDR0, 0);
-+}
-+
-+#ifdef CONFIG_LOCKDEP
-+void notrace time_hardirqs_on(unsigned long a0, unsigned long a1)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		stop_critical_timing(a0, a1);
-+}
-+
-+void notrace time_hardirqs_off(unsigned long a0, unsigned long a1)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		start_critical_timing(a0, a1);
-+}
-+
-+#else /* !CONFIG_LOCKDEP */
-+
-+/*
-+ * Stubs:
-+ */
-+
-+void early_boot_irqs_off(void)
-+{
-+}
-+
-+void early_boot_irqs_on(void)
-+{
-+}
-+
-+void trace_softirqs_on(unsigned long ip)
-+{
-+}
-+
-+void trace_softirqs_off(unsigned long ip)
-+{
-+}
-+
-+inline void print_irqtrace_events(struct task_struct *curr)
-+{
-+}
-+
-+/*
-+ * We are only interested in hardirq on/off events:
-+ */
-+void notrace trace_hardirqs_on(void)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		stop_critical_timing(CALLER_ADDR0, 0);
-+}
-+EXPORT_SYMBOL(trace_hardirqs_on);
-+
-+void notrace trace_hardirqs_off(void)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		start_critical_timing(CALLER_ADDR0, 0);
-+}
-+EXPORT_SYMBOL(trace_hardirqs_off);
-+
-+void notrace trace_hardirqs_on_caller(unsigned long caller_addr)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		stop_critical_timing(CALLER_ADDR0, caller_addr);
-+}
-+EXPORT_SYMBOL(trace_hardirqs_on_caller);
-+
-+void notrace trace_hardirqs_off_caller(unsigned long caller_addr)
-+{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+
-+	if (irqs_disabled_flags(flags))
-+		start_critical_timing(CALLER_ADDR0, caller_addr);
-+}
-+EXPORT_SYMBOL(trace_hardirqs_off_caller);
-+
-+#endif /* CONFIG_LOCKDEP */
-+
-+static void start_irqsoff_trace(struct tracing_trace *tr)
-+{
-+	trace_enabled = 1;
-+	register_mcount_function(&trace_ops);
-+}
-+
-+static void stop_irqsoff_trace(struct tracing_trace *tr)
-+{
-+	unregister_mcount_function(&trace_ops);
-+	trace_enabled = 0;
-+}
-+
-+static void irqsoff_trace_init(struct tracing_trace *tr)
-+{
-+	tracer_trace = tr;
-+	/* make sure that the tracer is visibel */
-+	smp_wmb();
-+
-+	if (tr->ctrl)
-+		start_irqsoff_trace(tr);
-+}
-+
-+static void irqsoff_trace_reset(struct tracing_trace *tr)
-+{
-+	if (tr->ctrl)
-+		stop_irqsoff_trace(tr);
-+}
-+
-+static void irqsoff_trace_ctrl_update(struct tracing_trace *tr)
-+{
-+	if (tr->ctrl)
-+		start_irqsoff_trace(tr);
-+	else
-+		stop_irqsoff_trace(tr);
-+}
-+
-+static void notrace irqsoff_trace_open(struct tracing_iterator *iter)
-+{
-+	/* stop the trace while dumping */
-+	if (iter->tr->ctrl)
-+		stop_irqsoff_trace(iter->tr);
-+}
-+
-+static void notrace irqsoff_trace_close(struct tracing_iterator *iter)
-+{
-+	if (iter->tr->ctrl)
-+		start_irqsoff_trace(iter->tr);
-+}
-+
-+static void irqsoff_trace_start(struct tracing_iterator *iter)
-+{
-+	mutex_lock(&max_mutex);
-+}
-+
-+static void irqsoff_trace_stop(struct tracing_iterator *iter)
-+{
-+	mutex_unlock(&max_mutex);
-+}
-+
-+static struct trace_types_struct irqsoff_trace __read_mostly =
-+{
-+	.name = "irqsoff",
-+	.init = irqsoff_trace_init,
-+	.reset = irqsoff_trace_reset,
-+	.open = irqsoff_trace_open,
-+	.close = irqsoff_trace_close,
-+	.start = irqsoff_trace_start,
-+	.stop = irqsoff_trace_stop,
-+	.ctrl_update = irqsoff_trace_ctrl_update,
-+	.print_max = 1,
-+};
-+
-+__init static int init_irqsoff_trace(void)
-+{
-+	register_trace(&irqsoff_trace);
++	struct tracing_iterator *iter = v;
++
++	if (iter->ent == NULL) {
++		if (iter->iter_flags & TRACE_FILE_LAT_FMT) {
++			/* print nothing if the buffers are empty */
++			if (trace_empty(iter))
++				return 0;
++			print_trace_header(m, iter);
++			if (!(trace_flags & TRACE_ITER_VERBOSE))
++				print_help_header(m);
++		} else
++			seq_printf(m, "tracer:\n");
++	} else {
++		if (iter->iter_flags & TRACE_FILE_LAT_FMT)
++			print_lat_fmt(m, iter, iter->idx, iter->cpu);
++		else
++			print_trace_fmt(m, iter);
++	}
 +
 +	return 0;
 +}
 +
-+device_initcall(init_irqsoff_trace);
-Index: linux-mcount.git/lib/tracing/tracer.c
-===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-30 15:38:44.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.c	2008-01-30 15:39:30.000000000 -0500
-@@ -74,24 +74,14 @@ enum trace_flag_type {
-  * structure. (this way the maximum trace is permanently saved,
-  * for later retrieval via /debugfs/tracing/latency_trace)
-  */
--void update_max_tr(struct tracing_trace *tr, struct task_struct *tsk, int cpu)
-+static void notrace __update_max_tr(struct tracing_trace *tr,
-+				    struct task_struct *tsk, int cpu)
- {
- 	struct tracing_trace_cpu *data = tr->data[cpu];
--	void *save_trace;
--	int i;
- 
- 	max_tr.cpu = cpu;
- 	max_tr.time_start = data->preempt_timestamp;
- 
--
--	/* clear out all the previous traces */
--	for_each_possible_cpu(i) {
--		data = tr->data[i];
--		save_trace = max_tr.data[i]->trace;
--		memcpy(max_tr.data[i], data, sizeof(*data));
--		data->trace = save_trace;
--	}
--
- 	data = max_tr.data[cpu];
- 	data->saved_latency = tracing_max_latency;
- 
-@@ -106,6 +96,47 @@ void update_max_tr(struct tracing_trace 
- 	tracing_record_cmdline(current);
- }
- 
-+notrace void update_max_tr(struct tracing_trace *tr,
-+			   struct task_struct *tsk, int cpu)
-+{
-+	struct tracing_trace_cpu *data;
-+	void *save_trace;
-+	int i;
++static struct seq_operations tracer_seq_ops = {
++	.start = s_start,
++	.next = s_next,
++	.stop = s_stop,
++	.show = s_show,
++};
 +
-+	/* clear out all the previous traces */
-+	for_each_possible_cpu(i) {
-+		data = tr->data[i];
-+		save_trace = max_tr.data[i]->trace;
-+		memcpy(max_tr.data[i], data, sizeof(*data));
-+		data->trace = save_trace;
++static struct tracing_iterator notrace *
++__tracing_open(struct inode *inode, struct file *file, int *ret)
++{
++	struct tracing_iterator *iter;
++
++	iter = kzalloc(sizeof(*iter), GFP_KERNEL);
++	if (!iter) {
++		*ret = -ENOMEM;
++		goto out;
 +	}
 +
-+	__update_max_tr(tr, tsk, cpu);
++	mutex_lock(&trace_types_lock);
++	iter->tr = inode->i_private;
++	iter->trace = current_trace;
++	iter->pos = -1;
++
++	/* TODO stop tracer */
++	*ret = seq_open(file, &tracer_seq_ops);
++	if (!*ret) {
++		struct seq_file *m = file->private_data;
++		m->private = iter;
++
++		/* stop the trace while dumping */
++		if (iter->tr->ctrl)
++			trace_enabled = 0;
++
++		if (iter->trace && iter->trace->open)
++			iter->trace->open(iter);
++	} else {
++		kfree(iter);
++		iter = NULL;
++	}
++	mutex_unlock(&trace_types_lock);
++
++ out:
++	return iter;
 +}
 +
-+/**
-+ * update_max_tr_single - only copy one trace over, and reset the rest
-+ * @tr - tracer
-+ * @tsk - task with the latency
-+ * @cpu - the cpu of the buffer to copy.
-+ */
-+notrace void update_max_tr_single(struct tracing_trace *tr,
-+				  struct task_struct *tsk, int cpu)
++int tracing_open_generic(struct inode *inode, struct file *filp)
 +{
-+	struct tracing_trace_cpu *data = tr->data[cpu];
-+	void *save_trace;
++	filp->private_data = inode->i_private;
++	return 0;
++}
++
++int tracing_release(struct inode *inode, struct file *file)
++{
++	struct seq_file *m = (struct seq_file *)file->private_data;
++	struct tracing_iterator *iter = m->private;
++
++	mutex_lock(&trace_types_lock);
++	if (iter->trace && iter->trace->close)
++		iter->trace->close(iter);
++
++	/* reenable tracing if it was previously enabled */
++	if (iter->tr->ctrl)
++		trace_enabled = 1;
++	mutex_unlock(&trace_types_lock);
++
++	seq_release(inode, file);
++	kfree(iter);
++	return 0;
++}
++
++static int tracing_open(struct inode *inode, struct file *file)
++{
++	int ret;
++
++	__tracing_open(inode, file, &ret);
++
++	return ret;
++}
++
++static int tracing_lt_open(struct inode *inode, struct file *file)
++{
++	struct tracing_iterator *iter;
++	int ret;
++
++	iter = __tracing_open(inode, file, &ret);
++
++	if (!ret)
++		iter->iter_flags |= TRACE_FILE_LAT_FMT;
++
++	return ret;
++}
++
++
++static void notrace *
++t_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct trace_types_struct *t = m->private;
++
++	(*pos)++;
++
++	if (t)
++		t = t->next;
++
++	m->private = t;
++
++	return t;
++}
++
++static void *t_start(struct seq_file *m, loff_t *pos)
++{
++	struct trace_types_struct *t = m->private;
++	loff_t l = 0;
++
++	mutex_lock(&trace_types_lock);
++	for (; t && l < *pos; t = t_next(m, t, &l))
++		;
++
++	return t;
++}
++
++static void t_stop(struct seq_file *m, void *p)
++{
++	mutex_unlock(&trace_types_lock);
++}
++
++static int t_show(struct seq_file *m, void *v)
++{
++	struct trace_types_struct *t = v;
++
++	if (!t)
++		return 0;
++
++	seq_printf(m, "%s", t->name);
++	if (t->next)
++		seq_putc(m, ' ');
++	else
++		seq_putc(m, '\n');
++
++	return 0;
++}
++
++static struct seq_operations show_traces_seq_ops = {
++	.start = t_start,
++	.next = t_next,
++	.stop = t_stop,
++	.show = t_show,
++};
++
++static int show_traces_open(struct inode *inode, struct file *file)
++{
++	int ret;
++
++	ret = seq_open(file, &show_traces_seq_ops);
++	if (!ret) {
++		struct seq_file *m = file->private_data;
++		m->private = trace_types;
++	}
++
++	return ret;
++}
++
++static struct file_operations tracing_fops = {
++	.open = tracing_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = tracing_release,
++};
++
++static struct file_operations tracing_lt_fops = {
++	.open = tracing_lt_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = tracing_release,
++};
++
++static struct file_operations show_traces_fops = {
++	.open = show_traces_open,
++	.read = seq_read,
++	.release = seq_release,
++};
++
++static ssize_t tracing_iter_ctrl_read(struct file *filp, char __user *ubuf,
++				      size_t cnt, loff_t *ppos)
++{
++	char *buf;
++	int r = 0;
++	int len = 0;
 +	int i;
 +
-+	for_each_possible_cpu(i)
-+		tracing_reset(max_tr.data[i]);
++	/* calulate max size */
++	for (i = 0; trace_options[i]; i++) {
++		len += strlen(trace_options[i]);
++		len += 3; /* "no" and space */
++	}
 +
-+	save_trace = max_tr.data[cpu]->trace;
-+	memcpy(max_tr.data[cpu], data, sizeof(*data));
-+	data->trace = save_trace;
++	/* +2 for \n and \0 */
++	buf = kmalloc(len + 2, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
 +
-+	__update_max_tr(tr, tsk, cpu);
++	for (i = 0; trace_options[i]; i++) {
++		if (trace_flags & (1 << i))
++			r += sprintf(buf + r, "%s ", trace_options[i]);
++		else
++			r += sprintf(buf + r, "no%s ", trace_options[i]);
++	}
++
++	r += sprintf(buf + r, "\n");
++	WARN_ON(r >= len + 2);
++
++	r = simple_read_from_buffer(ubuf, cnt, ppos,
++				    buf, r);
++
++	kfree(buf);
++
++	return r;
 +}
 +
- int register_trace(struct trace_types_struct *type)
- {
- 	struct trace_types_struct *t;
-@@ -204,12 +235,12 @@ static struct mcount_ops trace_ops __rea
- };
- #endif
- 
--void tracing_start_function_trace(void)
-+notrace void tracing_start_function_trace(void)
- {
- 	register_mcount_function(&trace_ops);
- }
- 
--void tracing_stop_function_trace(void)
-+notrace void tracing_stop_function_trace(void)
- {
- 	unregister_mcount_function(&trace_ops);
- }
++static ssize_t tracing_iter_ctrl_write(struct file *filp,
++				       const char __user *ubuf,
++				       size_t cnt, loff_t *ppos)
++{
++	char buf[64];
++	char *cmp = buf;
++	int neg = 0;
++	int i;
++
++	if (cnt > 63)
++		cnt = 63;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	if (strncmp(buf, "no", 2) == 0) {
++		neg = 1;
++		cmp += 2;
++	}
++
++	for (i = 0; trace_options[i]; i++) {
++		int len = strlen(trace_options[i]);
++
++		if (strncmp(cmp, trace_options[i], len) == 0) {
++			if (neg)
++				trace_flags &= ~(1 << i);
++			else
++				trace_flags |= (1 << i);
++			break;
++		}
++	}
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static struct file_operations tracing_iter_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_iter_ctrl_read,
++	.write = tracing_iter_ctrl_write,
++};
++
++static ssize_t tracing_ctrl_read(struct file *filp, char __user *ubuf,
++				 size_t cnt, loff_t *ppos)
++{
++	struct tracing_trace *tr = filp->private_data;
++	char buf[64];
++	int r;
++
++	r = sprintf(buf, "%ld\n", tr->ctrl);
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t tracing_ctrl_write(struct file *filp,
++				  const char __user *ubuf,
++				  size_t cnt, loff_t *ppos)
++{
++	struct tracing_trace *tr = filp->private_data;
++	long val;
++	char buf[64];
++
++	if (cnt > 63)
++		cnt = 63;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	val = simple_strtoul(buf, NULL, 10);
++
++	val = !!val;
++
++	mutex_lock(&trace_types_lock);
++	if (tr->ctrl ^ val) {
++		if (val)
++			trace_enabled = 1;
++		else
++			trace_enabled = 0;
++
++		tr->ctrl = val;
++
++		if (current_trace && current_trace->ctrl_update)
++			current_trace->ctrl_update(tr);
++	}
++	mutex_unlock(&trace_types_lock);
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static ssize_t tracing_set_trace_read(struct file *filp, char __user *ubuf,
++				      size_t cnt, loff_t *ppos)
++{
++	char buf[max_tracer_type_len+2];
++	int r;
++
++	mutex_lock(&trace_types_lock);
++	if (current_trace)
++		r = sprintf(buf, "%s\n", current_trace->name);
++	else
++		r = sprintf(buf, "\n");
++	mutex_unlock(&trace_types_lock);
++
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t tracing_set_trace_write(struct file *filp,
++				       const char __user *ubuf,
++				       size_t cnt, loff_t *ppos)
++{
++	struct tracing_trace *tr = &tracer_trace;
++	struct trace_types_struct *t;
++	char buf[max_tracer_type_len+1];
++	int i;
++
++	if (cnt > max_tracer_type_len)
++		cnt = max_tracer_type_len;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	/* strip ending whitespace. */
++	for (i = cnt - 1; i > 0 && isspace(buf[i]); i--)
++		buf[i] = 0;
++
++	mutex_lock(&trace_types_lock);
++	for (t = trace_types; t; t = t->next) {
++		if (strcmp(t->name, buf) == 0)
++			break;
++	}
++	if (!t || t == current_trace)
++		goto out;
++
++	if (current_trace && current_trace->reset)
++		current_trace->reset(tr);
++
++	current_trace = t;
++	if (t->init)
++		t->init(tr);
++
++ out:
++	mutex_unlock(&trace_types_lock);
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static struct file_operations tracing_ctrl_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_ctrl_read,
++	.write = tracing_ctrl_write,
++};
++
++static struct file_operations set_tracer_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_set_trace_read,
++	.write = tracing_set_trace_write,
++};
++
++static struct dentry *d_tracer;
++
++struct dentry *tracing_init_dentry(void)
++{
++	static int once;
++
++	if (d_tracer)
++		return d_tracer;
++
++	d_tracer = debugfs_create_dir("tracing", NULL);
++
++	if (!d_tracer && !once) {
++		once = 1;
++		pr_warning("Could not create debugfs directory 'tracing'\n");
++		return NULL;
++	}
++
++	return d_tracer;
++}
++
++static __init void tracer_init_debugfs(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++
++	entry = debugfs_create_file("trace_ctrl", 0644, d_tracer,
++				    &tracer_trace, &tracing_ctrl_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace_ctrl' entry\n");
++
++	entry = debugfs_create_file("iter_ctrl", 0644, d_tracer,
++				    NULL, &tracing_iter_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'iter_ctrl' entry\n");
++
++	entry = debugfs_create_file("latency_trace", 0444, d_tracer,
++				    &tracer_trace, &tracing_lt_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'latency_trace' entry\n");
++
++	entry = debugfs_create_file("trace", 0444, d_tracer,
++				    &tracer_trace, &tracing_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace' entry\n");
++
++	entry = debugfs_create_file("available_tracers", 0444, d_tracer,
++				    &tracer_trace, &show_traces_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace' entry\n");
++
++	entry = debugfs_create_file("current_tracer", 0444, d_tracer,
++				    &tracer_trace, &set_tracer_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace' entry\n");
++}
++
++/* dummy trace to disable tracing */
++static struct trace_types_struct disable_trace __read_mostly =
++{
++	.name = "disable",
++};
++
++static inline notrace int page_order(const unsigned long size)
++{
++	const unsigned long nr_pages = DIV_ROUND_UP(size, PAGE_SIZE);
++	return ilog2(roundup_pow_of_two(nr_pages));
++}
++
++__init static int tracer_alloc_buffers(void)
++{
++	const int order = page_order(trace_nr_entries * TRACING_ENTRY_SIZE);
++	const unsigned long size = (1UL << order) << PAGE_SHIFT;
++	struct tracing_entry *array;
++	int i;
++
++	for_each_possible_cpu(i) {
++		tracer_trace.data[i] = &per_cpu(tracer_trace_cpu, i);
++		array = (struct tracing_entry *)
++			  __get_free_pages(GFP_KERNEL, order);
++		if (array == NULL) {
++			printk(KERN_ERR "tracer: failed to allocate"
++			       " %ld bytes for trace buffer!\n", size);
++			goto free_buffers;
++		}
++		tracer_trace.data[i]->trace = array;
++	}
++
++	/*
++	 * Since we allocate by orders of pages, we may be able to
++	 * round up a bit.
++	 */
++	tracer_trace.entries = size / TRACING_ENTRY_SIZE;
++
++	pr_info("tracer: %ld bytes allocated for %ld",
++		size, trace_nr_entries);
++	pr_info(" entries of %ld bytes\n", (long)TRACING_ENTRY_SIZE);
++	pr_info("   actual entries %ld\n", tracer_trace.entries);
++
++	tracer_init_debugfs();
++
++	register_trace(&disable_trace);
++
++	return 0;
++
++ free_buffers:
++	for (i-- ; i >= 0; i--) {
++		struct tracing_trace_cpu *data = tracer_trace.data[i];
++
++		if (data && data->trace) {
++			free_pages((unsigned long)data->trace, order);
++			data->trace = NULL;
++		}
++	}
++	return -ENOMEM;
++}
++
++device_initcall(tracer_alloc_buffers);
 Index: linux-mcount.git/lib/tracing/tracer.h
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-30 15:38:44.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.h	2008-01-30 15:39:30.000000000 -0500
-@@ -112,6 +112,8 @@ extern unsigned long tracing_max_latency
- extern unsigned long tracing_thresh;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-30 15:18:18.000000000 -0500
+@@ -0,0 +1,96 @@
++#ifndef _LINUX_MCOUNT_TRACER_H
++#define _LINUX_MCOUNT_TRACER_H
++
++#include <asm/atomic.h>
++#include <linux/sched.h>
++#include <linux/clocksource.h>
++
++struct tracing_function {
++	unsigned long ip;
++	unsigned long parent_ip;
++};
++
++struct tracing_entry {
++	char type;
++	char cpu;  /* who will want to trace more than 256 CPUS? */
++	char flags;
++	char preempt_count; /* assumes PREEMPT_MASK is 8 bits or less */
++	int pid;
++	cycle_t t;
++	char comm[TASK_COMM_LEN];
++	struct tracing_function fn;
++};
++
++struct tracing_trace_cpu {
++	void *trace;
++	unsigned long trace_idx;
++	atomic_t      disabled;
++	atomic_t      underrun;
++	unsigned long saved_latency;
++	unsigned long critical_start;
++	unsigned long critical_end;
++	unsigned long critical_sequence;
++	unsigned long nice;
++	unsigned long policy;
++	unsigned long rt_priority;
++	cycle_t preempt_timestamp;
++	pid_t	      pid;
++	uid_t	      uid;
++	char comm[TASK_COMM_LEN];
++};
++
++struct tracing_iterator;
++
++struct tracing_trace {
++	unsigned long entries;
++	long	      ctrl;
++	int	      cpu;
++	cycle_t	      time_start;
++	struct tracing_trace_cpu *data[NR_CPUS];
++};
++
++struct trace_types_struct {
++	const char *name;
++	void (*init)(struct tracing_trace *tr);
++	void (*reset)(struct tracing_trace *tr);
++	void (*open)(struct tracing_iterator *iter);
++	void (*close)(struct tracing_iterator *iter);
++	void (*start)(struct tracing_iterator *iter);
++	void (*stop)(struct tracing_iterator *iter);
++	void (*ctrl_update)(struct tracing_trace *tr);
++	struct trace_types_struct *next;
++};
++
++struct tracing_iterator {
++	struct tracing_trace *tr;
++	struct trace_types_struct *trace;
++	struct tracing_entry *ent;
++	unsigned long iter_flags;
++	loff_t pos;
++	unsigned long next_idx[NR_CPUS];
++	int cpu;
++	int idx;
++};
++
++#define TRACING_ENTRY_SIZE sizeof(struct tracing_entry)
++
++void notrace tracing_reset(struct tracing_trace_cpu *data);
++int tracing_open_generic(struct inode *inode, struct file *filp);
++struct dentry *tracing_init_dentry(void);
++void tracing_function_trace(struct tracing_trace *tr,
++			    struct tracing_trace_cpu *data,
++			    unsigned long ip,
++			    unsigned long parent_ip,
++			    unsigned long flags);
++
++void tracing_start_function_trace(void);
++void tracing_stop_function_trace(void);
++int register_trace(struct trace_types_struct *type);
++void unregister_trace(struct trace_types_struct *type);
++
++static inline notrace cycle_t now(void)
++{
++	return get_monotonic_cycles();
++}
++
++#endif /* _LINUX_MCOUNT_TRACER_H */
+Index: linux-mcount.git/lib/Makefile
+===================================================================
+--- linux-mcount.git.orig/lib/Makefile	2008-01-30 14:36:01.000000000 -0500
++++ linux-mcount.git/lib/Makefile	2008-01-30 15:18:18.000000000 -0500
+@@ -68,6 +68,7 @@ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
  
- void update_max_tr(struct tracing_trace *tr, struct task_struct *tsk, int cpu);
-+void update_max_tr_single(struct tracing_trace *tr,
-+			  struct task_struct *tsk, int cpu);
+ obj-$(CONFIG_MCOUNT) += tracing/
++obj-$(CONFIG_TRACING) += tracing/
  
- static inline notrace cycle_t now(void)
- {
+ lib-$(CONFIG_GENERIC_BUG) += bug.o
+ 
+Index: linux-mcount.git/lib/tracing/trace_function.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/trace_function.c	2008-01-30 15:18:18.000000000 -0500
+@@ -0,0 +1,72 @@
++/*
++ * ring buffer based mcount tracer
++ *
++ * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
++ *
++ * Based on code from the latency_tracer, that is:
++ *
++ *  Copyright (C) 2004-2006 Ingo Molnar
++ *  Copyright (C) 2004 William Lee Irwin III
++ */
++#include <linux/fs.h>
++#include <linux/debugfs.h>
++#include <linux/uaccess.h>
++#include <linux/mcount.h>
++
++#include "tracer.h"
++
++static notrace void function_reset(struct tracing_trace *tr)
++{
++	int cpu;
++
++	tr->time_start = now();
++
++	for_each_online_cpu(cpu)
++		tracing_reset(tr->data[cpu]);
++}
++
++static notrace void start_function_trace(struct tracing_trace *tr)
++{
++	function_reset(tr);
++	tracing_start_function_trace();
++}
++
++static notrace void stop_function_trace(struct tracing_trace *tr)
++{
++	tracing_stop_function_trace();
++}
++
++static notrace void function_trace_init(struct tracing_trace *tr)
++{
++	if (tr->ctrl)
++		start_function_trace(tr);
++}
++
++static notrace void function_trace_reset(struct tracing_trace *tr)
++{
++	if (tr->ctrl)
++		stop_function_trace(tr);
++}
++
++static notrace void function_trace_ctrl_update(struct tracing_trace *tr)
++{
++	if (tr->ctrl)
++		start_function_trace(tr);
++	else
++		stop_function_trace(tr);
++}
++
++static struct trace_types_struct function_trace __read_mostly =
++{
++	.name = "function",
++	.init = function_trace_init,
++	.reset = function_trace_reset,
++	.ctrl_update = function_trace_ctrl_update,
++};
++
++static __init int init_function_trace(void)
++{
++	return register_trace(&function_trace);
++}
++
++device_initcall(init_function_trace);
 
 -- 
