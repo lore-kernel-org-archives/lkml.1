@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYA3Ih7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYA3Ii0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYA3Ih7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 03:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYA3Ihu
+	id S1755121AbYA3Ii0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 03:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbYA3IiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 03:37:50 -0500
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:46225 "EHLO
-	smtp1.bethere.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbYA3Ihu (ORCPT
+	Wed, 30 Jan 2008 03:38:11 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:17635 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756292AbYA3IiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 03:37:50 -0500
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] Force enable HPET on (some?) ICH9 boards
-Date: Wed, 30 Jan 2008 08:36:27 +0000
-User-Agent: KMail/1.9.7
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <1201444379-4223-1-git-send-email-alistair@devzero.co.uk> <924EFEDD5F540B4284297C4DC59F3DEE6CD87A@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE6CD87A@orsmsx423.amr.corp.intel.com>
+	Wed, 30 Jan 2008 03:38:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cgFM3/y6zoLMOpuLKQXOnS+oJnHRiWtTj1vRORVCnDFksiclwrVTJlkJOa3Pnu+IKn2Jllu+8fOgvpp4tMdBb11GQCSIesRRbAE6WPVJI8HnsyN+B27ELxDFa5Ir6DeVBT0GgPOSI4QVmKY5ZgwCn08/AFm7LW+U5WeTrCAlqWo=
+Message-ID: <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+Date: Wed, 30 Jan 2008 09:38:04 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Cc: rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801300836.27647.alistair@devzero.co.uk>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <adazluoe2t3.fsf@cisco.com>
+	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 January 2008 01:12:33 Pallipadi, Venkatesh wrote:
-> Patch looks good.
-> If BIOS does not report HPET on more of such systems we may have to add
-> other chipsets in ICH9 family (ICH9_8, ...) as well.
+On Jan 30, 2008 12:32 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 >
-> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> iSER has parameters to limit the maximum size of RDMA (it needs to
+> repeat RDMA with a poor configuration)?
 
-Hi Ingo,
+Please specify which parameters you are referring to. As you know I
+had already repeated my tests with ridiculously high values for the
+following iSER parameters: FirstBurstLength, MaxBurstLength and
+MaxRecvDataSegmentLength (16 MB, which is more than the 1 MB block
+size specified to dd).
 
-Are you going to pick this patch up via the x86 tree, or shall I forward it to 
-Andrew or trivial@?
-
-Do you want me to re-send with Venki's ack?
-
--- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
+Bart Van Assche.
