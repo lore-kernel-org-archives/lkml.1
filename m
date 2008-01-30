@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbYA3IzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbYA3Izr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758657AbYA3IzV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 03:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbYA3Iwx
+	id S1758848AbYA3Izr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 03:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757643AbYA3Iw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 03:52:53 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:47051 "EHLO
+	Wed, 30 Jan 2008 03:52:56 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:33791 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755745AbYA3Iwj (ORCPT
+	with ESMTP id S1755710AbYA3Iwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 03:52:39 -0500
 X-IronPort-AV: E=Sophos;i="4.25,276,1199682000"; 
-   d="scan'208";a="61202555"
+   d="scan'208";a="61202557"
 From: Bryan Wu <bryan.wu@analog.com>
 To: jeff@garzik.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Alexey Demin <bf53x@ya.ru>,
-       Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 7/8] [Blackfin] EMAC driver: fix bug - invalidate data cache of new_skb->data range when cache is WB
-Date: Wed, 30 Jan 2008 16:52:27 +0800
-Message-Id: <1201683148-23931-8-git-send-email-bryan.wu@analog.com>
+Cc: linux-kernel@vger.kernel.org, Bryan Wu <bryan.wu@analog.com>,
+       Kalle Pokki <kalle.pokki@eke.com>
+Subject: [PATCH 8/8] [Blackfin] EMAC driver: Fix bug: The clock divisor is set to all ones at reset.
+Date: Wed, 30 Jan 2008 16:52:28 +0800
+Message-Id: <1201683148-23931-9-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1201683148-23931-1-git-send-email-bryan.wu@analog.com>
 References: <1201683148-23931-1-git-send-email-bryan.wu@analog.com>
@@ -26,32 +26,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Demin <bf53x@ya.ru>
-
-It prevents overwritting new data from DMA.
-
-Signed-off-by: Alexey Demin <bf53x@ya.ru>
+Signed-off-by: Kalle Pokki <kalle.pokki@eke.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/net/bfin_mac.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/net/bfin_mac.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-index f2368b7..0a17fb4 100644
+index 0a17fb4..c993a32 100644
 --- a/drivers/net/bfin_mac.c
 +++ b/drivers/net/bfin_mac.c
-@@ -651,6 +651,12 @@ static void bf537mac_rx(struct net_device *dev)
- 	current_rx_ptr->skb = new_skb;
- 	current_rx_ptr->desc_a.start_addr = (unsigned long)new_skb->data - 2;
+@@ -408,7 +408,7 @@ static int mii_probe(struct net_device *dev)
+ 	mdc_div = ((sclk / MDC_CLK) / 2) - 1;
  
-+	/* Invidate the data cache of skb->data range when it is write back
-+	 * cache. It will prevent overwritting the new data from DMA
-+	 */
-+	blackfin_dcache_invalidate_range((unsigned long)new_skb->head,
-+					 (unsigned long)new_skb->end);
-+
- 	len = (unsigned short)((current_rx_ptr->status.status_word) & RX_FRLEN);
- 	skb_put(skb, len);
- 	blackfin_dcache_invalidate_range((unsigned long)skb->head,
+ 	sysctl = bfin_read_EMAC_SYSCTL();
+-	sysctl |= SET_MDCDIV(mdc_div);
++	sysctl = (sysctl & ~MDCDIV) | SET_MDCDIV(mdc_div);
+ 	bfin_write_EMAC_SYSCTL(sysctl);
+ 
+ 	/* search for connect PHY device */
 -- 
 1.5.3.4
