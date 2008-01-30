@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbYA3RYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763227AbYA3R0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760944AbYA3RYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYA3RX6
+	id S1763227AbYA3R0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYA3R0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:23:58 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:57248 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbYA3RX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:23:57 -0500
-Date: Wed, 30 Jan 2008 20:26:46 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Miklos Szeredi <mszeredi@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
-Message-ID: <20080130172646.GA2355@tv-sign.ru>
-References: <20080130142014.GA2164@tv-sign.ru> <1201712101.31222.22.camel@tucsk.pomaz.szeredi.hu>
+	Wed, 30 Jan 2008 12:26:11 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53334 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753324AbYA3R0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 12:26:10 -0500
+Subject: Re: [PATCH 2/4] dma/ia64: update ia64 machvecs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: akepner@sgi.com
+Cc: Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080130055212.GT30022@sgi.com>
+References: <20080130055212.GT30022@sgi.com>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 11:25:58 -0600
+Message-Id: <1201713958.3292.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201712101.31222.22.camel@tucsk.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/30, Miklos Szeredi wrote:
-> 
-> On Wed, 2008-01-30 at 17:20 +0300, Oleg Nesterov wrote:
-> > Fix ->vm_file accounting, mmap_region() may do do_munmap().
-> 
-> There's a small problem with the patch: the vma itself is freed at
-> unmap, so the fput(vma->vm_file) may crash.  Here's an updated patch.
+In general, the patches look reasonable to me.  Just an observation:
 
-Ah, indeed, thanks!
+On Tue, 2008-01-29 at 21:52 -0800, akepner@sgi.com wrote:
+> diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
+> index e69de29..31af292 100644
+> --- a/include/linux/dma-attrs.h
+> +++ b/include/linux/dma-attrs.h
+> @@ -0,0 +1,48 @@
+> +#ifndef _DMA_ATTR_H
+> +#define _DMA_ATTR_H
+> +#ifdef ARCH_USES_DMA_ATTRS
+> +
+> +enum dma_attr {
+> +       DMA_ATTR_BARRIER,
+> +       DMA_ATTR_FOO,
+> +       DMA_ATTR_GOO,
+> +       DMA_ATTR_MAX,
+> +};
+> +
 
 
-Offtopic. I noticed this problem while looking at this patch:
+The attribute names (DMA_ATTR_...) are going to have to live somewhere
+outside of the #ifdef ARCH_USES_DMA_ATTRS otherwise we'll get compile
+failures of drivers using attributes on architectures that don't support
+them.
 
-	http://marc.info/?l=linux-mm-commits&m=120141116911711
+Secondly, DMA_ATTR_BARRIER doesn't quite sound right.  What you're
+actually doing is trying to prescribe strict ordering, so shouldn't this
+be something like DMA_ATTR_STRICT_ORDERING (and perhaps with a
+corresponding DMA_ATTR_RELAXED_ORDERING for the PCIe case).  also,
+strike the DMA_ATTR_FOO and DMA_ATTR_GOO since they have no plausible
+meaning.
 
-So this (the old vma could be removed before we create the new mapping)
-means that the patch above has another problem: if we are remapping the
-whole VM_EXECUTABLE vma, removed_exe_file_vma() can clear ->exe_file
-while it shouldn't (Matt Helsley cc'ed).
+James
 
-Oleg.
 
