@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbYA3VKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762808AbYA3VLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761777AbYA3VKv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 16:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbYA3VFy
+	id S1762808AbYA3VLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 16:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbYA3VF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 16:05:54 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:51422 "EHLO
+	Wed, 30 Jan 2008 16:05:56 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:51419 "EHLO
 	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758052AbYA3VFh (ORCPT
+	with ESMTP id S1758050AbYA3VFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Jan 2008 16:05:37 -0500
-Message-Id: <20080130210525.547283853@goodmis.org>
+Message-Id: <20080130210528.149582393@goodmis.org>
 References: <20080130210357.927754294@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 Jan 2008 16:04:02 -0500
+Date: Wed, 30 Jan 2008 16:04:18 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,131 +29,187 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 05/23 -v8] add notrace annotations to vsyscall.
-Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
+Subject: [PATCH 21/23 -v8] Add markers to various events
+Content-Disposition: inline; filename=tracer-add-event-markers.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the notrace annotations to some of the vsyscall functions.
+This patch adds markers to various events in the kernel.
+(interrupts, task activation and hrtimers)
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/vsyscall_64.c  |    3 ++-
- arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
- arch/x86/vdso/vgetcpu.c        |    3 ++-
- include/asm-x86/vsyscall.h     |    3 ++-
- 4 files changed, 14 insertions(+), 10 deletions(-)
+ arch/x86/kernel/apic_32.c  |    2 ++
+ arch/x86/kernel/irq_32.c   |    1 +
+ arch/x86/kernel/irq_64.c   |    2 ++
+ arch/x86/kernel/traps_32.c |    2 ++
+ arch/x86/kernel/traps_64.c |    2 ++
+ arch/x86/mm/fault_32.c     |    3 +++
+ arch/x86/mm/fault_64.c     |    3 +++
+ kernel/hrtimer.c           |    7 +++++++
+ kernel/sched.c             |   11 +++++++++++
+ 9 files changed, 33 insertions(+)
 
-Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
+Index: linux-mcount.git/arch/x86/kernel/apic_32.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-30 14:35:51.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-30 14:47:08.000000000 -0500
-@@ -42,7 +42,8 @@
- #include <asm/topology.h>
- #include <asm/vgtod.h>
+--- linux-mcount.git.orig/arch/x86/kernel/apic_32.c	2008-01-30 15:10:16.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/apic_32.c	2008-01-30 15:54:06.000000000 -0500
+@@ -581,6 +581,8 @@ notrace fastcall void smp_apic_timer_int
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
  
--#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
-+#define __vsyscall(nr) \
-+		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
- #define __syscall_clobber "r11","rcx","memory"
- #define __pa_vsymbol(x)			\
- 	({unsigned long v;  		\
-Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
++	trace_mark(arch_apic_timer, "ip %lx", regs->eip);
++
+ 	/*
+ 	 * NOTE! We'd better ACK the irq immediately,
+ 	 * because timer handling can be slow.
+Index: linux-mcount.git/arch/x86/kernel/irq_32.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-30 14:35:51.000000000 -0500
-+++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-30 14:47:08.000000000 -0500
-@@ -24,7 +24,7 @@
+--- linux-mcount.git.orig/arch/x86/kernel/irq_32.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/irq_32.c	2008-01-30 15:54:06.000000000 -0500
+@@ -85,6 +85,7 @@ fastcall unsigned int do_IRQ(struct pt_r
  
- #define gtod vdso_vsyscall_gtod_data
- 
--static long vdso_fallback_gettime(long clock, struct timespec *ts)
-+notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
- {
- 	long ret;
- 	asm("syscall" : "=a" (ret) :
-@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
- 	return ret;
- }
- 
--static inline long vgetns(void)
-+notrace static inline long vgetns(void)
- {
- 	long v;
- 	cycles_t (*vread)(void);
-@@ -41,7 +41,7 @@ static inline long vgetns(void)
- 	return (v * gtod->clock.mult) >> gtod->clock.shift;
- }
- 
--static noinline int do_realtime(struct timespec *ts)
-+notrace static noinline int do_realtime(struct timespec *ts)
- {
- 	unsigned long seq, ns;
- 	do {
-@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
- }
- 
- /* Copy of the version in kernel/time.c which we cannot directly access */
--static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
-+notrace static void
-+vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
- {
- 	while (nsec >= NSEC_PER_SEC) {
- 		nsec -= NSEC_PER_SEC;
-@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
- 	ts->tv_nsec = nsec;
- }
- 
--static noinline int do_monotonic(struct timespec *ts)
-+notrace static noinline int do_monotonic(struct timespec *ts)
- {
- 	unsigned long seq, ns, secs;
- 	do {
-@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
- 	return 0;
- }
- 
--int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
-+notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
- {
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
- 		switch (clock) {
-@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
- int clock_gettime(clockid_t, struct timespec *)
- 	__attribute__((weak, alias("__vdso_clock_gettime")));
- 
--int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
-+notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
- {
- 	long ret;
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
-Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
+ 	old_regs = set_irq_regs(regs);
+ 	irq_enter();
++	trace_mark(arch_do_irq, "ip %lx irq %d", regs->eip, irq);
+ #ifdef CONFIG_DEBUG_STACKOVERFLOW
+ 	/* Debugging check for stack overflow: is there less than 1KB free? */
+ 	{
+Index: linux-mcount.git/arch/x86/kernel/irq_64.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-30 14:35:51.000000000 -0500
-+++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-30 14:47:08.000000000 -0500
-@@ -13,7 +13,8 @@
- #include <asm/vgtod.h>
- #include "vextern.h"
+--- linux-mcount.git.orig/arch/x86/kernel/irq_64.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/irq_64.c	2008-01-30 15:54:06.000000000 -0500
+@@ -149,6 +149,8 @@ asmlinkage unsigned int do_IRQ(struct pt
+ 	irq_enter();
+ 	irq = __get_cpu_var(vector_irq)[vector];
  
--long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
-+notrace long
-+__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
- {
- 	unsigned int dummy, p;
- 
-Index: linux-mcount.git/include/asm-x86/vsyscall.h
++	trace_mark(arch_do_irq, "ip %lx irq %d", regs->rip, irq);
++
+ #ifdef CONFIG_DEBUG_STACKOVERFLOW
+ 	stack_overflow_check(regs);
+ #endif
+Index: linux-mcount.git/arch/x86/kernel/traps_32.c
 ===================================================================
---- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-30 14:35:51.000000000 -0500
-+++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-30 14:47:08.000000000 -0500
-@@ -24,7 +24,8 @@ enum vsyscall_num {
- 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
- #define __section_vsyscall_clock __attribute__ \
- 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
--#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
-+#define __vsyscall_fn \
-+	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
+--- linux-mcount.git.orig/arch/x86/kernel/traps_32.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/traps_32.c	2008-01-30 15:54:06.000000000 -0500
+@@ -769,6 +769,8 @@ fastcall __kprobes void do_nmi(struct pt
  
- #define VGETCPU_RDTSCP	1
- #define VGETCPU_LSL	2
+ 	nmi_enter();
+ 
++	trace_mark(arch_do_nmi, "ip %lx flags %lx", regs->eip, regs->eflags);
++
+ 	cpu = smp_processor_id();
+ 
+ 	++nmi_count(cpu);
+Index: linux-mcount.git/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/traps_64.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/traps_64.c	2008-01-30 15:54:06.000000000 -0500
+@@ -782,6 +782,8 @@ asmlinkage __kprobes void default_do_nmi
+ 
+ 	cpu = smp_processor_id();
+ 
++	trace_mark(arch_do_nmi, "ip %lx flags %lx", regs->rip, regs->eflags);
++
+ 	/* Only the BSP gets external NMIs from the system.  */
+ 	if (!cpu)
+ 		reason = get_nmi_reason();
+Index: linux-mcount.git/arch/x86/mm/fault_32.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/mm/fault_32.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/arch/x86/mm/fault_32.c	2008-01-30 15:54:06.000000000 -0500
+@@ -311,6 +311,9 @@ fastcall void __kprobes do_page_fault(st
+ 	/* get the address */
+         address = read_cr2();
+ 
++	trace_mark(arch_do_page_fault, "ip %lx err %lx addr %lx",
++		   regs->eip, error_code, address);
++
+ 	tsk = current;
+ 
+ 	si_code = SEGV_MAPERR;
+Index: linux-mcount.git/arch/x86/mm/fault_64.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/mm/fault_64.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/arch/x86/mm/fault_64.c	2008-01-30 15:54:06.000000000 -0500
+@@ -316,6 +316,9 @@ asmlinkage void __kprobes do_page_fault(
+ 	/* get the address */
+ 	address = read_cr2();
+ 
++	trace_mark(arch_do_page_fault, "ip %lx err %lx addr %lx",
++		   regs->rip, error_code, address);
++
+ 	info.si_code = SEGV_MAPERR;
+ 
+ 
+Index: linux-mcount.git/kernel/hrtimer.c
+===================================================================
+--- linux-mcount.git.orig/kernel/hrtimer.c	2008-01-30 14:35:48.000000000 -0500
++++ linux-mcount.git/kernel/hrtimer.c	2008-01-30 15:54:06.000000000 -0500
+@@ -709,6 +709,8 @@ static void enqueue_hrtimer(struct hrtim
+ 	struct hrtimer *entry;
+ 	int leftmost = 1;
+ 
++	trace_mark(kernel_hrtimer_enqueue,
++		   "expires %p timer %p", &timer->expires, timer);
+ 	/*
+ 	 * Find the right place in the rbtree:
+ 	 */
+@@ -1130,6 +1132,7 @@ void hrtimer_interrupt(struct clock_even
+ 
+  retry:
+ 	now = ktime_get();
++	trace_mark(kernel_hrtimer_interrupt, "now %p", &now);
+ 
+ 	expires_next.tv64 = KTIME_MAX;
+ 
+@@ -1168,6 +1171,10 @@ void hrtimer_interrupt(struct clock_even
+ 				continue;
+ 			}
+ 
++			trace_mark(kernel_hrtimer_interrupt_expire,
++				   "expires %p timer %p",
++				   &timer->expires, timer);
++
+ 			__run_hrtimer(timer);
+ 		}
+ 		spin_unlock(&cpu_base->lock);
+Index: linux-mcount.git/kernel/sched.c
+===================================================================
+--- linux-mcount.git.orig/kernel/sched.c	2008-01-30 15:46:44.000000000 -0500
++++ linux-mcount.git/kernel/sched.c	2008-01-30 15:54:06.000000000 -0500
+@@ -90,6 +90,11 @@ unsigned long long __attribute__((weak))
+ #define PRIO_TO_NICE(prio)	((prio) - MAX_RT_PRIO - 20)
+ #define TASK_NICE(p)		PRIO_TO_NICE((p)->static_prio)
+ 
++#define __PRIO(prio) \
++	((prio) <= 99 ? 199 - (prio) : (prio) - 120)
++
++#define PRIO(p) __PRIO((p)->prio)
++
+ /*
+  * 'User priority' is the nice value converted to something we
+  * can work with better when scaling various scheduler parameters,
+@@ -1372,6 +1377,9 @@ static void activate_task(struct rq *rq,
+ 	if (p->state == TASK_UNINTERRUPTIBLE)
+ 		rq->nr_uninterruptible--;
+ 
++	trace_mark(kernel_sched_activate_task,
++		   "pid %d prio %d nr_running %ld",
++		   p->pid, PRIO(p), rq->nr_running);
+ 	enqueue_task(rq, p, wakeup);
+ 	inc_nr_running(p, rq);
+ }
+@@ -1385,6 +1393,9 @@ static void deactivate_task(struct rq *r
+ 		rq->nr_uninterruptible++;
+ 
+ 	dequeue_task(rq, p, sleep);
++	trace_mark(kernel_sched_deactivate_task,
++		   "pid %d prio %d nr_running %ld",
++		   p->pid, PRIO(p), rq->nr_running);
+ 	dec_nr_running(p, rq);
+ }
+ 
 
 -- 
