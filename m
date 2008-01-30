@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYA3Ii0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756599AbYA3Ikw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755121AbYA3Ii0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 03:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbYA3IiL
+	id S1756599AbYA3Ikw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 03:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbYA3Iko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 03:38:11 -0500
-Received: from wx-out-0506.google.com ([66.249.82.226]:17635 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756292AbYA3IiI (ORCPT
+	Wed, 30 Jan 2008 03:40:44 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:37678 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754429AbYA3Ikn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 03:38:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cgFM3/y6zoLMOpuLKQXOnS+oJnHRiWtTj1vRORVCnDFksiclwrVTJlkJOa3Pnu+IKn2Jllu+8fOgvpp4tMdBb11GQCSIesRRbAE6WPVJI8HnsyN+B27ELxDFa5Ir6DeVBT0GgPOSI4QVmKY5ZgwCn08/AFm7LW+U5WeTrCAlqWo=
-Message-ID: <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
-Date: Wed, 30 Jan 2008 09:38:04 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Cc: rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 30 Jan 2008 03:40:43 -0500
+Date: Wed, 30 Jan 2008 09:40:41 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH mm] Remove deprecation of a.out ELF interpreters
+Message-ID: <20080130084041.GA8429@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <adazluoe2t3.fsf@cisco.com>
-	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 30 Jan 2008 08:34:24.0796 (UTC) FILETIME=[EB4B9DC0:01C8631A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 12:32 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
->
-> iSER has parameters to limit the maximum size of RDMA (it needs to
-> repeat RDMA with a poor configuration)?
 
-Please specify which parameters you are referring to. As you know I
-had already repeated my tests with ridiculously high values for the
-following iSER parameters: FirstBurstLength, MaxBurstLength and
-MaxRecvDataSegmentLength (16 MB, which is more than the 1 MB block
-size specified to dd).
+Andrew has already queued the patch to remove the support for a.out
+ELF interpreters. So remove the deprecation with it too.
 
-Bart Van Assche.
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/Documentation/feature-removal-schedule.txt
+===================================================================
+--- linux.orig/Documentation/feature-removal-schedule.txt
++++ linux/Documentation/feature-removal-schedule.txt
+@@ -107,17 +107,6 @@ Who:	Eric Biederman <ebiederm@xmission.c
+ 
+ ---------------------------
+ 
+-What:  a.out interpreter support for ELF executables
+-When:  2.6.25
+-Files: fs/binfmt_elf.c
+-Why:   Using a.out interpreters for ELF executables was a feature for
+-       transition from a.out to ELF. But now it is unlikely to be still
+-       needed anymore and removing it would simplify the hairy ELF
+-       loader code.
+-Who:   Andi Kleen <ak@suse.de>
+-
+----------------------------
+-
+ What:	remove EXPORT_SYMBOL(kernel_thread)
+ When:	August 2006
+ Files:	arch/*/kernel/*_ksyms.c
