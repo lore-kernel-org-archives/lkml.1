@@ -1,66 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYA3NMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbYA3NPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbYA3NMv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYA3NMn
+	id S1760180AbYA3NPF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYA3NOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:12:43 -0500
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:49897 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbYA3NMm (ORCPT
+	Wed, 30 Jan 2008 08:14:55 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:58173 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756129AbYA3NOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:12:42 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 08:12:41 EST
-Date: Wed, 30 Jan 2008 14:05:59 +0100
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: linux-pcmcia@lists.infradead.org, linux-sh <linux-sh@vger.kernel.org>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: Re: [HD64461_PCMCIA_driver] - Shared IRQ lines / Segfaults
-Message-ID: <20080130130559.GA30360@roarinelk.homelinux.net>
-References: <20080130132036.87299f09.Kristoffer.ericson@gmail.com>
+	Wed, 30 Jan 2008 08:14:54 -0500
+Message-ID: <47A0784D.8090902@steeleye.com>
+Date: Wed, 30 Jan 2008 08:14:53 -0500
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130132036.87299f09.Kristoffer.ericson@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] NBD: raise max number of nbd devices to 1024
+References: <479F9B12.8010207@steeleye.com>	<20080129135417.e20b8107.akpm@linux-foundation.org>	<479FDB15.4090104@steeleye.com> <20080129180857.f8979300.akpm@linux-foundation.org>
+In-Reply-To: <20080129180857.f8979300.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------010309010500020103030705"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 01:20:36PM +0100, Kristoffer Ericson wrote:
-> Greetings,
-> 
-> Driver detects card insertion / ejection and sets power properly. The mapping looks resonable also compairing to a working 2.6.17 driver.
-> modprobe hostap_cs
-> hostap_cs: Registered netdevice wifi0
-> Unable to handle kernel NULL pointer dereference at virtual address 00000028
-> pc = 8d0031b8
-> *pde = 00000000
-> Oops: 0000 [#1]
-> Modules linked in: hostap_cs hostap orinoco_cs orinoco hermes atmel_cs atmel
-> 
-> Pid : 283, Comm:             modprobe
-> PC is at generic_inw+0x8/0x20
-> PC  : 8d0031b8 SP  : 8ecaba74 SR  : 400000f0 TEA : c0045040    Not tainted
-> R0  : 00000028 R1  : 8d2d9030 R2  : 8d2ac050 R3  : 00000007
-> R4  : 00000028 R5  : 00000002 R6  : 00000080 R7  : 8ecf06a0
-> R8  : 8ee62000 R9  : 00008a32 R10 : c002a1b0 R11 : 8ee62000
-> R12 : 00000080 R13 : 8ee62000 R14 : 8ecf06a0
-> MACH: 0000458f MACL: 00001110 GBR : 296ce450 PR  : 8d0031b8
-> 
-> Call trace: 
-> [<c002a1fa>] prism2_interrupt+0x4a/0xc50 [hostap_cs]
+This is a multi-part message in MIME format.
+--------------010309010500020103030705
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The oops output suggests it crashes in 
-drivers/net/wireless/hostap/hostap_hw.c::prism2_check_magic(),
-specifically when it tries to read the HF384X_SWSUPPORT0_OFF register
-(which ist at offset 0x28, just like the oopsing address).
-So, looking at the HFA384X_INW macro, it seems dev->base_addr is NULL.
-I suspect this is because of set_io_map() callback in the hd64461.c
-socket driver.  The comment there says IO area is statically mapped,
-yet it returns null; I suggest you let it return the base address of
-the IO area instead.
+Andrew Morton wrote:
+> On Tue, 29 Jan 2008 21:04:05 -0500 Paul Clements <paul.clements@steeleye.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>
+>> <snip>
+>>
+>>> much nicer?
+>> OK, yes, I was going for quick and easy, but you've got a point...
+>>
+>> We do need to move the kcalloc into nbd_init instead of nbd_cleanup, 
+>> though -- that works a little better. Patch is attached. Thanks for the 
+>> suggestion.
+>>
+>> --
+>> Paul
+>>
+>>
+>> [nbd_max_nbd_killed.diff  text/x-patch (1.2KB)]
+>>
+>> Signed-Off-By: Paul Clements <paul.clements@steeleye.com>
+>>
+>> --- ./include/linux/nbd.h.TIMEOUT	2007-08-22 13:18:12.000000000 -0400
+>> +++ ./include/linux/nbd.h	2008-01-29 20:01:33.000000000 -0500
+> 
+> Could we have a complete changelog please?  As I mentioned in the
+> earlier email?
+> 
 
--- 
- Manuel Lauss
+
+--------------010309010500020103030705
+Content-Type: text/x-patch;
+ name="nbd_max_nbd_killed.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nbd_max_nbd_killed.diff"
+
+
+[PATCH 1/1] NBD: remove limit on max number of nbd devices
+
+Remove the arbitrary 128 device limit for NBD. nbds_max can now be set to
+any number. In certain scenarios where devices are used sparsely we
+have run into the 128 device limit.
+
+Signed-Off-By: Paul Clements <paul.clements@steeleye.com>
+
+--- ./include/linux/nbd.h.TIMEOUT	2007-08-22 13:18:12.000000000 -0400
++++ ./include/linux/nbd.h	2008-01-29 20:01:33.000000000 -0500
+@@ -35,7 +35,6 @@ enum {
+ };
+ 
+ #define nbd_cmd(req) ((req)->cmd[0])
+-#define MAX_NBD 128
+ 
+ /* userspace doesn't need the nbd_device structure */
+ #ifdef __KERNEL__
+--- ./drivers/block/nbd.c.ORIG	2008-01-29 20:01:12.000000000 -0500
++++ ./drivers/block/nbd.c	2008-01-29 20:08:30.000000000 -0500
+@@ -53,7 +53,7 @@ static unsigned int debugflags;
+ #endif /* NDEBUG */
+ 
+ static unsigned int nbds_max = 16;
+-static struct nbd_device nbd_dev[MAX_NBD];
++static struct nbd_device *nbd_dev;
+ 
+ /*
+  * Use just one lock (or at most 1 per NIC). Two arguments for this:
+@@ -659,11 +659,9 @@ static int __init nbd_init(void)
+ 
+ 	BUILD_BUG_ON(sizeof(struct nbd_request) != 28);
+ 
+-	if (nbds_max > MAX_NBD) {
+-		printk(KERN_CRIT "nbd: cannot allocate more than %u nbds; %u requested.\n", MAX_NBD,
+-				nbds_max);
+-		return -EINVAL;
+-	}
++	nbd_dev = kcalloc(nbds_max, sizeof(*nbd_dev), GFP_KERNEL);
++	if (!nbd_dev)
++		return -ENOMEM;
+ 
+ 	for (i = 0; i < nbds_max; i++) {
+ 		struct gendisk *disk = alloc_disk(1);
+
+--------------010309010500020103030705--
