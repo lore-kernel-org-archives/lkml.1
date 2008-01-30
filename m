@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYA3BzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbYA3Bzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYA3BzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 20:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbYA3Bys
+	id S1753529AbYA3Bzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 20:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYA3Bz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 20:54:48 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:2494 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbYA3Byl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 20:54:41 -0500
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [patch 01/26] mount options: add documentation
-Date: Wed, 30 Jan 2008 02:54:04 +0100
-User-Agent: KMail/1.9.7
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steve French <sfrench@us.ibm.com>,
-       Lachlan McIlroy <lachlan@sgi.com>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>,
-       Russell King <rmk@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ian Kent <raven@themaw.net>,
-       "Sergey S. Kostyliov" <rathamahata@php4.ru>,
-       Karsten Keil <kkeil@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Jeff Dike <jdike@addtoit.com>,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       William Irwin <wli@holomorphy.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       Petr Vandrovec <vandrove@vc.cvut.cz>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Jeff Mahoney <jeffm@suse.com>, Paul Mackerras <paulus@samba.org>,
-       Hugh Dickins <hugh@veritas.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-References: <20080124193341.166753833@szeredi.hu> <20080124193416.379218079@szeredi.hu>
-In-Reply-To: <20080124193416.379218079@szeredi.hu>
+	Tue, 29 Jan 2008 20:55:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:45086 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753126AbYA3Bz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 20:55:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=lb6H2k7XFcUWgU+Hu9VnjDjVsknWKXJWM4ZXUdeZLmWBinKVl7WMkOABmSHWpePWZ4l1ng8jbjEg41HERMT4h9jK/MTGHU1+eVy/dHNu1h582zPQA/2xwl2bUrRg7jh/wOFSOHZUg28Qu+3ey7XlFuCTtLgJYZL+XFKmQkCAcYA=
+Date: Wed, 30 Jan 2008 09:56:25 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] driver-core : get_device before create/remove sysfs files
+Message-ID: <20080130015625.GA3058@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801300254.06363.zippel@linux-m68k.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+get dev reference before create/remove sysfiles, errno fixes as well.
 
-On Thursday 24. January 2008, Miklos Szeredi wrote:
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-> Q: Why do we need correct option showing in /proc/mounts?
-> A: We want /proc/mounts to fully replace /etc/mtab.  The reasons for
->    this are:
->     - unprivileged mounters won't be able to update /etc/mtab
->     - /etc/mtab doesn't work with private mount namespaces
->     - /etc/mtab can become out-of-sync with reality
+---
+drivers/base/core.c |   12 ++++++++----
+1 file changed, 8 insertions(+), 4 deletions(-)
 
-I asked this before and I don't remember getting an answer:
-How does this deal with certain special cases:
-- chroot: how will mount/df only show the for chroot relevant mounts?
-- loop: how is the connection between file and loop device maintained?
-
-I don't quite see how you want to achieve a _full_ replacement.
-
-Could also please explain why you want to go via user mounts. Other OS use a 
-daemon for that, which e.g. can maintain access controls. How do you want to 
-manage this?
-
-bye, Roman
+diff -upr a/drivers/base/core.c b/drivers/base/core.c
+--- a/drivers/base/core.c	2008-01-30 09:49:56.000000000 +0800
++++ b/drivers/base/core.c	2008-01-30 09:49:56.000000000 +0800
+@@ -414,7 +414,7 @@ struct kset *devices_kset;
+  */
+ int device_create_file(struct device *dev, struct device_attribute *attr)
+ {
+-	int error = 0;
++	int error = -ENODEV;
+ 	if (get_device(dev)) {
+ 		error = sysfs_create_file(&dev->kobj, &attr->attr);
+ 		put_device(dev);
+@@ -442,9 +442,11 @@ void device_remove_file(struct device *d
+  */
+ int device_create_bin_file(struct device *dev, struct bin_attribute *attr)
+ {
+-	int error = -EINVAL;
+-	if (dev)
++	int error = -ENODEV;
++	if (get_device(dev)) {
+ 		error = sysfs_create_bin_file(&dev->kobj, attr);
++		put_device(dev);
++	}
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(device_create_bin_file);
+@@ -456,8 +458,10 @@ EXPORT_SYMBOL_GPL(device_create_bin_file
+  */
+ void device_remove_bin_file(struct device *dev, struct bin_attribute *attr)
+ {
+-	if (dev)
++	if (get_device(dev)) {
+ 		sysfs_remove_bin_file(&dev->kobj, attr);
++		put_device(dev);
++	}
+ }
+ EXPORT_SYMBOL_GPL(device_remove_bin_file);
+ 
