@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbYA3XdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbYA3XiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759687AbYA3XdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 18:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbYA3XdG
+	id S1759267AbYA3XiE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 18:38:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYA3Xhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 18:33:06 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41830 "EHLO e5.ny.us.ibm.com"
+	Wed, 30 Jan 2008 18:37:54 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:23987 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755334AbYA3XdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 18:33:04 -0500
-Subject: Re: + fix-procfs-task-exe-symlink.patch added to -mm tree
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, ebiederm@xmission.com, hch@lst.de,
-       viro@zeniv.linux.org.uk
-In-Reply-To: <20080130110617.GA245@tv-sign.ru>
-References: <200801270518.m0R5ILbT031199@imap1.linux-foundation.org>
-	 <20080127162553.GA8791@tv-sign.ru>
-	 <1201565920.10206.149.camel@localhost.localdomain>
-	 <20080129113646.GA76@tv-sign.ru>
-	 <1201656208.4400.141.camel@localhost.localdomain>
-	 <20080130110617.GA245@tv-sign.ru>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 30 Jan 2008 15:32:48 -0800
-Message-Id: <1201735968.4028.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	id S1751697AbYA3Xhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 18:37:53 -0500
+Message-ID: <47A10A4F.3060203@msgid.tls.msk.ru>
+Date: Thu, 31 Jan 2008 02:37:51 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+MIME-Version: 1.0
+To: nigel@nigel.suspend2.net
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: hibernate/suspend-to-disk: to turn power or not?
+References: <47A0CD90.5080208@msgid.tls.msk.ru> <47A0EB65.1020505@nigel.suspend2.net>
+In-Reply-To: <47A0EB65.1020505@nigel.suspend2.net>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nigel Cunningham wrote:
+[]
+> That should be doable. How is your UPS connected? Presumably, with some
+> modifications to the appropriate driver, we could send the commands when
+> we're ready to shutdown. It would probably be useful whether or not your
+> hibernating (if not, sending the commands could always be made an option).
 
-On Wed, 2008-01-30 at 14:06 +0300, Oleg Nesterov wrote:
+You mean adding stuff to some KERNEL driver?  Like to a serial driver if
+the UPS is connected to a COM-port??
 
-<snip>
+I'm afraid either I don't understand what you're talking about here, or,
+if I got you right, that YOU don't understand what you're talking about...
 
-> Err, I was double wrong. It _is_ trivial to set ->exe_file before exec_mmap(),
-> 
-> 	flush_old_exec:
-> 
-> + 		get_file(bprm->file);
-> + 		set_mm_exe_file(bprm->mm, bprm->file);
-> 		retval = exec_mmap(bprm->mm);
-> 		if (retval)
-> 			goto mmap_failed;
-> 
-> 		bprm->mm = NULL;		/* We're using it now */
-> 
-> If exec_mmap() fails, the caller (do_execve) has to mmput(bprm->mm)
-> anyway, and this imply set_mm_exe_file(NULL). This way set_mm_exe_file()
-> doesn't need any locking.
-> 
-> Not that this is relly important, but still.
+Come on, teaching kernel about various idiotic UPSes out there is more
+than insane... ;)
 
-I've got the patch written and will be testing this shortly.
-
-> However. I didn't notice this patch plays with #ifdef CONFIG_PROC_FS.
-
-There are portions in there to deal with the presence or lack of proc
-fs. In include/linux/mm_types.h for example. Also, I placed some of the
-functions in fs/proc/base.c and avoided the need for #ifdefs in the .c
-files.
-
-> Without CONFIG_PROC_FS we seem to leak bprm->file, I'd suggest to move
-> get_file(bprm->file) into set_mm_exe_file().
-
-Good catch. Also I noticed that I was still setting the exe_file field
-in fork.c regardles of CONFIG_PROC_FS.
-
-So based on your feedback I'm working on 3 patches:
-1 - fix the two CONFIG_PROC_FS issues
-	a) breaks compilation when CONFIG_PROC_FS is not defined
-	b) struct file leak when CONFIG_PROC_FS is not defined
-2 - reuse mmap semaphore
-3 - move the mm initialization bits in the exec path to close the window
-where userspace could see a "NULL" exe_file.
-
-I will post each after it passes testing.
-
-Thanks again!
-
-Cheers,
-	-Matt Helsley
-
+/mjt
