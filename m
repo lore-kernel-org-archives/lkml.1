@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYAaAJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763240AbYAaAKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759106AbYAaAJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbYAaAJj
+	id S1763240AbYAaAKd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 19:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYAaAKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:09:39 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64796 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbYAaAJg (ORCPT
+	Wed, 30 Jan 2008 19:10:23 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:38095 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755345AbYAaAKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:09:36 -0500
-Date: Wed, 30 Jan 2008 18:09:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: DMA mapping on SCSI device?
-In-reply-to: <47A0AC33.1060504@rtr.ca>
-To: Mark Lord <liml@rtr.ca>
-Cc: ltuikov@yahoo.com, linux-arch@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Message-id: <47A111B7.1070106@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <896139.88121.qm@web31812.mail.mud.yahoo.com>
- <479FDA52.8050204@shaw.ca> <47A0AC33.1060504@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 30 Jan 2008 19:10:21 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Ku44UN4b9VFttIzMfg3WGQi4pCsJ+LvrPcJ7G3w3iR3qSYGrdaO9U6WdzB1uh+ClHhIrYC2Njh/ccLXzyjBQn4w/eEWsQ21dJjrTB0sSxOyADKYhOYUSQ52+0Xv04OXYUuyONFHmptm9rPKS4dU07f/YF293QKZ9I3zOQi21mOM=  ;
+X-YMail-OSG: Xt37OxEVM1miF.SpXpKlsHLdZ1fTyMHkIsFStPPWISon27hm1qFC4ajKRq884uCKxJYhGtHvjw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [spi-devel-general] [PATCH 2/6] [Blackfin] SPI driver: Use SPI device name to do gpio peripheral request
+Date: Wed, 30 Jan 2008 13:48:43 -0800
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <1201684421-26124-1-git-send-email-bryan.wu@analog.com> <1201684421-26124-3-git-send-email-bryan.wu@analog.com>
+In-Reply-To: <1201684421-26124-3-git-send-email-bryan.wu@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801301348.43275.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Robert Hancock wrote:
->> Luben Tuikov wrote:
->>> --- On Mon, 1/28/08, Robert Hancock <hancockr@shaw.ca> wrote:
->>>> The trick is that if an ATAPI device is connected, we (as
->>>> far as I'm aware) can't use ADMA mode, so we have to switch that
->>>> port into legacy mode.
->>>
->>> Can you double check this with the HW architect of the
->>> HW DMA engine of the ASIC?
->>
->> Will do so. However, previous statements from NVIDIA fairly clearly 
->> indicate that this is the case.
->>
->>>
->>>> This means it's only capable of 32-bit DMA.
->>>> However the other port on the controller may be connected to a hard 
->>>> drive and therefore still capable of 64-bit DMA.
->>>
->>> If this is indeed the case as you've presented it here,
->>> it sounds like a HW shortcoming.  I cannot see how the device
->>> type (or protocol) dictate how the DMA engine operates.
->>> They live in two different domains.
->>
->> Well, there is an indirect link. The ADMA interface (which supports 
->> 64-bit DMA) cannot be used to issue ATAPI commands, so if an ATAPI 
->> device is connected we have to go to legacy mode, which supports only 
->> 32-bit DMA.
->>
->> I'm not sure why ADMA mode doesn't support ATAPI. The only reason I 
->> can think of is that there's issues since ATAPI commands can 
->> potentially be of unpredictable transfer size. The "real" ADMA spec 
->> that the NVIDIA implementation is loosely based on does have some 
->> special "ignore excess" controls that don't seem to be in the NVIDIA 
->> version (or at least not to the knowledge I have on this hardware).
-> ..
+On Wednesday 30 January 2008, Bryan Wu wrote:
+> When got some gpio conflict, it is easy to know which SPI device driver not just got "bfin-spi"
 > 
-> The original Pacific Digital ADMA cores *do* support most ATAPI commands
-> in ADMA mode, including READ_CD, READ_10, etc..  With the caveat that if
-> DSC completion state is required, the driver has to drop out of ADMA
-> and poll for it after the ADMA command completes.
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> ---
+>  drivers/spi/spi_bfin5xx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Commands which were not ADMA compatible (eg. MODE_SENSE, 
-> TEST_UNIT_READY, ..)
-> were simply handled with PIO (in the driver) rather than any form of DMA,
-> which is okay because those commands are relatively infrequent.
-> 
-> Note that Pacific Digital "officially" said "no ATAPI" for the ADMA design,
-> but I implemented it regardless (for Linux) and it worked rather well.
-> We could burn DVDs and back-up to tape simultaneously, with the burner
-> and the tape unit sharing a single IDE cable/channel.
+> diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
+> index 8fd1365..c3f9ed4 100644
+> --- a/drivers/spi/spi_bfin5xx.c
+> +++ b/drivers/spi/spi_bfin5xx.c
+> @@ -1176,7 +1176,7 @@ static int setup(struct spi_device *spi)
+>  	if ((chip->chip_select_num > 0)
+>  		&& (chip->chip_select_num <= spi->master->num_chipselect))
+>  		peripheral_request(ssel[spi->master->bus_num]
+> -			[chip->chip_select_num-1], DRV_NAME);
+> +			[chip->chip_select_num-1], spi->modalias);
 
-I'm told that the ADMA hardware does have some support for issuing ATAPI 
-commands, however according to Allen Martin of NVIDIA, "The ATAPI 
-support in the ADMA hardware had some serious problem that forced us to 
-turn it off in the Windows driver." So it looks like ATAPI in ADMA mode 
-is likely a non-starter.
+Better:  spi->dev.bus_id (always unique) not spi->modalias (isn't) ...
+
+ 
+>  
+>  	cs_deactive(drv_data, chip);
+>  
+> 
