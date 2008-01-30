@@ -1,151 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYA3WiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbYA3WkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbYA3WiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 17:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYA3Wh4
+	id S1758571AbYA3WkR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 17:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbYA3WkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 17:37:56 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:41059 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756804AbYA3Whx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 17:37:53 -0500
-In-Reply-To: <18686.1201663501@redhat.com>
-References: <479901A8.3000706@oracle.com> <20080123172038.11107.86025.stgit@warthog.procyon.org.uk> <20080123172246.11107.62216.stgit@warthog.procyon.org.uk> <18686.1201663501@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8DB49AEC-5DA8-4AC3-A660-689E6BC80D2E@oracle.com>
-Cc: Trond.Myklebust@netapp.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-fsdevel@vger.kernel.org
+	Wed, 30 Jan 2008 17:40:04 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:45945 "EHLO smtp1.cc.lut.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754403AbYA3WkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 17:40:01 -0500
+Date: Thu, 31 Jan 2008 00:39:01 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: tglx@linutronix.de
+Cc: Pekka Paalanen <pq@iki.fi>, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86: mmiotrace - trace memory mapped IO
+Message-ID: <20080131003901.763449fb@daedalus.pq.iki.fi>
+In-Reply-To: <20080127195536.50809974@daedalus.pq.iki.fi>
+References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
+	<20080127195536.50809974@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: [PATCH 24/27] NFS: Use local caching [try #2]
-Date: Wed, 30 Jan 2008 17:36:16 -0500
-To: David Howells <dhowells@redhat.com>
-X-Mailer: Apple Mail (2.753)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David-
+On Sun, 27 Jan 2008 19:55:36 +0200
+Pekka Paalanen <pq@iki.fi> wrote:
 
-On Jan 29, 2008, at 10:25 PM, David Howells wrote:
-> Chuck Lever <chuck.lever@oracle.com> wrote:
->> This patch really ought to be broken into more manageable atomic
->> changes to make it easier to review, and to provide more fine-grained
->> explanation and rationalization for each specific change via
->> individual patch descriptions.
->
-> Hmmm....  I broke the patch up as Trond stipulated - at least, I  
-> thought I
-> had.
->
-> In many ways this request doesn't make sense.  You can't do NFS  
-> caching
-> without all the appropriate bits, so logically they should be one  
-> patch.
-> Breaking it up won't help git-bisect since the option to enable all  
-> this is
-> the last (or nearly last) patch.
+> The following is a copy of the patch description:
+...
+> Mmiotrace works by wrapping the ioremap family of kernel functions and
+> marking the returned pages as not present. Access to the IO memory
+> triggers a page fault, which will be handled by mmiotrace's custom page
+> fault handler. This will single-step the faulted instruction with the
+> MMIO page marked as present. Access logs are directed to user space via
+> relay and debug_fs.
 
-In addition to adding a new feature, you are changing existing code.   
-If any one of the changes you made breaks existing behavior, having  
-them all in small atomic patches makes it practical to bisect and  
-find the problem.
+Hi,
 
-In addition it makes it worlds easier to review by people who are not  
-so familiar with your fscache implementation.  And smaller patches  
-means the ratio of patch descriptions to code changes can be much  
-higher.
+a test user found a problem with mmiotrace (ported to x86/mm git tree).
+The symbol 'init_mm' is undefined, but required when building the 32-bit
+mmiotrace kernel module.
 
-It does make sense to introduce the files under fs/fsc in a single  
-patch.  But when you are changing code that is already being used,  
-more care needs to be taken.
+commit 3abf024d2abb79614d8c4cb25a70d5596f77d0ad
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Wed Jan 30 13:30:28 2008 +0100
 
->> This should no longer be necessary.  The latest mount.nfs subcommand
->> from nfs-utils supports text-based mounts when running on kernels
->> 2.6.23 and later.
->
-> Okay.  I'll update my patches to reflect this.  Note, however, I've  
-> got
-> someone reporting a bug that seems to show otherwise.  I'll have to
-> investigate this more next week.
+    x86: nuke a ton of unused exports
 
-The very latest version (post 1.1.1) is required today for text-based  
-NFS mounts.  (That is, the bleeding edge version you get by cloning  
-the nfs-utils git repo).
+This commit removes EXPORT_SYMBOL(init_mm). Apparently mmiotrace requires
+this symbol, but I do not know why. I do not use init_mm myself, so
+apparently some function I call is inlined and requires it. Page table or
+attribute handling stuff maybe?
 
-And it only works on kernels later than 2.6.22 -- if that particular  
-user is testing fscache on 2.6.22 or older, then only the legacy  
-binary NFS mount system call API is supported.
+Is it possible to simply put back this export or should I dig deeper into
+why it seems to be required?
+I can provide the simple patch to put it back in my next patch set, if
+this is the right solution.
 
->> Add comments like this in a separate clean up patch.
->
-> ????
+I will post the patch set after this issue is solved. In the mean time,
+for the interested, the current patches are here:
+http://jumi.lut.fi/~paalanen/scratch/mmio25/
 
-+/*
-+ * Notification that a PTE pointing to an NFS page is about to be made
-+ * writable, implying that someone is about to modify the page  
-through a
-+ * shared-writable mapping
-+ */
 
-What does that have to do with local disk caching?
+Ps. I tested x86/mm version of mmiotrace on my 64-bit system and it seems
+to work ok. I had to write a simple test module because I did not have any
+drivers that a) called ioremap, b) were not broken on x86/mm, and c) I
+had the hardware to actually use it. So this testing is very light.
 
->>> +struct nfs_fh_auxdata {
->>> +	struct timespec	i_mtime;
->>> +	struct timespec	i_ctime;
->>> +	loff_t		i_size;
->>> +};
->>
->> It might be useful to explain here why you need to supplement the
->> mtime, ctime, and size fields that already exist in an NFS inode.
->
-> Supplement?  I don't understand.
-
-Why is it necessary to add additional mtime, ctime and size fields  
-for NFS inodes?  Similar metadata is already stored in nfsi.
-
-All I'm asking for is some documentation of what these fields do that  
-the existing time stamps and size fields in nfsi don't.  Explain why  
-the NFS fsc implementation needs this data structure.
-
->>> +		key->port = clp->cl_addr.sin_port;
->>
->> Not sure why you are using the server's port here.  In almost every
->> case the server side port number will be 2049, so it really doesn't
->> add any uniquification.
->
-> The reason lies is "in almost every case".  It's possible to  
-> configure it
-> such that a server is running two separate NFS servers on different  
-> ports.
-
-We should explore whether it is typical or even possible that such a  
-configuration exports the same file handles on different ports, and  
-whether that really matters to the client.
-
->> I strongly recommend you use the existing IPv6 address conversion
->> macros for this instead of open-coding yet another way of mapping an
->> IPv4 address to an IPv6 address.
->>
->> However, since AF_INET6 support is being introduced in the NFS client
->> in 2.6.24, I recommend you take a look at these source files after
->> Trond has pushed his NFS_ALL for 2.6.24.
->
-> I'll look at them.
-
-I always do this:  I meant 2.6.25, not 2.6.24.
-
-By the time you return, basic IPv6 support for NFSv4 should be in  
-2.6.25-rc1's NFS client (not server).  Not that it is bug-free, but  
-an implementation is now there.
-
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
