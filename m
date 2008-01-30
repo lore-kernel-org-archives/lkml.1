@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbYA3KD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbYA3KGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbYA3KD7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 05:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYA3KDu
+	id S1757648AbYA3KGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 05:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYA3KGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 05:03:50 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49232 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752166AbYA3KDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 05:03:50 -0500
-Date: Wed, 30 Jan 2008 11:03:48 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add documentation for isofs dmode option
-Message-ID: <20080130100348.GA16140@duck.suse.cz>
+	Wed, 30 Jan 2008 05:06:09 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51126 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbYA3KGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 05:06:06 -0500
+Message-ID: <47A04C07.1040200@garzik.org>
+Date: Wed, 30 Jan 2008 05:05:59 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       auke-jan.h.kok@intel.com, "David S. Miller" <davem@davemloft.net>,
+       akpm <akpm@linux-foundation.org>, NetDev <netdev@vger.kernel.org>
+Subject: Re: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over
+ to e1000e"
+References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com>
+In-Reply-To: <alpine.LFD.1.00.0801301631400.3426@www.l.google.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Andrew,
+Linus Torvalds wrote:
+> 
+> On Tue, 29 Jan 2008, Randy Dunlap wrote:
+>> Andrew was concerned about this when the driver was in -mm.
+>> He asked for a patch that would set E1000E to same value as E1000
+>> and I supplied that.  Auke acked it IIRC.  Other people vetoed it.  :(
+> 
+> Yeah, I've been discussing with Jeff and the gang.
+> 
+> I think we have agreed on a solution where the ID's show up in the old 
+> driver if the new driver is not enabled at all.
+> 
+> (And as a side note: it turns out that the problem I experienced didn't 
+> come from the new e1000e driver after all, so I'll be removing the 
+> EXPERIMENTAL flag again).
+> 
+> So I'd suggest the final patch be something like this, but I'm sendign it 
+> out just as an example of how we could solve this, not necessarily as a 
+> final patch.
+> 
+> Jeff, Auke, would something like this be acceptable? It makes it very 
+> obvious in the driver table which entries are for the PCIE versions that 
+> would be handled by the E1000E driver if it is enabled..
+> 
+> Untested, but as mentioned, this is more of a "this looks maintainable and 
+> like it should solve the issues" rather than anything I was planning on 
+> committing now.
+> 
+> 		Linus
+> ---
+>  drivers/net/Kconfig            |    5 ++-
+>  drivers/net/e1000/e1000_main.c |   60 ++++++++++++++++++++++------------------
+>  2 files changed, 37 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index 5a2d1dd..6c57540 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -1992,7 +1992,7 @@ config E1000_DISABLE_PACKET_SPLIT
+>  
+>  config E1000E
+>  	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+> -	depends on PCI && EXPERIMENTAL
+> +	depends on PCI
+>  	---help---
+>  	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+>  	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+> @@ -2009,6 +2009,9 @@ config E1000E
+>  	  To compile this driver as a module, choose M here. The module
+>  	  will be called e1000e.
+>  
+> +config E1000E_ENABLED
+> +	def_bool E1000E != n
+> +
+>  config IP1000
+>  	tristate "IP1000 Gigabit Ethernet support"
+>  	depends on PCI && EXPERIMENTAL
+> diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+> index 3111af6..8c87940 100644
+> --- a/drivers/net/e1000/e1000_main.c
+> +++ b/drivers/net/e1000/e1000_main.c
+> @@ -47,6 +47,12 @@ static const char e1000_copyright[] = "Copyright (c) 1999-2006 Intel Corporation
+>   * Macro expands to...
+>   *   {PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
+>   */
+> +#ifdef CONFIG_E1000E_ENABLED
+> +  #define PCIE(x) 
+> +#else
+> +  #define PCIE(x) x,
+> +#endif
 
-  I'm resending this oneliner... You seem to have missed it in my reply (or
-at least I haven't seen it merged yet).
+Patch gets my ACK, if you like, though an improvement would be to have 
+your Kconfig logic activate CONFIG_E1000_PCIEX.  Then future janitors 
+could come along and disable unused code in addition to PCI IDs.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
+	Jeff
 
-Add documentation to for new dmode option.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
 
-diff --git a/Documentation/filesystems/isofs.txt b/Documentation/filesystems/isofs.txt
-index 758e504..6973b98 100644
---- a/Documentation/filesystems/isofs.txt
-+++ b/Documentation/filesystems/isofs.txt
-@@ -24,6 +24,7 @@ Mount options unique to the isofs filesystem.
-   map=normal    Map non-Rock Ridge filenames to lower case
-   map=acorn     As map=normal but also apply Acorn extensions if present
-   mode=xxx      Sets the permissions on files to xxx
-+  dmode=xxx     Sets the permissions on directories to xxx
-   nojoliet      Ignore Joliet extensions if they are present.
-   norock        Ignore Rock Ridge extensions if they are present.
-   hide		Completely strip hidden files from the file system.
