@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYA3CCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYA3CES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbYA3CCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYA3CCh
+	id S1755344AbYA3CES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYA3CEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:02:37 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:35378 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbYA3CCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:02:36 -0500
-Subject: Re: ndiswrapper and GPL-only symbols redux
-From: Pavel Roskin <proski@gnu.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
-In-Reply-To: <20080130002514.GA1802@does.not.exist>
-References: <1201641765.18773.35.camel@dv>
-	 <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv>
-	 <20080130002514.GA1802@does.not.exist>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 21:02:35 -0500
-Message-Id: <1201658555.24898.27.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 21:04:08 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:34632 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751244AbYA3CEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 21:04:06 -0500
+Message-ID: <479FDB15.4090104@steeleye.com>
+Date: Tue, 29 Jan 2008 21:04:05 -0500
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] NBD: raise max number of nbd devices to 1024
+References: <479F9B12.8010207@steeleye.com> <20080129135417.e20b8107.akpm@linux-foundation.org>
+In-Reply-To: <20080129135417.e20b8107.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------020205070006080800090505"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-30 at 02:25 +0200, Adrian Bunk wrote:
+This is a multi-part message in MIME format.
+--------------020205070006080800090505
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > > It is interesting that someone posting with an @gnu.org address claims
-> > > that dynamic linking of not GPLv2 compatible code into GPLv2 code was
-> > > not a copyright violation.
-> > 
-> > No, I'm representing myself only.  I don't think you represent all
-> > kernel developers when posting from the kernel.org address.
-> 
-> I'm not using my @kernel.org address except for kernel issues and I'm 
-> not using a company address in linux-kernel discussions.
-> 
-> Mailing lists of a project or a company are something completely 
-> different from using a project or company address outside of the 
-> project.
+Andrew Morton wrote:
 
-OK, I'll think about it.
+<snip>
 
-> > I, for one, would welcome an informed position of the FSF.  It may have
-> > interesting implications for Wine, ReactOS, mplayer, qemu, Java and many
-> > other programs loading non-free compiled code at the run time.
-> 
-> Wine is licenced under the terms of the LGPL.
-> 
-> ReactOS is licenced under the terms of the GPL with a licence 
-> exception for runtime linking of non-free modules.
-> 
-> QEMU is licenced under the terms of the GPL with a licence exception for 
-> runtime linking with libqemu.a.
-> 
-> GNU classpath (and libgcj) are licenced under the terms of the GPL with 
-> a licence exception for runtime linking with it.
-> 
-> As you can see, all of the above explicitely address this issue.
-> 
-> The only program from your list that has a fishy licencing is mplayer.
+> much nicer?
 
-Thanks for the detailed analysis!
+OK, yes, I was going for quick and easy, but you've got a point...
 
-Anyway, as far as I know, copyright covers copying of works, and dynamic
-linking never creates anything suitable for copying.  The "derived work"
-stays in memory, just like it does when a proprietary program runs on
-top of the Linux kernel.  Memory dumps might be illegal to distribute
-though.
+We do need to move the kcalloc into nbd_init instead of nbd_cleanup, 
+though -- that works a little better. Patch is attached. Thanks for the 
+suggestion.
 
-I'm not a lawyer and the above is not a legal advice.  I don't represent
-Free Software Foundation.
+--
+Paul
 
--- 
-Regards,
-Pavel Roskin
+--------------020205070006080800090505
+Content-Type: text/x-patch;
+ name="nbd_max_nbd_killed.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nbd_max_nbd_killed.diff"
+
+
+Signed-Off-By: Paul Clements <paul.clements@steeleye.com>
+
+--- ./include/linux/nbd.h.TIMEOUT	2007-08-22 13:18:12.000000000 -0400
++++ ./include/linux/nbd.h	2008-01-29 20:01:33.000000000 -0500
+@@ -35,7 +35,6 @@ enum {
+ };
+ 
+ #define nbd_cmd(req) ((req)->cmd[0])
+-#define MAX_NBD 128
+ 
+ /* userspace doesn't need the nbd_device structure */
+ #ifdef __KERNEL__
+--- ./drivers/block/nbd.c.ORIG	2008-01-29 20:01:12.000000000 -0500
++++ ./drivers/block/nbd.c	2008-01-29 20:08:30.000000000 -0500
+@@ -53,7 +53,7 @@ static unsigned int debugflags;
+ #endif /* NDEBUG */
+ 
+ static unsigned int nbds_max = 16;
+-static struct nbd_device nbd_dev[MAX_NBD];
++static struct nbd_device *nbd_dev;
+ 
+ /*
+  * Use just one lock (or at most 1 per NIC). Two arguments for this:
+@@ -659,11 +659,9 @@ static int __init nbd_init(void)
+ 
+ 	BUILD_BUG_ON(sizeof(struct nbd_request) != 28);
+ 
+-	if (nbds_max > MAX_NBD) {
+-		printk(KERN_CRIT "nbd: cannot allocate more than %u nbds; %u requested.\n", MAX_NBD,
+-				nbds_max);
+-		return -EINVAL;
+-	}
++	nbd_dev = kcalloc(nbds_max, sizeof(*nbd_dev), GFP_KERNEL);
++	if (!nbd_dev)
++		return -ENOMEM;
+ 
+ 	for (i = 0; i < nbds_max; i++) {
+ 		struct gendisk *disk = alloc_disk(1);
+
+--------------020205070006080800090505--
