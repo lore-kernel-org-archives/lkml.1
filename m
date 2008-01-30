@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbYA3MhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYA3MiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760594AbYA3MhQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 07:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbYA3MhE
+	id S1757567AbYA3MiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 07:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbYA3MiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 07:37:04 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:56163 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756806AbYA3MhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 07:37:02 -0500
-Date: Wed, 30 Jan 2008 13:36:59 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: michael <trimarchi@gandalf.sssup.it>
-Cc: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-Message-ID: <20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <47A051A7.7030004@gandalf.sssup.it>
-References: <20080129224316.GA23155@gandalf.sssup.it>
-	<479FB2D7.4020804@gandalf.sssup.it>
-	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
-	<47A051A7.7030004@gandalf.sssup.it>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Jan 2008 07:38:05 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:4266 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753885AbYA3MiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 07:38:04 -0500
+X-IronPort-AV: E=Sophos;i="4.25,277,1199682000"; 
+   d="scan'208";a="47632676"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] [Blackfin] char driver for Blackfin on-chip OTP memory
+Date: Wed, 30 Jan 2008 07:39:20 -0500
+User-Agent: KMail/1.9.5
+Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
+       "Mike Frysinger" <michael.frysinger@analog.com>
+References: <1201689401-2892-1-git-send-email-bryan.wu@analog.com> <47A058B3.6000009@gmail.com>
+In-Reply-To: <47A058B3.6000009@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801300739.21344.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 30 Jan 2008 12:38:02.0090 (UTC) FILETIME=[F3E1ACA0:01C8633C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 11:29:59 +0100
-michael <trimarchi@gandalf.sssup.it> wrote:
-> > Now, _that_ is strange. I can't see anything that needs protection
-> > across that call; in fact, I think we can lock a lot less than what we
-> > currently do.
-> >
-> >   
-> I explain it bad:
-> - with spin_lock the system seems, there is no problem with Valuntary 
-> Preeption and
-> Preemptible Kernel
-> - with full preemption  it runs but the serial line can't be used for 
-> receiving at
-> high bit rate (using lrz)
+On Wed 30 Jan 2008 06:00, Jiri Slaby pondered:
+> On 01/30/2008 11:36 AM, Bryan Wu wrote:
+> > From: Mike Frysinger <michael.frysinger@analog.com>
+> > 
+> > initial char driver for otp memory
+> > (only read supported atm ... needs real examples/docs for write support)
+> > 
+> > Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 
-...but if you drop the spinlock across the call to
-tty_flip_buffer_push, you get an Oops?
+> > +	bfin_otp_class = class_create(THIS_MODULE, "otp");
+> > +	device_create(bfin_otp_class, NULL, bfin_otp_dev_node, "otp");
+> 
+> Anyway, wouldn't be easier/better to use misc.c functionality here 
+> (misc_register() et al.)?
 
-Could you post the Oops?
+OTP (one time programmable) memory are not registers, they are small blocks 
+(8k bytes) of non violate on chip memory, for storing things that you don't 
+want other people to look at via a PCB level probe. (like keys), or things 
+that are just helpful - like MAC addresses.
 
-> >> Complete Preemption (Real-Time) ok but the serials is just unusable due
-> >> to too many overruns (just using lrz)
-> >>     
-> >
-> > Is it worse than before? IIRC Remy mentioned something about
-> > IRQF_NODELAY being the reason for moving all this code to softirq
-> > context in the first place; does the interrupt handler run in hardirq
-> > context?
-> >
-> >   
-> In the complete preemption yes.
-
-Which question did you answer "yes" to? That it's worse than before or
-that the interrupt handler runs in hardirq context (i.e. IRQF_NODELAY)?
-
-> > I think you're right. Can you change it and see if it helps?
-> >
-> >   
-> I just change it because I have corruption on receiving buffer. All
-> my test are done with this fix
-
-Ok.
-
-> > I guess I didn't test it thoroughly enough with DMA
-> > disabled...slub_debug ought to catch such things, but not until we
-> > receive enough data to actually overflow the buffer.
-> >
-> >   
-> I just test it I don't have
-> buffer overflow.
-
-No, I'd expect your allocation fix to take care of that. Or did you by
-any chance test without the fix and with slub_debug enabled?
-
-> I protect with a spinlock the access to the register when we sending
-> from the tasklet. It is correct?
-
-I have no idea. Could you post some more specifics about what you
-modified, for example a diff?
-
-Most of the tasklet is already protected by the spinlock, so you must
-be careful to avoid any lock recursion.
-
-Haavard
+-Robin
