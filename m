@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbYA3Uhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYA3Upp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759961AbYA3Uhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbYA3Uhh
+	id S1753420AbYA3Upp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYA3Upg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:37:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35350 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755211AbYA3Uhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:37:35 -0500
-Date: Wed, 30 Jan 2008 14:29:14 -0600
-From: David Teigland <teigland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] dlm updates for 2.6.25
-Message-ID: <20080130202914.GA21643@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 Jan 2008 15:45:36 -0500
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:36016 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750923AbYA3Upf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:45:35 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BueQ8JKIKwwfdpUv3d/mXqx3/2aN4m5oo760xb53d7+L/Fvq2tzCr5JMdjUr5600kW/Z+UugKcowOP2kLxuWVGy0jmoMWBFs4VSCUCfW+KWvbx6hsuRFrnpf8dpIt0p9Tk3qkumqf7Z91hHOevawmrPedva6u26MS6jvZSflNC8=  ;
+X-YMail-OSG: _D7OnAwVM1nvA4SCRk2Fob5MhE0OrePBvdbnZNH5TpFyhNe5s47X47gRTNQl6KfqNbbUNShOkw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re: [RFC v2 2/5] dmaengine: Add slave DMA interface
+Date: Wed, 30 Jan 2008 12:45:31 -0800
+User-Agent: KMail/1.9.6
+Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>, linux-kernel@vger.kernel.org,
+       "Shannon Nelson" <shannon.nelson@intel.com>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com> <200801300252.50344.david-b@pacbell.net> <e9c3a7c20801301028l12af0f6bv90509ea08c319bc6@mail.gmail.com>
+In-Reply-To: <e9c3a7c20801301028l12af0f6bv90509ea08c319bc6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200801301245.32286.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wednesday 30 January 2008, Dan Williams wrote:
+> On Jan 30, 2008 3:52 AM, David Brownell <david-b@pacbell.net> wrote:
+> > On Wednesday 30 January 2008, Haavard Skinnemoen wrote:
+> > > Descriptor-based vs. register-based transfers sounds like something the
+> > > DMA engine driver is free to decide on its own.
+> >
+> > Not entirely.  The current interface has "dma_async_tx_descriptor"
+> > wired pretty thoroughly into the call structure -- hard to avoid.
+> > (And where's the "dma_async_rx_descriptor", since that's only TX??
+> > Asymmetry like that is usually not a healthy sign.)  The engine is
+> > not free to avoid those descriptors ...
+> >
+> 
+> For better or worse I picked async_tx to represent "asynchronous
+> transfers/transforms", not "transmit". 
 
-Please pull dlm updates for 2.6.25 from:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
-
-In the past, the dlm patches went through the gfs2 git tree.  We've moved
-to a separate tree because the dlm work is now largely independent from
-gfs2, and dlm patches are mostly relevant for other applications.
-
-There are no new features, only fixes for various bugs or problems.  They
-stem mainly from mixed architecture testing, and new tests that overlap
-recovery with userland stress tests.
-
-Thanks,
-Dave
-
-
-Adrian Bunk (1):
-      dlm: proper prototypes
-
-David Teigland (14):
-      dlm: don't print common non-errors
-      dlm: use dlm prefix on alloc and free functions
-      dlm: use fixed errno values in messages
-      dlm: clear ast_type when removing from astqueue
-      dlm: recover locks waiting for overlap replies
-      dlm: another call to confirm_master in receive_request_reply
-      dlm: reject messages from non-members
-      dlm: validate messages before processing
-      dlm: reject normal unlock when lock is waiting for lookup
-      dlm: limit dir lookup loop
-      dlm: fix possible use-after-free
-      dlm: change error message to debug
-      dlm: keep cached master rsbs during recovery
-      dlm: clean ups
-
-Denis Cheng (1):
-      dlm: static initialization improvements
-
-Fabio M. Di Nitto (2):
-      dlm: align midcomms message buffer
-      dlm: swap bytes for rcom lock reply
-
-Lon Hohberger (1):
-      dlm: bind connections from known local address when using TCP
-
-Patrick Caulfeld (2):
-      dlm: close othercons
-      dlm: Sanity check namelen before copying it
-
- fs/dlm/dir.c          |   76 +++++++--------
- fs/dlm/dlm_internal.h |   16 +++
- fs/dlm/lock.c         |  249 +++++++++++++++++++++++++++++++++++--------------
- fs/dlm/lock.h         |    2 -
- fs/dlm/lockspace.c    |   16 +---
- fs/dlm/lowcomms.c     |   15 +++-
- fs/dlm/main.c         |   10 --
- fs/dlm/member.c       |    4 +-
- fs/dlm/member.h       |    3 +-
- fs/dlm/memory.c       |   32 ++-----
- fs/dlm/memory.h       |   16 ++--
- fs/dlm/midcomms.c     |   15 ++-
- fs/dlm/rcom.c         |   25 +----
- fs/dlm/recover.c      |   27 +++++-
- fs/dlm/recoverd.c     |   11 +-
- fs/dlm/user.c         |   29 ++++--
- fs/dlm/util.c         |   82 +++++++++++++---
- 17 files changed, 395 insertions(+), 233 deletions(-)
-
+"dma_async_descriptor" would not be misleading.  :)
