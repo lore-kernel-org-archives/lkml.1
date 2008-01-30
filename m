@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbYA3Bzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYA3CBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbYA3Bzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 20:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYA3Bz3
+	id S1754522AbYA3CBp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:01:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYA3CBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 20:55:29 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:45086 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbYA3Bz1 (ORCPT
+	Tue, 29 Jan 2008 21:01:33 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:63255 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752659AbYA3CBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 20:55:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=lb6H2k7XFcUWgU+Hu9VnjDjVsknWKXJWM4ZXUdeZLmWBinKVl7WMkOABmSHWpePWZ4l1ng8jbjEg41HERMT4h9jK/MTGHU1+eVy/dHNu1h582zPQA/2xwl2bUrRg7jh/wOFSOHZUg28Qu+3ey7XlFuCTtLgJYZL+XFKmQkCAcYA=
-Date: Wed, 30 Jan 2008 09:56:25 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] driver-core : get_device before create/remove sysfs files
-Message-ID: <20080130015625.GA3058@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 29 Jan 2008 21:01:31 -0500
+Date: Tue, 29 Jan 2008 20:00:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: DMA mapping on SCSI device?
+In-reply-to: <896139.88121.qm@web31812.mail.mud.yahoo.com>
+To: ltuikov@yahoo.com
+Cc: linux-arch@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Message-id: <479FDA52.8050204@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <896139.88121.qm@web31812.mail.mud.yahoo.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get dev reference before create/remove sysfiles, errno fixes as well.
+Luben Tuikov wrote:
+> --- On Mon, 1/28/08, Robert Hancock <hancockr@shaw.ca> wrote:
+>> The trick is that if an ATAPI device is connected, we (as
+>> far as I'm 
+>> aware) can't use ADMA mode, so we have to switch that
+>> port into legacy 
+>> mode.
+> 
+> Can you double check this with the HW architect of the
+> HW DMA engine of the ASIC?
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+Will do so. However, previous statements from NVIDIA fairly clearly 
+indicate that this is the case.
 
----
-drivers/base/core.c |   12 ++++++++----
-1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+>> This means it's only capable of 32-bit DMA.
+>> However the other port 
+>> on the controller may be connected to a hard drive and
+>> therefore still 
+>> capable of 64-bit DMA.
+> 
+> If this is indeed the case as you've presented it here,
+> it sounds like a HW shortcoming.  I cannot see how the device
+> type (or protocol) dictate how the DMA engine operates.
+> They live in two different domains.
 
-diff -upr a/drivers/base/core.c b/drivers/base/core.c
---- a/drivers/base/core.c	2008-01-30 09:49:56.000000000 +0800
-+++ b/drivers/base/core.c	2008-01-30 09:49:56.000000000 +0800
-@@ -414,7 +414,7 @@ struct kset *devices_kset;
-  */
- int device_create_file(struct device *dev, struct device_attribute *attr)
- {
--	int error = 0;
-+	int error = -ENODEV;
- 	if (get_device(dev)) {
- 		error = sysfs_create_file(&dev->kobj, &attr->attr);
- 		put_device(dev);
-@@ -442,9 +442,11 @@ void device_remove_file(struct device *d
-  */
- int device_create_bin_file(struct device *dev, struct bin_attribute *attr)
- {
--	int error = -EINVAL;
--	if (dev)
-+	int error = -ENODEV;
-+	if (get_device(dev)) {
- 		error = sysfs_create_bin_file(&dev->kobj, attr);
-+		put_device(dev);
-+	}
- 	return error;
- }
- EXPORT_SYMBOL_GPL(device_create_bin_file);
-@@ -456,8 +458,10 @@ EXPORT_SYMBOL_GPL(device_create_bin_file
-  */
- void device_remove_bin_file(struct device *dev, struct bin_attribute *attr)
- {
--	if (dev)
-+	if (get_device(dev)) {
- 		sysfs_remove_bin_file(&dev->kobj, attr);
-+		put_device(dev);
-+	}
- }
- EXPORT_SYMBOL_GPL(device_remove_bin_file);
- 
+Well, there is an indirect link. The ADMA interface (which supports 
+64-bit DMA) cannot be used to issue ATAPI commands, so if an ATAPI 
+device is connected we have to go to legacy mode, which supports only 
+32-bit DMA.
+
+I'm not sure why ADMA mode doesn't support ATAPI. The only reason I can 
+think of is that there's issues since ATAPI commands can potentially be 
+of unpredictable transfer size. The "real" ADMA spec that the NVIDIA 
+implementation is loosely based on does have some special "ignore 
+excess" controls that don't seem to be in the NVIDIA version (or at 
+least not to the knowledge I have on this hardware).
+
+And yes, it is a rather unfortunate hardware shortcoming (presuming that 
+it is entirely true).
+
+> 
+>> The ideal solution would be to do mapping against a
+>> different struct 
+>> device for each port, so that we could maintain the proper
+>> DMA mask for 
+>> each of them at all times. However I'm not sure if
+>> that's possible. The 
+>> thought of using the SCSI struct device for DMA mapping was
+>> brought up 
+>> at one point.. any thoughts on that?
+> 
+> The reason for this is that the object that a struct scsi_dev
+> represents has nothing to do with HW DMA engines.
+> 
+> It looks like your current solution is correct and
+> x86_64's blk_queue_bounce_limit needs work.
+> 
+>     Luben
+> 
+> 
