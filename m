@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYA3HRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYA3HSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbYA3HRU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 02:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYA3HRI
+	id S1757188AbYA3HSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 02:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYA3HSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 02:17:08 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:43284 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751764AbYA3HRG (ORCPT
+	Wed, 30 Jan 2008 02:18:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52296 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752222AbYA3HSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 02:17:06 -0500
-Date: Wed, 30 Jan 2008 02:11:23 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 update
-Message-ID: <20080130071123.GF21944@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <E1JJjMo-00011j-EU@closure.thunk.org> <20080129125307.GF6774@mit.edu> <Pine.LNX.4.64.0801292250110.14907@fbirervta.pbzchgretzou.qr>
+	Wed, 30 Jan 2008 02:18:03 -0500
+Message-ID: <47A02483.5000606@zytor.com>
+Date: Tue, 29 Jan 2008 23:17:23 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801292250110.14907@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: yi.y.yang@intel.com
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2.6.24] x86: add sysfs interface for cpuid module
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>	 <1201562058.12722.9.camel@yangyi-dev.bj.intel.com>	 <479F4B99.4060701@zytor.com> <1201643817.12722.30.camel@yangyi-dev.bj.intel.com>
+In-Reply-To: <1201643817.12722.30.camel@yangyi-dev.bj.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 10:54:03PM +0100, Jan Engelhardt wrote:
-> 
-> On Jan 29 2008 07:53, Theodore Tso wrote:
-> >
-> >>fwiw, diffstat is confused by git's diff output; you need to use
-> >>'diffstat -p1'
-> 
-> I am seeing normal behavior:
->
-> 22:52 sovereign:~/linux > git diff HEAD | diffstat
+Yi Yang wrote:
+>>
+>> It's broken, because it doesn't take into account the fact that Intel 
+>> broke CPUID level 4 and made it "repeating" (neither did the cpuid char 
+>> device, because it predated the Intel braindamage; I've had a patch for 
+>> it privately for a while, but didn't push it upstream because paravirt 
+>> broke it royally and I wanted the situation to settle down.)
 
-That's because you are doing a diff stat of changes that haven't been
-checked in yet.  I was doing a "git log -p origin.. | diffstat -p1",
-and in that incantation you definitely do need the -p1 to diffstat.
+> level 4 doesn't result in repeating on Intel CPU, cpuid module sets
+> file offset to level, so cat /dev/cpu/*/cpuid will run cpuid instruction
+> continuously.
 
-       	    		    	       	  - Ted
+The issue is that Intel suddenly made CPUID ECX-sensitive, which there 
+is no way to represent.
+
+As far as cat /dev/cpu/*/cpuid, that's a user error.
+
+	-hpa
+
