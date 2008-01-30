@@ -1,556 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764078AbYA3SHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763384AbYA3SIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764078AbYA3SHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:07:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbYA3SGz
+	id S1763384AbYA3SIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYA3SIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:06:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52189 "EHLO mx3.mail.elte.hu"
+	Wed, 30 Jan 2008 13:08:32 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:53491 "EHLO smtp1.cc.lut.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbYA3SGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:06:51 -0500
-Date: Wed, 30 Jan 2008 19:06:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Mike Travis <travis@sgi.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130180623.GA24881@elte.hu>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753719AbYA3SIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:08:31 -0500
+Date: Wed, 30 Jan 2008 20:08:27 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jan Beulich <jbeulich@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] x86: Add a list for custom page fault handlers.
+Message-ID: <20080130200827.322c4f7d@daedalus.pq.iki.fi>
+In-Reply-To: <1201660453.8837.13.camel@brick>
+References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
+	<1201660102.8837.9.camel@brick>
+	<1201660453.8837.13.camel@brick>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Jan 2008 18:34:13 -0800
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-* Luck, Tony <tony.luck@intel.com> wrote:
+> Sorry, attached the wrong version to my last message missing the
+> kdebug.h hunk.  This is still just a straight port to current x86.git.
 
-> > thanks! Sorry about that: we cross-built on ARM but not on SMP 
-> > non-x86 platforms so this dependency/breakage went unnoticed.
-> 
-> Yes ... all ia64 builds (UP and SMP) are broken at the moment. Please 
-> Cc: me with the fixup patch.
+Wow, thanks.
 
-Could you check the patch below? With this applied to latest -git, ia64 
-buils fine for me in a cross-compiling environment. (but i dont know 
-whether it boots ...)
+I have to say I already did this for myself, but I had to
+change too many things to simply resubmit without testing. And it turned
+out porting mmiotrace to x86/mm was a non-trivial task. I have not
+been able to test yet even though I have been working on it every night.
+Today I will see if things work for me, and hopefully also for someone else.
+I might send new patches today or tomorrow, if all goes well.
 
-	Ingo
+btw. I have a bad feeling about global_flush_tlb() disappearing, it was used
+in mmiotrace code, and I don't know what to use instead. The obvious
+replacement for it is a static function elsewhere. Currently I am simply
+hoping it was a redundant leftover from the time when we had trouble making
+mmiotrace stable.
 
------------------>
-Subject: generic: percpu infrastructure to rebase the per cpu area to zero
-From: travis@sgi.com
+To be honest, I haven't yet had the time to educate myself about what is
+TLB.
 
-    * Support an option
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index e28cc52..c6c8164 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -49,6 +49,54 @@
+>  #define PF_RSVD		(1<<3)
+>  #define PF_INSTR	(1<<4)
+>  
+> +#ifdef CONFIG_PAGE_FAULT_HANDLERS
+> +static HLIST_HEAD(pf_handlers); /* protected by RCU */
+> +static DEFINE_SPINLOCK(pf_handlers_writer);
+> +
+> +void register_page_fault_handler(struct pf_handler *new_pfh)
+> +{
+> +	spin_lock(&pf_handlers_writer);
+> +	hlist_add_head_rcu(&new_pfh->hlist, &pf_handlers);
+> +	spin_unlock(&pf_handlers_writer);
 
-	CONFIG_HAVE_ZERO_BASED_PER_CPU
+Here I had to change to irqsave/irqrestore versions, as I found a possible
+lock dependency issue. Lockdep debugging code pointed it out. I'm not sure
+I fixed it completely, but using spin_lock_irqsave() is a safe bet.
 
-      that makes offsets for per cpu variables to start at zero.
+> +}
+> +EXPORT_SYMBOL_GPL(register_page_fault_handler);
+> +
+> +void unregister_page_fault_handler(struct pf_handler *old_pfh)
+> +{
+> +	might_sleep();
+> +	spin_lock(&pf_handlers_writer);
+> +	hlist_del_rcu(&old_pfh->hlist);
+> +	spin_unlock(&pf_handlers_writer);
+> +	synchronize_rcu();
+> +}
 
-      If a percpu area starts at zero then:
+And here. And I also removed sync RCU and might_sleep().
 
-	-  We do not need RELOC_HIDE anymore
+> +EXPORT_SYMBOL_GPL(unregister_page_fault_handler);
+> +#endif
+> +
+> +/* returns non-zero if do_page_fault() should return */
+> +static int handle_custom_pf(struct pt_regs *regs, unsigned long error_code,
+> +			    unsigned long address)
+> +{
+> +#ifdef CONFIG_PAGE_FAULT_HANDLERS
+> +	int ret = 0;
+> +	struct pf_handler *cur;
+> +	struct hlist_node *ncur;
+> +
+> +	if (hlist_empty(&pf_handlers))
+> +		return 0;
 
-	-  Provides for the future capability of architectures providing
-	   a per cpu allocator that returns offsets instead of pointers.
-	   The offsets would be independent of the processor so that
-	   address calculations can be done in a processor independent way.
-	   Per cpu instructions can then add the processor specific offset
-	   at the last minute possibly in an atomic instruction.
+This looks prettier than my code. I might change my code to this.
 
-      The data the linker provides is different for zero based percpu segments:
+> +	rcu_read_lock();
+> +	hlist_for_each_entry_rcu(cur, ncur, &pf_handlers, hlist) {
+> +		ret = cur->handler(regs, error_code, address);
+> +		if (ret)
+> +			break;
+> +	}
+> +	rcu_read_unlock();
+> +	return ret;
+> +#else
+> +	return 0;
+> +#endif
+> +}
+> +
+>  static inline int notify_page_fault(struct pt_regs *regs)
+>  {
+>  #ifdef CONFIG_KPROBES
+> @@ -588,6 +636,9 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+>  	if (notify_page_fault(regs))
+>  		return;
+>  
+> +	if (handle_custom_pf(regs, error_code, address))
+> +		return;
+> +
 
-	__per_cpu_load	-> The address at which the percpu area was loaded
-	__per_cpu_size	-> The length of the per cpu area
+This is the non-trivial change that I really want to test before
+submitting again. The call site of the handlers changes, and vmalloc
+related faults reach the custom handlers. I don't think this would be a
+problem for mmiotrace, but I don't know enough to be sure.
+I guess using vmalloc'd memory from a page fault handler would be doomed,
+anyway, so no point worrying about it, right?
 
-    * Removes the &__per_cpu_x in lockdep. The __per_cpu_x are already
-      pointers. There is no need to take the address.
+if (unlikely(handle_custom_pf(regs, error_code, address)))
+Maybe like this, even?
 
-    * Changes generic setup_per_cpu_areas to allocate per_cpu space in
-      node local memory.  This requires a generic early_cpu_to_node function.
+It is still supposedly making a function call every time, at least
+when CONFIG_PAGE_FAULT_HANDLERS is defined. Would it have a non-negligible
+impact on performance when no custom handlers are registered?
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/ia64/Kconfig                     |    2 -
- arch/ia64/kernel/module.c             |   11 --------
- arch/powerpc/Kconfig                  |    2 -
- arch/sparc64/mm/init.c                |    5 ++++
- include/asm-alpha/topology.h          |    1 
- include/asm-generic/percpu.h          |    7 ++++-
- include/asm-generic/sections.h        |   10 ++++++++
- include/asm-generic/topology.h        |    3 ++
- include/asm-generic/vmlinux.lds.h     |   15 ++++++++++++
- include/asm-ia64/percpu.h             |   29 +++++------------------
- include/asm-ia64/topology.h           |    1 
- include/asm-mips/mach-ip27/topology.h |    1 
- include/asm-powerpc/percpu.h          |   29 +----------------------
- include/asm-powerpc/topology.h        |    1 
- include/asm-s390/percpu.h             |   42 +++++++---------------------------
- include/asm-sparc64/percpu.h          |   22 ++---------------
- init/main.c                           |   18 ++++++++------
- kernel/lockdep.c                      |    4 +--
- 18 files changed, 78 insertions(+), 125 deletions(-)
+My original version had the separate inline function to check if the list
+is empty. Which one is preferrable?
 
-Index: linux-x86.q/arch/ia64/Kconfig
-===================================================================
---- linux-x86.q.orig/arch/ia64/Kconfig
-+++ linux-x86.q/arch/ia64/Kconfig
-@@ -80,7 +80,7 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default y
- 
--config ARCH_SETS_UP_PER_CPU_AREA
-+config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
- config DMI
-Index: linux-x86.q/arch/ia64/kernel/module.c
-===================================================================
---- linux-x86.q.orig/arch/ia64/kernel/module.c
-+++ linux-x86.q/arch/ia64/kernel/module.c
-@@ -940,14 +940,3 @@ module_arch_cleanup (struct module *mod)
- 	if (mod->arch.core_unw_table)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
- }
--
--#ifdef CONFIG_SMP
--void
--percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
--{
--	unsigned int i;
--	for_each_possible_cpu(i) {
--		memcpy(pcpudst + per_cpu_offset(i), src, size);
--	}
--}
--#endif /* CONFIG_SMP */
-Index: linux-x86.q/arch/powerpc/Kconfig
-===================================================================
---- linux-x86.q.orig/arch/powerpc/Kconfig
-+++ linux-x86.q/arch/powerpc/Kconfig
-@@ -42,7 +42,7 @@ config GENERIC_HARDIRQS
- 	bool
- 	default y
- 
--config ARCH_SETS_UP_PER_CPU_AREA
-+config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
- config IRQ_PER_CPU
-Index: linux-x86.q/arch/sparc64/mm/init.c
-===================================================================
---- linux-x86.q.orig/arch/sparc64/mm/init.c
-+++ linux-x86.q/arch/sparc64/mm/init.c
-@@ -1328,6 +1328,11 @@ pgd_t swapper_pg_dir[2048];
- static void sun4u_pgprot_init(void);
- static void sun4v_pgprot_init(void);
- 
-+/* Dummy function */
-+void __init setup_per_cpu_areas(void)
-+{
-+}
-+
- void __init paging_init(void)
- {
- 	unsigned long end_pfn, pages_avail, shift, phys_base;
-Index: linux-x86.q/include/asm-alpha/topology.h
-===================================================================
---- linux-x86.q.orig/include/asm-alpha/topology.h
-+++ linux-x86.q/include/asm-alpha/topology.h
-@@ -6,6 +6,7 @@
- #include <asm/machvec.h>
- 
- #ifdef CONFIG_NUMA
-+#define early_cpu_to_node(cpu)	cpu_to_node(cpu)
- static inline int cpu_to_node(int cpu)
- {
- 	int node;
-Index: linux-x86.q/include/asm-generic/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-generic/percpu.h
-+++ linux-x86.q/include/asm-generic/percpu.h
-@@ -43,7 +43,12 @@ extern unsigned long __per_cpu_offset[NR
-  * Only S390 provides its own means of moving the pointer.
-  */
- #ifndef SHIFT_PERCPU_PTR
--#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
-+# ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+#  define SHIFT_PERCPU_PTR(__p, __offset) \
-+	((__typeof(__p))(((void *)(__p)) + (__offset)))
-+# else
-+#  define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
-+# endif /* CONFIG_HAVE_ZERO_BASED_PER_CPU */
- #endif
- 
- /*
-Index: linux-x86.q/include/asm-generic/sections.h
-===================================================================
---- linux-x86.q.orig/include/asm-generic/sections.h
-+++ linux-x86.q/include/asm-generic/sections.h
-@@ -11,7 +11,17 @@ extern char _sinittext[], _einittext[];
- extern char _sextratext[] __attribute__((weak));
- extern char _eextratext[] __attribute__((weak));
- extern char _end[];
-+#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+extern char __per_cpu_load[];
-+extern char ____per_cpu_size[];
-+#define __per_cpu_size ((unsigned long)&____per_cpu_size)
-+#define __per_cpu_start ((char *)0)
-+#define __per_cpu_end ((char *)__per_cpu_size)
-+#else
- extern char __per_cpu_start[], __per_cpu_end[];
-+#define __per_cpu_load __per_cpu_start
-+#define __per_cpu_size (__per_cpu_end - __per_cpu_start)
-+#endif
- extern char __kprobes_text_start[], __kprobes_text_end[];
- extern char __initdata_begin[], __initdata_end[];
- extern char __start_rodata[], __end_rodata[];
-Index: linux-x86.q/include/asm-generic/topology.h
-===================================================================
---- linux-x86.q.orig/include/asm-generic/topology.h
-+++ linux-x86.q/include/asm-generic/topology.h
-@@ -32,6 +32,9 @@
- #ifndef cpu_to_node
- #define cpu_to_node(cpu)	(0)
- #endif
-+#ifndef early_cpu_to_node
-+#define early_cpu_to_node(cpu)	cpu_to_node(cpu)
-+#endif
- #ifndef parent_node
- #define parent_node(node)	(0)
- #endif
-Index: linux-x86.q/include/asm-generic/vmlinux.lds.h
-===================================================================
---- linux-x86.q.orig/include/asm-generic/vmlinux.lds.h
-+++ linux-x86.q/include/asm-generic/vmlinux.lds.h
-@@ -341,6 +341,20 @@
-   	*(.initcall7.init)						\
-   	*(.initcall7s.init)
- 
-+#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-+#define PERCPU(align)							\
-+	. = ALIGN(align);						\
-+	percpu : { } :percpu						\
-+	__per_cpu_load = .;						\
-+	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
-+		*(.data.percpu.first)					\
-+		*(.data.percpu)						\
-+		*(.data.percpu.shared_aligned)				\
-+		____per_cpu_size = .;					\
-+	}								\
-+	. = __per_cpu_load + ____per_cpu_size;				\
-+	data : { } :data
-+#else
- #define PERCPU(align)							\
- 	. = ALIGN(align);						\
- 	__per_cpu_start = .;						\
-@@ -349,3 +363,4 @@
- 		*(.data.percpu.shared_aligned)				\
- 	}								\
- 	__per_cpu_end = .;
-+#endif
-Index: linux-x86.q/include/asm-ia64/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-ia64/percpu.h
-+++ linux-x86.q/include/asm-ia64/percpu.h
-@@ -19,34 +19,14 @@
- # define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
- #endif
- 
--#define DECLARE_PER_CPU(type, name)				\
--	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
--
--/*
-- * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
-- * external routine, to avoid include-hell.
-- */
- #ifdef CONFIG_SMP
- 
--extern unsigned long __per_cpu_offset[NR_CPUS];
--#define per_cpu_offset(x) (__per_cpu_offset[x])
--
--/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
--DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
-+#define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
- 
--#define per_cpu(var, cpu)  (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))
--#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
--#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
--
--extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
--extern void setup_per_cpu_areas (void);
- extern void *per_cpu_init(void);
- 
- #else /* ! SMP */
- 
--#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
--#define __get_cpu_var(var)			per_cpu__##var
--#define __raw_get_cpu_var(var)			per_cpu__##var
- #define per_cpu_init()				(__phys_per_cpu_start)
- 
- #endif	/* SMP */
-@@ -57,7 +37,12 @@ extern void *per_cpu_init(void);
-  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
-  * more efficient.
-  */
--#define __ia64_per_cpu_var(var)	(per_cpu__##var)
-+#define __ia64_per_cpu_var(var)	per_cpu__##var
-+
-+#include <asm-generic/percpu.h>
-+
-+/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
-+DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
- 
- #endif /* !__ASSEMBLY__ */
- 
-Index: linux-x86.q/include/asm-ia64/topology.h
-===================================================================
---- linux-x86.q.orig/include/asm-ia64/topology.h
-+++ linux-x86.q/include/asm-ia64/topology.h
-@@ -31,6 +31,7 @@
-  * Returns the number of the node containing CPU 'cpu'
-  */
- #define cpu_to_node(cpu) (int)(cpu_to_node_map[cpu])
-+#define early_cpu_to_node(cpu)	cpu_to_node(cpu)
- 
- /*
-  * Returns a bitmask of CPUs on Node 'node'.
-Index: linux-x86.q/include/asm-mips/mach-ip27/topology.h
-===================================================================
---- linux-x86.q.orig/include/asm-mips/mach-ip27/topology.h
-+++ linux-x86.q/include/asm-mips/mach-ip27/topology.h
-@@ -23,6 +23,7 @@ struct cpuinfo_ip27 {
- extern struct cpuinfo_ip27 sn_cpu_info[NR_CPUS];
- 
- #define cpu_to_node(cpu)	(sn_cpu_info[(cpu)].p_nodeid)
-+#define early_cpu_to_node(cpu)	cpu_to_node(cpu)
- #define parent_node(node)	(node)
- #define node_to_cpumask(node)	(hub_data(node)->h_cpus)
- #define node_to_first_cpu(node)	(first_cpu(node_to_cpumask(node)))
-Index: linux-x86.q/include/asm-powerpc/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-powerpc/percpu.h
-+++ linux-x86.q/include/asm-powerpc/percpu.h
-@@ -16,34 +16,9 @@
- #define __my_cpu_offset() get_paca()->data_offset
- #define per_cpu_offset(x) (__per_cpu_offset(x))
- 
--/* var is in discarded region: offset to particular copy we want */
--#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
--#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
--#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
-+#endif /* CONFIG_SMP */
-+#endif /* __powerpc64__ */
- 
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset(__i),		\
--		       (src), (size));				\
--} while (0)
--
--extern void setup_per_cpu_areas(void);
--
--#else /* ! SMP */
--
--#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
--#define __get_cpu_var(var)			per_cpu__##var
--#define __raw_get_cpu_var(var)			per_cpu__##var
--
--#endif	/* SMP */
--
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
--
--#else
- #include <asm-generic/percpu.h>
--#endif
- 
- #endif /* _ASM_POWERPC_PERCPU_H_ */
-Index: linux-x86.q/include/asm-powerpc/topology.h
-===================================================================
---- linux-x86.q.orig/include/asm-powerpc/topology.h
-+++ linux-x86.q/include/asm-powerpc/topology.h
-@@ -15,6 +15,7 @@ static inline int cpu_to_node(int cpu)
- 	return numa_cpu_lookup_table[cpu];
- }
- 
-+#define early_cpu_to_node(cpu)	cpu_to_node(cpu)
- #define parent_node(node)	(node)
- 
- static inline cpumask_t node_to_cpumask(int node)
-Index: linux-x86.q/include/asm-s390/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-s390/percpu.h
-+++ linux-x86.q/include/asm-s390/percpu.h
-@@ -13,49 +13,25 @@
-  */
- #if defined(__s390x__) && defined(MODULE)
- 
--#define __reloc_hide(var,offset) (*({			\
-+#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
- 	extern int simple_identifier_##var(void);	\
- 	unsigned long *__ptr;				\
--	asm ( "larl %0,per_cpu__"#var"@GOTENT"		\
--	    : "=a" (__ptr) : "X" (per_cpu__##var) );	\
--	(typeof(&per_cpu__##var))((*__ptr) + (offset));	}))
-+	asm ( "larl %0, %1@GOTENT"		\
-+	    : "=a" (__ptr) : "X" (ptr) );		\
-+	(typeof(ptr))((*__ptr) + (offset));	}))
- 
- #else
- 
--#define __reloc_hide(var, offset) (*({				\
-+#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
- 	extern int simple_identifier_##var(void);		\
- 	unsigned long __ptr;					\
--	asm ( "" : "=a" (__ptr) : "0" (&per_cpu__##var) );	\
--	(typeof(&per_cpu__##var)) (__ptr + (offset)); }))
-+	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
-+	(typeof(ptr)) (__ptr + (offset)); }))
- 
- #endif
- 
--#ifdef CONFIG_SMP
-+#define __my_cpu_offset S390_lowcore.percpu_offset
- 
--extern unsigned long __per_cpu_offset[NR_CPUS];
--
--#define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
--#define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
--#define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
--#define per_cpu_offset(x) (__per_cpu_offset[x])
--
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset[__i],		\
--		       (src), (size));				\
--} while (0)
--
--#else /* ! SMP */
--
--#define __get_cpu_var(var) __reloc_hide(var,0)
--#define __raw_get_cpu_var(var) __reloc_hide(var,0)
--#define per_cpu(var,cpu) __reloc_hide(var,0)
--
--#endif /* SMP */
--
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
-+#include <asm-generic/percpu.h>
- 
- #endif /* __ARCH_S390_PERCPU__ */
-Index: linux-x86.q/include/asm-sparc64/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-sparc64/percpu.h
-+++ linux-x86.q/include/asm-sparc64/percpu.h
-@@ -7,7 +7,6 @@ register unsigned long __local_per_cpu_o
- 
- #ifdef CONFIG_SMP
- 
--#define setup_per_cpu_areas()			do { } while (0)
- extern void real_setup_per_cpu_areas(void);
- 
- extern unsigned long __per_cpu_base;
-@@ -16,29 +15,14 @@ extern unsigned long __per_cpu_shift;
- 	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
- #define per_cpu_offset(x) (__per_cpu_offset(x))
- 
--/* var is in discarded region: offset to particular copy we want */
--#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
--#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
--#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
--
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset(__i),		\
--		       (src), (size));				\
--} while (0)
-+#define __my_cpu_offset __local_per_cpu_offset
-+
- #else /* ! SMP */
- 
- #define real_setup_per_cpu_areas()		do { } while (0)
- 
--#define per_cpu(var, cpu)			(*((void)cpu, &per_cpu__##var))
--#define __get_cpu_var(var)			per_cpu__##var
--#define __raw_get_cpu_var(var)			per_cpu__##var
--
- #endif	/* SMP */
- 
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
-+#include <asm-generic/percpu.h>
- 
- #endif /* __ARCH_SPARC64_PERCPU__ */
-Index: linux-x86.q/init/main.c
-===================================================================
---- linux-x86.q.orig/init/main.c
-+++ linux-x86.q/init/main.c
-@@ -374,18 +374,20 @@ EXPORT_SYMBOL(__per_cpu_offset);
- 
- static void __init setup_per_cpu_areas(void)
- {
--	unsigned long size, i;
--	char *ptr;
--	unsigned long nr_possible_cpus = num_possible_cpus();
-+	unsigned long size;
-+	int cpu;
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
--	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
- 
--	for_each_possible_cpu(i) {
--		__per_cpu_offset[i] = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
--		ptr += size;
-+	printk(KERN_INFO "(generic)PERCPU: Allocating %lu bytes of per cpu data\n", size);
-+
-+	for_each_possible_cpu(cpu) {
-+		char *ptr = alloc_bootmem_pages_node(
-+				NODE_DATA(early_cpu_to_node(cpu)), size);
-+
-+		__per_cpu_offset[cpu] = ptr - __per_cpu_start;
-+		memcpy(ptr, __per_cpu_load, __per_cpu_size);
- 	}
- }
- #endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
-Index: linux-x86.q/kernel/lockdep.c
-===================================================================
---- linux-x86.q.orig/kernel/lockdep.c
-+++ linux-x86.q/kernel/lockdep.c
-@@ -609,8 +609,8 @@ static int static_obj(void *obj)
- 	 * percpu var?
- 	 */
- 	for_each_possible_cpu(i) {
--		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
--		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
-+		start = (unsigned long) __per_cpu_start + per_cpu_offset(i);
-+		end   = (unsigned long) __per_cpu_start + PERCPU_ENOUGH_ROOM
- 					+ per_cpu_offset(i);
- 
- 		if ((addr >= start) && (addr < end))
+I'm hoping distros would ship some kernels with PAGE_FAULT_HANDLERS
+enabled as it would make contributors' lives easier. IIRC some
+already have enabled RELAY and DEBUG_FS for mmiotrace. This is why I
+think keeping the performance impact to the minimum here is important,
+for the case of no custom handlers registered.
+
+
+Thanks,
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
