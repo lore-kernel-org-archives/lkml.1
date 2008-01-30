@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbYA3FvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbYA3FwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbYA3FvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 00:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYA3FvI
+	id S1756536AbYA3FwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 00:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYA3FwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 00:51:08 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52492 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753840AbYA3FvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 00:51:07 -0500
+	Wed, 30 Jan 2008 00:52:08 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47189 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753799AbYA3FwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 00:52:06 -0500
 From: akepner@sgi.com
-Date: Tue, 29 Jan 2008 21:49:38 -0800
+Date: Tue, 29 Jan 2008 21:50:40 -0800
 To: Tony Luck <tony.luck@intel.com>,
        Grant Grundler <grundler@parisc-linux.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
@@ -20,8 +19,8 @@ To: Tony Luck <tony.luck@intel.com>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
        David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4] dma: dma_{un}map_{single|sg}_attrs() interface
-Message-ID: <20080130054938.GR30022@sgi.com>
+Subject: [PATCH 1/4] dma: document dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080130055040.GS30022@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,59 +30,86 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Introduce a new interface for passing architecture-specific 
-attributes when memory is mapped and unmapped for DMA. Give 
-the interface a default implementation which ignores 
-attributes.
+Document the new dma_{un}map_{single|sg}_attrs() functions. 
 
 Signed-off-by: Arthur Kepner <akepner@sgi.com>
 
 --
 
- dma-mapping.h |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+)
+ DMA-API.txt |   63 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 63 insertions(+)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 101a2d4..bc313e3 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -116,4 +116,37 @@ static inline void dmam_release_declared_memory(struct device *dev)
- }
- #endif /* ARCH_HAS_DMA_DECLARE_COHERENT_MEMORY */
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index b939ebb..fad05e0 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -395,6 +395,69 @@ Notes:  You must do this:
  
-+#ifndef ARCH_USES_DMA_ATTRS
-+struct dma_attrs;
+ See also dma_map_single().
+ 
++dma_addr_t 
++dma_map_single_attrs(struct device *dev, void *cpu_addr, size_t size, 
++		     enum dma_data_direction dir, 
++		     struct dma_attrs* attrs)
 +
-+static inline dma_addr_t dma_map_single_attrs(struct device *dev, 
-+					      void *cpu_addr, size_t size, 
-+					      int dir, struct dma_attrs* attrs)
++void 
++dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
++		       size_t size, enum dma_data_direction dir,
++		       struct dma_attrs* attrs)
++
++int 
++dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
++		 int nents, enum dma_data_direction dir, 
++		 struct dma_attrs *attrs)
++
++void 
++dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl, 
++		   int nents, enum dma_data_direction dir,
++		   struct dma_attrs *attrs)
++
++The four functions above are just like the counterpart functions 
++without the _attrs suffixes, except that they pass an optional 
++struct dma_attrs*. 
++
++struct dma_attrs encapsulates a set of "dma attributes". For the 
++definition of struct dma_attrs see linux/dma-attrs.h. 
++
++The interpretation of dma attributes is architecture-specific. 
++
++If struct dma_attrs* is NULL, the semantics of each of these 
++functions is identical to those of the corresponding function 
++without the _attrs suffix. As a result dma_map_single_attrs() 
++can generally replace dma_map_single(), etc.
++
++As an example of the use of the *_attrs functions, here's how 
++you could pass an attribute DMA_ATTR_FOO when mapping memory 
++for DMA:
++
++#include <linux/dma-attrs.h>
++/* DMA_ATTR_FOO should be defined in linux/dma-attrs.h */
++...
++
++	DECLARE_DMA_ATTRS(attrs);
++	dma_set_attr(&attrs, DMA_ATTR_FOO);
++	....
++	n = dma_map_sg_attrs(dev, sg, nents, DMA_TO_DEVICE, &attr);
++	....
++
++Architectures that care about DMA_ATTR_FOO would check for its 
++presence in their implementations of the mapping and unmapping 
++routines, e.g.:
++
++void whizco_dma_map_sg_attrs(struct device *dev, dma_addr_t dma_addr, 
++			     size_t size, enum dma_data_direction dir, 
++			     struct dma_attrs* attrs)
 +{
-+	return dma_map_single(dev, cpu_addr, size, dir);
-+}
++	....
++	int foo =  dma_get_attr(attrs, DMA_ATTR_FOO);
++	....
++	if (foo) 
++		/* twizzle the frobnozzle */
++	....
 +
-+static inline void dma_unmap_single_attrs(struct device *dev, 
-+					  dma_addr_t dma_addr,
-+					  size_t size, int dir, 
-+					  struct dma_attrs* attrs)
-+{
-+	return dma_unmap_single(dev, dma_addr, size, dir);
-+}
-+
-+static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
-+				   int nents, int dir, struct dma_attrs *attrs)
-+{
-+	return dma_map_sg(dev, sgl, nents, dir);
-+}
-+
-+static inline void dma_unmap_sg_attrs(struct device *dev, 
-+				      struct scatterlist *sgl,
-+				      int nents, int dir, 
-+				      struct dma_attrs *attrs)
-+{
-+	return dma_unmap_sg(dev, sgl, nents, dir);
-+}
-+#endif /* ARCH_USES_DMA_ATTRS */
-+
- #endif
-
-
+ 
+ Part II - Advanced dma_ usage
+ -----------------------------
