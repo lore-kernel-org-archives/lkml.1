@@ -1,232 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbYA3R67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbYA3SBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760105AbYA3R67 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYA3R6u
+	id S1761408AbYA3SBt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYA3SBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:58:50 -0500
-Received: from stinky.trash.net ([213.144.137.162]:57306 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753306AbYA3R6s (ORCPT
+	Wed, 30 Jan 2008 13:01:42 -0500
+Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:36250 "EHLO
+	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753406AbYA3SBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:58:48 -0500
-Message-ID: <47A0BAB5.3080207@trash.net>
-Date: Wed, 30 Jan 2008 18:58:13 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@vger.kernel.org>
-Subject: Re: [build bug] ip_queue.c:(.init.text+0x322c): undefined reference
- to	`net_ipv4_ctl_path'
-References: <20080130164554.GA2800@elte.hu>
-In-Reply-To: <20080130164554.GA2800@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------040704010203000406050702"
+	Wed, 30 Jan 2008 13:01:41 -0500
+X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 13:01:41 EST
+X-Authority-Analysis: v=1.0 c=1 a=EouV8EeEjs0A:10 a=RXvFtDA4TIRRQeNwqcoA:9
+ a=cYd9i9LoYStH_cM11VfqqIzvLNwA:4 a=BgJWR2bEJjkA:10
+Subject: Re: [BUILD FAILURE] 2.6.24-git7 section type conflict at various
+	drivers on powerpc
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 11:57:31 -0600
+Message-Id: <1201715851.7154.15.camel@popeye>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040704010203000406050702
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Please note that this does not appear to be just a issue with the
+powerpc build - I get the following failure whiole building a generic
+x86 2.6.24-git7 kernel.
 
-Ingo Molnar wrote:
-> randconfig testing found the following build failure on latest -git:
->
->  net/built-in.o: In function `ip_queue_init':
->  ip_queue.c:(.init.text+0x322c): undefined reference to `net_ipv4_ctl_path'
->
-> config attached.
+drivers/net/sis190.c:329: error: sis190_pci_tbl causes a section type
+conflict
 
-Thanks, the reason is CONFIG_SYSCTL=n. I've queued this patch
-(might not apply to Linus' tree due to local changes) to fix
-the build error and a runtime error with CONFIG_PROC_FS=n.
+I suspect that you are ahead of me and alrealy knew this but I get into
+trouble every time I make an assumption like that.
 
+Chris
 
-
-
-
---------------040704010203000406050702
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-diff --git a/net/ipv4/netfilter/ip_queue.c b/net/ipv4/netfilter/ip_queue.c
-index 5109839..6bda110 100644
---- a/net/ipv4/netfilter/ip_queue.c
-+++ b/net/ipv4/netfilter/ip_queue.c
-@@ -512,6 +512,7 @@ static struct notifier_block ipq_nl_notifier = {
- 	.notifier_call	= ipq_rcv_nl_event,
- };
- 
-+#ifdef CONFIG_SYSCTL
- static struct ctl_table_header *ipq_sysctl_header;
- 
- static ctl_table ipq_table[] = {
-@@ -525,7 +526,9 @@ static ctl_table ipq_table[] = {
- 	},
- 	{ .ctl_name = 0 }
- };
-+#endif
- 
-+#ifdef CONFIG_PROC_FS
- static int ip_queue_show(struct seq_file *m, void *v)
- {
- 	read_lock_bh(&queue_lock);
-@@ -562,6 +565,7 @@ static const struct file_operations ip_queue_proc_fops = {
- 	.release	= single_release,
- 	.owner		= THIS_MODULE,
- };
-+#endif
- 
- static const struct nf_queue_handler nfqh = {
- 	.name	= "ip_queue",
-@@ -571,7 +575,7 @@ static const struct nf_queue_handler nfqh = {
- static int __init ip_queue_init(void)
- {
- 	int status = -ENOMEM;
--	struct proc_dir_entry *proc;
-+	struct proc_dir_entry *proc __maybe_unused;
- 
- 	netlink_register_notifier(&ipq_nl_notifier);
- 	ipqnl = netlink_kernel_create(&init_net, NETLINK_FIREWALL, 0,
-@@ -581,6 +585,7 @@ static int __init ip_queue_init(void)
- 		goto cleanup_netlink_notifier;
- 	}
- 
-+#ifdef CONFIG_PROC_FS
- 	proc = create_proc_entry(IPQ_PROC_FS_NAME, 0, init_net.proc_net);
- 	if (proc) {
- 		proc->owner = THIS_MODULE;
-@@ -589,10 +594,11 @@ static int __init ip_queue_init(void)
- 		printk(KERN_ERR "ip_queue: failed to create proc entry\n");
- 		goto cleanup_ipqnl;
- 	}
--
-+#endif
- 	register_netdevice_notifier(&ipq_dev_notifier);
-+#ifdef CONFIG_SYSCTL
- 	ipq_sysctl_header = register_sysctl_paths(net_ipv4_ctl_path, ipq_table);
--
-+#endif
- 	status = nf_register_queue_handler(PF_INET, &nfqh);
- 	if (status < 0) {
- 		printk(KERN_ERR "ip_queue: failed to register queue handler\n");
-@@ -601,10 +607,12 @@ static int __init ip_queue_init(void)
- 	return status;
- 
- cleanup_sysctl:
-+#ifdef CONFIG_SYSCTL
- 	unregister_sysctl_table(ipq_sysctl_header);
-+#endif
- 	unregister_netdevice_notifier(&ipq_dev_notifier);
- 	proc_net_remove(&init_net, IPQ_PROC_FS_NAME);
--cleanup_ipqnl:
-+cleanup_ipqnl: __maybe_unused
- 	netlink_kernel_release(ipqnl);
- 	mutex_lock(&ipqnl_mutex);
- 	mutex_unlock(&ipqnl_mutex);
-@@ -620,7 +628,9 @@ static void __exit ip_queue_fini(void)
- 	synchronize_net();
- 	ipq_flush(NULL, 0);
- 
-+#ifdef CONFIG_SYSCTL
- 	unregister_sysctl_table(ipq_sysctl_header);
-+#endif
- 	unregister_netdevice_notifier(&ipq_dev_notifier);
- 	proc_net_remove(&init_net, IPQ_PROC_FS_NAME);
- 
-diff --git a/net/ipv6/netfilter/ip6_queue.c b/net/ipv6/netfilter/ip6_queue.c
-index 56b4ea6..e869916 100644
---- a/net/ipv6/netfilter/ip6_queue.c
-+++ b/net/ipv6/netfilter/ip6_queue.c
-@@ -515,6 +515,7 @@ static struct notifier_block ipq_nl_notifier = {
- 	.notifier_call	= ipq_rcv_nl_event,
- };
- 
-+#ifdef CONFIG_SYSCTL
- static struct ctl_table_header *ipq_sysctl_header;
- 
- static ctl_table ipq_table[] = {
-@@ -528,7 +529,9 @@ static ctl_table ipq_table[] = {
- 	},
- 	{ .ctl_name = 0 }
- };
-+#endif
- 
-+#ifdef CONFIG_PROC_FS
- static int ip6_queue_show(struct seq_file *m, void *v)
- {
- 	read_lock_bh(&queue_lock);
-@@ -565,6 +568,7 @@ static const struct file_operations ip6_queue_proc_fops = {
- 	.release	= single_release,
- 	.owner		= THIS_MODULE,
- };
-+#endif
- 
- static const struct nf_queue_handler nfqh = {
- 	.name	= "ip6_queue",
-@@ -574,7 +578,7 @@ static const struct nf_queue_handler nfqh = {
- static int __init ip6_queue_init(void)
- {
- 	int status = -ENOMEM;
--	struct proc_dir_entry *proc;
-+	struct proc_dir_entry *proc __maybe_unused;
- 
- 	netlink_register_notifier(&ipq_nl_notifier);
- 	ipqnl = netlink_kernel_create(&init_net, NETLINK_IP6_FW, 0,
-@@ -584,6 +588,7 @@ static int __init ip6_queue_init(void)
- 		goto cleanup_netlink_notifier;
- 	}
- 
-+#ifdef CONFIG_PROC_FS
- 	proc = create_proc_entry(IPQ_PROC_FS_NAME, 0, init_net.proc_net);
- 	if (proc) {
- 		proc->owner = THIS_MODULE;
-@@ -592,10 +597,11 @@ static int __init ip6_queue_init(void)
- 		printk(KERN_ERR "ip6_queue: failed to create proc entry\n");
- 		goto cleanup_ipqnl;
- 	}
--
-+#endif
- 	register_netdevice_notifier(&ipq_dev_notifier);
-+#ifdef CONFIG_SYSCTL
- 	ipq_sysctl_header = register_sysctl_paths(net_ipv6_ctl_path, ipq_table);
--
-+#endif
- 	status = nf_register_queue_handler(PF_INET6, &nfqh);
- 	if (status < 0) {
- 		printk(KERN_ERR "ip6_queue: failed to register queue handler\n");
-@@ -604,11 +610,13 @@ static int __init ip6_queue_init(void)
- 	return status;
- 
- cleanup_sysctl:
-+#ifdef CONFIG_SYSCTL
- 	unregister_sysctl_table(ipq_sysctl_header);
-+#endif
- 	unregister_netdevice_notifier(&ipq_dev_notifier);
- 	proc_net_remove(&init_net, IPQ_PROC_FS_NAME);
- 
--cleanup_ipqnl:
-+cleanup_ipqnl: __maybe_unused
- 	netlink_kernel_release(ipqnl);
- 	mutex_lock(&ipqnl_mutex);
- 	mutex_unlock(&ipqnl_mutex);
-@@ -624,7 +632,9 @@ static void __exit ip6_queue_fini(void)
- 	synchronize_net();
- 	ipq_flush(NULL, 0);
- 
-+#ifdef CONFIG_SYSCTL
- 	unregister_sysctl_table(ipq_sysctl_header);
-+#endif
- 	unregister_netdevice_notifier(&ipq_dev_notifier);
- 	proc_net_remove(&init_net, IPQ_PROC_FS_NAME);
- 
-
---------------040704010203000406050702--
