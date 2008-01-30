@@ -1,120 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760694AbYA3Wyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761763AbYA3WzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760694AbYA3Wyk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 17:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYA3Wyc
+	id S1761763AbYA3WzC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 17:55:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758347AbYA3Wyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 17:54:32 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58182 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752785AbYA3Wyb (ORCPT
+	Wed, 30 Jan 2008 17:54:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:4685 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754424AbYA3Wys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 17:54:31 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 30 Jan 2008 23:53:34 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] FireWire updates post 2.6.24
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.459cc31de75e4149@s5r6.in-berlin.de>
+	Wed, 30 Jan 2008 17:54:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Nb+U7lYUlPX7IAVZ74kXQJ4VE+IdWwNRm16zq+b50lNxjgN2f8jubayHuAY+RmNHp5X4vF1zPO7Anmh1UARuf7JWhDUHj8pzMi0bWt8ETTioozVocmES9Gk7RJiSTYYIJLaD3954SRZIt71nmZw/m2VLEgnfeB/vsWyDRoMl8gQ=
+Message-ID: <3d8471ca0801301454l56dd8607g25aad3ac3cd88e75@mail.gmail.com>
+Date: Wed, 30 Jan 2008 23:54:46 +0100
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Hang in work_resched
+In-Reply-To: <3d8471ca0801291430n68c0a845u1b24a590df8360f4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3d8471ca0801291430n68c0a845u1b24a590df8360f4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+On Jan 29, 2008 11:30 PM, Guillaume Chazarain <guichaz@gmail.com> wrote:
+>  =======================
+> gnome-termina S 00000027     0  2201      1
+>        f6711fb0 00200082 cb330d62 00000027 f664105c 00000b1e 00000000 cb331880
+>        00000027 f660d780 009e3840 080ab7d8 080ab298 f6711000 c0103e7e 009e3840
+>        000e0002 00000002 080ab7d8 080ab298 bfb41be8 080ab7d8 0000007b c010007b
+> Call Trace:
+>  [<c0103e7e>] work_resched+0x5/0x16
+>  =======================
+>
+> This corresponds to the cli instruction:
+> c0103e7e:       fa                      cli
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+I bisected it, and the resulting commit is appended. Rerverting this
+commit applies cleanly on today's git
+(dd430ca20c40ecccd6954a7efd13d4398f507728) and makes the hang go away
+-:)
 
-to receive the following IEEE 1394/ FireWire subsystem updates.  Once
-again it is almost all about bug fixes.  Most notable are David Moore's
-fixes for isochronous reception which greatly enhance the new firewire
-stack's usability in the IIDC domain (uncompressed video from industrial
-cameras and webcams).  The storage driver firewire-sbp2 received some
-attention too, prompted by user reports, but that's an ongoing story.
 
-I let self-discipline slide this time and added 9 patches which have not
-yet been in -mm and were not listed in the "What's in linux1394-2.6.git?"
-report from January 17.  Half of those are bug fixes from November which
-have been laying around waiting for last touch-up until we noticed in
-January that they indeed address a good number of bug reports.  The other
-new additions are bug fixes too.  Everything has been intensively tested
-with affected and unaffected hardware.
+commit 37bb6cb4097e29ffee970065b74499cbf10603a3
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Jan 25 21:08:32 2008 +0100
 
-Updated status of the new (still EXPERIMENTAL) drivers/firewire
-subsystem:
-  - integration with userspace libraries still with rough edges,
-  - DV reception broken on OHCI 1.0 variants of VIA VT630x,
-  - IP over 1394 still not implemented/ ported,
-  - SBP-2 (storage) fragile during hotplugging on some setups.
+    hrtimer: unlock hrtimer_wakeup
 
-Before distributors of kernel packages consider to enable the new
-firewire drivers in parallel or instead of the classic ieee1394 drivers,
-we ask that they first read up about all the caveats of the new drivers
-at wiki.linux1394.org which we regularly update.
+    hrtimer_wakeup creates a
 
-I will re-post the newly added patches in a reply.  Stat and shortlog of
-the entire queue:
+      base->lock
+        rq->lock
 
- MAINTAINERS                              |    4 +-
- drivers/firewire/fw-cdev.c               |    3 +-
- drivers/firewire/fw-device.c             |   38 ++-
- drivers/firewire/fw-device.h             |   12 +
- drivers/firewire/fw-ohci.c               |  390 +++++++++++++---------
- drivers/firewire/fw-sbp2.c               |  127 +++++---
- drivers/firewire/fw-topology.c           |    6 +
- drivers/firewire/fw-transaction.c        |    4 +-
- drivers/ieee1394/dma.c                   |   39 +--
- drivers/ieee1394/ieee1394_transactions.c |   68 ----
- drivers/ieee1394/ohci1394.c              |   12 +-
- drivers/ieee1394/raw1394.c               |    4 +-
- drivers/ieee1394/sbp2.c                  |   52 ++--
- drivers/ieee1394/sbp2.h                  |    1 -
- 14 files changed, 424 insertions(+), 336 deletions(-)
+    lock dependancy. Avoid this by switching to HRTIMER_CB_IRQSAFE_NO_SOFTIRQ
+    which doesn't hold base->lock.
 
-David Moore (3):
-      firewire: fw-ohci: Fix for dualbuffer three-or-more buffers
-      firewire: fw-ohci: Bug fixes for packet-per-buffer support
-      firewire: fw-ohci: Dynamically allocate buffers for DMA descriptors
+    This fully untangles hrtimer locks from the scheduler locks, and allows
+    hrtimer usage in the scheduler proper.
 
-Jarod Wilson (3):
-      firewire: replace subtraction with bitwise and
-      firewire: fw-sbp2: increase login orb reply timeout, fix "failed to login"
-      firewire: fw-sbp2: Use sbp2 device-provided mgt orb timeout for logins
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Joe Perches (1):
-      ieee1394: Add missing "space"
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 061ae28..bd5d6b5 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1293,7 +1293,7 @@ void hrtimer_init_sleeper(struct hrtimer_sleeper
+*sl, struct task_struct *task)
+ 	sl->timer.function = hrtimer_wakeup;
+ 	sl->task = task;
+ #ifdef CONFIG_HIGH_RES_TIMERS
+-	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_RESTART;
++	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
+ #endif
+ }
 
-Nick Piggin (1):
-      ieee1394: nopage
+@@ -1304,6 +1304,8 @@ static int __sched do_nanosleep(struct
+hrtimer_sleeper *t, enum hrtimer_mode mod
+ 	do {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		hrtimer_start(&t->timer, t->timer.expires, mode);
++		if (!hrtimer_active(&t->timer))
++			t->task = NULL;
 
-Rabin Vincent (1):
-      firewire: Fix extraction of source node id
+ 		if (likely(t->task))
+ 			schedule();
 
-Stefan Richter (17):
-      ieee1394: sbp2: prepare for s/g chaining
-      ieee1394: sbp2: s/g list access cosmetics
-      ieee1394: small cleanup after "nopage"
-      ieee1394: remove unused code
-      ieee1394: sbp2: raise default transfer size limit
-      ieee1394: ohci1394: don't schedule IT tasklets on IR events
-      firewire: fw-sbp2: refactor workq and kref handling
-      firewire: fw-sbp2: prepare for s/g chaining
-      firewire: fw-sbp2: remove unused misleading macro
-      firewire: fw-ohci: CycleTooLong interrupt management
-      firewire vs. ieee1394: clarify MAINTAINERS
-      firewire: fw-sbp2: skip unnecessary logout
-      firewire: fw-sbp2: try to increase reconnect_hold (speed up reconnection)
-      firewire: fw-sbp2: use device generation, not card generation
-      firewire: fw-cdev: use device generation, not card generation
-      firewire: enforce access order between generation and node ID, fix "giving up on config rom"
-      firewire: fw-core: react on bus resets while the config ROM is being fetched
 
 -- 
-Stefan Richter
--=====-==--- ---= ====-
-http://arcgraph.de/sr/
-
+Guillaume
