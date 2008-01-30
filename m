@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759796AbYA3UEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbYA3UEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759796AbYA3UEJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYA3UBm
+	id S1764677AbYA3UEf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbYA3UBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:01:42 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51717 "EHLO smtp4.pp.htv.fi"
+	Wed, 30 Jan 2008 15:01:45 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40675 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754747AbYA3UBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:01:38 -0500
-Date: Wed, 30 Jan 2008 22:02:12 +0200
+	id S1757226AbYA3UBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:01:43 -0500
+Date: Wed, 30 Jan 2008 22:02:17 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] parport_ECP_supported() mustn't be __devinit
-Message-ID: <20080130200212.GM29368@does.not.exist>
+To: gregkh@suse.de
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] pci_bus_size_cardbus() mustn't be __devinit
+Message-ID: <20080130200217.GP29368@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -27,7 +28,7 @@ This patch fixes the following section mismatch:
 <--  snip  -->
 
 ...
-WARNING: drivers/parport/built-in.o(.text+0x45ed): Section mismatch in reference from the function parport_pc_probe_port() to the function .devinit.text:parport_ECP_supported()
+WARNING: drivers/pci/built-in.o(.text+0x28e1f): Section mismatch in reference from the function pci_bus_size_bridges() to the function .devinit.text:pci_bus_size_cardbus()
 ...
 
 <--  snip  -->
@@ -35,27 +36,19 @@ WARNING: drivers/parport/built-in.o(.text+0x45ed): Section mismatch in reference
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-10388dc9a0e499125508eaae2c0e60d82859f5e6 
-diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-index e9743d3..69b75ab 100644
---- a/drivers/parport/parport_pc.c
-+++ b/drivers/parport/parport_pc.c
-@@ -1736,7 +1736,7 @@ static int parport_PS2_supported(struct parport *pb)
+5049ae8012186114d885db973a04b2f0c45f93a2 
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 401e03c..2cc957d 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -390,8 +390,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
+ 	return 1;
  }
  
- #ifdef CONFIG_PARPORT_PC_FIFO
--static int __devinit parport_ECP_supported(struct parport *pb)
-+static int parport_ECP_supported(struct parport *pb)
+-static void __devinit
+-pci_bus_size_cardbus(struct pci_bus *bus)
++static void pci_bus_size_cardbus(struct pci_bus *bus)
  {
- 	int i;
- 	int config, configb;
-@@ -1960,7 +1960,7 @@ static int parport_ECPEPP_supported(struct parport *pb)
- /* Don't bother probing for modes we know we won't use. */
- static int __devinit parport_PS2_supported(struct parport *pb) { return 0; }
- #ifdef CONFIG_PARPORT_PC_FIFO
--static int __devinit parport_ECP_supported(struct parport *pb) { return 0; }
-+static int parport_ECP_supported(struct parport *pb) { return 0; }
- #endif
- static int __devinit parport_EPP_supported(struct parport *pb) { return 0; }
- static int __devinit parport_ECPEPP_supported(struct parport *pb){return 0;}
+ 	struct pci_dev *bridge = bus->self;
+ 	struct resource *b_res = &bridge->resource[PCI_BRIDGE_RESOURCES];
 
