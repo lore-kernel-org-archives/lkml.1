@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYA3EnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYA3E4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYA3EnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 23:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYA3EnL
+	id S1754550AbYA3E4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 23:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYA3E4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 23:43:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:36134 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbYA3EnI (ORCPT
+	Tue, 29 Jan 2008 23:56:42 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56960 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752818AbYA3E4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 23:43:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=eHsCs/EPFmgAjHk88etXVGsaPIM20KqcWu4VXvfp/CAbTNet/6jrLbPL/Dki5U+lYg5ggizyjUuinGCGTEuQRLHW1+85FVQydLxUwblhYfXxwnJ+6IfLoOVJOlFF/Q+xs2GWZsVfGryrPQP19Fpo+/p0MV49MZP110EaPzrg8mM=
-Message-ID: <47A00057.9090306@googlemail.com>
-Date: Wed, 30 Jan 2008 05:43:03 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+	Tue, 29 Jan 2008 23:56:41 -0500
+Date: Tue, 29 Jan 2008 20:56:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       mingo@elte.hu, xemul@openvz.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
+Message-ID: <20080130045633.GG12073@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080129164019.GA2060@tv-sign.ru> <20080129150836.7fd994a2.akpm@linux-foundation.org> <m1r6g0gir1.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       romieu@fr.zoreil.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD FAILURE]2.6.24-git6 build failure on sis190 ethernet driver
-References: <479FF1F0.10907@linux.vnet.ibm.com>
-In-Reply-To: <479FF1F0.10907@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1r6g0gir1.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> Hi,
+On Tue, Jan 29, 2008 at 07:16:50PM -0700, Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> The 2.6.24-git6 kernel build fails on various x86_64 machines with the build failure
+> > On Tue, 29 Jan 2008 19:40:19 +0300
+> > Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> >
+> >> With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply
+> > rcu_read_lock(),
+> >> but find_pid_ns()->hlist_for_each_entry_rcu() should be safe under tasklist.
+> >> 
+> >> Usually it is, detach_pid() is always called under write_lock(tasklist_lock),
+> >> but copy_process() calls free_pid() lockless.
+> >> 
+> >> "#ifdef CONFIG_PREEMPT_RCU" is added mostly as documentation, perhaps it is
+> >> too ugly and should be removed.
+> >> 
+> >> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> >> 
+> >> --- MM/kernel/fork.c~PR_RCU	2008-01-27 17:09:47.000000000 +0300
+> >> +++ MM/kernel/fork.c	2008-01-29 19:23:44.000000000 +0300
+> >> @@ -1335,8 +1335,19 @@ static struct task_struct *copy_process(
+> >>  	return p;
+> >>  
+> >>  bad_fork_free_pid:
+> >> -	if (pid != &init_struct_pid)
+> >> +	if (pid != &init_struct_pid) {
+> >> +#ifdef CONFIG_PREEMPT_RCU
+> >> +		/*
+> >> +		 * read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+> >> +		 * make sure find_pid() is safe under read_lock(tasklist).
+> >> +		 */
+> >> +		write_lock_irq(&tasklist_lock);
+> >> +#endif
+> >>  		free_pid(pid);
+> >> +#ifdef CONFIG_PREEMPT_RCU
+> >> +		write_unlock_irq(&tasklist_lock);
+> >> +#endif
+> >> +	}
+> >>  bad_fork_cleanup_namespaces:
+> >>  	exit_task_namespaces(p);
+> >>  bad_fork_cleanup_keys:
+> >
+> > My attempt to understand this change timed out.
+> >
+> > kernel/pid.c is full of global but undocumented functions.  What are the
+> > locking requirements for free_pid()?  free_pid_ns()?  If it's just
+> > caller-must-hold-rcu_read_lock() then why not use rcu_read_lock() here?
+> >
+> > If the locking is "caller must hold write_lock_irq(tasklist_lock) then the
+> > sole relevant comment in there (in free_pid()) is wrong.
+> >
+> > Guys, more maintainable code please?
 > 
-> drivers/net/sis190.c:329: error: sis190_pci_tbl causes a section type conflict
-> make[2]: *** [drivers/net/sis190.o] Error 1
+> Well I took a quick look.
 > 
-> # gcc --version (machine1)
-> gcc (GCC) 4.1.1 20070105 (Red Hat 4.1.1-52)
+> Yeah this looks complex.
+> Mutation of the hash table is protected by pidmap_lock.
+> But attachments of tasks to hash entries is protected task_lock.
 > 
-> # gcc --version (machine2)
-> gcc (GCC) 4.1.1 20060525 (Red Hat 4.1.1-1)
+> And it looks like it has been that way since commit 92476d7fc0326a409ab1d3864a04093a6be9aca7
 > 
+> I thought free_pid did not have any requirements that a lock be held when
+> it was called, taking all of the needed locks.
+> 
+> Now how read_lock doesn't imply rcu_read_lock is another question.
 
-Heh :) vger.kernel.org does not like emails directly from gmail , it seems =)
+Although read_lock() does accidentally imply rcu_read_lock() for
+Classic RCU, it no longer does so for preemptible RCU.
 
-( sorry for sending this 3 time now )
+But I thought that we had found these -- must have missed some...
 
-The following patch should fix the build failure.
+							Thanx, Paul
 
-diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
-index b570402..e48e4ad 100644
---- a/drivers/net/sis190.c
-+++ b/drivers/net/sis190.c
-@@ -326,7 +326,7 @@ static const struct {
- 	{ "SiS 191 PCI Gigabit Ethernet adapter" },
- };
- 
--static struct pci_device_id sis190_pci_tbl[] __devinitdata = {
-+static const struct pci_device_id sis190_pci_tbl[] __devinitdata = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0190), 0, 0, 0 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0191), 0, 0, 1 },
- 	{ 0, },
-
-
-Gabriel
+> Anyway I have to run.  I will see about looking at this in a bit.
+> 
+> Eric
