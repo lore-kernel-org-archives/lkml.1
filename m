@@ -1,161 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763384AbYA3SIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764087AbYA3SJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763384AbYA3SIk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 13:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYA3SIc
+	id S1764087AbYA3SJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 13:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbYA3SJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 13:08:32 -0500
-Received: from smtp1.cc.lut.fi ([157.24.2.30]:53491 "EHLO smtp1.cc.lut.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbYA3SIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 13:08:31 -0500
-Date: Wed, 30 Jan 2008 20:08:27 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jan Beulich <jbeulich@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86: Add a list for custom page fault handlers.
-Message-ID: <20080130200827.322c4f7d@daedalus.pq.iki.fi>
-In-Reply-To: <1201660453.8837.13.camel@brick>
-References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
-	<1201660102.8837.9.camel@brick>
-	<1201660453.8837.13.camel@brick>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 13:09:43 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59563 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752322AbYA3SJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 13:09:42 -0500
+Message-Id: <20080130180940.022172000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 30 Jan 2008 10:09:40 -0800
+From: travis@sgi.com
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 0/6] percpu: Per cpu code simplification linux-2.6.git
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008 18:34:13 -0800
-Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> Sorry, attached the wrong version to my last message missing the
-> kdebug.h hunk.  This is still just a straight port to current x86.git.
+Patchset to fixup differences between x86.git and base linux-2.6.git
 
-Wow, thanks.
+This patchset simplifies the code that arches need to maintain to support
+per cpu functionality. Most of the code is moved into arch independent
+code. Only a minimal set of definitions is kept for each arch.
 
-I have to say I already did this for myself, but I had to
-change too many things to simply resubmit without testing. And it turned
-out porting mmiotrace to x86/mm was a non-trivial task. I have not
-been able to test yet even though I have been working on it every night.
-Today I will see if things work for me, and hopefully also for someone else.
-I might send new patches today or tomorrow, if all goes well.
+Based on latest linux-2.6.git
 
-btw. I have a bad feeling about global_flush_tlb() disappearing, it was used
-in mmiotrace code, and I don't know what to use instead. The obvious
-replacement for it is a static function elsewhere. Currently I am simply
-hoping it was a redundant leftover from the time when we had trouble making
-mmiotrace stable.
+Cc: Andi Kleen <ak@suse.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: David Miller <davem@davemloft.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-To be honest, I haven't yet had the time to educate myself about what is
-TLB.
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 
-> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> index e28cc52..c6c8164 100644
-> --- a/arch/x86/mm/fault.c
-> +++ b/arch/x86/mm/fault.c
-> @@ -49,6 +49,54 @@
->  #define PF_RSVD		(1<<3)
->  #define PF_INSTR	(1<<4)
->  
-> +#ifdef CONFIG_PAGE_FAULT_HANDLERS
-> +static HLIST_HEAD(pf_handlers); /* protected by RCU */
-> +static DEFINE_SPINLOCK(pf_handlers_writer);
-> +
-> +void register_page_fault_handler(struct pf_handler *new_pfh)
-> +{
-> +	spin_lock(&pf_handlers_writer);
-> +	hlist_add_head_rcu(&new_pfh->hlist, &pf_handlers);
-> +	spin_unlock(&pf_handlers_writer);
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
 
-Here I had to change to irqsave/irqrestore versions, as I found a possible
-lock dependency issue. Lockdep debugging code pointed it out. I'm not sure
-I fixed it completely, but using spin_lock_irqsave() is a safe bet.
+Notes:
 
-> +}
-> +EXPORT_SYMBOL_GPL(register_page_fault_handler);
-> +
-> +void unregister_page_fault_handler(struct pf_handler *old_pfh)
-> +{
-> +	might_sleep();
-> +	spin_lock(&pf_handlers_writer);
-> +	hlist_del_rcu(&old_pfh->hlist);
-> +	spin_unlock(&pf_handlers_writer);
-> +	synchronize_rcu();
-> +}
+* The latest linux-2.6.git as the following errors unrelated to this patch,
+which prevents a complete verification:
 
-And here. And I also removed sync RCU and might_sleep().
+x86_64: allmodconfig | allyesconfig
+drivers/net/sis190.c:329: error: sis190_pci_tbl causes a section type conflict
 
-> +EXPORT_SYMBOL_GPL(unregister_page_fault_handler);
-> +#endif
-> +
-> +/* returns non-zero if do_page_fault() should return */
-> +static int handle_custom_pf(struct pt_regs *regs, unsigned long error_code,
-> +			    unsigned long address)
-> +{
-> +#ifdef CONFIG_PAGE_FAULT_HANDLERS
-> +	int ret = 0;
-> +	struct pf_handler *cur;
-> +	struct hlist_node *ncur;
-> +
-> +	if (hlist_empty(&pf_handlers))
-> +		return 0;
+ia64-sn2:
+drivers/md/md.c:5881: error: __param_start_ro causes a section type conflict
 
-This looks prettier than my code. I might change my code to this.
+s390-default:
+include/linux/sched.h:1931: error: implicit declaration of function '__raw_spin_is_contended'
 
-> +	rcu_read_lock();
-> +	hlist_for_each_entry_rcu(cur, ncur, &pf_handlers, hlist) {
-> +		ret = cur->handler(regs, error_code, address);
-> +		if (ret)
-> +			break;
-> +	}
-> +	rcu_read_unlock();
-> +	return ret;
-> +#else
-> +	return 0;
-> +#endif
-> +}
-> +
->  static inline int notify_page_fault(struct pt_regs *regs)
->  {
->  #ifdef CONFIG_KPROBES
-> @@ -588,6 +636,9 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
->  	if (notify_page_fault(regs))
->  		return;
->  
-> +	if (handle_custom_pf(regs, error_code, address))
-> +		return;
-> +
+sparc-default:
+include/asm/pgtable.h:346: error: expected '=', ',', ';', 'asm' or '__attribute__' before '___f___swp_entry'
+include/asm/highmem.h:60: error: implicit declaration of function 'PageHighMem'
+include/asm/highmem.h:61: error: implicit declaration of function 'page_address'
 
-This is the non-trivial change that I really want to test before
-submitting again. The call site of the handlers changes, and vmalloc
-related faults reach the custom handlers. I don't think this would be a
-problem for mmiotrace, but I don't know enough to be sure.
-I guess using vmalloc'd memory from a page fault handler would be doomed,
-anyway, so no point worrying about it, right?
+* Successful Builds:
 
-if (unlikely(handle_custom_pf(regs, error_code, address)))
-Maybe like this, even?
+	x86_64-default
+	x86_64-single
+	x86_64-8psmp
+	x86_64-debug
+	x86_64-numa
+	i386-default
+	i386-single
+	i386-smp
+	arm-default
+	sparc64-default
+	sparc64-smp
+	ppc-pmac32
+	ppc-smp
 
-It is still supposedly making a function call every time, at least
-when CONFIG_PAGE_FAULT_HANDLERS is defined. Would it have a non-negligible
-impact on performance when no custom handlers are registered?
+* Test Results:
 
-My original version had the separate inline function to check if the list
-is empty. Which one is preferrable?
+x86_64 all configurations:
 
-I'm hoping distros would ship some kernels with PAGE_FAULT_HANDLERS
-enabled as it would make contributors' lives easier. IIRC some
-already have enabled RELAY and DEBUG_FS for mmiotrace. This is why I
-think keeping the performance impact to the minimum here is important,
-for the case of no custom handlers registered.
-
-
-Thanks,
+kernel BUG at /mdata/lwork/polaris1/travis/workareas/Linus/linux-2.6/drivers/ide/ide-cd.c:1726!
+Pid: 1327, comm: udevd Not tainted 2.6.24-defconfig-04890-gdd430ca-dirty #1
+Call Trace:
+ <IRQ>  [<ffffffff804613ed>] ? cdrom_newpc_intr+0x0/0x2f3
+ [<ffffffff80453edd>] ? ide_intr+0x193/0x207
+ [<ffffffff80251c0c>] ? handle_IRQ_event+0x25/0x53
+ [<ffffffff80253144>] ? handle_edge_irq+0xdd/0x11c
+ [<ffffffff8020c1fc>] ? call_softirq+0x1c/0x28
+ [<ffffffff8020e332>] ? do_IRQ+0xf1/0x15f
+ [<ffffffff8020b581>] ? ret_from_intr+0x0/0xa
+ <EOI>
 
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
