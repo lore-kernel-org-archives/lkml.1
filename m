@@ -1,43 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbYA3CJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYA3COg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755772AbYA3CJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYA3CI5
+	id S1754633AbYA3COg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYA3CO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:08:57 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:40612 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755073AbYA3CIz (ORCPT
+	Tue, 29 Jan 2008 21:14:27 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54491 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYA3CO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:08:55 -0500
-Date: Wed, 30 Jan 2008 03:08:54 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Pavel Roskin <proski@gnu.org>
-cc: Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-In-Reply-To: <1201657701.24898.14.camel@dv>
-Message-ID: <Pine.LNX.4.64.0801300308260.22578@fbirervta.pbzchgretzou.qr>
-References: <1201641765.18773.35.camel@dv>  <1201652420.2271.91.camel@perihelion>
- <1201657701.24898.14.camel@dv>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 Jan 2008 21:14:26 -0500
+Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
+From: john stultz <johnstul@us.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <Pine.LNX.4.64.0801290439480.17507@scrub.home>
+References: <1201142334.6383.40.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0801251349120.17507@scrub.home>
+	 <1201573686.6766.13.camel@localhost>
+	 <Pine.LNX.4.64.0801290439480.17507@scrub.home>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 18:14:23 -0800
+Message-Id: <1201659263.6766.40.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jan 29 2008 20:48, Pavel Roskin wrote:
->On Tue, 2008-01-29 at 19:20 -0500, Jon Masters wrote:
->
->> Yes it is. But I thought the existing code was intending to taint the
->> kernel (that's what it does), so it would really help to identify why it
->> tainted the kernel, by calling add_taint_module instead of add_taint. I
->> didn't put the existing match in there...don't shoot the messenger :)
->
->So, it's the same thing as in year 2006.  Good intentions, unexpected
->side effects, and a long discussion.
+On Tue, 2008-01-29 at 05:02 +0100, Roman Zippel wrote:
+> Hi,
+> 
+> On Mon, 28 Jan 2008, john stultz wrote:
+> 
+> > Regardless, current_tick_length() really is the base interval we're
+> > using in the error accumulation loop, so it seems the cleanest interface
+> > to use (just to avoid redundancy at least) when establishing the
+> > clocksource's interval length. Or do you not agree?
+> 
+> I see, what you need to use in timex.h for !CONFIG_NO_HZ is:
+> 
+> #define NTP_INTERVAL_LENGTH ((s64)LATCH * NSEC_PER_SEC) / (s64)CLOCK_TICK_RATE)
+> 
+> this calculates the base length of a clock tick in nsec.
+> 
+> current_tick_length() would only work during boot. If you switch clocks 
+> later, it would include random adjustments specific to the old clock.
 
-Perhaps module.c needs more comments explaining why the ndis line
-is there, and why it's correct and noone should touch it.
+Ah. Good point. How about the following, tested on x86_64 both with and
+without CONFIG_NO_HZ?
+
+Thanks for the review and feedback!
+-john
+
+
+
+Correct NTP drift caused by using inconsistent NTP_INTERVAL_LENGTHs in
+clocksource initialization and error accumulation. This corrects a
+280ppm drift seen on some systems using acpi_pm, and affects other
+clocksources as well (likely to a lesser degree).
+
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+
+Index: linux/include/linux/timex.h
+===================================================================
+--- linux.orig/include/linux/timex.h
++++ linux/include/linux/timex.h
+@@ -231,7 +231,13 @@ static inline int ntp_synced(void)
+ #else
+ #define NTP_INTERVAL_FREQ  (HZ)
+ #endif
+-#define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
++
++#define CLOCK_TICK_OVERFLOW	(LATCH * HZ - CLOCK_TICK_RATE)
++#define CLOCK_TICK_ADJUST	(((s64)CLOCK_TICK_OVERFLOW * NSEC_PER_SEC) / \
++					(s64)CLOCK_TICK_RATE)
++
++/* Because using NSEC_PER_SEC would be too easy */
++#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC*NSEC_PER_USEC*USER_HZ)+CLOCK_TICK_ADJUST)/NTP_INTERVAL_FREQ)
+ 
+ /* Returns how long ticks are at present, in ns / 2^(SHIFT_SCALE-10). */
+ extern u64 current_tick_length(void);
+Index: linux/kernel/time/ntp.c
+===================================================================
+--- linux.orig/kernel/time/ntp.c
++++ linux/kernel/time/ntp.c
+@@ -43,10 +43,6 @@ long time_freq;				/* frequency offset (
+ static long time_reftime;		/* time at last adjustment (s)	*/
+ long time_adjust;
+ 
+-#define CLOCK_TICK_OVERFLOW	(LATCH * HZ - CLOCK_TICK_RATE)
+-#define CLOCK_TICK_ADJUST	(((s64)CLOCK_TICK_OVERFLOW * NSEC_PER_SEC) / \
+-					(s64)CLOCK_TICK_RATE)
+-
+ static void ntp_update_frequency(void)
+ {
+ 	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
+
+
