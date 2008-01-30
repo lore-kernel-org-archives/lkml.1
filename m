@@ -1,143 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYA3CXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbYA3CXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYA3CXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYA3CXI
+	id S1755722AbYA3CXr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYA3CXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:23:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:31496 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbYA3CXE (ORCPT
+	Tue, 29 Jan 2008 21:23:37 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51211 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbYA3CXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:23:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=pBtMvRMl+6E8DdQ3UV7yJRWfFHgVsz2IVYuX0u/Dcm0r3ltfu4ErgaFtkxyfIUFlFkzO22dTXW/nb5NX0sp7doku5x+jVh0LNDlrLtWVw623FQs/ucpSg5lb9cN2wa1AWq3I7Ls1Keay9trdkZ04HJGAFrUQ2ZG8yAzwlxkaYp0=
-Date: Wed, 30 Jan 2008 10:23:54 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: marcel@holtmann.org
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: [PATCH retry] bluetooth : add conn add/del workqueues to avoid
-	connection fail
-Message-ID: <20080130022354.GA3132@darkstar.te-china.tietoenator.com>
+	Tue, 29 Jan 2008 21:23:36 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu, paulmck@linux.vnet.ibm.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
+References: <20080129164019.GA2060@tv-sign.ru>
+	<20080129150836.7fd994a2.akpm@linux-foundation.org>
+Date: Tue, 29 Jan 2008 19:16:50 -0700
+In-Reply-To: <20080129150836.7fd994a2.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 29 Jan 2008 15:08:36 -0800")
+Message-ID: <m1r6g0gir1.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-The bluetooth hci_conn sysfs add/del executed in the default workqueue.
-If the del_conn is executed after the new add_conn with same target,
-add_conn will failed with warning of "same kobject name".
+> On Tue, 29 Jan 2008 19:40:19 +0300
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+>
+>> With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply
+> rcu_read_lock(),
+>> but find_pid_ns()->hlist_for_each_entry_rcu() should be safe under tasklist.
+>> 
+>> Usually it is, detach_pid() is always called under write_lock(tasklist_lock),
+>> but copy_process() calls free_pid() lockless.
+>> 
+>> "#ifdef CONFIG_PREEMPT_RCU" is added mostly as documentation, perhaps it is
+>> too ugly and should be removed.
+>> 
+>> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>> 
+>> --- MM/kernel/fork.c~PR_RCU	2008-01-27 17:09:47.000000000 +0300
+>> +++ MM/kernel/fork.c	2008-01-29 19:23:44.000000000 +0300
+>> @@ -1335,8 +1335,19 @@ static struct task_struct *copy_process(
+>>  	return p;
+>>  
+>>  bad_fork_free_pid:
+>> -	if (pid != &init_struct_pid)
+>> +	if (pid != &init_struct_pid) {
+>> +#ifdef CONFIG_PREEMPT_RCU
+>> +		/*
+>> +		 * read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+>> +		 * make sure find_pid() is safe under read_lock(tasklist).
+>> +		 */
+>> +		write_lock_irq(&tasklist_lock);
+>> +#endif
+>>  		free_pid(pid);
+>> +#ifdef CONFIG_PREEMPT_RCU
+>> +		write_unlock_irq(&tasklist_lock);
+>> +#endif
+>> +	}
+>>  bad_fork_cleanup_namespaces:
+>>  	exit_task_namespaces(p);
+>>  bad_fork_cleanup_keys:
+>
+> My attempt to understand this change timed out.
+>
+> kernel/pid.c is full of global but undocumented functions.  What are the
+> locking requirements for free_pid()?  free_pid_ns()?  If it's just
+> caller-must-hold-rcu_read_lock() then why not use rcu_read_lock() here?
+>
+> If the locking is "caller must hold write_lock_irq(tasklist_lock) then the
+> sole relevant comment in there (in free_pid()) is wrong.
+>
+> Guys, more maintainable code please?
 
-Here add btaddconn & btdelconn workqueues,
-flush the btdelconn workqueue in the add_conn function to avoid the issue.
+Well I took a quick look.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+Yeah this looks complex.
+Mutation of the hash table is protected by pidmap_lock.
+But attachments of tasks to hash entries is protected task_lock.
 
----
-diff -upr a/net/bluetooth/hci_sysfs.c b/net/bluetooth/hci_sysfs.c
---- a/net/bluetooth/hci_sysfs.c	2008-01-30 10:14:27.000000000 +0800
-+++ b/net/bluetooth/hci_sysfs.c	2008-01-30 10:14:14.000000000 +0800
-@@ -12,6 +12,8 @@
- #undef  BT_DBG
- #define BT_DBG(D...)
- #endif
-+static struct workqueue_struct *btaddconn;
-+static struct workqueue_struct *btdelconn;
- 
- static inline char *typetostr(int type)
- {
-@@ -279,6 +281,7 @@ static void add_conn(struct work_struct 
- 	struct hci_conn *conn = container_of(work, struct hci_conn, work);
- 	int i;
- 
-+	flush_workqueue(btdelconn);
- 	if (device_add(&conn->dev) < 0) {
- 		BT_ERR("Failed to register connection device");
- 		return;
-@@ -313,6 +316,7 @@ void hci_conn_add_sysfs(struct hci_conn 
- 
- 	INIT_WORK(&conn->work, add_conn);
- 
-+	queue_work(btaddconn, &conn->work);
- 	schedule_work(&conn->work);
- }
- 
-@@ -349,6 +353,7 @@ void hci_conn_del_sysfs(struct hci_conn 
- 
- 	INIT_WORK(&conn->work, del_conn);
- 
-+	queue_work(btdelconn, &conn->work);
- 	schedule_work(&conn->work);
- }
- 
-@@ -398,31 +403,52 @@ int __init bt_sysfs_init(void)
- {
- 	int err;
- 
-+	btaddconn = create_singlethread_workqueue("btaddconn");
-+	if (!btaddconn) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+	btdelconn = create_singlethread_workqueue("btdelconn");
-+	if (!btdelconn) {
-+		err = -ENOMEM;
-+		goto out_del;
-+	}
-+
- 	bt_platform = platform_device_register_simple("bluetooth", -1, NULL, 0);
--	if (IS_ERR(bt_platform))
--		return PTR_ERR(bt_platform);
-+	if (IS_ERR(bt_platform)) {
-+		err = PTR_ERR(bt_platform);
-+		goto out_platform;
-+	}
- 
- 	err = bus_register(&bt_bus);
--	if (err < 0) {
--		platform_device_unregister(bt_platform);
--		return err;
--	}
-+	if (err < 0)
-+		goto out_bus;
- 
- 	bt_class = class_create(THIS_MODULE, "bluetooth");
- 	if (IS_ERR(bt_class)) {
--		bus_unregister(&bt_bus);
--		platform_device_unregister(bt_platform);
--		return PTR_ERR(bt_class);
-+		err = PTR_ERR(bt_class);
-+		goto out_class;
- 	}
- 
- 	return 0;
-+
-+out_class:
-+	bus_unregister(&bt_bus);
-+out_bus:
-+	platform_device_unregister(bt_platform);
-+out_platform:
-+	destroy_workqueue(btdelconn);
-+out_del:
-+	destroy_workqueue(btaddconn);
-+out:
-+	return err;
- }
- 
- void bt_sysfs_cleanup(void)
- {
-+	destroy_workqueue(btaddconn);
-+	destroy_workqueue(btdelconn);
- 	class_destroy(bt_class);
--
- 	bus_unregister(&bt_bus);
--
- 	platform_device_unregister(bt_platform);
- }
+And it looks like it has been that way since commit 92476d7fc0326a409ab1d3864a04093a6be9aca7
+
+I thought free_pid did not have any requirements that a lock be held when
+it was called, taking all of the needed locks.
+
+Now how read_lock doesn't imply rcu_read_lock is another question.
+
+Anyway I have to run.  I will see about looking at this in a bit.
+
+Eric
