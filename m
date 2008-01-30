@@ -1,157 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYA3C2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYA3C2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYA3C2b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYA3C2X
+	id S1753370AbYA3C2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbYA3C2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:28:23 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:5945 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbYA3C2W (ORCPT
+	Tue, 29 Jan 2008 21:28:44 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:10155 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754923AbYA3C2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:28:22 -0500
+	Tue, 29 Jan 2008 21:28:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=EMxCKgiukAemAAcIpjDEuWm8eobWXX5IdQ/bH6nL9vncAUvqMnfX4NFNemXD/o4UtymV2CpTVfcYcsl4NvRagrdHlwo8cz9TNDeM63Dqb68W/y/2wuHhvZmPP3WPRaSIiviZw23cnvi2UGBOJGLXHFmc92q4ad1DX/QNsQEU6Zc=
-Subject: Re: [PATCH] x86: Add a list for custom page fault handlers.
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Pekka Paalanen <pq@iki.fi>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
-In-Reply-To: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
-References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 18:28:22 -0800
-Message-Id: <1201660102.8837.9.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=s8tjMG5KPARw9m3CWHym90ANjXBICSsQSq91WL5K1GF1hsUKTCTCe+vQFFUEFG0PS5UMdZDaD3vjy8Lomqe5jZ487atHpCdFkUJxPBMEYNdyajS3+LuUdADWNMTAen+RJSVSwRljTX2x7t4RAIzn5T+lLHfaXEcZyTmV72DrWDQ=
+Message-ID: <479FE0D1.1030607@gmail.com>
+Date: Wed, 30 Jan 2008 11:28:33 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Kuan Luo <kluo@nvidia.com>, Allen Martin <AMartin@nvidia.com>
+Subject: Re: [PATCH] sata_nv: fix for completion handling
+References: <479FD88F.8090605@shaw.ca>
+In-Reply-To: <479FD88F.8090605@shaw.ca>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Paalanen <pq@iki.fi>
+Robert Hancock wrote:
+> This patch is based on an original patch from Kuan Luo of NVIDIA,
+> posted under subject "fixed a bug of adma in rhel4u5 with HDS7250SASUN500G".
+> His description follows. I've reworked it a bit to avoid some unnecessary
+> repeated checks but it should be functionally identical.
+> 
+> "The patch is to solve the error message "ata1: CPB flags CMD err,
+> flags=0x11" when testing HDS7250SASUN500G in rhel4u5.
+> I tested this hd in 2.6.24-rc7 which needed to remove the mask in
+> blacklist to run the ncq and the same error also showed up. 
+> 
+> I traced the  bug and found that the interrupt finished a command (for
+> example, tag=0) when the driver got that adma status is
+> NV_ADMA_STAT_DONE  and  cpb->resp_flags is NV_CPB_RESP_DONE.
+> However, For this hd, the drive maybe didn't clear bit 0 at this moment.
+> It meaned the hardware  had not completely finished the command.
+> If at the same time  the driver freed the command(tag 0) and sended
+> another command (tag 0), the error happened.
+> 
+> The notifier register is 32-bit register containing notifier value.
+> Value is bit vector containing one bit per tag number (0-31) in
+> corresponding bit positions (bit 0 is for tag 0, etc). When bit is set
+> then ADMA indicates that command with corresponding tag number completed
+> execution.
+> 
+> So i added the check notifier code. Sometimes i saw that the notifier
+> reg set some bits  , but the adma status set NV_ADMA_STAT_CMD_COMPLETE
+> ,not NV_ADMA_STAT_DONE. So i added the NV_ADMA_STAT_CMD_COMPLETE check
+> code."
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-Provides kernel modules a way to register custom page fault handlers.
-On every page fault, except those handled in vmalloc_fault(), this will
-call a list of registered functions. The functions may handle the fault
-and force do_page_fault() to return immediately.
+Any chance this fixes the FLUSH problem?
 
-This functionality is similar to the now removed page fault notifiers.
-Custom page fault handlers are used by debugging and reverse engineering
-tools. Mmio-trace is one such tool and a patch to add it into the tree
-will follow.
-
-The custom page fault handlers are called from the exact same points in
-do_page_fault() as the page fault notifiers were.
-
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Ingo, ported Pekka's patch to current x86.git for review.  I have not
-incorporated the RCU comments from Peter Zjistra, but I have folded
-some of the static functions into on handle_custom_pf function that
-will match the handle_kprobe_fault helper that will be ready for
-RC1.
-
-Harvey
-
- arch/x86/Kconfig.debug |    9 ++++++++
- arch/x86/mm/fault.c    |   51
-++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 2e1e3af..9b44bc5 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -225,4 +225,13 @@ config CPA_DEBUG
- 	help
- 	  Do change_page_attr self tests at boot.
- 
-+config PAGE_FAULT_HANDLERS
-+	bool "Custom page fault handlers"
-+	depends on DEBUG_KERNEL
-+	help
-+	  Allow the use of custom page fault handlers. A kernel module may
-+	  register a function that is called on every page fault not handled
-+	  for vmalloc. Custom handlers are used by some debugging and reverse
-+	  engineering tools.
-+
- endmenu
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index e28cc52..c6c8164 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -49,6 +49,54 @@
- #define PF_RSVD		(1<<3)
- #define PF_INSTR	(1<<4)
- 
-+#ifdef CONFIG_PAGE_FAULT_HANDLERS
-+static HLIST_HEAD(pf_handlers); /* protected by RCU */
-+static DEFINE_SPINLOCK(pf_handlers_writer);
-+
-+void register_page_fault_handler(struct pf_handler *new_pfh)
-+{
-+	spin_lock(&pf_handlers_writer);
-+	hlist_add_head_rcu(&new_pfh->hlist, &pf_handlers);
-+	spin_unlock(&pf_handlers_writer);
-+}
-+EXPORT_SYMBOL_GPL(register_page_fault_handler);
-+
-+void unregister_page_fault_handler(struct pf_handler *old_pfh)
-+{
-+	might_sleep();
-+	spin_lock(&pf_handlers_writer);
-+	hlist_del_rcu(&old_pfh->hlist);
-+	spin_unlock(&pf_handlers_writer);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(unregister_page_fault_handler);
-+#endif
-+
-+/* returns non-zero if do_page_fault() should return */
-+static int handle_custom_pf(struct pt_regs *regs, unsigned long
-error_code,
-+			    unsigned long address)
-+{
-+#ifdef CONFIG_PAGE_FAULT_HANDLERS
-+	int ret = 0;
-+	struct pf_handler *cur;
-+	struct hlist_node *ncur;
-+
-+	if (hlist_empty(&pf_handlers))
-+		return 0;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(cur, ncur, &pf_handlers, hlist) {
-+		ret = cur->handler(regs, error_code, address);
-+		if (ret)
-+			break;
-+	}
-+	rcu_read_unlock();
-+	return ret;
-+#else
-+	return 0;
-+#endif
-+}
-+
- static inline int notify_page_fault(struct pt_regs *regs)
- {
- #ifdef CONFIG_KPROBES
-@@ -588,6 +636,9 @@ void __kprobes do_page_fault(struct pt_regs *regs,
-unsigned long error_code)
- 	if (notify_page_fault(regs))
- 		return;
- 
-+	if (handle_custom_pf(regs, error_code, address))
-+		return;
-+
- 	/*
- 	 * We fault-in kernel-space virtual memory on-demand. The
- 	 * 'reference' page table is init_mm.pgd.
 -- 
-1.5.4.rc4.1142.gf5a97
-
-
-
+tejun
