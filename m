@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYA2X52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbYA3ABA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbYA2X52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 18:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYA2X5M
+	id S1758666AbYA3ABA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:01:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYA3AAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 18:57:12 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:50516 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758316AbYA2X5F (ORCPT
+	Tue, 29 Jan 2008 19:00:53 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:36647
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbYA3AAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 18:57:05 -0500
-Date: Tue, 29 Jan 2008 16:57:03 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: tcamuso@redhat.com, Greg KH <greg@kroah.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 29 Jan 2008 19:00:52 -0500
+Date: Wed, 30 Jan 2008 01:00:39 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
-Message-ID: <20080129235703.GC14088@parisc-linux.org>
-References: <20080119165809.GB11553@colo.lackof.org> <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com> <20080128190505.5f5b1ccc@laptopd505.fenrus.org> <20080129031804.GF20198@parisc-linux.org> <20080129131955.GC10761@kroah.com> <479F34E6.40806@redhat.com> <20080129064724.0f7e91e5@laptopd505.fenrus.org> <479F4321.6030106@redhat.com> <20080129072951.5c8af9a0@laptopd505.fenrus.org>
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080130000039.GA7233@v2.random>
+References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com> <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com> <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129072951.5c8af9a0@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 07:29:51AM -0800, Arjan van de Ven wrote:
-> > Right now, that isn't a lot of people in x86 land, but your patch
-> > encumbers drivers for non-x86 archs with an additional call to access
-> > space that they've never had a problem with.
+On Tue, Jan 29, 2008 at 02:39:00PM -0800, Christoph Lameter wrote:
+> If it does not run in write mode then concurrent faults are permissible 
+> while we remap pages. Weird. Maybe we better handle this like individual
+> page operations? Put the invalidate_page back into zap_pte. But then there 
+> would be no callback w/o lock as required by Robin. Doing the 
+
+The Robin requirements and the need to schedule are the source of the
+complications indeed.
+
+I posted all the KVM patches using mmu notifiers, today I reposted the
+ones to work with your V2 (which crashes my host unlike my last
+simpler mmu notifier patch but I also changed a few other variable
+besides your mmu notifier changes, so I can't yet be sure it's a bug
+in your V2, and the SMP regressions I fixed so far sure can't explain
+the crashes because my KVM setup could never run in do_wp_page nor
+remap_file_pages so it's something else I need to find ASAP).
+
+Robin, if you don't mind, could you please post or upload somewhere
+your GPLv2 code that registers itself in Christoph's V2 notifiers? Or
+is it top secret? I wouldn't mind to have a look so I can better
+understand what's the exact reason you're sleeping besides attempting
+GFP_KERNEL allocations. Thanks!
+
+> invalidate_range after populate allows access to memory for which ptes 
+> were zapped and the refcount was released.
+
+The last refcount is released by the invalidate_range itself.
+ 
+> > All pins are gone by the time invalidate_page/range returns. But there
+> > is no critical section between invalidate_page and the _later_
+> > ptep_clear_flush. So get_user_pages is free to run and take the PT
+> > lock before the ptep_clear_flush, find the linux pte still
+> > instantiated, and to create a new spte, before ptep_clear_flush runs.
 > 
-> lets say s/x86/x86, IA64 and architectures that use intel, amd or via chipsets/
+> Hmmm... Right. Did not consider get_user_pages. A write to the page that 
+> is not marked dirty would typically require a fault that will serialize.
 
-Umm .. ia64 already does exactly what I'm proposing for x86.  It uses
-one SAL interface for bytes below 256 and a different SAL interface for
-bytes 256-4095.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The pte is already marked dirty (and this is the case only for
+get_user_pages, regular linux writes don't fault unless it's
+explicitly writeprotect, which is mandatory in a few archs, x86 not).
