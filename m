@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbYA3UPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933304AbYA3UQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933258AbYA3UPm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 15:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762889AbYA3UDI
+	id S933304AbYA3UQI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 15:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763954AbYA3UDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 15:03:08 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51755 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758711AbYA3UCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 15:02:04 -0500
-Date: Wed, 30 Jan 2008 22:02:39 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Surjit Reang <surjit.reang@neterion.com>,
-       Sreenivasa Honnur <sreenivasa.honnur@neterion.com>,
-       Ramkrishna Vepa <ram.vepa@neterion.com>, santosh.rastapur@neterion.com,
-       sivakumar.subramani@neterion.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make s2io.c:init_tti() static
-Message-ID: <20080130200239.GX29368@does.not.exist>
+	Wed, 30 Jan 2008 15:03:35 -0500
+Received: from stinky.trash.net ([213.144.137.162]:60187 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763789AbYA3UDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 15:03:32 -0500
+Message-ID: <47A0D7F1.7010700@trash.net>
+Date: Wed, 30 Jan 2008 21:02:57 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Pavel Emelyanov <xemul@openvz.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make nf_ct_path[] static
+References: <20080130200259.GE29368@does.not.exist>
+In-Reply-To: <20080130200259.GE29368@does.not.exist>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global init_tti() static.
+Adrian Bunk wrote:
+> This patch makes the needlessly global nf_ct_path[] static.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
----
-1e8c2b07be955b181814e4c24366517a66557908 
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index 5fab7d7..bc94e84 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -1088,7 +1088,7 @@ static int s2io_print_pci_mode(struct s2io_nic *nic)
-  *  '-1' on failure
-  */
- 
--int init_tti(struct s2io_nic *nic, int link)
-+static int init_tti(struct s2io_nic *nic, int link)
- {
- 	struct XENA_dev_config __iomem *bar0 = nic->bar0;
- 	register u64 val64 = 0;
-
+I already have this queued.
