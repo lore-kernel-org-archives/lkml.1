@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbYA3AIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbYA3ALp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756341AbYA3AIj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 19:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYA3AIb
+	id S1756622AbYA3ALp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 19:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYA3ALh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 19:08:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33411 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752455AbYA3AIa (ORCPT
+	Tue, 29 Jan 2008 19:11:37 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:58784 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300AbYA3ALg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 19:08:30 -0500
-Date: Wed, 30 Jan 2008 11:04:58 +1100 (EST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@www.l.google.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Greg KH <greg@kroah.com>, Tony Camuso <tcamuso@redhat.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: PCI x86: always use conf1 to access config space below 256
- bytes
-In-Reply-To: <20080129234345.GB14088@parisc-linux.org>
-Message-ID: <alpine.LFD.1.00.0801301102370.3344@www.l.google.com>
-References: <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <20080119165809.GB11553@colo.lackof.org> <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com> <20080128223141.GA31101@parisc-linux.org> <20080128225334.GD4720@kroah.com>
- <20080129025615.GC20198@parisc-linux.org> <20080129025743.GD20198@parisc-linux.org> <20080129132108.GD10761@kroah.com> <20080129234345.GB14088@parisc-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 29 Jan 2008 19:11:36 -0500
+Message-ID: <479FC0B6.8000607@web.de>
+Date: Wed, 30 Jan 2008 01:11:34 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] don't prefer unsuited consoles on registration
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18DpnqQlBPdMTeVROYxBxzQ2NMVu5rf24X5Y0OX
+	CwFuxIBdxqbxOIgiME3O5GYgEgTM+wm/IGLH1+Qn62NrMj9+g0
+	EOKPrtYlI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KGDB triggers a (probably so far theoretical) issue of the automatic
+init console election: If some console happens to be registered first
+which does not provide a tty binding (!console->device), it prevents
+that more suited consoles which are registered later on can enter the
+candidate pool for console_device(). This is observable with KGDB's
+console which may already be registered (and exploited!) during early
+debugger connections, that is before any regular console registration.
 
+This patch fixes the issue by postponing the final, automated
+preferred_console selection until someone with a non-NULL device
+handler comes around.
 
-On Tue, 29 Jan 2008, Matthew Wilcox wrote:
-> 
-> Sorry, I didn't know that was the convention.  I thought the first
-> Signed-off-by: was assumed to be the author.
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
-There's certainly a strong correlation between "first sign-off" and 
-authorship, but signing off doesn't guarantee it, and while it's not the 
-bulk of patches, it certainly happens that people sign off on patches made 
-by others (either because the company has specific people who have the 
-right to sign off on things, or simply because the code comes from some 
-source that did GPL it, but perhaps didn't sign off on it - hopefully 
-rare, but certainly not impossible or unheard of especially for 
-one-liners that got picked up from mailing lists etc)
+---
+ kernel/printk.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-		Linus
+Index: b/kernel/printk.c
+===================================================================
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1126,8 +1126,11 @@ void register_console(struct console *co
+ 			console->index = 0;
+ 		if (console->setup == NULL ||
+ 		    console->setup(console, NULL) == 0) {
+-			console->flags |= CON_ENABLED | CON_CONSDEV;
+-			preferred_console = 0;
++			console->flags |= CON_ENABLED;
++			if (console->device) {
++				console->flags |= CON_CONSDEV;
++				preferred_console = 0;
++			}
+ 		}
+ 	}
+ 
