@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbYA3TfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbYA3Tg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbYA3TfW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYA3TfK
+	id S1759470AbYA3Tg3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYA3TgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:35:10 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:49796 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752837AbYA3TfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:35:08 -0500
-Date: Wed, 30 Jan 2008 11:35:06 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080130161123.GS26420@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801301129260.30568@schroedinger.engr.sgi.com>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
- <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
- <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
- <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
- <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
+	Wed, 30 Jan 2008 14:36:22 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:40703 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752744AbYA3TgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:36:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=dTO/PuiB1rFd+6Sd8uS7cdQGA4haFdNZy0+PvvGjxDyBTCLrHlxeN5Z9K7xIaSSNFAf/LoI9KrVXYEr5/4aYtfF91M45/zA45fxcQ3Ix3MFvad31lIS7fMn0h3gOyTKBfttz/8XNY+6M5d1ErIf91YNQVcv28qGwVy3etdaCroI=
+Message-ID: <75b66ecd0801301136n193fa44bg890ad4dab9b61eb5@mail.gmail.com>
+Date: Wed, 30 Jan 2008 14:36:19 -0500
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: ndiswrapper and GPL-only symbols redux
+Cc: "Chris Friesen" <cfriesen@nortel.com>,
+       "Giridhar Pemmasani" <pgiri@yahoo.com>, "Pavel Roskin" <proski@gnu.org>,
+       linux-kernel@vger.kernel.org, "Jon Masters" <jonathan@jonmasters.org>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, rms@gnu.org
+In-Reply-To: <20080130185446.GF29368@does.not.exist>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080129225701.GS8767@does.not.exist>
+	 <754585.89171.qm@web32403.mail.mud.yahoo.com>
+	 <20080130175447.GB29368@does.not.exist> <47A0C138.2070807@nortel.com>
+	 <20080130185446.GF29368@does.not.exist>
+X-Google-Sender-Auth: 7fe138837767fe35
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008, Robin Holt wrote:
+On Jan 30, 2008 1:54 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> IANAL, and I would therefore ask a lawyer whether, and if yes under
+> which circumstances, shipping a binary driver written for another OS
+> dynamically linked into the Linux kernel would not be a criminal offense.
+>
 
-> I think I need to straighten this discussion out in my head a little bit.
-> Am I correct in assuming Andrea's original patch set did not have any SMP
-> race conditions for KVM?  If so, then we need to start looking at how to
-> implement Christoph's and my changes in a safe fashion.  Andrea, I agree
-> complete that our introduction of the range callouts have introduced
-> SMP races.
+Please stop throwing around words like "criminal".  If this is in fact
+illegal it would be a civil matter.
 
-The original patch drew the clearing of the sptes into ptep_clear_flush(). 
-So the invalidate_page was called for each page regardless if we had been 
-doing an invalidate range before or not. It seems that the the 
-invalidate_range() was just there for optimization.
- 
-> The three issues we need to simultaneously solve is revoking the remote
-> page table/tlb information while still in a sleepable context and not
-> having the remote faulters become out of sync with the granting process.
-> Currently, I don't see a way to do that cleanly with a single callout.
-
-You could use the invalidate_page callouts to set a flag that no 
-additional rmap entries may be added until the invalidate_range has 
-occurred? We could add back all the original invalidate_pages() and pass
-a flag that specifies that an invalidate range will follow. The notifier 
-can then decide what to do with that information. If its okay to defer 
-then do nothing and wait for the range_invalidate. XPmem could stop 
-allowing external references to be established until the invalidate_range 
-was successful.
-
-Jack had a concern that multiple callouts for the same pte could cause 
-problems.
-
+Lee
