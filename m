@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYA3CBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYA3CCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbYA3CBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 21:01:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYA3CBd
+	id S1753620AbYA3CCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 21:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYA3CCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 21:01:33 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:63255 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752659AbYA3CBb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 21:01:31 -0500
-Date: Tue, 29 Jan 2008 20:00:50 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: DMA mapping on SCSI device?
-In-reply-to: <896139.88121.qm@web31812.mail.mud.yahoo.com>
-To: ltuikov@yahoo.com
-Cc: linux-arch@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Message-id: <479FDA52.8050204@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <896139.88121.qm@web31812.mail.mud.yahoo.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 29 Jan 2008 21:02:37 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:35378 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753107AbYA3CCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 21:02:36 -0500
+Subject: Re: ndiswrapper and GPL-only symbols redux
+From: Pavel Roskin <proski@gnu.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
+In-Reply-To: <20080130002514.GA1802@does.not.exist>
+References: <1201641765.18773.35.camel@dv>
+	 <20080129225701.GS8767@does.not.exist> <1201650267.18773.118.camel@dv>
+	 <20080130002514.GA1802@does.not.exist>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 21:02:35 -0500
+Message-Id: <1201658555.24898.27.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luben Tuikov wrote:
-> --- On Mon, 1/28/08, Robert Hancock <hancockr@shaw.ca> wrote:
->> The trick is that if an ATAPI device is connected, we (as
->> far as I'm 
->> aware) can't use ADMA mode, so we have to switch that
->> port into legacy 
->> mode.
-> 
-> Can you double check this with the HW architect of the
-> HW DMA engine of the ASIC?
+On Wed, 2008-01-30 at 02:25 +0200, Adrian Bunk wrote:
 
-Will do so. However, previous statements from NVIDIA fairly clearly 
-indicate that this is the case.
+> > > It is interesting that someone posting with an @gnu.org address claims
+> > > that dynamic linking of not GPLv2 compatible code into GPLv2 code was
+> > > not a copyright violation.
+> > 
+> > No, I'm representing myself only.  I don't think you represent all
+> > kernel developers when posting from the kernel.org address.
+> 
+> I'm not using my @kernel.org address except for kernel issues and I'm 
+> not using a company address in linux-kernel discussions.
+> 
+> Mailing lists of a project or a company are something completely 
+> different from using a project or company address outside of the 
+> project.
 
-> 
->> This means it's only capable of 32-bit DMA.
->> However the other port 
->> on the controller may be connected to a hard drive and
->> therefore still 
->> capable of 64-bit DMA.
-> 
-> If this is indeed the case as you've presented it here,
-> it sounds like a HW shortcoming.  I cannot see how the device
-> type (or protocol) dictate how the DMA engine operates.
-> They live in two different domains.
+OK, I'll think about it.
 
-Well, there is an indirect link. The ADMA interface (which supports 
-64-bit DMA) cannot be used to issue ATAPI commands, so if an ATAPI 
-device is connected we have to go to legacy mode, which supports only 
-32-bit DMA.
+> > I, for one, would welcome an informed position of the FSF.  It may have
+> > interesting implications for Wine, ReactOS, mplayer, qemu, Java and many
+> > other programs loading non-free compiled code at the run time.
+> 
+> Wine is licenced under the terms of the LGPL.
+> 
+> ReactOS is licenced under the terms of the GPL with a licence 
+> exception for runtime linking of non-free modules.
+> 
+> QEMU is licenced under the terms of the GPL with a licence exception for 
+> runtime linking with libqemu.a.
+> 
+> GNU classpath (and libgcj) are licenced under the terms of the GPL with 
+> a licence exception for runtime linking with it.
+> 
+> As you can see, all of the above explicitely address this issue.
+> 
+> The only program from your list that has a fishy licencing is mplayer.
 
-I'm not sure why ADMA mode doesn't support ATAPI. The only reason I can 
-think of is that there's issues since ATAPI commands can potentially be 
-of unpredictable transfer size. The "real" ADMA spec that the NVIDIA 
-implementation is loosely based on does have some special "ignore 
-excess" controls that don't seem to be in the NVIDIA version (or at 
-least not to the knowledge I have on this hardware).
+Thanks for the detailed analysis!
 
-And yes, it is a rather unfortunate hardware shortcoming (presuming that 
-it is entirely true).
+Anyway, as far as I know, copyright covers copying of works, and dynamic
+linking never creates anything suitable for copying.  The "derived work"
+stays in memory, just like it does when a proprietary program runs on
+top of the Linux kernel.  Memory dumps might be illegal to distribute
+though.
 
-> 
->> The ideal solution would be to do mapping against a
->> different struct 
->> device for each port, so that we could maintain the proper
->> DMA mask for 
->> each of them at all times. However I'm not sure if
->> that's possible. The 
->> thought of using the SCSI struct device for DMA mapping was
->> brought up 
->> at one point.. any thoughts on that?
-> 
-> The reason for this is that the object that a struct scsi_dev
-> represents has nothing to do with HW DMA engines.
-> 
-> It looks like your current solution is correct and
-> x86_64's blk_queue_bounce_limit needs work.
-> 
->     Luben
-> 
-> 
+I'm not a lawyer and the above is not a legal advice.  I don't represent
+Free Software Foundation.
+
+-- 
+Regards,
+Pavel Roskin
