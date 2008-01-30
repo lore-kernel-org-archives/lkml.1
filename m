@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764302AbYA3TSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbYA3TTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764302AbYA3TSu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:18:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYA3TSn
+	id S1764751AbYA3TTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbYA3TS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:18:43 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:21959 "EHLO hobbit.corpit.ru"
+	Wed, 30 Jan 2008 14:18:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55021 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752997AbYA3TSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:18:42 -0500
-Message-ID: <47A0CD90.5080208@msgid.tls.msk.ru>
-Date: Wed, 30 Jan 2008 22:18:40 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	id S1758190AbYA3TS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:18:56 -0500
+Date: Wed, 30 Jan 2008 20:18:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Olof Johansson <olof@lixom.net>
+Cc: "Luck, Tony" <tony.luck@intel.com>, sparclinux@vger.kernel.org,
+       linux-ia64@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130191821.GA6527@elte.hu>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <20080130184920.GA32212@elte.hu> <20080130191302.GA20008@lixom.net>
 MIME-Version: 1.0
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: hibernate/suspend-to-disk: to turn power or not?
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080130191302.GA20008@lixom.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to "glue" hibernation and UPS control
-together, and have a question.
 
-When the system power comes off an UPS (Uninterruptable
-Power Supply I mean), it's probably a good idea to turn
-the UPS off when shutting the system down or hibernating.
+* Olof Johansson <olof@lixom.net> wrote:
 
-Even with shutdown (not related to hibernating) there's
-an interesting twist: modern systems can remember the
-previous on/off status when the power gets cut and
-restores - BIOS-controlled option that allows the
-system to automatically start when the input power
-returns.  Now, when we shutting down a system, we
-need to turn the UPS *before* powering down the
-system but *after* the shutdown procedure has been
-completed.  This is done by replacing poweroff with
-halt, and ordering the UPS to turn itself off after
-a small delay (needed for the poweroff command to
-complete) - this way, system will be on but in a
-safe-to-powercut mode, and in order to turn it
-back on only the UPS has to be turned on.
+> > could you try the full patchset that Travis has just sent and which 
+> > i've put into x86.git, you can pull it from:
+> 
+> Looks ok for powerpc so far, I haven't gotten through all defconfigs 
+> yet but the first ones that failed before build now. pasemi_defconfig 
+> boots as well.
 
-But the question comes as how to control the UPS when
-we replace shutdown with hibernation.  Ideally I want
-to send some commands to the UPS after hibernation has
-been completed (since I don't know how much time it
-will require to hibernate), but before the machine
-will be turned off by the kernel.  Or at the very least,
-to be able to stop the kernel turning the machine off
-after hibernation process is complete - this way,
-I can order the UPS to turn the power off after some
-delay and hope hibernation process will finish when
-the UPS will finally cut the power (not all UPSes
-are able to do timely shutdown like this).
+great, thanks!
 
-What's my way here?
-
-Thanks!
-
-/mjt
-
-P.S.  Surprisingly, there's NO software that works
-with UPSes and implements even the basic shutdown
-process completely (not even mentioning hibernation).
-Most common is just to turn the system off without
-touching the UPS.  Yes it will work (till the UPS
-will run out of battery), but how about servers which
-should be up-n-running, ie. which should restart
-automatically?..  Oh well.
+	Ingo
