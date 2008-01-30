@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYA3XPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbYA3XX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbYA3XPT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 18:15:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbYA3XPF
+	id S1758349AbYA3XX1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 18:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYA3XXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 18:15:05 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34251 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753555AbYA3XPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 18:15:04 -0500
-Date: Thu, 31 Jan 2008 00:15:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Stephen Blackheath [to Foxconn]" <stephen@symmetric.co.nz>
-Cc: David Sterba <dsterba@suse.cz>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz, benm@symmetric.co.nz
-Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
-Message-ID: <20080130231521.GA5937@elf.ucw.cz>
-References: <20080128171929.GA3906@ds.suse.cz> <20080130134046.GB5139@elf.ucw.cz> <47A0EC3A.1040502@symmetric.co.nz>
+	Wed, 30 Jan 2008 18:23:15 -0500
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:60724 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754195AbYA3XXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 18:23:14 -0500
+Date: Wed, 30 Jan 2008 17:23:08 -0600 (CST)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+In-Reply-To: <20080130143335.7fc9ea21@deepthought>
+Message-ID: <Pine.LNX.4.63.0801301721070.23200@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
+ <20080130.055333.192844925.davem@davemloft.net>
+ <Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>
+ <20080130082136.1017631d@deepthought> <Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
+ <20080130143335.7fc9ea21@deepthought>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A0EC3A.1040502@symmetric.co.nz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-01-31 10:29:30, Stephen Blackheath [to Foxconn] wrote:
-> Pavel & all,
-> 
-> 
-> Pavel Machek wrote:
-> 
-> >> +/* I/O ports and bit definitions for version 2 of the hardware */
-> >> +
-> >> +struct MEMCCR {
-> >> +	unsigned short PCCOR;		/* Configuration Option Register */
-> >> +	unsigned short PCCSR;		/* Configuration and Status Register */
-> >> +	unsigned short PCPRR;		/* Pin Replacemant Register */
-> >> +	unsigned short PCSCR;		/* Socket and Copy Register */
-> >> +	unsigned short PCESR;		/* Extendend Status Register */
-> >> +	unsigned short PCIOB;		/* I/O Base Register */
-> >> +};
+Hi Stephen,
 
-> > Could we get better names? PCIOB is cryptic, pci_io_base is pretty
-> > good.
-> >
-> >   
-> We should keep these names because they are part of the interface
-> between host and card defined by the manufacturer.
+>>>> Indeed, we are not asking to see 1000 Mb/s.  We'd be happy to see 900
+>>>> Mb/s.
+>>>>
+>>>> Netperf is trasmitting a large buffer in MTU-sized packets (min 1500
+>>>> bytes).  Since the acks are only about 60 bytes in size, they should be
+>>>> around 4% of the total traffic.  Hence we would not expect to see more
+>>>> than 960 Mb/s.
+>>
+>>> Don't forget the network overhead: http://sd.wareonearth.com/~phil/net/overhead/
+>>> Max TCP Payload data rates over ethernet:
+>>>  (1500-40)/(38+1500) = 94.9285 %  IPv4, minimal headers
+>>>  (1500-52)/(38+1500) = 94.1482 %  IPv4, TCP timestamps
+>>
+>> Yes.  If you look further down the page, you will see that with jumbo
+>> frames (which we have also tried) on Gb/s ethernet the maximum throughput
+>> is:
+>>
+>>    (9000-20-20-12)/(9000+14+4+7+1+12)*1000000000/1000000 = 990.042 Mbps
+>>
+>> We are very far from this number -- averaging perhaps 600 or 700 Mbps.
 
-No. Use sensible names, and put manufacturer-defined 5-letter crap in
-the comments. Heck, notice that they just took first letter of each
-word of good name....
+> That is the upper bound of performance on a standard PCI bus (32 bit).
+> To go higher you need PCI-X or PCI-Express. Also make sure you are really
+> getting 64-bit PCI, because I have seen some e1000 PCI-X boards that
+> are only 32bit.
 
-> > Is some locking needed around *hw?
-> >   
-> I don't think so, but I'm happy to be corrected.
+The motherboard NIC is in a PCI-e x1 slot.  This has a maximum speed of 
+250 MB/s (2 Gb/s) in each direction.  It should be a factor of 2 more 
+interface speed than is needed.
 
-You have a structure, and are accessing its fields from interrupts. I
-assume you access the fields outside interrupt, too? As the fields are
-not of atomic_t, I believe you need locking.
-
-(Oh, and I should have said that earlier: Thanks for the driver and
-congratulations for getting it this far).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+ 	Bruce
