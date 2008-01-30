@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbYA3Xzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYA3X6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759720AbYA3Xzw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 18:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYA3Xzp
+	id S1760581AbYA3X6Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 18:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbYA3X6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 18:55:45 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59918 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753851AbYA3Xzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 18:55:44 -0500
-Date: Wed, 30 Jan 2008 15:55:37 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-In-Reply-To: <20080130233803.GB7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801301552210.1722@schroedinger.engr.sgi.com>
-References: <20080130022909.677301714@sgi.com> <20080130022944.236370194@sgi.com>
- <20080130153749.GN7233@v2.random> <20080130155306.GA13746@sgi.com>
- <Pine.LNX.4.64.0801301116510.27491@schroedinger.engr.sgi.com>
- <20080130222035.GX26420@sgi.com> <20080130233803.GB7185@v2.random>
+	Wed, 30 Jan 2008 18:58:05 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:52154 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752454AbYA3X6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 18:58:03 -0500
+Date: Thu, 31 Jan 2008 01:58:36 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       auke-jan.h.kok@intel.com, jeff@garzik.org,
+       "David S. Miller" <davem@davemloft.net>,
+       akpm <akpm@linux-foundation.org>, netdev@vger.kernel.org
+Subject: Re: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over
+	to e1000e"
+Message-ID: <20080130235836.GV29368@does.not.exist>
+References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0801301631400.3426@www.l.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Andrea Arcangeli wrote:
-
-> > I think Andrea's original concept of the lock in the mmu_notifier_head
-> > structure was the best.  I agree with him that it should be a spinlock
-> > instead of the rw_lock.
+On Wed, Jan 30, 2008 at 04:51:04PM +1100, Linus Torvalds wrote:
 > 
-> BTW, I don't see the scalability concern with huge number of tasks:
-> the lock is still in the mm, down_write(mm->mmap_sem); oneinstruction;
-> up_write(mm->mmap_sem) is always going to scale worse than
-> spin_lock(mm->somethingelse); oneinstruction;
-> spin_unlock(mm->somethinglese).
+> 
+> On Tue, 29 Jan 2008, Randy Dunlap wrote:
+> > 
+> > Andrew was concerned about this when the driver was in -mm.
+> > He asked for a patch that would set E1000E to same value as E1000
+> > and I supplied that.  Auke acked it IIRC.  Other people vetoed it.  :(
+> 
+> Yeah, I've been discussing with Jeff and the gang.
+> 
+> I think we have agreed on a solution where the ID's show up in the old 
+> driver if the new driver is not enabled at all.
+> 
+> (And as a side note: it turns out that the problem I experienced didn't 
+> come from the new e1000e driver after all, so I'll be removing the 
+> EXPERIMENTAL flag again).
+> 
+> So I'd suggest the final patch be something like this, but I'm sendign it 
+> out just as an example of how we could solve this, not necessarily as a 
+> final patch.
+> 
+> Jeff, Auke, would something like this be acceptable? It makes it very 
+> obvious in the driver table which entries are for the PCIE versions that 
+> would be handled by the E1000E driver if it is enabled..
+> 
+> Untested, but as mentioned, this is more of a "this looks maintainable and 
+> like it should solve the issues" rather than anything I was planning on 
+> committing now.
 
-If we put it elsewhere in the mm then we increase the size of the memory 
-used in the mm_struct.
+I don't like it:
 
-> Furthermore if we go this route and we don't relay on implicit
-> serialization of all the mmu notifier users against exit_mmap
-> (i.e. the mmu notifier user must agree to stop calling
-> mmu_notifier_register on a mm after the last mmput) the autodisarming
-> feature will likely have to be removed or it can't possibly be safe to
-> run mmu_notifier_unregister while mmu_notifier_release runs. With the
-> auto-disarming feature, there is no way to safely know if
-> mmu_notifier_unregister has to be called or not. I'm ok with removing
-> the auto-disarming feature and to have as self-contained-as-possible
-> locking. Then mmu_notifier_release can just become the
-> invalidate_all_after and invalidate_all, invalidate_all_before.
+We should aim at having exactly one driver for one card.
 
-Hmmmm.. exit_mmap is only called when the last reference is removed 
-against the mm right? So no tasks are running anymore. No pages are left. 
-Do we need to serialize at all for mmu_notifier_release?
+Your patch has effects like e.g. a kernel behaving differently when 
+adding and compiling the e1000e module later compared to having it 
+originally in the .config.
 
- 
+And fun like "The card works on my machine with the e1000 driver, why 
+doesn't it work in your machine with the e1000 driver?".
+
+And in terms of maintainability, people will disable the e1000e driver 
+in their kernel for working around bugs in it instead of reporting the 
+bugs. Exactly what we want to not happen.
+
+And unless we want to keep this situation forever, we anyway have to 
+remove the support for the PCI-Express adapters from the e1000 driver at 
+some point in time, so why not make a clear cut now? Whatever problems 
+this causes will be the same now or in a few years.
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
