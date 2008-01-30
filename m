@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYA3I3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYA3Ih7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbYA3I3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 03:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYA3I3c
+	id S1755915AbYA3Ih7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 03:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYA3Ihu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 03:29:32 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:12543 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbYA3I3b (ORCPT
+	Wed, 30 Jan 2008 03:37:50 -0500
+Received: from smtp1.betherenow.co.uk ([87.194.0.68]:46225 "EHLO
+	smtp1.bethere.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYA3Ihu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 03:29:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lAJRD64JMGxTAS6q82WwUZjduO5H+JLQe3T4NXUWM7EzpeyQjcBTMsUq3h0WNkkudz6HeY/+bMsvgo6Zv34l+0kODuRBIL5cgLRlraeJNcOD0r9djlKsQ7TU8F+Phbi7ju3ssXiv/bKCdK8n3LelG3ZasBRxE24TOPKsUS0CRXQ=
-Message-ID: <e2e108260801300029r1a949353k73b30f1f28db0bc9@mail.gmail.com>
-Date: Wed, 30 Jan 2008 09:29:27 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1201639331.3069.58.camel@localhost.localdomain>
+	Wed, 30 Jan 2008 03:37:50 -0500
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] Force enable HPET on (some?) ICH9 boards
+Date: Wed, 30 Jan 2008 08:36:27 +0000
+User-Agent: KMail/1.9.7
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <1201444379-4223-1-git-send-email-alistair@devzero.co.uk> <924EFEDD5F540B4284297C4DC59F3DEE6CD87A@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE6CD87A@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
+Message-Id: <200801300836.27647.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 29, 2008 9:42 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> > As an SCST user, I would like to see the SCST kernel code integrated
-> > in the mainstream kernel because of its excellent performance on an
-> > InfiniBand network. Since the SCST project comprises about 14 KLOC,
-> > reviewing the SCST code will take considerable time. Who will do this
-> > reviewing work ? And with regard to the comments made by the
-> > reviewers: Vladislav, do you have the time to carry out the
-> > modifications requested by the reviewers ? I expect a.o. that
-> > reviewers will ask to move SCST's configuration pseudofiles from
-> > procfs to sysfs.
+On Tuesday 29 January 2008 01:12:33 Pallipadi, Venkatesh wrote:
+> Patch looks good.
+> If BIOS does not report HPET on more of such systems we may have to add
+> other chipsets in ICH9 family (ICH9_8, ...) as well.
 >
-> The two target architectures perform essentially identical functions, so
-> there's only really room for one in the kernel.  Right at the moment,
-> it's STGT.  Problems in STGT come from the user<->kernel boundary which
-> can be mitigated in a variety of ways.  The fact that the figures are
-> pretty much comparable on non IB networks shows this.
+> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Are you saying that users who need an efficient iSCSI implementation
-should switch to OpenSolaris ? The OpenSolaris COMSTAR project involves
-the migration of the existing OpenSolaris iSCSI target daemon from
-userspace to their kernel. The OpenSolaris developers are
-spending time on this because they expect a significant performance
-improvement.
+Hi Ingo,
 
-> I really need a whole lot more evidence than at worst a 20% performance
-> difference on IB to pull one implementation out and replace it with
-> another.  Particularly as there's no real evidence that STGT can't be
-> tweaked to recover the 20% even on IB.
+Are you going to pick this patch up via the x86 tree, or shall I forward it to 
+Andrew or trivial@?
 
-My measurements on a 1 GB/s InfiniBand network have shown that the current
-SCST implementation is able to read data via direct I/O at a rate of 811 GB/s
-(via SRP) and that the current STGT implementation is able to transfer data at a
-rate of 589 MB/s (via iSER). That's a performance difference of 38%.
+Do you want me to re-send with Venki's ack?
 
-And even more important, the I/O latency of SCST is significantly
-lower than that
-of STGT. This is very important for database workloads -- the I/O pattern caused
-by database software is close to random I/O, and database software needs low
-latency I/O in order to run efficiently.
+-- 
+Cheers,
+Alistair.
 
-In the thread with the title "Performance of SCST versus STGT" on the
-SCST-devel /
-STGT-devel mailing lists not only the raw performance numbers were discussed but
-also which further performance improvements are possible. It became clear that
-the SCST performance can be improved further by implementing a well known
-optimization (zero-copy I/O). Fujita Tomonori explained in the same
-thread that it is
-possible to improve the performance of STGT further, but that this would require
-a lot of effort (implementing asynchronous I/O in the kernel and also
-implementing
-a new caching mechanism using pre-registered buffers).
-
-See also:
-http://sourceforge.net/mailarchive/forum.php?forum_name=scst-devel&viewmonth=200801&viewday=17
-
-Bart Van Assche.
+137/1 Warrender Park Road, Edinburgh, UK.
