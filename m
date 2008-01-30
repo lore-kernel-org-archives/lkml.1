@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763227AbYA3R0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763592AbYA3R1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763227AbYA3R0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYA3R0L
+	id S1763592AbYA3R1t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbYA3R1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:26:11 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53334 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753324AbYA3R0K (ORCPT
+	Wed, 30 Jan 2008 12:27:41 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:21577 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757591AbYA3R1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:26:10 -0500
-Subject: Re: [PATCH 2/4] dma/ia64: update ia64 machvecs
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: akepner@sgi.com
-Cc: Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080130055212.GT30022@sgi.com>
-References: <20080130055212.GT30022@sgi.com>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 11:25:58 -0600
-Message-Id: <1201713958.3292.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Wed, 30 Jan 2008 12:27:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Hs+zNYfs7+95LQaL0xzp6GOinJYEigYc+Cx/ZH/qK6z66bNFsnifCIEsOnmfs2OOudvBIFVRyrGKlfA0dJZ/gRv726OEkUY55FV9pnzWzavL+tTkGa7+bi8uiFOy0AWY9n0itlEuh42jgvGFW49chZu+rSAH7mtdkEGGalEpBoM=
+Message-ID: <386072610801300927u5fa3786bn5e6ff0c4deef9ff5@mail.gmail.com>
+Date: Thu, 31 Jan 2008 01:27:36 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Paulo Marques" <pmarques@grupopie.com>
+Subject: Re: [PATCH 1/1] [Kallsyms] Blackfin: Allow kernel symbols in L1 to be found
+Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
+       "Robin Getz" <robin.getz@analog.com>
+In-Reply-To: <47A05CBA.2030903@grupopie.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1201688453-1763-1-git-send-email-bryan.wu@analog.com>
+	 <47A05CBA.2030903@grupopie.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In general, the patches look reasonable to me.  Just an observation:
+On Jan 30, 2008 7:17 PM, Paulo Marques <pmarques@grupopie.com> wrote:
+> Bryan Wu wrote:
+> > From: Robin Getz <robin.getz@analog.com>
+> > [...]
+> > --- a/scripts/kallsyms.c
+> > +++ b/scripts/kallsyms.c
+> > @@ -12,6 +12,8 @@
+> >   * (25/Aug/2004) Paulo Marques <pmarques@grupopie.com>
+> >   *      Changed the compression method from stem compression to "table lookup"
+> >   *      compression
+> > + * (10/Jul/2006) Robin Getz <rgetz@blackfin.uclinux.org>
+> > + *      Add _stext_l1, _etext_l1 for the L1 memory section in Blackfin.
+>
+> When I wrote this initially, it was a mistake to add a Changelog in the
+> first place, but I didn't know better at the time.
+>
+> If you're going to make changes to this file, please remove all the
+> Changelog, instead of adding more entries to it. The "Changelog" should
+> be kept by the version control system, and not the source code itself.
+>
 
-On Tue, 2008-01-29 at 21:52 -0800, akepner@sgi.com wrote:
-> diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
-> index e69de29..31af292 100644
-> --- a/include/linux/dma-attrs.h
-> +++ b/include/linux/dma-attrs.h
-> @@ -0,0 +1,48 @@
-> +#ifndef _DMA_ATTR_H
-> +#define _DMA_ATTR_H
-> +#ifdef ARCH_USES_DMA_ATTRS
-> +
-> +enum dma_attr {
-> +       DMA_ATTR_BARRIER,
-> +       DMA_ATTR_FOO,
-> +       DMA_ATTR_GOO,
-> +       DMA_ATTR_MAX,
-> +};
-> +
+May I remove the whole "Changelog" with a separated patch?
 
-
-The attribute names (DMA_ATTR_...) are going to have to live somewhere
-outside of the #ifdef ARCH_USES_DMA_ATTRS otherwise we'll get compile
-failures of drivers using attributes on architectures that don't support
-them.
-
-Secondly, DMA_ATTR_BARRIER doesn't quite sound right.  What you're
-actually doing is trying to prescribe strict ordering, so shouldn't this
-be something like DMA_ATTR_STRICT_ORDERING (and perhaps with a
-corresponding DMA_ATTR_RELAXED_ORDERING for the PCIe case).  also,
-strike the DMA_ATTR_FOO and DMA_ATTR_GOO since they have no plausible
-meaning.
-
-James
-
-
+Thanks
+-Bryan
