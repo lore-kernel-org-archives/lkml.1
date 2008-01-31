@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760071AbYAaPHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764062AbYAaPIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760071AbYAaPHf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 10:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYAaPHZ
+	id S1764062AbYAaPIZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 10:08:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYAaPIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 10:07:25 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:52259 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753241AbYAaPHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 10:07:24 -0500
-Date: Thu, 31 Jan 2008 16:07:21 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: michael <trimarchi@gandalf.sssup.it>
-Cc: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-Message-ID: <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <47A12A2E.5040309@gandalf.sssup.it>
-References: <20080129224316.GA23155@gandalf.sssup.it>
-	<479FB2D7.4020804@gandalf.sssup.it>
-	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
-	<47A051A7.7030004@gandalf.sssup.it>
-	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
-	<47A09723.7020000@gandalf.sssup.it>
-	<20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>
-	<47A12A2E.5040309@gandalf.sssup.it>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 10:08:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37252 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754061AbYAaPIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 10:08:14 -0500
+Date: Thu, 31 Jan 2008 16:07:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, linux-kernel@vger.kernel.org,
+       Jan Beulich <jbeulich@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] x86: Add a list for custom page fault handlers.
+Message-ID: <20080131150746.GB11996@elte.hu>
+References: <20080127185238.4bcac54b@daedalus.pq.iki.fi> <1201660102.8837.9.camel@brick> <1201660453.8837.13.camel@brick> <20080130200827.322c4f7d@daedalus.pq.iki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080130200827.322c4f7d@daedalus.pq.iki.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 02:53:50 +0100
-michael <trimarchi@gandalf.sssup.it> wrote:
 
-> The overrun still remain. An lrz receive session is impossible using
-> full preemption. I will try the dma patch too and test in iso mode for 
-> smart card.
+* Pekka Paalanen <pq@iki.fi> wrote:
 
-Hmm. Seems to work reasonably well on a non-rt kernel -- I get quite a
-few overruns, but nothing more than the Zmodem protocol can handle.
+> >  static inline int notify_page_fault(struct pt_regs *regs)
+> >  {
+> >  #ifdef CONFIG_KPROBES
+> > @@ -588,6 +636,9 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+> >  	if (notify_page_fault(regs))
+> >  		return;
+> >  
+> > +	if (handle_custom_pf(regs, error_code, address))
+> > +		return;
+> > +
+> 
+> This is the non-trivial change that I really want to test before 
+> submitting again. The call site of the handlers changes, and vmalloc 
+> related faults reach the custom handlers. I don't think this would be 
+> a problem for mmiotrace, but I don't know enough to be sure. I guess 
+> using vmalloc'd memory from a page fault handler would be doomed, 
+> anyway, so no point worrying about it, right?
 
-It seems to be very sensitive to network traffic though...could it have
-something to do with softirq scheduling? Could you try the patch below
-and see if you can trigger the error message?
+could you please send us a patch for the whole mmiotrace kernel-side 
+feature, so that we can have a look at the general structure of this? 
+(and the interaction with change_page_attr(), etc.) Even if it's not 
+functional (and wont even build/boot) at the moment. Thanks,
 
-Haavard
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 477950f..c61fcc3 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -337,9 +337,12 @@ atmel_buffer_rx_char(struct uart_port *port, unsigned int status,
- 	struct circ_buf *ring = &atmel_port->rx_ring;
- 	struct atmel_uart_char *c;
- 
--	if (!CIRC_SPACE(ring->head, ring->tail, ATMEL_SERIAL_RINGSIZE))
-+	if (!CIRC_SPACE(ring->head, ring->tail, ATMEL_SERIAL_RINGSIZE)) {
-+		dev_err(port->dev, "RX ring buffer full, dropping data\n");
-+
- 		/* Buffer overflow, ignore char */
- 		return;
-+	}
- 
- 	c = &((struct atmel_uart_char *)ring->buf)[ring->head];
- 	c->status	= status;
+	Ingo
