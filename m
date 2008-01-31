@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933104AbYAaW6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYAaW6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933104AbYAaW6Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbYAaW6E
+	id S1755385AbYAaW6v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYAaW6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:58:04 -0500
-Received: from wr-out-0506.google.com ([64.233.184.232]:18487 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbYAaW6B (ORCPT
+	Thu, 31 Jan 2008 17:58:42 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59250 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753090AbYAaW6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:58:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kJxF6QtqzXiS3cCl63LLoPo1aOu68rLS8TKBAjsU1rPpZ5TDk1R94lXGj/a91ADZ/7y3KYZ+M+IZcmi7ZCdFfWRowc2CPz0eB+kC/aVuHMuwSIQwRr8VvXAO1DhBkoxpaumABpMJ0ZXyQ46ntmvbYsIo6Hks9PLZa0apLMZ1zLA=
-Message-ID: <4d8e3fd30801311457x3edc67eap16c03f511dca506b@mail.gmail.com>
-Date: Fri, 1 Feb 2008 02:27:57 +0330
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH 6/7] X86: include missing KERN_ facility level
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1201563036.23527.22.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 31 Jan 2008 17:58:41 -0500
+Date: Thu, 31 Jan 2008 14:58:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: avuton@gmail.com, yakui.zhao@intel.com, shaohua.li@intel.com,
+       bjorn.helgaas@hp.com, trenn@suse.de, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
+ sound card
+Message-Id: <20080131145820.44171af2.akpm@linux-foundation.org>
+In-Reply-To: <479CCAAD.4080706@shaw.ca>
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no>
+	<479CCAAD.4080706@shaw.ca>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080129000803.69b54c7e@paolo-desktop>
-	 <1201563036.23527.22.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/29/08, Joe Perches <joe@perches.com> wrote:
-> On Tue, 2008-01-29 at 00:08 +0100, Paolo Ciarrocchi wrote:
-> > \diff --git a/arch/x86/math-emu/errors.c b/arch/x86/math-emu/errors.c
-> > index 6102fe0..569a62e 100644
-> > --- a/arch/x86/math-emu/errors.c
-> > +++ b/arch/x86/math-emu/errors.c
-> > @@ -57,65 +57,65 @@ void FPU_printall(void)
-> >
-> >    RE_ENTRANT_CHECK_OFF;
-> >    /* No need to check access_ok(), we have previously fetched these
-> bytes. */
-> > -  printk("At %p:", (void *) address);
-> > +  printk(KERN_ERR "At %p:", (void *) address);
-> >    if (FPU_CS == __USER_CS) {
-> >  #define MAX_PRINTED_BYTES 20
-> >        for (i = 0; i < MAX_PRINTED_BYTES; i++) {
-> >  	  FPU_get_user(byte1, (u_char __user *) address);
-> >  	  if ((byte1 & 0xf8) == 0xd8) {
-> > -	      printk(" %02x", byte1);
-> > +	      printk(KERN_ERR " %02x", byte1);
-> >  	      break;
-> >  	    }
-> > -	  printk(" [%02x]", byte1);
-> > +	  printk(KERN_ERR " [%02x]", byte1);
-> >  	  address++;
-> >  	}
->
-> KERN_ prefixes are used only at the start of a line.
-> You should probably use print_hex_dump.
+On Sun, 27 Jan 2008 12:17:17 -0600
+Robert Hancock <hancockr@shaw.ca> wrote:
 
+> Avuton Olrich wrote:
+> > With v2.6.24 my second ALSA sound device stopped working.
+> > 
+> > After bisection it says this was the offending commit.
+> > 
+> > a7839e960675b549f06209d18283d5cee2ce9261 is first bad commit
+> > commit a7839e960675b549f06209d18283d5cee2ce9261
+> > Author: Zhao Yakui <yakui.zhao@intel.com>
+> > Date:   Wed Nov 28 16:21:21 2007 -0800
+> > 
+> >     PNP: increase the maximum number of resources
+> > 
+> >     On some systems the number of resources(IO,MEM) returnedy by PNP device is
+> >     greater than the PNP constant, for example motherboard devices.  It brings
+> >     that some resources can't be reserved and resource confilicts.  This will
+> >     cause PCI resources are assigned wrongly in some systems, and cause hang.
+> >     This is a regression since we deleted ACPI motherboard driver and use PNP
+> >     system driver.
+> > 
+> >     [akpm@linux-foundation.org: fix text and coding-style a bit]
+> >     Signed-off-by: Li Shaohua <shaohua.li@intel.com>
+> >     Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+> >     Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> >     Cc: Thomas Renninger <trenn@suse.de>
+> >     Cc: <stable@kernel.org>
+> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > 
+> > The audio device is 00:1b.0 (see my lspci -vvv output), the other
+> > audio device works fine.
+> > 
+> > http://avuton.googlepages.com/v2.6-before (dmesg revision before)
+> > http://avuton.googlepages.com/v2.6-after (dmesg broken revision)
+> > http://avuton.googlepages.com/lspci-vvv
+> > http://avuton.googlepages.com/config (from the broken revision)
+> > http://avuton.googlepages.com/iomem
+> > http://avuton.googlepages.com/ioports
 
-Thank you. I'll redo the patch.
+I don't think anything has happened yet on this?
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+> Here's why the driver fails to load:
+> 
+> [   31.133060] ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 22 (level, 
+> low) -> IRQ 22
+> [   31.133141] PCI: Unable to reserve mem region #1:4000@febf8000 for 
+> device 0000:00:1b.0
+> [   31.133197] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+> [   31.133244] HDA Intel: probe of 0000:00:1b.0 failed with error -16
+> 
+> The iomem location of the HDA controller conflicts with this reservation 
+> by the BIOS:
+> 
+> [   22.906654] system 00:08: iomem range 0xfebfa000-0xfebfac00 has been 
+> reserved
+> 
+> There was a patch floating around to ignore PnPACPI reservations which 
+> conflict with PCI BARs, which appears to be what's happening in this 
+> case. That patch originally worked for any board, but was later made 
+> specific to a certain Supermicro motherboard which had the sata_nv 
+> controller MMIO regions marked as reserved, preventing the driver from 
+> loading. We may need a more general solution. See:
+> 
+> https://bugzilla.redhat.com/show_bug.cgi?id=313491
+
+Thanks.  If we were to remove the supermicro-specificity, would this be a
+sufficiently general solution?
+
