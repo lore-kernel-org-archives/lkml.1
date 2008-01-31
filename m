@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934862AbYAaX3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934646AbYAaXaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934862AbYAaX3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 18:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934154AbYAaX27
+	id S934646AbYAaXaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 18:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbYAaX36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 18:28:59 -0500
-Received: from mga09.intel.com ([134.134.136.24]:24265 "EHLO mga09.intel.com"
+	Thu, 31 Jan 2008 18:29:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52298 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934400AbYAaX25 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 18:28:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,287,1199692800"; 
-   d="scan'208";a="294761153"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Thu, 31 Jan 2008 15:28:13 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC78CC73@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC78C75A@orsmsx424.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Thread-Index: Achj6MJxBSJCZx/gQf+KkNIfkM+UVgATq2qQAAoYgTA=
-References: <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com> <20080130194616.GA19426@elte.hu> <1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com> <20080130200221.GA28073@elte.hu> <1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com> <20080130205915.GA4562@elte.hu> <1FE6DD409037234FAB833C420AA843EC78C219@orsmsx424.amr.corp.intel.com> <20080131090642.GA5688@elte.hu> <1FE6DD409037234FAB833C420AA843EC78C75A@orsmsx424.amr.corp.intel.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, "Ingo Molnar" <mingo@elte.hu>
-Cc: "Mike Travis" <travis@sgi.com>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       <linux-ia64@vger.kernel.org>, <sparclinux@vger.kernel.org>
-X-OriginalArrivalTime: 31 Jan 2008 23:28:14.0302 (UTC) FILETIME=[F3628FE0:01C86460]
+	id S1752872AbYAaX34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 18:29:56 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <8DB49AEC-5DA8-4AC3-A660-689E6BC80D2E@oracle.com>
+References: <8DB49AEC-5DA8-4AC3-A660-689E6BC80D2E@oracle.com> <479901A8.3000706@oracle.com> <20080123172038.11107.86025.stgit@warthog.procyon.org.uk> <20080123172246.11107.62216.stgit@warthog.procyon.org.uk> <18686.1201663501@redhat.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: dhowells@redhat.com, Trond.Myklebust@netapp.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 24/27] NFS: Use local caching [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 31 Jan 2008 23:29:17 +0000
+Message-ID: <28512.1201822157@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So the percpu changes are innocent ... something else since 2.6.24 is
-> to blame.  Only 5749 commits :-)  I'll start bisecting.
+Chuck Lever <chuck.lever@oracle.com> wrote:
 
-12 bisections later ... nothing!  I think I got lost in the
-maze.  Bisection #5 had a crash, but it looked to be a very
-differnt crash (and looked to happen later than the bug I was
-hunting).  So I marked that as "good" on the theory that it
-looked like this bug wasn't in the kernel. Same thing happened
-at bisection #9.  But I ended up with:
+> >>> +struct nfs_fh_auxdata {
+> >>> +	struct timespec	i_mtime;
+> >>> +	struct timespec	i_ctime;
+> >>> +	loff_t		i_size;
+> >>> +};
+> >>
+> >> It might be useful to explain here why you need to supplement the
+> >> mtime, ctime, and size fields that already exist in an NFS inode.
+> >
+> > Supplement?  I don't understand.
+> 
+> Why is it necessary to add additional mtime, ctime and size fields for NFS
+> inodes?  Similar metadata is already stored in nfsi.
 
-commit bfada697bd534d2c16fd07fbef3a4924c4d4e014
-Author: Pavel Emelyanov <xemul@openvz.org>
-Date:   Sun Dec 2 00:57:08 2007 +1100
+Yes, but this is the data that's stored in the cache on disk, not what's
+stored in the NFS inode struct in RAM.
 
-    [IPV4]: Use ctl paths to register devinet sysctls
+I'll add some more comments to the code to make this clearer.
 
-
-Which just looks too improbable to be the cause of the UP
-crash.  Git won't revert it out from top of tree automatically
-so I can't easily test whether some weird magic means that
-this is the buggy commit.
-
-Perhaps the issue is another offset of object X in kernel w.r.t.
-object Y ... and so the good/bad choices in the bisection are
-actually pretty random depending on how much code is stuffed
-between X & Y at each bisection point.
-
--Tony
+David
