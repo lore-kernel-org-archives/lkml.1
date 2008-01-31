@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYAaRgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbYAaRho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbYAaRgr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 12:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbYAaRgf
+	id S932537AbYAaRho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 12:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbYAaRhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 12:36:35 -0500
-Received: from elasmtp-curtail.atl.sa.earthlink.net ([209.86.89.64]:58981 "EHLO
-	elasmtp-curtail.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751592AbYAaRge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 12:36:34 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=KyZuxkWNPPPtwDdD7ofDNoiWXS8W2gWGviATOmFXWSTslrnNdtVymodc4pULvx4b;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Thu, 31 Jan 2008 12:36:27 -0500
-From: Bill Fink <billfink@mindspring.com>
-To: Bruce Allen <ballen@gravity.phys.uwm.edu>
-Cc: SANGTAE HA <sangtae.ha@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: e1000 full-duplex TCP performance well below wire speed
-Message-Id: <20080131123627.599be68f.billfink@mindspring.com>
-In-Reply-To: <Pine.LNX.4.63.0801310951060.10967@trinity.phys.uwm.edu>
-References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
-	<20080130.055333.192844925.davem@davemloft.net>
-	<Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>
-	<20080130082136.1017631d@deepthought>
-	<Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
-	<649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
-	<20080131064533.ef0ae932.billfink@mindspring.com>
-	<Pine.LNX.4.63.0801310951060.10967@trinity.phys.uwm.edu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 31 Jan 2008 12:37:37 -0500
+Received: from gw.goop.org ([64.81.55.164]:48542 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756123AbYAaRhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 12:37:36 -0500
+Message-ID: <47A20750.8000702@goop.org>
+Date: Thu, 31 Jan 2008 09:37:20 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: x86.git: wants to build as ia64
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d362fef374961ea41e0b9370f2468fb2c350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.55.21.22
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bruce,
+Something in current x86.git is making my kernel build as ia64.  I don't 
+see any obvious change which might be the cause.
 
-On Thu, 31 Jan 2008, Bruce Allen wrote:
+: ezr:pts/6; make oldconfig
+make -C /home/jeremy/hg/xen/paravirt/linux O=/home/jeremy/hg/xen/paravirt/linux-i386/. oldconfig
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/toolchain-flags: line 16: ia64-linux-gcc: command not found
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/toolchain-flags: line 17: ia64-linux-objdump: command not found
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/toolchain-flags: line 19: [: !=: unary operator expected
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/toolchain-flags: line 30: ia64-linux-gcc: command not found
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/toolchain-flags: line 31: ia64-linux-readelf: command not found
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/check-gas: line 7: ia64-linux-gcc: command not found
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/check-gas: line 8: ia64-linux-objdump: command not found
+/home/jeremy/hg/xen/paravirt/linux/arch/ia64/scripts/check-gas: line 10: [: !=: unary operator expected
+/home/jeremy/hg/xen/paravirt/linux/scripts/gcc-version.sh: line 25: ia64-linux-gcc: command not found
+/home/jeremy/hg/xen/paravirt/linux/scripts/gcc-version.sh: line 26: ia64-linux-gcc: command not found
+  GEN     /home/jeremy/hg/xen/paravirt/linux-i386/Makefile
+scripts/kconfig/conf -o arch/ia64/Kconfig
+drivers/net/Kconfig:1743:warning: 'select' used by config symbol 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+drivers/spi/Kconfig:156:warning: 'select' used by config symbol 'SPI_PXA2XX' refers to undefined symbol 'PXA_SSP'
+.config:12:warning: trying to assign nonexistent symbol GENERIC_CMOS_UPDATE
+.config:13:warning: trying to assign nonexistent symbol CLOCKSOURCE_WATCHDOG
+.config:14:warning: trying to assign nonexistent symbol GENERIC_CLOCKEVENTS
+.config:15:warning: trying to assign nonexistent symbol GENERIC_CLOCKEVENTS_BROADCAST
+.config:18:warning: trying to assign nonexistent symbol SEMAPHORE_SLEEPERS
+.config:22:warning: trying to assign nonexistent symbol GENERIC_ISA_DMA
+.config:25:warning: trying to assign nonexistent symbol GENERIC_HWEIGHT
+.config:29:warning: trying to assign nonexistent symbol RWSEM_GENERIC_SPINLOCK
+.config:37:warning: trying to assign nonexistent symbol ZONE_DMA32
+.config:43:warning: trying to assign nonexistent symbol X86_SMP
+.config:44:warning: trying to assign nonexistent symbol X86_32_SMP
+...
 
-> > I see similar results on my test systems
-> 
-> Thanks for this report and for confirming our observations.  Could you 
-> please confirm that a single-port bidrectional UDP link runs at wire 
-> speed?  This helps to localize the problem to the TCP stack or interaction 
-> of the TCP stack with the e1000 driver and hardware.
-
-Yes, a single-port bidirectional UDP test gets full GigE line rate
-in both directions with no packet loss.
-
-[bill@chance4 ~]$ nuttcp -f-beta -Itx -u -Ru -w2m 192.168.6.79 & nuttcp -f-beta -Irx -r -u -Ru -w2m 192.168.6.79
-tx:  1187.0078 MB /  10.04 sec =  992.0550 Mbps 19 %TX 7 %RX 0 / 151937 drop/pkt 0.00 %loss
-rx:  1187.1016 MB /  10.03 sec =  992.3408 Mbps 19 %TX 7 %RX 0 / 151949 drop/pkt 0.00 %loss
-
-						-Bill
+    J
