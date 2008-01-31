@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbYAaBBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbYAaBC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbYAaBBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 20:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYAaBBf
+	id S1760659AbYAaBC2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 20:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbYAaBCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 20:01:35 -0500
-Received: from smtp11.unit.tiscali.de ([213.205.33.47]:35663 "EHLO
-	smtp11.unit.tiscali.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbYAaBBe (ORCPT
+	Wed, 30 Jan 2008 20:02:21 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57654 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbYAaBCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 20:01:34 -0500
-From: Michael Gerdau <mgerdau@tiscali.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Date: Thu, 31 Jan 2008 02:00:31 +0100
-User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
-Cc: Lee Revell <rlrevell@joe-job.com>, Chris Friesen <cfriesen@nortel.com>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, Pavel Roskin <proski@gnu.org>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, rms@gnu.org
-References: <20080129225701.GS8767@does.not.exist> <75b66ecd0801301136n193fa44bg890ad4dab9b61eb5@mail.gmail.com> <20080130202821.GP29368@does.not.exist>
-In-Reply-To: <20080130202821.GP29368@does.not.exist>
+	Wed, 30 Jan 2008 20:02:20 -0500
+Date: Thu, 31 Jan 2008 02:02:19 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: sam@ravnborg.org
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: oldconfig/menuconfig help text display for "choice" items
+Message-ID: <Pine.LNX.4.64.0801310157050.13320@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart150249257.afTSm1ajAo";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200801310200.49236.mgerdau@tiscali.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart150249257.afTSm1ajAo
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-> > > IANAL, and I would therefore ask a lawyer whether, and if yes under
-> > > which circumstances, shipping a binary driver written for another OS
-> > > dynamically linked into the Linux kernel would not be a criminal offe=
-nse.
-> >=20
-> > Please stop throwing around words like "criminal".  If this is in fact
-> > illegal it would be a civil matter.
->=20
-> You are living in a country where copyright violations can't bring=20
-> people into jail?
 
-AFAICS you are misunderstanding the words "criminal" and "civil matter".
+when running oldconfig, I got to see some new IO delay questions,
+and tried displaying its info using ?.
 
-AFAIK in german law the difference between the two is that "criminal"
-offences are prosecuted by the government out of their own accord while
-"civil matters" require someone else to sue.
+	IO delay type
+	  1. port 0x80 based port-IO delay [recommended] (IO_DELAY_0X80) (NEW)
+	> 2. port 0xed based port-IO delay (IO_DELAY_0XED) (NEW)
+	  3. udelay based port-IO delay (IO_DELAY_UDELAY) (NEW)
+	  4. no port-IO delay (IO_DELAY_NONE) (NEW)
+	choice[1-4]: ?
 
-Murder and robbery are criminal offences.
+	Sorry, no help available for this option yet.
 
-Assuming the above is correct then copyright violations definitely are
-"civil matters" in germany regardless whether you could go into jail or not.
 
-Best,
-Michael
-=2D-=20
- Michael Gerdau       email: mgerdau@tiscali.de
- GPG-keys available on request or at public keyserver
+The IO_DELAY_* "config" items have a help text, while the "choice" 
+item does not.
+Are there any plans on 'fixing' oldconfig to somehow tell me something 
+about such new options?
 
---nextPart150249257.afTSm1ajAo
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBHoR3BUYYhyuxDQc4RArweAJ41jQ3LZSMcd3RkRskREOc/whl4UQCfS1IK
-8xIjU/wJ6NCYKsI97mD1orw=
-=2mx3
------END PGP SIGNATURE-----
-
---nextPart150249257.afTSm1ajAo--
+thanks,
+Jan
