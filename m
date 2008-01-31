@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYAaGPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764923AbYAaGQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbYAaGPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 01:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYAaGP2
+	id S1764923AbYAaGQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 01:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYAaGQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 01:15:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46778 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbYAaGP1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 01:15:27 -0500
-Message-ID: <47A16616.9070606@zytor.com>
-Date: Wed, 30 Jan 2008 22:09:26 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: system without RAM on node0 boot fail
-References: <200801302026.27130.yinghai.lu@sun.com> <200801302102.09510.yinghai.lu@sun.com> <Pine.LNX.4.64.0801302049180.15109@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0801302049180.15109@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 31 Jan 2008 01:16:42 -0500
+Received: from gate.crashing.org ([63.228.1.57]:50492 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752785AbYAaGQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 01:16:41 -0500
+Cc: <mporter@kernel.crashing.org>, <linux-kernel@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>
+Message-Id: <F84DDA3A-AF43-4E88-B971-2C9C89733FF1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Zhang Wei <wei.zhang@freescale.com>
+In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AEBD0683@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 1/6] Change RIO function mpc85xx_ to fsl_ .
+Date: Thu, 31 Jan 2008 00:15:07 -0600
+References: <1201689053956-git-send-email-wei.zhang@freescale.com> <A3EAB036-F69D-48DD-8CA9-4EAAE63AE1F5@kernel.crashing.org> <ABF87B0B6A38C0458E319AC973ED68AEBD0683@zch01exm26.fsl.freescale.net>
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> x86 supports booting from a node without RAM?
 
- From the looks of it I would say he probably has the boot node numbered 1.
+On Jan 31, 2008, at 12:04 AM, Zhang Wei wrote:
 
-The e820 map is also "interesting" - doesn't list the first 256 bytes, 
-which corresponds to the first quarter(!) of the real-mode exception table.
+> All right, I'll give you another patch for 86xx dts file. :)
+>
+> Btw: Why the PCI and other nodes were moved from SOC? Just for clear?
+> If they are moved out, their register address must use full address  
+> not
+> offset address.
 
-	-hpa
+we did this because the feeling was the SOC node just represented the  
+IMMR/CCSBAR registers, and not the address space used by the various  
+busses.
+
+(this is why pci, rio, and local bus all exist outside of the soc node).
+
+- k
