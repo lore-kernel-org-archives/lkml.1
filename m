@@ -1,145 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbYAaO1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbYAaOaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759972AbYAaO1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 09:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYAaO1n
+	id S1758828AbYAaOaE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 09:30:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYAaO3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 09:27:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36843 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbYAaO1m (ORCPT
+	Thu, 31 Jan 2008 09:29:54 -0500
+Received: from virt2h.secure-wi.com ([209.216.203.82]:40678 "EHLO
+	virt2h.secure-wi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbYAaO3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 09:27:42 -0500
-Subject: [PATCH] hrtimer: fix hrtimer_init_sleeper() users
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Guillaume Chazarain <guichaz@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <200801310042.07910.rjw@sisk.pl>
-References: <200801302338.25365.rjw@sisk.pl>
-	 <200801310042.07910.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 15:27:24 +0100
-Message-Id: <1201789644.32654.5.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Thu, 31 Jan 2008 09:29:53 -0500
+X-Greylist: delayed 336 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 09:29:52 EST
+X-ClientAddr: 24.8.33.16
+Message-ID: <47A1D9AE.4090206@wildturkeyranch.net>
+Date: Thu, 31 Jan 2008 07:22:38 -0700
+From: George Anzinger <george@wildturkeyranch.net>
+Reply-To: george@wildturkeyranch.net
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Jan Kiszka <jan.kiszka@web.de>
+CC: Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
+       kgdb-bugreport@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Kgdb-bugreport] [PATCH 1/5] KGDB: improve early init
+References: <479FBA3B.5050209@web.de> <47A10355.9090707@web.de>
+In-Reply-To: <47A10355.9090707@web.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-webintellects-MailScanner-Information: Please contact the ISP for more information
+X-webintellects-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-MailScanner-From: george@wildturkeyranch.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/31/2008 01:36 AM,  Jan Kiszka was caught saying:
+ > Jan Kiszka wrote:
+ >> George Anzinger wrote:
+ >>> On 01/30/2008 04:08 PM,  Jan Kiszka was caught saying:
+ >>>> [Here comes a rebased version against latest x86/mm]
+ >>>>
+ >>>> In case "kgdbwait" is passed as kernel parameter, KGDB tries to set up
+ >>>> and connect to the front-end already during early_param evaluation.
+ >>>> This
+ >>>> fails on x86 as the exception stack is not yet initialized, 
+effectively
+ >>>> delaying kgdbwait until late-init.
+ >>>
+ >>> I wonder how much work it would take to just set up the exception
+ >>> stack and proceed.  After all the kgbdwait is there to help debug
+ >>> very early kernel code...
+ >>
+ >> In principle a valid question, but I'm not the one to answer it. I
+ >> would not feel very well if I had to reorder this critical setup code.
+ >> Look, we would have to move trap_init in start_kernel before
+ >> parse_early_param, and that would affect _every_ arch...
 
-On Thu, 2008-01-31 at 00:42 +0100, Rafael J. Wysocki wrote:
-> Update.
-> 
-> On Wednesday, 30 of January 2008, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > Recently I've been observing problems with unmounting the /home fs on reboot
-> > and/or shutdown on two test boxes.
-> > 
-> > After some more investigation I've found that this is due to some KDE processes
-> > stuck in D states after their owner has logged out.
-> > 
-> > This happens 100% of the time if there's a suspend/resume cycle before the user
-> > logs out (ie. the user logs into KDE, works for some time, suspends the box to
-> > RAM and resmes one or more times and then logs out).  Still, I also observe the
-> > symptoms on a box that's never suspended.
-> > 
-> > I'm not sure how to debug this, so please advise.
-> 
-> After reverting:
-> 
-> commit 37bb6cb4097e29ffee970065b74499cbf10603a3
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Fri Jan 25 21:08:32 2008 +0100
-> 
->     hrtimer: unlock hrtimer_wakeup
-> 
-> I no longer get processes in the D state, but there still is a problem with
-> artswrapper (this is an openSUSE 10.3 system, x86-64).  Namely,
-> after a suspend/resume cycle and logging out/logging in the user,
-> artswrapper gets stuck somewhere, apparently in the running (R) state.
-> For this reason it blocks any subsequent attempts to suspend.
-> 
-> Here's the relevant trace (from show_state()):
-> 
-> [  522.474919] artswrapper   R  running task        0  4805      1
-> [  522.474922]  ffff810074cd1f70 0000000000000082 0000000000000296 ffff810074cd1ed8
-> [  522.474926]  ffffffff80311769 ffff810074cd1f20 ffffffff80701240 ffffffff80701240
-> [  522.474930]  ffffffff80701240 ffffffff80701240 ffffffff80701240 ffffffff80701240
-> [  522.474933] Call Trace:
-> [  522.474940]  [<ffffffff80311769>] ? __up_read+0x8f/0x97
-> [  522.474963]  [<ffffffff8020c5cf>] retint_careful+0xd/0x21
-> 
-> where, according to gdb,
-> 
-> (gdb) l *__up_read+0x8f
-> 0xffffffff80311769 is in __up_read (/home/rafael/src/linux-2.6/lib/rwsem-spinlock.c:273).
-> 268
-> 269             if (--sem->activity == 0 && !list_empty(&sem->wait_list))
-> 270                     sem = __rwsem_wake_one_writer(sem);
-> 271
-> 272             spin_unlock_irqrestore(&sem->wait_lock, flags);
-> 273     }
-> 274
-> 275     /*
-> 276      * release a write lock on the semaphore
-> 277      */
-> 
-> What gives?
+I can not speak to other archs, but for x86 I called trap_init from the 
+code that caught the kgdbwait.  At that time (since I retired, I have 
+not looked at the actual kernel code) it could be called again later by 
+the kernel code.  I.e. I did not try to reorder the kernel bring up 
+code, but just added an additional call to trap_init and then only in 
+the case of finding a kgdbwait.
 
-Well, let me give you something that worked for Guillaume :-)
+As such, this would need to be arch specific...
 
----
-Subject: hrtimer: fix hrtimer_init_sleeper() users
+ >>
+ >
+ > BTW, do you know if EXCEPTION_STACK_READY fails for other archs in
+ > parse_early_param as well? It should, because my under standing of
+ > trap_init is that it's the functions to arm things like... exception
+ > handlers? And that raises the question of the deeper purpose of this
+ > check (and the invocation of kgdb_early_init from the argument parsing
+ > function). Sigh, KGDB is still a quite improvable piece of code.
 
-commit 37bb6cb4097e29ffee970065b74499cbf10603a3
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Fri Jan 25 21:08:32 2008 +0100
+Likely.  Once you get it in the main line kernel, one would hope that 
+other arch code would be forth coming as many more "eyes" will be in play.
+ >
+ > Jan
+ >
+ > PS: Can we move this to some public list?
 
-    hrtimer: unlock hrtimer_wakeup
+Sure, sorry I picked the wrong reply button, never intended it to be 
+private.
+ >
 
-Broke hrtimer_init_sleeper() users. It forgot to fix up the futex
-caller of this function to detect the failed queueing and messed up
-the do_nanosleep() caller in that it could leak a TASK_INTERRUPTIBLE
-state.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/futex.c   |    2 ++
- kernel/hrtimer.c |    2 ++
- 2 files changed, 4 insertions(+)
-
-Index: linux-2.6/kernel/hrtimer.c
-===================================================================
---- linux-2.6.orig/kernel/hrtimer.c
-+++ linux-2.6/kernel/hrtimer.c
-@@ -1312,6 +1312,8 @@ static int __sched do_nanosleep(struct h
- 
- 	} while (t->task && !signal_pending(current));
- 
-+	__set_current_state(TASK_RUNNING);
-+
- 	return t->task == NULL;
- }
- 
-Index: linux-2.6/kernel/futex.c
-===================================================================
---- linux-2.6.orig/kernel/futex.c
-+++ linux-2.6/kernel/futex.c
-@@ -1252,6 +1252,8 @@ static int futex_wait(u32 __user *uaddr,
- 			t.timer.expires = *abs_time;
- 
- 			hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_ABS);
-+			if (!hrtimer_active(&t->timer))
-+				t->task = NULL;
- 
- 			/*
- 			 * the timer could have already expired, in which
+-- 
+George Anzinger   george@wildturkeyranch.net
 
 
