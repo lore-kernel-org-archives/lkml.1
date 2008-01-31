@@ -1,33 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYAaAsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbYAaA62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759974AbYAaAsX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYAaAsP
+	id S1756360AbYAaA62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 19:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYAaA6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:48:15 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59329 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751100AbYAaAsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:48:14 -0500
-Message-ID: <47A11ACD.1090400@redhat.com>
-Date: Wed, 30 Jan 2008 19:48:13 -0500
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 30 Jan 2008 19:58:18 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47985 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751061AbYAaA6R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 19:58:17 -0500
+Date: Wed, 30 Jan 2008 19:58:16 -0500
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Guenter Kukkukk <linux@kukkukk.com>, samba-technical@lists.samba.org,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       sfrench@samba.org
+Subject: Re: [2.6 patch] remove smbfs
+Message-ID: <20080131005816.GB26259@csclub.uwaterloo.ca>
+References: <20080128220835.GF8767@does.not.exist> <200801302216.13788.linux@kukkukk.com> <20080130174103.17ff8197@tleilax.poochiereds.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Purpose of numa_node?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080130174103.17ff8197@tleilax.poochiereds.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While pondering ways to optimize I/O and swapping on large NUMA machines, I 
-noticed that the numa_node field in struct device isn't actually used anywhere. 
-  We just have a couple dozen lines of code to conditionally create a sysfs file 
-that will always return -1.  Is anyone even working on code to actually use this 
-field?  I think it's a good piece of information to keep track of, so I'm not 
-suggesting we remove it, but I want to make sure I'm not stepping on toes or 
-duplicating effort if I try to make it useful.
+On Wed, Jan 30, 2008 at 05:41:03PM -0500, Jeff Layton wrote:
+> Some of our older products use smbfs, but our newer stuff (RHEL5 and
+> up) have smbfs disabled. Fedora has had smbfs disabled for quite some
+> time as well. I've heard very few complaints (though maybe they're just
+> not getting to me).
+> 
+> I have no problem with targeting smbfs for removal, but I thought
+> Andrew had an unofficial policy that we should first mark things to be
+> deprecated, and then remove them 2 releases later. That seems like a
+> sensible policy to me. If we mark it deprecated in 2.6.25 then we can
+> remove it after 2.6.26 is released.
+> 
+> It might not even hurt to have a nice loud printk when the smbfs
+> module is plugged in to warn users that it's slated to be removed,
+> and that they should move to CIFS as soon as possible.
+> 
+> It would be ideal if someone were to report these problems as bugs. I
+> remember some of those in the past, but haven't heard of any cases of
+> that sort of thing for some time. When I have, Steve has generally
+> been very good about tracking down the cause and fixing it.
 
-	-- Chris
+But if smbfs works when cifs doesn't, most people figure it's supposed
+to be that way and smbfs works so what's to complain about?
+
+I too have had cifs not work for some devices, and I actually thought
+that was intentional.  I will try to keep a note of what device that
+was.
+
+--
+Len Sorensen
