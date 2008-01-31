@@ -1,103 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764515AbYAaP7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765222AbYAaQBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764515AbYAaP7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 10:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758076AbYAaP7J
+	id S1765222AbYAaQBN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbYAaQA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 10:59:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51248 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758161AbYAaP7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 10:59:07 -0500
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during
-	suspend/hibernation on x86-64 (bisected)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-In-Reply-To: <200801280226.22013.rjw@sisk.pl>
-References: <200801272229.48955.rjw@sisk.pl> <20080127215904.GB2686@elte.hu>
-	 <200801280226.22013.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 16:58:48 +0100
-Message-Id: <1201795128.32654.22.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 11:00:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56839 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbYAaQAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:00:54 -0500
+Date: Thu, 31 Jan 2008 17:00:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 arch updates for v2.6.25
+Message-ID: <20080131160033.GA11501@elte.hu>
+References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131155739.GA19700@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 2008-01-28 at 02:26 +0100, Rafael J. Wysocki wrote:
-> On Sunday, 27 of January 2008, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > 2.6.24-git3 adds a 5 - 10 sec delay to the suspend and hibernation 
-> > > code paths (probably related to the disabling of nonboot CPUs), which 
-> > > is !@#$%^&*() annoying.
-> > > 
-> > > It's 100% reproducible on my HP nx6325 and bisection idendified the 
-> > > following commit as the first bad one:
-> > > 
-> > > commit 764a9d6fe4b52995c8aba277e3634385699354f4
-> > > Author: Steven Rostedt <srostedt@redhat.com>
-> > > Date:   Fri Jan 25 21:08:04 2008 +0100
-> > > 
-> > >     sched: track highest prio task queued
-> > 
-> > hm, this patch is a NOP, so it's weird that it has an effect.
-> > 
-> > Do you have serial logging enabled perhaps? If the following WARN_ON() 
-> > triggers:
-> > 
-> > +               WARN_ON(p->prio < rq->rt.highest_prio);
-> > 
-> > then perhaps that can cause a 5-10 seconds delay. (that's how much time 
-> > it takes to printk a warning on the slowest serial settings)
-> > 
-> > but if you use suspend, then any such printks would be preserved in the 
-> > dmesg, right? If the WARN_ON() triggers, and if you remove it, do things 
-> > get faster?
-> 
-> No, this isn't the WARN_ON().
-> 
-> > this does have the feel of being scheduling related, but are you 
-> > absolutely sure about the precise identity of the patch?
-> 
-> Actually, not quite.  That's why I have verified it and found that another
-> patch is really responsible for the issue, namely:
-> 
-> commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Fri Jan 25 21:08:02 2008 +0100
-> 
->     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
-> 
-> Reverting this commit (it reverts with some minor modifications) fixes the
-> problem for me.
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-I can seem to reproduce this:
+> You tested x86 but broke more than half a dozen other archtectures, 
+> with at least 3 different commits breaking other architectures.
 
-[root@opteron cpu1]# time echo 0 > online
+Note that all known breakages are fixed in current -git, except for the 
+s390 problem that Martin/Nick posted the fix.
 
-real    0m6.230s
-user    0m0.000s
-sys     0m0.010s
-[root@opteron cpu1]# echo 1 > online
-[root@opteron cpu1]# time echo 0 > online
-
-real    0m7.966s
-user    0m0.000s
-sys     0m0.011s
-
-
-I'll have a look at it.
-
+	Ingo
