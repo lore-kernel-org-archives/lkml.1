@@ -1,58 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934525AbYAaXlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934501AbYAaXpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934525AbYAaXlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 18:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbYAaXlI
+	id S934501AbYAaXpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 18:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYAaXpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 18:41:08 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:33288
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbYAaXlH (ORCPT
+	Thu, 31 Jan 2008 18:45:08 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:40280 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbYAaXpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 18:41:07 -0500
-Date: Fri, 1 Feb 2008 00:41:01 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-Message-ID: <20080131234101.GS7185@v2.random>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com>
+	Thu, 31 Jan 2008 18:45:06 -0500
+Date: Thu, 31 Jan 2008 16:45:05 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Liam Howlett <howlett@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Pull request: TASK_KILLABLE
+Message-ID: <20080131234504.GB25967@parisc-linux.org>
+References: <20080129000447.GC31101@parisc-linux.org> <alpine.LFD.1.00.0801292237480.3505@www.l.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com>
+In-Reply-To: <alpine.LFD.1.00.0801292237480.3505@www.l.google.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 03:09:55PM -0800, Christoph Lameter wrote:
-> On Thu, 31 Jan 2008, Christoph Lameter wrote:
-> 
-> > > pagefault against the main linux page fault, given we already have all
-> > > needed serialization out of the PT lock. XPMEM is forced to do that
+On Tue, Jan 29, 2008 at 10:41:24PM +1100, Linus Torvalds wrote:
+> On Mon, 28 Jan 2008, Matthew Wilcox wrote:
 > > 
-> > pt lock cannot serialize with invalidate_range since it is split. A range 
-> > requires locking for a series of ptes not only individual ones.
+> > I'd like you to pull the task_killable branch of 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git
 > 
-> Hmmm.. May be okay after all. I see that you are only doing it on the pte 
-> level. This means the range callbacks are taking down a max of 512 
-> entries. So you have a callback for each pmd. A callback for 2M of memory?
+> Well, Andrew already pointed out some of this, but I do want more 
+> information. There's a "git request-pull" script that even comes with git 
+> and that generates a shortlog, a proper url+branch description, and a 
+> diffstat of the changes.
+> 
+> So that is already much more descriptive, but in addition to that, if this 
+> isn't one of the "regular" pulls (which it obviously isn't), I really want 
+> a human description too so that I know what I'm pulling and what it's all 
+> about.
+> 
+> I do *not* want to be in the position of having to fetch first, just to be 
+> able to look at what I'm fetching. By the time I pull a branch, I want to 
+> basically know (a) what I'm pulling and (b) why I _want_ to pull it.
 
-Exactly. The point of _pages is to reduce of an order of magnitude
-(512, or 1024 times) the number of needed invalidate_page calls in a
-few places where it's a strightforward optimization for both KVM and
-GRU. Thanks to the PT lock this remains a totally obviously safe
-design and it requires zero additional locking anywhere (nor linux VM,
-nor in the mmu notifier methods, nor in the KVM/GRU page fault).
+OK.  Hopefully this satisfies you:
 
-Sure you can do invalidate_range_start/end for more than 2M(/4M on
-32bit) max virtual ranges. But my approach that averages the fixed
-mmu_lock cost already over 512(/1024) ptes will make any larger
-"range" improvement not strongly measurable anymore given to do that
-you have to add locking as well and _surely_ decrease the GRU
-scalability with tons of threads and tons of cpus potentially making
-GRU a lot slower _especially_ on your numa systems.
+
+Introduce TASK_KILLABLE.
+
+The basic idea was Linus', back in 2002.  We can't normally return a
+short read because it breaks applications.  But if a task has received
+a fatal signal, it doesn't have a chance to notice that it didn't get
+all the data it asked for.
+
+To allow tasks to be interrupted by fatal signals, we introduce a new
+TASK_* bit; TASK_WAKEKILL.  We also add a predicate fatal_signal_pending;
+the counterpart of signal_pending().  Then we add killable versions
+of lock_page(), mutex_lock(), schedule_timeout(), wait_event(), and
+wait_for_completion().  Finally, we can make the NFS 'intr' mount option
+a no-op.
+
+At the end of this patch set, you can now kill a task in readdir(), read()
+and write(), at least most of the time.  There is still much more work
+that can (and should) be done, such as implementing down_killable(),
+lock_kernel_killable() and even spin_lock_killable().
+
+While my main motivation has been to fix problems I have with flaky
+wireless networks and/or NFS servers, people like Ingo and Nick Piggin
+want to see this infrastructure for helping them improve the OOM killer.
+
+The following changes since commit 8af03e782cae1e0a0f530ddd22301cdd12cf9dc0:
+  Linus Torvalds (1):
+        Merge branch 'for-2.6.25' of git://git.kernel.org/.../paulus/powerpc
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git task_killable
+
+Liam R. Howlett (2):
+      Add mutex_lock_killable
+      Use mutex_lock_killable in vfs_readdir
+
+Matthew Wilcox (20):
+      Use wake_up_locked() in eventpoll
+      Add macros to replace direct uses of TASK_ flags
+      perfmon: Use task_is_*
+      proc/array.c: Use TASK_REPORT
+      proc/base.c: Use task_is_*
+      wait: Use TASK_NORMAL
+      power: Use task_is_*
+      ptrace: Use task_is_*
+      sched: Use task_contributes_to_load, TASK_ALL and TASK_NORMAL
+      signal: Use task_is_*
+      exit: Use task_is_*
+      Add TASK_WAKEKILL
+      Add fatal_signal_pending
+      Add lock_page_killable
+      Use lock_page_killable
+      Add schedule_timeout_killable
+      Add wait_event_killable
+      Add wait_for_completion_killable
+      NFS: Switch from intr mount option to TASK_KILLABLE
+      Remove commented-out code copied from NFS
+
+ arch/ia64/kernel/perfmon.c   |    4 +-
+ fs/eventpoll.c               |   11 ++---
+ fs/nfs/client.c              |    6 +--
+ fs/nfs/direct.c              |   10 +----
+ fs/nfs/inode.c               |    6 +--
+ fs/nfs/mount_clnt.c          |    2 +-
+ fs/nfs/nfs3proc.c            |    7 +--
+ fs/nfs/nfs4proc.c            |   27 +++---------
+ fs/nfs/nfsroot.c             |    3 -
+ fs/nfs/pagelist.c            |   18 ++------
+ fs/nfs/read.c                |    5 --
+ fs/nfs/super.c               |    4 --
+ fs/nfs/write.c               |    7 +---
+ fs/proc/array.c              |    7 +---
+ fs/proc/base.c               |    2 +-
+ fs/readdir.c                 |    5 ++-
+ fs/smbfs/request.c           |    2 +-
+ include/linux/completion.h   |    1 +
+ include/linux/mutex.h        |    5 ++
+ include/linux/nfs_fs.h       |    9 +----
+ include/linux/nfs_mount.h    |    2 +-
+ include/linux/pagemap.h      |   14 +++++++
+ include/linux/sched.h        |   36 ++++++++++++++++-
+ include/linux/sunrpc/clnt.h  |    2 -
+ include/linux/sunrpc/sched.h |    2 -
+ include/linux/wait.h         |   52 ++++++++++++++++++++++--
+ kernel/exit.c                |   88 ++++++++++++++++++-----------------------
+ kernel/mutex.c               |   36 ++++++++++++++++-
+ kernel/power/process.c       |    6 +-
+ kernel/ptrace.c              |    8 ++--
+ kernel/sched.c               |   28 +++++++++-----
+ kernel/signal.c              |   19 ++++++---
+ kernel/timer.c               |    7 +++
+ kernel/wait.c                |    2 +-
+ mm/filemap.c                 |   25 ++++++++++--
+ net/sunrpc/clnt.c            |   47 +---------------------
+ net/sunrpc/rpcb_clnt.c       |    3 +-
+ net/sunrpc/sched.c           |   15 +++----
+ net/sunrpc/sunrpc_syms.c     |    2 -
+ 39 files changed, 281 insertions(+), 254 deletions(-)
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
