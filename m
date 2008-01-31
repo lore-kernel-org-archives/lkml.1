@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbYAaKwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933259AbYAaKxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbYAaKwx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760762AbYAaKwp
+	id S933259AbYAaKxW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765802AbYAaKxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:52:45 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54567
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753239AbYAaKwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:52:44 -0500
-Date: Thu, 31 Jan 2008 11:52:41 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
-	address ranges
-Message-ID: <20080131105241.GH7185@v2.random>
-References: <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com> <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com> <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com> <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com> <20080131003434.GE7185@v2.random> <Pine.LNX.4.64.0801301728110.2454@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801301728110.2454@schroedinger.engr.sgi.com>
+	Thu, 31 Jan 2008 05:53:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45612 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760762AbYAaKxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:53:09 -0500
+Date: Thu, 31 Jan 2008 05:52:09 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, hugh@veritas.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
+       mztabzr@0pointer.de, mpm@selenic.com
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+Message-ID: <20080131055209.6adede04@riellaptop.surriel.com>
+In-Reply-To: <20080131110610.GA31090@one.firstfloor.org>
+References: <1201714139.28547.237.camel@lappy>
+	<20080130144049.73596898.akpm@linux-foundation.org>
+	<1201769040.28547.245.camel@lappy>
+	<20080131011227.257b9437.akpm@linux-foundation.org>
+	<1201772118.28547.254.camel@lappy>
+	<20080131014702.705f1040.akpm@linux-foundation.org>
+	<1201773206.28547.259.camel@lappy>
+	<p73ve5a47yr.fsf@bingen.suse.de>
+	<20080131021949.92715ba4.akpm@linux-foundation.org>
+	<20080131110610.GA31090@one.firstfloor.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 05:46:21PM -0800, Christoph Lameter wrote:
-> Well the GRU uses follow_page() instead of get_user_pages. Performance is 
-> a major issue for the GRU. 
+On Thu, 31 Jan 2008 12:06:10 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-GRU is a external TLB, we have to allocate RAM instead but we do it
-through the regular userland paging mechanism. Performance is a major
-issue for kvm too, but the result of get_user_pages is used to fill a
-spte, so then the cpu will use the spte in hardware to fill its
-tlb, we won't have to keep calling follow_page in software to fill the
-tlb like GRU has to do, so you can imagine the difference in cpu
-utilization spent in those paths (plus our requirement to allocate
-memory).
-
-> Hmmmm.. Could we go to a scheme where we do not have to increase the page 
-> count? Modifications of the page struct require dirtying a cache line and 
-
-I doubt the atomic_inc is measurable given the rest of overhead like
-building the rmap for each new spte.
-
-There's no technical reason for not wanting proper reference counting
-other than microoptimization. What will work for GRU will work for KVM
-too regardless of whatever reference counting. Each mmu-notifier user
-should be free to do what it think it's better/safer or more
-convenient (and for anybody calling get_user_pages having the
-refcounting on external references is natural and zero additional
-cost).
-
-> it seems that we do not need an increased page count if we have an
-> invalidate_range_start() that clears all the external references 
-> and stops the establishment of new ones and invalidate_range_end() that 
-> reenables new external references?
+> > Yeah, the 2.5 switch to physical scanning killed us there.
+> > 
+> > I still don't know why my
+> > allocate-swapspace-according-to-virtual-address change didn't
+> > help.  Much.  Marcelo played with that a bit too.
 > 
-> Then we do not need the frequent invalidate_page() calls.
+> I've been thinking about just always doing swap on > page clusters. 
+> Any reason swapping couldn't be done on e.g. 1MB chunks? 
 
-The increased page count is _mandatory_ to safely use range_start/end
-called outside the locks with _end called after releasing the old
-page. sptes will build themself the whole time until the pte_clear is
-called on the main linux pte. We don't want to clutter the VM fast
-paths with additional locks to stop the kvm pagefault while the VM is
-in the _range_start/end critical section like xpmem has to do be
-safe. So you're contradicting yourself by suggesting not to use
-invalidate_page and not to use a increased page count at the same
-time. And I need invalidate_page anyway for rmap.c which can't be
-provided as an invalidate_range and it can't sleep either.
+Don't malloc() and free() hopelessly fragment memory
+over time, ensuring that little related data can be
+found inside each 1MB chunk if the process is large
+enough?  (say, firefox)
