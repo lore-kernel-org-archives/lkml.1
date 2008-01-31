@@ -1,265 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934531AbYAaSCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbYAaSKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934531AbYAaSCA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765121AbYAaSBw
+	id S933908AbYAaSKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759599AbYAaSK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:01:52 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35420 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764636AbYAaSBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:01:51 -0500
-Date: Thu, 31 Jan 2008 12:01:25 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pierre Peiffer <pierre.peiffer@bull.net>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH 2.6.24-rc8-mm1 14/15] (RFC) IPC/semaphores: prepare
-	semundo code to work on another task than current
-Message-ID: <20080131180125.GA5617@sergelap.ibm.com>
-References: <20080129160229.612172683@bull.net> <20080129162232.843976550@bull.net> <20080130214430.GB8945@sergelap.austin.rr.com> <47A19988.5030108@bull.net>
+	Thu, 31 Jan 2008 13:10:26 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:55928 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754726AbYAaSKY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 13:10:24 -0500
+Message-ID: <47A20EC8.4050006@linux.vnet.ibm.com>
+Date: Thu, 31 Jan 2008 23:39:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A19988.5030108@bull.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: vatsa@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       Ingo Molnar <mingo@elte.hu>, menage@google.com,
+       containers@lists.osdl.org, dhaval@linux.vnet.ibm.com,
+       Balbir Singh <balbir@in.ibm.com>, pj@sgi.com
+Subject: Re: [RFC] Default child of a cgroup
+References: <20080131024049.GA9544@linux.vnet.ibm.com>
+In-Reply-To: <20080131024049.GA9544@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pierre Peiffer (pierre.peiffer@bull.net):
+Srivatsa Vaddagiri wrote:
+> Hi,
+> 	As we were implementing multiple-hierarchy support for CPU
+> controller, we hit some oddities in its implementation, partly related
+> to current cgroups implementation. Peter and I have been debating on the 
+> exact solution and I thought of bringing that discussion to lkml.
+> 
+> Consider the cgroup filesystem structure for managing cpu resource.
+> 
+> 	# mount -t cgroup -ocpu,cpuacct none /cgroup
+> 	# mkdir /cgroup/A
+> 	# mkdir /cgroup/B
+> 	# mkdir /cgroup/A/a1
+> 
+> will result in:
+> 
+> 	/cgroup
+> 	   |------<tasks>
+> 	   |------<cpuacct.usage>
+>  	   |------<cpu.shares>
+> 	   |
+> 	   |----[A]
+> 	   |     |----<tasks>
+> 	   |     |----<cpuacct.usage>
+> 	   |     |----<cpu.shares>
+> 	   |     |
+> 	   |     |---[a1]
+> 	   |           |----<tasks>
+> 	   |   	       |----<cpuacct.usage>
+> 	   |           |----<cpu.shares>
+> 	   |           |
+> 	   |
+> 	   |----[B]
+> 	   |     |----<tasks>
+> 	   |     |----<cpuacct.usage>
+> 	   |     |----<cpu.shares>
+> 	   |     
 > 
 > 
-> Serge E. Hallyn wrote:
-> > Quoting pierre.peiffer@bull.net (pierre.peiffer@bull.net):
-> >> From: Pierre Peiffer <pierre.peiffer@bull.net>
-> >>
-> >> In order to modify the semundo-list of a task from procfs, we must be able to
-> >> work on any target task.
-> >> But all the existing code playing with the semundo-list, currently works
-> >> only on the 'current' task, and does not allow to specify any target task.
-> >>
-> >> This patch changes all these routines to allow them to work on a specified
-> >> task, passed in parameter, instead of current.
-> >>
-> >> This is mainly a preparation for the semundo_write() operation, on the
-> >> /proc/<pid>/semundo file, as provided in the next patch.
-> >>
-> >> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
-> >> ---
-> >>
-> >>  ipc/sem.c |   90 ++++++++++++++++++++++++++++++++++++++++++++++----------------
-> >>  1 file changed, 68 insertions(+), 22 deletions(-)
-> >>
-> >> Index: b/ipc/sem.c
-> >> ===================================================================
-> >> --- a/ipc/sem.c
-> >> +++ b/ipc/sem.c
-> >> @@ -1017,8 +1017,9 @@ asmlinkage long sys_semctl (int semid, i
-> >>  }
-> >>
-> >>  /* If the task doesn't already have a undo_list, then allocate one
-> >> - * here.  We guarantee there is only one thread using this undo list,
-> >> - * and current is THE ONE
-> >> + * here.
-> >> + * The target task (tsk) is current in the general case, except when
-> >> + * accessed from the procfs (ie when writting to /proc/<pid>/semundo)
-> >>   *
-> >>   * If this allocation and assignment succeeds, but later
-> >>   * portions of this code fail, there is no need to free the sem_undo_list.
-> >> @@ -1026,22 +1027,60 @@ asmlinkage long sys_semctl (int semid, i
-> >>   * at exit time.
-> >>   *
-> >>   * This can block, so callers must hold no locks.
-> >> + *
-> >> + * Note: task_lock is used to synchronize 1. several possible concurrent
-> >> + * creations and 2. the free of the undo_list (done when the task using it
-> >> + * exits). In the second case, we check the PF_EXITING flag to not create
-> >> + * an undo_list for a task which has exited.
-> >> + * If there already is an undo_list for this task, there is no need
-> >> + * to held the task-lock to retrieve it, as the pointer can not change
-> >> + * afterwards.
-> >>   */
-> >> -static inline int get_undo_list(struct sem_undo_list **undo_listp)
-> >> +static inline int get_undo_list(struct task_struct *tsk,
-> >> +				struct sem_undo_list **ulp)
-> >>  {
-> >> -	struct sem_undo_list *undo_list;
-> >> +	if (tsk->sysvsem.undo_list == NULL) {
-> >> +		struct sem_undo_list *undo_list;
-> > 
-> > Hmm, this is weird.  If there was no undo_list and
-> > tsk!=current, you set the refcnt to 2.  But if there was an
-> > undo list and tsk!=current, where do you inc the refcnt?
-> > 
+> Here are some questions that arise in this picture:
 > 
-> I inc it  outside this function, as I don't call get_undo_list() if there is an
-> undo_list.
-> This appears most clearly in the next patch, in semundo_open() for example.
+> 1. What is the relationship of the task-group in A/tasks with the
+>    task-group in A/a1/tasks? In otherwords do they form siblings
+>    of the same parent A?
+> 
 
-Ok, so however unlikely, there is a flow that could cause you a problem:
-T2 calls semundo_open() for T1.  T1 does not yet have a semundolist.
-T2.semundo_open() calls get_undo_list, just then T1 creats its own
-semundo_list.  T2 comes to top of get_undo_list() and see
-tsk->sysvsem.undo_list != NULL, simply returns a pointer to the
-undo_list.  Now you never increment the count.
+I consider them to be the same relationship between directories and files.
+A/tasks are siblings of A/a1 and A/other children, *but* the entities of
+interest are A and A/a1.
+
+> 2. Somewhat related to the above question, how much resource should the 
+>    task-group A/a1/tasks get in relation to A/tasks? Is it 1/2 of parent
+>    A's share or 1/(1 + N) of parent A's share (where N = number of tasks
+>    in A/tasks)?
+> 
+
+I propose that it gets 1/2 of the bandwidth, here is why
+
+1. Assume that a task in A/tasks forks 1000 children, what happens to the
+bandwidth of A/a1's tasks then? We have no control over how many tasks can be
+created on A/tasks as a consequence of moving one task to A/tasks. Doing it the
+other way would mean, that A/a1/tasks will get 1/1001 of the bandwidth (sounds
+very unfair and prone to Denial of Service/Fairness)
+
+
+> 3. What should A/cpuacct.usage reflect? CPU usage of A/tasks? Or CPU usage
+>    of all siblings put together? It can reflect only one, in which case
+>    user has to manually derive the other component of the statistics.
+> 
+
+It should reflect the accumulated usage of A's children and the tasks in A.
+
+> It seems to me that tasks in A/tasks form what can be called the
+> "default" child group of A, in which case:
+> 
+> 4. Modifications to A/cpu.shares should affect the parent or its default
+>    child group (A/tasks)?
+> 
+> To avoid these ambiguities, it may be good if cgroup create this
+> "default child group" automatically whenever a cgroup is created?
+> Something like below (not the absence of tasks file in some directories
+> now):
+> 
+
+I think the concept makes sense, but creating a default child is going to be
+confusing, as it is not really a child of A.
 
 > 
-> >> -	undo_list = current->sysvsem.undo_list;
-> >> -	if (!undo_list) {
-> >> -		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL);
-> >> +		/* we must alloc a new one */
-> >> +		undo_list = kmalloc(sizeof(*undo_list), GFP_KERNEL);
-> >>  		if (undo_list == NULL)
-> >>  			return -ENOMEM;
-> >> +
-> >> +		task_lock(tsk);
-> >> +
-> >> +		/* check again if there is an undo_list for this task */
-> >> +		if (tsk->sysvsem.undo_list) {
-> >> +			if (tsk != current)
-> >> +				atomic_inc(&tsk->sysvsem.undo_list->refcnt);
-> >> +			task_unlock(tsk);
-> >> +			kfree(undo_list);
-> >> +			goto out;
-> >> +		}
-> >> +
-> >>  		spin_lock_init(&undo_list->lock);
-> >> -		atomic_set(&undo_list->refcnt, 1);
-> >> -		undo_list->ns = get_ipc_ns(current->nsproxy->ipc_ns);
-> >> -		current->sysvsem.undo_list = undo_list;
-> >> +		/*
-> >> +		 * If tsk is not current (meaning that current is creating
-> >> +		 * a semundo_list for a target task through procfs), and if
-> >> +		 * it's not being exited then refcnt must be 2: the target
-> >> +		 * task tsk + current.
-> >> +		 */
-> >> +		if (tsk == current)
-> >> +			atomic_set(&undo_list->refcnt, 1);
-> >> +		else if (!(tsk->flags & PF_EXITING))
-> >> +			atomic_set(&undo_list->refcnt, 2);
-> >> +		else {
-> >> +			task_unlock(tsk);
-> >> +			kfree(undo_list);
-> >> +			return -EINVAL;
-> >> +		}
-> >> +		undo_list->ns = get_ipc_ns(tsk->nsproxy->ipc_ns);
-> >> +		undo_list->proc_list = NULL;
-> >> +		tsk->sysvsem.undo_list = undo_list;
-> >> +		task_unlock(tsk);
-> >>  	}
-> >> -	*undo_listp = undo_list;
-> >> +out:
-> >> +	*ulp = tsk->sysvsem.undo_list;
-> >>  	return 0;
-> >>  }
-> >>
-> >> @@ -1065,17 +1104,12 @@ static struct sem_undo *lookup_undo(stru
-> >>  	return un;
-> >>  }
-> >>
-> >> -static struct sem_undo *find_undo(struct ipc_namespace *ns, int semid)
-> >> +static struct sem_undo *find_undo(struct sem_undo_list *ulp, int semid)
-> >>  {
-> >>  	struct sem_array *sma;
-> >> -	struct sem_undo_list *ulp;
-> >>  	struct sem_undo *un, *new;
-> >> +	struct ipc_namespace *ns;
-> >>  	int nsems;
-> >> -	int error;
-> >> -
-> >> -	error = get_undo_list(&ulp);
-> >> -	if (error)
-> >> -		return ERR_PTR(error);
-> >>
-> >>  	spin_lock(&ulp->lock);
-> >>  	un = lookup_undo(ulp, semid);
-> >> @@ -1083,6 +1117,8 @@ static struct sem_undo *find_undo(struct
-> >>  	if (likely(un!=NULL))
-> >>  		goto out;
-> >>
-> >> +	ns = ulp->ns;
-> >> +
-> >>  	/* no undo structure around - allocate one. */
-> >>  	sma = sem_lock_check(ns, semid);
-> >>  	if (IS_ERR(sma))
-> >> @@ -1133,6 +1169,7 @@ asmlinkage long sys_semtimedop(int semid
-> >>  	struct sem_array *sma;
-> >>  	struct sembuf fast_sops[SEMOPM_FAST];
-> >>  	struct sembuf* sops = fast_sops, *sop;
-> >> +	struct sem_undo_list *ulp;
-> >>  	struct sem_undo *un;
-> >>  	int undos = 0, alter = 0, max;
-> >>  	struct sem_queue queue;
-> >> @@ -1177,9 +1214,13 @@ asmlinkage long sys_semtimedop(int semid
-> >>  			alter = 1;
-> >>  	}
-> >>
-> >> +	error = get_undo_list(current, &ulp);
-> >> +	if (error)
-> >> +		goto out_free;
-> >> +
-> >>  retry_undos:
-> >>  	if (undos) {
-> >> -		un = find_undo(ns, semid);
-> >> +		un = find_undo(ulp, semid);
-> >>  		if (IS_ERR(un)) {
-> >>  			error = PTR_ERR(un);
-> >>  			goto out_free;
-> >> @@ -1305,7 +1346,7 @@ int copy_semundo(unsigned long clone_fla
-> >>  	int error;
-> >>
-> >>  	if (clone_flags & CLONE_SYSVSEM) {
-> >> -		error = get_undo_list(&undo_list);
-> >> +		error = get_undo_list(current, &undo_list);
-> >>  		if (error)
-> >>  			return error;
-> >>  		atomic_inc(&undo_list->refcnt);
-> >> @@ -1405,10 +1446,15 @@ next_entry:
-> >>  	kfree(undo_list);
-> >>  }
-> >>
-> >> -/* called from do_exit() */
-> >> +/* exit_sem: called from do_exit()
-> >> + * task_lock is used to synchronize with get_undo_list()
-> > 
-> > Ok I had to think about this again.  I'd like the comment
-> > here to point out that the task_lock here acts as a barrier
-> > between the prior setting of PF_EXITING and the undo_list
-> > being freed here, so that get_undo_list() will either see
-> > PF_EXITING is NOT in the tsk->flags, in which case it will
-> > insert the undo_list before the task_lock() is grabbed here,
-> > and with count=2, so that it gets correctly put here in
-> > exit_sem, or it will see PF_EXITING set and cancel the
-> > undo_list it was creating.
-> > 
+> 	/cgroup
+> 	   |
+> 	   |------<cpuacct.usage>
+>  	   |------<cpu.shares>
+> 	   |
+>   	   |---[def_child]
+> 	   |     |----<tasks>
+> 	   |     |----<cpuacct.usage>
+> 	   |     |----<cpu.shares>
+> 	   |     |
+> 	   |
+> 	   |----[A]
+> 	   |     |
+> 	   |     |----<cpuacct.usage>
+> 	   |     |----<cpu.shares>
+> 	   |     |
+> 	   |     |---[def_child]
+> 	   |     |     |----<tasks>
+> 	   |   	 |     |----<cpuacct.usage>
+> 	   |     |     |----<cpu.shares>
+> 	   |     |     |
+> 	   |     | 
+> 	   |     |---[a1]
+> 	   |           |
+> 	   |   	       |----<cpuacct.usage>
+> 	   |           |----<cpu.shares>
+> 	   |           |
+> 	   | 	       |---[def_child]
+> 	   |	       |       |---<tasks>
+> 	   |	       |       |---<cpuacct.usage>
+> 	   | 	       |       |---<cpu.shares>
+> 	   |	       |       |
+> 	   |
+> 	   |----[B]
+> 	   |     |
+> 	   |     |----<cpuacct.usage>
+> 	   |     |----<cpu.shares>
+> 	   |     | 
+> 	   |     |---[def_child]
+> 	   |     |     |----<tasks>
+> 	   |   	 |     |----<cpuacct.usage>
+> 	   |     |     |----<cpu.shares>
+> 	   |     |     |
 > 
-> Yep, I will add this to clarify this point.
+> Note that user cannot create subdirectories under def_child with this
+> scheme! I am also not sure what impact this will have on other resources
+> like cpusets ..
 > 
-> Thanks Serge.
+
+Which means we'll need special logic in the cgroup filesystem to handle
+def_child. Not a very good idea.
+
+> Thoughts?
 > 
-> P.
 > 
-> >> + */
-> >>  void exit_sem(struct task_struct *tsk)
-> >>  {
-> >> -	struct sem_undo_list *ul = tsk->sysvsem.undo_list;
-> >> +	struct sem_undo_list *ul;
-> >> +	task_lock(tsk);
-> >> +	ul = tsk->sysvsem.undo_list;
-> >> +	task_unlock(tsk);
-> >>  	if (ul) {
-> >>  		rcu_assign_pointer(tsk->sysvsem.undo_list, NULL);
-> >>  		synchronize_rcu();
-> >>
-> >> -- 
-> >> Pierre Peiffer
-> >> _______________________________________________
-> >> Containers mailing list
-> >> Containers@lists.linux-foundation.org
-> >> https://lists.linux-foundation.org/mailman/listinfo/containers
-> > 
-> > 
-> 
-> -- 
-> Pierre Peiffer
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
