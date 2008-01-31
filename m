@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbYAaPWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760941AbYAaP0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbYAaPWU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 10:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbYAaPWM
+	id S1760941AbYAaP0g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 10:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYAaP02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 10:22:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59697 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753046AbYAaPWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 10:22:10 -0500
-Date: Thu, 31 Jan 2008 16:21:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: remove unused code in set_cyc2ns_scale()
-Message-ID: <20080131152158.GB26963@elte.hu>
-References: <1201641301-9288-1-git-send-email-guichaz@yahoo.fr>
+	Thu, 31 Jan 2008 10:26:28 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37951 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751786AbYAaP02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 10:26:28 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/wXXwltN3wSc2tE6hXNSLzhNR7zKvFFBuLITMjyN
+	mLVFs3MWUxGclU
+Date: Thu, 31 Jan 2008 16:26:39 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: David Brownell <david-b@pacbell.net>, i2c@lm-sensors.org
+Subject: [PATCH] Define a NO_GPIO macro to compare against and to use as an
+ invalid GPIO
+Message-ID: <Pine.LNX.4.64.0801311624370.8478@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201641301-9288-1-git-send-email-guichaz@yahoo.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As discussed on i2c mailing list with David Brownell, and number
+outside of the 0...MAX_INT range is invalid as a GPIO number.
+Define a macro, similar to NO_IRQ, to be used as a deliberate
+invalid GPIO, rather than defining a is_valid_gpio() macro.
 
-* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
->  arch/x86/kernel/tsc_32.c |   14 +++++---------
->  arch/x86/kernel/tsc_64.c |   14 +++++---------
->  2 files changed, 10 insertions(+), 18 deletions(-)
+---
 
->  static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
->  {
-> -	unsigned long flags, prev_scale, *scale;
-> -	unsigned long long tsc_now, ns_now;
-> +	unsigned long flags, *scale;
-> +
-> +	if (!cpu_khz)
-> +		return;
->  
->  	local_irq_save(flags);
->  	sched_clock_idle_sleep_event();
->  
->  	scale = &per_cpu(cyc2ns, cpu);
-> -
-> -	rdtscll(tsc_now);
-> -	ns_now = __cycles_2_ns(tsc_now);
-> -
-> -	prev_scale = *scale;
-> -	if (cpu_khz)
-> -		*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
-> +	*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
+As gpiolib doesn't seem to have an own mailing list, sending it directly 
+to LKML.
 
-hm, this is not a pure elimination of dead code, this will change 
-behavior. For example we wont call sched_clock_idle_sleep_event() on 
-!cpu_khz now. Hm?
+ include/asm-generic/gpio.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-	Ingo
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index f29a502..806b86c 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -16,6 +16,10 @@
+ #define ARCH_NR_GPIOS		256
+ #endif
+ 
++#ifndef NO_GPIO
++#define NO_GPIO			((unsigned int)-1)
++#endif
++
+ struct seq_file;
+ 
+ /**
+-- 
+1.5.3.4
