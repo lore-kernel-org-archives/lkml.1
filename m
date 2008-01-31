@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933674AbYAaMDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbYAaMEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933674AbYAaMDN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 07:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764784AbYAaMBD
+	id S933368AbYAaMEv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 07:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764090AbYAaMEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 07:01:03 -0500
-Received: from swsoft-msk-nat.sw.ru ([195.214.232.10]:59330 "EHLO iris.sw.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764333AbYAaMAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 07:00:48 -0500
-From: "Denis V. Lunev" <den@openvz.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH 6/6] [NETNS]: Lookup in FIB semantic hashes taking into account the namespace.
-Date: Thu, 31 Jan 2008 15:00:50 +0300
-Message-Id: <1201780850-22216-6-git-send-email-den@openvz.org>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <47A1B835.7050600@sw.ru>
-References: <47A1B835.7050600@sw.ru>
+	Thu, 31 Jan 2008 07:04:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34693 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764014AbYAaMEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 07:04:41 -0500
+Date: Thu, 31 Jan 2008 13:04:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: about relocs.c on x86
+Message-ID: <20080131120427.GA12571@elte.hu>
+References: <86802c440801310007oe8693c7q177d41a87c27ca7@mail.gmail.com> <20080131095223.GA11867@elte.hu> <1201773740.23523.17.camel@brick> <20080131101111.GB11867@elte.hu> <20080131103842.GA550@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131103842.GA550@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The namespace is not available in the fib_sync_down_addr, add it
-as a parameter.
 
-Looking up a device by the pointer to it is OK. Looking up using a result
-from fib_trie/fib_hash table lookup is also safe. No need to fix that at all.
-So, just fix lookup by address and insertion to the hash table path.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
----
- include/net/ip_fib.h     |    2 +-
- net/ipv4/fib_frontend.c  |    2 +-
- net/ipv4/fib_semantics.c |    6 +++++-
- 3 files changed, 7 insertions(+), 3 deletions(-)
+> As for the Makefiles - I looked at them last time and only issue that 
+> kept me away for unifying them was that I did not understand the 
+> linking order requirments and I did not see enough benefit at that 
+> time to invest the time to unify them. Each of the remaining Makefile 
+> should be unifyable in less than 10 steps each. It is just work that 
+> are waitng to be done.
 
-diff --git a/include/net/ip_fib.h b/include/net/ip_fib.h
-index cb0df37..90d1175 100644
---- a/include/net/ip_fib.h
-+++ b/include/net/ip_fib.h
-@@ -220,7 +220,7 @@ extern void fib_select_default(struct net *net, const struct flowi *flp,
- /* Exported by fib_semantics.c */
- extern int ip_fib_check_default(__be32 gw, struct net_device *dev);
- extern int fib_sync_down_dev(struct net_device *dev, int force);
--extern int fib_sync_down_addr(__be32 local);
-+extern int fib_sync_down_addr(struct net *net, __be32 local);
- extern int fib_sync_up(struct net_device *dev);
- extern __be32  __fib_res_prefsrc(struct fib_result *res);
- extern void fib_select_multipath(const struct flowi *flp, struct fib_result *res);
-diff --git a/net/ipv4/fib_frontend.c b/net/ipv4/fib_frontend.c
-index d69ffa2..86ff271 100644
---- a/net/ipv4/fib_frontend.c
-+++ b/net/ipv4/fib_frontend.c
-@@ -808,7 +808,7 @@ static void fib_del_ifaddr(struct in_ifaddr *ifa)
- 			   First of all, we scan fib_info list searching
- 			   for stray nexthop entries, then ignite fib_flush.
- 			*/
--			if (fib_sync_down_addr(ifa->ifa_local))
-+			if (fib_sync_down_addr(dev->nd_net, ifa->ifa_local))
- 				fib_flush(dev->nd_net);
- 		}
- 	}
-diff --git a/net/ipv4/fib_semantics.c b/net/ipv4/fib_semantics.c
-index 97cc494..a13c847 100644
---- a/net/ipv4/fib_semantics.c
-+++ b/net/ipv4/fib_semantics.c
-@@ -229,6 +229,8 @@ static struct fib_info *fib_find_info(const struct fib_info *nfi)
- 	head = &fib_info_hash[hash];
- 
- 	hlist_for_each_entry(fi, node, head, fib_hash) {
-+		if (fi->fib_net != nfi->fib_net)
-+			continue;
- 		if (fi->fib_nhs != nfi->fib_nhs)
- 			continue;
- 		if (nfi->fib_protocol == fi->fib_protocol &&
-@@ -1031,7 +1033,7 @@ nla_put_failure:
-      referring to it.
-    - device went down -> we must shutdown all nexthops going via it.
-  */
--int fib_sync_down_addr(__be32 local)
-+int fib_sync_down_addr(struct net *net, __be32 local)
- {
- 	int ret = 0;
- 	unsigned int hash = fib_laddr_hashfn(local);
-@@ -1043,6 +1045,8 @@ int fib_sync_down_addr(__be32 local)
- 		return 0;
- 
- 	hlist_for_each_entry(fi, node, head, fib_lhash) {
-+		if (fi->fib_net != net)
-+			continue;
- 		if (fi->fib_prefsrc == local) {
- 			fi->fib_flags |= RTNH_F_DEAD;
- 			ret++;
--- 
-1.5.3.rc5
+the only real issue i remember in this area are hidden link dependencies 
+in terms of ordering init sequences.
 
+and there's just no other sane approach here but to do finegrained 
+changes (so that any breakage remains bisectable) and take the plunge 
+down that road. Any implicit link dependency is a bug in the waiting 
+anyway, which we want to fix. So feel free to unify this area, whenver 
+you find the time.
+
+	Ingo
