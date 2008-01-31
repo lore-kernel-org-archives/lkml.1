@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933794AbYAaNAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbYAaNBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933794AbYAaNAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933202AbYAaNAb
+	id S933860AbYAaNBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 08:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764439AbYAaNBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:00:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60366 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932830AbYAaNAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:00:30 -0500
-Subject: Re: High wake up latencies with FAIR_USER_SCHED
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, dhaval@linux.vnet.ibm.com
-In-Reply-To: <3d8471ca0801310449y426742b8yf711c7859b105469@mail.gmail.com>
-References: <3d8471ca0801271201o5a41955cg552ef06a2f821285@mail.gmail.com>
-	 <20080128023129.GD1044@linux.vnet.ibm.com>
-	 <3d8471ca0801280857m2ea8518ds2ad8d5346f756a0e@mail.gmail.com>
-	 <3d8471ca0801281213l5ec62984i763afb22216cb423@mail.gmail.com>
-	 <1201776461.28547.289.camel@lappy>
-	 <3d8471ca0801310449y426742b8yf711c7859b105469@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 14:00:23 +0100
-Message-Id: <1201784423.28547.302.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 08:01:11 -0500
+Received: from www.tglx.de ([62.245.132.106]:40987 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758631AbYAaNBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 08:01:10 -0500
+Date: Thu, 31 Jan 2008 14:00:34 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Huang, Ying" <ying.huang@intel.com>
+cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: add executable mapping support to ioremap
+In-Reply-To: <1201764967.12950.25.camel@caritas-dev.intel.com>
+Message-ID: <alpine.LFD.1.00.0801311324270.9204@apollo.tec.linutronix.de>
+References: <1201764967.12950.25.camel@caritas-dev.intel.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jan 2008, Huang, Ying wrote:
 
-On Thu, 2008-01-31 at 13:49 +0100, Guillaume Chazarain wrote:
-> On 1/31/08, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > Does something like this help?
-> 
-> I made it compile by open coding undefined macros instead of
-> refactoring the whole file.
-> But it didn't affect wake up latencies.
+> This patch makes ioremap() can be used to map pages as executable,
+> this is needed by EFI support.
 
-Ah, well, what can one expect from mid-night ideas :-)
+> +extern void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+> +			       enum ioremap_mode mode,
+> +			       enum ioremap_xmode xmode);
+> +
 
-Thanks for testing!
+Why do you want to add a new API?
 
+    addr = ioremap(phys_addr, len);
+    set_memory_x(addr);
+
+should do what you want already. I think Arjan was not very clear in
+his reply yesterday.
+
+We tried to avoid the intermingling of ioremap and the page attribute
+settings. We just kept the cached/uncached part.
+
+Now thinking about it further, we should probably fully decouple the
+mapping and the attribute change and remove the enum argument from
+__ioremap and change the implementations of ioremap_cached and
+ioremap_uncached to do the attribute setting after the remap. 
+
+That way ioremap_chached and ioremap_uncached just would become what
+they should be: conveniance functions for the developers.
+
+Thanks,
+	tglx
