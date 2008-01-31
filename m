@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbYAaWQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934789AbYAaWS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965082AbYAaWQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964931AbYAaWQS
+	id S934789AbYAaWS1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760381AbYAaWSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:16:18 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40540 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964891AbYAaWQQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:16:16 -0500
-Date: Thu, 31 Jan 2008 14:16:10 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: mmu_notifier: reduce size of mm_struct if !CONFIG_MMU_NOTIFIER
-In-Reply-To: <Pine.LNX.4.64.0801311355260.27804@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0801311415280.15573@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com>
- <20080131123118.GK7185@v2.random> <Pine.LNX.4.64.0801311355260.27804@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Jan 2008 17:18:18 -0500
+Received: from 1wt.eu ([62.212.114.60]:1659 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759696AbYAaWSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 17:18:17 -0500
+Date: Thu, 31 Jan 2008 22:37:11 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Santiago Garcia Mantinan <manty@manty.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: dl2k stopped working on 2.6.24
+Message-ID: <20080131213711.GM8953@1wt.eu>
+References: <20080125211153.GA10203@dis.manty.net> <20080128233334.GA14326@dis.manty.net> <20080131215541.GA22018@dis.manty.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131215541.GA22018@dis.manty.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mmu_notifier: Reduce size of mm_struct if !CONFIG_MMU_NOTIFIER
+Hi Santiago,
 
-Andrea and Peter had a concern about this.
+On Thu, Jan 31, 2008 at 10:55:41PM +0100, Santiago Garcia Mantinan wrote:
+> As I didn't get any ideas on what to do to help find the problem with the
+> dl2k driver, I'm doing some tests to get to know what has broken it.
+> 
+> I have today compiled dl2k from git, the version with the 2007-12-23 patches
+> from Al Viro: dl2k endianness fixes (.24 fodder?) Right before the Al Viro
+> patches. This seems to be working perfectly on my system.
 
-Use an #ifdef to make the mmu_notifer_head structure empty if we have
-no notifier. That allows the use of the structure in inline functions
-(which allows parameter verification even if !CONFIG_MMU_NOTIFIER)
+I thought about those patches when you reported your problem but they
+looked correct at first glance, and generally Al is known for pushing
+clean and valid work.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> I'm wondering if I can apply the patches by Al Viro one by one to know which
+> one broke it.
 
----
- include/linux/mm_types.h |    2 ++
- 1 file changed, 2 insertions(+)
+Yes it should be possible, people generally try to push incrementally
+valid patches. Please CC Al with your findings. Maybe you'll get him
+caught with a bug in his fixes, but get prepared to get fried on your
+chair if you're wrong :-)
 
-Index: linux-2.6/include/linux/mm_types.h
-===================================================================
---- linux-2.6.orig/include/linux/mm_types.h	2008-01-31 14:03:23.000000000 -0800
-+++ linux-2.6/include/linux/mm_types.h	2008-01-31 14:03:38.000000000 -0800
-@@ -154,7 +154,9 @@ struct vm_area_struct {
- };
- 
- struct mmu_notifier_head {
-+#ifdef CONFIG_MMU_NOTIFIER
- 	struct hlist_head head;
-+#endif
- };
- 
- struct mm_struct {
+It is also possible that the code he fixed was really buggy but worked
+because of another bug remaining somewhere else.
+
+Regards,
+Willy
 
