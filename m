@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760416AbYAaOxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYAaOz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760416AbYAaOxx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 09:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYAaOxq
+	id S1757769AbYAaOz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 09:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYAaOzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 09:53:46 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:60063 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750969AbYAaOxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 09:53:45 -0500
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: akpm@linux-foundation.org
-Cc: linux@bohmer.net, linux@maxim.org.za, michael <trimarchi@gandalf.sssup.it>,
-       linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH -mm] atmel_serial: Fix broken RX buffer allocation
-Date: Thu, 31 Jan 2008 15:52:21 +0100
-Message-Id: <1201791141-12545-1-git-send-email-hskinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.3.8
+	Thu, 31 Jan 2008 09:55:48 -0500
+Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:58652
+	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYAaOzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 09:55:47 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 09:55:47 EST
+Message-ID: <47A1E026.2070805@roinet.com>
+Date: Thu, 31 Jan 2008 09:50:14 -0500
+From: David Acker <dacker@roinet.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+MIME-Version: 1.0
+To: Bill Fink <billfink@mindspring.com>
+CC: SANGTAE HA <sangtae.ha@gmail.com>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>	<20080130.055333.192844925.davem@davemloft.net>	<Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>	<20080130082136.1017631d@deepthought>	<Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>	<649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com> <20080131064533.ef0ae932.billfink@mindspring.com>
+In-Reply-To: <20080131064533.ef0ae932.billfink@mindspring.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduced by atmel_serial-split-the-interrupt-handler.patch.
-
-Thanks to michael <trimarchi@gandalf.sssup.it> for spotting it.
-
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
-It was surprisingly difficult to actually provoke a crash without this
-patch, but the system did start to behave rather funny after
-transferring a lot of data.
-
- drivers/serial/atmel_serial.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 62654ab..477950f 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -1477,7 +1477,8 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
- 
- 	if (!atmel_use_dma_rx(&port->uart)) {
- 		ret = -ENOMEM;
--		data = kmalloc(ATMEL_SERIAL_RINGSIZE, GFP_KERNEL);
-+		data = kmalloc(sizeof(struct atmel_uart_char)
-+				* ATMEL_SERIAL_RINGSIZE, GFP_KERNEL);
- 		if (!data)
- 			goto err_alloc_ring;
- 		port->rx_ring.buf = data;
--- 
-1.5.3.8
-
+Bill Fink wrote:
+> If the receive direction uses a different GigE NIC that's part of the
+> same quad-GigE, all is fine:
+> 
+> [bill@chance4 ~]$ nuttcp -f-beta -Itx -w2m 192.168.6.79 & nuttcp -f-beta -Irx -r -w2m 192.168.5.79
+> tx:  1186.5051 MB /  10.05 sec =  990.2250 Mbps 12 %TX 13 %RX 0 retrans
+> rx:  1186.7656 MB /  10.05 sec =  990.5204 Mbps 15 %TX 14 %RX 0 retrans
+Could this be an issue with pause frames?  At a previous job I remember 
+having issues with a similar configuration using two broadcom sb1250 3 
+gigE port devices. If I ran bidirectional tests on a single pair of 
+ports connected via cross over, it was slower than when I gave each 
+direction its own pair of ports.  The problem turned out to be that 
+pause frame generation and handling was not configured correctly.
+-Ack
