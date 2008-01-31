@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbYAaIuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765827AbYAaIwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932268AbYAaIuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 03:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbYAaIuc
+	id S1765827AbYAaIwh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 03:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762990AbYAaIw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 03:50:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42133 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760045AbYAaIub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 03:50:31 -0500
-Date: Thu, 31 Jan 2008 09:50:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: travis@sgi.com, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 6/6] s390: Use generic percpu linux-2.6.git
-Message-ID: <20080131085013.GB1585@elte.hu>
-References: <20080130180940.022172000@sgi.com> <20080130180940.921597000@sgi.com> <20080130215339.GC28242@elte.hu> <1201768346.18221.5.camel@localhost>
+	Thu, 31 Jan 2008 03:52:27 -0500
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:40084 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762314AbYAaIwZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 03:52:25 -0500
+Date: Thu, 31 Jan 2008 02:52:13 -0600 (CST)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: SANGTAE HA <sangtae.ha@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+In-Reply-To: <649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
+Message-ID: <Pine.LNX.4.63.0801310240210.3240@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu> 
+ <20080130.055333.192844925.davem@davemloft.net> 
+ <Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu> 
+ <20080130082136.1017631d@deepthought>  <Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
+ <649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201768346.18221.5.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Sangtae,
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+Thanks for joining this discussion -- it's good to a CUBIC author and 
+expert here!
 
-> On Wed, 2008-01-30 at 22:53 +0100, Ingo Molnar wrote:
-> > * travis@sgi.com <travis@sgi.com> wrote:
-> > 
-> > > Change s390 percpu.h to use asm-generic/percpu.h
-> > 
-> > do the s390 maintainer agree with this change (Acks please), and has it 
-> > been tested on s390?
-> 
-> Now I'm confused. The patch has been acked a few weeks ago and the 
-> last 5+ version of the patch had the acked line. The lastest version 
-> dropped it for a reason I don't know. And more, the patch is already 
-> upstream with the (correct) acked line, see git commit 
-> f034347470e486835ccdcd7a5bb2ceb417be11c4. So, what is the problem ?
+>> In our application (cluster computing) we use a very tightly coupled 
+>> high-speed low-latency network.  There is no 'wide area traffic'.  So 
+>> it's hard for me to understand why any networking components or 
+>> software layers should take more than milliseconds to ramp up or back 
+>> off in speed. Perhaps we should be asking for a TCP congestion 
+>> avoidance algorithm which is designed for a data center environment 
+>> where there are very few hops and typical packet delivery times are 
+>> tens or hundreds of microseconds. It's very different than delivering 
+>> data thousands of km across a WAN.
 
-the latest patch was sent without your acked line and i asked about 
-that. But later on Mike told me that you acked it - so i restored the 
-ack and the patch, Linus pulled the fixes and it now all is upstream and 
-all architectures should be fine again now.
+> If your network latency is low, regardless of type of protocols should 
+> give you more than 900Mbps.
 
-	Ingo
+Yes, this is also what I had thought.
+
+In the graph that we posted, the two machines are connected by an ethernet 
+crossover cable.  The total RTT of the two machines is probably AT MOST a 
+couple of hundred microseconds.  Typically it takes 20 or 30 microseconds 
+to get the first packet out the NIC.  Travel across the wire is a few 
+nanoseconds.  Then getting the packet into the receiving NIC might be 
+another 20 or 30 microseconds.  The ACK should fly back in about the same 
+time.
+
+> I can guess the RTT of two machines is less than 4ms in your case and I 
+> remember the throughputs of all high-speed protocols (including 
+> tcp-reno) were more than 900Mbps with 4ms RTT. So, my question which 
+> kernel version did you use with your broadcomm NIC and got more than 
+> 900Mbps?
+
+We are going to double-check this (we did the broadcom testing about two 
+months ago). Carsten is going to re-run the broadcomm experiments later 
+today and will then post the results.
+
+You can see results from some testing on crossover-cable wired systems 
+with broadcomm NICs, that I did about 2 years ago, here:
+http://www.lsc-group.phys.uwm.edu/beowulf/nemo/design/SMC_8508T_Performance.html
+You'll notice that total TCP throughput on the crossover cable was about 
+220 MB/sec.  With TCP overhead this is very close to 2Gb/s.
+
+> I have two machines connected by a gig switch and I can see what happens 
+> in my environment. Could you post what parameters did you use for 
+> netperf testing?
+
+Carsten will post these in the next few hours.  If you want to simplify 
+further, you can even take away the gig switch and just use a crossover 
+cable.
+
+> and also if you set any parameters for your testing, please post them
+> here so that I can see that happens to me as well.
+
+Carsten will post all the sysctl and ethtool parameters shortly.
+
+Thanks again for chiming in. I am sure that with help from you, Jesse, and 
+Rick, we can figure out what is going on here, and get it fixed.
+
+Cheers,
+ 	Bruce
