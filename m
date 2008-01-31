@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765350AbYAaI2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYAaI2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765350AbYAaI2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 03:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764380AbYAaI1y
+	id S1754982AbYAaI2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 03:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764127AbYAaI1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 03:27:54 -0500
-Received: from chello089077127128.chello.pl ([89.77.127.128]:56838 "EHLO
-	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755378AbYAaI1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 03:27:31 -0500
-Date: Thu, 31 Jan 2008 09:26:40 +0100
-From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
-To: "Steve French" <smfrench@gmail.com>
-Cc: "Jeff Layton" <jlayton@redhat.com>, "Adrian Bunk" <bunk@kernel.org>,
-       "Guenter Kukkukk" <linux@kukkukk.com>, samba-technical@lists.samba.org,
-       linux-kernel@vger.kernel.org, sfrench@samba.org
-Subject: Re: [2.6 patch] remove smbfs
-Message-ID: <20080131092640.5bc79dbd@astralstorm.puszkin.org>
-In-Reply-To: <524f69650801301730m42abca6dn76d21fbdddbe89b5@mail.gmail.com>
-References: <20080128220835.GF8767@does.not.exist>
-	<200801302216.13788.linux@kukkukk.com>
-	<20080130174103.17ff8197@tleilax.poochiereds.net>
-	<20080130225810.GU29368@does.not.exist>
-	<20080130193412.61c6e2e9@tleilax.poochiereds.net>
-	<20080131004717.GX29368@does.not.exist>
-	<20080130201350.7a576203@tleilax.poochiereds.net>
-	<524f69650801301730m42abca6dn76d21fbdddbe89b5@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+	Thu, 31 Jan 2008 03:27:55 -0500
+Received: from mga02.intel.com ([134.134.136.20]:11174 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762051AbYAaI1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 03:27:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,283,1199692800"; 
+   d="scan'208";a="255965285"
+Subject: Re: [PATCH 2/5] x86: c_p_a clflush_cache_range fix
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <200801310840.25221.ak@suse.de>
+References: <1201764962.12950.23.camel@caritas-dev.intel.com>
+	 <200801310840.25221.ak@suse.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 31 Jan 2008 16:27:53 +0800
+Message-Id: <1201768073.21226.2.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/O4llMdYloMS7sHMZ9qktUVY";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 31 Jan 2008 08:26:51.0354 (UTC) FILETIME=[076F9BA0:01C863E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/O4llMdYloMS7sHMZ9qktUVY
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2008-01-31 at 08:40 +0100, Andi Kleen wrote:
+> On Thursday 31 January 2008 08:36:02 Huang, Ying wrote:
+> > Because in i386 early boot stage, boot_cpu_data may be not available,
+> > which makes clflush_cach_range() into infinite loop, which is called
+> > by change_page_attr(). This patch fixes this by providing a default
+> > clflush_size of 64. But the better method may be providing a
+> > early_identify_cpu() for i386.
+> 
+> There already is one. arch/x86/kernel/cpu/common.c:early_cpu_detect 
+> Just set it to 64 there.
 
-On Wed, 30 Jan 2008 19:30:55 -0600
-"Steve French" <smfrench@gmail.com> wrote:
+Thanks. The following is a new patch based on your reminding.
 
-> On Jan 30, 2008 7:13 PM, Jeff Layton <jlayton@redhat.com> wrote:
-> > On Thu, 31 Jan 2008 02:47:17 +0200
-> > > > > > > In addition, cifs cannot completely replace smbfs atm.
-> > > > > > > Even todays sold NAS-boxes (often running anchient
-> > > > > > > samba-2.x.x) work only with smbfs on the client side.
-> I am not convinced that this (mounting to older servers) would be a
-> problem with the proper mount options but it is more intuitive for
-> smbfs for some of the lanman servers.   I do want to make sure that we
-> don't make it too easy to mount with insecure lanman (ie due to
-> downgrade attacks) without the user at least doing that (specify weak
-> lanman security explicitly).  Today the user has to explicitly specify
-> sec=3Dlanman which is confusing but at least makes explicit the weaker
-> security.
->=20
-> There are four common issues with mounting to these very old servers:
-> 1) remembering to mount specifying lanman security (sec=3Dlanman)
+--------------------------------------------------------------------
 
-I think it'd be nice to add an alias called oldsmb or similar for that
-option in mount.cifs. It should only be needed for old win9x servers.
+Because in i386 early boot stage, boot_cpu_data may be not available,
+which makes clflush_cach_range() into infinite loop, which is called
+by change_page_attr(). This patch fixes this by setting
+boot_cpu_data.x86_clflush_size in early_cpu_detect().
 
---Sig_/O4llMdYloMS7sHMZ9qktUVY
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+---
+ arch/x86/kernel/cpu/common.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-iD8DBQFHoYZLBlhXA0ALOYMRAm98AJ9BRW54fyQNHhCN8SON7JcWbAqLKQCdGjyA
-Da2G1U4I2K8RnCzhLkHMFvU=
-=+pqR
------END PGP SIGNATURE-----
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -274,8 +274,10 @@ void __init cpu_detect(struct cpuinfo_x8
+ 		if (c->x86 >= 0x6)
+ 			c->x86_model += ((tfms >> 16) & 0xF) << 4;
+ 		c->x86_mask = tfms & 15;
+-		if (cap0 & (1<<19))
++		if (cap0 & (1<<19)) {
+ 			c->x86_cache_alignment = ((misc >> 8) & 0xff) * 8;
++			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
++		}
+ 	}
+ }
+ static void __cpuinit early_get_cap(struct cpuinfo_x86 *c)
+@@ -317,6 +319,7 @@ static void __init early_cpu_detect(void
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+ 
+ 	c->x86_cache_alignment = 32;
++	c->x86_clflush_size = 32;
+ 
+ 	if (!have_cpuid_p())
+ 		return;
 
---Sig_/O4llMdYloMS7sHMZ9qktUVY--
