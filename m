@@ -1,70 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933386AbYAaOM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbYAaO1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933386AbYAaOM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 09:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYAaOMu
+	id S1759972AbYAaO1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 09:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYAaO1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 09:12:50 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:57520 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752992AbYAaOMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 09:12:49 -0500
-Date: Thu, 31 Jan 2008 15:12:47 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Paul Mundt <lethal@linux-sh.org>, Dan Williams <dan.j.williams@intel.com>,
-       linux-kernel@vger.kernel.org, Shannon Nelson <shannon.nelson@intel.com>,
-       kernel@avr32linux.org, Francis Moreau <francis.moro@gmail.com>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: [RFC v2 2/5] dmaengine: Add slave DMA interface
-Message-ID: <20080131151247.47867e06@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <200801310451.03966.david-b@pacbell.net>
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-	<200801310027.25516.david-b@pacbell.net>
-	<20080131084433.GA14160@linux-sh.org>
-	<200801310451.03966.david-b@pacbell.net>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Thu, 31 Jan 2008 09:27:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36843 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbYAaO1m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 09:27:42 -0500
+Subject: [PATCH] hrtimer: fix hrtimer_init_sleeper() users
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Guillaume Chazarain <guichaz@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <200801310042.07910.rjw@sisk.pl>
+References: <200801302338.25365.rjw@sisk.pl>
+	 <200801310042.07910.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 15:27:24 +0100
+Message-Id: <1201789644.32654.5.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 04:51:03 -0800
-David Brownell <david-b@pacbell.net> wrote:
-> First steps are after all followed by second steps, and often
-> by third steps.  It's not "overengineering" to recognize when
-> those steps necessarily have a direction.
 
-But it might be considered overengineering to actually take those steps
-when you're not sure if the direction is the right one :)
+On Thu, 2008-01-31 at 00:42 +0100, Rafael J. Wysocki wrote:
+> Update.
+> 
+> On Wednesday, 30 of January 2008, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > Recently I've been observing problems with unmounting the /home fs on reboot
+> > and/or shutdown on two test boxes.
+> > 
+> > After some more investigation I've found that this is due to some KDE processes
+> > stuck in D states after their owner has logged out.
+> > 
+> > This happens 100% of the time if there's a suspend/resume cycle before the user
+> > logs out (ie. the user logs into KDE, works for some time, suspends the box to
+> > RAM and resmes one or more times and then logs out).  Still, I also observe the
+> > symptoms on a box that's never suspended.
+> > 
+> > I'm not sure how to debug this, so please advise.
+> 
+> After reverting:
+> 
+> commit 37bb6cb4097e29ffee970065b74499cbf10603a3
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Fri Jan 25 21:08:32 2008 +0100
+> 
+>     hrtimer: unlock hrtimer_wakeup
+> 
+> I no longer get processes in the D state, but there still is a problem with
+> artswrapper (this is an openSUSE 10.3 system, x86-64).  Namely,
+> after a suspend/resume cycle and logging out/logging in the user,
+> artswrapper gets stuck somewhere, apparently in the running (R) state.
+> For this reason it blocks any subsequent attempts to suspend.
+> 
+> Here's the relevant trace (from show_state()):
+> 
+> [  522.474919] artswrapper   R  running task        0  4805      1
+> [  522.474922]  ffff810074cd1f70 0000000000000082 0000000000000296 ffff810074cd1ed8
+> [  522.474926]  ffffffff80311769 ffff810074cd1f20 ffffffff80701240 ffffffff80701240
+> [  522.474930]  ffffffff80701240 ffffffff80701240 ffffffff80701240 ffffffff80701240
+> [  522.474933] Call Trace:
+> [  522.474940]  [<ffffffff80311769>] ? __up_read+0x8f/0x97
+> [  522.474963]  [<ffffffff8020c5cf>] retint_careful+0xd/0x21
+> 
+> where, according to gdb,
+> 
+> (gdb) l *__up_read+0x8f
+> 0xffffffff80311769 is in __up_read (/home/rafael/src/linux-2.6/lib/rwsem-spinlock.c:273).
+> 268
+> 269             if (--sem->activity == 0 && !list_empty(&sem->wait_list))
+> 270                     sem = __rwsem_wake_one_writer(sem);
+> 271
+> 272             spin_unlock_irqrestore(&sem->wait_lock, flags);
+> 273     }
+> 274
+> 275     /*
+> 276      * release a write lock on the semaphore
+> 277      */
+> 
+> What gives?
 
-Maybe we should ask Al Viro if we can use his in-kernel XML parser and
-take care of the extensibility requirements once and for all? ;-)
+Well, let me give you something that worked for Guillaume :-)
 
-> In this case, that direction is "working on more hardware", so
-> evaluating the interface proposal against several types of
-> hardware is a good way to review it.  The hardware I referenced
-> doesn't seem "fringe" to me; it's used on more Linux systems
-> and by more users than the Synopsys design.  And I've seen some
-> of the same issues on other DMA controllers:  priority, options
-> for synchronization (e.g. after DMAREQ is signaled), and more.
+---
+Subject: hrtimer: fix hrtimer_init_sleeper() users
 
-Right, but can we get away with some sort of vague "I think we need to
-go in _that_ direction eventually" spec for now, and just see how many
-existing drivers and hardware we can support with just some basic
-interfaces, and get a better idea about what we need to support the
-remaining ones?
+commit 37bb6cb4097e29ffee970065b74499cbf10603a3
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Jan 25 21:08:32 2008 +0100
 
-> In that vein, doesn't SuperH have DMA controllers to fit into this
-> proposed interface?  I don't know about such "fringe" hardware
-> myself, but it'd be good to know if this proposal is sufficient
-> for the needs of drivers there.
+    hrtimer: unlock hrtimer_wakeup
 
-That would indeed be good to know, and is in fact the reason why I Cc'd
-Paul and Francis in the first place.
+Broke hrtimer_init_sleeper() users. It forgot to fix up the futex
+caller of this function to detect the failed queueing and messed up
+the do_nanosleep() caller in that it could leak a TASK_INTERRUPTIBLE
+state.
 
-Haavard
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/futex.c   |    2 ++
+ kernel/hrtimer.c |    2 ++
+ 2 files changed, 4 insertions(+)
+
+Index: linux-2.6/kernel/hrtimer.c
+===================================================================
+--- linux-2.6.orig/kernel/hrtimer.c
++++ linux-2.6/kernel/hrtimer.c
+@@ -1312,6 +1312,8 @@ static int __sched do_nanosleep(struct h
+ 
+ 	} while (t->task && !signal_pending(current));
+ 
++	__set_current_state(TASK_RUNNING);
++
+ 	return t->task == NULL;
+ }
+ 
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c
++++ linux-2.6/kernel/futex.c
+@@ -1252,6 +1252,8 @@ static int futex_wait(u32 __user *uaddr,
+ 			t.timer.expires = *abs_time;
+ 
+ 			hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_ABS);
++			if (!hrtimer_active(&t->timer))
++				t->task = NULL;
+ 
+ 			/*
+ 			 * the timer could have already expired, in which
+
+
