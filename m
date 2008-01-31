@@ -1,55 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbYAaCDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbYAaCI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761504AbYAaCDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 21:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYAaCDc
+	id S1760940AbYAaCI0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 21:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYAaCIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 21:03:32 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:33497 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbYAaCDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 21:03:31 -0500
-Message-ID: <47A12C71.4050609@davidnewall.com>
-Date: Thu, 31 Jan 2008 12:33:29 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 30 Jan 2008 21:08:18 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:44156 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752648AbYAaCIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 21:08:16 -0500
+Date: Wed, 30 Jan 2008 18:08:14 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
+ address ranges
+In-Reply-To: <20080131003434.GE7185@v2.random>
+Message-ID: <Pine.LNX.4.64.0801301805200.14071@schroedinger.engr.sgi.com>
+References: <20080129220212.GX7233@v2.random>
+ <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
+ <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
+ <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
+ <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
+ <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
+ <20080131003434.GE7185@v2.random>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Steve French <smfrench@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       sfrench@samba.org, samba-technical@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove smbfs
-References: <20080128220835.GF8767@does.not.exist>  <Pine.LNX.4.64.0801301923450.13036@fbirervta.pbzchgretzou.qr> <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com> <Pine.LNX.4.64.0801302003560.13036@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0801302003560.13036@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jan 30 2008 12:53, Steve French wrote:
->   
->> I have mounted to Windows98 a few months ago with no problems (other
->> than a few restrictions like you can't set the file times via utimes).
->> For mounts to Windows98 note that you have to specify the server
->> netbios name on the mount (since it is not the same as the DNS name).
->> In your example your would need to specify "servernetbiosname=WIN98"
->> in the mount options (until mount.cifs autoretries with
->> servernetbiosname assumed to be the beginning of the UNC name - note
->> that later servers have a dummy netbios name that is used so this
->> mount option is only needed for OS/2 and Win9x).
->>     
->
-> Ok that works. I had tried "netbiosname" but not "servernetbiosname"
-> (only fuzzy memories from the last win98 encounter and the suggestion
-> to use netbiossomething).
->   
 
-Apparently CIFS lacks an adequate man page (otherwise Jan would have
-discovered servernetbiosname for himself.)  That's sufficient reason to
-keep smbfs, and just to be radical, why not remove cifs until it's
-properly documented?  Man pages are essential.
+Patch to
 
-(Listens for howls.)
+
+1. Remove sync on notifier_release. Must be called when only a 
+   single process remain.
+
+2. Add invalidate_range_start/end. This should allow safe removal
+   of ranges of external ptes without having to resort to a callback
+   for every individual page.
+
+This must be able to nest so the driver needs to keep a refcount of range 
+invalidates and wait if the refcount != 0.
+
+
+---
+ include/linux/mmu_notifier.h |   11 +++++++++--
+ mm/fremap.c                  |    3 ++-
+ mm/hugetlb.c                 |    3 ++-
+ mm/memory.c                  |   16 ++++++++++------
+ mm/mmu_notifier.c            |    9 ++++-----
+ 5 files changed, 27 insertions(+), 15 deletions(-)
+
+Index: linux-2.6/mm/mmu_notifier.c
+===================================================================
+--- linux-2.6.orig/mm/mmu_notifier.c	2008-01-30 17:58:48.000000000 -0800
++++ linux-2.6/mm/mmu_notifier.c	2008-01-30 18:00:26.000000000 -0800
+@@ -13,23 +13,22 @@
+ #include <linux/mm.h>
+ #include <linux/mmu_notifier.h>
+ 
++/*
++ * No synchronization. This function can only be called when only a single
++ * process remains that performs teardown.
++ */
+ void mmu_notifier_release(struct mm_struct *mm)
+ {
+ 	struct mmu_notifier *mn;
+ 	struct hlist_node *n, *t;
+ 
+ 	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
+-		down_write(&mm->mmap_sem);
+-		rcu_read_lock();
+ 		hlist_for_each_entry_safe_rcu(mn, n, t,
+ 					  &mm->mmu_notifier.head, hlist) {
+ 			hlist_del_rcu(&mn->hlist);
+ 			if (mn->ops->release)
+ 				mn->ops->release(mn, mm);
+ 		}
+-		rcu_read_unlock();
+-		up_write(&mm->mmap_sem);
+-		synchronize_rcu();
+ 	}
+ }
+ 
+Index: linux-2.6/include/linux/mmu_notifier.h
+===================================================================
+--- linux-2.6.orig/include/linux/mmu_notifier.h	2008-01-30 17:58:48.000000000 -0800
++++ linux-2.6/include/linux/mmu_notifier.h	2008-01-30 18:00:26.000000000 -0800
+@@ -67,15 +67,22 @@ struct mmu_notifier_ops {
+ 				int dummy);
+ 
+ 	/*
++	 * invalidate_range_begin() and invalidate_range_end() are paired.
++	 *
++	 * invalidate_range_begin must clear all references in the range
++	 * and stop the establishment of new references.
++	 *
++	 * invalidate_range_end() reenables the establishment of references.
++	 *
+ 	 * lock indicates that the function is called under spinlock.
+ 	 */
+ 	void (*invalidate_range_begin)(struct mmu_notifier *mn,
+ 				 struct mm_struct *mm,
++				 unsigned long start, unsigned long end,
+ 				 int lock);
+ 
+ 	void (*invalidate_range_end)(struct mmu_notifier *mn,
+-				 struct mm_struct *mm,
+-				 unsigned long start, unsigned long end);
++				 struct mm_struct *mm);
+ };
+ 
+ struct mmu_rmap_notifier_ops;
+Index: linux-2.6/mm/fremap.c
+===================================================================
+--- linux-2.6.orig/mm/fremap.c	2008-01-30 17:58:48.000000000 -0800
++++ linux-2.6/mm/fremap.c	2008-01-30 18:00:26.000000000 -0800
+@@ -212,8 +212,9 @@ asmlinkage long sys_remap_file_pages(uns
+ 		spin_unlock(&mapping->i_mmap_lock);
+ 	}
+ 
++	mmu_notifier(invalidate_range_start, mm, start, start + size, 0);
+ 	err = populate_range(mm, vma, start, size, pgoff);
+-	mmu_notifier(invalidate_range, mm, start, start + size, 0);
++	mmu_notifier(invalidate_range_end, mm);
+ 	if (!err && !(flags & MAP_NONBLOCK)) {
+ 		if (unlikely(has_write_lock)) {
+ 			downgrade_write(&mm->mmap_sem);
+Index: linux-2.6/mm/hugetlb.c
+===================================================================
+--- linux-2.6.orig/mm/hugetlb.c	2008-01-30 17:58:48.000000000 -0800
++++ linux-2.6/mm/hugetlb.c	2008-01-30 18:00:26.000000000 -0800
+@@ -744,6 +744,7 @@ void __unmap_hugepage_range(struct vm_ar
+ 	BUG_ON(start & ~HPAGE_MASK);
+ 	BUG_ON(end & ~HPAGE_MASK);
+ 
++	mmu_notifier(invalidate_range_start, mm, start, end, 1);
+ 	spin_lock(&mm->page_table_lock);
+ 	for (address = start; address < end; address += HPAGE_SIZE) {
+ 		ptep = huge_pte_offset(mm, address);
+@@ -764,7 +765,7 @@ void __unmap_hugepage_range(struct vm_ar
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+ 	flush_tlb_range(vma, start, end);
+-	mmu_notifier(invalidate_range, mm, start, end, 1);
++	mmu_notifier(invalidate_range_end, mm);
+ 	list_for_each_entry_safe(page, tmp, &page_list, lru) {
+ 		list_del(&page->lru);
+ 		put_page(page);
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c	2008-01-30 17:58:48.000000000 -0800
++++ linux-2.6/mm/memory.c	2008-01-30 18:00:51.000000000 -0800
+@@ -888,11 +888,12 @@ unsigned long zap_page_range(struct vm_a
+ 	lru_add_drain();
+ 	tlb = tlb_gather_mmu(mm, 0);
+ 	update_hiwater_rss(mm);
++	mmu_notifier(invalidate_range_start, mm, address, end,
++		(details ? (details->i_mmap_lock != NULL)  : 0));
+ 	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
+ 	if (tlb)
+ 		tlb_finish_mmu(tlb, address, end);
+-	mmu_notifier(invalidate_range, mm, address, end,
+-		(details ? (details->i_mmap_lock != NULL)  : 0));
++	mmu_notifier(invalidate_range_end, mm);
+ 	return end;
+ }
+ 
+@@ -1355,6 +1356,7 @@ int remap_pfn_range(struct vm_area_struc
+ 	pfn -= addr >> PAGE_SHIFT;
+ 	pgd = pgd_offset(mm, addr);
+ 	flush_cache_range(vma, addr, end);
++	mmu_notifier(invalidate_range_start, mm, start, end, 0);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+ 		err = remap_pud_range(mm, pgd, addr, next,
+@@ -1362,7 +1364,7 @@ int remap_pfn_range(struct vm_area_struc
+ 		if (err)
+ 			break;
+ 	} while (pgd++, addr = next, addr != end);
+-	mmu_notifier(invalidate_range, mm, start, end, 0);
++	mmu_notifier(invalidate_range_end, mm);
+ 	return err;
+ }
+ EXPORT_SYMBOL(remap_pfn_range);
+@@ -1450,6 +1452,7 @@ int apply_to_page_range(struct mm_struct
+ 	int err;
+ 
+ 	BUG_ON(addr >= end);
++	mmu_notifier(invalidate_range_start, mm, start, end, 0);
+ 	pgd = pgd_offset(mm, addr);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+@@ -1457,7 +1460,7 @@ int apply_to_page_range(struct mm_struct
+ 		if (err)
+ 			break;
+ 	} while (pgd++, addr = next, addr != end);
+-	mmu_notifier(invalidate_range, mm, start, end, 0);
++	mmu_notifier(invalidate_range_end, mm);
+ 	return err;
+ }
+ EXPORT_SYMBOL_GPL(apply_to_page_range);
+@@ -1635,6 +1638,8 @@ gotten:
+ 		goto oom;
+ 	cow_user_page(new_page, old_page, address, vma);
+ 
++	mmu_notifier(invalidate_range_start, mm, address,
++				address + PAGE_SIZE - 1, 0);
+ 	/*
+ 	 * Re-check the pte - we dropped the lock
+ 	 */
+@@ -1673,8 +1678,7 @@ gotten:
+ 		page_cache_release(old_page);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+-	mmu_notifier(invalidate_range, mm, address,
+-				address + PAGE_SIZE - 1, 0);
++	mmu_notifier(invalidate_range_end, mm);
+ 	if (dirty_page) {
+ 		if (vma->vm_file)
+ 			file_update_time(vma->vm_file);
+
