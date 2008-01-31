@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934403AbYAaWoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbYAaWpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934403AbYAaWoo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762213AbYAaWoh
+	id S934633AbYAaWpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762366AbYAaWpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:44:37 -0500
-Received: from pat.uio.no ([129.240.10.15]:51553 "EHLO pat.uio.no"
+	Thu, 31 Jan 2008 17:45:23 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42359 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762199AbYAaWoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:44:37 -0500
-Subject: Re: degrading performance (NFS v.3 client)
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: r31dmaeu@pc0312b.rz.unibw-muenchen.de
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <47A1E4AB.2010504@pc0312a.rz.unibw-muenchen.de>
-References: <47A1E4AB.2010504@pc0312a.rz.unibw-muenchen.de>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 17:44:33 -0500
-Message-Id: <1201819473.11897.34.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: 49081716DD7EF73F8518933F0F9A439B42E5889A
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 578 total 6613122 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1762341AbYAaWpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 17:45:22 -0500
+Date: Thu, 31 Jan 2008 23:45:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: define OBJCOPYFLAGS explicitly for each target.
+Message-ID: <20080131224505.GB24974@elte.hu>
+References: <1201815920-24669-1-git-send-email-ijc@hellion.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201815920-24669-1-git-send-email-ijc@hellion.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-01-31 at 16:09 +0100, Claude Frantz wrote:
-> Hello !
-> 
-> Please allow me to submit to you a question related to a system which
-> is a NFS v3 client for a Netapp server. The home directories are
-> NFS attached. The following behaviour occurs sometimes. The system 
-> becomes very slow. The load average is increasing but the most
-> interesting observation is the increase of the %iowait. After
-> reboot the system is running well for many days, then the problem 
-> occurs again.
-> 
-> Any idea ?
+* Ian Campbell <ijc@hellion.org.uk> wrote:
 
-Hi,
+> Do this rather than defining a global version and overriding it in 
+> almost all cases in order to make subsequent patches simpler.
 
-Have you tried analysing the NFS performances using Chuck's nfs-iostat
-utility? You can pick up a copy at
-    http://oss.oracle.com/~cel/linux-2.6/2.6.24/
+thanks Ian - i've picked up #1, #2 and #4 from your series. Once #3 is 
+OK to Peter i'll add that too. (#4, the bumping of the version needs 
+#3 to be meaningful.)
 
-Try looking both at
-
-	nfs-iostat 10 --page
-and
-	nfs-iostat 10 --attr
-
-to see what the differences are between the 'fast' and 'slow' cases...
-
-Cheers
-  Trond
-
+	Ingo
