@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765570AbYAaIrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765784AbYAaItx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765570AbYAaIrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 03:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbYAaIrb
+	id S1765784AbYAaItx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 03:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760898AbYAaItm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 03:47:31 -0500
-Received: from hs-out-0708.google.com ([64.233.178.244]:53425 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754815AbYAaIra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 03:47:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p5HhXVRzkpV5ftpL8ZmUEse2V4MR/jnjguLceEuVo+sKF77K0VFMq3frsCLGYaVO8EGX7/yXelwTHFnwoh+l5XcK08aoHFqq/7uIaFhDqroG79uaavWLlTOOUQ9iuQkOZv6pF6x+JGczd59B01zYtVgbra5oJ4IuelTQwcfqMw4=
-Message-ID: <a8e1da0801310046q289ce4a1qd8d9f8865e2e6972@mail.gmail.com>
-Date: Thu, 31 Jan 2008 16:46:35 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: [BUG] io-scheduler : spinlock deadlock
+	Thu, 31 Jan 2008 03:49:42 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:9551 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753033AbYAaItm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 03:49:42 -0500
+Date: Thu, 31 Jan 2008 17:48:51 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Francis Moreau <francis.moro@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080131084526.GJ15220@kernel.dk>
+Subject: Re: [Kbuild] How to clean a particular directory ?
+Message-ID: <20080131084851.GB14160@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Francis Moreau <francis.moro@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <38b2ab8a0801310038o2906ab68ta8893240576d806d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080131084345.GA3902@darkstar.te-china.tietoenator.com>
-	 <20080131084526.GJ15220@kernel.dk>
+In-Reply-To: <38b2ab8a0801310038o2906ab68ta8893240576d806d@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 31, 2008 4:45 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> On Thu, Jan 31 2008, Dave Young wrote:
-> > While building kernel, lockdep detected spinlock deaklock and after a
-> > while the system hung.
-> >
-> > Attached is the screenshot.
->
-> Fixed by commit 149a051f82d2b3860fe32fa182dbc83a66274894 yesterday, just
-> updated your kernel.
+On Thu, Jan 31, 2008 at 09:38:10AM +0100, Francis Moreau wrote:
+> I'd like to clean a particular directory in the kernel tree.
+> 
+> I tried several things such as:
+> 
+> $ make drivers/char clean
+> $ make -f scripts/Makefile.clean obj=drivers/char
+> 
+> But it doesn't work.
+> 
+> Could anybody give me  a hint ?
 
-Thanks.
+make SUBDIRS=drivers/char clean
 
->
-> --
-> Jens Axboe
->
->
+should do the trick. Kbuild might have a magic incantation for it these
+days, but that's the way it used to work, and still seems to.
