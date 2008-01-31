@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbYAaB01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbYAaB1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760970AbYAaB01 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 20:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759355AbYAaB0G
+	id S1759780AbYAaB1s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 20:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYAaB1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 20:26:06 -0500
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:3282 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758902AbYAaB0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 20:26:04 -0500
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over       to e1000e"
-Cc: akpm@linux-foundation.org, auke-jan.h.kok@intel.com, davem@davemloft.net,
-       jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       randy.dunlap@oracle.com, torvalds@linux-foundation.org
-In-reply-To: <20080130235836.GV29368@does.not.exist>
-References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com> <20080130235836.GV29368@does.not.exist>
-Message-Id: <E1JKOBl-0007ne-EE@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Thu, 31 Jan 2008 02:26:01 +0100
-X-OriginalArrivalTime: 31 Jan 2008 01:26:01.0835 (UTC) FILETIME=[3D8CC3B0:01C863A8]
+	Wed, 30 Jan 2008 20:27:40 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:34904 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751719AbYAaB1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 20:27:39 -0500
+Date: Wed, 30 Jan 2008 17:27:37 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [patch 1/6] mmu_notifier: Core code
+In-Reply-To: <20080131001258.GD7185@v2.random>
+Message-ID: <Pine.LNX.4.64.0801301718530.2454@schroedinger.engr.sgi.com>
+References: <20080130022909.677301714@sgi.com> <20080130022944.236370194@sgi.com>
+ <20080130153749.GN7233@v2.random> <20080130155306.GA13746@sgi.com>
+ <Pine.LNX.4.64.0801301116510.27491@schroedinger.engr.sgi.com>
+ <20080130222035.GX26420@sgi.com> <20080130233803.GB7185@v2.random>
+ <Pine.LNX.4.64.0801301552210.1722@schroedinger.engr.sgi.com>
+ <20080131001258.GD7185@v2.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->> Jeff, Auke, would something like this be acceptable? It makes it very
->> obvious in the driver table which entries are for the PCIE versions that
->> would be handled by the E1000E driver if it is enabled..
+On Thu, 31 Jan 2008, Andrea Arcangeli wrote:
+
+> > Hmmmm.. exit_mmap is only called when the last reference is removed 
+> > against the mm right? So no tasks are running anymore. No pages are left. 
+> > Do we need to serialize at all for mmu_notifier_release?
 > 
-> I don't like it:
-> We should aim at having exactly one driver for one card.
+> KVM sure doesn't need any locking there.  I thought somebody had to
+> possibly take a pin on the "mm_count" and pretend to call
+> mmu_notifier_register at will until mmdrop was finally called, in a
+> out of order fashion given mmu_notifier_release was implemented like
+> if the list could change from under it. Note mmdrop != mmput. mmput
+> and in turn mm_users is the serialization point if you prefer to drop
+> all locking from _release. Nobody must ever attempt a mmu_notifier_*
+> after calling mmput for that mm. That should be enough to be
+> safe. I'm fine either ways...
 
-There is one thing I don't understand, but that may well be just me...
+exit_mmap (where we call invalidate_all() and release()) is called when 
+mm_users == 0:
 
->From Linus' original patch:
-> +++ b/drivers/net/e1000/e1000_main.c
-> +     INTEL_E1000_ETHERNET_DEVICE(0x108C),
+void mmput(struct mm_struct *mm)
+{
+        might_sleep();
 
-So, apparently support for 8086:108c was removed from the e1000 driver.
+        if (atomic_dec_and_test(&mm->mm_users)) {
+                exit_aio(mm);
+                exit_mmap(mm);
+                if (!list_empty(&mm->mmlist)) {
+                        spin_lock(&mmlist_lock);
+                        list_del(&mm->mmlist);
+                        spin_unlock(&mmlist_lock);
+                }
+                put_swap_token(mm);
+                mmdrop(mm);
+        }
+}
+EXPORT_SYMBOL_GPL(mmput);
 
->From my lspci:
-$ lspci -nn | grep Ether
-01:00.0 Ethernet controller [0200]: Intel Corporation 82573E Gigabit Ethernet Controller (Copper) [8086:108c] (rev 03)
+So there is only a single thread executing at the time when 
+invalidate_all() is called from exit_mmap(). Then we drop the 
+pages, and the page tables. After the page tables we call the ->release 
+method and then remove the vmas.
 
-But when I look at where that card is sitting:
-$ readlink pci/devices/0000\:01\:00.0/driver
-../../../../bus/pci/drivers/e1000
+So even dropping off the mmu_notifier chain in invalidate_all() could be 
+done without an issue and without locking.
 
-So, it's on the PCI bus, not on the PCI-Express bus (which I also have, but
-which has no devices on it).
+Trouble is if other callbacks attempt the same. Do we need to support the 
+removal from the mmu_notifier list in invalidate_range()?
 
-Or does the e1000e driver also support cards on the PCI bus?
-
-If that's the case then the original changelog entry "Move PCI-Express
-device IDs over to e1000e" is misleading as it's not only PCI-Express
-devices...
-
-Hmmm. Or does which driver is loaded decide on which bus the device ends up?
-
-Confused,
-FJP
