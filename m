@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764536AbYAaHHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbYAaHWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764536AbYAaHHG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 02:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYAaHGy
+	id S1762661AbYAaHWI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 02:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYAaHVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 02:06:54 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:5972 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753651AbYAaHGx (ORCPT
+	Thu, 31 Jan 2008 02:21:54 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:43485 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752129AbYAaHVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 02:06:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XKsAbJnF+vfXxKp6EKd2+6zUtIoFmdHU0nu6zIZbf0ZqBYU77WL9/0xhsm8chzW3jKgDraNKRJ8J/3G9KkPD8wZOQoyXNGYJhHG6+UpZ2lYbhzuSVOlq/qiH8pO8QsIE6DdtvMrv2HqRKGWVQvjR9xKLvkHRxRFbGnvWVGPRxH0=
-Message-ID: <86802c440801302306g2a1ae11h52b883eed79b7e96@mail.gmail.com>
-Date: Wed, 30 Jan 2008 23:06:53 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, "Andi Kleen" <ak@suse.de>
-Subject: Re: system without RAM on node0 boot fail
-Cc: "Christoph Lameter" <clameter@sgi.com>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47A16616.9070606@zytor.com>
+	Thu, 31 Jan 2008 02:21:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zRdi4OXF7wc5bDh3mVNl7YubrF9iUyPTC1GlYeJHuKD9yBaK3+zg7aUJj792pkdfjrMG05BPu8HUkw6eCDNLMfeKn8dRcP23EeaK+iAVp5sRVI+NnQZuF0cdC8IsnPq3JmIlC+wGSjHO+02ZoCfrSiFckd+t6qLf+kYsx/PIJHQ=  ;
+X-YMail-OSG: x80en24VM1kEs_RsBu1nZjRSy7JUReVW6CwExLRNY144MLZh4OZC4zfXaQ4tCoE8gRU0C2wi3A--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [spi-devel-general] SPI related Kconfig warning
+Date: Wed, 30 Jan 2008 23:21:50 -0800
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       eric miao <eric.y.miao@gmail.com>
+References: <D5CED6F1-A708-4866-BA3D-75F3CCBA43F6@kernel.crashing.org>
+In-Reply-To: <D5CED6F1-A708-4866-BA3D-75F3CCBA43F6@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200801302026.27130.yinghai.lu@sun.com>
-	 <200801302102.09510.yinghai.lu@sun.com>
-	 <Pine.LNX.4.64.0801302049180.15109@schroedinger.engr.sgi.com>
-	 <47A16616.9070606@zytor.com>
+Message-Id: <200801302321.51120.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 10:09 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Christoph Lameter wrote:
-> > x86 supports booting from a node without RAM?
+On Wednesday 30 January 2008, Kumar Gala wrote:
+> Was wondering if anyone was looking at the cause of this warning in  
+> top of linus's tree (8af03e782cae1e0a0f530ddd22301cdd12cf9dc0)
+> 
+> drivers/spi/Kconfig:156:warning: 'select' used by config symbol  
+> 'SPI_PXA2XX' refers to undefined symbol 'PXA_SSP'
+> 
+> I was doing a build of a ppc kernel.
 
-it is a two sockets system. only 4G RAM installed on node1.
+Happens on x86, AVR32, and non-PXA ARM too.  Came from some PXA cleanup
+patches.  Eric, didn't you have a patch for this?
 
->
->  From the looks of it I would say he probably has the boot node numbered 1.
->
-> The e820 map is also "interesting" - doesn't list the first 256 bytes,
-> which corresponds to the first quarter(!) of the real-mode exception table.
+(Of course I *still* don't understand why kconfig bothers to look
+at reverse dependencies whose "forward" ones can never be satisfied.
+If it stopped looking at those, lots of similar problems would vanish.)
 
-i kexec that from 2.6.24 (with discontinuous and slab)
-so that e820 is passed by kexec from first kernel. normal pxeboot will
-have start for 0.
-
-YH
+- Dave
