@@ -1,64 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbYBABmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S932113AbYAaQma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760371AbYBABmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 20:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYBABmJ
+	id S932113AbYAaQma (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 31 Jan 2008 11:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbYAaQmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 20:42:09 -0500
-Received: from mga11.intel.com ([192.55.52.93]:16588 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751324AbYBABmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 20:42:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,287,1199692800"; 
-   d="scan'208";a="294783800"
-Subject: Re: [PATCH 2.6.24] Add new string functions real_strtoul and
-	change kernel params to use them
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080131090345.92bce974.randy.dunlap@oracle.com>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
-	 <1201562058.12722.9.camel@yangyi-dev.bj.intel.com>
-	 <1201650080.3875.1.camel@yangyi-dev.bj.intel.com>
-	 <1201742302.6500.7.camel@yangyi-dev.bj.intel.com>
-	 <20080131090345.92bce974.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Organization: Intel
-Date: Fri, 01 Feb 2008 00:30:17 +0800
-Message-Id: <1201797017.6500.16.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Thu, 31 Jan 2008 11:42:22 -0500
+Received: from smtpauth13.prod.mesa1.secureserver.net ([64.202.165.37]:49455
+	"HELO smtpauth13.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757753AbYAaQmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:42:21 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 11:42:21 EST
+Message-ID: <47A1F827.7000508@seclark.us>
+Date: Thu, 31 Jan 2008 11:32:39 -0500
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: test
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 09:03 -0800, Randy Dunlap wrote:
-> On Thu, 31 Jan 2008 09:18:22 +0800 Yi Yang wrote:
-> 
-> > Currently, for every sysfs node, the callers will be responsible for
-> > implementing store operation, so many many callers are doing duplicate
-> > things to validate input, they have the same mistakes because they are
-> > calling simple_strtol/ul/ll/ull, especially for module params, they are
-> > just numeric, but you can echo such values as 0x1234xxx, 07777888 and
-> > 1234aaa, for these cases, module params store operation just ignores
-> > successive invalid char and converts prefix part to a numeric although
-> > input is actually invalid.
-> > 
-> > This patch tries to fix the aforementioned issues and implements real_strtox
-> > serial functions, kernel/params.c uses them to strictly validate input,
-> > so module params will reject such values as 0x1234xxxx and returns an error:
-> 
-> How about a prefix of safe_ or strict_ or something other than real_?
-> real_ sounds too much like a real number function string parser.
-> 
-I named it as strict_ at the beginning, but it results in some alignment
-issues checkpatch.pl will always warn, i don't know if warnings will
-make the patch out of the door.
+test - is the ml alive.
 
-In kernel/params.c, STANDARD_PARAM_DEF(a function definition macro) will
-be over 80 chars, is it correct coding style to split it to two lines?
+-- 
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
 
