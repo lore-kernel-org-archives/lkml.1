@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932741AbYAaQMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbYAaQNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932741AbYAaQMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765904AbYAaQL7
+	id S932920AbYAaQNG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:13:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759131AbYAaQMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:11:59 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50103 "EHLO smtp6.pp.htv.fi"
+	Thu, 31 Jan 2008 11:12:54 -0500
+Received: from www.tglx.de ([62.245.132.106]:35407 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765774AbYAaQL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:11:58 -0500
-Date: Thu, 31 Jan 2008 18:12:35 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 arch updates for v2.6.25
-Message-ID: <20080131161235.GB19700@cs181133002.pp.htv.fi>
-References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu>
+	id S1758183AbYAaQMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:12:54 -0500
+Date: Thu, 31 Jan 2008 17:12:35 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [7/9] Add an option to disable direct mapping gbpages
+ and a global variable
+In-Reply-To: <20080129050635.B5A7C1B416E@basil.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0801311711130.9204@apollo.tec.linutronix.de>
+References: <20080129606.610336873@suse.de> <20080129050635.B5A7C1B416E@basil.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080131160033.GA11501@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 05:00:33PM +0100, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > You tested x86 but broke more than half a dozen other archtectures, 
-> > with at least 3 different commits breaking other architectures.
-> 
-> Note that all known breakages are fixed in current -git, except for the 
-> s390 problem that Martin/Nick posted the fix.
+On Tue, 29 Jan 2008, Andi Kleen wrote:
+> +int direct_gbpages;
+> +
+> +static int __init parse_direct_gbpages(char *arg)
+> +{
+> +	if (!strcmp(arg, "off")) {
+> +		direct_gbpages = -1;
+> +		return 0;
+> +	}
+> +	return -1;
+> +}
+> +early_param("direct_gbpages", parse_direct_gbpages);
 
-What about the breakages caused by commit 
-a5a19c63f4e55e32dc0bc3d936d7f94793d8b380 (this commit broke the 
-defconfig compilation on at least avr32, blackfin, sh, sparc and uml)?
+Can we please use simple boolean logic ? This 0, -1, 1 magic is more
+than confusing.
 
-This commit touched two different not x86 specific headers, and both of 
-them broke (different) architectures.
-
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+	tglx
