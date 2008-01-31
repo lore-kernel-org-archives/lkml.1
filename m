@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765457AbYAaJOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751482AbYAaJOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765457AbYAaJOI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 04:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYAaJN2
+	id S1751482AbYAaJOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 04:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbYAaJNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 04:13:28 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:14587 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751786AbYAaJNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 04:13:25 -0500
-Date: Thu, 31 Jan 2008 18:12:34 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] kobject: Always build in kernel/ksysfs.o.
-Message-ID: <20080131091234.GA14631@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+	Thu, 31 Jan 2008 04:13:37 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:50387 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755477AbYAaJNe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 04:13:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=epl0X+t7TtCRZJLtp0Nw91bYY/ue4DIch1NQaObSfBhBRGWlHolMV5meteMgkuHz4ztjcOxehQhBzr73htFrhT3dABLi2fat5sLPdgzHbkQZxsPpBVuVb0gOH8VhucM220ag3st3zAthtjSQOGqvXzkofiKeELtxwdlenUzuInc=
+Message-ID: <86802c440801310113s4f792b70le8377440078125f4@mail.gmail.com>
+Date: Thu, 31 Jan 2008 01:13:33 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: about relocs.c on x86
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47A187DB.5010201@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <86802c440801310007oe8693c7q177d41a87c27ca7@mail.gmail.com>
+	 <47A187DB.5010201@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/ksysfs.c seems to be a random dumping group for misc globals
-that the rest of the tree depend on. This has caused problems with
-exports in the past when sysfs is disabled, which can already be
-observed in commit-id 51107301b629640f9ab76fe23bf385e187b9ac29.
+On Jan 31, 2008 12:33 AM, Chris Snook <csnook@redhat.com> wrote:
+> Yinghai Lu wrote:
+> > why not rename relocs.c to relocs_32.c?
+>
+> Because we're trying to get rid of all the _32 and _64 files?
 
-The latest one is the kernel_kobj usage, which presently results in:
+but that file is not need for x86_64
 
-fs/built-in.o: In function `debugfs_init':
-inode.c:(.init.text+0xc34): undefined reference to `kernel_kobj'
-make: *** [.tmp_vmlinux1] Error 1
-
-kernel/ksysfs.c itself at this point only contains globals and some
-basic sysfs initialization, the sysfs initialization code is optimized
-out when we build with sysfs disabled. Given that, it's easier to just
-build in unconditionally, rather than trying to find some other random
-place to dump and initialize the globals.
-
-Additionally, the current trend seems to be decoupling of kobjects from
-sysfs, in which case it still makes sense to perform the kernel_kobj
-initialization that happens here even if sysfs is disabled, as
-lib/kobject.o is built-in unconditionally.
-
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- kernel/Makefile |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 8885627..db9af70 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -9,7 +9,7 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
- 	    rcupdate.o extable.o params.o posix-timers.o \
- 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
- 	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o \
--	    utsname.o notifier.o
-+	    utsname.o notifier.o ksysfs.o
- 
- obj-$(CONFIG_SYSCTL) += sysctl_check.o
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
-@@ -49,7 +49,6 @@ obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
- obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
- obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
- obj-$(CONFIG_KPROBES) += kprobes.o
--obj-$(CONFIG_SYSFS) += ksysfs.o
- obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
- obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
- obj-$(CONFIG_SECCOMP) += seccomp.o
+YH
