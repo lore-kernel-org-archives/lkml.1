@@ -1,109 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbYAaAep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbYAaAfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757439AbYAaAep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYAaAeg
+	id S1760087AbYAaAfG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 19:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYAaAei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:34:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51624 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751991AbYAaAef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:34:35 -0500
-Date: Wed, 30 Jan 2008 19:34:12 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Guenter Kukkukk <linux@kukkukk.com>, samba-technical@lists.samba.org,
-       linux-kernel@vger.kernel.org, sfrench@samba.org
-Subject: Re: [2.6 patch] remove smbfs
-Message-ID: <20080130193412.61c6e2e9@tleilax.poochiereds.net>
-In-Reply-To: <20080130225810.GU29368@does.not.exist>
-References: <20080128220835.GF8767@does.not.exist>
-	<200801302216.13788.linux@kukkukk.com>
-	<20080130174103.17ff8197@tleilax.poochiereds.net>
-	<20080130225810.GU29368@does.not.exist>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 19:34:38 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:58476
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYAaAeh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 19:34:37 -0500
+Date: Thu, 31 Jan 2008 01:34:34 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
+	address ranges
+Message-ID: <20080131003434.GE7185@v2.random>
+References: <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com> <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com> <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com> <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com> <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 00:58:10 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+On Wed, Jan 30, 2008 at 04:01:31PM -0800, Christoph Lameter wrote:
+> How we offload that? Before the scan of the rmaps we do not have the 
+> mmstruct. So we'd need another notifier_rmap_callback.
 
-> On Wed, Jan 30, 2008 at 05:41:03PM -0500, Jeff Layton wrote:
-> > On Wed, 30 Jan 2008 22:16:13 +0100
-> > Guenter Kukkukk <linux@kukkukk.com> wrote:
-> > 
-> > > Am Montag, 28. Januar 2008 schrieb Adrian Bunk:
-> > > > I remember that there were some small things missing in CIFS
-> > > > for completely replacing the unmaintained smbfs when we
-> > > > discussed removing smbfs back in 2005 due to smbfs being
-> > > > unmaintained.
-> > > > 
-> > > > CIFS has improved since, smbfs is still unmaintained, and it's
-> > > > becoming time to finally remove smbfs.
-> > > > 
-> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > > 
-> > > 
-> > > "... unmaintained smbfs ..." is not quite right, see
-> > >    http://lkml.org/lkml/2007/11/6/94
-> > > Before removing it now completely, drop
-> > >   Jeff Layton <jlayton@redhat.com>
-> > > a note.
-> > > Afaik, Redhat still has customers which rely on smbfs.
-> > > 
-> > 
-> > Some of our older products use smbfs, but our newer stuff (RHEL5 and
-> > up) have smbfs disabled. Fedora has had smbfs disabled for quite
-> > some time as well. I've heard very few complaints (though maybe
-> > they're just not getting to me).
-> > 
-> > I have no problem with targeting smbfs for removal, but I thought
-> > Andrew had an unofficial policy that we should first mark things to
-> > be deprecated, and then remove them 2 releases later. That seems
-> > like a sensible policy to me. If we mark it deprecated in 2.6.25
-> > then we can remove it after 2.6.26 is released.
-> > 
-> > It might not even hurt to have a nice loud printk when the smbfs
-> > module is plugged in to warn users that it's slated to be removed,
-> > and that they should move to CIFS as soon as possible.
-> 
-> Andrew has this with a target date of December 2006 (sic) for the 
-> removal buried in -mm...
-> 
+My assumption is that that "int lock" exists just because
+unmap_mapping_range_vma exists. If I'm right then my suggestion was to
+move the invalidate_range after dropping the i_mmap_lock and not to
+invoke it inside zap_page_range.
 
-True, but most users don't run -mm. I think we should have this marked
-as deprecated in mainline kernels before removing it. I rather like the
-idea of a runtime warning too...
+> The obvious solution does not scale. You will have a callback for every 
 
-smbfs has the unfortunate quality of momentum. A lot of users aren't
-aware of CIFS at all since smbfs basically does what they need it to
-do. Some extra warning for those users would be nice.
+Scale is the wrong word. The PT lock will prevent any other cpu to
+trash on the mmu_lock, so it's a fixed cost for each pte_clear with no
+scalability risk, nor any complexity issue. Certainly we could average
+certain fixed costs over more than one pte_clear to boost performance,
+and that's good idea. Not really a short term concern, we need to swap
+reliably first ;).
 
-> > > In addition, cifs cannot completely replace smbfs atm.
-> > > Even todays sold NAS-boxes (often running anchient 
-> > > samba-2.x.x) work only with smbfs on the client side.
-> > 
-> > It would be ideal if someone were to report these problems as bugs.
-> > I remember some of those in the past, but haven't heard of any
-> > cases of that sort of thing for some time. When I have, Steve has
-> > generally been very good about tracking down the cause and fixing
-> > it.
-> 
-> More exactly, one of the main advantages of removing redundant code
-> like smbfs is that people are finally forced to report their bugs.
-> 
+> page and there may be a million of those if you have a 4GB process.
 
-Indeed. I'm all for removing it, but I think we should try to have a
-clear transition path to avoid some of the "WTF happened to smbfs?"
-emails we're bound to get. Marking it deprecated in mainline and
-stating that it'll be removed in version 2.6.26 (or whenever) seems like
-a reasonable thing to do.
+That can be optimized adding a __ptep_clear_flush and an
+invalidate_pages (let's call it pages to better show it's an
+'clustered' version of invalidate_page, to avoid the confusion with
+_range_before/after that does an entirely different thing). Also for
+_range I tend to like before/after, as a means to say before the
+pte_clear and after the pte_clear but any other meaning is ok with me.
 
-Just my $.02...
+We add invalidate_page and invalidate_pages
+immediately. invalidate_pages may never be called initially by the
+linux VM, we can start calling it later as we replace ptep_clear_flush
+with __ptep_clear_flush (or local_ptep_clear_flush).
 
--- 
-Jeff Layton <jlayton@redhat.com>
+I don't see any problem with this approach and it looks quite clean to
+me and it leaves you full room for experimenting in practice with
+range_before/after while knowing those range_before/after won't
+require many changes.
+
+And for things like the age_page it will never happen that you could
+call the respective ptep_clear_flush_young w/o mmu notifier age_page
+after it, so you won't ever risk having to add an age_pages or a
+__ptep_clear_flush_young.
+
+> We need to have a coherent notifier solution that works for multiple 
+> scenarios. I think a working invalidate_range would also be required for 
+> KVM. KVM and GRUB are very similar so they should be able to use the same 
+> mechanisms and we need to properly document how that mechanism is safe. 
+> Either both take a page refcount or none.
+
+There's no reason why KVM should take any risk of corrupting memory
+due to a single missing mmu notifier, with not taking the
+refcount. get_user_pages will take it for us, so we have to pay the
+atomic-op anyway. It sure worth doing the atomic_dec inside the mmu
+notifier, and not immediately like this:
+
+	  get_user_pages(pages)
+	  __free_page(pages[0])
+
+The idea is that what works for GRU, works for KVM too. So we do a
+single invalidate_page and clustered invalidate_pages, we add that,
+and then we make sure all places are covered so GRU will not
+kernel-crash, and KVM won't risk to run oom or to generate _userland_
+corruption.
