@@ -1,195 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765371AbYAaUTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbYAaUbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765371AbYAaUTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 15:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbYAaUTB
+	id S1763921AbYAaUbz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 15:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYAaUbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 15:19:01 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:37575 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756882AbYAaUTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 15:19:00 -0500
-Date: Thu, 31 Jan 2008 12:18:54 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-In-Reply-To: <20080131171806.GN7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random>
+	Thu, 31 Jan 2008 15:31:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54913 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754901AbYAaUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 15:31:46 -0500
+Date: Thu, 31 Jan 2008 21:31:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
+Message-ID: <20080131203122.GA6457@elte.hu>
+References: <20080131201430.GA9375@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131201430.GA9375@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Andrea Arcangeli wrote:
 
-> My suggestion is to add the invalidate_range_start/end incrementally
-> with this, and to keep all the xpmem mmu notifiers in a separate
-> incremental patch (those are going to require many more changes to
-> perfect). They've very different things. GRU is simpler, will require
-> less changes and it should be taken care of sooner than XPMEM. KVM
-> requirements are a subset of GRU thanks to the page pin so I can
-> ignore KVM requirements as a whole and I only focus on GRU for the
-> time being.
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-KVM requires get_user_pages. This makes them currently different.
+> A commit that does nothing except for adding two unused 
+> EXPORT_SYMBOL's.
+> 
+> Without any rationale why they should be exported.
 
-> Invalidates inside PT lock will avoid the page faults to happen in
-> parallel of my invalidates, no dependency on the page pin, mremap
+the rationale is obvious: it's part of the standard uaccess 
+functionality and while it's rarely used (in fact it's not used by any 
+modular code right now) there's no reason not to export it alongside the 
+other uaccess vectors. We can unexport it once we unexport all uses of 
+the uaccess APIs. We could make it a _GPL export perhaps.
 
-You are aware that the pt lock is split for systems with >4 CPUS? You can 
-use the pte_lock only to serialize access to individual ptes.
+It's very annoying to driver writers when a small portion of a sensible 
+API vector is not available symmetrically.
 
-> pagefault against the main linux page fault, given we already have all
-> needed serialization out of the PT lock. XPMEM is forced to do that
+> And that from a person who on the other hand wants to introduce (and 
+> tries to force on other people) deprecation periods for unused 
+> EXPORT_SYMBOL's.
 
-pt lock cannot serialize with invalidate_range since it is split. A range 
-requires locking for a series of ptes not only individual ones.
+why does this bother you? The API makes total sense. This is a 
+completely sensible API (with a full implementation) to use non-temporal 
+copies. I mean, if this was some legacy API that nobody uses anymore i'd 
+agree, but this is about the ability to access user-space memory via 
+SSE2+ non-temporal stores.
 
-> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-> --- a/include/asm-generic/pgtable.h
-> +++ b/include/asm-generic/pgtable.h
-> @@ -46,6 +46,7 @@
->  	__young = ptep_test_and_clear_young(__vma, __address, __ptep);	\
->  	if (__young)							\
->  		flush_tlb_page(__vma, __address);			\
-> +	__young |= mmu_notifier_age_page((__vma)->vm_mm, __address);	\
->  	__young;							\
->  })
->  #endif
-
-That may be okay. Have you checked all the arches that can provide their 
-own implementation of this macro? This is only going to work on arches 
-that use the generic implementation.
-
- > @@ -86,6 +87,7 @@ do {									\
->  	pte_t __pte;							\
->  	__pte = ptep_get_and_clear((__vma)->vm_mm, __address, __ptep);	\
->  	flush_tlb_page(__vma, __address);				\
-> +	mmu_notifier(invalidate_page, (__vma)->vm_mm, __address);	\
->  	__pte;								\
->  })
->  #endif
-
-This will require a callback on every(!) removal of a pte. A range 
-invalidate does not do any good since the callbacks are performed anyways. 
-Probably needlessly.
-
-In addition you have the same issues with arches providing their own macro 
-here.
-
-> diff --git a/include/asm-s390/pgtable.h b/include/asm-s390/pgtable.h
-> --- a/include/asm-s390/pgtable.h
-> +++ b/include/asm-s390/pgtable.h
-> @@ -712,6 +712,7 @@ static inline pte_t ptep_clear_flush(str
->  {
->  	pte_t pte = *ptep;
->  	ptep_invalidate(address, ptep);
-> +	mmu_notifier(invalidate_page, vma->vm_mm, address);
->  	return pte;
->  }
->  
-
-Ahh you found an additional arch. How about x86 code? There is one 
-override of these functions there as well.
-
-> +	/*
-> +	 * invalidate_page[s] is called in atomic context
-> +	 * after any pte has been updated and before
-> +	 * dropping the PT lock required to update any Linux pte.
-> +	 * Once the PT lock will be released the pte will have its
-> +	 * final value to export through the secondary MMU.
-> +	 * Before this is invoked any secondary MMU is still ok
-> +	 * to read/write to the page previously pointed by the
-> +	 * Linux pte because the old page hasn't been freed yet.
-> +	 * If required set_page_dirty has to be called internally
-> +	 * to this method.
-> +	 */
-> +	void (*invalidate_page)(struct mmu_notifier *mn,
-> +				struct mm_struct *mm,
-> +				unsigned long address);
-
-
-> +	void (*invalidate_pages)(struct mmu_notifier *mn,
-> +				 struct mm_struct *mm,
-> +				 unsigned long start, unsigned long end);
-
-What is the point of invalidate_pages? It cannot be serialized properly 
-and you do the invalidate_page() calles regardless. Is is some sort of 
-optimization?
-
-> +struct mmu_notifier_head {};
-> +
-> +#define mmu_notifier_register(mn, mm) do {} while(0)
-> +#define mmu_notifier_unregister(mn, mm) do {} while (0)
-> +#define mmu_notifier_release(mm) do {} while (0)
-> +#define mmu_notifier_age_page(mm, address) ({ 0; })
-> +#define mmu_notifier_head_init(mmh) do {} while (0)
-
-Macros. We want functions there to be able to validate the parameters even 
-if !CONFIG_MMU_NOTIFIER.
-
-> +
-> +/*
-> + * Notifiers that use the parameters that they were passed so that the
-> + * compiler does not complain about unused variables but does proper
-> + * parameter checks even if !CONFIG_MMU_NOTIFIER.
-> + * Macros generate no code.
-> + */
-> +#define mmu_notifier(function, mm, args...)			       \
-> +	do {							       \
-> +		if (0) {					       \
-> +			struct mmu_notifier *__mn;		       \
-> +								       \
-> +			__mn = (struct mmu_notifier *)(0x00ff);	       \
-> +			__mn->ops->function(__mn, mm, args);	       \
-> +		};						       \
-> +	} while (0)
-> +
-> +#endif /* CONFIG_MMU_NOTIFIER */
-
-Ok here you took the variant that checks parameters.
-
-> @@ -1249,6 +1250,7 @@ static int remap_pte_range(struct mm_str
->  {
->  	pte_t *pte;
->  	spinlock_t *ptl;
-> +	unsigned long start = addr;
->  
->  	pte = pte_alloc_map_lock(mm, pmd, addr, &ptl);
->  	if (!pte)
-> @@ -1260,6 +1262,7 @@ static int remap_pte_range(struct mm_str
->  		pfn++;
->  	} while (pte++, addr += PAGE_SIZE, addr != end);
->  	arch_leave_lazy_mmu_mode();
-> +	mmu_notifier(invalidate_pages, mm, start, addr);
->  	pte_unmap_unlock(pte - 1, ptl);
->  	return 0;
-
-You are under the wrong impression that you can use the pte lock to 
-serialize general access to ptes! Nope. ptelock only serialize access to 
-individual ptes. This is broken.
-
-> +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
-> +		hlist_for_each_entry_safe(mn, n, tmp,
-> +					  &mm->mmu_notifier.head, hlist) {
-> +			hlist_del(&mn->hlist);
-
-hlist_del_init?
-
-> @@ -71,6 +72,7 @@ static void change_pte_range(struct mm_s
->  
->  	} while (pte++, addr += PAGE_SIZE, addr != end);
->  	arch_leave_lazy_mmu_mode();
-> +	mmu_notifier(invalidate_pages, mm, start, addr);
->  	pte_unmap_unlock(pte - 1, ptl);
->  }
-
-Again broken serialization.
+	Ingo
