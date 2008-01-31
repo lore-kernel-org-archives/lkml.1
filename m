@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbYAaA7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbYAaBBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758956AbYAaA7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYAaA7D
+	id S1758565AbYAaBBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 20:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYAaBBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:59:03 -0500
-Received: from mga02.intel.com ([134.134.136.20]:32380 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbYAaA67 convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jan 2008 20:01:35 -0500
+Received: from smtp11.unit.tiscali.de ([213.205.33.47]:35663 "EHLO
+	smtp11.unit.tiscali.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYAaBBe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:58:59 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,281,1199692800"; 
-   d="scan'208";a="332500669"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 30 Jan 2008 20:01:34 -0500
+From: Michael Gerdau <mgerdau@tiscali.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: ndiswrapper and GPL-only symbols redux
+Date: Thu, 31 Jan 2008 02:00:31 +0100
+User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
+Cc: Lee Revell <rlrevell@joe-job.com>, Chris Friesen <cfriesen@nortel.com>,
+       Giridhar Pemmasani <pgiri@yahoo.com>, Pavel Roskin <proski@gnu.org>,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, rms@gnu.org
+References: <20080129225701.GS8767@does.not.exist> <75b66ecd0801301136n193fa44bg890ad4dab9b61eb5@mail.gmail.com> <20080130202821.GP29368@does.not.exist>
+In-Reply-To: <20080130202821.GP29368@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Wed, 30 Jan 2008 16:57:37 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC78C219@orsmsx424.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Thread-Index: AchjgwwT+Vd3uaCjRc2frc6p5ctgqAAAQNgAAAfWeGA=
-References: <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com> <20080130194616.GA19426@elte.hu> <1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com> <20080130200221.GA28073@elte.hu> <1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com> <20080130205915.GA4562@elte.hu> 
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, "Ingo Molnar" <mingo@elte.hu>
-Cc: "Mike Travis" <travis@sgi.com>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       <linux-ia64@vger.kernel.org>, <sparclinux@vger.kernel.org>
-X-OriginalArrivalTime: 31 Jan 2008 00:57:38.0145 (UTC) FILETIME=[46124D10:01C863A4]
+Content-Type: multipart/signed;
+  boundary="nextPart150249257.afTSm1ajAo";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801310200.49236.mgerdau@tiscali.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'll start digging on why this doesn't boot ... but you might as well
-> send the fixes so far upstream to Linus so that the SMP fix is available
+--nextPart150249257.afTSm1ajAo
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Well a pure 2.6.24 version compiled with CONFIG_SMP=n booted just fine, so
-the breakage is recent ... and more than likely related to this change.
+> > > IANAL, and I would therefore ask a lawyer whether, and if yes under
+> > > which circumstances, shipping a binary driver written for another OS
+> > > dynamically linked into the Linux kernel would not be a criminal offe=
+nse.
+> >=20
+> > Please stop throwing around words like "criminal".  If this is in fact
+> > illegal it would be a civil matter.
+>=20
+> You are living in a country where copyright violations can't bring=20
+> people into jail?
 
-I've only had a casual dig at the failing case ... kernel dies in memset()
-as called from kmem_cache_alloc() with the address being written as
-0x4000000000117b48 (which is off in the virtual address space range used
-by users ... not a kernel address).
+AFAICS you are misunderstanding the words "criminal" and "civil matter".
 
-I'll dig some more tomorrow.
+AFAIK in german law the difference between the two is that "criminal"
+offences are prosecuted by the government out of their own accord while
+"civil matters" require someone else to sue.
 
--Tony
+Murder and robbery are criminal offences.
+
+Assuming the above is correct then copyright violations definitely are
+"civil matters" in germany regardless whether you could go into jail or not.
+
+Best,
+Michael
+=2D-=20
+ Michael Gerdau       email: mgerdau@tiscali.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart150249257.afTSm1ajAo
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHoR3BUYYhyuxDQc4RArweAJ41jQ3LZSMcd3RkRskREOc/whl4UQCfS1IK
+8xIjU/wJ6NCYKsI97mD1orw=
+=2mx3
+-----END PGP SIGNATURE-----
+
+--nextPart150249257.afTSm1ajAo--
