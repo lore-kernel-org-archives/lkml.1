@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759414AbYAaFFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764614AbYAaFHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759414AbYAaFFW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 00:05:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYAaFFF
+	id S1764614AbYAaFHg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 00:07:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYAaFH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 00:05:05 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46621 "EHLO pasmtpB.tele.dk"
+	Thu, 31 Jan 2008 00:07:26 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37219 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751562AbYAaFFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 00:05:01 -0500
-Date: Thu, 31 Jan 2008 06:05:00 +0100
+	id S1751787AbYAaFHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 00:07:25 -0500
+Date: Thu, 31 Jan 2008 06:07:27 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080131050500.GA30989@uranus.ravnborg.org>
-References: <20080130094440.GA4652@havoc.gtf.org> <20080130102116.GA20846@uranus.ravnborg.org> <20080130224711.GA24133@electric-eye.fr.zoreil.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>,
+       Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: oldconfig/menuconfig help text display for "choice" items
+Message-ID: <20080131050727.GB30989@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0801310157050.13320@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080130224711.GA24133@electric-eye.fr.zoreil.com>
+In-Reply-To: <Pine.LNX.4.64.0801310157050.13320@fbirervta.pbzchgretzou.qr>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 11:47:11PM +0100, Francois Romieu wrote:
-> Sam Ravnborg <sam@ravnborg.org> :
-> [...]
-> > > -static struct pci_device_id sis190_pci_tbl[] __devinitdata = {
-> > > +static struct pci_device_id sis190_pci_tbl[] = {
-> > >  	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0190), 0, 0, 0 },
-> > >  	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0191), 0, 0, 1 },
-> > >  	{ 0, },
-> > 
-> > The __devinitdata is OK, it is the following _devinitdata that had
-> > to be _devinitconst.
+On Thu, Jan 31, 2008 at 02:02:19AM +0100, Jan Engelhardt wrote:
+> Hi,
 > 
-> Strangely enough, removing the devinitdata from the sis190_pci_tbl
-> silents the error message here. Do you have an explanation ?
-gcc compalins if you add const and non-const data to the same section
-which is the case in this driver.
+> 
+> when running oldconfig, I got to see some new IO delay questions,
+> and tried displaying its info using ?.
+> 
+> 	IO delay type
+> 	  1. port 0x80 based port-IO delay [recommended] (IO_DELAY_0X80) (NEW)
+> 	> 2. port 0xed based port-IO delay (IO_DELAY_0XED) (NEW)
+> 	  3. udelay based port-IO delay (IO_DELAY_UDELAY) (NEW)
+> 	  4. no port-IO delay (IO_DELAY_NONE) (NEW)
+> 	choice[1-4]: ?
+> 
+> 	Sorry, no help available for this option yet.
+> 
+> 
+> The IO_DELAY_* "config" items have a help text, while the "choice" 
+> item does not.
+> Are there any plans on 'fixing' oldconfig to somehow tell me something 
+> about such new options?
 
-The bug are exposed now where __devinitdata are no longer an empty define.
+IT should be fixed but I have not looked into to it.
+Roman?
 
 	Sam
