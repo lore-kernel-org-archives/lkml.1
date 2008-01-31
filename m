@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934329AbYAaV6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYAaWBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934329AbYAaV6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 16:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbYAaV6V
+	id S933661AbYAaWBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:01:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760826AbYAaWBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 16:58:21 -0500
-Received: from el-out-1112.google.com ([209.85.162.181]:14513 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933060AbYAaV6T (ORCPT
+	Thu, 31 Jan 2008 17:01:46 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39926 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757582AbYAaWBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 16:58:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:from;
-        b=DYpUve8MGXhD+La47wPIaVmWOiNCkEZmuSQpV/ZSZO1nLc6eMyW766GRLxepOCJIJaRKOb83hJT8nD4D1mBpPh2cTVqAq2k2clnI1BzPbDMPYzM+JmkAZ3XHA133IYmQPUX3S1t6/bZWvn8ElZN7mbScI/YWaEh4vnivE7YVTk8=
-Date: Thu, 31 Jan 2008 22:58:11 +0100
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh <linux-sh@vger.kernel.org>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: [PATCH/KCONFIG] - Add SUPERH depends to sound/soc/sh/Kconfig
-Message-Id: <20080131225811.a175de2c.Kristoffer.ericson@gmail.com>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg"
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Thu, 31 Jan 2008 17:01:46 -0500
+Date: Thu, 31 Jan 2008 14:01:43 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: mmu_notifier: close hole in fork
+In-Reply-To: <20080131123118.GK7185@v2.random>
+Message-ID: <Pine.LNX.4.64.0801311355260.27804@schroedinger.engr.sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com>
+ <20080131123118.GK7185@v2.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Talking to Robin and Jack we found taht we still have a hole during fork. 
+Fork may set a pte writeprotect. At that point the remote pte are 
+not marked readonly(!). Remote writes may occur to pages that are marked 
+readonly locally without this patch.
 
---Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+mmu_notifier: Provide invalidate_range on fork
 
-Currently you will see an empty "SoC Audio support for SuperH" menu 
-when building for other archs (example pxa).
-This patch adds "depends on SUPERH" to remove that empty menu.
+On fork we change ptes in cow mappings to readonly. This means we must
+invalidate the ptes so that they are reestablished later with proper
+permission.
 
-signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-diff --git a/sound/soc/sh/Kconfig b/sound/soc/sh/Kconfig
-index f03220d..4c1e013 100644
---- a/sound/soc/sh/Kconfig
-+++ b/sound/soc/sh/Kconfig
-@@ -1,4 +1,5 @@
- menu "SoC Audio support for SuperH"
-+	depends on SUPERH
+---
+ mm/memory.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c	2008-01-31 13:42:35.000000000 -0800
++++ linux-2.6/mm/memory.c	2008-01-31 13:47:31.000000000 -0800
+@@ -602,6 +602,9 @@ int copy_page_range(struct mm_struct *ds
+ 	if (is_vm_hugetlb_page(vma))
+ 		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
  
- config SND_SOC_PCM_SH7760
- 	tristate "SoC Audio support for Renesas SH7760"
-
-
---Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg
-Content-Type: application/octet-stream;
- name="SoC-SuperH-add-depends.patch"
-Content-Disposition: attachment;
- filename="SoC-SuperH-add-depends.patch"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL3NvdW5kL3NvYy9zaC9LY29uZmlnIGIvc291bmQvc29jL3NoL0tjb25maWcK
-aW5kZXggZjAzMjIwZC4uNGMxZTAxMyAxMDA2NDQKLS0tIGEvc291bmQvc29jL3NoL0tjb25maWcK
-KysrIGIvc291bmQvc29jL3NoL0tjb25maWcKQEAgLTEsNCArMSw1IEBACiBtZW51ICJTb0MgQXVk
-aW8gc3VwcG9ydCBmb3IgU3VwZXJIIgorCWRlcGVuZHMgb24gU1VQRVJICiAKIGNvbmZpZyBTTkRf
-U09DX1BDTV9TSDc3NjAKIAl0cmlzdGF0ZSAiU29DIEF1ZGlvIHN1cHBvcnQgZm9yIFJlbmVzYXMg
-U0g3NzYwIgo=
-
---Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg--
++	if (is_cow_mapping(vma->vm_flags))
++		mmu_notifier(invalidate_range_begin, src_mm, addr, end, 0);
++
+ 	dst_pgd = pgd_offset(dst_mm, addr);
+ 	src_pgd = pgd_offset(src_mm, addr);
+ 	do {
+@@ -612,6 +615,9 @@ int copy_page_range(struct mm_struct *ds
+ 						vma, addr, next))
+ 			return -ENOMEM;
+ 	} while (dst_pgd++, src_pgd++, addr = next, addr != end);
++
++	if (is_cow_mapping(vma->vm_flags))
++		mmu_notifier(invalidate_range_end, src_mm, 0);
+ 	return 0;
+ }
+ 
