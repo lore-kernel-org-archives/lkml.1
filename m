@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYAaAjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYAaAkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbYAaAjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYAaAjE
+	id S1759373AbYAaAkc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 19:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYAaAkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:39:04 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:36694 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754597AbYAaAjB (ORCPT
+	Wed, 30 Jan 2008 19:40:19 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37031 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753863AbYAaAkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:39:01 -0500
-X-Greylist: delayed 380 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 19:39:00 EST
-Date: Wed, 30 Jan 2008 17:32:31 -0700
-From: Andreas Dilger <adilger@Sun.COM>
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-In-reply-to: <200801300929.21778.chris.mason@oracle.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Al Boldi <a1426z@gawab.com>, Jan Kara <jack@suse.cz>,
-       Chris Snook <csnook@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-id: <20080131003231.GK23836@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <200801242336.00340.a1426z@gawab.com>
- <20080129172232.GA9770@atrey.karlin.mff.cuni.cz>
- <200801300904.48299.a1426z@gawab.com>
- <200801300929.21778.chris.mason@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 30 Jan 2008 19:40:16 -0500
+Date: Wed, 30 Jan 2008 16:39:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 6/6] mm: bdi: allow setting a maximum for the bdi dirty
+ limit
+Message-Id: <20080130163927.760e94cc.akpm@linux-foundation.org>
+In-Reply-To: <20080129154954.275142755@szeredi.hu>
+References: <20080129154900.145303789@szeredi.hu>
+	<20080129154954.275142755@szeredi.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 January 2008, Al Boldi wrote:
-> And, a quick test of successive 1sec delayed syncs shows no hangs until
-> about 1 minute (~180mb) of db-writeout activity, when the sync abruptly
-> hangs for minutes on end, and io-wait shows almost 100%.
+On Tue, 29 Jan 2008 16:49:06 +0100
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-How large is the journal in this filesystem?  You can check via
-"debugfs -R 'stat <8>' /dev/XXX".  Is this affected by increasing
-the journal size?  You can set the journal size via "mke2fs -J size=400" 
-at format time, or on an unmounted filesystem by running
-"tune2fs -O ^has_journal /dev/XXX" then "tune2fs -J size=400 /dev/XXX".
+> Add "max_ratio" to /sys/class/bdi.  This indicates the maximum
+> percentage of the global dirty threshold allocated to this bdi.
 
-I suspect that the stall is caused by the journal filling up, and then
-waiting while the entire journal is checkpointed back to the filesystem
-before the next transaction can start.
+Maybe I'm having a stupid day, but I don't understand the semantics of this
+min and max at all.  I've read the code, and I've read the comments (well,
+I've hunted for some) and I've read the docs.
 
-It is possible to improve this behaviour in JBD by reducing the amount
-of space that is cleared if the journal becomes "full", and also doing
-journal checkpointing before it becomes full.  While that may reduce
-performance a small amount, it would help avoid such huge latency problems.
-I believe we have such a patch in one of the Lustre branches already,
-and while I'm not sure what kernel it is for the JBD code rarely changes
-much....
+I really don't know how anyone could use this in its current state without
+doing a lot of code-reading and complex experimentation.  All of which
+would be unneeded if this tunable was properly documented.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+So.  Please provide adequate documentation for this tunable.  I'd suggest
+that it be pitched at the level of a reasonably competent system operator. 
+It should help them understand why the tunable exists, why they might
+choose to alter it, and what effects they can expect to see.  Hopefully a
+reaonably competent kernel developer can then understand it too.
 
