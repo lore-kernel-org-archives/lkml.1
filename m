@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764614AbYAaFHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYAaF21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764614AbYAaFHg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 00:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYAaFH0
+	id S1754803AbYAaF21 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 00:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbYAaF2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 00:07:26 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37219 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751787AbYAaFHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 00:07:25 -0500
-Date: Thu, 31 Jan 2008 06:07:27 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>,
-       Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: oldconfig/menuconfig help text display for "choice" items
-Message-ID: <20080131050727.GB30989@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0801310157050.13320@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801310157050.13320@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 31 Jan 2008 00:28:18 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:54973 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYAaF2S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 00:28:18 -0500
+Date: Thu, 31 Jan 2008 00:28:14 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Strange error?
+To: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801310028.14259.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 02:02:19AM +0100, Jan Engelhardt wrote:
-> Hi,
-> 
-> 
-> when running oldconfig, I got to see some new IO delay questions,
-> and tried displaying its info using ?.
-> 
-> 	IO delay type
-> 	  1. port 0x80 based port-IO delay [recommended] (IO_DELAY_0X80) (NEW)
-> 	> 2. port 0xed based port-IO delay (IO_DELAY_0XED) (NEW)
-> 	  3. udelay based port-IO delay (IO_DELAY_UDELAY) (NEW)
-> 	  4. no port-IO delay (IO_DELAY_NONE) (NEW)
-> 	choice[1-4]: ?
-> 
-> 	Sorry, no help available for this option yet.
-> 
-> 
-> The IO_DELAY_* "config" items have a help text, while the "choice" 
-> item does not.
-> Are there any plans on 'fixing' oldconfig to somehow tell me something 
-> about such new options?
+Greetings all;
 
-IT should be fixed but I have not looked into to it.
-Roman?
+This line showed up in my log a couple of hours ago, several minutes removed 
+from anything else I was doing at the time:
 
-	Sam
+rarian-sk-get-c[31855]: segfault at 00000000 eip 00b7c153 esp bf9ddf0c error 4
+
+The system acts and feels normal.
+
+Does anyone have a clue to loan me?
+
+Thanks.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Love is the triumph of imagination over intelligence.
+		-- H. L. Mencken
