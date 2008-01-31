@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765900AbYAaKRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbYAaKSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765900AbYAaKRx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:17:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYAaKRo
+	id S932710AbYAaKSi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYAaKS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:17:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39989 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbYAaKRn (ORCPT
+	Thu, 31 Jan 2008 05:18:29 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:53466 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbYAaKS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:17:43 -0500
-Subject: Re: [patch 6/6] mm: bdi: allow setting a maximum for the bdi dirty
-	limit
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <E1JKW0Q-000200-An@pomaz-ex.szeredi.hu>
-References: <20080129154900.145303789@szeredi.hu>
-	 <20080129154954.275142755@szeredi.hu>
-	 <20080130163927.760e94cc.akpm@linux-foundation.org>
-	 <E1JKW0Q-000200-An@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 11:17:47 +0100
-Message-Id: <1201774667.28547.286.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Thu, 31 Jan 2008 05:18:28 -0500
+Message-ID: <47A1A076.4060108@bull.net>
+Date: Thu, 31 Jan 2008 11:18:30 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 2.6.24-rc8-mm1 05/15] IPC/semaphores: remove one unused
+ parameter from semctl_down()
+References: <20080129160229.612172683@bull.net> <20080129161758.154775218@bull.net> <47A187AE.1000809@bull.net>
+In-Reply-To: <47A187AE.1000809@bull.net>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/01/2008 11:27:08,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/01/2008 11:27:09,
+	Serialize complete at 31/01/2008 11:27:09
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-01-31 at 10:46 +0100, Miklos Szeredi wrote:
-> > On Tue, 29 Jan 2008 16:49:06 +0100
-> > Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > 
-> > > Add "max_ratio" to /sys/class/bdi.  This indicates the maximum
-> > > percentage of the global dirty threshold allocated to this bdi.
-> > 
-> > Maybe I'm having a stupid day, but I don't understand the semantics of this
-> > min and max at all.  I've read the code, and I've read the comments (well,
-> > I've hunted for some) and I've read the docs.
-> > 
-> > I really don't know how anyone could use this in its current state without
-> > doing a lot of code-reading and complex experimentation.  All of which
-> > would be unneeded if this tunable was properly documented.
-> > 
-> > So.  Please provide adequate documentation for this tunable.  I'd suggest
-> > that it be pitched at the level of a reasonably competent system operator. 
-> > It should help them understand why the tunable exists, why they might
-> > choose to alter it, and what effects they can expect to see.  Hopefully a
-> > reaonably competent kernel developer can then understand it too.
+
+Nadia Derbey wrote:
+> pierre.peiffer@bull.net wrote:
+>> From: Pierre Peiffer <pierre.peiffer@bull.net>
+>>
+>> semctl_down() takes one unused parameter: semnum.
+>> This patch proposes to get rid of it.
+>>
+>> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+>> Acked-by: Serge Hallyn <serue@us.ibm.com>
+>> ---
+>>  ipc/sem.c |    6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> Index: b/ipc/sem.c
+>> ===================================================================
+>> --- a/ipc/sem.c
+>> +++ b/ipc/sem.c
+>> @@ -882,8 +882,8 @@ static inline unsigned long copy_semid_f
+>>   * to be held in write mode.
+>>   * NOTE: no locks must be held, the rw_mutex is taken inside this
+>> function.
+>>   */
+>> -static int semctl_down(struct ipc_namespace *ns, int semid, int semnum,
+>> -        int cmd, int version, union semun arg)
+>> +static int semctl_down(struct ipc_namespace *ns, int semid,
+>> +               int cmd, int version, union semun arg)
+>>  {
+>>      struct sem_array *sma;
+>>      int err;
+>> @@ -974,7 +974,7 @@ asmlinkage long sys_semctl (int semid, i
+>>          return err;
+>>      case IPC_RMID:
+>>      case IPC_SET:
+>> -        err = semctl_down(ns,semid,semnum,cmd,version,arg);
+>> +        err = semctl_down(ns, semid, cmd, version, arg);
+>>          return err;
+>>      default:
+>>          return -EINVAL;
+>>
 > 
-> OK.  I think what's missing from some docs, is a high level
-> description of the per-bdi throttling algorithm, and how it affects
-> writeback.  Because with info, I think the min and max ratios are
-> trivially understandable: they just override the result of the
-> algorithm, in case it would mean too high or too low threshold.
-> 
-> Peter, could you write something about that?
+> Looks like semnum is only used in semctl_main(). Why not removing it
+> from semctl_nolock() too?
 
-Sure.
+Indeed.
+In fact, I already fixed that in a previous patch, included in -mm since kernel
+2.6.24.rc3-mm2 (patch named ipc-semaphores-consolidate-sem_stat-and.patch)
 
-How about something like:
-
-Under normal circumstances each device is given a part of the total
-write-back cache that relates to its current avg writeout speed in
-relation to the other devices.
-
-min_ratio - allows one to assign a minimum portion of the write-back
-cache to a particular device. This is useful in situations where you
-might want to provide a minimum QoS. (One request for this feature came
-from flash based storage people who wanted to avoid writing out at all
-costs - they of course needed some pdflush hacks as well)
-
-max_ratio - allows one to assign a maximum portion of the dirty limit to
-a particular device. This is useful in situations where you want to
-avoid one device taking all or most of the write-back cache. Eg. an NFS
-mount that is prone to get stuck, or a FUSE mount which you don't trust
-to play fair.
-
+-- 
+Pierre
