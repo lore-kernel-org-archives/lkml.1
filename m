@@ -1,102 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbYAaNKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbYAaNMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934035AbYAaNKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933054AbYAaNJl
+	id S933902AbYAaNMZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 08:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765881AbYAaNMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:09:41 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:57903 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932376AbYAaNJj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:09:39 -0500
-Message-ID: <47A1BC0D.3040404@cfl.rr.com>
-Date: Thu, 31 Jan 2008 07:16:13 -0500
-From: Mark Hounschell <dmarkh@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Thu, 31 Jan 2008 08:12:16 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:42047 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764613AbYAaNMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 08:12:15 -0500
+Message-ID: <47A1C8FE.9010700@sw.ru>
+Date: Thu, 31 Jan 2008 16:11:26 +0300
+From: Kirill Korotaev <dev@sw.ru>
+Organization: SWsoft
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: maxk@qualcomm.com
-CC: linux-kernel@vger.kernel.org, Mark Hounschell <dmarkh@cfl.rr.com>
-Subject: Re: [CPUISOL] CPU isolation extensions
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-In-Reply-To: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-X-Enigmail-Version: 0.95.5
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to change
+ an ID
+References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru> <47A18E47.5050206@bull.net> <47A19AC2.7040709@sw.ru> <47A1B78C.7050405@bull.net>
+In-Reply-To: <47A1B78C.7050405@bull.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-maxk@qualcomm.com wrote:
-> Following patch series extends CPU isolation support. Yes, most people want to virtuallize 
-> CPUs these days and I want to isolate them :).
-> The primary idea here is to be able to use some CPU cores as dedicated engines for running
-> user-space code with minimal kernel overhead/intervention, think of it as an SPE in the 
-> Cell processor.
+Pierre,
+
+my point is that after you've added interface "set IPCID", you'll need more and more for checkpointing:
+- "create/setup conntrack" (otherwise connections get dropped),
+- "set task start time" (needed for Oracle checkpointing BTW),
+- "set some statistics counters (e.g. networking or taskstats)"
+- "restore inotify"
+and so on and so forth.
+
+Exporting such intimate kernel interfaces to user space doesn't look sane.
+Exactly from compatibility and maintenance POV. You'll be burden with supporting them for a long time.
+Remember recent story with SLUB and /proc/slabinfo?
+
+Hope I made my argument more clear this time.
+
+Thanks,
+Kirill
+
+
+Pierre Peiffer wrote:
 > 
-> We've had scheduler support for CPU isolation ever since O(1) scheduler went it. 
-> I'd like to extend it further to avoid kernel activity on those CPUs as much as possible.
-> In fact that the primary distinction that I'm making between say "CPU sets" and 
-> "CPU isolation". "CPU sets" let you manage user-space load while "CPU isolation" provides
-> a way to isolate a CPU as much as possible (including kernel activities).
+> Kirill Korotaev wrote:
+>> Why user space can need this API? for checkpointing only?
 > 
-> I'm personally using this for hard realtime purposes. With CPU isolation it's very easy to 
-> achieve single digit usec worst case and around 200 nsec average response times on off-the-shelf
-> multi- processor/core systems under exteme system load. I'm working with legal folks on releasing 
-> hard RT user-space framework for that.
-> I can also see other application like simulators and stuff that can benefit from this.
+> I would say "at least for checkpointing"... ;) May be someone else may find an
+> interest about this for something else.
+> In fact, I'm sure that you have some interest in checkpointing; and thus, you
+> have probably some ideas in mind; but whatever the solution you will propose,
+> I'm pretty sure that I could say the same thing for your solution.
+> And what I finally think is: even if it's for "checkpointing only", if many
+> people are interested by this, it may be sufficient to push this ?
 > 
-> I've been maintaining this stuff since around 2.6.18 and it's been running in production
-> environment for a couple of years now. It's been tested on all kinds of machines, from NUMA
-> boxes like HP xw9300/9400 to tiny uTCA boards like Mercury AXA110.
-> The messiest part used to be SLAB garbage collector changes. With the new SLUB all that mess 
-> goes away (ie no changes necessary). Also CFS seems to handle CPU hotplug much better than O(1) 
-> did (ie domains are recomputed dynamically) so that isolation can be done at any time (via sysfs). 
-> So this seems like a good time to merge. 
+>> Then I would not consider it for inclusion until it is clear how to implement checkpointing.
+>> As for me personally - I'm against exporting such APIs, since they are not needed in real-life user space applications and maintaining it forever for compatibility doesn't worth it.
 > 
-> Anyway. The patchset consist of 5 patches. First three are very simple and non-controversial.
-> They simply make "CPU isolation" a configurable feature, export cpu_isolated_map and provide
-> some helper functions to access it (just like cpu_online() and friends).
-> Last two patches add support for isolating CPUs from running workqueus and stop machine.
-> More details in the individual patch descriptions.
+> Maintaining these patches is not a big deal, really, but this is not the main
+> point; the "need in real life" (1) is in fact the main one, and then, the "is
+> this solution the best one ?" (2) the second one.
 > 
-> Ideally I'd like all of this to go in during this merge window. If people think it's acceptable 
-> Linus or Andrew (or whoever is more appropriate Ingo maybe) can pull this patch set from
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/maxk/cpuisol-2.6.git
+> About (1), as said in my first mail, as the namespaces and containers are being
+> integrated into the mainline kernel, checkpoint/restart is (or will be) the next
+> need.
+> About (2), my solution propose to do that, as much as possible from userspace,
+> to minimize the kernel impact. Of course, this is subject to discussion. My
+> opinion is that doing a full checkpoint/restart from kernel space will need lot
+> of new specific and intrusive code; I'm not sure that this will be acceptable by
+> the community. But this is my opinion only. Discusion is opened.
 > 
-
-It's good to see hear from someone else that thinks a multi-processor
-box _should_ be able to run a CPU intensive (%100) RT app on one of the
-processors without adversely affecting or being affected by the others.
-I have had issues that were _traced_ back to the fact that I am doing
-just that. All I got was, you can't do that or we don't support that
-kind of thing in the Linux kernel.
-
-One example,  Andrew Mortons feedback to the LKML thread "floppy.c soft
-lockup"
-
-Good luck with this. I hope this gets someones attention.
-
-BTW, I have tried your patches against a vanilla 2.6.24 kernel but am
-not successful.
-
-# echo '1' > /sys/devices/system/cpu/cpu1/isolated
-bash: echo: write error: Device or resource busy
-
-The cpuisol=1 cmdline option yields:
-
-harley:# cat /sys/devices/system/cpu/cpu1/isolated
-0
-
-harley:# cat /proc/cmdline
-root=/dev/sda3 vga=normal apm=off selinux=0 noresume splash=silent
-kmalloc=192M cpuisol=1
-
-
-
-
-Regards
-Mark
-
-
-
+>> Also such APIs allow creation of non-GPL checkpointing in user-space, which can be of concern as well.
+> 
+> Honestly, I don't think this really a concern at all. I mean: I've never seen
+> "this allows non-GPL binary and thus, this is bad" as an argument to reject a
+> functionality, but I may be wrong, and thus, it can be discussed as well.
+> I think the points (1) and (2) as stated above are the key ones.
+> 
+> Pierre
+> 
+>> Kirill
+>>
+>>
+>> Pierre Peiffer wrote:
+>>> Hi again,
+>>>
+>>> 	Thinking more about this, I think I must clarify why I choose this way.
+>>> In fact, the idea of these patches is to provide the missing user APIs (or
+>>> extend the existing ones) that allow to set or update _all_ properties of all
+>>> IPCs, as needed in the case of the checkpoint/restart of an application (the
+>>> current user API does not allow to specify an ID for a created IPC, for
+>>> example). And this, without changing the existing API of course.
+>>>
+>>> 	And msgget(), semget() and shmget() does not have any parameter we can use to
+>>> specify an ID.
+>>> 	That's why I've decided to not change these routines and add a new control
+>>> command, IP_SETID, with which we can can change the ID of an IPC. (that looks to
+>>> me more straightforward and logical)
+>>>
+>>> 	Now, this patch is, in fact, only a preparation for the patch 10/15 which
+>>> really complete the user API by adding this IPC_SETID command.
+>>>
+>>> (... continuing below ...)
+>>>
+>>> Alexey Dobriyan wrote:
+>>>> On Tue, Jan 29, 2008 at 05:02:38PM +0100, pierre.peiffer@bull.net wrote:
+>>>>> This patch provides three new API to change the ID of an existing
+>>>>> System V IPCs.
+>>>>>
+>>>>> These APIs are:
+>>>>> 	long msg_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>> 	long sem_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>> 	long shm_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>>
+>>>>> They return 0 or an error code in case of failure.
+>>>>>
+>>>>> They may be useful for setting a specific ID for an IPC when preparing
+>>>>> a restart operation.
+>>>>>
+>>>>> To be successful, the following rules must be respected:
+>>>>> - the IPC exists (of course...)
+>>>>> - the new ID must satisfy the ID computation rule.
+>>>>> - the entry in the idr corresponding to the new ID must be free.
+>>>>>  ipc/util.c          |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+>>>>>  ipc/util.h          |    1 +
+>>>>>  8 files changed, 197 insertions(+)
+>>>> For the record, OpenVZ uses "create with predefined ID" method which
+>>>> leads to less code. For example, change at the end is all we want from
+>>>> ipc/util.c .
+>>> And in fact, you do that from kernel space, you don't have the constraint to fit
+>>> the existing user API.
+>>> Again, this patch, even if it presents a new kernel API, is in fact a
+>>> preparation for the next patch which introduces a new user API.
+>>>
+>>> Do you think that this could fit your need ?
+>>>
+>>
+> 
