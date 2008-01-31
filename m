@@ -1,118 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932668AbYAaQqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933993AbYAaQrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932668AbYAaQqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbYAaQqj
+	id S933993AbYAaQrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932816AbYAaQrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:46:39 -0500
-Received: from styx.suse.cz ([82.119.242.94]:36501 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755510AbYAaQqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:46:39 -0500
-Date: Thu, 31 Jan 2008 17:46:38 +0100
-From: Jan Kara <jack@suse.cz>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 08/10] udf: simplify __udf_read_inode
-Message-ID: <20080131164637.GH1461@duck.suse.cz>
-References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-9-git-send-email-marcin.slusarz@gmail.com>
+	Thu, 31 Jan 2008 11:47:00 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:31858 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765591AbYAaQq6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:46:58 -0500
+X-IronPort-AV: E=Sophos;i="4.25,286,1199682000"; 
+   d="scan'208";a="61315735"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: managing kallsyms_addresses
+Date: Thu, 31 Jan 2008 11:48:18 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1201727040-6769-9-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200801311148.18859.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 31 Jan 2008 16:46:56.0899 (UTC) FILETIME=[E4226D30:01C86428]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 30-01-08 22:03:58, marcin.slusarz@gmail.com wrote:
-> - move all brelse(ibh) after main if, because it's called
->   on every path except one where ibh is null
-> - move variables to the most inner blocks
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Jan Kara <jack@suse.cz>
-  Acked-by: Jan Kara <jack@suse.cz>
+When the kernel needs to find out what symbol is at a specific address, it 
+uses kallsyms_lookup() This seems to work pretty well - almost.
 
-									Honza
+The problem is today, we don't to remove the symbols from the init section 
+when the init section is freed. There is invalid data in kallsyms_addresses.
 
-> ---
->  fs/udf/inode.c |   52 +++++++++++++++++++++++-----------------------------
->  1 files changed, 23 insertions(+), 29 deletions(-)
-> 
-> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> index 68db2ea..c2d0477 100644
-> --- a/fs/udf/inode.c
-> +++ b/fs/udf/inode.c
-> @@ -1116,42 +1116,36 @@ static void __udf_read_inode(struct inode *inode)
->  	fe = (struct fileEntry *)bh->b_data;
->  
->  	if (fe->icbTag.strategyType == cpu_to_le16(4096)) {
-> -		struct buffer_head *ibh = NULL, *nbh = NULL;
-> -		struct indirectEntry *ie;
-> +		struct buffer_head *ibh;
->  
->  		ibh = udf_read_ptagged(inode->i_sb, iinfo->i_location, 1,
->  					&ident);
-> -		if (ident == TAG_IDENT_IE) {
-> -			if (ibh) {
-> -				kernel_lb_addr loc;
-> -				ie = (struct indirectEntry *)ibh->b_data;
-> -
-> -				loc = lelb_to_cpu(ie->indirectICB.extLocation);
-> -
-> -				if (ie->indirectICB.extLength &&
-> -				    (nbh = udf_read_ptagged(inode->i_sb, loc, 0,
-> -							    &ident))) {
-> -					if (ident == TAG_IDENT_FE ||
-> -					    ident == TAG_IDENT_EFE) {
-> -						memcpy(&iinfo->i_location,
-> -						       &loc,
-> -						       sizeof(kernel_lb_addr));
-> -						brelse(bh);
-> -						brelse(ibh);
-> -						brelse(nbh);
-> -						__udf_read_inode(inode);
-> -						return;
-> -					} else {
-> -						brelse(nbh);
-> -						brelse(ibh);
-> -					}
-> -				} else {
-> +		if (ident == TAG_IDENT_IE && ibh) {
-> +			struct buffer_head *nbh = NULL;
-> +			kernel_lb_addr loc;
-> +			struct indirectEntry *ie;
-> +
-> +			ie = (struct indirectEntry *)ibh->b_data;
-> +			loc = lelb_to_cpu(ie->indirectICB.extLocation);
-> +
-> +			if (ie->indirectICB.extLength &&
-> +				(nbh = udf_read_ptagged(inode->i_sb, loc, 0,
-> +							&ident))) {
-> +				if (ident == TAG_IDENT_FE ||
-> +					ident == TAG_IDENT_EFE) {
-> +					memcpy(&iinfo->i_location,
-> +						&loc,
-> +						sizeof(kernel_lb_addr));
-> +					brelse(bh);
->  					brelse(ibh);
-> +					brelse(nbh);
-> +					__udf_read_inode(inode);
-> +					return;
->  				}
-> +				brelse(nbh);
->  			}
-> -		} else {
-> -			brelse(ibh);
->  		}
-> +		brelse(ibh);
->  	} else if (fe->icbTag.strategyType != cpu_to_le16(4)) {
->  		printk(KERN_ERR "udf: unsupported strategy type: %d\n",
->  		       le16_to_cpu(fe->icbTag.strategyType));
-> -- 
-> 1.5.3.7
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+The problem I have been experiencing - If you have a module get loaded into a 
+location which was init, then kallsyms_lookup()  can return init labels, 
+rather than the module labels. (since it looks up kernel labels before module 
+labels).
+
+What happens is if there is a OOPS in the module, the labels from the OOPS can 
+point to init code (which doesn't exist), which confuses the heck out of 
+users and developers... 
+
+There would be two solutions:
+ - when freeing the init section, remove all the init labels from the 
+kallsyms_addresses, and resort/pack it.
+ - if the init section is unloaded, have is_kernel_inittext always return 0.
+
+I assume that similar things need to be handled for module init too, but I 
+have not run into that yet.
+
+Thoughts?
