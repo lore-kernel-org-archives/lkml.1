@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbYAaK4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764602AbYAaK45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032AbYAaK4G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764758AbYAaKzy
+	id S1764602AbYAaK45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764758AbYAaK4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:55:54 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:49401 "EHLO minas.ics.muni.cz"
+	Thu, 31 Jan 2008 05:56:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52270 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764531AbYAaKzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:55:53 -0500
-Date: Thu, 31 Jan 2008 11:55:05 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-git4+ regression
-Message-ID: <20080131105504.GA4332@ics.muni.cz>
-References: <20080130135609.GA5100@ics.muni.cz> <20080131102919.GC27157@elte.hu>
+	id S1761757AbYAaK4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:56:48 -0500
+Date: Thu, 31 Jan 2008 11:56:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix sparse warnings in intel_cacheinfo.c
+Message-ID: <20080131105634.GE27157@elte.hu>
+References: <1201775890.23523.25.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080131102919.GC27157@elte.hu>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 147.251.54.96
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 31 Jan 2008 11:55:06 +0100 (CET)
+In-Reply-To: <1201775890.23523.25.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 11:29:19AM +0100, Ingo Molnar wrote:
-> if you apply the current sched-fixes (rollup patch below), does it get 
-> any better?
 
-No. 
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Another observation, running two instances of while true; do true; done (on
-1 dual core cpu) does not break interactivity.
+> arch/x86/kernel/cpu/intel_cacheinfo.c:355:7: warning: symbol 'i' shadows an earlier one
+> arch/x86/kernel/cpu/intel_cacheinfo.c:296:39: originally declared here
+> arch/x86/kernel/cpu/intel_cacheinfo.c:367:18: warning: incorrect type in argument 2 (different signedness)
 
-running make clean; make -j2 in kernel tree breaks interactivity terribly.
-Looks like disk I/O activity is needed to break interactivity. 
+thanks, applied.
 
-While compiling, I have more than 1GB of RAM free. One friend of mine suggests
-that kernel is swapping out binaries which causes non-interactivity. The
-swaparea is clean, though. He also reports that the behavior can be seen even
-in 2.6.24-rc8. 
-
--- 
-Luká¹ Hejtmánek
+	Ingo
