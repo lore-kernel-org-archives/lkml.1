@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934373AbYAaSsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765391AbYAaSxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934373AbYAaSsu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763225AbYAaSsk
+	id S1765391AbYAaSxO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYAaSw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:48:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47997 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761406AbYAaSsi (ORCPT
+	Thu, 31 Jan 2008 13:52:58 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:38720 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753795AbYAaSw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:48:38 -0500
-Date: Thu, 31 Jan 2008 10:48:11 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>,
+	Thu, 31 Jan 2008 13:52:57 -0500
+Date: Thu, 31 Jan 2008 19:52:53 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Chris Wedgwood <cw@f00f.org>
+cc: Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
-       davem@davemloft.net, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
+       Sam Ravnborg <sam@ravnborg.org>, davem@davemloft.net,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>
 Subject: Re: [PATCH] kill hotplug init/exit section annotations
-Message-ID: <20080131104811.4c2d558f@laptopd505.fenrus.org>
-In-Reply-To: <20080131183425.GA2893@uranus.ravnborg.org>
-References: <20080130212011.GA26621@uranus.ravnborg.org>
-	<1201729295.3292.94.camel@localhost.localdomain>
-	<20080130223219.GT29368@does.not.exist>
-	<20080131074436.GA31966@uranus.ravnborg.org>
-	<1201795051.3131.13.camel@localhost.localdomain>
-	<20080131081120.27505dc0@laptopd505.fenrus.org>
-	<20080131162141.GC19700@cs181133002.pp.htv.fi>
-	<20080131090749.72781689@laptopd505.fenrus.org>
-	<20080131171436.GG19700@cs181133002.pp.htv.fi>
-	<20080131094801.63a048f0@laptopd505.fenrus.org>
-	<20080131183425.GA2893@uranus.ravnborg.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20080131183222.GA3412@puku.stupidest.org>
+Message-ID: <Pine.LNX.4.64.0801311951450.22762@anakin>
+References: <1201729295.3292.94.camel@localhost.localdomain>
+ <20080130223219.GT29368@does.not.exist> <20080131074436.GA31966@uranus.ravnborg.org>
+ <1201795051.3131.13.camel@localhost.localdomain> <20080131081120.27505dc0@laptopd505.fenrus.org>
+ <20080131162141.GC19700@cs181133002.pp.htv.fi> <20080131090749.72781689@laptopd505.fenrus.org>
+ <20080131171436.GG19700@cs181133002.pp.htv.fi> <20080131174526.GA2488@puku.stupidest.org>
+ <20080131175543.GH19700@cs181133002.pp.htv.fi> <20080131183222.GA3412@puku.stupidest.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 19:34:25 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Thu, 31 Jan 2008, Chris Wedgwood wrote:
+> On Thu, Jan 31, 2008 at 07:55:43PM +0200, Adrian Bunk wrote:
+> > Who was talking about laptops?
+> 
+> If laptops are mostly MP these days, then 'desktops' and 'servers'
+> certainly are --- so pretty much everyone needs CPU hotplug.
 
-> On Thu, Jan 31, 2008 at 09:48:01AM -0800, Arjan van de Ven wrote:
-> > On Thu, 31 Jan 2008 19:14:36 +0200
-> > Adrian Bunk <bunk@kernel.org> wrote:
-> > > > cpuhotplug is required for suspend/resume.
-> > > 
-> > > Not on UP computers.
-> > > 
-> > 
-> > great! someone who still has one of those and uses a kernel without
-> > it. Can you look at your system.map and see how many kilobytes
-> > you've gained? Eg how many kilobytes are in these sections exactly?
-> I have one. A Atmel AT91 board equipped with an 9263.
-> So lets take a look at the defconfig build for the evaluation board.
-> 
-> 
-> o-arm/vmlinux.o:     file format elf32-littlearm
-> 
->   0 .text         001cdefc  00000000  00000000  00000400  2**10
->   2 .init.text    000165e8  00000000  00000000  001ce6c0  2**5
->  26 .init.data    000032ec  00000000  00000000  002578cc  2**2
-> 
-> ---
-> 
->   4 .devinit.text 00001558  00000000  00000000  001e5270  2**2
->   9 .exit.text    00000bc8  00000000  00000000  001e8d2c  2**2
->  10 .cpuinit.text 00000924  00000000  00000000  001e98f4  2**2
->  11 .meminit.text 000004cc  00000000  00000000  001ea218  2**2
->  12 .devexit.text 00000160  00000000  00000000  001ea6e4  2**2
->  38 .cpuinit.data 00000040  00000000  00000000  0025afc0  2**2
->  39 .meminit.data 0000000c  00000000  00000000  0025b000  2**2
-> 
-> 
-> __devinit alone gives a net win of 5464 bytes.
-> That is only ~3% of total .text size but this is non-swapable
-> memory where everything is worth it.
+<irony>
+Thank you for giving an exhaustive list of classes of machines Linux runs on!
+</irony>
 
-now how much of this is lost again because you have to round the stuff to pagesize?
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
