@@ -1,106 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbYAaGvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbYAaG7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762891AbYAaGvA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 01:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYAaGuw
+	id S1760659AbYAaG7c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 01:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYAaG7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 01:50:52 -0500
-Received: from eth6155.nsw.adsl.internode.on.net ([59.167.247.10]:60697 "EHLO
-	sac.g2microsystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751061AbYAaGuv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 01:50:51 -0500
-X-Greylist: delayed 963 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 01:50:50 EST
-Message-ID: <47A16C47.5090703@g2microsystems.com>
-Date: Thu, 31 Jan 2008 17:35:51 +1100
-From: Farbod Nejati <farbodn@g2microsystems.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 31 Jan 2008 01:59:22 -0500
+Received: from relay1.bcons.ru ([77.105.137.253]:57512 "EHLO relay1.bcons.ru"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752899AbYAaG7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 01:59:22 -0500
+Message-ID: <47A171C5.7030100@b-k.ru>
+Date: Thu, 31 Jan 2008 09:59:17 +0300
+From: Evgen L <evgen@b-k.ru>
+User-Agent: Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:1.8.1.8) Gecko/20071106 SeaMonkey/1.1.5
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>,
-       Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Philip Ryan <Philip.Ryan@g2microsystems.com>, linux-kernel@vger.kernel.org,
-       "Chad O'Neill" <chad@g2microsystems.com>,
-       Tom McDermott <tom.mcdermott@g2microsystems.com>
-Subject: SDIO driver not receiving responses
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com> <1201630213-31900-2-git-send-email-hskinnemoen@atmel.com> <1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
-In-Reply-To: <1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+Subject: Re: intel ahci problem
+References: <47A16E27.2090809@b-k.ru>
+In-Reply-To: <47A16E27.2090809@b-k.ru>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+Robert Hancock wrote:
+> Evgen L wrote:
+>> Hi all
+>>
+>> I have a problem with my Intel SR1550 server (S5000PAL motheboard, 
+>> SATA/SAS controller, 5 SATA HDD Seagate ST9120822AS ).
+>> The four drivers are in two md raid1, which striping by lvm and one 
+>> drive used separately. I have problem like below with two different 
+>> drives (ata3 or ata4) and ata5. I look problem like this with RedHat  
+>> 2.6.18-53 kernel, 2.6.24-rc8, and today 2.6.24-git5. I reading about 
+>> any problems like this in lkml.org. There can be this message will 
+>> help to fix this issue.
+>> The complete dmesg in attachment.
+>>
+>> md: bind<sdd1>
+>> RAID1 conf printout:
+>> --- wd:1 rd:2
+>> disk 0, wo:0, o:1, dev:sdc1
+>> disk 1, wo:1, o:1, dev:sdd1
+>> md: recovery of RAID array md2
+>> md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+>> md: using maximum available idle IO bandwidth (but not more than 
+>> 200000 KB/sec) for recovery.
+>> md: using 128k window, over a total of 117218176 blocks.
+>> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>> ata4.00: cmd e7/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>>         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata4.00: status: { DRDY }
+>> ata4: hard resetting link
+>> ata4: port is slow to respond, please be patient (Status 0x80)
+>> ata4: softreset failed (device not ready)
+>> ata4: hard resetting link
+>> ata4: port is slow to respond, please be patient (Status 0x80)
+>> ata4: softreset failed (device not ready)
+>> ata4: hard resetting link
+>> ata4: port is slow to respond, please be patient (Status 0x80)
+>> ata4: softreset failed (device not ready)
+>> ata4: limiting SATA link speed to 1.5 Gbps
+>> ata4: hard resetting link
+>> ata4: softreset failed (device not ready)
+>> ata4: reset failed, giving up
+>> ata4.00: disabled
+>
+> Are you sure this is not a hardware problem (bad disk, cable, etc?) Is
+> it always ata4 that fails?
+>
+I'm sure - it's not hardware problem, I testing different disks,  and 
+not always ata4 fails, sometimes  ata3, but ata5 - always.
 
-I'm having problems with the latest mmc_core.ko and sdhci.ko for 2.6.24. 
-I've used both my development SDIO client and an off-the-shelf SDIO WIFI 
-card. I have a Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter 
-(rev 21).
-
-The mmc_send_io_op_cond() function call in core.c::mmc_rescan() is 
-returning with a -110 (a timeout error). I traced this deeper and 
-noticed that CMD5 is being sent out via sdhci.c::sdhci_send_command() (I 
-verified this using a logic analyser, the host *is* transmitting a CMD5 
-[IO_SEND_OP_COND] packet in the correct format). However, when the 
-client responds with the IO_SEND_OP_COND Response R4 (SD mode), it does 
-not seem to be received by the host. Again, I verified using the logic 
-analyser that the response is as would be expected. An IRQ *is* 
-triggered, however it is 0x00018000 (SDHCI_INT_TIMEOUT|SDHCI_INT_ERROR). 
-I'm not too familiar with Linux kernel programming but I suspect that 
-whatever is waiting for a valid response is giving up instead and 
-triggering the above-mentioned interrupt instead.
-
-# lspci -v -s 15:00.2 -xxx
-15:00.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 
-SD/SDIO/MMC/MS/MSPro Host Adapter (rev 21)
-        Subsystem: Lenovo Unknown device 20c8
-        Flags: medium devsel, IRQ 23
-        Memory at f8101800 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [80] Power Management version 2
-00: 80 11 22 08 02 00 10 02 21 00 05 08 00 40 80 00
-10: 00 18 10 f8 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 aa 17 c8 20
-30: 00 00 00 00 80 00 00 00 00 00 00 00 0b 03 00 00
-40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 01 00 02 fe 00 40 00 48 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 aa 17 c8 20
-b0: 04 00 02 00 00 00 00 00 00 00 00 00 a0 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: a1 21 e0 01 00 00 00 00 40 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 d0 00 20 02 00 00 00 00
-
-*** An interesting thing is, when I try to printk() values in the above 
-table through the driver, I don't get identical values. I do this using 
-the following code:
-        for (i = 0; i < 16; i++)
-        {
-                for (k = 0; k < 16; k++)
-                {
-                        printk("%02x ", readb(host->ioaddr + (i*16) + k));
-                }
-                printk("\n");
-        }
-
-Why would the output of the above code differ from the one produced by 
-lspci -xxx. Could this have something to do with this issue???
-
-host->ioaddr is set to 0xF8A84800 (which is the output of 
-ioremap_nocache(0xF8101800, 256)
-
-Sections of /var/log/messages:
-sdhci: SDHCI controller found at 0000:15:00.2 [1180:0822] (rev 21)
-sdhci [sdhci_probe()]: found 1 slot(s)
-ACPI: PCI Interrupt 0000:15:00.2[C] -> GSI 18 (level, low) -> IRQ 22
-sdhci [sdhci_probe_slot()]: slot 0 at 0xf8101800, irq 22
-
-
-I'm fresh out of ideas on this one and would greatly appreciate some 
-hints or assistance. I'm happy to provide any further information if needed.
-
-Regards
-Farbod Nejati
