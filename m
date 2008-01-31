@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761741AbYAaCmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbYAaCnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761741AbYAaCmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 21:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbYAaCme
+	id S1764030AbYAaCnM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 21:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbYAaCmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 21:42:34 -0500
-Received: from stinky.trash.net ([213.144.137.162]:35438 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbYAaCmd (ORCPT
+	Wed, 30 Jan 2008 21:42:55 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59772
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756829AbYAaCmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 21:42:33 -0500
-Message-ID: <47A13573.7090804@trash.net>
-Date: Thu, 31 Jan 2008 03:41:55 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Wed, 30 Jan 2008 21:42:55 -0500
+Date: Thu, 31 Jan 2008 03:42:52 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
+	address ranges
+Message-ID: <20080131024252.GF7185@v2.random>
+References: <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com> <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com> <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com> <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com> <20080131003434.GE7185@v2.random> <Pine.LNX.4.64.0801301805200.14071@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-CC: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       cups-bugs <cups-bugs@easysw.com>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>
-Subject: Re: cups slow on linux-2.6.24
-References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com>	 <Pine.LNX.4.64.0801290855360.19273@blackhole.kfki.hu>	 <b6a2187b0801291924k15f883aeg54f704156e4f2e3e@mail.gmail.com>	 <47A07FEA.3000702@trash.net>	 <b6a2187b0801301823m331957e9n9d9bb9613622c844@mail.gmail.com> <b6a2187b0801301826l5a50ce84p7d5dce3d0a74b3c0@mail.gmail.com>
-In-Reply-To: <b6a2187b0801301826l5a50ce84p7d5dce3d0a74b3c0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801301805200.14071@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> On Jan 31, 2008 10:23 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
->
->   
->> Again, using latest linux, one with
->> 17311393f969090ab060540bd9dbe7dc885a76d5 reverted, and the other
->> without.
->>     
->
-> Sorry, here's the attached output files.
+On Wed, Jan 30, 2008 at 06:08:14PM -0800, Christoph Lameter wrote:
+>  		hlist_for_each_entry_safe_rcu(mn, n, t,
+				         ^^^^
 
-Thanks. In the dump we can see that connections reusing ports
-always have their first SYN dropped and retransmissted three
-seconds later. I'm not sure whats causing this yet, do you have
-any firewall rules that affect loopback traffic?
+>  					  &mm->mmu_notifier.head, hlist) {
+>  			hlist_del_rcu(&mn->hlist);
+				 ^^^^
 
-This filter (wireshark) shows one example of the problem in case
-someone else wants to have a look:
-
-(tcp.dstport == 1017 || tcp.srcport == 1017) && (tcp.flags == 0x02)
-
+_rcu can go away from both, if hlist_del_rcu can be called w/o locks.
