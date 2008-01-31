@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765097AbYAaHD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765235AbYAaHGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765097AbYAaHD0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 02:03:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYAaHDS
+	id S1765235AbYAaHGY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 02:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYAaHGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 02:03:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:59615 "EHLO ozlabs.org"
+	Thu, 31 Jan 2008 02:06:16 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59918 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753302AbYAaHDS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 02:03:18 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] lguest: fix mis-merge against hpa's TSS renaming
-Date: Thu, 31 Jan 2008 18:00:47 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "H. Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       lguest <lguest@ozlabs.org>
+	id S1753640AbYAaHGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 02:06:16 -0500
+Message-ID: <47A17362.6060106@redhat.com>
+Date: Thu, 31 Jan 2008 02:06:10 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801311800.48359.rusty@rustcorp.com.au>
+To: Gene Heskett <gene.heskett@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Strange error?
+References: <200801310028.14259.gene.heskett@gmail.com>
+In-Reply-To: <200801310028.14259.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/lguest/x86/core.c: In function ‘copy_in_guest_info’:
-drivers/lguest/x86/core.c:97: error: ‘struct x86_hw_tss’ has no member named ‘esp1’
+Gene Heskett wrote:
+> Greetings all;
+> 
+> This line showed up in my log a couple of hours ago, several minutes removed 
+> from anything else I was doing at the time:
+> 
+> rarian-sk-get-c[31855]: segfault at 00000000 eip 00b7c153 esp bf9ddf0c error 4
+> 
+> The system acts and feels normal.
+> 
+> Does anyone have a clue to loan me?
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+I would ask the rarian developers:
 
-diff -r bf3a09b5070a drivers/lguest/x86/core.c
---- a/drivers/lguest/x86/core.c	Thu Jan 31 14:50:43 2008 +1100
-+++ b/drivers/lguest/x86/core.c	Thu Jan 31 17:58:44 2008 +1100
-@@ -94,7 +94,7 @@ static void copy_in_guest_info(struct lg
- 	/* Set up the two "TSS" members which tell the CPU what stack to use
- 	 * for traps which do directly into the Guest (ie. traps at privilege
- 	 * level 1). */
--	pages->state.guest_tss.esp1 = cpu->esp1;
-+	pages->state.guest_tss.sp1 = cpu->esp1;
- 	pages->state.guest_tss.ss1 = cpu->ss1;
- 
- 	/* Copy direct-to-Guest trap entries. */
+http://rarian.freedesktop.org/
+
+My barely-educated guess is that Gnome was doing a routine re-index of 
+its help files and and the app got bored and decided to dereference a 
+NULL pointer for fun.  Your desktop documentation index may be 
+incomplete or corrupt.  Try not to panic.
+
+	-- Chris
