@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764343AbYAaABn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYAaAJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764343AbYAaABn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbYAaABe
+	id S1759106AbYAaAJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 19:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbYAaAJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:01:34 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60065 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753725AbYAaABd (ORCPT
+	Wed, 30 Jan 2008 19:09:39 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:64796 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754371AbYAaAJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:01:33 -0500
-Date: Wed, 30 Jan 2008 16:01:31 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080130235214.GC7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
-References: <20080129211759.GV7233@v2.random>
- <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
- <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
- <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
- <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
- <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
- <20080130235214.GC7185@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Jan 2008 19:09:36 -0500
+Date: Wed, 30 Jan 2008 18:09:27 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: DMA mapping on SCSI device?
+In-reply-to: <47A0AC33.1060504@rtr.ca>
+To: Mark Lord <liml@rtr.ca>
+Cc: ltuikov@yahoo.com, linux-arch@vger.kernel.org,
+       ide <linux-ide@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Message-id: <47A111B7.1070106@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <896139.88121.qm@web31812.mail.mud.yahoo.com>
+ <479FDA52.8050204@shaw.ca> <47A0AC33.1060504@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Andrea Arcangeli wrote:
-
-> > -	void (*invalidate_range)(struct mmu_notifier *mn,
-> > +	void (*invalidate_range_begin)(struct mmu_notifier *mn,
-> >  				 struct mm_struct *mm,
-> > -				 unsigned long start, unsigned long end,
-> >  				 int lock);
-> > +
-> > +	void (*invalidate_range_end)(struct mmu_notifier *mn,
-> > +				 struct mm_struct *mm,
-> > +				 unsigned long start, unsigned long end);
-> >  };
+Mark Lord wrote:
+> Robert Hancock wrote:
+>> Luben Tuikov wrote:
+>>> --- On Mon, 1/28/08, Robert Hancock <hancockr@shaw.ca> wrote:
+>>>> The trick is that if an ATAPI device is connected, we (as
+>>>> far as I'm aware) can't use ADMA mode, so we have to switch that
+>>>> port into legacy mode.
+>>>
+>>> Can you double check this with the HW architect of the
+>>> HW DMA engine of the ASIC?
+>>
+>> Will do so. However, previous statements from NVIDIA fairly clearly 
+>> indicate that this is the case.
+>>
+>>>
+>>>> This means it's only capable of 32-bit DMA.
+>>>> However the other port on the controller may be connected to a hard 
+>>>> drive and therefore still capable of 64-bit DMA.
+>>>
+>>> If this is indeed the case as you've presented it here,
+>>> it sounds like a HW shortcoming.  I cannot see how the device
+>>> type (or protocol) dictate how the DMA engine operates.
+>>> They live in two different domains.
+>>
+>> Well, there is an indirect link. The ADMA interface (which supports 
+>> 64-bit DMA) cannot be used to issue ATAPI commands, so if an ATAPI 
+>> device is connected we have to go to legacy mode, which supports only 
+>> 32-bit DMA.
+>>
+>> I'm not sure why ADMA mode doesn't support ATAPI. The only reason I 
+>> can think of is that there's issues since ATAPI commands can 
+>> potentially be of unpredictable transfer size. The "real" ADMA spec 
+>> that the NVIDIA implementation is loosely based on does have some 
+>> special "ignore excess" controls that don't seem to be in the NVIDIA 
+>> version (or at least not to the knowledge I have on this hardware).
+> ..
 > 
-> start/finish/begin/end/before/after? ;)
+> The original Pacific Digital ADMA cores *do* support most ATAPI commands
+> in ADMA mode, including READ_CD, READ_10, etc..  With the caveat that if
+> DSC completion state is required, the driver has to drop out of ADMA
+> and poll for it after the ADMA command completes.
+> 
+> Commands which were not ADMA compatible (eg. MODE_SENSE, 
+> TEST_UNIT_READY, ..)
+> were simply handled with PIO (in the driver) rather than any form of DMA,
+> which is okay because those commands are relatively infrequent.
+> 
+> Note that Pacific Digital "officially" said "no ATAPI" for the ADMA design,
+> but I implemented it regardless (for Linux) and it worked rather well.
+> We could burn DVDs and back-up to tape simultaneously, with the burner
+> and the tape unit sharing a single IDE cable/channel.
 
-Well lets pick one and then stick to it.
-
-> I'd drop the 'int lock', you should skip the before/after if
-> i_mmap_lock isn't null and offload it to the caller before taking the
-> lock. At least for the "after" call that looks a few liner change,
-> didn't figure out the "before" yet.
-
-How we offload that? Before the scan of the rmaps we do not have the 
-mmstruct. So we'd need another notifier_rmap_callback.
-
-> Given the amount of changes that are going on in design terms to cover
-> both XPMEM and GRE, can we split the minimal invalidate_page that
-> provides an obviously safe and feature complete mmu notifier code for
-> KVM, and merge that first patch that will cover KVM 100%, it will
-
-The obvious solution does not scale. You will have a callback for every 
-page and there may be a million of those if you have a 4GB process.
-
-> made so that are extendible in backwards compatible way. I think
-> invalidate_page inside ptep_clear_flush is the first fundamental block
-> of the mmu notifiers. Then once the fundamental is in and obviously
-> safe and feature complete for KVM, the rest can be added very easily
-> with incremental patches as far as I can tell. That would be my
-> preferred route ;)
-
-We need to have a coherent notifier solution that works for multiple 
-scenarios. I think a working invalidate_range would also be required for 
-KVM. KVM and GRUB are very similar so they should be able to use the same 
-mechanisms and we need to properly document how that mechanism is safe. 
-Either both take a page refcount or none.
-
-
-
+I'm told that the ADMA hardware does have some support for issuing ATAPI 
+commands, however according to Allen Martin of NVIDIA, "The ATAPI 
+support in the ADMA hardware had some serious problem that forced us to 
+turn it off in the Windows driver." So it looks like ATAPI in ADMA mode 
+is likely a non-starter.
