@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763225AbYAaVSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763552AbYAaVaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763225AbYAaVSq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 16:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYAaVSi
+	id S1763552AbYAaVaJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 16:30:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYAaV34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 16:18:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59502 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897AbYAaVSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 16:18:38 -0500
-Date: Thu, 31 Jan 2008 22:18:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
-Message-ID: <20080131211817.GA21210@elte.hu>
-References: <20080131201430.GA9375@cs181133002.pp.htv.fi> <20080131130529.b0e17815.akpm@linux-foundation.org>
+	Thu, 31 Jan 2008 16:29:56 -0500
+Received: from wx-out-0506.google.com ([66.249.82.236]:13986 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbYAaV3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 16:29:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XzZbKGM/TFd97MCEXk3wqNaFTu4QRENNP0LjG+GjPxqq8wul2LWoF0iQjjzcgFieyeFaE+AivvgQAgm6WZiGLc23XpsZ/gS8tj7y8cOBxTG73wWrPzHV3obwP+XftZhBkESY43cnvHUIi+7P76Q9GYW+Bsm1u2zVdtG7fUK63uY=
+Message-ID: <86802c440801311329h67a79139xa33994e2cc116781@mail.gmail.com>
+Date: Thu, 31 Jan 2008 13:29:52 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Brice Goglin" <Brice.Goglin@inria.fr>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
+       "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Purpose of numa_node?
+Cc: "Paul Mundt" <lethal@linux-sh.org>, "Chris Snook" <csnook@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47A1D03A.3020508@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080131130529.b0e17815.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <47A11ACD.1090400@redhat.com> <20080131074045.GA13788@linux-sh.org>
+	 <47A1D03A.3020508@inria.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 31, 2008 5:42 AM, Brice Goglin <Brice.Goglin@inria.fr> wrote:
+> Paul Mundt wrote:
+> > On Wed, Jan 30, 2008 at 07:48:13PM -0500, Chris Snook wrote:
+> >
+> >> While pondering ways to optimize I/O and swapping on large NUMA machines, I
+> >> noticed that the numa_node field in struct device isn't actually used
+> >> anywhere. We just have a couple dozen lines of code to conditionally
+> >>  create a sysfs file that will always return -1.  Is anyone even working on
+> >> code to actually use this field?  I think it's a good piece of information
+> >> to keep track of, so I'm not suggesting we remove it, but I want to make
+> >> sure I'm not stepping on toes or duplicating effort if I try to make it
+> >> useful.
+> >>
+> > It's manipulated with accessors. If you look at the users of
+> > dev_to_node()/set_dev_node() you can see where it's being used. It's
+> > primarily used in allocation paths for node locality, and the existing
+> > set_dev_node() callsites are places where node locality information
+> > already exists (ie, which node a given controller sits on). You can see
+> > this in places like PCI (pcibus_to_node()) and USB, with node allocation
+> > hints used in places like the dmapool and skb alloc paths.
+> >
+> > The in-kernel use looks perfectly sane in that regard, though I'm not
+> > sure what the point of exporting this as a RO attribute to userspace is.
+> > Presumably someone has a tool somewhere that cares about this.
+> >
+>
+> I added the numa_node sysfs attribute in the beginning to make it easier
+> to bind processes near some devices. So yes I have some user-space tool
+> using it. It is much easier to use than the local_cpus field on large
+> machines, especially when you use the libnuma interface to bind things,
+> since you don't have to translate numa_node from/to cpumasks.
+>
+> It works fine on regular machines such as dual opterons. However, I
+> noticed recently that it was wrong on some quad-opteron machines (see
+> http://marc.info/?l=linux-pci&m=119072400008538&w=2) because something
+> is not initialized in the right order. But I haven't tested 2.6.24 on
+> this hardware yet, and I don't know if things have changed regarding this.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+that will depend if you dsdt have _PXM for your pci root bus.
+otherwise you will get all -1
 
-> > A commit that does nothing except for adding two unused 
-> > EXPORT_SYMBOL's.
-> > 
-> > Without any rationale why they should be exported.
-> 
-> Don't look at me.  This has been sitting in my tree for nearly two 
-> years as part of the reiser4 patchset.  It may not even be needed any 
-> more.  I guess Ingo went on a fishing expedition and liked the change.
+I have a patchset locally that it call bus_numa, can get that from pci
+conf space for AMD64 based machine.
+so you can use that for AMD64 system without _PXM for pci root bus or
+even with acpi=off.
 
-yes, i picked it up from -mm (as can be seen from the SOB line), and i 
-agreed with that change regardless of the reiser4 patchset. (which might 
-never see the light of upstream acceptance)
+let me know if you want test it.
 
-there's nothing more annoying than incomplete and inconsistent APIs. I'm 
-trying to fix them up everywhere i see, and this is one of those cases. 
-Adrian still has not given any rationale about why he wants to see the 
-export removed.
-
-	Ingo
+YH
