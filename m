@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933149AbYAaKkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761757AbYAaKk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933149AbYAaKkI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933292AbYAaKjU
+	id S1761757AbYAaKk4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933428AbYAaKkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:39:20 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:20179 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933289AbYAaKjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:39:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=J1MfIkUO/1eZYxtUryuq18qRYpzBdv5359lI0YhHU7tBxAm9+wKzZQnMSINnA2MEgdCYAKG53A+WRZ7trsfIjS64K5y2p5yseODhHenTfU4m5FozBMTag9zeu+3x1I4KORJKVSQcubTnEN4iuKF4DEl5GTbOqzc0lsFBVI256UM=
-From: Denis Cheng <crquan@gmail.com>
-To: Alexander Viro <viro@www.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fs/char_dev.c: chrdev_open marked static and removed from fs.h
-Date: Thu, 31 Jan 2008 18:39:30 +0800
-Message-Id: <1201775970-15553-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.3.8
+	Thu, 31 Jan 2008 05:40:14 -0500
+Received: from smtp1.kfki.hu ([148.6.0.26]:36941 "EHLO smtp1.kfki.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933163AbYAaKkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:40:10 -0500
+Date: Thu, 31 Jan 2008 11:40:04 +0100 (CET)
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Patrick McHardy <kaber@trash.net>, lkml <linux-kernel@vger.kernel.org>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: cups slow on linux-2.6.24
+In-Reply-To: <b6a2187b0801302101l46d614c9y53f798a025b57dc3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
+References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com> 
+ <Pine.LNX.4.64.0801290855360.19273@blackhole.kfki.hu> 
+ <b6a2187b0801291924k15f883aeg54f704156e4f2e3e@mail.gmail.com> 
+ <47A07FEA.3000702@trash.net>  <b6a2187b0801301823m331957e9n9d9bb9613622c844@mail.gmail.com>
+  <b6a2187b0801301826l5a50ce84p7d5dce3d0a74b3c0@mail.gmail.com> 
+ <47A13573.7090804@trash.net>  <b6a2187b0801301921s4a7842cg6cfec09a393cd63@mail.gmail.com>
+  <47A13FBD.8050803@trash.net> <b6a2187b0801302101l46d614c9y53f798a025b57dc3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-there is an outdated comment in serial_core.c also fixed.
+Hi Jeff,
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- drivers/serial/serial_core.c |    4 ++--
- fs/char_dev.c                |    2 +-
- include/linux/fs.h           |    1 -
- 3 files changed, 3 insertions(+), 4 deletions(-)
+On Thu, 31 Jan 2008, Jeff Chua wrote:
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 3bb5d24..2f0b61c 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -1550,8 +1550,8 @@ static struct uart_state *uart_get(struct uart_driver *drv, int line)
- }
- 
- /*
-- * In 2.4.5, calls to uart_open are serialised by the BKL in
-- *   linux/fs/devices.c:chrdev_open()
-+ * calls to uart_open are serialised by the BKL in
-+ *   fs/char_dev.c:chrdev_open()
-  * Note that if this fails, then uart_close() _will_ be called.
-  *
-  * In time, we want to scrap the "opening nonpresent ports"
-diff --git a/fs/char_dev.c b/fs/char_dev.c
-index 2c7a8b5..038674a 100644
---- a/fs/char_dev.c
-+++ b/fs/char_dev.c
-@@ -357,7 +357,7 @@ void cdev_put(struct cdev *p)
- /*
-  * Called every time a character special file is opened
-  */
--int chrdev_open(struct inode * inode, struct file * filp)
-+static int chrdev_open(struct inode *inode, struct file *filp)
- {
- 	struct cdev *p;
- 	struct cdev *new = NULL;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index a516b67..a5fb302 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1620,7 +1620,6 @@ extern int register_chrdev(unsigned int, const char *,
- 			   const struct file_operations *);
- extern void unregister_chrdev(unsigned int, const char *);
- extern void unregister_chrdev_region(dev_t, unsigned);
--extern int chrdev_open(struct inode *, struct file *);
- extern void chrdev_show(struct seq_file *,off_t);
- 
- /* fs/block_dev.c */
--- 
-1.5.3.8
+> On the bad run, I got the following message ...
+> 
+> boston kernel: nf_ct_tcp: invalid packed ignored IN= OUT=
+> SRC=127.0.0.1 DST=127.0.0.1 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=8162
+> DF PROTO=TCP SPT=1016 DPT=515 SEQ=3834958843 ACK=0 WINDOW=32792
+> RES=0x00 SYN URGP=0 OPT (0204400C0402080A0000CC190000000001030307)
+> UID=0 GID=65534
 
+I can't find this packet in the last lo.bad pcap file. Could you dump the 
+bad traffic and send it together with the generated log record?
+
+Strange, but there are a lot of incorrect checksum packets. How does it 
+come on the loopback interface?
+
+Best regards,
+Jozsef
+-
+E-mail  : kadlec@blackhole.kfki.hu, kadlec@sunserv.kfki.hu
+PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
+Address : KFKI Research Institute for Particle and Nuclear Physics
+          H-1525 Budapest 114, POB. 49, Hungary
