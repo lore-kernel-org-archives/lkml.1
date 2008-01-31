@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761774AbYAaCLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbYAaCQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761774AbYAaCLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 21:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYAaCLM
+	id S1761637AbYAaCQc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 21:16:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbYAaCQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 21:11:12 -0500
-Received: from fmailhost06.isp.att.net ([207.115.11.56]:57324 "EHLO
-	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbYAaCLL convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jan 2008 21:16:25 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:51186 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754006AbYAaCQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 21:11:11 -0500
-X-Originating-IP: [70.157.3.17]
-Date: Wed, 30 Jan 2008 20:11:08 -0600
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: greg@kroah.com, chrisw@sous-sol.org
-Cc: csnook@redhat.com, stable@kernel.org, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, david.harris@cpni-inc.com
-Subject: [2.6.23.y][PATCH] atl1: fix frame length bug
-Message-ID: <20080130201108.75878288@osprey.hogchain.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Wed, 30 Jan 2008 21:16:24 -0500
+Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
+From: john stultz <johnstul@us.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <Pine.LNX.4.64.0801310251090.17507@scrub.home>
+References: <1201142334.6383.40.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0801251349120.17507@scrub.home>
+	 <1201573686.6766.13.camel@localhost>
+	 <Pine.LNX.4.64.0801290439480.17507@scrub.home>
+	 <1201659263.6766.40.camel@localhost>
+	 <Pine.LNX.4.64.0801310251090.17507@scrub.home>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 18:16:16 -0800
+Message-Id: <1201745776.6195.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From de0e1eddb6a4dd7673f84c472812b062aaea2f39 Mon Sep 17 00:00:00 2001
-From: Jay Cliburn <jacliburn@bellsouth.net>
-Date: Wed, 30 Jan 2008 19:21:10 -0600
-Subject: [PATCH] atl1: fix frame length bug
 
-Upstream commit: 2a49128f0a6edee337174ea341c1d6d7565be350
+On Thu, 2008-01-31 at 02:55 +0100, Roman Zippel wrote:
+> Hi,
+> 
+> On Tue, 29 Jan 2008, john stultz wrote:
+> 
+> > +/* Because using NSEC_PER_SEC would be too easy */
+> > +#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC*NSEC_PER_USEC*USER_HZ)+CLOCK_TICK_ADJUST)/NTP_INTERVAL_FREQ)
+> 
+> Why are you using USER_HZ? Did you test this with HZ!=100?
 
-The driver sets up the hardware to accept a frame with max length
-equal to MTU + Ethernet header + FCS + VLAN tag, but we neglect to
-add the VLAN tag size to the ingress buffer.  When a VLAN-tagged
-frame arrives, the hardware passes it, but bad things happen
-because the buffer is too small.  This patch fixes that.
+I'm using USER_HZ, because ntp_update_frequency() uses USER_HZ.
 
-Thanks to David Harris for reporting the bug and testing the fix.
+And my tests were run at HZ=1000.
 
-Tested-by: David Harris <david.harris@cpni-inc.com>
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
----
- drivers/net/atl1/atl1_main.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> Anyway, please don't make more complicated than it already is.
+> What I said previously about the update interval is still valid, so the 
+> correct solution is to use the simpler NTP_INTERVAL_LENGTH calculation 
+> from my last mail and to omit the correction for NO_HZ.
 
-diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
-index f23e13c..d2d4730 100644
---- a/drivers/net/atl1/atl1_main.c
-+++ b/drivers/net/atl1/atl1_main.c
-@@ -121,7 +121,7 @@ static int __devinit atl1_sw_init(struct atl1_adapter *adapter)
- 	struct atl1_hw *hw = &adapter->hw;
- 	struct net_device *netdev = adapter->netdev;
- 
--	hw->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN;
-+	hw->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
- 	hw->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
- 
- 	adapter->wol = 0;
-@@ -689,7 +689,7 @@ static int atl1_change_mtu(struct net_device *netdev, int new_mtu)
- {
- 	struct atl1_adapter *adapter = netdev_priv(netdev);
- 	int old_mtu = netdev->mtu;
--	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
-+	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
- 
- 	if ((max_frame < ETH_ZLEN + ETH_FCS_LEN) ||
- 	    (max_frame > MAX_JUMBO_FRAME_SIZE)) {
-@@ -854,8 +854,8 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
- 	/* set Interrupt Clear Timer */
- 	iowrite16(adapter->ict, hw->hw_addr + REG_CMBDISDMA_TIMER);
- 
--	/* set MTU, 4 : VLAN */
--	iowrite32(hw->max_frame_size + 4, hw->hw_addr + REG_MTU);
-+	/* set max frame size hw will accept */
-+	iowrite32(hw->max_frame_size, hw->hw_addr + REG_MTU);
- 
- 	/* jumbo size & rrd retirement timer */
- 	value = (((u32) hw->rx_jumbo_th & RXQ_JMBOSZ_TH_MASK)
--- 
-1.5.3.7
+I'm not sure I follow how having two separate and totally different
+definitions of NTP_INTERVAL_LENGTH is less complicated then my last
+patch.
+
+Maybe I'm missing something from your suggestion? Or maybe could you
+contribute your suggestion as a patch?
+
+My concern is we state the accumulation interval is X ns long. Then
+current_tick_length() is to return (X + ntp_adjustment), so each
+accumulation interval we can keep track of the error and adjust our
+interval length.
+
+So if ntp_update_frequency() sets tick_length_base to be:
+
+	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
+			<< TICK_LENGTH_SHIFT;
+	second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
+	second_length += (s64)time_freq
+				<< (TICK_LENGTH_SHIFT - SHIFT_NSEC);
+
+	tick_length_base = second_length;
+	do_div(tick_length_base, NTP_INTERVAL_FREQ);
+
+
+The above is basically (X + part of ntp_adjustment)
+
+So I'm trying to calculate the X as: 
+
+#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC*NSEC_PER_USEC*USER_HZ)+CLOCK_TICK_ADJUST)/NTP_INTERVAL_FREQ)
+
+
+thanks
+-john
+
 
