@@ -1,123 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763581AbYAaLgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764850AbYAaLqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763581AbYAaLgQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 06:36:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765736AbYAaLe6
+	id S1764850AbYAaLqH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 06:46:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbYAaLpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 06:34:58 -0500
-Received: from swsoft-msk-nat.sw.ru ([195.214.232.10]:52663 "EHLO iris.sw.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764811AbYAaLew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 06:34:52 -0500
-From: "Denis V. Lunev" <den@openvz.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       xemul@openvz.org, bunk@kernel.org, "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH 1/3] [RAW]: Family check in the /proc/net/raw[6] is extra.
-Date: Thu, 31 Jan 2008 14:34:52 +0300
-Message-Id: <1201779294-21987-1-git-send-email-den@openvz.org>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <47A1B1E4.2010804@sw.ru>
-References: <47A1B1E4.2010804@sw.ru>
+	Thu, 31 Jan 2008 06:45:50 -0500
+Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:38766 "EHLO
+	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753984AbYAaLps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 06:45:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=OBrYtiv3a+rCMkPznh+izsTPw6VtYS/jXKOkDHYGUZOgntiPPGifXwD2vOjhD1Gv;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Thu, 31 Jan 2008 06:45:33 -0500
+From: Bill Fink <billfink@mindspring.com>
+To: "SANGTAE HA" <sangtae.ha@gmail.com>
+Cc: "Bruce Allen" <ballen@gravity.phys.uwm.edu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+Message-Id: <20080131064533.ef0ae932.billfink@mindspring.com>
+In-Reply-To: <649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
+	<20080130.055333.192844925.davem@davemloft.net>
+	<Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>
+	<20080130082136.1017631d@deepthought>
+	<Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
+	<649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d995b832eb806aa7ce8a3c49371bc4d36350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.55.21.22
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Different hashtables are used for IPv6 and IPv4 raw sockets, so no need to
-check the socket family in the iterator over hashtables. Clean this out.
+On Wed, 30 Jan 2008, SANGTAE HA wrote:
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
----
- include/net/raw.h |    4 +---
- net/ipv4/raw.c    |   12 ++++--------
- net/ipv6/raw.c    |    2 +-
- 3 files changed, 6 insertions(+), 12 deletions(-)
+> On Jan 30, 2008 5:25 PM, Bruce Allen <ballen@gravity.phys.uwm.edu> wrote:
+> >
+> > In our application (cluster computing) we use a very tightly coupled
+> > high-speed low-latency network.  There is no 'wide area traffic'.  So it's
+> > hard for me to understand why any networking components or software layers
+> > should take more than milliseconds to ramp up or back off in speed.
+> > Perhaps we should be asking for a TCP congestion avoidance algorithm which
+> > is designed for a data center environment where there are very few hops
+> > and typical packet delivery times are tens or hundreds of microseconds.
+> > It's very different than delivering data thousands of km across a WAN.
+> >
+> 
+> If your network latency is low, regardless of type of protocols should
+> give you more than 900Mbps. I can guess the RTT of two machines is
+> less than 4ms in your case and I remember the throughputs of all
+> high-speed protocols (including tcp-reno) were more than 900Mbps with
+> 4ms RTT. So, my question which kernel version did you use with your
+> broadcomm NIC and got more than 900Mbps?
+> 
+> I have two machines connected by a gig switch and I can see what
+> happens in my environment. Could you post what parameters did you use
+> for netperf testing?
+> and also if you set any parameters for your testing, please post them
+> here so that I can see that happens to me as well.
 
-diff --git a/include/net/raw.h b/include/net/raw.h
-index cca81d8..c7ea7a2 100644
---- a/include/net/raw.h
-+++ b/include/net/raw.h
-@@ -41,7 +41,6 @@ extern void raw_proc_exit(void);
- struct raw_iter_state {
- 	struct seq_net_private p;
- 	int bucket;
--	unsigned short family;
- 	struct raw_hashinfo *h;
- };
- 
-@@ -49,8 +48,7 @@ struct raw_iter_state {
- void *raw_seq_start(struct seq_file *seq, loff_t *pos);
- void *raw_seq_next(struct seq_file *seq, void *v, loff_t *pos);
- void raw_seq_stop(struct seq_file *seq, void *v);
--int raw_seq_open(struct inode *ino, struct file *file, struct raw_hashinfo *h,
--		unsigned short family);
-+int raw_seq_open(struct inode *ino, struct file *file, struct raw_hashinfo *h);
- 
- #endif
- 
-diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
-index f863c3d..507cbfe 100644
---- a/net/ipv4/raw.c
-+++ b/net/ipv4/raw.c
-@@ -862,8 +862,7 @@ static struct sock *raw_get_first(struct seq_file *seq)
- 		struct hlist_node *node;
- 
- 		sk_for_each(sk, node, &state->h->ht[state->bucket])
--			if (sk->sk_net == state->p.net &&
--					sk->sk_family == state->family)
-+			if (sk->sk_net == state->p.net)
- 				goto found;
- 	}
- 	sk = NULL;
-@@ -879,8 +878,7 @@ static struct sock *raw_get_next(struct seq_file *seq, struct sock *sk)
- 		sk = sk_next(sk);
- try_again:
- 		;
--	} while (sk && sk->sk_net != state->p.net &&
--			sk->sk_family != state->family);
-+	} while (sk && sk->sk_net != state->p.net);
- 
- 	if (!sk && ++state->bucket < RAW_HTABLE_SIZE) {
- 		sk = sk_head(&state->h->ht[state->bucket]);
-@@ -974,8 +972,7 @@ static const struct seq_operations raw_seq_ops = {
- 	.show  = raw_seq_show,
- };
- 
--int raw_seq_open(struct inode *ino, struct file *file, struct raw_hashinfo *h,
--		unsigned short family)
-+int raw_seq_open(struct inode *ino, struct file *file, struct raw_hashinfo *h)
- {
- 	int err;
- 	struct raw_iter_state *i;
-@@ -987,14 +984,13 @@ int raw_seq_open(struct inode *ino, struct file *file, struct raw_hashinfo *h,
- 
- 	i = raw_seq_private((struct seq_file *)file->private_data);
- 	i->h = h;
--	i->family = family;
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(raw_seq_open);
- 
- static int raw_v4_seq_open(struct inode *inode, struct file *file)
- {
--	return raw_seq_open(inode, file, &raw_v4_hashinfo, PF_INET);
-+	return raw_seq_open(inode, file, &raw_v4_hashinfo);
- }
- 
- static const struct file_operations raw_seq_fops = {
-diff --git a/net/ipv6/raw.c b/net/ipv6/raw.c
-index d61c63d..a2cf499 100644
---- a/net/ipv6/raw.c
-+++ b/net/ipv6/raw.c
-@@ -1262,7 +1262,7 @@ static const struct seq_operations raw6_seq_ops = {
- 
- static int raw6_seq_open(struct inode *inode, struct file *file)
- {
--	return raw_seq_open(inode, file, &raw_v6_hashinfo, PF_INET6);
-+	return raw_seq_open(inode, file, &raw_v6_hashinfo);
- }
- 
- static const struct file_operations raw6_seq_fops = {
--- 
-1.5.3.rc5
+I see similar results on my test systems, using Tyan Thunder K8WE (S2895)
+motherboard with dual Intel Xeon 3.06 GHZ CPUs and 1 GB memory, running
+a 2.6.15.4 kernel.  The GigE NICs are Intel PRO/1000 82546EB_QUAD_COPPER,
+on a 64-bit/133-MHz PCI-X bus, using version 6.1.16-k2 of the e1000
+driver, and running with 9000-byte jumbo frames.  The TCP congestion
+control is BIC.
 
+Unidirectional TCP test:
+
+[bill@chance4 ~]$ nuttcp -f-beta -Itx -w2m 192.168.6.79
+tx:  1186.5649 MB /  10.05 sec =  990.2741 Mbps 11 %TX 9 %RX 0 retrans
+
+and:
+
+[bill@chance4 ~]$ nuttcp -f-beta -Irx -r -w2m 192.168.6.79
+rx:  1186.8281 MB /  10.05 sec =  990.5634 Mbps 14 %TX 9 %RX 0 retrans
+
+Each direction gets full GigE line rate.
+
+Bidirectional TCP test:
+
+[bill@chance4 ~]$ nuttcp -f-beta -Itx -w2m 192.168.6.79 & nuttcp -f-beta -Irx -r -w2m 192.168.6.79
+tx:   898.9934 MB /  10.05 sec =  750.1634 Mbps 10 %TX 8 %RX 0 retrans
+rx:  1167.3750 MB /  10.06 sec =  973.8617 Mbps 14 %TX 11 %RX 0 retrans
+
+While one direction gets close to line rate, the other only got 750 Mbps.
+Note there were no TCP retransmitted segments for either data stream, so
+that doesn't appear to be the cause of the slower transfer rate in one
+direction.
+
+If the receive direction uses a different GigE NIC that's part of the
+same quad-GigE, all is fine:
+
+[bill@chance4 ~]$ nuttcp -f-beta -Itx -w2m 192.168.6.79 & nuttcp -f-beta -Irx -r -w2m 192.168.5.79
+tx:  1186.5051 MB /  10.05 sec =  990.2250 Mbps 12 %TX 13 %RX 0 retrans
+rx:  1186.7656 MB /  10.05 sec =  990.5204 Mbps 15 %TX 14 %RX 0 retrans
+
+Here's a test using the same GigE NIC for both directions with 1-second
+interval reports:
+
+[bill@chance4 ~]$ nuttcp -f-beta -Itx -i1 -w2m 192.168.6.79 & nuttcp -f-beta -Irx -r -i1 -w2m 192.168.6.79
+tx:    92.3750 MB /   1.01 sec =  767.2277 Mbps     0 retrans
+rx:   104.5625 MB /   1.01 sec =  872.4757 Mbps     0 retrans
+tx:    83.3125 MB /   1.00 sec =  700.1845 Mbps     0 retrans
+rx:   117.6250 MB /   1.00 sec =  986.5541 Mbps     0 retrans
+tx:    83.8125 MB /   1.00 sec =  703.0322 Mbps     0 retrans
+rx:   117.6250 MB /   1.00 sec =  986.5502 Mbps     0 retrans
+tx:    83.0000 MB /   1.00 sec =  696.1779 Mbps     0 retrans
+rx:   117.6250 MB /   1.00 sec =  986.5522 Mbps     0 retrans
+tx:    83.7500 MB /   1.00 sec =  702.4989 Mbps     0 retrans
+rx:   117.6250 MB /   1.00 sec =  986.5512 Mbps     0 retrans
+tx:    83.1250 MB /   1.00 sec =  697.2270 Mbps     0 retrans
+rx:   117.6250 MB /   1.00 sec =  986.5512 Mbps     0 retrans
+tx:    84.1875 MB /   1.00 sec =  706.1665 Mbps     0 retrans
+rx:   117.5625 MB /   1.00 sec =  985.5510 Mbps     0 retrans
+tx:    83.0625 MB /   1.00 sec =  696.7167 Mbps     0 retrans
+rx:   117.6875 MB /   1.00 sec =  987.5543 Mbps     0 retrans
+tx:    84.1875 MB /   1.00 sec =  706.1545 Mbps     0 retrans
+rx:   117.6250 MB /   1.00 sec =  986.5472 Mbps     0 retrans
+rx:   117.6875 MB /   1.00 sec =  987.0724 Mbps     0 retrans
+tx:    83.3125 MB /   1.00 sec =  698.8137 Mbps     0 retrans
+
+tx:   844.9375 MB /  10.07 sec =  703.7699 Mbps 11 %TX 6 %RX 0 retrans
+rx:  1167.4414 MB /  10.05 sec =  973.9980 Mbps 14 %TX 11 %RX 0 retrans
+
+In this test case, the receiver ramped up to nearly full GigE line rate,
+while the transmitter was stuck at about 700 Mbps.  I ran one longer
+60-second test and didn't see the oscillating behavior between receiver
+and transmitter, but maybe that's because I have the GigE NIC interrupts
+and nuttcp client/server applications both locked to CPU 0.
+
+So in my tests, once one direction gets the upper hand, it seems to
+stay that way.  Could this be because the slower side is so busy
+processing the transmits of the faster side, that it just doesn't
+get to do its fair share of transmits (although it doesn't seem to
+be a bus or CPU issue).  Hopefully those more knowledgeable about
+the Linux TCP/IP stack and network drivers might have some more
+concrete ideas.
+
+						-Bill
