@@ -1,93 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbYAaQSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbYAaQTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932103AbYAaQSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbYAaQSA
+	id S932525AbYAaQTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbYAaQTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:18:00 -0500
-Received: from www.tglx.de ([62.245.132.106]:49420 "EHLO www.tglx.de"
+	Thu, 31 Jan 2008 11:19:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56952 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756136AbYAaQR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:17:59 -0500
-Date: Thu, 31 Jan 2008 17:17:41 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [9/9] GBPAGES: Do kernel direct mapping at boot using
- GB pages
-In-Reply-To: <20080129050637.BD7441B416E@basil.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0801311713010.9204@apollo.tec.linutronix.de>
-References: <20080129606.610336873@suse.de> <20080129050637.BD7441B416E@basil.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1753932AbYAaQT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:19:28 -0500
+Date: Thu, 31 Jan 2008 11:14:17 -0500
+From: Josef Bacik <jbacik@redhat.com>
+To: linux-ext4@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] jbd: fix assertion failure in journal_next_log_block
+Message-ID: <20080131161417.GA29679@unused.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008, Andi Kleen wrote:
->
-> +static unsigned long direct_entry(unsigned long paddr)
+Hello,
 
-Please use a more sensible function name. This one has no association
-with the functionality at all.
+The way jbd tries to determine if there is enough space left on the journal in
+order to start a new transaction is looking at the space left in the journal and
+the space needed for the committing transaction, which is 1/4 of the journal +
+the number of t_outstanding_credits for that transaction.  In this case its
+assumed that t_outstanding_credits accurately represents the number of credits
+waiting to be written to the journal, but this sometimes isn't the case.  The
+transaction has two counters for buffers, t_outstanding_credits which is used in
+conjunction with handles that are added to the transaction, and t_nr_buffers
+which is only incremented/decremented when buffers are added/removed from the
+transaction and are actually destined to be journaled.  Normally these two
+counters are the same, however there are cases where the committing transaction
+can have buffers moved to the next running transaction, for example any buffers
+on the committing transactions t_reserved list would be moved to the next
+(running) transaction, and if it had been dirtied in the process it would
+immediately make it onto the t_updates list, which would increment t_nr_buffers
+but not t_outstanding_credits.  So you get into this situation where
+t_nr_buffers (the actual number of buffers that are on the transaction) is
+greater than the number of buffers accounted for via t_outstanding_credits.
+This presents a problem since as we loop through writting buffers to the
+journal, we decrement t_outstanding_credits, and if t_nr_buffers is more than
+t_outstanding_credits then we end up with a negative number for
+t_outstanding_credits, which means we start saying we need less than 1/4 of the
+journal for our committing transaction and allow more transactions than we can
+handle to start, and then bam we fail because journal_next_log_block doesn't
+have enough free blocks in order to handle the request.  This has been tested
+and fixes the issue (which could not be reproduced by me but several other
+people could get it to reproduce using postmark), and although I couldn't
+reproduce the assertion, I could very easily reproduce the situation where
+t_outstanding_credits was < than t_nr_buffers.
 
-> +{
-> +	unsigned long entry;
 
-New line please
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
 
-> +	entry = __PAGE_KERNEL_LARGE|paddr;
-> +	entry &= __supported_pte_mask;
-> +	return entry;
-> +}
 
-> +static void init_gbpages(void)
-> +{
-> +#ifdef CONFIG_DEBUG_PAGEALLOC
-> +	/* debug pagealloc causes too much recursion with gbpages */
-> +	if (direct_gbpages == 0)
-> +		return;
-> +#endif
-> +	if (direct_gbpages >= 0 && cpu_has_gbpages) {
-> +		printk(KERN_INFO "Using GB pages for direct mapping\n");
-> +		direct_gbpages = 1;
-> +	} else
-> +		direct_gbpages = 0;
-> +}
-
-Please use simple boolean logic. gbpages are either enabled or disabled.
-
-> +static void split_gb_page(pud_t *pud, unsigned long paddr)
-> +{
-> +	int i;
-> +	pmd_t *pmd;
-> +	struct page *p = alloc_page(GFP_KERNEL);
-> +	if (!p)
-> +		return;
-> +
-> +	paddr &= PUD_PAGE_MASK;
-> +	pmd = page_address(p);
-> +	for (i = 0; i < PTRS_PER_PTE; i++, paddr += PMD_PAGE_SIZE)
-> +		pmd[i] = __pmd(direct_entry(paddr));
-> +	pud_populate(NULL, pud, pmd);
-> +}
-> +
->  /*
->   * Unmap a kernel mapping if it exists. This is useful to avoid
->   * prefetches from the CPU leading to inconsistent cache lines.
-> @@ -467,6 +511,8 @@ __clear_kernel_mapping(unsigned long add
->  			continue;
->  
->  		pud = pud_offset(pgd, address);
-> +		if (pud_large(*pud))
-> +			split_gb_page(pud, __pa(address));
->  		if (pud_none(*pud))
->  			continue;
-
-As I said before, this needs to use CPA and not implement another variant.
-
-Thanks,
-	tglx
-  
+diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
+index 31853eb..e385a5c 100644
+--- a/fs/jbd/commit.c
++++ b/fs/jbd/commit.c
+@@ -561,13 +561,6 @@ void journal_commit_transaction(journal_t *journal)
+ 			continue;
+ 		}
  
+-		/*
+-		 * start_this_handle() uses t_outstanding_credits to determine
+-		 * the free space in the log, but this counter is changed
+-		 * by journal_next_log_block() also.
+-		 */
+-		commit_transaction->t_outstanding_credits--;
+-
+ 		/* Bump b_count to prevent truncate from stumbling over
+                    the shadowed buffer!  @@@ This can go if we ever get
+                    rid of the BJ_IO/BJ_Shadow pairing of buffers. */
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 4f302d2..c0f93f5 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -580,7 +580,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 	stats.u.run.rs_logging = jiffies;
+ 	stats.u.run.rs_flushing = jbd2_time_diff(stats.u.run.rs_flushing,
+ 						 stats.u.run.rs_logging);
+-	stats.u.run.rs_blocks = commit_transaction->t_outstanding_credits;
++	stats.u.run.rs_blocks = commit_transaction->t_nr_buffers;
+ 	stats.u.run.rs_blocks_logged = 0;
+ 
+ 	descriptor = NULL;
+@@ -655,13 +655,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 			continue;
+ 		}
+ 
+-		/*
+-		 * start_this_handle() uses t_outstanding_credits to determine
+-		 * the free space in the log, but this counter is changed
+-		 * by jbd2_journal_next_log_block() also.
+-		 */
+-		commit_transaction->t_outstanding_credits--;
+-
+ 		/* Bump b_count to prevent truncate from stumbling over
+                    the shadowed buffer!  @@@ This can go if we ever get
+                    rid of the BJ_IO/BJ_Shadow pairing of buffers. */
+diff --git a/include/linux/jbd.h b/include/linux/jbd.h
+index d9ecd13..076d1fc 100644
+--- a/include/linux/jbd.h
++++ b/include/linux/jbd.h
+@@ -1056,7 +1056,7 @@ static inline int jbd_space_needed(journal_t *journal)
+ 	int nblocks = journal->j_max_transaction_buffers;
+ 	if (journal->j_committing_transaction)
+ 		nblocks += journal->j_committing_transaction->
+-					t_outstanding_credits;
++					t_nr_buffers;
+ 	return nblocks;
+ }
+ 
+diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
+index 2cbf6fd..60800a0 100644
+--- a/include/linux/jbd2.h
++++ b/include/linux/jbd2.h
+@@ -1168,7 +1168,7 @@ static inline int jbd_space_needed(journal_t *journal)
+ 	int nblocks = journal->j_max_transaction_buffers;
+ 	if (journal->j_committing_transaction)
+ 		nblocks += journal->j_committing_transaction->
+-					t_outstanding_credits;
++					t_nr_buffers;
+ 	return nblocks;
+ }
+ 
+
+
