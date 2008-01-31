@@ -1,136 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933848AbYAaSnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYAaSrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933848AbYAaSnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbYAaSnZ
+	id S933661AbYAaSrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763034AbYAaSrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:43:25 -0500
-Received: from mx30.micromemory.com ([67.95.226.74]:1647 "EHLO
-	mail.micromemory.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757021AbYAaSnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:43:24 -0500
-X-Greylist: delayed 473 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 13:43:24 EST
-X-Authenticated-Sender: pterry@micromemory.com
-X-Return-Path: pterry@micromemory.com
-X-Envelope-From: pterry@micromemory.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Subject: RE: [PATCH 4/6] Add multi mport support.
-From: Phil Terry <pterry@micromemory.com>
-Reply-To: pterry@vmetro.com
-To: Wei.Zhang@freescale.com
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AEBD0697@zch01exm26.fsl.freescale.net>
-References: <1201689053956-git-send-email-wei.zhang@freescale.com>
-	 <12016890621727-git-send-email-wei.zhang@freescale.com>
-	 <120168907160-git-send-email-wei.zhang@freescale.com>
-	 <12016890773706-git-send-email-wei.zhang@freescale.com>
-	 <AF4B8466-C1CE-4FFB-8341-4BFC1CB76116@kernel.crashing.org>
-	 <ABF87B0B6A38C0458E319AC973ED68AEBD0677@zch01exm26.fsl.freescale.net>
-	 <EC566605-6890-4983-8700-3B15C9EFC1C5@kernel.crashing.org>
-	 <F2D2FCC7-D1ED-4DC6-BE7A-EE2755CCE125@kernel.crashing.org>
-	 <ABF87B0B6A38C0458E319AC973ED68AEBD0697@zch01exm26.fsl.freescale.net>
+	Thu, 31 Jan 2008 13:47:22 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49856 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759674AbYAaSrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 13:47:20 -0500
+Subject: Re: [patch] vfs: create /proc/<pid>/mountinfo
+From: Ram Pai <linuxram@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk,
+       a.p.zijlstra@chello.nl
+In-Reply-To: <E1JKVY6-0001wd-BE@pomaz-ex.szeredi.hu>
+References: <E1JJqxt-0004r2-Vf@pomaz-ex.szeredi.hu>
+	 <20080130160839.828c4363.akpm@linux-foundation.org>
+	 <E1JKVY6-0001wd-BE@pomaz-ex.szeredi.hu>
 Content-Type: text/plain
-Date: Thu, 31 Jan 2008 10:35:25 -0800
-Message-Id: <1201804525.14266.45.camel@pterry-fc6.micromemory.com>
+Date: Thu, 31 Jan 2008 10:45:23 -0800
+Message-Id: <1201805123.10358.23.camel@ram.us.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 14:30 +0800, Zhang Wei wrote:
->  
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org] 
-> > 
-> > On Jan 31, 2008, at 12:15 AM, Kumar Gala wrote:
-> > 
-> > >
-> > > On Jan 30, 2008, at 11:57 PM, Zhang Wei wrote:
-> > >
-> > >>
-> > >>
-> > >>> -----Original Message-----
-> > >>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > >>>
-> > >>> On Jan 30, 2008, at 4:30 AM, Zhang Wei wrote:
-> > >>>
-> > >>>> Change lots of static variable to mport private. And add
-> > >>> mport to some
-> > >>>> function declaration.
-> > >>>
-> > >>> Can you explain this patch further.  Its not clear 
-> > exactly from this
-> > >>> commit message why we are doing this.
-> > >>>
-> > >>> - k
-> > >>
-> > >> Sorry about I have a little hurry about it.
-> > >>
-> > >> The original RapidIO driver suppose there is only one mpc85xx RIO
-> > >> controller
-> > >> in system. So, some data structures are defined as mpc85xx_rio  
-> > >> global,
-> > >> such as 'regs_win', 'dbell_ring', 'msg_tx_ring'. Now, I 
-> > changed them
-> > >> to
-> > >> mport's private members. And you can define multi RIO 
-> > OF-nodes in dts
-> > >> file
-> > >> for multi RapidIO controller in one processor, such as PCI/PCI-Ex  
-> > >> host
-> > >> controllers
-> > >> in Freescale's silicon. And the mport operation function 
-> > declaration
-> > >> should be changed
-> > >> to know which RapidIO controller is target.
-> > >
-> > > thanks, this makes a lot of sense and now reviewing the patch will
-> > > make some sense to me :)
-> > 
-> > when we have multiple ports are the device IDs on the ports intended  
-> > to be unique only to a port or unique across all ports?
-> > 
-> I consider each RIO controller will has its own network, the device IDs
-> should be
-> unique only in its port network.
-Hmmm, I see two cases:
+On Thu, 2008-01-31 at 10:17 +0100, Miklos Szeredi wrote:
+> > > From: Ram Pai <linuxram@us.ibm.com>
 
-1. I have two mport to two controllers each connected to different
-physical fabrics. This system can act as an application bridge between
-the two fabrics.
+...snipped...
 
-2. I have two mports to two controllers each connected directly or
-indirectly to the same fabric. I want to use the extra bandwidth and
-load balance and/or have a fall back redundant connection via an
-alternate physical connection to the fabric etc.
+> IDR ids are 'int' but they are always positive (AFAICT), but yeah,
+> maybe this is confusing.
+> 
+> > The new exported-to-everyone dentry_path() probably could do with a bit
+> > more documentation - it's the sort of thing which people keep on wanting
+> > and using.
+> 
+> OK.
+> 
+> > How does dentry_path() differ from d_path() and why do we need both and can
+> > we get some sharing/consolidation happening here?
 
-What should be the rules for allocating the initial IDs to the two
-mports to allow system wide enumeration to work in both of the above
-cases? 
-
-What do you expect the semantics of higher level addressing to be:
- a pair <mport,id>, where <x,n> is a different device from <y,n>,
- a pair <mport,id>, where <x,n> is the same device as <y,n>,or
- a singleton n, where n is unique and identifies the first routing step
-of which controller, x or y, to use.
-
-I smell a can of worms.... :-)
-
-Cheers
-Phil
+d_path displays the path from the rootfs, whereas dentry_path displays
+the path from the root of that filesystem.
 
 > 
-> Cheers!
-> Wei
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+> Tried that but not easy, without removing some of the
+> microoptimizations in d_path(), which I'm not sure are really
+> important, but...
 
+this patch was intially developed with Al Viro. He preferred to keep the
+two functions separate. BTW: this patch owes credits to Al Viro for his
+initial set of ideas.
+
+> 
+> > Why do d_path() and dentry_path() have differing conventions for displaying
+> > a deleted file and can we fix that?
+> 
+> I think Ram chose a different convention in dentry_path() in order to
+> make sure, there was no space in the resulting path.  But spaces would
+> be escaped anyway, so this isn't really important.  So yes, this could
+> be fixed.
+
+
+my patch was generated about  a year or so back using probably the
+2.6.18 code base which had the "//deleted" convention. That got copied
+in my patch. But since then I see that the original code has changed to
+use the " (deleted)" convention. 
+
+Yes this patch has to be changed to be consistent with the existing
+code. 
+
+
+> 
+> > This patch adds a lot of code which is, I guess, unused if
+> > CONFIG_PROC_FS=n.  Fixable?
+
+yes. good observation. I will send a patch with this optimization and
+the above mentioned change. 
+
+RP
+
+> 
+> Possibly yes.  A good chunk of namespace.c could be surrounded by an
+> #ifdef, which would save even more, than was added by this particular
+> patch.
+
+
+> Thanks,
+> Miklos
 
