@@ -1,53 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763647AbYAaUxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbYAaU4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763647AbYAaUxk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 15:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbYAaUxb
+	id S1763649AbYAaU4y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 15:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbYAaU4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 15:53:31 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:37523 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751592AbYAaUxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 15:53:30 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CIteYUCn6hR2cBnym0RJkpnfRuE+udaCLe30y1q2dahItf1cWDmEa48FDKIbzS/nfc59KN/2XxHNTMdapyPqQyn1PTt5HXxgXcR1HvVwC2XZW66ZCZeog76Oyg0wDA8feOt5BQJbvYfxTtd2OVqjiJl8xXjNSfUow0qx6Gy0wWQ=  ;
-X-YMail-OSG: qPQWPTQVM1kGRbnRFi9kloTRMIPp0eVA5gdiITVsg3tgxqtlX5qBl1G1CQ3_p1KE3_MzSnF25g--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH 0/6] [Blackfin] SPI driver updates
-Date: Thu, 31 Jan 2008 12:50:46 -0800
-User-Agent: KMail/1.9.6
-Cc: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org
-References: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
-In-Reply-To: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
+	Thu, 31 Jan 2008 15:56:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55365 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753241AbYAaU4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 15:56:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
+Date: Thu, 31 Jan 2008 21:54:32 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+References: <200801272229.48955.rjw@sisk.pl> <200801280226.22013.rjw@sisk.pl> <1201795128.32654.22.camel@lappy>
+In-Reply-To: <1201795128.32654.22.camel@lappy>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801311250.46415.david-b@pacbell.net>
+Message-Id: <200801312154.33754.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've forwarded these to Andrew, with my signoff and updated comments.
-You still need to work on having your patch descriptions match up
-to what the patches actually do...
+On Thursday, 31 of January 2008, Peter Zijlstra wrote:
+> 
+> On Mon, 2008-01-28 at 02:26 +0100, Rafael J. Wysocki wrote:
+> > On Sunday, 27 of January 2008, Ingo Molnar wrote:
+> > > 
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > 
+> > > > Hi,
+> > > > 
+> > > > 2.6.24-git3 adds a 5 - 10 sec delay to the suspend and hibernation 
+> > > > code paths (probably related to the disabling of nonboot CPUs), which 
+> > > > is !@#$%^&*() annoying.
+> > > > 
+> > > > It's 100% reproducible on my HP nx6325 and bisection idendified the 
+> > > > following commit as the first bad one:
+> > > > 
+> > > > commit 764a9d6fe4b52995c8aba277e3634385699354f4
+> > > > Author: Steven Rostedt <srostedt@redhat.com>
+> > > > Date:   Fri Jan 25 21:08:04 2008 +0100
+> > > > 
+> > > >     sched: track highest prio task queued
+> > > 
+> > > hm, this patch is a NOP, so it's weird that it has an effect.
+> > > 
+> > > Do you have serial logging enabled perhaps? If the following WARN_ON() 
+> > > triggers:
+> > > 
+> > > +               WARN_ON(p->prio < rq->rt.highest_prio);
+> > > 
+> > > then perhaps that can cause a 5-10 seconds delay. (that's how much time 
+> > > it takes to printk a warning on the slowest serial settings)
+> > > 
+> > > but if you use suspend, then any such printks would be preserved in the 
+> > > dmesg, right? If the WARN_ON() triggers, and if you remove it, do things 
+> > > get faster?
+> > 
+> > No, this isn't the WARN_ON().
+> > 
+> > > this does have the feel of being scheduling related, but are you 
+> > > absolutely sure about the precise identity of the patch?
+> > 
+> > Actually, not quite.  That's why I have verified it and found that another
+> > patch is really responsible for the issue, namely:
+> > 
+> > commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Fri Jan 25 21:08:02 2008 +0100
+> > 
+> >     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
+> > 
+> > Reverting this commit (it reverts with some minor modifications) fixes the
+> > problem for me.
+> 
+> I can seem to reproduce this:
+> 
+> [root@opteron cpu1]# time echo 0 > online
+> 
+> real    0m6.230s
+> user    0m0.000s
+> sys     0m0.010s
+> [root@opteron cpu1]# echo 1 > online
+> [root@opteron cpu1]# time echo 0 > online
+> 
+> real    0m7.966s
+> user    0m0.000s
+> sys     0m0.011s
+> 
+> 
+> I'll have a look at it.
 
-Patches 3-5 in this series seem to have a common thread:  waiting
-until BIT_STAT_SPIF is set before moving to the next step of the
-transfer.  Next time something similar happens, I'd rather see just
-one patch addressing the issue on all code paths ... not three small
-patches that only fix it for a few of the code paths.
-
-Also, two of those three patches describe their updates as fixing
-a "regression", or "reverting" the code.  Was this a bug that came
-in those patches you wanted to merge to 2.6.24?  If so, shouldn't
-those regression fixes go into the stable series?
-
-- Dave
-
+Much appreciated, thanks!
