@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYAaWBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbYAaWEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933661AbYAaWBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:01:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760826AbYAaWBq
+	id S934002AbYAaWEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbYAaWE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:01:46 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39926 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757582AbYAaWBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:01:46 -0500
-Date: Thu, 31 Jan 2008 14:01:43 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: mmu_notifier: close hole in fork
-In-Reply-To: <20080131123118.GK7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801311355260.27804@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com>
- <20080131123118.GK7185@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Jan 2008 17:04:29 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:33448 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756176AbYAaWE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 17:04:28 -0500
+Date: Thu, 31 Jan 2008 23:04:30 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Greg KH <gregkh@suse.de>, Adrian Bunk <bunk@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/11] fix 25 section mismatch warnings..
+Message-ID: <20080131220430.GA4874@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Talking to Robin and Jack we found taht we still have a hole during fork. 
-Fork may set a pte writeprotect. At that point the remote pte are 
-not marked readonly(!). Remote writes may occur to pages that are marked 
-readonly locally without this patch.
+The following set of patches fixes 25 Section mismatch warnings
+in following directories:
 
-mmu_notifier: Provide invalidate_range on fork
+kernel/
+mm/
+drivers/pci
+arch/x86/
 
-On fork we change ptes in cow mappings to readonly. This means we must
-invalidate the ptes so that they are reestablished later with proper
-permission.
+When build individually they are now clean.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+The shortlog:
 
----
- mm/memory.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+Sam Ravnborg (11):
+      pci: fix section mismatch warnings referring to pci_do_scan_bus
+      pci: fix 4x section mismatch warnings
+      cpu: fix section mismatch warnings for enable_nonboot_cpus
+      cpu: fix section mismatch related to cpu_chain
+      cpu: do not annotate exported register_cpu_notifier()
+      cpu: silence section mismatch warnings for hotcpu notifies
+      mm: fix section mismatch warning in sparse.c
+      x86: fix section mismatch warning in acpi/boot.c
+      x86: silence section mismatch warning in smpboot_64.c
+      x86: fix section mismatch warning in kernel/pci-calgary
+      x86: fix section mismatch warnings when referencing notifiers
 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-01-31 13:42:35.000000000 -0800
-+++ linux-2.6/mm/memory.c	2008-01-31 13:47:31.000000000 -0800
-@@ -602,6 +602,9 @@ int copy_page_range(struct mm_struct *ds
- 	if (is_vm_hugetlb_page(vma))
- 		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
- 
-+	if (is_cow_mapping(vma->vm_flags))
-+		mmu_notifier(invalidate_range_begin, src_mm, addr, end, 0);
-+
- 	dst_pgd = pgd_offset(dst_mm, addr);
- 	src_pgd = pgd_offset(src_mm, addr);
- 	do {
-@@ -612,6 +615,9 @@ int copy_page_range(struct mm_struct *ds
- 						vma, addr, next))
- 			return -ENOMEM;
- 	} while (dst_pgd++, src_pgd++, addr = next, addr != end);
-+
-+	if (is_cow_mapping(vma->vm_flags))
-+		mmu_notifier(invalidate_range_end, src_mm, 0);
- 	return 0;
- }
- 
+With these patches applied I have a clean build of arch/x86/
+with an allyesconfig.
+
+I expect Greg to pick up the pci patches - but as they conflict with
+patches recently posted by Adrian a qualified selection should be made.
+
+The cpu patches are cc:ed to Gautham R Shenoy but I think they
+need to go in via Andrew.
+The mm patch are cc:ed the Mel, Christoph and Andy but I think this one
+should also go in via Andrew.
+
+The x86 patches are cc:ed to the x86 gang and should all go in via the x86 tree.
+
+I would like some extra review of the following patches:
+-> The pci patches
+-> x86: silence section mismatch warning in smpboot_64.c
+
+The others are more strightforward but please eye ball them too.
+
+For my allyesconfig build I still has 116 warnings - but this is without
+Adrian's patches applied.
+Of these 8 happens only when running the final check on vmlinux.o which
+is due to references between the sub directories (kernel/ <-> arch/x86/kernel/)
+
+Patches follows unnumbered as they are independent of each other.
+
+	Sam
+
