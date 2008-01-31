@@ -1,109 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbYAaQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765400AbYAaQ6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933460AbYAaQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbYAaQ5M
+	id S1765400AbYAaQ6E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:58:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbYAaQ5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:57:12 -0500
-Received: from scalableinformatics.com ([66.93.0.201]:39425 "EHLO
-	mail.scalableinformatics.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757041AbYAaQ5K (ORCPT
+	Thu, 31 Jan 2008 11:57:50 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:22702 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758522AbYAaQ5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:57:10 -0500
-X-Greylist: delayed 1898 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 11:57:10 EST
-Message-ID: <47A1F67C.4020300@scalableinformatics.com>
-Date: Thu, 31 Jan 2008 11:25:32 -0500
-From: Joe Landman <landman@scalableinformatics.com>
-Reply-To: landman@scalableinformatics.com
-Organization: Scalable Informatics
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 31 Jan 2008 11:57:48 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+Date: Thu, 31 Jan 2008 11:56:01 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andreas Dilger <adilger@sun.com>, Jan Kara <jack@suse.cz>,
+       Chris Snook <csnook@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200801242336.00340.a1426z@gawab.com> <20080131003231.GK23836@webber.adilger.int> <200801310920.36383.a1426z@gawab.com>
+In-Reply-To: <200801310920.36383.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       fujita.tomonori@lab.ntt.co.jp, scst-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-References: <adazluoe2t3.fsf@cisco.com>		<20080130083239E.fujita.tomonori@lab.ntt.co.jp>		<e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>		<20080130195635T.tomof@acm.org>		<1201785938.7280.105.camel@haakon2.linux-iscsi.org>	<e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com> <47A1EE54.6000005@vlnb.net>
-In-Reply-To: <47A1EE54.6000005@vlnb.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801311156.01768.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> Bart Van Assche wrote:
+On Thursday 31 January 2008, Al Boldi wrote:
+> Andreas Dilger wrote:
+> > On Wednesday 30 January 2008, Al Boldi wrote:
+> > > And, a quick test of successive 1sec delayed syncs shows no hangs until
+> > > about 1 minute (~180mb) of db-writeout activity, when the sync abruptly
+> > > hangs for minutes on end, and io-wait shows almost 100%.
+> >
+> > How large is the journal in this filesystem?  You can check via
+> > "debugfs -R 'stat <8>' /dev/XXX".
+>
+> 32mb.
+>
+> > Is this affected by increasing
+> > the journal size?  You can set the journal size via "mke2fs -J size=400"
+> > at format time, or on an unmounted filesystem by running
+> > "tune2fs -O ^has_journal /dev/XXX" then "tune2fs -J size=400 /dev/XXX".
+>
+> Setting size=400 doesn't help, nor does size=4.
+>
+> > I suspect that the stall is caused by the journal filling up, and then
+> > waiting while the entire journal is checkpointed back to the filesystem
+> > before the next transaction can start.
+> >
+> > It is possible to improve this behaviour in JBD by reducing the amount
+> > of space that is cleared if the journal becomes "full", and also doing
+> > journal checkpointing before it becomes full.  While that may reduce
+> > performance a small amount, it would help avoid such huge latency
+> > problems. I believe we have such a patch in one of the Lustre branches
+> > already, and while I'm not sure what kernel it is for the JBD code rarely
+> > changes much....
+>
+> The big difference between ordered and writeback is that once the slowdown
+> starts, ordered goes into ~100% iowait, whereas writeback continues 100%
+> user.
 
-[...]
+Does data=ordered write buffers in the order they were dirtied?  This might 
+explain the extreme problems in transactional workloads.
 
->> I can run disktest on the same setups I ran dd on. This will take some
->> time however.
-> 
-> Disktest was already referenced in the beginning of the performance 
-> comparison thread, but its results are not very interesting if we are 
-> going to find out, which implementation is more effective, because in 
-> the modes, in which usually people run this utility, it produces latency 
-> insensitive workload (multiple threads working in parallel). So, such 
-
-There are other issues with disktest, in that you can easily specify 
-option combinations that generate apparently 5+ GB/s of IO, though 
-actual traffic over the link to storage is very low.  Caveat disktest 
-emptor.
-
-> multithreaded disktests results will be different between STGT and SCST 
-> only if STGT's implementation will get target CPU bound. If CPU on the 
-> target is powerful enough, even extra busy loops in the STGT or SCST hot 
-> path code will change nothing.
-> 
-> Additionally, multithreaded disktest over RAM disk is a good example of 
-> a synthetic benchmark, which has almost no relation with real life 
-> workloads. But people like it, because it produces nice looking results.
-
-I agree.  The backing store should be a disk for it to have meaning, 
-though please note my caveat above.
-
-> 
-> Actually, I don't know what kind of conclusions it is possible to make 
-> from disktest's results (maybe only how throughput gets bigger or slower 
-> with increasing number of threads?), it's a good stress test tool, but 
-> not more.
-
-Unfortunately, I agree.  Bonnie++, dd tests, and a few others seem to 
-bear far closer to "real world" tests than disktest and iozone, the 
-latter of which does more to test the speed of RAM cache and system call 
-performance than actual IO.
-
-
->> Disktest is new to me -- any hints with regard to suitable
->> combinations of command line parameters are welcome. The most recent
->> version I could find on http://ltp.sourceforge.net/ is ltp-20071231.
->>
->> Bart Van Assche.
-
-Here is what I have run:
-
-disktest -K 8 -B 256k  -I F -N 20000000 -P A -w /big/file
-disktest -K 8 -B 64k   -I F -N 20000000 -P A -w /big/file
-disktest -K 8 -B 1k    -I B -N 2000000  -P A  /dev/sdb2
-
-and many others.
-
-
-
-Joe
-
-
--- 
-Joseph Landman, Ph.D
-Founder and CEO
-Scalable Informatics LLC,
-email: landman@scalableinformatics.com
-web  : http://www.scalableinformatics.com
-        http://jackrabbit.scalableinformatics.com
-phone: +1 734 786 8423
-fax  : +1 866 888 3112
-cell : +1 734 612 4615
+-chris
