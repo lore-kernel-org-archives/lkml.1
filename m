@@ -1,98 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933770AbYAaNzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934108AbYAaNzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933770AbYAaNzb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYAaNzV
+	id S934108AbYAaNzs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 08:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933054AbYAaNz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:55:21 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59317 "EHLO
+	Thu, 31 Jan 2008 08:55:26 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59364 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbYAaNzU (ORCPT
+	with ESMTP id S932870AbYAaNzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:55:20 -0500
-Message-Id: <20080131134018.273154000@bull.net>
+	Thu, 31 Jan 2008 08:55:24 -0500
+Message-Id: <20080131135354.583979000@bull.net>
+References: <20080131134018.273154000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Thu, 31 Jan 2008 14:40:18 +0100
+Date: Thu, 31 Jan 2008 14:40:19 +0100
 From: Nadia.Derbey@bull.net
 To: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
        akpm@linux-foundation.org
 Cc: linux-mm@kvack.org, containers@lists.linux-foundation.org,
-       matthltc@us.ibm.com
-Subject: [RFC][PATCH v2 0/7] Scaling msgmni to the amount of lowmem
+       matthltc@us.ibm.com, Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: [RFC][PATCH v2 1/7] Scaling msgmni to the amount of lowmem
+Content-Disposition: inline; filename=ipc_scale_msgmni_with_lowmem.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH 01/07]
 
-Resending the set of patches after Yasunori's remark about having a single
-callback on the hotplug memory notifier chain for the ipc subsystem.
-(see thread at http://lkml.org/lkml/2008/1/14/196).
+This patch computes msg_ctlmni to make it scale with the amount of lowmem.
+msg_ctlmni is now set to make the message queues occupy 1/32 of the available
+lowmem.
 
-Cc'ing linux-mm since I'm adding a notifier block to the memory hotplug
-notifier chain.
-Also, Cc'ing containers since I'm introducing a change in the ipc namespace
-structure.
+Some cleaning has also been done for the MSGPOOL constant: the msgctl man page
+says it's not used, but it also defines it as a size in bytes (the code
+expresses it in Kbytes).
 
--------------------
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
-On large systems we'd like to allow a larger number of message queues.
-In some cases up to 32K. However simply setting MSGMNI to a larger value may
-cause problems for smaller systems.
+---
+ include/linux/msg.h |   14 ++++++++++++--
+ ipc/msg.c           |   37 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 48 insertions(+), 3 deletions(-)
 
-The first patch of this series introduces a default maximum number of message
-queue ids that scales with the amount of lowmem.
-
-Since msgmni is per namespace and there is no amount of memory dedicated to
-each namespace so far, the second patch of this series scales msgmni to
-the number of ipc namespaces too.
-
-Since msgmni depends on the amount of memory, it becomes necessary to
-recompute it upon memory add/remove.
-In the 4th patch, memory hotplug management is added: a notifier block is
-registered into the memory hotplug notifier chain for the ipc subsystem.
-Since the ipc namespaces are not linked together, they have their own
-notification chain: one notifier_block is defined per ipc namespace.
-Each time an ipc namespace is created (removed) it registers (unregisters)
-its notifier block in (from) the ipcns chain.
-The callback routine registered in the memory chain invokes the ipcns
-notifier chain with the IPCNS_MEMCHANGE event.
-Each callback routine registered in the ipcns namespace, in turn, recomputes
-msgmni for the owning namespace.
-
-The 5th patch makes it possible to keep the memory hotplug notifier chain's
-lock for a lesser amount of time: instead of directly notifying the ipcns
-notifier chain upon memory add/remove, a work item is added to the global
-workqueue. When activated, this work item is the one who notifies the ipcns
-notifier chain.
-
-Since msgmni depends on the number of ipc namespaces, it becomes necessary
-to recompute it upon ipc namespace creation / removal.
-The 6th patch uses the ipc namespace notifier chain for that purpose: that
-chain is notified each time an ipc namespace is created or removed. This makes
-it possible to recompute msgmni for all the namespaces each time one of them
-is created or removed.
-
-When msgmni is explicitely set from userspace, we should avoid recomputing it
-upon memory add/remove or ipcns creation/removal.
-This is what the 7th patch does: it simply unregisters the ipcns callback
-routine as soon as msgmni has been changed from procfs or sysctl().
-
-
-These patches should be applied to 2.6.24, in the following order:
-
-[PATCH 1/7]: ipc_scale_msgmni_with_lowmem.patch
-[PATCH 2/7]: ipc_scale_msgmni_with_namespaces.patch
-[PATCH 3/7]: ipc_slab_memory_callback_prio_to_const.patch
-[PATCH 4/7]: ipc_recompute_msgmni_on_memory_hotplug.patch
-[PATCH 5/7]: ipc_ipcns_notification_workqueue.patch
-[PATCH 6/7]: ipc_recompute_msgmni_on_ipcns_create_remove.patch
-[PATCH 7/7]: ipc_unregister_callback_on_msgmni_manual_change.patch
-
-
-Andrew, do you think this patchset could be considered for inclusion in -mm?
-
-
-Regards,
-Nadia
+Index: linux-2.6.24/include/linux/msg.h
+===================================================================
+--- linux-2.6.24.orig/include/linux/msg.h	2008-01-29 16:54:40.000000000 +0100
++++ linux-2.6.24/include/linux/msg.h	2008-01-31 08:47:48.000000000 +0100
+@@ -49,16 +49,26 @@ struct msginfo {
+ 	unsigned short  msgseg; 
+ };
+ 
++/*
++ * Scaling factor to compute msgmni:
++ * the memory dedicated to msg queues (msgmni * msgmnb) should occupy
++ * at most 1/MSG_MEM_SCALE of the lowmem (see the formula in ipc/msg.c):
++ * up to 8MB       : msgmni = 16 (MSGMNI)
++ * 4 GB            : msgmni = 8K
++ * more than 16 GB : msgmni = 32K (IPCMNI)
++ */
++#define MSG_MEM_SCALE 32
++
+ #define MSGMNI    16   /* <= IPCMNI */     /* max # of msg queue identifiers */
+ #define MSGMAX  8192   /* <= INT_MAX */   /* max size of message (bytes) */
+ #define MSGMNB 16384   /* <= INT_MAX */   /* default max size of a message queue */
+ 
+ /* unused */
+-#define MSGPOOL (MSGMNI*MSGMNB/1024)  /* size in kilobytes of message pool */
++#define MSGPOOL (MSGMNI * MSGMNB) /* size in bytes of message pool */
+ #define MSGTQL  MSGMNB            /* number of system message headers */
+ #define MSGMAP  MSGMNB            /* number of entries in message map */
+ #define MSGSSZ  16                /* message segment size */
+-#define __MSGSEG ((MSGPOOL*1024)/ MSGSSZ) /* max no. of segments */
++#define __MSGSEG (MSGPOOL / MSGSSZ) /* max no. of segments */
+ #define MSGSEG (__MSGSEG <= 0xffff ? __MSGSEG : 0xffff)
+ 
+ #ifdef __KERNEL__
+Index: linux-2.6.24/ipc/msg.c
+===================================================================
+--- linux-2.6.24.orig/ipc/msg.c	2008-01-29 16:55:04.000000000 +0100
++++ linux-2.6.24/ipc/msg.c	2008-01-31 09:58:25.000000000 +0100
+@@ -27,6 +27,7 @@
+ #include <linux/msg.h>
+ #include <linux/spinlock.h>
+ #include <linux/init.h>
++#include <linux/mm.h>
+ #include <linux/proc_fs.h>
+ #include <linux/list.h>
+ #include <linux/security.h>
+@@ -79,12 +80,46 @@ static int newque(struct ipc_namespace *
+ static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
+ #endif
+ 
++/*
++ * Scale msgmni with the available lowmem size: the memory dedicated to msg
++ * queues should occupy at most 1/MSG_MEM_SCALE of lowmem.
++ * This should be done staying within the (MSGMNI , IPCMNI) range.
++ */
++static void recompute_msgmni(struct ipc_namespace *ns)
++{
++	struct sysinfo i;
++	unsigned long allowed;
++
++	si_meminfo(&i);
++	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
++		/ MSGMNB;
++
++	if (allowed < MSGMNI) {
++		ns->msg_ctlmni = MSGMNI;
++		goto out_callback;
++	}
++
++	if (allowed > IPCMNI) {
++		ns->msg_ctlmni = IPCMNI;
++		goto out_callback;
++	}
++
++	ns->msg_ctlmni = allowed;
++
++out_callback:
++
++	printk(KERN_INFO "msgmni has been set to %d for ipc namespace %p\n",
++		ns->msg_ctlmni, ns);
++}
++
+ static void __msg_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
+ {
+ 	ns->ids[IPC_MSG_IDS] = ids;
+ 	ns->msg_ctlmax = MSGMAX;
+ 	ns->msg_ctlmnb = MSGMNB;
+-	ns->msg_ctlmni = MSGMNI;
++
++	recompute_msgmni(ns);
++
+ 	atomic_set(&ns->msg_bytes, 0);
+ 	atomic_set(&ns->msg_hdrs, 0);
+ 	ipc_init_ids(ids);
 
 --
