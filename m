@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764429AbYAaQLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932741AbYAaQMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764429AbYAaQLz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbYAaQLp
+	id S932741AbYAaQMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765904AbYAaQL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:11:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54061 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756357AbYAaQLo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:11:44 -0500
-Date: Thu, 31 Jan 2008 08:11:20 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-       davem@davemloft.net, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] kill hotplug init/exit section annotations
-Message-ID: <20080131081120.27505dc0@laptopd505.fenrus.org>
-In-Reply-To: <1201795051.3131.13.camel@localhost.localdomain>
-References: <20080130200336.GN29368@does.not.exist>
-	<1201726817.3292.84.camel@localhost.localdomain>
-	<20080130212011.GA26621@uranus.ravnborg.org>
-	<1201729295.3292.94.camel@localhost.localdomain>
-	<20080130223219.GT29368@does.not.exist>
-	<20080131074436.GA31966@uranus.ravnborg.org>
-	<1201795051.3131.13.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 31 Jan 2008 11:11:59 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:50103 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765774AbYAaQL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:11:58 -0500
+Date: Thu, 31 Jan 2008 18:12:35 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 arch updates for v2.6.25
+Message-ID: <20080131161235.GB19700@cs181133002.pp.htv.fi>
+References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080131160033.GA11501@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 09:57:31 -0600
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> No-one seems to see much value in these, and they cause about 90% of
-> our problems with __init/__exit markers, so simply eliminate them.
-> Rather than run over the whole tree removing them, this patch
-> #defines them to be nops.
+On Thu, Jan 31, 2008 at 05:00:33PM +0100, Ingo Molnar wrote:
 > 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> ---
+> > You tested x86 but broke more than half a dozen other archtectures, 
+> > with at least 3 different commits breaking other architectures.
 > 
-> I'll probably be going after __exit after this one, but it makes sense
-> to split them up, since the hotplug annotation removal looks
-> uncontroversial, whereas __exit and discard section removal might
-> produce more robust debate.  I also think doing the hotplug removal
-> gives us 90% of the benefits and removes 90% of the section mismatch
-> problems.
+> Note that all known breakages are fixed in current -git, except for the 
+> s390 problem that Martin/Nick posted the fix.
 
+What about the breakages caused by commit 
+a5a19c63f4e55e32dc0bc3d936d7f94793d8b380 (this commit broke the 
+defconfig compilation on at least avr32, blackfin, sh, sparc and uml)?
 
-Since hotplug is so fundamental nowadays the value no longer outweighs the pain/cost
-to me, so 
+This commit touched two different not x86 specific headers, and both of 
+them broke (different) architectures.
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+> 	Ingo
+
+cu
+Adrian
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
