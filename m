@@ -1,104 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbYAaW1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbYAaWgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933608AbYAaW1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbYAaW1i
+	id S932817AbYAaWgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759696AbYAaWgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:27:38 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:55215 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755702AbYAaW1h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:27:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Mlg1DHunVwAq7SrgPawx7rur7uzjEasWKhNCh2FJIHtRz5hFVlnlDX3hEloAMkBGTE2lsMhDlZKBcBd0vvHs7ag/exr0Jbvo9pQ+8bLkzIRYeKNqEzP1fzqUxVG2X8Sg17zDNZ5t7zl/EvBwvmeMa1NRRKP7oSzI+xZTjfgAEU8=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: Silent crash witk 2-6.24-rc8-git4
-Date: Thu, 31 Jan 2008 22:26:57 +0000
-User-Agent: KMail/1.9.7
-Cc: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <200801220603.02986.chris2553@googlemail.com> <200801312013.31220.chris2553@googlemail.com> <20080131210338.GK6413@tuxdriver.com>
-In-Reply-To: <20080131210338.GK6413@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 31 Jan 2008 17:36:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56812 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbYAaWgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 17:36:07 -0500
+Date: Thu, 31 Jan 2008 17:35:56 -0500 (EST)
+Message-Id: <20080131.173556.38717303.k-ueda@ct.jp.nec.com>
+To: petkovbb@gmail.com, petkovbb@googlemail.com
+Cc: jens.axboe@oracle.com, nai.xia@gmail.com, rdreier@cisco.com,
+       bzolnier@gmail.com, flo@rfc822.org, linux-kernel@vger.kernel.org,
+       j-nomura@ce.jp.nec.com, linux-ide@vger.kernel.org, k-ueda@ct.jp.nec.com
+Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 &&
+ -g8561b089
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080131213740.GA4500@gollum.tnic>
+References: <ab418ea90801302349u945788jeed1f42021801dbf@mail.gmail.com>
+	<20080131130558.GV15220@kernel.dk>
+	<20080131213740.GA4500@gollum.tnic>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801312226.57972.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 January 2008, John W. Linville wrote:
-> On Thu, Jan 31, 2008 at 08:13:31PM +0000, Chris Clayton wrote:
-> > Hi John,
+Hi Boris,
+
+Thank you for the confirmation of original behavior.
+
+On Thu, 31 Jan 2008 22:37:40 +0100, Borislav Petkov wrote:
+> On Thu, Jan 31, 2008 at 02:05:58PM +0100, Jens Axboe wrote:
+> > On Thu, Jan 31 2008, Nai Xia wrote:
+> > > My dmesg relevant info is quite similar:
+> > > 
+> > > [    6.875041] Freeing unused kernel memory: 320k freed
+> > > [    8.143120] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
+> > > [    8.144439]
+> > > [    8.144439] sector 10824201199534213, nr/cnr 0/0
+> > > [    8.144439] bio cf029280, biotail cf029280, buffer 00000000, data
+> > > 00000000, len 158
+> > > [    8.144439] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > > [    8.144439] backup: data_len=158  bi_size=158
+> > > [    8.160756] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
+> > > [    8.160756]
+> > > [    8.160756] sector 2669858, nr/cnr 0/0
+> > > [    8.160756] bio cf029300, biotail cf029300, buffer 00000000, data
+> > > 00000000, len 158
+> > > [    8.160756] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > > [    8.160756] backup: data_len=158  bi_size=158
+> > > [   14.851101] eth0: link up
+> > > [   27.121883] eth0: no IPv6 routers present
+> > > 
+> > > 
+> > > And by the way, Kiyoshi,
+> > > This can be reproduced in a typical setup vmware workstation 6.02 with
+> > > a vritual IDE cdrom,
+> > > in case you wanna catch that with your own eyes. :-)
+> > > Thanks for your trying hard to correct this annoying bug.
 > > 
-> > On Wednesday 23 January 2008, John W. Linville wrote:
-> > > On Wed, Jan 23, 2008 at 04:42:58PM +0000, Chris Clayton wrote:
-> > > > On Wednesday 23 January 2008, Chris Clayton wrote:
-> > > > > Hi again.
-> > > > > 
-> > > > > On Tuesday 22 January 2008, Chris Clayton wrote:
-> > > > > > Hi,
-> > > > 
-> > > > and here's another, slightly more complete, one, this time from 2.6.24-rc8-git6
-> > > > (the none I sent earlier was from -git4, by the way)
-> > > > 
-> > > > Call Trace:
-> > > > [<c011440a>] __update_rq_clock+0x1a/0xf0
-> > > > [<e08ff59d>] rt2x00lib_txdone+0x9d/0xd0 [rt2x00lib]
-> > > > [<e0909573>] rt61pci_txdone+0x153/0x1f0 [rt61pci]
-> > > > [<e09096ad>] rt61pci_interrupt+0x9d/0xb0 [rt61pci]
-> > > 
-> > > I suspect this could relate to this commit:
-> > > 
-> > > commit 62bc060b8ed5fcdafd87da5ab17bdd59a39ebcc9
-> > > Author: Mattias Nissler <mattias.nissler@gmx.de>
-> > > Date:   Mon Nov 12 15:03:12 2007 +0100
-> > > 
-> > >     rt2x00: Allow rt61 to catch up after a missing tx report
-> > > 
-> > > Could you revert that patch, rebuild, and try to recreate the problem?
-> > 
-> > As you will have seen, Matthias doubted whether his patch would be at the root
-> > of the problem I am seeing. I noticed you posted some patches earlier this week.
-> > Would any combination of those be likely to fix the bug, please? The patch
-> > http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/upstream/0001-rt61pci-fix-up-merge-damage.patch
-> > applies cleanly to 2.6.24 but the build fails :(
+> > The below fix should be enough. It's perfectly legal to have leftover
+> > byte counts when the drive signals completion, happens all the time for
+> > eg user issued commands where you don't know an exact byte count.
 > 
-> This patch is not intended for 2.6.24, so that won't help. :-)
+> Actually, this behavior has been the case even before the __blk_end_request()
+> changes. I did test plain 2.6.24 with the following
 > 
-> I saw Mattias's reply, but I didn't see him suggest any other
-> fixes... :-(  I'm wondering if maybe you tried reverting it anyway?
-> I only ask because the call trace references symbols that would seem
-> to relate to the patch.  So even if _why_ it might break things isn't
-> obvious, it still might be worth trying a revert "just in case". :-)
 > 
-
-Yes, I did revert Matthias' patch- see http://marc.info/?l=linux-wireless&m=120116461507261&w=4
-which is what Matthias was replying to.
-
-> > It seems that it may take a little while to get to the bottom of this bug. Should
-> > I raise an incident on bugzilla?
+> --- linux-2.6/drivers/ide/ide-cd.c	2008-01-31 22:18:59.000000000 +0100
+> +++ linux-2.6/drivers/ide/ide-cd.c-new	2008-01-31 22:18:50.000000000 +0100
+> @@ -1711,8 +1711,12 @@ static ide_startstop_t cdrom_newpc_intr(
+>  	/*
+>  	 * If DRQ is clear, the command has completed.
+>  	 */
+> -	if ((stat & DRQ_STAT) == 0)
+> +	if ((stat & DRQ_STAT) == 0) {
+> +		blk_dump_rq_flags(rq, "ide-cd: rq still having bio");
+> +		printk("backup: data_len=%u  bi_size=%u\n",
+> +				rq->data_len, rq->bio->bi_size);
+>  		goto end_request;
+> +	}
+>  
+>  	/*
+>  	 * check which way to transfer data
 > 
-> I've seen other reports of rt61 working fine with 2.6.24.  So I
-> suppose you should open a bug.
 > 
-
-OK, I'll do that. 
-
-Incidentally, I've seen other posting to the linux-wireless list containing discussion
-about problems when using an 11g device to connect to an 11b AP. That's exactly
-what I am doing with a Belkin F5D7010 wireless adapter and a Draytek Vigor
-2600WE AP. 
-
-> Thanks!
+> to see whether we've been getting residual byte counts:
 > 
-> John
+> Jan 31 22:10:06 gollum kernel: [   26.702877] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
+> Jan 31 22:10:06 gollum kernel: [   26.702945]
+> Jan 31 22:10:06 gollum kernel: [   26.702946] sector 2673511, nr/cnr 0/0
+> Jan 31 22:10:06 gollum kernel: [   26.703052] bio dfa8ec40, biotail dfa8ec40, buffer 00000000, data 00000000, len 158
+> Jan 31 22:10:06 gollum kernel: [   26.703122] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> Jan 31 22:10:06 gollum kernel: [   26.703877] backup: data_len=158  bi_size=158
+> 
+> ... so we've been simply silently ignoring this until now so i guess we don't
+> need to BUG() for something that's totally benign.
 
--- 
-Beauty is in the eye of the beerholder.
+end_that_request_last() is not called when __blk_end_reuqest()
+returns 1.  Then, the issuer isn't waken up.
+So I think the BUG() or error messages should be there.
+
+And fortunately, the issuer seems not to mind whether
+end_that_request_first() is called for the remaining bio or not.
+
+So I think Jens' patch is fine.
+
+Thanks,
+Kiyoshi Ueda
