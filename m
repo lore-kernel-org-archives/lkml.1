@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbYAaKoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933143AbYAaKpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932875AbYAaKoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbYAaKoL
+	id S933143AbYAaKpm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbYAaKpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:44:11 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:29879 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbYAaKoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:44:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nTwLetl6gKyjC3kTxgXzaaXEU9cW1/LsrVllwi1oHpyPf37XQEC8E+2EWD+hOc1B2P0mK1qA8U6gl7WraFQ1x0UNryVCuzkZNP2tKrUeaQExeW+oxaqDnG0YHHVm+fuGwcpL67+2m7DGD8t8bL3XzshZDRXzawrYCHbGzD6t2ds=
-Subject: Re: about relocs.c on x86
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080131103842.GA550@uranus.ravnborg.org>
-References: <86802c440801310007oe8693c7q177d41a87c27ca7@mail.gmail.com>
-	 <20080131095223.GA11867@elte.hu> <1201773740.23523.17.camel@brick>
-	 <20080131101111.GB11867@elte.hu> <20080131103842.GA550@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 02:44:08 -0800
-Message-Id: <1201776248.23523.29.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 05:45:34 -0500
+Received: from styx.suse.cz ([82.119.242.94]:54408 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755641AbYAaKpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:45:33 -0500
+Date: Thu, 31 Jan 2008 11:45:32 +0100
+From: Jan Kara <jack@suse.cz>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/10] udf: fix udf_build_ustr
+Message-ID: <20080131104532.GB1461@duck.suse.cz>
+References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-3-git-send-email-marcin.slusarz@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201727040-6769-3-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 11:38 +0100, Sam Ravnborg wrote:
-> > 
-> > no strong opinion from me - but i think it should be obvious to the 
-> > developer when they are looking at a .c file that it's 32-bit only (or 
-> > 64-bit only). I.e. the default is that whatever .c file we look at is 
-> > unified - and in that sense relocs.c breaks that general expectation.
+On Wed 30-01-08 22:03:52, marcin.slusarz@gmail.com wrote:
+> udf_build_ustr was completely broken when
+> size >= UDF_NAME_LEN - 1 or size < 2
 > 
-> I for one would like to see when stuff is 32 bit only and when
-> shared across 32 and 64 bit. 
-> And this type of info is useful when I do greps so hiding the information
-> in a Makefiel is then no good.
+> nobody noticed because all callers set size
+> to acceptable values (constants)
 > 
-> It helps your understanding when you get the most correct picture of
-> where a certain symbol is used - a functionality I often need.
-> And this is by no menas limited to a narrow x86 view but across
-> the full kernel.
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Jan Kara <jack@suse.cz>
+> ---
+>  fs/udf/unicode.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
 > 
-> So I, and this is no news for Ingo, would like to see what is
-> solely for 32 bit to be marked as such.
+> diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+> index f969617..f4e54e5 100644
+> --- a/fs/udf/unicode.c
+> +++ b/fs/udf/unicode.c
+> @@ -47,16 +47,16 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
+>   */
+>  int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+>  {
+> -	int usesize;
+> +	u8 usesize;
+  What is the purpose for this? Why not just leave int there? Arithmetics
+is usually best done in ints if that's possible...
+>  
+> -	if ((!dest) || (!ptr) || (!size))
+> +	if (!dest || !ptr || size < 2)
+>  		return -1;
+>  
+> -	memset(dest, 0, sizeof(struct ustr));
+> -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
+> +	usesize = min_t(size_t, size - 2, sizeof(dest->u_name));
+>  	dest->u_cmpID = ptr[0];
+> -	dest->u_len = ptr[size - 1];
+> -	memcpy(dest->u_name, ptr + 1, usesize - 1);
+> +	dest->u_len = usesize;
+> +	memcpy(dest->u_name, ptr + 1, usesize);
+> +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
+  Hmm, after parsing what the standard says (ugh), I don't think the code is
+wrong (at least I think you made it incorrect). The caller of
+udf_char_to_ustr() specifies length of the field (not length of the
+string). Now, in the last character of the field is stored the number of
+characters in the string and in the first character of the field is stored
+encoding of the string. So the original code seems correct.
 
-Consider me outnumbered then, no worries.
-
-> 
-> And we are heading with full speed to the situation for x86 where
-> the number of foo_32.c, foo_64.c are minimal.
-> But that said we will likely see a small decrease in speed now.
-
-Well, we're doing our best ;-)
-
-> 
-> As for the Makefiles - I looked at them last time and only
-> issue that kept me away for unifying them was that I did
-> not understand the linking order requirments and I did not see
-> enough benefit at that time to invest the time to unify them.
-> Each of the remaining Makefile should be unifyable in less
-> than 10 steps each. It is just work that are waitng to be done.
-
-The continued unification will probably make this obvious over time
-anyway.
-
-Cheers,
-
-Harvey
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
