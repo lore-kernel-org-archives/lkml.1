@@ -1,95 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765563AbYAaL5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbYAaL5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765563AbYAaL5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 06:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763173AbYAaL4v
+	id S933032AbYAaL5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 06:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764730AbYAaL5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 06:56:51 -0500
-Received: from mail.uni-paderborn.de ([131.234.142.9]:5946 "EHLO
-	mail.uni-paderborn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762468AbYAaL4t (ORCPT
+	Thu, 31 Jan 2008 06:57:00 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47191 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764652AbYAaL46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 06:56:49 -0500
-X-Greylist: delayed 2869 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 06:56:49 EST
-Message-ID: <47A1ABF8.4050408@upb.de>
-Date: Thu, 31 Jan 2008 12:07:36 +0100
-From: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 31 Jan 2008 06:56:58 -0500
+Message-ID: <47A1B78C.7050405@bull.net>
+Date: Thu, 31 Jan 2008 12:57:00 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG?] GDTH driver not working after upgrade to 2.6.24
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>
-In-Reply-To: <47A19E26.30107@panasas.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF2114B8E2DB1F8A50F942FFC"
-X-IMT-Authenticated-Sender: uid=skoehler,ou=People,o=upb,c=de
+To: Kirill Korotaev <dev@sw.ru>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to change
+ an ID
+References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru> <47A18E47.5050206@bull.net> <47A19AC2.7040709@sw.ru>
+In-Reply-To: <47A19AC2.7040709@sw.ru>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/01/2008 13:05:37,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/01/2008 13:05:40,
+	Serialize complete at 31/01/2008 13:05:40
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF2114B8E2DB1F8A50F942FFC
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
-
-> Yes the gdth driver passed an open hart surgery in kernel 2.6.24. The b=
-ad thing
-> about it is that all three of the Coders that did that did not have any=
- HW to work
-> on. One of them is me. We did cry for tester for a long time but no one=
- came forward.
-
-All i'd like to ask is WHY!?
-WHY such a big open heart surgery?
-OK, you have your reasons.
-
-> Could you test patches for us? first thing would be to enable debug out=
-put patch below.
-
-The machine is still production. It will be replaced by a 64bit system=20
-with an AACRAID card some time in the future. Then, i could maybe test=20
-patches on the old machine. But unfortunatly, it's not my machine. It's=20
-just administrated by me. And i don't know, what's exactly is the future =
-
-of it.
-
-> If you absolutely need a 2.6.24 kernel, + gdth in a production system y=
-ou could
-> checkout the 2.6.23 driver and compile. The old driver will work the sa=
-me in 2.6.24.
-> It will not however even compile in 2.6.25-rcx.
-
-I see. Thanks for the hint. Would be an alternative. Actually, i don't=20
-need 2.6.24 - but if something security related is fixed, then i'm not=20
-able to move on to 2.6.24. And i'm using Gentoo. There's not really a=20
-kernel maintained by the distribution.
-
-> If any one wants to send me a card that uses the gdth driver, I will be=
- very happy
-> to debug this card, and return it once I'm done.
-
-I don't think, it's a seperate card, that i could send you. It's some=20
-19" rack server with such a card on-board, i think.
 
 
-So it don't see much opportunity for me to test patched and stuff :-(
+Kirill Korotaev wrote:
+> Why user space can need this API? for checkpointing only?
 
+I would say "at least for checkpointing"... ;) May be someone else may find an
+interest about this for something else.
+In fact, I'm sure that you have some interest in checkpointing; and thus, you
+have probably some ideas in mind; but whatever the solution you will propose,
+I'm pretty sure that I could say the same thing for your solution.
+And what I finally think is: even if it's for "checkpointing only", if many
+people are interested by this, it may be sufficient to push this ?
 
---------------enigF2114B8E2DB1F8A50F942FFC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> Then I would not consider it for inclusion until it is clear how to implement checkpointing.
+> As for me personally - I'm against exporting such APIs, since they are not needed in real-life user space applications and maintaining it forever for compatibility doesn't worth it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Maintaining these patches is not a big deal, really, but this is not the main
+point; the "need in real life" (1) is in fact the main one, and then, the "is
+this solution the best one ?" (2) the second one.
 
-iD8DBQFHoav47Ww7FjRBE4ARAo4bAJ9m9mKR+Yko3we+KHQdSFWUXAZkbQCfSDpx
-+qtpoe7cL2dE+rbbV9akdbI=
-=EkF4
------END PGP SIGNATURE-----
+About (1), as said in my first mail, as the namespaces and containers are being
+integrated into the mainline kernel, checkpoint/restart is (or will be) the next
+need.
+About (2), my solution propose to do that, as much as possible from userspace,
+to minimize the kernel impact. Of course, this is subject to discussion. My
+opinion is that doing a full checkpoint/restart from kernel space will need lot
+of new specific and intrusive code; I'm not sure that this will be acceptable by
+the community. But this is my opinion only. Discusion is opened.
 
---------------enigF2114B8E2DB1F8A50F942FFC--
+> Also such APIs allow creation of non-GPL checkpointing in user-space, which can be of concern as well.
+
+Honestly, I don't think this really a concern at all. I mean: I've never seen
+"this allows non-GPL binary and thus, this is bad" as an argument to reject a
+functionality, but I may be wrong, and thus, it can be discussed as well.
+I think the points (1) and (2) as stated above are the key ones.
+
+Pierre
+
+> Kirill
+> 
+> 
+> Pierre Peiffer wrote:
+>> Hi again,
+>>
+>> 	Thinking more about this, I think I must clarify why I choose this way.
+>> In fact, the idea of these patches is to provide the missing user APIs (or
+>> extend the existing ones) that allow to set or update _all_ properties of all
+>> IPCs, as needed in the case of the checkpoint/restart of an application (the
+>> current user API does not allow to specify an ID for a created IPC, for
+>> example). And this, without changing the existing API of course.
+>>
+>> 	And msgget(), semget() and shmget() does not have any parameter we can use to
+>> specify an ID.
+>> 	That's why I've decided to not change these routines and add a new control
+>> command, IP_SETID, with which we can can change the ID of an IPC. (that looks to
+>> me more straightforward and logical)
+>>
+>> 	Now, this patch is, in fact, only a preparation for the patch 10/15 which
+>> really complete the user API by adding this IPC_SETID command.
+>>
+>> (... continuing below ...)
+>>
+>> Alexey Dobriyan wrote:
+>>> On Tue, Jan 29, 2008 at 05:02:38PM +0100, pierre.peiffer@bull.net wrote:
+>>>> This patch provides three new API to change the ID of an existing
+>>>> System V IPCs.
+>>>>
+>>>> These APIs are:
+>>>> 	long msg_chid(struct ipc_namespace *ns, int id, int newid);
+>>>> 	long sem_chid(struct ipc_namespace *ns, int id, int newid);
+>>>> 	long shm_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>
+>>>> They return 0 or an error code in case of failure.
+>>>>
+>>>> They may be useful for setting a specific ID for an IPC when preparing
+>>>> a restart operation.
+>>>>
+>>>> To be successful, the following rules must be respected:
+>>>> - the IPC exists (of course...)
+>>>> - the new ID must satisfy the ID computation rule.
+>>>> - the entry in the idr corresponding to the new ID must be free.
+>>>>  ipc/util.c          |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+>>>>  ipc/util.h          |    1 +
+>>>>  8 files changed, 197 insertions(+)
+>>> For the record, OpenVZ uses "create with predefined ID" method which
+>>> leads to less code. For example, change at the end is all we want from
+>>> ipc/util.c .
+>> And in fact, you do that from kernel space, you don't have the constraint to fit
+>> the existing user API.
+>> Again, this patch, even if it presents a new kernel API, is in fact a
+>> preparation for the next patch which introduces a new user API.
+>>
+>> Do you think that this could fit your need ?
+>>
+> 
+> 
+
+-- 
+Pierre Peiffer
