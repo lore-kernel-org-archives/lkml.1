@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYAaApW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761064AbYAaApi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758040AbYAaApW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 19:45:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYAaApI
+	id S1761064AbYAaApi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 19:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbYAaApR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 19:45:08 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:61217 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbYAaApH (ORCPT
+	Wed, 30 Jan 2008 19:45:17 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:28427 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755319AbYAaApP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 19:45:07 -0500
-Date: Wed, 30 Jan 2008 16:43:10 -0800
+	Wed, 30 Jan 2008 19:45:15 -0500
+Date: Wed, 30 Jan 2008 16:43:23 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
-Subject: [PATCH 1/2] kernel-doc: prevent duplicate description: output
-Message-Id: <20080130164310.007ad3fc.randy.dunlap@oracle.com>
+Subject: [PATCH 2/2] kernel-doc: warn on badly formatted short description
+Message-Id: <20080130164323.f773d5b4.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,28 +31,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Prevent duplicate output of a Description: section when there is a "blank"
-("*") line between the initial function name/description line and the
-"Description:" header.
+Make kernel-doc warn when a function/struct/union/typedef does not contain
+a properly formatted short description, such as:
+ * scsi_devinfo: set up the dynamic device list
+or
+ * scsi_devinfo -
 
-Test case:  drivers/scsi/scsi_devinfo.c::scsi_init_devinfo().
+This warning is only generated when verbose (-v) mode is used.
 
-Rob Landley hit this while he was producing SCSI kernel-doc.
+Also explain the -v command line option in the -h output.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
-
- scripts/kernel-doc |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/kernel-doc |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 --- linux-2.6.24-git8.orig/scripts/kernel-doc
 +++ linux-2.6.24-git8/scripts/kernel-doc
-@@ -1907,7 +1907,7 @@ sub process_file($) {
- 		$newsection = $1;
- 		$newcontents = $2;
+@@ -218,6 +218,7 @@ sub usage {
+     print "         [ -function funcname [ -function funcname ...] ]\n";
+     print "         [ -nofunction funcname [ -nofunction funcname ...] ]\n";
+     print "         c source file(s) > outputfile\n";
++    print "         -v : verbose output, more warnings & other info listed\n";
+     exit 1;
+ }
  
--		if ($contents ne "") {
-+		if (($contents ne "") && ($contents ne "\n")) {
- 		    if (!$in_doc_sect && $verbose) {
- 			print STDERR "Warning(${file}:$.): contents before sections\n";
- 			++$warnings;
+@@ -1881,6 +1882,13 @@ sub process_file($) {
+ 		} else {
+ 		    $declaration_purpose = "";
+ 		}
++
++		if (($declaration_purpose eq "") && $verbose) {
++			print STDERR "Warning(${file}:$.): missing initial short description on line:\n";
++			print STDERR $_;
++			++$warnings;
++		}
++
+ 		if ($identifier =~ m/^struct/) {
+ 		    $decl_type = 'struct';
+ 		} elsif ($identifier =~ m/^union/) {
