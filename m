@@ -1,132 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934107AbYAaQri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934138AbYAaQs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934107AbYAaQri (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933789AbYAaQrO
+	id S934138AbYAaQs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760898AbYAaQsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:47:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36101 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933744AbYAaQrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:47:12 -0500
-Date: Thu, 31 Jan 2008 17:46:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [git pull] x86 arch updates for v2.6.25
-Message-ID: <20080131164653.GA24494@elte.hu>
-References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu> <20080131161235.GB19700@cs181133002.pp.htv.fi> <20080131161523.GA12347@elte.hu> <20080131162423.GD19700@cs181133002.pp.htv.fi>
+	Thu, 31 Jan 2008 11:48:18 -0500
+Received: from styx.suse.cz ([82.119.242.94]:40527 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761208AbYAaQsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:48:17 -0500
+Date: Thu, 31 Jan 2008 17:48:16 +0100
+From: Jan Kara <jack@suse.cz>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 09/10] udf: replace udf_*_offset macros with functions
+Message-ID: <20080131164816.GI1461@duck.suse.cz>
+References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-10-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131162423.GD19700@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1201727040-6769-10-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Adrian Bunk <bunk@stusta.de> wrote:
-
-> > > What about the breakages caused by commit 
-> > > a5a19c63f4e55e32dc0bc3d936d7f94793d8b380 (this commit broke the 
-> > > defconfig compilation on at least avr32, blackfin, sh, sparc and uml)?
-> > 
-> > the patch below fixes that.
+On Wed 30-01-08 22:03:59, marcin.slusarz@gmail.com wrote:
+> - translate udf_file_entry_alloc_offset macro into function
+> - translate udf_ext0_offset macro into function
+> - add comment about crypticly named fields in struct udf_inode_info
 > 
-> Is it safe, or why did Jeremy state in the commit
-> "I removed this include to avoid an include cycle"?
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Jan Kara <jack@suse.cz>
+  Acked-by: Jan Kara <jack@suse.cz>
 
-that is an x86.git complication alone, and only affects 32-bit PAE: it 
-is solved by the uninlining patch (that i've queued up to before the 
-asm-generic/tlb.h revert/fix).
+								Honza
 
-	Ingo
-
-------------->
-Subject: x86: uninline __pte_free_tlb() and __pmd_free_tlb()
-From: Ingo Molnar <mingo@elte.hu>
-
-this also removes an include file dependency.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pgtable_32.c     |   19 +++++++++++++++++++
- include/asm-x86/pgalloc_32.h |   19 ++-----------------
- 2 files changed, 21 insertions(+), 17 deletions(-)
-
-Index: linux/arch/x86/mm/pgtable_32.c
-===================================================================
---- linux.orig/arch/x86/mm/pgtable_32.c
-+++ linux/arch/x86/mm/pgtable_32.c
-@@ -376,3 +376,22 @@ void check_pgt_cache(void)
- {
- 	quicklist_trim(0, pgd_dtor, 25, 16);
- }
-+
-+void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
-+{
-+	paravirt_release_pt(page_to_pfn(pte));
-+	tlb_remove_page(tlb, pte);
-+}
-+
-+void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
-+{
-+	/* This is called just after the pmd has been detached from
-+	   the pgd, which requires a full tlb flush to be recognized
-+	   by the CPU.  Rather than incurring multiple tlb flushes
-+	   while the address space is being pulled down, make the tlb
-+	   gathering machinery do a full flush when we're done. */
-+	tlb->fullmm = 1;
-+
-+	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
-+	tlb_remove_page(tlb, virt_to_page(pmd));
-+}
-Index: linux/include/asm-x86/pgalloc_32.h
-===================================================================
---- linux.orig/include/asm-x86/pgalloc_32.h
-+++ linux/include/asm-x86/pgalloc_32.h
-@@ -51,11 +51,7 @@ static inline void pte_free(struct page 
- }
- 
- 
--static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
--{
--	paravirt_release_pt(page_to_pfn(pte));
--	tlb_remove_page(tlb, pte);
--}
-+extern void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte);
- 
- #ifdef CONFIG_X86_PAE
- /*
-@@ -72,18 +68,7 @@ static inline void pmd_free(pmd_t *pmd)
- 	free_page((unsigned long)pmd);
- }
- 
--static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
--{
--	/* This is called just after the pmd has been detached from
--	   the pgd, which requires a full tlb flush to be recognized
--	   by the CPU.  Rather than incurring multiple tlb flushes
--	   while the address space is being pulled down, make the tlb
--	   gathering machinery do a full flush when we're done. */
--	tlb->fullmm = 1;
--
--	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--	tlb_remove_page(tlb, virt_to_page(pmd));
--}
-+extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
- 
- static inline void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd)
- {
+> ---
+>  fs/udf/udfdecl.h         |   29 +++++++++++++++++++----------
+>  include/linux/udf_fs_i.h |    4 ++--
+>  2 files changed, 21 insertions(+), 12 deletions(-)
+> 
+> diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+> index c6c457b..375be1b 100644
+> --- a/fs/udf/udfdecl.h
+> +++ b/fs/udf/udfdecl.h
+> @@ -12,6 +12,7 @@
+>  #include <linux/buffer_head.h>
+>  
+>  #include "udfend.h"
+> +#include "udf_i.h"
+>  
+>  #define udf_fixed_to_variable(x) ( ( ( (x) >> 5 ) * 39 ) + ( (x) & 0x0000001F ) )
+>  #define udf_variable_to_fixed(x) ( ( ( (x) / 39 ) << 5 ) + ( (x) % 39 ) )
+> @@ -23,16 +24,24 @@
+>  #define UDF_NAME_LEN		256
+>  #define UDF_PATH_LEN		1023
+>  
+> -#define udf_file_entry_alloc_offset(inode)\
+> -	(UDF_I(inode)->i_use ?\
+> -		sizeof(struct unallocSpaceEntry) :\
+> -		((UDF_I(inode)->i_efe ?\
+> -			sizeof(struct extendedFileEntry) :\
+> -			sizeof(struct fileEntry)) + UDF_I(inode)->i_lenEAttr))
+> -
+> -#define udf_ext0_offset(inode)\
+> -	(UDF_I(inode)->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB ?\
+> -		udf_file_entry_alloc_offset(inode) : 0)
+> +static inline size_t udf_file_entry_alloc_offset(struct inode *inode)
+> +{
+> +	struct udf_inode_info *iinfo = UDF_I(inode);
+> +	if (iinfo->i_use)
+> +		return sizeof(struct unallocSpaceEntry);
+> +	else if (iinfo->i_efe)
+> +		return sizeof(struct extendedFileEntry) + iinfo->i_lenEAttr;
+> +	else
+> +		return sizeof(struct fileEntry) + iinfo->i_lenEAttr;
+> +}
+> +
+> +static inline size_t udf_ext0_offset(struct inode *inode)
+> +{
+> +	if (UDF_I(inode)->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB)
+> +		return udf_file_entry_alloc_offset(inode);
+> +	else
+> +		return 0;
+> +}
+>  
+>  #define udf_get_lb_pblock(sb,loc,offset) udf_get_pblock((sb), (loc).logicalBlockNum, (loc).partitionReferenceNum, (offset))
+>  
+> diff --git a/include/linux/udf_fs_i.h b/include/linux/udf_fs_i.h
+> index ffaf056..6281a52 100644
+> --- a/include/linux/udf_fs_i.h
+> +++ b/include/linux/udf_fs_i.h
+> @@ -27,8 +27,8 @@ struct udf_inode_info
+>  	__u32			i_next_alloc_block;
+>  	__u32			i_next_alloc_goal;
+>  	unsigned		i_alloc_type : 3;
+> -	unsigned		i_efe : 1;
+> -	unsigned		i_use : 1;
+> +	unsigned		i_efe : 1; /* extendedFileEntry */
+> +	unsigned		i_use : 1; /* unallocSpaceEntry */
+>  	unsigned		i_strat4096 : 1;
+>  	unsigned		reserved : 26;
+>  	union
+> -- 
+> 1.5.3.7
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
