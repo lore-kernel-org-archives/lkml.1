@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933881AbYAaNN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934060AbYAaNOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933881AbYAaNN5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765601AbYAaNNr
+	id S934060AbYAaNOj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 08:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933225AbYAaNO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:13:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:42113 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110AbYAaNNq (ORCPT
+	Thu, 31 Jan 2008 08:14:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34626
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1764437AbYAaNOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:13:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=RVutjvApz0H5QRQdNutEVSgZ+cFlJM/oTkyx5JH7JQUHUsfqVxAFUfrcEej3jun0QV3zsRh3pvVbD9h0Hvs8HnzYUTzL9y93desEfLuadfo3N/APW31F/ZXGJMynTnzsfFHptP4II83S1hvIGjvnj0Knjo56ZbIgo4dwi3wZVuc=
-Message-ID: <47A1C95E.2080307@gmail.com>
-Date: Thu, 31 Jan 2008 14:13:02 +0100
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.77 is released
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 31 Jan 2008 08:14:23 -0500
+Date: Thu, 31 Jan 2008 05:14:44 -0800 (PST)
+Message-Id: <20080131.051444.157479191.davem@davemloft.net>
+To: den@openvz.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH 1/6] [IPV4]: Fix memory leak on error path during FIB
+ initialization.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1201780850-22216-1-git-send-email-den@openvz.org>
+References: <47A1B835.7050600@sw.ru>
+	<1201780850-22216-1-git-send-email-den@openvz.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday
+From: "Denis V. Lunev" <den@openvz.org>
+Date: Thu, 31 Jan 2008 15:00:45 +0300
 
-Some news: the man-pages web site at http://www.kernel.org/doc/man-pages/
-now includes a (Google-based) search facility for searching the pages that
-are online there.
+> commit c8050bf6d84785a7edd2e81591e8f833231477e8
+> Author: Denis V. Lunev <den@openvz.org>
+> Date:   Thu Jan 10 03:28:24 2008 -0800
 
-I've released man-pages-2.77.
+I am fixing it up for you this time, but please do not
+reference the commit this way.
 
-This release is now available for download at:
+Say something like:
 
-    http://www.kernel.org/pub/linux/docs/man-pages
-    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+  blah blah blah in commit $(SHA1_HASH) ("commit head line").
 
-A full list of the changes in this release can be seen at
-http://www.kernel.org/doc/man-pages/changelog.html
-A summary of the changes in this release that may be of interest to readers
-of this list is provided below.
+The author and date give no real useful information in
+this context, the important part is giving the reader
+enough information to find the commit should they wish
+to gain more information.
 
-Cheers,
+If they have the commit hash they can usually find the
+commit, but if that fails they can search the commit
+messages for the head line text string.
 
-Michael
-
-==================== Changes in man-pages-2.77 ====================
-
-
-Changes to individual pages
----------------------------
-
-wait.2
-    Phil Endecott
-        Clarify description of return value for WNOHANG.
-
-tkill.2
-    mtk
-        Rewrote DESCRIPTION; emphasized that tkill() is obsoleted by
-        tgkill().
-
-alloca.3
-    mtk
-        Various rewrites and additions (including notes on longjmp() and
-        SIGSEGV).
-    mtk / Vincent Lefevre
-        Weaken warning against use of alloca(), and
-        point out some cases where it can be useful;
-        as per http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=461100.
-
-
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
+I feel like I've had to explain this 10 times in the past week...
+:-/
 
