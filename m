@@ -1,90 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYAaE24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbYAaElR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbYAaE24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 23:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYAaE2s
+	id S1758957AbYAaElR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 23:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYAaElG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 23:28:48 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:32790 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754501AbYAaE2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 23:28:48 -0500
-Date: Wed, 30 Jan 2008 20:28:47 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix shadowed variable sparse warnings
-In-Reply-To: <1201753405.23523.8.camel@brick>
-Message-ID: <Pine.LNX.4.64.0801302027450.25812@schroedinger.engr.sgi.com>
+	Wed, 30 Jan 2008 23:41:06 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:4058 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754803AbYAaElD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 23:41:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=KGKmhsKx8cY1MtYfxrS8ObG7+Rtpq9hdtgAvGwmHxqEzCwyeqXonCFeggEo2ektQcg/6JknJ4/fWcOPyxZarH4wL8BThzPpE7UYDSoXpdgL8ITpTG53wxtYlepdLCIh0ufefROLRbXHQhe1QdiPHDxB5+dDa5tp6nNrV9K/zW1s=
+Subject: [PATCHv2] slub: fix shadowed variable sparse warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0801302027450.25812@schroedinger.engr.sgi.com>
 References: <1201753405.23523.8.camel@brick>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	 <Pine.LNX.4.64.0801302027450.25812@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 30 Jan 2008 20:40:58 -0800
+Message-Id: <1201754458.23523.10.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008, Harvey Harrison wrote:
+Introduce 'len' at outer level:
+mm/slub.c:3406:26: warning: symbol 'n' shadows an earlier one
+mm/slub.c:3393:6: originally declared here
 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  mm/slub.c |   15 ++++++---------
->  1 files changed, 6 insertions(+), 9 deletions(-)
-> 
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 5cc4b7d..f9a20bf 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -3403,19 +3403,19 @@ static int list_locations(struct kmem_cache *s, char *buf,
->  	flush_all(s);
->  
->  	for_each_node_state(node, N_NORMAL_MEMORY) {
-> -		struct kmem_cache_node *n = get_node(s, node);
-> +		struct kmem_cache_node *nd = get_node(s, node);
->  		unsigned long flags;
->  		struct page *page;
->  
-> -		if (!atomic_long_read(&n->nr_slabs))
-> +		if (!atomic_long_read(&nd->nr_slabs))
->  			continue;
->  
-> -		spin_lock_irqsave(&n->list_lock, flags);
-> -		list_for_each_entry(page, &n->partial, lru)
-> +		spin_lock_irqsave(&nd->list_lock, flags);
-> +		list_for_each_entry(page, &nd->partial, lru)
->  			process_slab(&t, s, page, alloc);
-> -		list_for_each_entry(page, &n->full, lru)
-> +		list_for_each_entry(page, &nd->full, lru)
->  			process_slab(&t, s, page, alloc);
-> -		spin_unlock_irqrestore(&n->list_lock, flags);
-> +		spin_unlock_irqrestore(&nd->list_lock, flags);
->  	}
+No need to declare new node:
+mm/slub.c:3501:7: warning: symbol 'node' shadows an earlier one
+mm/slub.c:3491:6: originally declared here
 
-Could you rename the outer variable instead? That is a counter. So call 
-this count or something. The n is used throughout to refer to 
-kmem_cache_node structs.
-  
->  	for (i = 0; i < t.count; i++) {
-> @@ -3498,7 +3498,6 @@ static unsigned long slab_objects(struct kmem_cache *s,
->  
->  	for_each_possible_cpu(cpu) {
->  		struct page *page;
-> -		int node;
->  		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
->  
->  		if (!c)
+No need to declare new x:
+mm/slub.c:3513:9: warning: symbol 'x' shadows an earlier one
+mm/slub.c:3492:6: originally declared here
 
-That is okay.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ mm/slub.c |   39 ++++++++++++++++++---------------------
+ 1 files changed, 18 insertions(+), 21 deletions(-)
 
-> @@ -3510,8 +3509,6 @@ static unsigned long slab_objects(struct kmem_cache *s,
->  			continue;
->  		if (page) {
->  			if (flags & SO_CPU) {
-> -				int x = 0;
-> -
->  				if (flags & SO_OBJECTS)
->  					x = page->inuse;
->  				else
+diff --git a/mm/slub.c b/mm/slub.c
+index 5cc4b7d..93f5c28 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -3390,7 +3390,7 @@ static void process_slab(struct loc_track *t, struct kmem_cache *s,
+ static int list_locations(struct kmem_cache *s, char *buf,
+ 					enum track_item alloc)
+ {
+-	int n = 0;
++	int len = 0;
+ 	unsigned long i;
+ 	struct loc_track t = { 0, 0, NULL };
+ 	int node;
+@@ -3421,54 +3421,54 @@ static int list_locations(struct kmem_cache *s, char *buf,
+ 	for (i = 0; i < t.count; i++) {
+ 		struct location *l = &t.loc[i];
+ 
+-		if (n > PAGE_SIZE - 100)
++		if (len > PAGE_SIZE - 100)
+ 			break;
+-		n += sprintf(buf + n, "%7ld ", l->count);
++		len += sprintf(buf + len, "%7ld ", l->count);
+ 
+ 		if (l->addr)
+-			n += sprint_symbol(buf + n, (unsigned long)l->addr);
++			len += sprint_symbol(buf + len, (unsigned long)l->addr);
+ 		else
+-			n += sprintf(buf + n, "<not-available>");
++			len += sprintf(buf + len, "<not-available>");
+ 
+ 		if (l->sum_time != l->min_time) {
+ 			unsigned long remainder;
+ 
+-			n += sprintf(buf + n, " age=%ld/%ld/%ld",
++			len += sprintf(buf + len, " age=%ld/%ld/%ld",
+ 			l->min_time,
+ 			div_long_long_rem(l->sum_time, l->count, &remainder),
+ 			l->max_time);
+ 		} else
+-			n += sprintf(buf + n, " age=%ld",
++			len += sprintf(buf + len, " age=%ld",
+ 				l->min_time);
+ 
+ 		if (l->min_pid != l->max_pid)
+-			n += sprintf(buf + n, " pid=%ld-%ld",
++			len += sprintf(buf + len, " pid=%ld-%ld",
+ 				l->min_pid, l->max_pid);
+ 		else
+-			n += sprintf(buf + n, " pid=%ld",
++			len += sprintf(buf + len, " pid=%ld",
+ 				l->min_pid);
+ 
+ 		if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
+-				n < PAGE_SIZE - 60) {
+-			n += sprintf(buf + n, " cpus=");
+-			n += cpulist_scnprintf(buf + n, PAGE_SIZE - n - 50,
++				len < PAGE_SIZE - 60) {
++			len += sprintf(buf + len, " cpus=");
++			len += cpulist_scnprintf(buf + len, PAGE_SIZE - len - 50,
+ 					l->cpus);
+ 		}
+ 
+ 		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
+-				n < PAGE_SIZE - 60) {
+-			n += sprintf(buf + n, " nodes=");
+-			n += nodelist_scnprintf(buf + n, PAGE_SIZE - n - 50,
++				len < PAGE_SIZE - 60) {
++			len += sprintf(buf + len, " nodes=");
++			len += nodelist_scnprintf(buf + len, PAGE_SIZE - len - 50,
+ 					l->nodes);
+ 		}
+ 
+-		n += sprintf(buf + n, "\n");
++		len += sprintf(buf + len, "\n");
+ 	}
+ 
+ 	free_loc_track(&t);
+ 	if (!t.count)
+-		n += sprintf(buf, "No data\n");
+-	return n;
++		len += sprintf(buf, "No data\n");
++	return len;
+ }
+ 
+ enum slab_stat_type {
+@@ -3498,7 +3498,6 @@ static unsigned long slab_objects(struct kmem_cache *s,
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		struct page *page;
+-		int node;
+ 		struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
+ 
+ 		if (!c)
+@@ -3510,8 +3509,6 @@ static unsigned long slab_objects(struct kmem_cache *s,
+ 			continue;
+ 		if (page) {
+ 			if (flags & SO_CPU) {
+-				int x = 0;
+-
+ 				if (flags & SO_OBJECTS)
+ 					x = page->inuse;
+ 				else
+-- 
+1.5.4.rc4.1142.gf5a97
 
-Ok too.
+
 
