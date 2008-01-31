@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933180AbYAaK6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933052AbYAaLAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933180AbYAaK6R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765573AbYAaK6B
+	id S933052AbYAaLAF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 06:00:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765097AbYAaK7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:58:01 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40999 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764758AbYAaK6A (ORCPT
+	Thu, 31 Jan 2008 05:59:54 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48382 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbYAaK7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:58:00 -0500
-Date: Thu, 31 Jan 2008 12:32:24 +0100
-From: Andi Kleen <andi@firstfloor.org>
+	Thu, 31 Jan 2008 05:59:53 -0500
+Date: Thu, 31 Jan 2008 19:59:27 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: Rik van Riel <riel@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, hugh@veritas.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
-       mztabzr@0pointer.de, mpm@selenic.com
-Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
-Message-ID: <20080131113224.GB31090@one.firstfloor.org>
-References: <20080130144049.73596898.akpm@linux-foundation.org> <1201769040.28547.245.camel@lappy> <20080131011227.257b9437.akpm@linux-foundation.org> <1201772118.28547.254.camel@lappy> <20080131014702.705f1040.akpm@linux-foundation.org> <1201773206.28547.259.camel@lappy> <p73ve5a47yr.fsf@bingen.suse.de> <20080131021949.92715ba4.akpm@linux-foundation.org> <20080131110610.GA31090@one.firstfloor.org> <20080131055209.6adede04@riellaptop.surriel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131055209.6adede04@riellaptop.surriel.com>
-User-Agent: Mutt/1.4.2.1i
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20080131054819.6be037f8@riellaptop.surriel.com>
+References: <20080131100838.1F3B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080131054819.6be037f8@riellaptop.surriel.com>
+Message-Id: <20080131195820.1F4A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 05:52:09AM -0500, Rik van Riel wrote:
-> On Thu, 31 Jan 2008 12:06:10 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
+> I will integrate your fixes with my code when I
+> get back from holidays.  Then things should work :)
 > 
-> > > Yeah, the 2.5 switch to physical scanning killed us there.
-> > > 
-> > > I still don't know why my
-> > > allocate-swapspace-according-to-virtual-address change didn't
-> > > help.  Much.  Marcelo played with that a bit too.
-> > 
-> > I've been thinking about just always doing swap on > page clusters. 
-> > Any reason swapping couldn't be done on e.g. 1MB chunks? 
-> 
-> Don't malloc() and free() hopelessly fragment memory
-> over time, ensuring that little related data can be
-> found inside each 1MB chunk if the process is large
-> enough?  (say, firefox)
+> Thank you for your analysis of the problem.
 
-Even if they do (I don't know if it's true or not) it does not really 
-matter because on modern hard disks/systems it does not cost less to 
-transfer 1MB versus 4K. The actual threshold seems to be rising in fact.
+Thank you.
+enjoy good vacation :)
 
-The only drawback is that the swap might be full sooner, but 
-I would actually consider this a feature because it would likely
-end many prolonged oom death dances much sooner.
+-
+kosaki
 
--Andi 
+
+
