@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933921AbYAaNH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbYAaNJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933921AbYAaNH6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765563AbYAaNHr
+	id S933830AbYAaNJr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 08:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765842AbYAaNJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:07:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40061 "EHLO mx3.mail.elte.hu"
+	Thu, 31 Jan 2008 08:09:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50114 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765098AbYAaNHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:07:46 -0500
-Date: Thu, 31 Jan 2008 14:07:30 +0100
+	id S1765563AbYAaNJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 08:09:34 -0500
+Date: Thu, 31 Jan 2008 14:09:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <Yinghai.Lu@Sun.COM>
 Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: PATCH] x86_64: make bootmap_start page align v4
-Message-ID: <20080131130730.GA8499@elte.hu>
-References: <200801291113.35974.yinghai.lu@sun.com> <200801291114.49030.yinghai.lu@sun.com> <200801291928.13927.yinghai.lu@sun.com> <200801301051.08485.yinghai.lu@sun.com>
+Subject: Re: [PATCH 1/4] print out node_data addr and bootmap_start addr
+Message-ID: <20080131130919.GB8499@elte.hu>
+References: <200801291041.10490.yinghai.lu@sun.com> <200801291113.55164.yinghai.lu@sun.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801301051.08485.yinghai.lu@sun.com>
+In-Reply-To: <200801291113.55164.yinghai.lu@sun.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,24 +37,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-> [PATCH] x86_64: make bootmap_start page align v3
-> 
-> boot oops when system get 64g or 128 installed
-
-> +++ linux-2.6/arch/x86/mm/numa_64.c
-> @@ -224,6 +224,14 @@ void __init setup_node_bootmem(int nodei
->  	}
->  	bootmap_start = __pa(bootmap);
->  
-> +	/*
-> +	 * when you have 64g or 128g ram, bootmap will be pushed after bss
-> +	 * section, the bootmap we get from early_node_mem via find_e820_area
-> +	 * is not page aligned, we need to round it up to  make sure bootmap
-> +	 * is not overlapped with bss section
-> +	 */
-> +	bootmap_start = round_up(bootmap_start, PAGE_SIZE);
-> +
+> [PATCH 1/4] print out node_data addr and bootmap_start addr
 
 thanks, applied.
+
+>  	nodedata_phys = __pa(node_data[nodeid]);
+> +	printk(KERN_INFO "  NODE_DATA [%016lx - %016lx]\n", nodedata_phys,
+> +		nodedata_phys + pgdat_size - 1);
+
+> +	printk(KERN_INFO "  bootmap [%016lx -  %016lx] pages %lx\n",
+> +		 bootmap_start, bootmap_start + bootmap_size - 1,
+> +		 bootmap_pages);
+
+did this help you find the bootmap alignment bug crash?
 
 	Ingo
