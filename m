@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbYAaF7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYAaGEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbYAaF7T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 00:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYAaF7J
+	id S1757468AbYAaGEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 01:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYAaGEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 00:59:09 -0500
-Received: from outbound-mail-39.bluehost.com ([69.89.20.193]:54440 "HELO
-	outbound-mail-39.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751061AbYAaF7I (ORCPT
+	Thu, 31 Jan 2008 01:04:43 -0500
+Received: from de01egw01.freescale.net ([192.88.165.102]:38974 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbYAaGEm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 00:59:08 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 00:59:08 EST
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver opt-in
-Date: Wed, 30 Jan 2008 21:51:12 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@infradead.org>,
-       Tony Camuso <tcamuso@redhat.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-References: <20080114225225.GQ18741@parisc-linux.org> <20080129031804.GF20198@parisc-linux.org> <20080129131955.GC10761@kroah.com>
-In-Reply-To: <20080129131955.GC10761@kroah.com>
+	Thu, 31 Jan 2008 01:04:42 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801302151.12544.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 169.222.10.15 authed with jbarnes@virtuousgeek.org}
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/6] Change RIO function mpc85xx_ to fsl_ .
+Date: Thu, 31 Jan 2008 14:04:22 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD0683@zch01exm26.fsl.freescale.net>
+In-Reply-To: <A3EAB036-F69D-48DD-8CA9-4EAAE63AE1F5@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/6] Change RIO function mpc85xx_ to fsl_ .
+Thread-Index: AchjTpSrOvEQkANzT5ug6XdKAUGnXQAgA3GA
+References: <1201689053956-git-send-email-wei.zhang@freescale.com> <A3EAB036-F69D-48DD-8CA9-4EAAE63AE1F5@kernel.crashing.org>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: <mporter@kernel.crashing.org>, <linux-kernel@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 January 2008 05:19:55 am Greg KH wrote:
-> Hahahaha, oh, that's a good one...
->
-> But what about the thousands of implementations out there that are
-> buggy?
->
-> I'm with Arjan here, I'm very skeptical.
+All right, I'll give you another patch for 86xx dts file. :)
 
-Ugg, let's look at the actual data (again); I'm really not sure why people 
-are jumping to such dire conclusions about the current state of things.
+ Btw: Why the PCI and other nodes were moved from SOC? Just for clear?
+If they are moved out, their register address must use full address not
+offset address.
 
-AIUI we only have 3 issues so far (remember mmconfig has been enabled in -mm 
-for a long time):
-  1) host bridge decode problems (disabling decode to avoid overlaps can 
-cause some bridges to stop decoding RAM addrs, but we have a fix for that)
-  2) config space retry on ATI (I think willy already debunked this one?)
-  3) some FUD about SMM or other firmware interrupts coming in during BAR 
-sizing while decode is disabled (this one is just pure FUD; if we want to 
-solve it properly we need a new platform hook to disable SMM/NMI/etc. 
-around PCI probing)
+Thanks!
+Wei.
 
-What else was there?  What reason do we have to think that things are so 
-disastrous?
-
-So I really prefer willy's approach to Arjan's alternative...
-
-Jesse
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+> Sent: Wednesday, January 30, 2008 10:44 PM
+> To: Zhang Wei
+> Cc: mporter@kernel.crashing.org; 
+> linux-kernel@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 1/6] Change RIO function mpc85xx_ to fsl_ .
+> 
+> Can you post a device tree update as well.
+> 
+> The older patches on the list for the 86xx .dts should NOT 
+> put the rio  
+> node under the soc.  It should be at the same level as PCI.
+> 
+> - k
+> 
