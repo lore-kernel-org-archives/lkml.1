@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934345AbYAaR07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934520AbYAaR1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934345AbYAaR07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 12:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759774AbYAaR0v
+	id S934520AbYAaR1m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 12:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762369AbYAaR1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 12:26:51 -0500
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:43631 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756136AbYAaR0u (ORCPT
+	Thu, 31 Jan 2008 12:27:35 -0500
+Received: from bipbip.grupopie.com ([195.23.16.24]:41714 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763411AbYAaR1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 12:26:50 -0500
-Date: Thu, 31 Jan 2008 18:26:46 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, NeilBrown <neilb@suse.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: crypto/async_tx/* doesn't build on s390
-Message-ID: <20080131182646.195990f7@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080131145058.GA6789@osiris.boeblingen.de.ibm.com>
-References: <20080131145058.GA6789@osiris.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 31 Jan 2008 12:27:34 -0500
+Message-ID: <47A204FD.70607@grupopie.com>
+Date: Thu, 31 Jan 2008 17:27:25 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: managing kallsyms_addresses
+References: <200801311148.18859.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200801311148.18859.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 15:50:58 +0100,
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-
-> I get the following:
+Robin Getz wrote:
+> When the kernel needs to find out what symbol is at a specific address, it 
+> uses kallsyms_lookup() This seems to work pretty well - almost.
 > 
-> crypto/built-in.o: In function `do_async_xor':
-> async_xor.c:49: undefined reference to `dma_map_page'
-> async_xor.c:56: undefined reference to `dma_map_page'
-> 
-> This is mainly because s390 doesn't support DMA at all,
-> but these files get selected via MD_RAID456 anyway.
+> The problem is today, we don't to remove the symbols from the init section 
+> when the init section is freed. There is invalid data in kallsyms_addresses.
+> [...]
+> There would be two solutions:
+>  - when freeing the init section, remove all the init labels from the 
+> kallsyms_addresses, and resort/pack it.
 
-deja-vu: http://marc.info/?l=linux-kernel&m=118056140212764&w=2
+This should be doable, but to be worth it, we would need to use 
+different structures for the init symbols, that would be stored in 
+__initdata.
 
-and indeed, async_memcpy.c doesn't seem to suffer from this affliction.
-async_xor.c needs a similar treatment; maybe async_memset.c as well
-(didn't check).
+Then, ideally we would have separate functions in the __init section to 
+look up symbols in those structures that would only be called until we 
+released the init sections.
 
-(No, I didn't actually look at the code :))
+On the plus side, this would avoid the "repacking" the kallsyms 
+structures to remove the init labels.
+
+>  - if the init section is unloaded, have is_kernel_inittext always return 0.
+
+This is by far the simplest solution. I even STR a patch floating around 
+to do this, by I can't seem to locate it now... :(
+
+> I assume that similar things need to be handled for module init too, but I 
+> have not run into that yet.
+
+It seems that at least the last solution should be easy enough to 
+implement there.
+
+> Thoughts?
+
+I think that the simplest solution (the second one) is probably the best 
+for now.
+
+One thing that did cross my mind though, is stuff like lockdep.
+
+If we run a locking sequence that is called from init code, and later a 
+different locking sequence is used when we already freed init data, how 
+can the debug information show the names of the functions that generated 
+the previous locking sequence?
+
+It seems that the only "correct" approach would be to store a "before 
+freeing init sections" flag together with the function pointer, and then 
+have a kallsyms interface that could receive this flag to know where to 
+look.
+
+In that case, the first solution can not be used at all (because we need 
+to keep the init symbols anyway) and the second solution could be simply 
+implemented by having a default value for the flag that is the "current 
+state" for that flag...
+
+-- 
+Paulo Marques - www.grupopie.com
+
+"There cannot be a crisis today; my schedule is already full."
