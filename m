@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933508AbYAaMCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbYAaMCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933508AbYAaMCW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 07:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764620AbYAaMA4
+	id S933610AbYAaMCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 07:02:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764729AbYAaMA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 07:00:56 -0500
-Received: from swsoft-msk-nat.sw.ru ([195.214.232.10]:53023 "EHLO iris.sw.ru"
+	Thu, 31 Jan 2008 07:00:59 -0500
+Received: from swsoft-msk-nat.sw.ru ([195.214.232.10]:57390 "EHLO iris.sw.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764090AbYAaMAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764290AbYAaMAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 31 Jan 2008 07:00:48 -0500
 From: "Denis V. Lunev" <den@openvz.org>
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, devel@openvz.org,
        "Denis V. Lunev" <den@openvz.org>
-Subject: [PATCH 3/6] [NETNS]: Process interface address manipulation routines in the namespace.
-Date: Thu, 31 Jan 2008 15:00:47 +0300
-Message-Id: <1201780850-22216-3-git-send-email-den@openvz.org>
+Subject: [PATCH 4/6] [IPV4]: fib_sync_down rework.
+Date: Thu, 31 Jan 2008 15:00:48 +0300
+Message-Id: <1201780850-22216-4-git-send-email-den@openvz.org>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <47A1B835.7050600@sw.ru>
 References: <47A1B835.7050600@sw.ru>
@@ -23,77 +23,182 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The namespace is available when required except rtm_to_ifaddr. Add
-namespace argument to it.
+fib_sync_down can be called with an address and with a device. In reality
+it is called either with address OR with a device. The codepath inside is
+completely different, so lets separate it into two calls for these two
+cases.
 
 Signed-off-by: Denis V. Lunev <den@openvz.org>
 ---
- net/ipv4/devinet.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ include/net/ip_fib.h     |    3 +-
+ net/ipv4/fib_frontend.c  |    4 +-
+ net/ipv4/fib_semantics.c |  104 +++++++++++++++++++++++----------------------
+ 3 files changed, 57 insertions(+), 54 deletions(-)
 
-diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
-index e55c85e..6a6e92e 100644
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -485,7 +485,7 @@ errout:
- 	return err;
- }
+diff --git a/include/net/ip_fib.h b/include/net/ip_fib.h
+index 9daa60b..1b2f008 100644
+--- a/include/net/ip_fib.h
++++ b/include/net/ip_fib.h
+@@ -218,7 +218,8 @@ extern void fib_select_default(struct net *net, const struct flowi *flp,
  
--static struct in_ifaddr *rtm_to_ifaddr(struct nlmsghdr *nlh)
-+static struct in_ifaddr *rtm_to_ifaddr(struct net *net, struct nlmsghdr *nlh)
- {
- 	struct nlattr *tb[IFA_MAX+1];
- 	struct in_ifaddr *ifa;
-@@ -503,7 +503,7 @@ static struct in_ifaddr *rtm_to_ifaddr(struct nlmsghdr *nlh)
- 	if (ifm->ifa_prefixlen > 32 || tb[IFA_LOCAL] == NULL)
- 		goto errout;
- 
--	dev = __dev_get_by_index(&init_net, ifm->ifa_index);
-+	dev = __dev_get_by_index(net, ifm->ifa_index);
- 	err = -ENODEV;
- 	if (dev == NULL)
- 		goto errout;
-@@ -571,7 +571,7 @@ static int inet_rtm_newaddr(struct sk_buff *skb, struct nlmsghdr *nlh, void *arg
- 	if (net != &init_net)
- 		return -EINVAL;
- 
--	ifa = rtm_to_ifaddr(nlh);
-+	ifa = rtm_to_ifaddr(net, nlh);
- 	if (IS_ERR(ifa))
- 		return PTR_ERR(ifa);
- 
-@@ -1189,7 +1189,7 @@ static int inet_dump_ifaddr(struct sk_buff *skb, struct netlink_callback *cb)
- 
- 	s_ip_idx = ip_idx = cb->args[1];
- 	idx = 0;
--	for_each_netdev(&init_net, dev) {
-+	for_each_netdev(net, dev) {
- 		if (idx < s_idx)
- 			goto cont;
- 		if (idx > s_idx)
-@@ -1223,7 +1223,9 @@ static void rtmsg_ifa(int event, struct in_ifaddr* ifa, struct nlmsghdr *nlh,
- 	struct sk_buff *skb;
- 	u32 seq = nlh ? nlh->nlmsg_seq : 0;
- 	int err = -ENOBUFS;
-+	struct net *net;
- 
-+	net = ifa->ifa_dev->dev->nd_net;
- 	skb = nlmsg_new(inet_nlmsg_size(), GFP_KERNEL);
- 	if (skb == NULL)
- 		goto errout;
-@@ -1235,10 +1237,10 @@ static void rtmsg_ifa(int event, struct in_ifaddr* ifa, struct nlmsghdr *nlh,
- 		kfree_skb(skb);
- 		goto errout;
+ /* Exported by fib_semantics.c */
+ extern int ip_fib_check_default(__be32 gw, struct net_device *dev);
+-extern int fib_sync_down(__be32 local, struct net_device *dev, int force);
++extern int fib_sync_down_dev(struct net_device *dev, int force);
++extern int fib_sync_down_addr(__be32 local);
+ extern int fib_sync_up(struct net_device *dev);
+ extern __be32  __fib_res_prefsrc(struct fib_result *res);
+ extern void fib_select_multipath(const struct flowi *flp, struct fib_result *res);
+diff --git a/net/ipv4/fib_frontend.c b/net/ipv4/fib_frontend.c
+index d0507f4..d69ffa2 100644
+--- a/net/ipv4/fib_frontend.c
++++ b/net/ipv4/fib_frontend.c
+@@ -808,7 +808,7 @@ static void fib_del_ifaddr(struct in_ifaddr *ifa)
+ 			   First of all, we scan fib_info list searching
+ 			   for stray nexthop entries, then ignite fib_flush.
+ 			*/
+-			if (fib_sync_down(ifa->ifa_local, NULL, 0))
++			if (fib_sync_down_addr(ifa->ifa_local))
+ 				fib_flush(dev->nd_net);
+ 		}
  	}
--	err = rtnl_notify(skb, &init_net, pid, RTNLGRP_IPV4_IFADDR, nlh, GFP_KERNEL);
-+	err = rtnl_notify(skb, net, pid, RTNLGRP_IPV4_IFADDR, nlh, GFP_KERNEL);
- errout:
- 	if (err < 0)
--		rtnl_set_sk_err(&init_net, RTNLGRP_IPV4_IFADDR, err);
-+		rtnl_set_sk_err(net, RTNLGRP_IPV4_IFADDR, err);
- }
+@@ -898,7 +898,7 @@ static void nl_fib_lookup_exit(struct net *net)
  
- #ifdef CONFIG_SYSCTL
+ static void fib_disable_ip(struct net_device *dev, int force)
+ {
+-	if (fib_sync_down(0, dev, force))
++	if (fib_sync_down_dev(dev, force))
+ 		fib_flush(dev->nd_net);
+ 	rt_cache_flush(0);
+ 	arp_ifdown(dev);
+diff --git a/net/ipv4/fib_semantics.c b/net/ipv4/fib_semantics.c
+index c791286..5beff2e 100644
+--- a/net/ipv4/fib_semantics.c
++++ b/net/ipv4/fib_semantics.c
+@@ -1031,70 +1031,72 @@ nla_put_failure:
+      referring to it.
+    - device went down -> we must shutdown all nexthops going via it.
+  */
+-
+-int fib_sync_down(__be32 local, struct net_device *dev, int force)
++int fib_sync_down_addr(__be32 local)
+ {
+ 	int ret = 0;
+-	int scope = RT_SCOPE_NOWHERE;
+-
+-	if (force)
+-		scope = -1;
++	unsigned int hash = fib_laddr_hashfn(local);
++	struct hlist_head *head = &fib_info_laddrhash[hash];
++	struct hlist_node *node;
++	struct fib_info *fi;
+ 
+-	if (local && fib_info_laddrhash) {
+-		unsigned int hash = fib_laddr_hashfn(local);
+-		struct hlist_head *head = &fib_info_laddrhash[hash];
+-		struct hlist_node *node;
+-		struct fib_info *fi;
++	if (fib_info_laddrhash == NULL || local == 0)
++		return 0;
+ 
+-		hlist_for_each_entry(fi, node, head, fib_lhash) {
+-			if (fi->fib_prefsrc == local) {
+-				fi->fib_flags |= RTNH_F_DEAD;
+-				ret++;
+-			}
++	hlist_for_each_entry(fi, node, head, fib_lhash) {
++		if (fi->fib_prefsrc == local) {
++			fi->fib_flags |= RTNH_F_DEAD;
++			ret++;
+ 		}
+ 	}
++	return ret;
++}
+ 
+-	if (dev) {
+-		struct fib_info *prev_fi = NULL;
+-		unsigned int hash = fib_devindex_hashfn(dev->ifindex);
+-		struct hlist_head *head = &fib_info_devhash[hash];
+-		struct hlist_node *node;
+-		struct fib_nh *nh;
++int fib_sync_down_dev(struct net_device *dev, int force)
++{
++	int ret = 0;
++	int scope = RT_SCOPE_NOWHERE;
++	struct fib_info *prev_fi = NULL;
++	unsigned int hash = fib_devindex_hashfn(dev->ifindex);
++	struct hlist_head *head = &fib_info_devhash[hash];
++	struct hlist_node *node;
++	struct fib_nh *nh;
+ 
+-		hlist_for_each_entry(nh, node, head, nh_hash) {
+-			struct fib_info *fi = nh->nh_parent;
+-			int dead;
++	if (force)
++		scope = -1;
+ 
+-			BUG_ON(!fi->fib_nhs);
+-			if (nh->nh_dev != dev || fi == prev_fi)
+-				continue;
+-			prev_fi = fi;
+-			dead = 0;
+-			change_nexthops(fi) {
+-				if (nh->nh_flags&RTNH_F_DEAD)
+-					dead++;
+-				else if (nh->nh_dev == dev &&
+-					 nh->nh_scope != scope) {
+-					nh->nh_flags |= RTNH_F_DEAD;
++	hlist_for_each_entry(nh, node, head, nh_hash) {
++		struct fib_info *fi = nh->nh_parent;
++		int dead;
++
++		BUG_ON(!fi->fib_nhs);
++		if (nh->nh_dev != dev || fi == prev_fi)
++			continue;
++		prev_fi = fi;
++		dead = 0;
++		change_nexthops(fi) {
++			if (nh->nh_flags&RTNH_F_DEAD)
++				dead++;
++			else if (nh->nh_dev == dev &&
++					nh->nh_scope != scope) {
++				nh->nh_flags |= RTNH_F_DEAD;
+ #ifdef CONFIG_IP_ROUTE_MULTIPATH
+-					spin_lock_bh(&fib_multipath_lock);
+-					fi->fib_power -= nh->nh_power;
+-					nh->nh_power = 0;
+-					spin_unlock_bh(&fib_multipath_lock);
++				spin_lock_bh(&fib_multipath_lock);
++				fi->fib_power -= nh->nh_power;
++				nh->nh_power = 0;
++				spin_unlock_bh(&fib_multipath_lock);
+ #endif
+-					dead++;
+-				}
++				dead++;
++			}
+ #ifdef CONFIG_IP_ROUTE_MULTIPATH
+-				if (force > 1 && nh->nh_dev == dev) {
+-					dead = fi->fib_nhs;
+-					break;
+-				}
+-#endif
+-			} endfor_nexthops(fi)
+-			if (dead == fi->fib_nhs) {
+-				fi->fib_flags |= RTNH_F_DEAD;
+-				ret++;
++			if (force > 1 && nh->nh_dev == dev) {
++				dead = fi->fib_nhs;
++				break;
+ 			}
++#endif
++		} endfor_nexthops(fi)
++		if (dead == fi->fib_nhs) {
++			fi->fib_flags |= RTNH_F_DEAD;
++			ret++;
+ 		}
+ 	}
+ 
 -- 
 1.5.3.rc5
 
