@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbYAaUHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765744AbYAaUOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933098AbYAaUHS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 15:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759623AbYAaUHF
+	id S1765744AbYAaUOB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 15:14:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbYAaUNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 15:07:05 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:41718 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759320AbYAaUHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 15:07:02 -0500
-Date: Thu, 31 Jan 2008 12:07:00 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/3] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080131123118.GK7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801311200250.25299@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com>
- <20080131123118.GK7185@v2.random>
+	Thu, 31 Jan 2008 15:13:54 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50369 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756833AbYAaUNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 15:13:53 -0500
+Date: Thu, 31 Jan 2008 22:14:30 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: x86: Why have __copy_from_user_ll_nocache* been exported?
+Message-ID: <20080131201430.GA9375@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Andrea Arcangeli wrote:
+A commit that does nothing except for adding two unused EXPORT_SYMBOL's.
 
-> On Wed, Jan 30, 2008 at 08:57:52PM -0800, Christoph Lameter wrote:
-> > @@ -211,7 +212,9 @@ asmlinkage long sys_remap_file_pages(uns
-> >  		spin_unlock(&mapping->i_mmap_lock);
-> >  	}
-> >  
-> > +	mmu_notifier(invalidate_range_begin, mm, start, start + size, 0);
-> >  	err = populate_range(mm, vma, start, size, pgoff);
-> > +	mmu_notifier(invalidate_range_end, mm, 0);
-> >  	if (!err && !(flags & MAP_NONBLOCK)) {
-> >  		if (unlikely(has_write_lock)) {
-> >  			downgrade_write(&mm->mmap_sem);
-> 
-> This can't be enough for GRU, infact it can't work for KVM either. You
-> got 1) to have some invalidate_page for GRU before freeing the page,
-> and 2) to pass start, end to range_end (if you want kvm to use it
-> instead of invalidate_page).
+Without any rationale why they should be exported.
 
-The external references are dropped when calling invalidate_range_begin. 
-This would work both for the KVM and the GRU. Why would KVM not be able to 
-invalidate the range before? Locking conventions is that no additional 
-external reference can be added between invalidate_range_begin and 
-invalidate_range_end. So KVM is fine too.
+And that from a person who on the other hand wants to introduce
+(and tries to force on other people) deprecation periods for unused 
+EXPORT_SYMBOL's.
 
-> mremap still missing as a whole.
+Can we please get this reverted quickly?
 
-mremap uses do_munmap which calls into unmap_region() that already has 
-callbacks. So what is wrong there?
+TIA
+Adrian
+
+
+commit 914c82694cadbab511f2aee8a59c89be2938bace
+Author: Andrew Morton <akpm@osdl.org>
+Date:   Wed Jan 30 23:27:57 2008 +0100
+
+    x86: export copy_from_user_ll_nocache[_nozero]
+    
+    Cc: Neil Brown <neilb@cse.unsw.edu.au>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 8bab2b2..9c4ffd5 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -817,6 +817,7 @@ unsigned long __copy_from_user_ll_nocache(void *to, const void __user *from,
+ #endif
+ 	return n;
+ }
++EXPORT_SYMBOL(__copy_from_user_ll_nocache);
+ 
+ unsigned long __copy_from_user_ll_nocache_nozero(void *to, const void __user *from,
+ 					unsigned long n)
+@@ -831,6 +832,7 @@ unsigned long __copy_from_user_ll_nocache_nozero(void *to, const void __user *fr
+ #endif
+ 	return n;
+ }
++EXPORT_SYMBOL(__copy_from_user_ll_nocache_nozero);
+ 
+ /**
+  * copy_to_user: - Copy a block of data into user space.
+
+
