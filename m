@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbYAaLTC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbYAaLXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757659AbYAaLTC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 06:19:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764442AbYAaLSw
+	id S932816AbYAaLXV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 06:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYAaLXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 06:18:52 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46600 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764358AbYAaLSv (ORCPT
+	Thu, 31 Jan 2008 06:23:11 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34037 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751743AbYAaLXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 06:18:51 -0500
-Date: Thu, 31 Jan 2008 12:18:50 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Steve French <smfrench@gmail.com>
-cc: Adrian Bunk <bunk@kernel.org>, sfrench@samba.org,
-       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove smbfs
-In-Reply-To: <524f69650801301723w2f186f73h2cb30a6a30793def@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801311215280.4864@fbirervta.pbzchgretzou.qr>
-References: <20080128220835.GF8767@does.not.exist> 
- <Pine.LNX.4.64.0801301923450.13036@fbirervta.pbzchgretzou.qr> 
- <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com> 
- <Pine.LNX.4.64.0801302003560.13036@fbirervta.pbzchgretzou.qr>
- <524f69650801301723w2f186f73h2cb30a6a30793def@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Jan 2008 06:23:09 -0500
+Subject: Re: XFS oops in vanilla 2.6.24
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Sven Geggus <lists@fuchsschwanzdomain.de>
+Cc: linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>
+In-Reply-To: <fnqmbl$ubh$1@ultimate100.geggus.net>
+References: <fnqmbl$ubh$1@ultimate100.geggus.net>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 12:23:11 +0100
+Message-Id: <1201778591.28547.291.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jan 30 2008 19:23, Steve French wrote:
->> On Jan 30 2008 12:53, Steve French wrote:
->> >I have mounted to Windows98 a few months ago with no problems (other
->> >than a few restrictions like you can't set the file times via utimes).
->> > For mounts to Windows98 note that you have to specify the server
->> >netbios name on the mount (since it is not the same as the DNS name).
->> >In your example your would need to specify "servernetbiosname=WIN98"
->> >in the mount options (until mount.cifs autoretries with
->> >servernetbiosname assumed to be the beginning of the UNC name - note
->> >that later servers have a dummy netbios name that is used so this
->> >mount option is only needed for OS/2 and Win9x).
->>
->> Ok that works. I had tried "netbiosname" but not "servernetbiosname"
->> (only fuzzy memories from the last win98 encounter and the suggestion
->> to use netbiossomething).
->>
->> I think servernetbiosname should implicitly be assumed to be the
->> same as the //hostpart/ when it's not explicitly specified, no?
->
->Unfortunately, it is not quite that easy since there is a default
->"dummy" netbiosname that you are supposed to specify.
->[...]
->There is retry which can be tried.  When the server does not listen on
->port 445 and mount fails to *SMBSERVER on port 139 (and retry using
->the uppercased tcp name as the netbios name fails) - we can try to do
->an "adapter status" rfc1001 call to the ip address of the target and
->pick the first netbiosname (or at least the first one that ends with
->the server suffix - ie a byte of 0x20 for byte 16 of the netbios
->name).   This complicates the mount.cifs helpers retry logic and
->adding rfc1001 adapter status code into the kernel also would be a few
->hundred lines of kernel code for little benefit if any for current
->servers, but it could be done.   Simply adding the one retry (for
->failed mounts using servernetbiosname=<target-host-name> would
->probably take care of most cases.
->
-Yes, that is what I'd like, the simple retry with the servernetbiosname
-taken from //foo/. Querying adapter and all that seems unnecessary since
-if I say //foo/, I really mean servernetbiosname=foo,ip=<resolve foo>
-not servernetbiosname=bar,ip=<resolve foo>.
+Lets CC the XFS maintainer..
+
+On Wed, 2008-01-30 at 20:23 +0000, Sven Geggus wrote:
+> Hi there,
+> 
+> I get the following with 2.6.24:
+> 
+> Ending clean XFS mount for filesystem: dm-0
+> BUG: unable to handle kernel paging request at virtual address f2134000
+> printing eip: c021a13a *pde = 010b5067 *pte = 32134000 
+> Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+> Modules linked in: radeon drm rfcomm l2cap sym53c8xx scsi_transport_spi snd_via82xx 8139too snd_mpu401_uart snd_ens1371 snd_rawmidi snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_page_alloc via_agp agpgart
+> 
+> Pid: 3889, comm: bash Not tainted (2.6.24 #3)
+> EIP: 0060:[<c021a13a>] EFLAGS: 00010282 CPU: 0
+> EIP is at xfs_file_readdir+0xfa/0x18c
+> EAX: 00000000 EBX: 000002f5 ECX: 00000020 EDX: 00000000
+> ESI: 00000000 EDI: f2133ff8 EBP: f227ff68 ESP: f227ff10
+>  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> Process bash (pid: 3889, ti=f227e000 task=f7205a80 task.ti=f227e000)
+> Stack: 000002f5 00000000 2c000137 00000000 00000000 c0165358 f227ff94 f221c810 
+>        f2d85e48 00000000 00000000 00000000 000002f5 00000000 f2133000 00001000 
+>        00000ff8 000002f9 00000000 c0421c80 f221c810 f1cdbe48 f227ff88 c0165543 
+> Call Trace:
+>  [<c0104da3>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0104e53>] show_stack_log_lvl+0x9b/0xa3
+>  [<c0104efb>] show_registers+0xa0/0x1e2
+>  [<c010514c>] die+0x10f/0x1dd
+>  [<c0113555>] do_page_fault+0x43a/0x519
+>  [<c040fe52>] error_code+0x6a/0x70
+>  [<c0165543>] vfs_readdir+0x5d/0x89
+>  [<c01655cd>] sys_getdents64+0x5e/0xa0
+>  [<c0103f06>] syscall_call+0x7/0xb
+>  =======================
+> Code: 89 74 24 04 81 e3 ff ff ff 7f 89 1c 24 ff 55 bc 85 c0 0f 85 82 00 00 00 8b 4f 10 31 d2 83 c1 1f 83 e1 f8 29 4d d0 19 55 d4 01 cf <8b> 57 08 8b 4f 0c 89 55 d8 89 4d dc 83 7d d4 00 7f a1 7c 06 83 
+> EIP: [<c021a13a>] xfs_file_readdir+0xfa/0x18c SS:ESP 0068:f227ff10
+> ---[ end trace e518e1370efb695e ]---
+> 
+> Sven
+> 
+
