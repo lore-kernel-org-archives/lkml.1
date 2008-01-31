@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765391AbYAaSxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbYAaSyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765391AbYAaSxO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:53:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYAaSw6
+	id S933135AbYAaSyY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760183AbYAaSyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:52:58 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:38720 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbYAaSw5 (ORCPT
+	Thu, 31 Jan 2008 13:54:06 -0500
+Received: from stinky.trash.net ([213.144.137.162]:56444 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759767AbYAaSyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:52:57 -0500
-Date: Thu, 31 Jan 2008 19:52:53 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Chris Wedgwood <cw@f00f.org>
-cc: Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, davem@davemloft.net,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] kill hotplug init/exit section annotations
-In-Reply-To: <20080131183222.GA3412@puku.stupidest.org>
-Message-ID: <Pine.LNX.4.64.0801311951450.22762@anakin>
-References: <1201729295.3292.94.camel@localhost.localdomain>
- <20080130223219.GT29368@does.not.exist> <20080131074436.GA31966@uranus.ravnborg.org>
- <1201795051.3131.13.camel@localhost.localdomain> <20080131081120.27505dc0@laptopd505.fenrus.org>
- <20080131162141.GC19700@cs181133002.pp.htv.fi> <20080131090749.72781689@laptopd505.fenrus.org>
- <20080131171436.GG19700@cs181133002.pp.htv.fi> <20080131174526.GA2488@puku.stupidest.org>
- <20080131175543.GH19700@cs181133002.pp.htv.fi> <20080131183222.GA3412@puku.stupidest.org>
+	Thu, 31 Jan 2008 13:54:03 -0500
+Message-ID: <47A21945.2050005@trash.net>
+Date: Thu, 31 Jan 2008 19:53:57 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+CC: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: cups slow on linux-2.6.24
+References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com>  <Pine.LNX.4.64.0801290855360.19273@blackhole.kfki.hu>  <b6a2187b0801291924k15f883aeg54f704156e4f2e3e@mail.gmail.com>  <47A07FEA.3000702@trash.net>  <b6a2187b0801301823m331957e9n9d9bb9613622c844@mail.gmail.com>  <b6a2187b0801301826l5a50ce84p7d5dce3d0a74b3c0@mail.gmail.com>  <47A13573.7090804@trash.net>  <b6a2187b0801301921s4a7842cg6cfec09a393cd63@mail.gmail.com>  <47A13FBD.8050803@trash.net> <b6a2187b0801302101l46d614c9y53f798a025b57dc3@mail.gmail.com> <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
+In-Reply-To: <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Chris Wedgwood wrote:
-> On Thu, Jan 31, 2008 at 07:55:43PM +0200, Adrian Bunk wrote:
-> > Who was talking about laptops?
+Jozsef Kadlecsik wrote:
+> Hi Jeff,
 > 
-> If laptops are mostly MP these days, then 'desktops' and 'servers'
-> certainly are --- so pretty much everyone needs CPU hotplug.
+> On Thu, 31 Jan 2008, Jeff Chua wrote:
+> 
+>> On the bad run, I got the following message ...
+>>
+>> boston kernel: nf_ct_tcp: invalid packed ignored IN= OUT=
+>> SRC=127.0.0.1 DST=127.0.0.1 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=8162
+>> DF PROTO=TCP SPT=1016 DPT=515 SEQ=3834958843 ACK=0 WINDOW=32792
+>> RES=0x00 SYN URGP=0 OPT (0204400C0402080A0000CC190000000001030307)
+>> UID=0 GID=65534
+> 
+> I can't find this packet in the last lo.bad pcap file. Could you dump the 
+> bad traffic and send it together with the generated log record?
+> 
+> Strange, but there are a lot of incorrect checksum packets. How does it 
+> come on the loopback interface?
 
-<irony>
-Thank you for giving an exhaustive list of classes of machines Linux runs on!
-</irony>
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Loopback doesn't perform full checksumming, so thats expected.
+Current kernel versions can tell userspace that its only a
+partial checksum, but I'm not sure whether tcpdump already
+supports this.
