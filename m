@@ -1,231 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbYAaCI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761774AbYAaCLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760940AbYAaCI0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 21:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYAaCIS
+	id S1761774AbYAaCLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 21:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYAaCLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 21:08:18 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:44156 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752648AbYAaCIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 21:08:16 -0500
-Date: Wed, 30 Jan 2008 18:08:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
- address ranges
-In-Reply-To: <20080131003434.GE7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801301805200.14071@schroedinger.engr.sgi.com>
-References: <20080129220212.GX7233@v2.random>
- <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
- <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
- <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
- <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
- <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
- <20080131003434.GE7185@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Jan 2008 21:11:12 -0500
+Received: from fmailhost06.isp.att.net ([207.115.11.56]:57324 "EHLO
+	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbYAaCLL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 21:11:11 -0500
+X-Originating-IP: [70.157.3.17]
+Date: Wed, 30 Jan 2008 20:11:08 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: greg@kroah.com, chrisw@sous-sol.org
+Cc: csnook@redhat.com, stable@kernel.org, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, david.harris@cpni-inc.com
+Subject: [2.6.23.y][PATCH] atl1: fix frame length bug
+Message-ID: <20080130201108.75878288@osprey.hogchain.net>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From de0e1eddb6a4dd7673f84c472812b062aaea2f39 Mon Sep 17 00:00:00 2001
+From: Jay Cliburn <jacliburn@bellsouth.net>
+Date: Wed, 30 Jan 2008 19:21:10 -0600
+Subject: [PATCH] atl1: fix frame length bug
 
-Patch to
+Upstream commit: 2a49128f0a6edee337174ea341c1d6d7565be350
 
+The driver sets up the hardware to accept a frame with max length
+equal to MTU + Ethernet header + FCS + VLAN tag, but we neglect to
+add the VLAN tag size to the ingress buffer.  When a VLAN-tagged
+frame arrives, the hardware passes it, but bad things happen
+because the buffer is too small.  This patch fixes that.
 
-1. Remove sync on notifier_release. Must be called when only a 
-   single process remain.
+Thanks to David Harris for reporting the bug and testing the fix.
 
-2. Add invalidate_range_start/end. This should allow safe removal
-   of ranges of external ptes without having to resort to a callback
-   for every individual page.
-
-This must be able to nest so the driver needs to keep a refcount of range 
-invalidates and wait if the refcount != 0.
-
-
+Tested-by: David Harris <david.harris@cpni-inc.com>
+Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 ---
- include/linux/mmu_notifier.h |   11 +++++++++--
- mm/fremap.c                  |    3 ++-
- mm/hugetlb.c                 |    3 ++-
- mm/memory.c                  |   16 ++++++++++------
- mm/mmu_notifier.c            |    9 ++++-----
- 5 files changed, 27 insertions(+), 15 deletions(-)
+ drivers/net/atl1/atl1_main.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/mm/mmu_notifier.c
-===================================================================
---- linux-2.6.orig/mm/mmu_notifier.c	2008-01-30 17:58:48.000000000 -0800
-+++ linux-2.6/mm/mmu_notifier.c	2008-01-30 18:00:26.000000000 -0800
-@@ -13,23 +13,22 @@
- #include <linux/mm.h>
- #include <linux/mmu_notifier.h>
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index f23e13c..d2d4730 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -121,7 +121,7 @@ static int __devinit atl1_sw_init(struct atl1_adapter *adapter)
+ 	struct atl1_hw *hw = &adapter->hw;
+ 	struct net_device *netdev = adapter->netdev;
  
-+/*
-+ * No synchronization. This function can only be called when only a single
-+ * process remains that performs teardown.
-+ */
- void mmu_notifier_release(struct mm_struct *mm)
+-	hw->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN;
++	hw->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+ 	hw->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
+ 
+ 	adapter->wol = 0;
+@@ -689,7 +689,7 @@ static int atl1_change_mtu(struct net_device *netdev, int new_mtu)
  {
- 	struct mmu_notifier *mn;
- 	struct hlist_node *n, *t;
+ 	struct atl1_adapter *adapter = netdev_priv(netdev);
+ 	int old_mtu = netdev->mtu;
+-	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
++	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
  
- 	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
--		down_write(&mm->mmap_sem);
--		rcu_read_lock();
- 		hlist_for_each_entry_safe_rcu(mn, n, t,
- 					  &mm->mmu_notifier.head, hlist) {
- 			hlist_del_rcu(&mn->hlist);
- 			if (mn->ops->release)
- 				mn->ops->release(mn, mm);
- 		}
--		rcu_read_unlock();
--		up_write(&mm->mmap_sem);
--		synchronize_rcu();
- 	}
- }
+ 	if ((max_frame < ETH_ZLEN + ETH_FCS_LEN) ||
+ 	    (max_frame > MAX_JUMBO_FRAME_SIZE)) {
+@@ -854,8 +854,8 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
+ 	/* set Interrupt Clear Timer */
+ 	iowrite16(adapter->ict, hw->hw_addr + REG_CMBDISDMA_TIMER);
  
-Index: linux-2.6/include/linux/mmu_notifier.h
-===================================================================
---- linux-2.6.orig/include/linux/mmu_notifier.h	2008-01-30 17:58:48.000000000 -0800
-+++ linux-2.6/include/linux/mmu_notifier.h	2008-01-30 18:00:26.000000000 -0800
-@@ -67,15 +67,22 @@ struct mmu_notifier_ops {
- 				int dummy);
+-	/* set MTU, 4 : VLAN */
+-	iowrite32(hw->max_frame_size + 4, hw->hw_addr + REG_MTU);
++	/* set max frame size hw will accept */
++	iowrite32(hw->max_frame_size, hw->hw_addr + REG_MTU);
  
- 	/*
-+	 * invalidate_range_begin() and invalidate_range_end() are paired.
-+	 *
-+	 * invalidate_range_begin must clear all references in the range
-+	 * and stop the establishment of new references.
-+	 *
-+	 * invalidate_range_end() reenables the establishment of references.
-+	 *
- 	 * lock indicates that the function is called under spinlock.
- 	 */
- 	void (*invalidate_range_begin)(struct mmu_notifier *mn,
- 				 struct mm_struct *mm,
-+				 unsigned long start, unsigned long end,
- 				 int lock);
- 
- 	void (*invalidate_range_end)(struct mmu_notifier *mn,
--				 struct mm_struct *mm,
--				 unsigned long start, unsigned long end);
-+				 struct mm_struct *mm);
- };
- 
- struct mmu_rmap_notifier_ops;
-Index: linux-2.6/mm/fremap.c
-===================================================================
---- linux-2.6.orig/mm/fremap.c	2008-01-30 17:58:48.000000000 -0800
-+++ linux-2.6/mm/fremap.c	2008-01-30 18:00:26.000000000 -0800
-@@ -212,8 +212,9 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
- 
-+	mmu_notifier(invalidate_range_start, mm, start, start + size, 0);
- 	err = populate_range(mm, vma, start, size, pgoff);
--	mmu_notifier(invalidate_range, mm, start, start + size, 0);
-+	mmu_notifier(invalidate_range_end, mm);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
- 			downgrade_write(&mm->mmap_sem);
-Index: linux-2.6/mm/hugetlb.c
-===================================================================
---- linux-2.6.orig/mm/hugetlb.c	2008-01-30 17:58:48.000000000 -0800
-+++ linux-2.6/mm/hugetlb.c	2008-01-30 18:00:26.000000000 -0800
-@@ -744,6 +744,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	BUG_ON(start & ~HPAGE_MASK);
- 	BUG_ON(end & ~HPAGE_MASK);
- 
-+	mmu_notifier(invalidate_range_start, mm, start, end, 1);
- 	spin_lock(&mm->page_table_lock);
- 	for (address = start; address < end; address += HPAGE_SIZE) {
- 		ptep = huge_pte_offset(mm, address);
-@@ -764,7 +765,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	}
- 	spin_unlock(&mm->page_table_lock);
- 	flush_tlb_range(vma, start, end);
--	mmu_notifier(invalidate_range, mm, start, end, 1);
-+	mmu_notifier(invalidate_range_end, mm);
- 	list_for_each_entry_safe(page, tmp, &page_list, lru) {
- 		list_del(&page->lru);
- 		put_page(page);
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-01-30 17:58:48.000000000 -0800
-+++ linux-2.6/mm/memory.c	2008-01-30 18:00:51.000000000 -0800
-@@ -888,11 +888,12 @@ unsigned long zap_page_range(struct vm_a
- 	lru_add_drain();
- 	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
-+	mmu_notifier(invalidate_range_start, mm, address, end,
-+		(details ? (details->i_mmap_lock != NULL)  : 0));
- 	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
- 	if (tlb)
- 		tlb_finish_mmu(tlb, address, end);
--	mmu_notifier(invalidate_range, mm, address, end,
--		(details ? (details->i_mmap_lock != NULL)  : 0));
-+	mmu_notifier(invalidate_range_end, mm);
- 	return end;
- }
- 
-@@ -1355,6 +1356,7 @@ int remap_pfn_range(struct vm_area_struc
- 	pfn -= addr >> PAGE_SHIFT;
- 	pgd = pgd_offset(mm, addr);
- 	flush_cache_range(vma, addr, end);
-+	mmu_notifier(invalidate_range_start, mm, start, end, 0);
- 	do {
- 		next = pgd_addr_end(addr, end);
- 		err = remap_pud_range(mm, pgd, addr, next,
-@@ -1362,7 +1364,7 @@ int remap_pfn_range(struct vm_area_struc
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
--	mmu_notifier(invalidate_range, mm, start, end, 0);
-+	mmu_notifier(invalidate_range_end, mm);
- 	return err;
- }
- EXPORT_SYMBOL(remap_pfn_range);
-@@ -1450,6 +1452,7 @@ int apply_to_page_range(struct mm_struct
- 	int err;
- 
- 	BUG_ON(addr >= end);
-+	mmu_notifier(invalidate_range_start, mm, start, end, 0);
- 	pgd = pgd_offset(mm, addr);
- 	do {
- 		next = pgd_addr_end(addr, end);
-@@ -1457,7 +1460,7 @@ int apply_to_page_range(struct mm_struct
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
--	mmu_notifier(invalidate_range, mm, start, end, 0);
-+	mmu_notifier(invalidate_range_end, mm);
- 	return err;
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
-@@ -1635,6 +1638,8 @@ gotten:
- 		goto oom;
- 	cow_user_page(new_page, old_page, address, vma);
- 
-+	mmu_notifier(invalidate_range_start, mm, address,
-+				address + PAGE_SIZE - 1, 0);
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
-@@ -1673,8 +1678,7 @@ gotten:
- 		page_cache_release(old_page);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
--	mmu_notifier(invalidate_range, mm, address,
--				address + PAGE_SIZE - 1, 0);
-+	mmu_notifier(invalidate_range_end, mm);
- 	if (dirty_page) {
- 		if (vma->vm_file)
- 			file_update_time(vma->vm_file);
+ 	/* jumbo size & rrd retirement timer */
+ 	value = (((u32) hw->rx_jumbo_th & RXQ_JMBOSZ_TH_MASK)
+-- 
+1.5.3.7
 
