@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761690AbYAaD5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbYAaEHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761690AbYAaD5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 22:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYAaD5M
+	id S1760767AbYAaEHN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 23:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYAaEHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 22:57:12 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:58958 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752492AbYAaD5L (ORCPT
+	Wed, 30 Jan 2008 23:07:00 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:22937 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbYAaEG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 22:57:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Nnk/KWAZ9zooCxHB3Ht8NtaGH/qK+IZIPnaeWrYNy3BuuW4FiG/sDneLZm5MuxoCSzghxKufhZlfuhGJHbeEGyPWLvq9U9jYVtnHX1KA9wEsvt0IQBQdD06hcREk4C6q+CZBZbfTV1tVCF/C/TEmF7z6DG+14rgqqiT6E1nxeVA=
-Subject: [PATCH] x86: fix sparse warning in kernel/scx200_32.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 19:57:08 -0800
-Message-Id: <1201751829.23523.5.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 23:06:58 -0500
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Prevent sending UD packets to QP0
+X-Message-Flag: Warning: May contain useful information
+References: <200801241759.09065.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 30 Jan 2008 20:06:53 -0800
+In-Reply-To: <200801241759.09065.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 24 Jan 2008 17:59:08 +0100")
+Message-ID: <adaabmmabaa.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 31 Jan 2008 04:06:54.0063 (UTC) FILETIME=[B6B9DFF0:01C863BE]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/x86/kernel/scx200_32.c:68:72: warning: Using plain integer as NULL pointer
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/scx200_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/scx200_32.c b/arch/x86/kernel/scx200_32.c
-index 87bc159..7e004ac 100644
---- a/arch/x86/kernel/scx200_32.c
-+++ b/arch/x86/kernel/scx200_32.c
-@@ -65,7 +65,7 @@ static int __devinit scx200_probe(struct pci_dev *pdev, const struct pci_device_
- 		base = pci_resource_start(pdev, 0);
- 		printk(KERN_INFO NAME ": GPIO base 0x%x\n", base);
- 
--		if (request_region(base, SCx200_GPIO_SIZE, "NatSemi SCx200 GPIO") == 0) {
-+		if (!request_region(base, SCx200_GPIO_SIZE, "NatSemi SCx200 GPIO")) {
- 			printk(KERN_ERR NAME ": can't allocate I/O for GPIOs\n");
- 			return -EBUSY;
- 		}
--- 
-1.5.4.rc4.1142.gf5a97
-
-
-
+thanks, applied
