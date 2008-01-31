@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765601AbYAaLtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765563AbYAaL5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765601AbYAaLtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 06:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYAaLs6
+	id S1765563AbYAaL5F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 06:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763173AbYAaL4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 06:48:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54245
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751743AbYAaLs5 (ORCPT
+	Thu, 31 Jan 2008 06:56:51 -0500
+Received: from mail.uni-paderborn.de ([131.234.142.9]:5946 "EHLO
+	mail.uni-paderborn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762468AbYAaL4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 06:48:57 -0500
-Date: Thu, 31 Jan 2008 03:49:18 -0800 (PST)
-Message-Id: <20080131.034918.135595049.davem@davemloft.net>
-To: den@sw.ru
-Cc: bunk@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       devel@openvz.org, xemul@openvz.org
-Subject: Re: [PATCH 0/3] [RAW]: proc output cleanups.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47A1B1E4.2010804@sw.ru>
-References: <47A1B1E4.2010804@sw.ru>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 06:56:49 -0500
+X-Greylist: delayed 2869 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 06:56:49 EST
+Message-ID: <47A1ABF8.4050408@upb.de>
+Date: Thu, 31 Jan 2008 12:07:36 +0100
+From: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG?] GDTH driver not working after upgrade to 2.6.24
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>
+In-Reply-To: <47A19E26.30107@panasas.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF2114B8E2DB1F8A50F942FFC"
+X-IMT-Authenticated-Sender: uid=skoehler,ou=People,o=upb,c=de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Denis V. Lunev" <den@sw.ru>
-Date: Thu, 31 Jan 2008 14:32:52 +0300
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF2114B8E2DB1F8A50F942FFC
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-> yesterday Adrian Bunk noticed, that the commit
-> 
-> commit 42a73808ed4f30b739eb52bcbb33a02fe62ceef5
-> Author: Pavel Emelyanov <xemul@openvz.org>
-> Date:   Mon Nov 19 22:38:33 2007 -0800
-> 
-> is somewhat strange. Basically, the commit is obviously wrong as the
-> content of the /proc/net/raw6 is incorrect due to it.
-> 
-> This series of patches fixes original problem and slightly cleanups the
-> code around.
-> 
-> Signed-off-by: Denis V. Lunev <den@openvz.org>
+> Yes the gdth driver passed an open hart surgery in kernel 2.6.24. The b=
+ad thing
+> about it is that all three of the Coders that did that did not have any=
+ HW to work
+> on. One of them is me. We did cry for tester for a long time but no one=
+ came forward.
 
-All applied, thanks a lot!
+All i'd like to ask is WHY!?
+WHY such a big open heart surgery?
+OK, you have your reasons.
+
+> Could you test patches for us? first thing would be to enable debug out=
+put patch below.
+
+The machine is still production. It will be replaced by a 64bit system=20
+with an AACRAID card some time in the future. Then, i could maybe test=20
+patches on the old machine. But unfortunatly, it's not my machine. It's=20
+just administrated by me. And i don't know, what's exactly is the future =
+
+of it.
+
+> If you absolutely need a 2.6.24 kernel, + gdth in a production system y=
+ou could
+> checkout the 2.6.23 driver and compile. The old driver will work the sa=
+me in 2.6.24.
+> It will not however even compile in 2.6.25-rcx.
+
+I see. Thanks for the hint. Would be an alternative. Actually, i don't=20
+need 2.6.24 - but if something security related is fixed, then i'm not=20
+able to move on to 2.6.24. And i'm using Gentoo. There's not really a=20
+kernel maintained by the distribution.
+
+> If any one wants to send me a card that uses the gdth driver, I will be=
+ very happy
+> to debug this card, and return it once I'm done.
+
+I don't think, it's a seperate card, that i could send you. It's some=20
+19" rack server with such a card on-board, i think.
+
+
+So it don't see much opportunity for me to test patched and stuff :-(
+
+
+--------------enigF2114B8E2DB1F8A50F942FFC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHoav47Ww7FjRBE4ARAo4bAJ9m9mKR+Yko3we+KHQdSFWUXAZkbQCfSDpx
++qtpoe7cL2dE+rbbV9akdbI=
+=EkF4
+-----END PGP SIGNATURE-----
+
+--------------enigF2114B8E2DB1F8A50F942FFC--
