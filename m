@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964960AbYAaWPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935145AbYAaWP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964960AbYAaWPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934509AbYAaWKt
+	id S935145AbYAaWP7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933057AbYAaWL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:10:49 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40303 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934364AbYAaWKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:10:38 -0500
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: fix section mismatch warnings when referencing notifiers
-Date: Thu, 31 Jan 2008 23:10:40 +0100
-Message-Id: <1201817440-5081-11-git-send-email-sam@ravnborg.org>
-X-Mailer: git-send-email 1.5.3.5.628.ga1309
-In-Reply-To: <20080131220430.GA4874@uranus.ravnborg.org>
-References: <20080131220430.GA4874@uranus.ravnborg.org>
+	Thu, 31 Jan 2008 17:11:27 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54890 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934748AbYAaWLZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 17:11:25 -0500
+Message-ID: <47A24765.3070300@zytor.com>
+Date: Thu, 31 Jan 2008 14:10:45 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ian Campbell <ijc@hellion.org.uk>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH] x86: add a crc32 checksum to the kernel image.
+References: <1201815920-24669-1-git-send-email-ijc@hellion.org.uk> <1201815920-24669-2-git-send-email-ijc@hellion.org.uk> <1201815920-24669-3-git-send-email-ijc@hellion.org.uk>
+In-Reply-To: <1201815920-24669-3-git-send-email-ijc@hellion.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following warnings:
-WARNING: arch/x86/kernel/built-in.o(.exit.text+0xf8): Section mismatch in reference from the function msr_exit() to the variable .cpuinit.data:msr_class_cpu_notifier
-WARNING: arch/x86/kernel/built-in.o(.exit.text+0x158): Section mismatch in reference from the function cpuid_exit() to the variable .cpuinit.data:cpuid_class_cpu_notifier
-WARNING: arch/x86/kernel/built-in.o(.exit.text+0x171): Section mismatch in reference from the function microcode_exit() to the variable .cpuinit.data:mc_cpu_notifier
+Ian Campbell wrote:
+> Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> ---
+>  Documentation/i386/boot.txt |    5 +++
+>  arch/x86/boot/tools/build.c |   78 +++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 83 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
+> index b5f5ba1..ad201f0 100644
+> --- a/Documentation/i386/boot.txt
+> +++ b/Documentation/i386/boot.txt
+> @@ -531,6 +531,11 @@ Protocol:	2.08+
+>  
+>    The length of the compressed payload.
+>  
+> +**** THE IMAGE CHECKSUM
+> +
+> +The CRC-32 checksum of the entire file is appended to the end of the
+> +file. The CRC of the file including these trailing bytes is therefore 0.
+> +
 
-In all three cases there were a function annotated __exit
-that referenced a variable annotated __cpuinitdata.
+Hm.  I have some minor concerns about this:
 
-The fix was to replace the annotation of the notifier
-with __refdata to tell modpost that the reference to
-a _cpuinit function in the notifier are OK.
-The unregister call that references the notifier
-variable will simple delete the function pointer
-so there is no problem ignoring the reference.
+* The classical length field is only available in multiples of 16 (I 
+realize your patches change that to some degree, but I'd hate to make 
+the guarantee that the image payload is the last thing in the image -- 
+it loses flexibility for the future.)  The end of the image isn't 
+available in all cases, so this would require padding it out to a 
+16-byte boundary before appending the CRC32.  An mmap is guaranteed to 
+be zero-padded out to the next page boundary, so explicitly rounding sz 
+up (instead of when calculating sys_size) should do the job.
 
-Note: This looks like another case where __cpuinit
-has been used as replacement for proper use
-of CONFIG_HOTPLUG_CPU to decide what code are used for
-HOTPLUG_CPU.
+* I believe it is recommended to store the inverse of the crc32, not the 
+crc32 itself - it catches more errors.  This is also the reason to start 
+out with ~0 rather than 0.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
----
- arch/x86/kernel/cpuid.c     |    2 +-
- arch/x86/kernel/microcode.c |    2 +-
- arch/x86/kernel/msr.c       |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+* Please don't use "unsigned long" to represent a 32-bit number.
 
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index dec66e4..a63432d 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -170,7 +170,7 @@ static int __cpuinit cpuid_class_cpu_callback(struct notifier_block *nfb,
- 	return err ? NOTIFY_BAD : NOTIFY_OK;
- }
- 
--static struct notifier_block __cpuinitdata cpuid_class_cpu_notifier =
-+static struct notifier_block __refdata cpuid_class_cpu_notifier =
- {
- 	.notifier_call = cpuid_class_cpu_callback,
- };
-diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
-index 6ff447f..f2702d0 100644
---- a/arch/x86/kernel/microcode.c
-+++ b/arch/x86/kernel/microcode.c
-@@ -797,7 +797,7 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block __cpuinitdata mc_cpu_notifier = {
-+static struct notifier_block __refdata mc_cpu_notifier = {
- 	.notifier_call = mc_cpu_callback,
- };
- 
-diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
-index 21f6e3c..bd82850 100644
---- a/arch/x86/kernel/msr.c
-+++ b/arch/x86/kernel/msr.c
-@@ -168,7 +168,7 @@ static int __cpuinit msr_class_cpu_callback(struct notifier_block *nfb,
- 	return err ? NOTIFY_BAD : NOTIFY_OK;
- }
- 
--static struct notifier_block __cpuinitdata msr_class_cpu_notifier = {
-+static struct notifier_block __refdata msr_class_cpu_notifier = {
- 	.notifier_call = msr_class_cpu_callback,
- };
- 
--- 
-1.5.4.rc3.14.g44397
+	-hpa
 
