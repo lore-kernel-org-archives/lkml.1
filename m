@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbYAaCgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762198AbYAaChh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757089AbYAaCgT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 21:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbYAaCf0
+	id S1762198AbYAaChh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 21:37:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbYAaCh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 21:35:26 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:50087 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754838AbYAaCe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 21:34:59 -0500
-Date: Thu, 31 Jan 2008 04:09:19 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH mm] Remove deprecation of a.out ELF interpreters
-Message-ID: <20080131030919.GA27115@one.firstfloor.org>
-References: <20080130084041.GA8429@basil.nowhere.org> <20080130152915.6e7d5865.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080130152915.6e7d5865.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 Jan 2008 21:37:28 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:51264 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755594AbYAaCh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 21:37:26 -0500
+Date: Wed, 30 Jan 2008 18:37:26 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, daniel.blueman@quadrics.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
+ address ranges
+In-Reply-To: <20080131023401.GY26420@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801301835310.14177@schroedinger.engr.sgi.com>
+References: <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
+ <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
+ <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
+ <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
+ <20080131003434.GE7185@v2.random> <Pine.LNX.4.64.0801301728110.2454@schroedinger.engr.sgi.com>
+ <20080131023401.GY26420@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 03:29:15PM -0800, Andrew Morton wrote:
-> On Wed, 30 Jan 2008 09:40:41 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
+On Wed, 30 Jan 2008, Robin Holt wrote:
+
+> > Well the GRU uses follow_page() instead of get_user_pages. Performance is 
+> > a major issue for the GRU. 
 > 
-> > 
-> > Andrew has already queued the patch to remove the support for a.out
-> > ELF interpreters. So remove the deprecation with it too.
-> > 
-> 
-> I'm trying to find which patch I might have queued which did this and came
-> up blank. 
+> Worse, the GRU takes its TLB faults from within an interrupt so we
+> use follow_page to prevent going to sleep.  That said, I think we
+> could probably use follow_page() with FOLL_GET set to accomplish the
+> requirements of mmu_notifier invalidate_range call.  Doesn't look too
+> promising for hugetlb pages.
 
-Sorry I somehow thought you had it queued.
+There may be no need to with the range_start/end scheme. The driver can 
+have its own lock to make follow page secure. The lock needs to serialize 
+the follow_page handler and the range_start/end calls as well as the 
+invalidate_page callouts. I think that avoids the need for 
+get_user_pages().
 
-My patch makes parts of David's patch obsolete because he makes 
-the code ifdef, but I remove the code completely. David also
-does some other cleanups which still make sense. 
 
-So I think the correct way is to apply my patch first and then David's
-and just ignore all the rejects and refresh.  The result should be correct.
-
-Basically after that only the core dump changes in David's patch should
-be left over.
-
-Can you do that or should I resubmit both patches in a merged form?
-(I can do that too) 
-
--Andi
