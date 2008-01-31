@@ -1,68 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934854AbYAaSk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933848AbYAaSnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934854AbYAaSk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763763AbYAaSkR
+	id S933848AbYAaSnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbYAaSnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:40:17 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38441 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757649AbYAaSkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:40:14 -0500
-Date: Thu, 31 Jan 2008 19:38:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Alessandro Guido <alessandro.guido@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [Patch] mm: fix a section mismatch warning
-Message-ID: <20080131183853.GB2893@uranus.ravnborg.org>
-References: <200801311648.43389.alessandro.guido@gmail.com> <20080131172517.GG2471@hacking>
+	Thu, 31 Jan 2008 13:43:25 -0500
+Received: from mx30.micromemory.com ([67.95.226.74]:1647 "EHLO
+	mail.micromemory.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757021AbYAaSnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 13:43:24 -0500
+X-Greylist: delayed 473 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 13:43:24 EST
+X-Authenticated-Sender: pterry@micromemory.com
+X-Return-Path: pterry@micromemory.com
+X-Envelope-From: pterry@micromemory.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Subject: RE: [PATCH 4/6] Add multi mport support.
+From: Phil Terry <pterry@micromemory.com>
+Reply-To: pterry@vmetro.com
+To: Wei.Zhang@freescale.com
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AEBD0697@zch01exm26.fsl.freescale.net>
+References: <1201689053956-git-send-email-wei.zhang@freescale.com>
+	 <12016890621727-git-send-email-wei.zhang@freescale.com>
+	 <120168907160-git-send-email-wei.zhang@freescale.com>
+	 <12016890773706-git-send-email-wei.zhang@freescale.com>
+	 <AF4B8466-C1CE-4FFB-8341-4BFC1CB76116@kernel.crashing.org>
+	 <ABF87B0B6A38C0458E319AC973ED68AEBD0677@zch01exm26.fsl.freescale.net>
+	 <EC566605-6890-4983-8700-3B15C9EFC1C5@kernel.crashing.org>
+	 <F2D2FCC7-D1ED-4DC6-BE7A-EE2755CCE125@kernel.crashing.org>
+	 <ABF87B0B6A38C0458E319AC973ED68AEBD0697@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 10:35:25 -0800
+Message-Id: <1201804525.14266.45.camel@pterry-fc6.micromemory.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131172517.GG2471@hacking>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi WANG.
-
-On Fri, Feb 01, 2008 at 01:25:17AM +0800, WANG Cong wrote:
-> 
-> This patch fix this mismatch warning from mm:
-> 
-> WARNING: vmlinux.o(.meminit.text+0x37f): Section mismatch in reference from the function free_area_init_core() to the function .init.text:setup_usemap()
-> modpost: Found 1 section mismatch(es).
-> 
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> 
-> ---
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index b2838c2..8a9ae3c 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -3321,7 +3321,7 @@ static inline int pageblock_default_order(unsigned int order)
->   *   - mark all memory queues empty
->   *   - clear the memory bitmaps
->   */
-> -static void __meminit free_area_init_core(struct pglist_data *pgdat,
-> +static void __init free_area_init_core(struct pglist_data *pgdat,
->  		unsigned long *zones_size, unsigned long *zholes_size)
->  {
->  	enum zone_type j;
-> @@ -3445,7 +3445,7 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
->  #endif /* CONFIG_FLAT_NODE_MEM_MAP */
->  }
+On Thu, 2008-01-31 at 14:30 +0800, Zhang Wei wrote:
 >  
-> -void __meminit free_area_init_node(int nid, struct pglist_data *pgdat,
-> +void __init free_area_init_node(int nid, struct pglist_data *pgdat,
-This change make me a bit unnerved. HAve you checked all callers?
-I simple grep shows 46 hits in the tree.
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+> > 
+> > On Jan 31, 2008, at 12:15 AM, Kumar Gala wrote:
+> > 
+> > >
+> > > On Jan 30, 2008, at 11:57 PM, Zhang Wei wrote:
+> > >
+> > >>
+> > >>
+> > >>> -----Original Message-----
+> > >>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> > >>>
+> > >>> On Jan 30, 2008, at 4:30 AM, Zhang Wei wrote:
+> > >>>
+> > >>>> Change lots of static variable to mport private. And add
+> > >>> mport to some
+> > >>>> function declaration.
+> > >>>
+> > >>> Can you explain this patch further.  Its not clear 
+> > exactly from this
+> > >>> commit message why we are doing this.
+> > >>>
+> > >>> - k
+> > >>
+> > >> Sorry about I have a little hurry about it.
+> > >>
+> > >> The original RapidIO driver suppose there is only one mpc85xx RIO
+> > >> controller
+> > >> in system. So, some data structures are defined as mpc85xx_rio  
+> > >> global,
+> > >> such as 'regs_win', 'dbell_ring', 'msg_tx_ring'. Now, I 
+> > changed them
+> > >> to
+> > >> mport's private members. And you can define multi RIO 
+> > OF-nodes in dts
+> > >> file
+> > >> for multi RapidIO controller in one processor, such as PCI/PCI-Ex  
+> > >> host
+> > >> controllers
+> > >> in Freescale's silicon. And the mport operation function 
+> > declaration
+> > >> should be changed
+> > >> to know which RapidIO controller is target.
+> > >
+> > > thanks, this makes a lot of sense and now reviewing the patch will
+> > > make some sense to me :)
+> > 
+> > when we have multiple ports are the device IDs on the ports intended  
+> > to be unique only to a port or unique across all ports?
+> > 
+> I consider each RIO controller will has its own network, the device IDs
+> should be
+> unique only in its port network.
+Hmmm, I see two cases:
 
-It is always good to explain why the change you do is OK,
-for no other reasons than to show you really thought it through.
+1. I have two mport to two controllers each connected to different
+physical fabrics. This system can act as an application bridge between
+the two fabrics.
 
-	Sam
+2. I have two mports to two controllers each connected directly or
+indirectly to the same fabric. I want to use the extra bandwidth and
+load balance and/or have a fall back redundant connection via an
+alternate physical connection to the fabric etc.
+
+What should be the rules for allocating the initial IDs to the two
+mports to allow system wide enumeration to work in both of the above
+cases? 
+
+What do you expect the semantics of higher level addressing to be:
+ a pair <mport,id>, where <x,n> is a different device from <y,n>,
+ a pair <mport,id>, where <x,n> is the same device as <y,n>,or
+ a singleton n, where n is unique and identifies the first routing step
+of which controller, x or y, to use.
+
+I smell a can of worms.... :-)
+
+Cheers
+Phil
+
+> 
+> Cheers!
+> Wei
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+
+
