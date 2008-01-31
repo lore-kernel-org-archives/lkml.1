@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765423AbYAaJrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765127AbYAaJsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765423AbYAaJrH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 04:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYAaJqz
+	id S1765127AbYAaJsM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 04:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYAaJr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 04:46:55 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49038 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbYAaJqx (ORCPT
+	Thu, 31 Jan 2008 04:47:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58108 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752570AbYAaJr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 04:46:53 -0500
-To: akpm@linux-foundation.org
-CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <20080130163927.760e94cc.akpm@linux-foundation.org> (message from
-	Andrew Morton on Wed, 30 Jan 2008 16:39:27 -0800)
-Subject: Re: [patch 6/6] mm: bdi: allow setting a maximum for the bdi dirty
- limit
-References: <20080129154900.145303789@szeredi.hu>
-	<20080129154954.275142755@szeredi.hu> <20080130163927.760e94cc.akpm@linux-foundation.org>
-Message-Id: <E1JKW0Q-000200-An@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 31 Jan 2008 10:46:50 +0100
+	Thu, 31 Jan 2008 04:47:56 -0500
+Date: Thu, 31 Jan 2008 01:47:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: hugh@veritas.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       npiggin@suse.de, riel@redhat.com, mztabzr@0pointer.de, mpm@selenic.com
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+Message-Id: <20080131014702.705f1040.akpm@linux-foundation.org>
+In-Reply-To: <1201772118.28547.254.camel@lappy>
+References: <1201714139.28547.237.camel@lappy>
+	<20080130144049.73596898.akpm@linux-foundation.org>
+	<1201769040.28547.245.camel@lappy>
+	<20080131011227.257b9437.akpm@linux-foundation.org>
+	<1201772118.28547.254.camel@lappy>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 29 Jan 2008 16:49:06 +0100
-> Miklos Szeredi <miklos@szeredi.hu> wrote:
-> 
-> > Add "max_ratio" to /sys/class/bdi.  This indicates the maximum
-> > percentage of the global dirty threshold allocated to this bdi.
-> 
-> Maybe I'm having a stupid day, but I don't understand the semantics of this
-> min and max at all.  I've read the code, and I've read the comments (well,
-> I've hunted for some) and I've read the docs.
-> 
-> I really don't know how anyone could use this in its current state without
-> doing a lot of code-reading and complex experimentation.  All of which
-> would be unneeded if this tunable was properly documented.
-> 
-> So.  Please provide adequate documentation for this tunable.  I'd suggest
-> that it be pitched at the level of a reasonably competent system operator. 
-> It should help them understand why the tunable exists, why they might
-> choose to alter it, and what effects they can expect to see.  Hopefully a
-> reaonably competent kernel developer can then understand it too.
+On Thu, 31 Jan 2008 10:35:18 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-OK.  I think what's missing from some docs, is a high level
-description of the per-bdi throttling algorithm, and how it affects
-writeback.  Because with info, I think the min and max ratios are
-trivially understandable: they just override the result of the
-algorithm, in case it would mean too high or too low threshold.
+> 
+> On Thu, 2008-01-31 at 01:12 -0800, Andrew Morton wrote:
+> 
+> > Implementation-wise: make_pages_present() _can_ be converted to do this. 
+> > But it's a lot of patching, and the result will be a cleaner, faster and
+> > smaller core MM.  Whereas your approach is easy, but adds more code and
+> > leaves the old stuff slow-and-dirty.
+> > 
+> > Guess which approach is preferred? ;)
+> 
+> Ok, I'll look at using make_pages_present().
 
-Peter, could you write something about that?
-
-Thanks,
-Miklos
+Am still curious to know what inspired this change.  What are the use
+cases?  Performance testing results, etc?
