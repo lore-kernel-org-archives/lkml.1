@@ -1,90 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934416AbYAaRGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934022AbYAaRI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934416AbYAaRGt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 12:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbYAaRGh
+	id S934022AbYAaRI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 12:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761430AbYAaRIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 12:06:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40764 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760169AbYAaRGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 12:06:34 -0500
-Date: Thu, 31 Jan 2008 12:04:45 -0500 (EST)
-Message-Id: <20080131.120445.48535245.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: nai.xia@gmail.com, rdreier@cisco.com, bzolnier@gmail.com,
-       bbpetkov@yahoo.de, flo@rfc822.org, linux-kernel@vger.kernel.org,
-       j-nomura@ce.jp.nec.com, linux-ide@vger.kernel.org, mingo@elte.hu,
-       clameter@sgi.com, travis@sgi.com, k-ueda@ct.jp.nec.com
-Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 &&
- -g8561b089
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <20080131130558.GV15220@kernel.dk>
-References: <adamyqmafl3.fsf@cisco.com>
-	<ab418ea90801302349u945788jeed1f42021801dbf@mail.gmail.com>
-	<20080131130558.GV15220@kernel.dk>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+	Thu, 31 Jan 2008 12:08:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57628 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759629AbYAaRIO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 12:08:14 -0500
+Date: Thu, 31 Jan 2008 09:07:49 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, davem@davemloft.net,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] kill hotplug init/exit section annotations
+Message-ID: <20080131090749.72781689@laptopd505.fenrus.org>
+In-Reply-To: <20080131162141.GC19700@cs181133002.pp.htv.fi>
+References: <20080130200336.GN29368@does.not.exist>
+	<1201726817.3292.84.camel@localhost.localdomain>
+	<20080130212011.GA26621@uranus.ravnborg.org>
+	<1201729295.3292.94.camel@localhost.localdomain>
+	<20080130223219.GT29368@does.not.exist>
+	<20080131074436.GA31966@uranus.ravnborg.org>
+	<1201795051.3131.13.camel@localhost.localdomain>
+	<20080131081120.27505dc0@laptopd505.fenrus.org>
+	<20080131162141.GC19700@cs181133002.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Thu, 31 Jan 2008 18:21:42 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-On Thu, 31 Jan 2008 14:05:58 +0100, Jens Axboe wrote:
-> On Thu, Jan 31 2008, Nai Xia wrote:
-> > My dmesg relevant info is quite similar:
+> On Thu, Jan 31, 2008 at 08:11:20AM -0800, Arjan van de Ven wrote:
+> > On Thu, 31 Jan 2008 09:57:31 -0600
+> > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > > 
-> > [    6.875041] Freeing unused kernel memory: 320k freed
-> > [    8.143120] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
-> > [    8.144439]
-> > [    8.144439] sector 10824201199534213, nr/cnr 0/0
-> > [    8.144439] bio cf029280, biotail cf029280, buffer 00000000, data
-> > 00000000, len 158
-> > [    8.144439] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
-> > [    8.144439] backup: data_len=158  bi_size=158
-> > [    8.160756] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
-> > [    8.160756]
-> > [    8.160756] sector 2669858, nr/cnr 0/0
-> > [    8.160756] bio cf029300, biotail cf029300, buffer 00000000, data
-> > 00000000, len 158
-> > [    8.160756] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
-> > [    8.160756] backup: data_len=158  bi_size=158
-> > [   14.851101] eth0: link up
-> > [   27.121883] eth0: no IPv6 routers present
+> > > No-one seems to see much value in these, and they cause about 90%
+> > > of our problems with __init/__exit markers, so simply eliminate
+> > > them. Rather than run over the whole tree removing them, this
+> > > patch #defines them to be nops.
+> > > 
+> > > Signed-off-by: James Bottomley
+> > > <James.Bottomley@HansenPartnership.com>
+> > > 
+> > > ---
+> > > 
+> > > I'll probably be going after __exit after this one, but it makes
+> > > sense to split them up, since the hotplug annotation removal looks
+> > > uncontroversial, whereas __exit and discard section removal might
+> > > produce more robust debate.  I also think doing the hotplug
+> > > removal gives us 90% of the benefits and removes 90% of the
+> > > section mismatch problems.
 > > 
 > > 
-> > And by the way, Kiyoshi,
-> > This can be reproduced in a typical setup vmware workstation 6.02 with
-> > a vritual IDE cdrom,
-> > in case you wanna catch that with your own eyes. :-)
-> > Thanks for your trying hard to correct this annoying bug.
+> > Since hotplug is so fundamental nowadays the value no longer
+> > outweighs the pain/cost to me, so 
 > 
-> The below fix should be enough. It's perfectly legal to have leftover
-> byte counts when the drive signals completion, happens all the time for
-> eg user issued commands where you don't know an exact byte count.
+> Granted for normal hotplug.
 > 
-> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> index 74c6087..bee05a3 100644
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -1722,7 +1722,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
->  	 */
->  	if ((stat & DRQ_STAT) == 0) {
->  		spin_lock_irqsave(&ide_lock, flags);
-> -		if (__blk_end_request(rq, 0, 0))
-> +		if (__blk_end_request(rq, 0, rq->data_len))
->  			BUG();
->  		HWGROUP(drive)->rq = NULL;
->  		spin_unlock_irqrestore(&ide_lock, flags);
+> But my computer has neither CPU hotplug 
 
-OK, I undarstand the leftover is legal.
 
-By the way, is it safe to always return success if there is a leftover?
-I thought we might have to complete the rq with -EIO in such case.
+cpuhotplug is required for suspend/resume.
 
-Thanks,
-Kiyoshi Ueda
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
