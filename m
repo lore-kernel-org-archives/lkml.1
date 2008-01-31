@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765302AbYAaFCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbYAaFDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765302AbYAaFCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 00:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbYAaFCb
+	id S1758161AbYAaFDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 00:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYAaFDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 00:02:31 -0500
-Received: from mga02.intel.com ([134.134.136.20]:6092 "EHLO mga02.intel.com"
+	Thu, 31 Jan 2008 00:03:01 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:4734 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751211AbYAaFC3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 00:02:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,282,1199692800"; 
-   d="scan'208";a="332588424"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751186AbYAaFC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 00:02:59 -0500
+Date: Thu, 31 Jan 2008 06:02:50 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: john stultz <johnstul@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
+In-Reply-To: <1201745776.6195.14.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0801310404480.17507@scrub.home>
+References: <1201142334.6383.40.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0801251349120.17507@scrub.home>  <1201573686.6766.13.camel@localhost>
+  <Pine.LNX.4.64.0801290439480.17507@scrub.home>  <1201659263.6766.40.camel@localhost>
+  <Pine.LNX.4.64.0801310251090.17507@scrub.home> <1201745776.6195.14.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over       to e1000e"
-Date: Wed, 30 Jan 2008 20:59:40 -0800
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F52044F8B6A@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <E1JKOBl-0007ne-EE@faramir.fjphome.nl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over       to e1000e"
-Thread-Index: AchjqL+DlX1CfEDQTlOguN3MO0aH0QAHL7aw
-References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com> <20080130235836.GV29368@does.not.exist> <E1JKOBl-0007ne-EE@faramir.fjphome.nl>
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Frans Pop" <elendil@planet.nl>, "Adrian Bunk" <bunk@kernel.org>
-Cc: <akpm@linux-foundation.org>, "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       <davem@davemloft.net>, <jeff@garzik.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       <randy.dunlap@oracle.com>, <torvalds@linux-foundation.org>
-X-OriginalArrivalTime: 31 Jan 2008 04:59:43.0273 (UTC) FILETIME=[17B8F190:01C863C6]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> There is one thing I don't understand, but that may well be just me...
+Hi,
+
+On Wed, 30 Jan 2008, john stultz wrote:
+
+> My concern is we state the accumulation interval is X ns long. Then
+> current_tick_length() is to return (X + ntp_adjustment), so each
+> accumulation interval we can keep track of the error and adjust our
+> interval length.
 > 
-> From Linus' original patch:
->> +++ b/drivers/net/e1000/e1000_main.c
->> +     INTEL_E1000_ETHERNET_DEVICE(0x108C),
+> So if ntp_update_frequency() sets tick_length_base to be:
 > 
-> So, apparently support for 8086:108c was removed from the e1000
-> driver. 
-
-When it was enabled to be supported by e1000e.
- 
-> From my lspci:
-> $ lspci -nn | grep Ether
-> 01:00.0 Ethernet controller [0200]: Intel Corporation 82573E Gigabit
-> Ethernet Controller (Copper) [8086:108c] (rev 03) 
+> 	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
+> 			<< TICK_LENGTH_SHIFT;
+> 	second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
+> 	second_length += (s64)time_freq
+> 				<< (TICK_LENGTH_SHIFT - SHIFT_NSEC);
 > 
-> But when I look at where that card is sitting:
-> $ readlink pci/devices/0000\:01\:00.0/driver
-> ../../../../bus/pci/drivers/e1000
+> 	tick_length_base = second_length;
+> 	do_div(tick_length_base, NTP_INTERVAL_FREQ);
 > 
-> So, it's on the PCI bus, not on the PCI-Express bus (which I also
-> have, but 
-> which has no devices on it).
+> 
+> The above is basically (X + part of ntp_adjustment)
 
-82573E/L are PCIe devices only, don't let the use of "PCI configuration
-space" confuse you.  All PCIe devices support PCI configuration space.
-This allows systems with PCIe to work right (or mostly right) with all
-the PCI supporting software like Linux.
- 
-> Or does the e1000e driver also support cards on the PCI bus?
+CLOCK_TICK_ADJUST is based on LATCH and HZ, if the update frequency isn't 
+based on HZ, there is no point in using it!
 
-E1000e is targeted at the PCIe devices only.
- 
-> If that's the case then the original changelog entry "Move PCI-Express
-> device IDs over to e1000e" is misleading as it's not only PCI-Express
-> devices...
+Let's look at what actually needs to be done:
 
-Unfortunate bit of confusion over terminology.
- 
-> Hmmm. Or does which driver is loaded decide on which bus the device
-> ends up? 
+1. initializing clock interval:
 
-Hope this helped,
-  Jesse
+	clock_cycle_interval = timer_cycle_interval * clock_frequency / timer_frequency
+
+It's simply about converting timer cycles into clock cycles, so they're 
+about the same time interval.
+We already make it a bit more complicated than necessary as we go via 
+nsec:
+
+	ntp_interval = timer_cycle_interval * 10^9nsec / timer_frequency
+
+and in clocksource_calculate_interval() basically:
+
+	clock_cycle_interval = ntp_interval * clock_frequency / 10^9nsec
+
+Without a fixed timer tick it's actually even easier, then we use the same 
+frequency for clock and timer and the cycle interval is simply:
+
+	clock_cycle_interval = timer_cycle_interval = clock_frequency / NTP_INTERVAL_FREQ
+
+There is no need to use the adjustment here, you'll only cause a mismatch 
+between the clock and timer cycle interval, which had to be corrected by 
+NTP.
+
+2. initializing clock adjustment:
+
+	clock_adjust = timer_cycle_interval * NTP_INTERVAL_FREQ / timer_frequency - 1sec
+
+This adjustment is used make up for the difference that the timer 
+frequency isn't evenly divisible by HZ, so that the clock is advanced by 
+1sec after timer_frequency cycles.
+
+Like above the clock frequency is used for the timer frequency for this 
+calculation for CONFIG_NO_HZ, so it would be incorrect to use 
+CLOCK_TICK_RATE/LATCH/HZ here and since NTP_INTERVAL_FREQ is quite small 
+the resulting adjustment would be rather small, it's easier not to bother 
+in this case.
+
+What you're basically trying is to add an error to the clock 
+initialization, so that we can later compensate for it. The correct 
+solution is really to not add the error in first place, so that there is 
+no need to compensate for it.
+
+bye. Roman
