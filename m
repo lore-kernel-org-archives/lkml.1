@@ -1,141 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbYAaJ4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932878AbYAaJ4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762164AbYAaJ4F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 04:56:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbYAaJzt
+	id S932878AbYAaJ4Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 04:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762624AbYAaJ4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 04:55:49 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47422 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754954AbYAaJzr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 04:55:47 -0500
-Date: Thu, 31 Jan 2008 01:54:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, kay.sievers@vrfy.org,
-       greg@kroah.com, trond.myklebust@fys.uio.no
-Subject: Re: [patch 2/6] mm: bdi: export BDI attributes in sysfs
-Message-Id: <20080131015453.d5c98955.akpm@linux-foundation.org>
-In-Reply-To: <E1JKVss-0001yr-7A@pomaz-ex.szeredi.hu>
-References: <20080129154900.145303789@szeredi.hu>
-	<20080129154948.823761079@szeredi.hu>
-	<20080130162839.977d1e63.akpm@linux-foundation.org>
-	<E1JKVss-0001yr-7A@pomaz-ex.szeredi.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 04:56:06 -0500
+Received: from ns1.suse.de ([195.135.220.2]:46887 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761460AbYAaJ4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 04:56:04 -0500
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Purpose of numa_node?
+From: Andi Kleen <andi@firstfloor.org>
+References: <47A11ACD.1090400@redhat.com>
+	<20080131074045.GA13788@linux-sh.org>
+Date: Thu, 31 Jan 2008 10:56:03 +0100
+In-Reply-To: <20080131074045.GA13788@linux-sh.org> (Paul Mundt's message of "Thu\, 31 Jan 2008 16\:40\:45 +0900")
+Message-ID: <p73zlum48uk.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 10:39:02 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+Paul Mundt <lethal@linux-sh.org> writes:
+>
+> The in-kernel use looks perfectly sane in that regard, though I'm not
+> sure what the point of exporting this as a RO attribute to userspace is.
+> Presumably someone has a tool somewhere that cares about this.
 
-> > On Tue, 29 Jan 2008 16:49:02 +0100
-> > Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > 
-> > > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > 
-> > > Provide a place in sysfs (/sys/class/bdi) for the backing_dev_info
-> > > object.  This allows us to see and set the various BDI specific
-> > > variables.
-> > > 
-> > > In particular this properly exposes the read-ahead window for all
-> > > relevant users and /sys/block/<block>/queue/read_ahead_kb should be
-> > > deprecated.
-> > 
-> > This description is not complete.  It implies that the readahead window is
-> > not "properly" exposed for some "relevant" users.  The reader is left
-> > wondering what on earth this is referring to.  I certainly don't know.
-> > Perhaps when this information is revealed, we can work out what was
-> > wrong with per-queue readahead tuning.
-> 
-> I think Peter meant, that the readahead window was only exposed for
-> block devices, and not things like NFS or FUSE.
+The idea was to allow e.g. NUMA aware irqbalanced that directs the interrupts
+on the same node as the device is connected to. Don't know if it was
+ever actually implemented.
 
-OK.
-
-> 
-> > > +blk-NAME
-> > > +
-> > > +	Block devices, NAME is 'sda', 'loop0', etc...
-> > 
-> > But if I've done `mknod /dev/pizza-party 8 0', I'm looking for
-> > blk-pizza-party, not blk-sda.
-> > 
-> > But I might still have /dev/sda, too.
-> 
-> An alternative would be to uniformly use MAJOR:MINOR in there.  It
-> would work for block devices and anonymous devices (NFS/FUSE) as well.
-> 
-> Would that be any better?
-
-I suppose so.  sysfs likes to use symlinks to point over at related
-things in different directories...
-
-> > 
-> > > +FSTYPE-MAJOR:MINOR
-> > > +
-> > > +	Non-block device backed filesystems which provide their own
-> > > +	BDI, such as NFS and FUSE.  MAJOR:MINOR is the value of st_dev
-> > > +	for files on this filesystem.
-> > > +
-> > > +default
-> > > +
-> > > +	The default backing dev, used for non-block device backed
-> > > +	filesystems which do not provide their own BDI.
-> > > +
-> > > +Files under /sys/class/bdi/<bdi>/
-> > > +---------------------------------
-> > > +
-> > > +read_ahead_kb (read-write)
-> > > +
-> > > +	Size of the read-ahead window in kilobytes
-> > > +
-> > > +reclaimable_kb (read-only)
-> > > +
-> > > +	Reclaimable (dirty or unstable) memory destined for writeback
-> > > +	to this device
-> > > +
-> > > +writeback_kb (read-only)
-> > > +
-> > > +	Memory currently under writeback to this device
-> > > +
-> > > +dirty_kb (read-only)
-> > > +
-> > > +	Global threshold for reclaimable + writeback memory
-> > > +
-> > > +bdi_dirty_kb (read-only)
-> > > +
-> > > +	Current threshold on this BDI for reclaimable + writeback
-> > > +	memory
-> > > +
-> > 
-> > I dunno.  A number of the things which you're exposing are closely tied to
-> > present-day kernel implementation and may be irrelevant or even
-> > unimplementable in a few years' time.
-> 
-> Which ones?
-
-I don't know - I misplaced my copy of linux-2.6.44 :)
-
-The whole concept of a BDI might go away, who knows?  Progress in
-non-volatile semiconductor storage might make the whole
-rotating-platter-with-a-seek-head thing obsolete.
-
-read_ahead_kb is likely to be stable.  writeback_kb is a stable concept
-too, although we might lose the ability to keep track of it some time in
-the future.
-
-Suppose that /dev/sda and /dev/sdb share the same queue - we lose the ability
-to track some of these things?
-
->  They could possibly be moved to debugfs, or something.
-> 
-> I agree, that sysfs should be relatively stable.
-
-This does look more like a debugging feature than a permanently-offered,
-support-it-forever part of the kernel ABI.
-
+-Andi
+ 
