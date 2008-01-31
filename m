@@ -1,152 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932376AbYAaKJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbYAaKJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932376AbYAaKJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbYAaKIs
+	id S1760880AbYAaKJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764442AbYAaKIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:08:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35506 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbYAaKIq (ORCPT
+	Thu, 31 Jan 2008 05:08:55 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:56624 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760762AbYAaKIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:08:46 -0500
-Subject: Re: [patch 2/6] mm: bdi: export BDI attributes in sysfs
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, kay.sievers@vrfy.org,
-       greg@kroah.com, trond.myklebust@fys.uio.no
-In-Reply-To: <20080131015453.d5c98955.akpm@linux-foundation.org>
-References: <20080129154900.145303789@szeredi.hu>
-	 <20080129154948.823761079@szeredi.hu>
-	 <20080130162839.977d1e63.akpm@linux-foundation.org>
-	 <E1JKVss-0001yr-7A@pomaz-ex.szeredi.hu>
-	 <20080131015453.d5c98955.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 11:08:39 +0100
-Message-Id: <1201774119.28547.272.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 05:08:52 -0500
+Message-ID: <47A19E26.30107@panasas.com>
+Date: Thu, 31 Jan 2008 12:08:38 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG?] GDTH driver not working after upgrade to 2.6.24
+References: <fnqka6$l46$1@ger.gmane.org>
+In-Reply-To: <fnqka6$l46$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 30 2008 at 21:47 +0200, Sven Köhler <skoehler@upb.de> wrote:
+> Hi,
+> 
+> so i have upgraded a system to kernel 2.6.24. After that, it failed to 
+> boot with the usual message telling, that the rootfs on device /dev/sda1 
+>   cannot be mounted (a raid1 run by the controller below).
+> 
+> With 2.6.23.12, everything is working fine.
+> 
+> # lspci -v:
+> 
+> 03:01.0 RAID bus controller: Intel Corporation RAID Controller
+>          Subsystem: Intel Corporation Unknown device 01db
+>          Flags: bus master, 66MHz, slow devsel, latency 64, IRQ 17
+>          Memory at ddffc000 (32-bit, prefetchable) [size=16K]
+>          [virtual] Expansion ROM at deef0000 [disabled] [size=32K]
+>          Capabilities: [80] Power Management version 2
+> 
+> # GDT-related dmesg output (2.6.23.12):
+> 
+> GDT-HA: Storage RAID Controller Driver. Version: 3.05
+> ACPI: PCI Interrupt 0000:03:01.0[A] -> GSI 24 (level, low) -> IRQ 17
+> GDT-HA: Found 1 PCI Storage RAID Controllers
+> Configuring GDT-PCI HA at 3/1 IRQ 17
+> GDT-HA 0: Name: SRCU42L
+> scsi0 : SRCU42L
+> scsi 0:0:0:0: Direct-Access     Intel    Host Drive  #00       PQ: 0 ANSI: 2
+> scsi 0:2:6:0: Processor         ESG-SHV  SCA HSBP M29     1.06 PQ: 0 ANSI: 2
+> sd 0:0:0:0: [sda] 143299800 512-byte hardware sectors (73369 MB)
+> sd 0:0:0:0: [sda] Assuming Write Enabled
+> sd 0:0:0:0: [sda] Assuming drive cache: write through
+> sd 0:0:0:0: [sda] 143299800 512-byte hardware sectors (73369 MB)
+> sd 0:0:0:0: [sda] Assuming Write Enabled
+> sd 0:0:0:0: [sda] Assuming drive cache: write through
+>   sda: sda1 sda2 < sda5 >
+> sd 0:0:0:0: [sda] Attached SCSI disk
+> 
+> # cat /boot/config-2.6.24 |grep GDT
+> 
+> CONFIG_SCSI_GDTH=y
+> 
+> 
+> 
+> 
+> Any ideas?
+> 
+> http://www.kernel.org/diff/diffview.cgi?file=%2Fpub%2Flinux%2Fkernel%2Fv2.6%2Fpatch-2.6.24.bz2 
+> show huge drivers/scsi/gdth* related changes.
+> 
+> Can't test at the moment. System went production.
+> 
+> 
+> Regards,
+>    Sven
+> 
 
-On Thu, 2008-01-31 at 01:54 -0800, Andrew Morton wrote:
-> On Thu, 31 Jan 2008 10:39:02 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
-> 
-> > > On Tue, 29 Jan 2008 16:49:02 +0100
-> > > Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > > 
-> > > > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > 
-> > > > Provide a place in sysfs (/sys/class/bdi) for the backing_dev_info
-> > > > object.  This allows us to see and set the various BDI specific
-> > > > variables.
-> > > > 
-> > > > In particular this properly exposes the read-ahead window for all
-> > > > relevant users and /sys/block/<block>/queue/read_ahead_kb should be
-> > > > deprecated.
-> > > 
-> > > This description is not complete.  It implies that the readahead window is
-> > > not "properly" exposed for some "relevant" users.  The reader is left
-> > > wondering what on earth this is referring to.  I certainly don't know.
-> > > Perhaps when this information is revealed, we can work out what was
-> > > wrong with per-queue readahead tuning.
-> > 
-> > I think Peter meant, that the readahead window was only exposed for
-> > block devices, and not things like NFS or FUSE.
-> 
-> OK.
+Hi Sven!
 
-And queue-less block devices like loop-back md/dm and whatnot.
+CCing to the scsi mailing list. 
 
-> > 
-> > > > +blk-NAME
-> > > > +
-> > > > +	Block devices, NAME is 'sda', 'loop0', etc...
-> > > 
-> > > But if I've done `mknod /dev/pizza-party 8 0', I'm looking for
-> > > blk-pizza-party, not blk-sda.
-> > > 
-> > > But I might still have /dev/sda, too.
-> > 
-> > An alternative would be to uniformly use MAJOR:MINOR in there.  It
-> > would work for block devices and anonymous devices (NFS/FUSE) as well.
-> > 
-> > Would that be any better?
-> 
-> I suppose so.  sysfs likes to use symlinks to point over at related
-> things in different directories...
+Yes the gdth driver passed an open hart surgery in kernel 2.6.24. The bad thing
+about it is that all three of the Coders that did that did not have any HW to work
+on. One of them is me. We did cry for tester for a long time but no one came forward.
 
-Yeah, I think that would work best. Its more consistent as well.
+Could you test patches for us? first thing would be to enable debug output patch below.
 
-> > > 
-> > > > +FSTYPE-MAJOR:MINOR
-> > > > +
-> > > > +	Non-block device backed filesystems which provide their own
-> > > > +	BDI, such as NFS and FUSE.  MAJOR:MINOR is the value of st_dev
-> > > > +	for files on this filesystem.
-> > > > +
-> > > > +default
-> > > > +
-> > > > +	The default backing dev, used for non-block device backed
-> > > > +	filesystems which do not provide their own BDI.
-> > > > +
-> > > > +Files under /sys/class/bdi/<bdi>/
-> > > > +---------------------------------
-> > > > +
-> > > > +read_ahead_kb (read-write)
-> > > > +
-> > > > +	Size of the read-ahead window in kilobytes
-> > > > +
-> > > > +reclaimable_kb (read-only)
-> > > > +
-> > > > +	Reclaimable (dirty or unstable) memory destined for writeback
-> > > > +	to this device
-> > > > +
-> > > > +writeback_kb (read-only)
-> > > > +
-> > > > +	Memory currently under writeback to this device
-> > > > +
-> > > > +dirty_kb (read-only)
-> > > > +
-> > > > +	Global threshold for reclaimable + writeback memory
-> > > > +
-> > > > +bdi_dirty_kb (read-only)
-> > > > +
-> > > > +	Current threshold on this BDI for reclaimable + writeback
-> > > > +	memory
-> > > > +
-> > > 
-> > > I dunno.  A number of the things which you're exposing are closely tied to
-> > > present-day kernel implementation and may be irrelevant or even
-> > > unimplementable in a few years' time.
-> > 
-> > Which ones?
-> 
-> I don't know - I misplaced my copy of linux-2.6.44 :)
-> 
-> The whole concept of a BDI might go away, who knows?  Progress in
-> non-volatile semiconductor storage might make the whole
-> rotating-platter-with-a-seek-head thing obsolete.
-> 
-> read_ahead_kb is likely to be stable.  writeback_kb is a stable concept
-> too, although we might lose the ability to keep track of it some time in
-> the future.
-> 
-> Suppose that /dev/sda and /dev/sdb share the same queue - we lose the ability
-> to track some of these things?
-> 
-> >  They could possibly be moved to debugfs, or something.
-> > 
-> > I agree, that sysfs should be relatively stable.
-> 
-> This does look more like a debugging feature than a permanently-offered,
-> support-it-forever part of the kernel ABI.
+If you absolutely need a 2.6.24 kernel, + gdth in a production system you could
+checkout the 2.6.23 driver and compile. The old driver will work the same in 2.6.24.
+It will not however even compile in 2.6.25-rcx.
 
-Agreed, all except the read_ahead tunable are debugish. The min/max
-things are real tunables though. (writing up a little text on the
-why/how of those as we speak - well, write)
+If any one wants to send me a card that uses the gdth driver, I will be very happy
+to debug this card, and return it once I'm done.
+
+Boaz
+
+---
+git-diff --stat -p
+ drivers/scsi/gdth.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index c825239..eca72c4 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -188,6 +188,7 @@ static int __gdth_queuecommand(gdth_ha_str *ha, struct scsi_cmnd *scp,
+ 				struct gdth_cmndinfo *cmndinfo);
+ static void gdth_scsi_done(struct scsi_cmnd *scp);
+ 
++#define DEBUG_GDTH 1
+ #ifdef DEBUG_GDTH
+ static unchar   DebugState = DEBUG_GDTH;
+ 
+
+
+
+
+ 
 
