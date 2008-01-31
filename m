@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYAaDAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764282AbYAaDEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbYAaDAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 22:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbYAaDAX
+	id S1764282AbYAaDEB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 22:04:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764443AbYAaDDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 22:00:23 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:52433 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757032AbYAaDAU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 22:00:20 -0500
-To: akepner@sgi.com
-Cc: Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] IB: introducing MTHCA_MR_DMABARRIER
-X-Message-Flag: Warning: May contain useful information
-References: <20080130055429.GV30022@sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 30 Jan 2008 19:00:11 -0800
-In-Reply-To: <20080130055429.GV30022@sgi.com> (akepner@sgi.com's message of "Tue, 29 Jan 2008 21:54:29 -0800")
-Message-ID: <adair1aaedg.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Wed, 30 Jan 2008 22:03:37 -0500
+Received: from mx2.suse.de ([195.135.220.15]:41611 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764075AbYAaDDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 22:03:35 -0500
+From: Andi Kleen <ak@suse.de>
+To: Yinghai Lu <Yinghai.Lu@sun.com>
+Subject: Re: PATCH] x86_64: make bootmap_start page align v4
+Date: Thu, 31 Jan 2008 04:02:14 +0100
+User-Agent: KMail/1.9.1
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200801291113.35974.yinghai.lu@sun.com> <200801302008.32811.ak@suse.de> <200801301215.51645.yinghai.lu@sun.com>
+In-Reply-To: <200801301215.51645.yinghai.lu@sun.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Jan 2008 03:00:11.0735 (UTC) FILETIME=[65271670:01C863B5]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801310402.14912.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > @@ -72,6 +73,8 @@ static void __ib_umem_release(struct ib_device *dev, struct ib_umem *umem, int d
- >   * @addr: userspace virtual address to start at
- >   * @size: length of region to pin
- >   * @access: IB_ACCESS_xxx flags for memory being pinned
- > + * @dmabarrier: set a "dma barrier" so that in-flight DMA is 
- > + *  flushed when the memory region is written to
- >   */
 
-I see... it seems some of the previous patch snuck in here...
+> I don't think so, that is setup_node_bootmem's problem.
+>
+> it is supposed to round_up instead of just do PAGE_SHIFT...
+>
+> other caller will just use the address instead change it page.
+
+You're right. In this case it really is the best way to round up in the 
+caller. I retract my earlier objection.
+
+That said there is not really any true requirement for the bootmem
+map to be page aligned (AFAIK) so an alternative might be to 
+fix the bootmem interface to not take a PFN. But that would be a 
+much more intrusive patch because you would need to fix 
+other architectures too or add compat wrappers.
+
+-Andi
