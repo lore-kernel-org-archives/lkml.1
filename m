@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764619AbYAaQFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763895AbYAaQKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764619AbYAaQFI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:05:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbYAaQEz
+	id S1763895AbYAaQKY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYAaQKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:04:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35558 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756793AbYAaQEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:04:54 -0500
-Date: Thu, 31 Jan 2008 17:04:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 arch updates for v2.6.25
-Message-ID: <20080131160437.GA12013@elte.hu>
-References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu>
+	Thu, 31 Jan 2008 11:10:10 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:12232 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755959AbYAaQKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:10:08 -0500
+Message-ID: <47A1F2DB.7080600@fr.ibm.com>
+Date: Thu, 31 Jan 2008 17:10:03 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131160033.GA11501@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Kirill Korotaev <dev@sw.ru>
+CC: Pierre Peiffer <pierre.peiffer@bull.net>,
+       containers@lists.linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to change
+ an ID
+References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru>	<47A18E47.5050206@bull.net> <47A19AC2.7040709@sw.ru>	<47A1B78C.7050405@bull.net> <47A1C8FE.9010700@sw.ru>
+In-Reply-To: <47A1C8FE.9010700@sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Kirill !
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Kirill Korotaev wrote:
+> Pierre,
+> 
+> my point is that after you've added interface "set IPCID", you'll need more and more for checkpointing:
+> - "create/setup conntrack" (otherwise connections get dropped),
+> - "set task start time" (needed for Oracle checkpointing BTW),
+> - "set some statistics counters (e.g. networking or taskstats)"
+> - "restore inotify"
+> and so on and so forth.
 
-> Note that all known breakages are fixed in current -git, except for 
-> the s390 problem that Martin/Nick posted the fix.
+right. we know that we will have to handle a lot of these
+and more and we will need an API for it :) so how should we 
+handle it ? 
 
-find below the s390 fix.
+through a dedicated syscall that would be able to checkpoint 
+and/or restart a process, an ipc object, an ipc namespace, a 
+full container ? will it take a fd or a big binary blob ?   
 
-	Ingo
+I personally really liked Pavel idea's of filesystem. but we 
+dropped the thread. 
 
-Index: linux/arch/s390/Kconfig
-===================================================================
---- linux.orig/arch/s390/Kconfig
-+++ linux/arch/s390/Kconfig
-@@ -22,6 +22,9 @@ config RWSEM_GENERIC_SPINLOCK
- config RWSEM_XCHGADD_ALGORITHM
- 	def_bool y
- 
-+config GENERIC_LOCKBREAK
-+	def_bool y
-+
- config ARCH_HAS_ILOG2_U32
- 	bool
- 	default n
+that's for the user API but we will need also kernel services 
+to expose (checkpoint) states and restore them. If it's too
+early to talk about the user API, we could try first to refactor
+the kernel internals to expose correctly what we need.  
+
+That's what Pierre's patchset is trying to do. 
+
+Cheers,
+
+C.
