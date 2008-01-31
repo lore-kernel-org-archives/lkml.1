@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYAaBnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbYAaBqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbYAaBnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 20:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYAaBnO
+	id S1759780AbYAaBqc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 20:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYAaBqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 20:43:14 -0500
-Received: from minbar.dodds.net ([66.93.39.86]:44275 "EHLO minbar.dodds.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbYAaBnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 20:43:13 -0500
-X-Greylist: delayed 535 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 20:43:13 EST
-Date: Wed, 30 Jan 2008 17:34:15 -0800
-From: Steve Langasek <vorlon@debian.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: sfrench@samba.org, samba-technical@lists.samba.org,
-       linux-kernel@vger.kernel.org, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [2.6 patch] remove smbfs
-Message-ID: <20080131013415.GA3768@dario.dodds.net>
-References: <20080128220835.GF8767@does.not.exist> <200801302216.13788.linux@kukkukk.com> <20080130174103.17ff8197@tleilax.poochiereds.net> <20080130225810.GU29368@does.not.exist> <20080130193412.61c6e2e9@tleilax.poochiereds.net> <20080131004717.GX29368@does.not.exist>
+	Wed, 30 Jan 2008 20:46:25 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34066 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752539AbYAaBqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 20:46:24 -0500
+Date: Wed, 30 Jan 2008 17:46:21 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [patch 2/6] mmu_notifier: Callbacks to invalidate
+ address ranges
+In-Reply-To: <20080131003434.GE7185@v2.random>
+Message-ID: <Pine.LNX.4.64.0801301728110.2454@schroedinger.engr.sgi.com>
+References: <20080129220212.GX7233@v2.random>
+ <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com>
+ <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com>
+ <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com>
+ <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
+ <20080130235214.GC7185@v2.random> <Pine.LNX.4.64.0801301555550.1722@schroedinger.engr.sgi.com>
+ <20080131003434.GE7185@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131004717.GX29368@does.not.exist>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 02:47:17AM +0200, Adrian Bunk wrote:
-> > smbfs has the unfortunate quality of momentum. A lot of users aren't
-> > aware of CIFS at all since smbfs basically does what they need it to
-> > do. Some extra warning for those users would be nice.
+On Thu, 31 Jan 2008, Andrea Arcangeli wrote:
 
-> And many users will start whining loudly that the not deprecated driver 
-> (in this case cifs) has this or that bug not before the patch to finally 
-> remove the deprecated feature got applied or at least posted.
+> On Wed, Jan 30, 2008 at 04:01:31PM -0800, Christoph Lameter wrote:
+> > How we offload that? Before the scan of the rmaps we do not have the 
+> > mmstruct. So we'd need another notifier_rmap_callback.
+> 
+> My assumption is that that "int lock" exists just because
+> unmap_mapping_range_vma exists. If I'm right then my suggestion was to
+> move the invalidate_range after dropping the i_mmap_lock and not to
+> invoke it inside zap_page_range.
 
-> And will demand that it therefore does not get removed.
+There is still no pointer to the mm_struct available there because pages 
+of a mapping may belong to multiple processes. So we need to add another 
+rmap method?
 
-We've had about 3 of these in Debian since deciding to cut it from the
-upcoming release.  (The kicker for us was the samba security update that
-wasn't tested with smbfs as a client.)  The key regressions of interest
-relative to smbfs seem to be:
+The same issue is also occurring for unmap_hugepages().
+ 
+> There's no reason why KVM should take any risk of corrupting memory
+> due to a single missing mmu notifier, with not taking the
+> refcount. get_user_pages will take it for us, so we have to pay the
+> atomic-op anyway. It sure worth doing the atomic_dec inside the mmu
+> notifier, and not immediately like this:
 
-- lack of DFS support
-- lack of netbios name resolution for UNC share names
+Well the GRU uses follow_page() instead of get_user_pages. Performance is 
+a major issue for the GRU. 
 
-The former seems to be a kernel issue whose resolution is in progress, and I
-think the latter would have to be addressed in the userspace mount tools?
 
--- 
-Steve Langasek                   Give me a lever long enough and a Free OS
-Debian Developer                   to set it on, and I can move the world.
-Ubuntu Developer                                    http://www.debian.org/
-slangasek@ubuntu.com                                     vorlon@debian.org
+> 	  get_user_pages(pages)
+> 	  __free_page(pages[0])
+> 
+> The idea is that what works for GRU, works for KVM too. So we do a
+> single invalidate_page and clustered invalidate_pages, we add that,
+> and then we make sure all places are covered so GRU will not
+> kernel-crash, and KVM won't risk to run oom or to generate _userland_
+> corruption.
+
+Hmmmm.. Could we go to a scheme where we do not have to increase the page 
+count? Modifications of the page struct require dirtying a cache line and 
+it seems that we do not need an increased page count if we have an
+invalidate_range_start() that clears all the external references 
+and stops the establishment of new ones and invalidate_range_end() that 
+reenables new external references?
+
+Then we do not need the frequent invalidate_page() calls.
+
+The typical case would be anyways that invalidate_all() is called 
+before anything else on exit. Invalidate_all() would remove all pages 
+and disable creation of new references to the memory in the mm_struct.
+
+
+
