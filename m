@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbYAaJfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765963AbYAaJfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761601AbYAaJfU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 04:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYAaJfF
+	id S1765963AbYAaJfz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 04:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbYAaJfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 04:35:05 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:36849 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbYAaJfB (ORCPT
+	Thu, 31 Jan 2008 04:35:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60445 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbYAaJfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 04:35:01 -0500
-Subject: Re: x86 arch updates also broke s390
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Nick Piggin <npiggin@suse.de>, heiko.carstens@de.ibm.com,
-       linux390@de.ibm.com
-In-Reply-To: <20080131003310.GW29368@does.not.exist>
-References: <20080130011550.GA31853@elte.hu>
-	 <20080131003310.GW29368@does.not.exist>
+	Thu, 31 Jan 2008 04:35:32 -0500
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hugh@veritas.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       npiggin@suse.de, riel@redhat.com, mztabzr@0pointer.de, mpm@selenic.com
+In-Reply-To: <20080131011227.257b9437.akpm@linux-foundation.org>
+References: <1201714139.28547.237.camel@lappy>
+	 <20080130144049.73596898.akpm@linux-foundation.org>
+	 <1201769040.28547.245.camel@lappy>
+	 <20080131011227.257b9437.akpm@linux-foundation.org>
 Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 31 Jan 2008 10:34:54 +0100
-Message-Id: <1201772094.18221.32.camel@localhost>
+Date: Thu, 31 Jan 2008 10:35:18 +0100
+Message-Id: <1201772118.28547.254.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 02:33 +0200, Adrian Bunk wrote:
-> <--  snip  -->
+
+On Thu, 2008-01-31 at 01:12 -0800, Andrew Morton wrote:
+
+> Implementation-wise: make_pages_present() _can_ be converted to do this. 
+> But it's a lot of patching, and the result will be a cleaner, faster and
+> smaller core MM.  Whereas your approach is easy, but adds more code and
+> leaves the old stuff slow-and-dirty.
 > 
-> ...
->   CC      arch/s390/kernel/asm-offsets.s
-> In file included from 
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/s390/kernel/asm-offsets.c:7:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h: In
-> function 'spin_needbreak':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h:1931:
-> error: implicit declaration of function '__raw_spin_is_contended'
-> make[2]: *** [arch/s390/kernel/asm-offsets.s] Error 1
-> 
-> <--  snip  -->
+> Guess which approach is preferred? ;)
 
-Defining GENERIC_LOCKBREAK in arch/s390/Kconfig takes care of it. I'll
-cook up a patch and queue it in git390.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Ok, I'll look at using make_pages_present().
 
