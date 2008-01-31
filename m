@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbYAaMvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933118AbYAaMx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbYAaMvU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 07:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763581AbYAaMvL
+	id S933118AbYAaMx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 07:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764205AbYAaMxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 07:51:11 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:42696 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761300AbYAaMvK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 07:51:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jh/eUmQv9t168gZ/siwoqz8AJVODXp9d69+JRI+sa44lQCNZmaiZd+x4589LTO2wwtXaK/9cc+mbFlzr1T7qsrnTS4hP4Avvlta+8LxaHEPbH6hhDp6ZGrPFw1OfnYT0R1k86qn8f59Gg4gbCJ/YI2+vVMh2QFUfe6D86LKkvRY=  ;
-X-YMail-OSG: j6GXlUAVM1mX35gDznDtaOBmpugNlwNIHox3TQ1qKQEWYUbyYxh5PSWmmK.Vi4o2qXqYh2Zr8g--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [RFC v2 2/5] dmaengine: Add slave DMA interface
-Date: Thu, 31 Jan 2008 04:51:03 -0800
+	Thu, 31 Jan 2008 07:53:21 -0500
+Received: from ns.suse.de ([195.135.220.2]:56238 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756429AbYAaMxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 07:53:20 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/5] x86: change_page_attr_clear fix
+Date: Thu, 31 Jan 2008 13:53:16 +0100
 User-Agent: KMail/1.9.6
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       Shannon Nelson <shannon.nelson@intel.com>, kernel@avr32linux.org,
-       Francis Moreau <francis.moro@gmail.com>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       Pierre Ossman <drzeus-list@drzeus.cx>
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com> <200801310027.25516.david-b@pacbell.net> <20080131084433.GA14160@linux-sh.org>
-In-Reply-To: <20080131084433.GA14160@linux-sh.org>
+Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+References: <1201764959.12950.22.camel@caritas-dev.intel.com> <200801310843.46831.ak@suse.de> <alpine.LFD.1.00.0801311333170.9204@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0801311333170.9204@apollo.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801310451.03966.david-b@pacbell.net>
+Message-Id: <200801311353.16633.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 January 2008, Paul Mundt wrote:
-> On Thu, Jan 31, 2008 at 12:27:24AM -0800, David Brownell wrote:
-> > On Wednesday 30 January 2008, Haavard Skinnemoen wrote:
-> > > So basically, you're asking for maximum flexibility with minimum
-> > > overhead.
-> >
-> > That's always a goal, but that's not what I said.  I was pointing out
-> > one scenario I ran into ... where starting with the simple solution
-> > ran into product issues which were unfixable without using some of the
-> > more advanced (and nonportable!!) hardware mechanisms.
-> >
-> >
-> > > I agree that should be the ultimate goal, but wouldn't it 
-> > > be better to start with something more basic?
-> > 
-> > Where you start is often NOT where you end up!  You should make sure
-> > that a wants-to-be-generic slave interface can accomodate a variety of
-> > non-basic mechanisms, without getting bloated.  :)
+On Thursday 31 January 2008 13:38:45 Thomas Gleixner wrote:
+> On Thu, 31 Jan 2008, Andi Kleen wrote:
 > 
-> I agree with Haavard here. The original dmaengine code was sparse at best
-> and for a very specific type of workload, evolving that in to something
-> that can be used by far more people with minimal pain is a good first
-> step. Trying to overengineer it from the beginning to accomodate fringe
-> controllers that already have an established API 
+> > On Thursday 31 January 2008 08:35:59 Huang, Ying wrote:
+> > > This patch replaces __change_page_attr_set_clr() with
+> > > change_page_attr_set_clr() in change_page_attr_clear() to flush the
+> > > TLB/cache properly.
+> > 
+> > Good catch :-) It actually only needs to flush TLBs not caches in this 
+> > case.
+> 
+> That's one of the items on our optimizations todo list already. There
+> are more low hanging fruits, but we need to make sure that the non
+> optimized version is bullet proof first.
 
-Which is not at all what I suggested.  When you want to set up a
-straw man to argue against, please don't involve me!
+I actually ported it already forward from my old patchkit (together
+with some other improvements). Will post later.
 
-First steps are after all followed by second steps, and often
-by third steps.  It's not "overengineering" to recognize when
-those steps necessarily have a direction.
-
-In this case, that direction is "working on more hardware", so
-evaluating the interface proposal against several types of
-hardware is a good way to review it.  The hardware I referenced
-doesn't seem "fringe" to me; it's used on more Linux systems
-and by more users than the Synopsys design.  And I've seen some
-of the same issues on other DMA controllers:  priority, options
-for synchronization (e.g. after DMAREQ is signaled), and more.
-
-In that vein, doesn't SuperH have DMA controllers to fit into this
-proposed interface?  I don't know about such "fringe" hardware
-myself, but it'd be good to know if this proposal is sufficient
-for the needs of drivers there.
-
-- Dave
+-Andi
