@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934437AbYAaRLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbYAaRNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934437AbYAaRLF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 12:11:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934615AbYAaRKo
+	id S933999AbYAaRNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 12:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbYAaRNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 12:10:44 -0500
-Received: from styx.suse.cz ([82.119.242.94]:50205 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934609AbYAaRKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 12:10:41 -0500
-Date: Thu, 31 Jan 2008 18:10:40 +0100
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Al Boldi <a1426z@gawab.com>, Andreas Dilger <adilger@sun.com>,
-       Jan Kara <jack@suse.cz>, Chris Snook <csnook@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-Message-ID: <20080131171040.GL1461@duck.suse.cz>
-References: <200801242336.00340.a1426z@gawab.com> <20080131003231.GK23836@webber.adilger.int> <200801310920.36383.a1426z@gawab.com> <200801311156.01768.chris.mason@oracle.com>
+	Thu, 31 Jan 2008 12:13:22 -0500
+Received: from scalableinformatics.com ([66.93.0.201]:39695 "EHLO
+	mail.scalableinformatics.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752956AbYAaRNV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 12:13:21 -0500
+Message-ID: <47A201A8.4060906@scalableinformatics.com>
+Date: Thu, 31 Jan 2008 12:13:12 -0500
+From: Joe Landman <landman@scalableinformatics.com>
+Reply-To: landman@scalableinformatics.com
+Organization: Scalable Informatics
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801311156.01768.chris.mason@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Bart Van Assche <bart.vanassche@gmail.com>
+CC: Vladislav Bolkhovitin <vst@vlnb.net>,
+       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
+       rdreier@cisco.com, linux-kernel@vger.kernel.org,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       fujita.tomonori@lab.ntt.co.jp, scst-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
+       torvalds@linux-foundation.org
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+References: <adazluoe2t3.fsf@cisco.com>	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>	 <20080130195635T.tomof@acm.org>	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>	 <e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com>	 <47A1EE54.6000005@vlnb.net> <47A1F67C.4020300@scalableinformatics.com> <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com>
+In-Reply-To: <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 31-01-08 11:56:01, Chris Mason wrote:
-> On Thursday 31 January 2008, Al Boldi wrote:
-> > Andreas Dilger wrote:
-> > > On Wednesday 30 January 2008, Al Boldi wrote:
-> > > > And, a quick test of successive 1sec delayed syncs shows no hangs until
-> > > > about 1 minute (~180mb) of db-writeout activity, when the sync abruptly
-> > > > hangs for minutes on end, and io-wait shows almost 100%.
-> > >
-> > > How large is the journal in this filesystem?  You can check via
-> > > "debugfs -R 'stat <8>' /dev/XXX".
-> >
-> > 32mb.
-> >
-> > > Is this affected by increasing
-> > > the journal size?  You can set the journal size via "mke2fs -J size=400"
-> > > at format time, or on an unmounted filesystem by running
-> > > "tune2fs -O ^has_journal /dev/XXX" then "tune2fs -J size=400 /dev/XXX".
-> >
-> > Setting size=400 doesn't help, nor does size=4.
-> >
-> > > I suspect that the stall is caused by the journal filling up, and then
-> > > waiting while the entire journal is checkpointed back to the filesystem
-> > > before the next transaction can start.
-> > >
-> > > It is possible to improve this behaviour in JBD by reducing the amount
-> > > of space that is cleared if the journal becomes "full", and also doing
-> > > journal checkpointing before it becomes full.  While that may reduce
-> > > performance a small amount, it would help avoid such huge latency
-> > > problems. I believe we have such a patch in one of the Lustre branches
-> > > already, and while I'm not sure what kernel it is for the JBD code rarely
-> > > changes much....
-> >
-> > The big difference between ordered and writeback is that once the slowdown
-> > starts, ordered goes into ~100% iowait, whereas writeback continues 100%
-> > user.
-> 
-> Does data=ordered write buffers in the order they were dirtied?  This might 
-> explain the extreme problems in transactional workloads.
-  Well, it does but we submit them to block layer all at once so elevator
-should sort the requests for us...
+Bart Van Assche wrote:
 
-									Honza
+> I have ran some tests with Bonnie++, but found out that on a fast
+> network like IB the filesystem used for the test has a really big
+> impact on the test results.
+
+This is true of the file systems when physically directly connected to 
+the unit as well.  Some file systems are designed with high performance 
+in mind, some are not.
+
+> If anyone has a suggestion for a better test than dd to compare the
+> performance of SCSI storage protocols, please let it know.
+
+Hmmm... if you care about the protocol side, I can't help.  Our users 
+are more concerned with the file system side, so this is where we focus 
+our tuning attention.
+
+> 
+> Bart Van Assche.
+
+Joe
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Joseph Landman, Ph.D
+Founder and CEO
+Scalable Informatics LLC,
+email: landman@scalableinformatics.com
+web  : http://www.scalableinformatics.com
+        http://jackrabbit.scalableinformatics.com
+phone: +1 734 786 8423
+fax  : +1 866 888 3112
+cell : +1 734 612 4615
