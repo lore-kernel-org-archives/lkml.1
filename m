@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934508AbYAaXNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933534AbYAaXQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934508AbYAaXNt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 18:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbYAaXNl
+	id S933534AbYAaXQy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 18:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYAaXQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 18:13:41 -0500
-Received: from wr-out-0506.google.com ([64.233.184.235]:32410 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755133AbYAaXNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 18:13:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=rm4GT1mxDC/bKGZSdIbhowjKghqazqkDVZJkFrsBcSK8Q1XQPH2V7+q/afSKPJid5TmUK2lwgnHVx0EnxWUdHPWywBdwkfWGtNVGgacVESa/Z6KnEeWoipyqw0ncfD1GTpXw1HgKt0GCIH/7dIVvVVP+iGZLFsDBIIYqO1P9Q+Q=
-Message-ID: <ec36785a0801311513g4172b915w7bdb7ca97035efde@mail.gmail.com>
-Date: Thu, 31 Jan 2008 23:13:36 +0000
-From: "Reinaldo Carvalho" <reinaldow@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: missing asm-x86_64 detection
+	Thu, 31 Jan 2008 18:16:46 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:15338 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754345AbYAaXQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 18:16:45 -0500
+Date: Fri, 1 Feb 2008 08:15:54 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject: Always build in kernel/ksysfs.o.
+Message-ID: <20080131231554.GA16399@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <20080131091234.GA14631@linux-sh.org> <20080131170344.GA20966@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080131170344.GA20966@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-:/# uname -a
-Linux devil 2.6.22.16-amd64 #15 SMP Sat Jan 19 13:58:02 BRT 2008
-x86_64 GNU/Linux
-
-:/# cd /usr/src/linux-2.6.22
-:/# patch -p1 -R < ../patch-2.6.22.16
-:/# patch -p1 < ../patch-2.6.23
-:/# patch -p1 < ../patch-2.6.24
-:/# cd /usr/src/ ; mv linux-2.6.22 linux-2.6.24; cd linux-2.6.24
-:/usr/src/linux-2.6.24# make oldconfig
-:/usr/src/linux-2.6.24# make all
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-ERROR: the symlink include/asm points to asm-x86_64 but asm-x86 was expected
-       set ARCH or save .config and run 'make mrproper' to fix it
-make: ** [include/asm] Erro 1
-
-:/usr/src/linux-2.6.24# cp .config ../config-2.6.24
-:/usr/src/linux-2.6.24# make mrproper
-  CLEAN   scripts/basic
-  CLEAN   scripts/genksyms
-  CLEAN   scripts/kconfig
-  CLEAN   scripts/mod
-  CLEAN   scripts
-  CLEAN   include/config
-  CLEAN   .config .config.old include/asm .version
-include/linux/autoconf.h include/linux/version.h
-include/linux/utsrelease.h Module.symvers
-devil:/usr/src/linux-2.6.24# cp ../config-2.6.24 .config
-devil:/usr/src/linux-2.6.24# make oldconfig
-devil:/usr/src/linux-2.6.24# make all
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CC      arch/x86/kernel/asm-offsets.s
-  GEN     include/asm-x86/asm-offsets.h
-...
-
-system is x86_64!
-
-:/# grep model\ name /proc/cpuinfo
-model name      : AMD Turion(tm) 64 X2
-model name      : AMD Turion(tm) 64 X2
-
-:/# uname -a
-Linux devil 2.6.22.16-amd64 #15 SMP Sat Jan 19 13:58:02 BRT 2008
-x86_64 GNU/Linux
-
-
--- 
-Reinaldo Carvalho
+On Thu, Jan 31, 2008 at 09:03:44AM -0800, Greg KH wrote:
+> On Thu, Jan 31, 2008 at 06:12:34PM +0900, Paul Mundt wrote:
+> > kernel/ksysfs.c seems to be a random dumping group for misc globals
+> > that the rest of the tree depend on. This has caused problems with
+> > exports in the past when sysfs is disabled, which can already be
+> > observed in commit-id 51107301b629640f9ab76fe23bf385e187b9ac29.
+> > 
+> > The latest one is the kernel_kobj usage, which presently results in:
+> > 
+> > fs/built-in.o: In function `debugfs_init':
+> > inode.c:(.init.text+0xc34): undefined reference to `kernel_kobj'
+> > make: *** [.tmp_vmlinux1] Error 1
+> > 
+> > kernel/ksysfs.c itself at this point only contains globals and some
+> > basic sysfs initialization, the sysfs initialization code is optimized
+> > out when we build with sysfs disabled. Given that, it's easier to just
+> > build in unconditionally, rather than trying to find some other random
+> > place to dump and initialize the globals.
+> > 
+> > Additionally, the current trend seems to be decoupling of kobjects from
+> > sysfs, in which case it still makes sense to perform the kernel_kobj
+> > initialization that happens here even if sysfs is disabled, as
+> > lib/kobject.o is built-in unconditionally.
+> > 
+> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
+> I'll take this, it looks right, but I don't think it fixes the
+> kernel_kobj problem, that shows up in a number of other places too.  I'm
+> working on fixing that up properly right now, give me a day, I'm doing
+> builds with tons of different kernel options :)
+> 
+Thanks. At least it makes the link error go away, which is the only
+kernel_kobj problem I had. If there's a greater conceptual problem with
+kernel_kobj, that's out of scope for this patch, and I defer to you on
+such matters ;-)
