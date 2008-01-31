@@ -1,82 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763554AbYAaTxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763876AbYAaT6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763554AbYAaTxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 14:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbYAaTxH
+	id S1763876AbYAaT6c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 14:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbYAaT6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 14:53:07 -0500
-Received: from gw.goop.org ([64.81.55.164]:37176 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754585AbYAaTxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 14:53:07 -0500
-Message-ID: <47A2270B.9050207@goop.org>
-Date: Thu, 31 Jan 2008 11:52:43 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 31 Jan 2008 14:58:24 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:14980 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755158AbYAaT6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 14:58:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=HN0ICejLaEn9IvQXomb1/fCSfq8Y1Pib44OmDptXNM44A6z51l8mCafEcEeG47SHlO3GNddYetdl1/WfVFcC/gu36NkqsOKJvg4E1a1EOQ1FHk0AhF82StpYljhrotlptgl+9nR32+RIdu95tV69x4XcITO0KswamF9O46irl3I=
+Date: Thu, 31 Jan 2008 20:57:47 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/10] udf: fix udf_build_ustr
+Message-ID: <20080131195730.GB6222@joi>
+References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-3-git-send-email-marcin.slusarz@gmail.com> <20080131104532.GB1461@duck.suse.cz>
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       H Peter Anvin <hpa@zytor.com>
-Subject: Re: [PATCH 04 of 11] x86: fix early_ioremap pagetable ops
-References: <de52cce203cd6edeed0d.1201296193@localhost> <1201806096.20036.43.camel@cthulhu.hellion.org.uk>
-In-Reply-To: <1201806096.20036.43.camel@cthulhu.hellion.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131104532.GB1461@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
->
-> This seems to have ended up in f6df72e71eba621b2f5c49b3a763116fac748f6e
-> as:
-> +	paravirt_release_pt(__pa(pmd) >> PAGE_SHIFT);
->
-> and the pmd_populate_kernel hunk is missing altogether.
->
-> ---
-> >From bfa2a08064a269dd7906ed5f60e436360e1360e7 Mon Sep 17 00:00:00 2001
-> From: Ian Campbell <ijc@hellion.org.uk>
-> Date: Thu, 31 Jan 2008 18:56:06 +0000
-> Subject: [PATCH] x86: fix early_ioremap pagetable ops for paravirt.
->
-> Some important parts of f6df72e71eba621b2f5c49b3a763116fac748f6e got dropped
-> along the way, reintroduce them.
->   
+On Thu, Jan 31, 2008 at 11:45:32AM +0100, Jan Kara wrote:
+> On Wed 30-01-08 22:03:52, marcin.slusarz@gmail.com wrote:
+> > udf_build_ustr was completely broken when
+> > size >= UDF_NAME_LEN - 1 or size < 2
+> > 
+> > nobody noticed because all callers set size
+> > to acceptable values (constants)
+> > 
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > Cc: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/udf/unicode.c |   12 ++++++------
+> >  1 files changed, 6 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+> > index f969617..f4e54e5 100644
+> > --- a/fs/udf/unicode.c
+> > +++ b/fs/udf/unicode.c
+> > @@ -47,16 +47,16 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
+> >   */
+> >  int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+> >  {
+> > -	int usesize;
+> > +	u8 usesize;
+>   What is the purpose for this? Why not just leave int there? Arithmetics
+> is usually best done in ints if that's possible...
+I made it to stress that length of string fits in one byte.
+(struct ustr->u_len is uint8_t)
 
-Yep.
+> > -	if ((!dest) || (!ptr) || (!size))
+> > +	if (!dest || !ptr || size < 2)
+> >  		return -1;
+> >  
+> > -	memset(dest, 0, sizeof(struct ustr));
+> > -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
+> > +	usesize = min_t(size_t, size - 2, sizeof(dest->u_name));
+> >  	dest->u_cmpID = ptr[0];
+> > -	dest->u_len = ptr[size - 1];
+> > -	memcpy(dest->u_name, ptr + 1, usesize - 1);
+> > +	dest->u_len = usesize;
+> > +	memcpy(dest->u_name, ptr + 1, usesize);
+> > +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
+>   Hmm, after parsing what the standard says (ugh), I don't think the code is
+> wrong (at least I think you made it incorrect). The caller of
+> udf_char_to_ustr() specifies length of the field (not length of the
+> string). Now, in the last character of the field is stored the number of
+> characters in the string and in the first character of the field is stored
+> encoding of the string. So the original code seems correct.
+You are right. I broke length calculation.
 
-Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+But observe that:
+- when size == 1:
+	dest->u_len = ptr[1 - 1], but at ptr[0] there's cmpID,
+	so we create string with wrong length
+- when size > 1 and size < UDF_NAME_LEN:
+	we set u_len correctly, but memcpy copies one needless byte
+- when size == UDF_NAME_LEN - 1:
+	memcpy overwrites u_len - with correct value, but...
+- when size >= UDF_NAME_LEN:
+	we copy UDF_NAME_LEN - 1 bytes, but dest->u_name is array
+	of UDF_NAME_LEN - 2 bytes, so we are overwriting u_len with
+	character from input string
 
-> Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-> ---
->  arch/x86/mm/ioremap.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-> index ed4208e..93d931e 100644
-> --- a/arch/x86/mm/ioremap.c
-> +++ b/arch/x86/mm/ioremap.c
-> @@ -302,7 +302,7 @@ void __init early_ioremap_init(void)
->  
->  	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
->  	memset(bm_pte, 0, sizeof(bm_pte));
-> -	set_pmd(pmd, __pmd(__pa(bm_pte) | _PAGE_TABLE));
-> +	pmd_populate_kernel(&init_mm, pmd, bm_pte);
->  
->  	/*
->  	 * The boot-ioremap range spans multiple pmds, for which
-> @@ -332,7 +332,7 @@ void __init early_ioremap_clear(void)
->  
->  	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
->  	pmd_clear(pmd);
-> -	paravirt_release_pt(__pa(pmd) >> PAGE_SHIFT);
-> +	paravirt_release_pt(__pa(bm_pte) >> PAGE_SHIFT);
->  	__flush_tlb_all();
->  }
->  
->   
+So if I didn't mess up someting, correct change would look like this:
+---
+udf: fix udf_build_ustr
+
+udf_build_ustr was broken when
+size >= UDF_NAME_LEN or size < 2
+
+nobody noticed because all callers set size
+to acceptable values (constants whitin range)
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Jan Kara <jack@suse.cz>
+---
+ fs/udf/unicode.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+index 335fc56..83ae9fc 100644
+--- a/fs/udf/unicode.c
++++ b/fs/udf/unicode.c
+@@ -47,16 +47,17 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
+  */
+ int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+ {
+-	int usesize;
++	u8 usesize;
+ 
+-	if ((!dest) || (!ptr) || (!size))
++	if (!dest || !ptr || size < 2)
+ 		return -1;
+ 
+-	memset(dest, 0, sizeof(struct ustr));
+-	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
++	usesize = min_t(size_t, ptr[size - 1], sizeof(dest->u_name));
++	usesize = min_t(size_t, usesize, size - 2);
+ 	dest->u_cmpID = ptr[0];
+-	dest->u_len = ptr[size - 1];
+-	memcpy(dest->u_name, ptr + 1, usesize - 1);
++	dest->u_len = usesize;
++	memcpy(dest->u_name, ptr + 1, usesize);
++	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
+ 
+ 	return 0;
+ }
+-- 
+1.5.3.7
 
