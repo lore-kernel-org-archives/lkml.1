@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbYAaSyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934274AbYAaSyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933135AbYAaSyY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760183AbYAaSyG
+	id S934274AbYAaSyq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbYAaSyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:54:06 -0500
-Received: from stinky.trash.net ([213.144.137.162]:56444 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759767AbYAaSyD (ORCPT
+	Thu, 31 Jan 2008 13:54:35 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:42796 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759409AbYAaSye (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:54:03 -0500
-Message-ID: <47A21945.2050005@trash.net>
-Date: Thu, 31 Jan 2008 19:53:57 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-CC: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       cups-bugs <cups-bugs@easysw.com>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>
-Subject: Re: cups slow on linux-2.6.24
-References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com>  <Pine.LNX.4.64.0801290855360.19273@blackhole.kfki.hu>  <b6a2187b0801291924k15f883aeg54f704156e4f2e3e@mail.gmail.com>  <47A07FEA.3000702@trash.net>  <b6a2187b0801301823m331957e9n9d9bb9613622c844@mail.gmail.com>  <b6a2187b0801301826l5a50ce84p7d5dce3d0a74b3c0@mail.gmail.com>  <47A13573.7090804@trash.net>  <b6a2187b0801301921s4a7842cg6cfec09a393cd63@mail.gmail.com>  <47A13FBD.8050803@trash.net> <b6a2187b0801302101l46d614c9y53f798a025b57dc3@mail.gmail.com> <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
-In-Reply-To: <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 13:54:34 -0500
+Date: Thu, 31 Jan 2008 11:12:05 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: PATCH] x86_64: fix comments in vmlinux_64.lds
+In-reply-to: <20080131123503.GG12571@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <200801311112.05409.yinghai.lu@sun.com>
+Organization: SUN
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801302348.37990.yinghai.lu@sun.com>
+ <20080131123503.GG12571@elte.hu>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jozsef Kadlecsik wrote:
-> Hi Jeff,
+On Thursday 31 January 2008 04:35:03 am Ingo Molnar wrote:
 > 
-> On Thu, 31 Jan 2008, Jeff Chua wrote:
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
->> On the bad run, I got the following message ...
->>
->> boston kernel: nf_ct_tcp: invalid packed ignored IN= OUT=
->> SRC=127.0.0.1 DST=127.0.0.1 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=8162
->> DF PROTO=TCP SPT=1016 DPT=515 SEQ=3834958843 ACK=0 WINDOW=32792
->> RES=0x00 SYN URGP=0 OPT (0204400C0402080A0000CC190000000001030307)
->> UID=0 GID=65534
+> >  ENTRY(startup_64)
+> >  SECTIONS
+> >  {
+> > -	/* Be careful parts of head_64.S assume startup_64 is at
+> > +	/* Be careful parts of head_64.S assume startup_32 is at
+> >  	 * address 0.
+> >  	 */
+> >  	. = 0;
 > 
-> I can't find this packet in the last lo.bad pcap file. Could you dump the 
-> bad traffic and send it together with the generated log record?
+> but this linker script rule is about startup_64, not about startup_32.
 > 
-> Strange, but there are a lot of incorrect checksum packets. How does it 
-> come on the loopback interface?
+> startup_32 does exist on 64-bit too (and is 32-bit code), but it's 
+> linked to a different address that is not 0:
+> 
+>  ffffffff806c23c0 r startup_32
+> 
+> startup_64 is at offset 0:
+> 
+>  ffffffff80200000 T startup_64
+> 
+> So your patch looks wrong to me.
 
+there are several startup_32 in 64 bit
+1. one is for bzImage, it is arch/x86/boot/compressed/head_64.S, and it said startup_64 will at 0x200. that what i mean
+2. one is vmlinux in linux-2.6/ , it is in arch/x86/kernel/trampoline_64.S  it is for AP trampoline and wake up. that is what you mean
 
-Loopback doesn't perform full checksumming, so thats expected.
-Current kernel versions can tell userspace that its only a
-partial checksum, but I'm not sure whether tcpdump already
-supports this.
+actually there was another one in arch/x86_64/kernel/head_64.S, and it was removed when Eric made linux-2.6/vmlinux to be 64bit elf. 
+
+So that patch is needed.
+
+YH
+
