@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760941AbYAaP0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbYAaPe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760941AbYAaP0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 10:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYAaP02
+	id S1758889AbYAaPe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 10:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbYAaPer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 10:26:28 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37951 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751786AbYAaP02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 10:26:28 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/wXXwltN3wSc2tE6hXNSLzhNR7zKvFFBuLITMjyN
-	mLVFs3MWUxGclU
-Date: Thu, 31 Jan 2008 16:26:39 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
+	Thu, 31 Jan 2008 10:34:47 -0500
+Received: from smtprelay06.ispgateway.de ([80.67.18.44]:34513 "EHLO
+	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755959AbYAaPeq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 10:34:46 -0500
+X-Greylist: delayed 375 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 10:34:46 EST
+Date: Thu, 31 Jan 2008 16:28:23 +0100
+From: Lars Noschinski <lklml@ml.noschinski.de>
 To: linux-kernel@vger.kernel.org
-cc: David Brownell <david-b@pacbell.net>, i2c@lm-sensors.org
-Subject: [PATCH] Define a NO_GPIO macro to compare against and to use as an
- invalid GPIO
-Message-ID: <Pine.LNX.4.64.0801311624370.8478@axis700.grange>
+Subject: How does ext2 implement sparse files?
+Message-ID: <20080131152823.GA29422@lars.home.noschinski.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-Df-Sender: 336680
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As discussed on i2c mailing list with David Brownell, and number
-outside of the 0...MAX_INT range is invalid as a GPIO number.
-Define a macro, similar to NO_IRQ, to be used as a deliberate
-invalid GPIO, rather than defining a is_valid_gpio() macro.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+Hello!
 
----
+For an university project, we had to write a toy filesystem (ext2-like),
+for which I would like to implement sparse file support. For this, I
+digged through the ext2 source code; but I could not find the point,
+where ext2 detects holes.
 
-As gpiolib doesn't seem to have an own mailing list, sending it directly 
-to LKML.
+As far as I can see from fs/buffer.c, an hole is a buffer_head which is
+not mapped, but uptodate. But I cannot find a relevant source line,
+where ext2 makes usage of this information.
 
- include/asm-generic/gpio.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Any hints would be greatly appreciated,
+     Lars.
 
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index f29a502..806b86c 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -16,6 +16,10 @@
- #define ARCH_NR_GPIOS		256
- #endif
- 
-+#ifndef NO_GPIO
-+#define NO_GPIO			((unsigned int)-1)
-+#endif
-+
- struct seq_file;
- 
- /**
--- 
-1.5.3.4
+[Please CC me on answers, I'm not subscribed]
