@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbYAaCQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYAaCXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761637AbYAaCQc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 21:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbYAaCQZ
+	id S1758641AbYAaCXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 21:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYAaCX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 21:16:25 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:51186 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754006AbYAaCQY (ORCPT
+	Wed, 30 Jan 2008 21:23:28 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:30002 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbYAaCX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 21:16:24 -0500
-Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
-From: john stultz <johnstul@us.ibm.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <Pine.LNX.4.64.0801310251090.17507@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0801251349120.17507@scrub.home>
-	 <1201573686.6766.13.camel@localhost>
-	 <Pine.LNX.4.64.0801290439480.17507@scrub.home>
-	 <1201659263.6766.40.camel@localhost>
-	 <Pine.LNX.4.64.0801310251090.17507@scrub.home>
-Content-Type: text/plain
-Date: Wed, 30 Jan 2008 18:16:16 -0800
-Message-Id: <1201745776.6195.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 30 Jan 2008 21:23:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N8lCAUmLRTIcu2cOUusSXT+mvVcMzxJoLCe53SvtD4WN0iezGxTxe/nLhldTd7JBKPGx5a5cVnCeZ09U6R0Ik8g0hFNps8CEWgEAhgSChm6mvafQMrF9cGStTF21/iZGrFOeYmjjlzG6SQI4+q9Ax7TztaJlsSecvDww5ntv8C0=
+Message-ID: <b6a2187b0801301823m331957e9n9d9bb9613622c844@mail.gmail.com>
+Date: Thu, 31 Jan 2008 10:23:26 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Subject: Re: cups slow on linux-2.6.24
+Cc: "Jozsef Kadlecsik" <kadlec@blackhole.kfki.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Krzysztof Piotr Oledzki" <ole@ans.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>,
+       "Netfilter Development Mailinglist" <netfilter-devel@vger.kernel.org>
+In-Reply-To: <47A07FEA.3000702@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com>
+	 <Pine.LNX.4.64.0801290855360.19273@blackhole.kfki.hu>
+	 <b6a2187b0801291924k15f883aeg54f704156e4f2e3e@mail.gmail.com>
+	 <47A07FEA.3000702@trash.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 30, 2008 9:47 PM, Patrick McHardy <kaber@trash.net> wrote:
 
-On Thu, 2008-01-31 at 02:55 +0100, Roman Zippel wrote:
-> Hi,
-> 
-> On Tue, 29 Jan 2008, john stultz wrote:
-> 
-> > +/* Because using NSEC_PER_SEC would be too easy */
-> > +#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC*NSEC_PER_USEC*USER_HZ)+CLOCK_TICK_ADJUST)/NTP_INTERVAL_FREQ)
-> 
-> Why are you using USER_HZ? Did you test this with HZ!=100?
+> A binary dump would be more useful:
+>
+> tcpdump -i lo -w <outfile>
+>
+> and I guess Jozsef also wants "-s 0" so the full packets are included.
 
-I'm using USER_HZ, because ntp_update_frequency() uses USER_HZ.
+Attached. Again, both runs with this command to print ...
 
-And my tests were run at HZ=1000.
+for((i=1; i<1001;i++)); do echo $i | lpr -Plp; done
 
-> Anyway, please don't make more complicated than it already is.
-> What I said previously about the update interval is still valid, so the 
-> correct solution is to use the simpler NTP_INTERVAL_LENGTH calculation 
-> from my last mail and to omit the correction for NO_HZ.
+In the good file (lo.good), look for this timestamp (08:38:11.818587)
+when it paused then continue again at 08:38:22.477261. That's almost
+11 seconds of "sleep" ... (may be a feature of TCP/IP?).
 
-I'm not sure I follow how having two separate and totally different
-definitions of NTP_INTERVAL_LENGTH is less complicated then my last
-patch.
+In the bad file (lo.bad), look for 08:47:55.434722 where it paused,
+and then continue at
+08:48:24.449176. That's 28 seconds of sleep. But, after it continued,
+lpstat shows it's printing a job every 3 seconds. All 100 jobs take
+approx 1400 seconds to complete as compared to under 100 seconds for
+the good run.
 
-Maybe I'm missing something from your suggestion? Or maybe could you
-contribute your suggestion as a patch?
-
-My concern is we state the accumulation interval is X ns long. Then
-current_tick_length() is to return (X + ntp_adjustment), so each
-accumulation interval we can keep track of the error and adjust our
-interval length.
-
-So if ntp_update_frequency() sets tick_length_base to be:
-
-	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
-			<< TICK_LENGTH_SHIFT;
-	second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
-	second_length += (s64)time_freq
-				<< (TICK_LENGTH_SHIFT - SHIFT_NSEC);
-
-	tick_length_base = second_length;
-	do_div(tick_length_base, NTP_INTERVAL_FREQ);
+Again, using latest linux, one with
+17311393f969090ab060540bd9dbe7dc885a76d5 reverted, and the other
+without.
 
 
-The above is basically (X + part of ntp_adjustment)
-
-So I'm trying to calculate the X as: 
-
-#define NTP_INTERVAL_LENGTH ((((s64)TICK_USEC*NSEC_PER_USEC*USER_HZ)+CLOCK_TICK_ADJUST)/NTP_INTERVAL_FREQ)
-
-
-thanks
--john
-
-
+Thanks,
+Jeff.
