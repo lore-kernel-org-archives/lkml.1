@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934615AbYAaWrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934535AbYAaWs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934615AbYAaWrL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 17:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762366AbYAaWq5
+	id S934535AbYAaWs4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 17:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762320AbYAaWst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 17:46:57 -0500
-Received: from yergi.telenet-ops.be ([195.130.132.36]:55057 "EHLO
-	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762112AbYAaWq4 convert rfc822-to-8bit (ORCPT
+	Thu, 31 Jan 2008 17:48:49 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:41425 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761188AbYAaWss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 17:46:56 -0500
-Subject: Re: 2.6.24 regression: pan hanging unkilleable and un-straceable
-From: Frederik Himpe <fhimpe@telenet.be>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <200801281246.24043.nickpiggin@yahoo.com.au>
-References: <1200949086.6648.19.camel@Anastacia>
-	 <200801221625.58615.nickpiggin@yahoo.com.au>
-	 <1201354155.6853.4.camel@Anastacia>
-	 <200801281246.24043.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 31 Jan 2008 23:45:59 +0100
-Message-Id: <1201819559.2965.2.camel@Anastacia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90-1mdv2008.1 
-Content-Transfer-Encoding: 8BIT
+	Thu, 31 Jan 2008 17:48:48 -0500
+Date: Thu, 31 Jan 2008 14:55:47 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: remove unneeded round_up
+In-reply-to: <20080131210553.GA15221@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Message-id: <200801311455.48573.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801291113.35974.yinghai.lu@sun.com>
+ <200801311244.11206.yinghai.lu@sun.com> <20080131210553.GA15221@elte.hu>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH] x86_64: remove unneeded round_up
 
-On ma, 2008-01-28 at 12:46 +1100, Nick Piggin wrote:
-> On Sunday 27 January 2008 00:29, Frederik Himpe wrote:
-> > On di, 2008-01-22 at 16:25 +1100, Nick Piggin wrote:
-> > > > > On Tuesday 22 January 2008 07:58, Frederik Himpe wrote:
-> > > > > > With Linux 2.6.24-rc8 I often have the problem that the pan usenet
-> > > > > > reader starts using 100% of CPU time after some time. When this
-> > > > > > happens, kill -9 does not work, and strace just hangs when trying
-> > > > > > to attach to the process. The same with gdb. ﻿ps shows the process
-> > > > > > as being in the R state.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-> Well after trying a lot of writev combinations, I've reproduced a hang
-> *hangs head*.
-> 
-> Does this help?
-
-Just to confirm: in four days of testing, I haven't seen the problem
-anymore, so it looks like this was indeed the right fix.
-
-Thanks!
-
--- 
-Frederik Himpe <fhimpe@telenet.be>
-
-
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index d585d27..5a02bf4 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -168,10 +168,9 @@ static void * __init early_node_mem(int nodeid, unsigned long start,
+ 	unsigned long mem = find_e820_area(start, end, size, align);
+ 	void *ptr;
+ 
+-	if (mem != -1L) {
+-		mem = round_up(mem, align);
++	if (mem != -1L)
+ 		return __va(mem);
+-	}
++
+ 	ptr = __alloc_bootmem_nopanic(size, align, __pa(MAX_DMA_ADDRESS));
+ 	if (ptr == NULL) {
+ 		printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
