@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933954AbYAaVNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763225AbYAaVSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933954AbYAaVNt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 16:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762264AbYAaVNi
+	id S1763225AbYAaVSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 16:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYAaVSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 16:13:38 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:6773 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbYAaVNh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 16:13:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ZsSCL/sl6GMPSUb4mhnLwz2ycGDgfqXG+Xo3wB3FxJscwYwe5Xs6zchkD+DfA0EpfUisbS8Igcgj/1JxmxuJx5k7Y92eS6u/Gb1Bd+9kK6Q9vL5B6xuD0iDR+myN435Iz55L9xxaottg+w+gOEvCsuG2l+E4QH0imGH63rCXzEk=
-Date: Thu, 31 Jan 2008 16:13:29 -0500
-From: Vivek Goyal <vivek.goyal2008@gmail.com>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       Ingo Molnar <mingo@elte.hu>, menage@google.com,
-       containers@lists.osdl.org, dhaval@linux.vnet.ibm.com,
-       Balbir Singh <balbir@in.ibm.com>, pj@sgi.com
-Subject: Re: [RFC] Default child of a cgroup
-Message-ID: <20080131211328.GA9521@dhcp83-78.boston.redhat.com>
-Reply-To: vivek.goyal2008@gmail.com
-References: <20080131024049.GA9544@linux.vnet.ibm.com>
+	Thu, 31 Jan 2008 16:18:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59502 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752897AbYAaVSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 16:18:38 -0500
+Date: Thu, 31 Jan 2008 22:18:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
+Message-ID: <20080131211817.GA21210@elte.hu>
+References: <20080131201430.GA9375@cs181133002.pp.htv.fi> <20080131130529.b0e17815.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131024049.GA9544@linux.vnet.ibm.com>
+In-Reply-To: <20080131130529.b0e17815.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 08:10:49AM +0530, Srivatsa Vaddagiri wrote:
-> Hi,
-> 	As we were implementing multiple-hierarchy support for CPU
-> controller, we hit some oddities in its implementation, partly related
-> to current cgroups implementation. Peter and I have been debating on the 
-> exact solution and I thought of bringing that discussion to lkml.
-> 
-> Consider the cgroup filesystem structure for managing cpu resource.
-> 
-> 	# mount -t cgroup -ocpu,cpuacct none /cgroup
-> 	# mkdir /cgroup/A
-> 	# mkdir /cgroup/B
-> 	# mkdir /cgroup/A/a1
-> 
-> will result in:
-> 
-> 	/cgroup
-> 	   |------<tasks>
-> 	   |------<cpuacct.usage>
->  	   |------<cpu.shares>
-> 	   |
-> 	   |----[A]
-> 	   |     |----<tasks>
-> 	   |     |----<cpuacct.usage>
-> 	   |     |----<cpu.shares>
-> 	   |     |
-> 	   |     |---[a1]
-> 	   |           |----<tasks>
-> 	   |   	       |----<cpuacct.usage>
-> 	   |           |----<cpu.shares>
-> 	   |           |
-> 	   |
-> 	   |----[B]
-> 	   |     |----<tasks>
-> 	   |     |----<cpuacct.usage>
-> 	   |     |----<cpu.shares>
-> 	   |     
-> 
-> 
-> Here are some questions that arise in this picture:
-> 
-> 1. What is the relationship of the task-group in A/tasks with the
->    task-group in A/a1/tasks? In otherwords do they form siblings
->    of the same parent A?
-> 
 
-Vatsa,
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I don't know much about cgroups but got a query. How do we handle this if we
-just go one level up? How do we define relationship between /cgroup/tasks and
-/cgroup/A/tasks, or /cgroup/tasks and /cgroup/B/tasks?
+> > A commit that does nothing except for adding two unused 
+> > EXPORT_SYMBOL's.
+> > 
+> > Without any rationale why they should be exported.
+> 
+> Don't look at me.  This has been sitting in my tree for nearly two 
+> years as part of the reiser4 patchset.  It may not even be needed any 
+> more.  I guess Ingo went on a fishing expedition and liked the change.
 
-To me lower levels should be handeled in the same way.
+yes, i picked it up from -mm (as can be seen from the SOB line), and i 
+agreed with that change regardless of the reiser4 patchset. (which might 
+never see the light of upstream acceptance)
 
-Thanks
-Vivek
+there's nothing more annoying than incomplete and inconsistent APIs. I'm 
+trying to fix them up everywhere i see, and this is one of those cases. 
+Adrian still has not given any rationale about why he wants to see the 
+export removed.
+
+	Ingo
