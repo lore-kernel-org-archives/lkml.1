@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933052AbYAaLAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932361AbYAaLKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933052AbYAaLAF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 06:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765097AbYAaK7y
+	id S932361AbYAaLKU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 06:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762164AbYAaLKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:59:54 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48382 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbYAaK7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:59:53 -0500
-Date: Thu, 31 Jan 2008 19:59:27 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20080131054819.6be037f8@riellaptop.surriel.com>
-References: <20080131100838.1F3B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080131054819.6be037f8@riellaptop.surriel.com>
-Message-Id: <20080131195820.1F4A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 31 Jan 2008 06:10:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54742 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751743AbYAaLKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 06:10:05 -0500
+Date: Thu, 31 Jan 2008 06:09:40 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, hugh@veritas.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
+       mztabzr@0pointer.de, mpm@selenic.com
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+Message-ID: <20080131060940.37a58559@riellaptop.surriel.com>
+In-Reply-To: <20080131113224.GB31090@one.firstfloor.org>
+References: <20080130144049.73596898.akpm@linux-foundation.org>
+	<1201769040.28547.245.camel@lappy>
+	<20080131011227.257b9437.akpm@linux-foundation.org>
+	<1201772118.28547.254.camel@lappy>
+	<20080131014702.705f1040.akpm@linux-foundation.org>
+	<1201773206.28547.259.camel@lappy>
+	<p73ve5a47yr.fsf@bingen.suse.de>
+	<20080131021949.92715ba4.akpm@linux-foundation.org>
+	<20080131110610.GA31090@one.firstfloor.org>
+	<20080131055209.6adede04@riellaptop.surriel.com>
+	<20080131113224.GB31090@one.firstfloor.org>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I will integrate your fixes with my code when I
-> get back from holidays.  Then things should work :)
+On Thu, 31 Jan 2008 12:32:24 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
+> On Thu, Jan 31, 2008 at 05:52:09AM -0500, Rik van Riel wrote:
+
+> > Don't malloc() and free() hopelessly fragment memory
+> > over time, ensuring that little related data can be
+> > found inside each 1MB chunk if the process is large
+> > enough?  (say, firefox)
 > 
-> Thank you for your analysis of the problem.
+> Even if they do (I don't know if it's true or not) it does not really 
+> matter because on modern hard disks/systems it does not cost less to 
+> transfer 1MB versus 4K. The actual threshold seems to be rising in
+> fact.
 
-Thank you.
-enjoy good vacation :)
+That is definately true.
 
--
-kosaki
+> The only drawback is that the swap might be full sooner, but 
+> I would actually consider this a feature because it would likely
+> end many prolonged oom death dances much sooner.
 
+A second drawback would be that we evict more potentially
+useful data every time we swap in a whole lot of extra
+data around the little bit of data we need.
 
+On the other hand, swapping should be the exception on
+many of today's workloads.
 
+Maybe we can measure how many of the swapped in pages end
+up being used and how many are evicted again without being
+used and automatically change our chunk size based on those
+statistics?
+
+I would expect most desktop systems to end up with large
+chunks, because they rarely swap.
