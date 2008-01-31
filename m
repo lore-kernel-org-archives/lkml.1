@@ -1,78 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbYAaNGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933792AbYAaNHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933562AbYAaNGT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765601AbYAaNGF
+	id S933792AbYAaNHX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 08:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765601AbYAaNHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:06:05 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:3931 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765290AbYAaNGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:06:02 -0500
-Date: Thu, 31 Jan 2008 14:05:58 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nai Xia <nai.xia@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       bzolnier@gmail.com, bbpetkov@yahoo.de, flo@rfc822.org,
-       linux-kernel@vger.kernel.org, j-nomura@ce.jp.nec.com,
-       linux-ide@vger.kernel.org
-Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 && -g8561b089
-Message-ID: <20080131130558.GV15220@kernel.dk>
-References: <20080129.151353.48534987.k-ueda@ct.jp.nec.com> <adar6g0e0g2.fsf@cisco.com> <20080129.182356.70224412.k-ueda@ct.jp.nec.com> <20080130.202659.104027826.k-ueda@ct.jp.nec.com> <adamyqmafl3.fsf@cisco.com> <ab418ea90801302349u945788jeed1f42021801dbf@mail.gmail.com>
+	Thu, 31 Jan 2008 08:07:06 -0500
+Received: from greensrv.RZ.UniBw-Muenchen.de ([137.193.10.35]:38876 "EHLO
+	GreenSrv.rz.unibw-muenchen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765274AbYAaNHE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 08:07:04 -0500
+X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Jan 2008 08:07:03 EST
+X-Remarks: If SPAM is relayed via GreenSrv.rz.unibw-muenchen.de to outside of unibw-muenchen.de, please report it to abuse@unibw-muenchen.de
+Message-ID: <47A1C4B1.8020607@pc0312a.rz.unibw-muenchen.de>
+Date: Thu, 31 Jan 2008 13:53:05 +0100
+From: Claude Frantz <r31dmaeu@pc0312a.rz.unibw-muenchen.de>
+Reply-To: r31dmaeu@pc0312b.rz.unibw-muenchen.de
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ab418ea90801302349u945788jeed1f42021801dbf@mail.gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: OOM-killer invoked but why ?
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31 2008, Nai Xia wrote:
-> My dmesg relevant info is quite similar:
-> 
-> [    6.875041] Freeing unused kernel memory: 320k freed
-> [    8.143120] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
-> [    8.144439]
-> [    8.144439] sector 10824201199534213, nr/cnr 0/0
-> [    8.144439] bio cf029280, biotail cf029280, buffer 00000000, data
-> 00000000, len 158
-> [    8.144439] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
-> [    8.144439] backup: data_len=158  bi_size=158
-> [    8.160756] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
-> [    8.160756]
-> [    8.160756] sector 2669858, nr/cnr 0/0
-> [    8.160756] bio cf029300, biotail cf029300, buffer 00000000, data
-> 00000000, len 158
-> [    8.160756] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
-> [    8.160756] backup: data_len=158  bi_size=158
-> [   14.851101] eth0: link up
-> [   27.121883] eth0: no IPv6 routers present
-> 
-> 
-> And by the way, Kiyoshi,
-> This can be reproduced in a typical setup vmware workstation 6.02 with
-> a vritual IDE cdrom,
-> in case you wanna catch that with your own eyes. :-)
-> Thanks for your trying hard to correct this annoying bug.
+Hello !
 
-The below fix should be enough. It's perfectly legal to have leftover
-byte counts when the drive signals completion, happens all the time for
-eg user issued commands where you don't know an exact byte count.
+I'm faced to a problem where the OOM-killer is invoked but I cannot find
+the reason why. The machine is rather powerfull, the load is very moderate,
+the disk swap space is nearly unused. The only strange observation which
+appears to me is the slow but progressive decreasing of kbbuffers during
+many hours.
 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 74c6087..bee05a3 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1722,7 +1722,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
- 	 */
- 	if ((stat & DRQ_STAT) == 0) {
- 		spin_lock_irqsave(&ide_lock, flags);
--		if (__blk_end_request(rq, 0, 0))
-+		if (__blk_end_request(rq, 0, rq->data_len))
- 			BUG();
- 		HWGROUP(drive)->rq = NULL;
- 		spin_unlock_irqrestore(&ide_lock, flags);
+Can you help me to diagnose the problem and to find a good solution ?
 
--- 
-Jens Axboe
+Thanks a lot !
 
+Claude
+
+
+kernel: 2.6.22.14-72.fc6 (Fedora 6)
+
+"sar -r" output:
+
+12:00:01 AM kbmemfree kbmemused  %memused kbbuffers  kbcached kbswpfree kbswpused  %swpused  kbswpcad
+12:10:01 AM   1739920   1635056     48.45      9368    135620   8192960       148      0.00         0
+12:20:01 AM   1691180   1683796     49.89      8644    162992   8192960       148      0.00         0
+12:30:01 AM   1732076   1642900     48.68      8608    141168   8192960       148      0.00         0
+12:40:01 AM   1766308   1608668     47.66      8128    134744   8192960       148      0.00         0
+12:50:01 AM   1718156   1656820     49.09      6884    134288   8192960       148      0.00         0
+01:00:01 AM   1728448   1646528     48.79      6476    137912   8192960       148      0.00         0
+01:10:01 AM   1707652   1667324     49.40      5792    156572   8192960       148      0.00         0
+01:20:01 AM   1736928   1638048     48.54      6368    138872   8192960       148      0.00         0
+01:30:02 AM   1776288   1598688     47.37      5412    145136   8192960       148      0.00         0
+01:40:01 AM   1780456   1594520     47.25      5464    150536   8192960       148      0.00         0
+01:50:01 AM   1744856   1630120     48.30      4960    154732   8192960       148      0.00         0
+02:00:02 AM   1687012   1687964     50.01      3996    171048   8192960       148      0.00         0
+02:10:01 AM   1696020   1678956     49.75      3916    145424   8192960       148      0.00         0
+02:20:02 AM   1740864   1634112     48.42      4340    142900   8192960       148      0.00         0
+02:30:01 AM   1769460   1605516     47.57      3516    138056   8192960       148      0.00         0
+02:40:02 AM   1764376   1610600     47.72      3184    138844   8192960       148      0.00         0
+02:50:02 AM   1702100   1672876     49.57      3736    157448   8192960       148      0.00         0
+03:00:01 AM   1750396   1624580     48.14      3556    141016   8192960       148      0.00         0
+03:10:02 AM   1744168   1630808     48.32      1900    136612   8192960       148      0.00         0
+03:20:01 AM   1749388   1625588     48.17      1012    136804   8192960       148      0.00         0
+03:30:01 AM   1728028   1646948     48.80      1980    139104   8192960       148      0.00         0
+03:40:01 AM   1718596   1656380     49.08      1136    156932   8192960       148      0.00         0
+03:50:02 AM   1692684   1682292     49.85       768    140808   8192960       148      0.00         0
+~~~~~~ OOM-killer in action. Then reboot.
+07:30:01 AM   2134568   1240408     36.75    233624    506224   8193108         0      0.00         0
+07:40:01 AM   2104412   1270564     37.65    252204    524220   8193108         0      0.00         0
+07:50:01 AM   2049712   1325264     39.27    265368    527096   8193108         0      0.00         0
+08:00:01 AM   1813652   1561324     46.26    281708    527296   8193108         0      0.00         0
+
+The values in /proc/sys/vm :
+
+/proc/sys/vm/overcommit_memory
+0
+/proc/sys/vm/panic_on_oom
+0
+/proc/sys/vm/overcommit_ratio
+50
+/proc/sys/vm/page-cluster
+3
+/proc/sys/vm/dirty_background_ratio
+5
+/proc/sys/vm/dirty_ratio
+10
+/proc/sys/vm/dirty_writeback_centisecs
+499
+/proc/sys/vm/dirty_expire_centisecs
+2999
+/proc/sys/vm/nr_pdflush_threads
+2
+/proc/sys/vm/swappiness
+60
+/proc/sys/vm/nr_hugepages
+0
+/proc/sys/vm/hugetlb_shm_group
+0
+/proc/sys/vm/lowmem_reserve_ratio
+256     32
+/proc/sys/vm/drop_caches
+0
+/proc/sys/vm/min_free_kbytes
+3816
+/proc/sys/vm/percpu_pagelist_fraction
+0
+/proc/sys/vm/max_map_count
+65536
+/proc/sys/vm/laptop_mode
+0
+/proc/sys/vm/block_dump
+0
+/proc/sys/vm/vfs_cache_pressure
+100
+/proc/sys/vm/legacy_va_layout
+0
+/proc/sys/vm/stat_interval
+1
+/proc/sys/vm/vdso_enabled
+1
+
+The syslog extract: 
+
+Jan 28 03:50:24 toaster kernel: ps invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
+Jan 28 03:50:24 toaster kernel:  [<c045cf52>] out_of_memory+0x69/0x1a7
+Jan 28 03:50:24 toaster kernel:  [<c045e3bb>] __alloc_pages+0x216/0x2a0
+Jan 28 03:50:24 toaster kernel:  [<c04a6f1e>] proc_info_read+0x0/0x9d
+Jan 28 03:50:24 toaster kernel:  [<c045e471>] __get_free_pages+0x2c/0x3a
+Jan 28 03:50:24 toaster kernel:  [<c04a6f57>] proc_info_read+0x39/0x9d
+Jan 28 03:50:24 toaster kernel:  [<c04a6f1e>] proc_info_read+0x0/0x9d
+Jan 28 03:50:24 toaster kernel:  [<c0477dda>] vfs_read+0xa6/0x158
+Jan 28 03:50:24 toaster kernel:  [<c0478238>] sys_read+0x41/0x67
+Jan 28 03:50:24 toaster kernel:  [<c0404fa2>] syscall_call+0x7/0xb
+Jan 28 03:50:24 toaster kernel:  =======================
+Jan 28 03:50:24 toaster kernel: Mem-info:
+Jan 28 03:50:24 toaster kernel: DMA per-cpu:
+Jan 28 03:50:35 toaster xinetd[3182]: START: time-dgram pid=0 from=137.193.74.3
+Jan 28 03:50:48 toaster kernel: CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+Jan 28 03:50:48 toaster kernel: CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+Jan 28 03:50:48 toaster kernel: CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+Jan 28 03:50:48 toaster kernel: CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+Jan 28 03:50:48 toaster kernel: Normal per-cpu:
+Jan 28 03:50:48 toaster kernel: CPU    0: Hot: hi:  186, btch:  31 usd:  58   Cold: hi:   62, btch:  15 usd:  60
+Jan 28 03:50:48 toaster kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  34   Cold: hi:   62, btch:  15 usd:  60
+Jan 28 03:50:49 toaster kernel: CPU    2: Hot: hi:  186, btch:  31 usd:  42   Cold: hi:   62, btch:  15 usd:  52
+Jan 28 03:50:49 toaster kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  85   Cold: hi:   62, btch:  15 usd:  51
+Jan 28 03:50:49 toaster kernel: HighMem per-cpu:
+Jan 28 03:50:49 toaster kernel: CPU    0: Hot: hi:  186, btch:  31 usd: 176   Cold: hi:   62, btch:  15 usd:   9
+Jan 28 03:50:49 toaster kernel: CPU    1: Hot: hi:  186, btch:  31 usd:  57   Cold: hi:   62, btch:  15 usd:  14
+Jan 28 03:50:49 toaster kernel: CPU    2: Hot: hi:  186, btch:  31 usd: 143   Cold: hi:   62, btch:  15 usd:  11
+Jan 28 03:50:49 toaster kernel: CPU    3: Hot: hi:  186, btch:  31 usd:  55   Cold: hi:   62, btch:  15 usd:   0
+Jan 28 03:50:49 toaster kernel: Active:186294 inactive:2340 dirty:6 writeback:55 unstable:0
+Jan 28 03:50:49 toaster kernel:  free:431675 slab:177466 mapped:7100 pagetables:1915 bounce:0
+Jan 28 03:50:49 toaster kernel: DMA free:3544kB min:68kB low:84kB high:100kB active:0kB inactive:0kB present:16256kB pages_scanned:0 all_unreclaimable? yes
+Jan 28 03:50:49 toaster kernel: lowmem_reserve[]: 0 873 3285
+Jan 28 03:50:49 toaster kernel: Normal free:3684kB min:3744kB low:4680kB high:5616kB active:212kB inactive:112kB present:894080kB pages_scanned:365 all_unreclaimable? yes
+Jan 28 03:50:49 toaster kernel: lowmem_reserve[]: 0 0 19300
+Jan 28 03:50:49 toaster kernel: HighMem free:1719472kB min:512kB low:3100kB high:5688kB active:744964kB inactive:9248kB present:2470404kB pages_scanned:0 all_unreclaimable? no
+Jan 28 03:50:49 toaster kernel: lowmem_reserve[]: 0 0 0
+Jan 28 03:50:49 toaster kernel: DMA: 3*4kB 4*8kB 3*16kB 0*32kB 0*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3548kB
+Jan 28 03:50:49 toaster kernel: Normal: 30*4kB 29*8kB 8*16kB 1*32kB 3*64kB 5*128kB 0*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 3904kB
+Jan 28 03:50:49 toaster kernel: HighMem: 5991*4kB 8849*8kB 18804*16kB 12622*32kB 7820*64kB 2500*128kB 354*256kB 15*512kB 1*1024kB 0*2048kB 0*4096kB = 1719332kB
+Jan 28 03:50:49 toaster kernel: Swap cache: add 37, delete 37, find 0/0, race 0+0
+Jan 28 03:50:49 toaster kernel: Free swap  = 8192960kB
+Jan 28 03:50:49 toaster kernel: Total swap = 8193108kB
+Jan 28 03:50:49 toaster kernel: Free swap:       8192960kB
+Jan 28 03:50:49 toaster kernel: 851840 pages of RAM
+Jan 28 03:50:49 toaster kernel: 622464 pages of HIGHMEM
+Jan 28 03:50:49 toaster kernel: 8096 reserved pages
+Jan 28 03:50:49 toaster kernel: 638310 pages shared
+Jan 28 03:50:49 toaster kernel: 0 pages swap cached
+Jan 28 03:50:49 toaster kernel: 6 pages dirty
+Jan 28 03:50:49 toaster kernel: 55 pages writeback
+Jan 28 03:50:49 toaster kernel: 7100 pages mapped
+Jan 28 03:50:49 toaster kernel: 177466 pages slab
+Jan 28 03:50:49 toaster kernel: 1915 pages pagetables
+Jan 28 03:50:49 toaster kernel: Out of memory: kill process 10859 (amavisd) score 36218 or a child
+Jan 28 03:50:49 toaster kernel: Killed process 19146 (amavisd)
+
+from "lspci":
+
+SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 08)
