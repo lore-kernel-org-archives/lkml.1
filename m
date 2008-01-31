@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbYAaOlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764422AbYAaOmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbYAaOlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 09:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYAaOlp
+	id S1764422AbYAaOmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 09:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758295AbYAaOlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 09:41:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40565 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754513AbYAaOlp (ORCPT
+	Thu, 31 Jan 2008 09:41:49 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:33288 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757453AbYAaOls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 09:41:45 -0500
-Date: Thu, 31 Jan 2008 06:41:28 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: introduce /dev/mem restrictions with a config
- option
-Message-ID: <20080131064128.58c516da@laptopd505.fenrus.org>
-In-Reply-To: <137932353@web.de>
-References: <137932353@web.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Thu, 31 Jan 2008 09:41:48 -0500
+Message-ID: <47A1DE37.9060202@web.de>
+Date: Thu, 31 Jan 2008 15:41:59 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: george@wildturkeyranch.net
+CC: Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
+       kgdb-bugreport@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Kgdb-bugreport] [PATCH 1/5] KGDB: improve early init
+References: <479FBA3B.5050209@web.de> <47A10355.9090707@web.de> <47A1D9AE.4090206@wildturkeyranch.net>
+In-Reply-To: <47A1D9AE.4090206@wildturkeyranch.net>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7BIT
+X-Provags-ID: V01U2FsdGVkX1/41diZwy99zqVB8bJONV+jPJqSivh3+u1myhFJ
+	NUhhnmSV4kk7tiCBWmQMoCy1oGwMdXVDLFPEasMSe+JkfKFG5i
+	x0CsPSu2s=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 15:04:28 +0100
-devzero@web.de wrote:
-
-> nice !
+George Anzinger wrote:
+> On 01/31/2008 01:36 AM,  Jan Kiszka was caught saying:
+>> Jan Kiszka wrote:
+>>> George Anzinger wrote:
+>>>> On 01/30/2008 04:08 PM,  Jan Kiszka was caught saying:
+>>>>> [Here comes a rebased version against latest x86/mm]
+>>>>>
+>>>>> In case "kgdbwait" is passed as kernel parameter, KGDB tries to set up
+>>>>> and connect to the front-end already during early_param evaluation.
+>>>>> This
+>>>>> fails on x86 as the exception stack is not yet initialized,
+> effectively
+>>>>> delaying kgdbwait until late-init.
+>>>>
+>>>> I wonder how much work it would take to just set up the exception
+>>>> stack and proceed.  After all the kgbdwait is there to help debug
+>>>> very early kernel code...
+>>>
+>>> In principle a valid question, but I'm not the one to answer it. I
+>>> would not feel very well if I had to reorder this critical setup code.
+>>> Look, we would have to move trap_init in start_kernel before
+>>> parse_early_param, and that would affect _every_ arch...
 > 
-> did you think about some boot-time param , e.g. "insecure-devmem" or
-> something like that?
+> I can not speak to other archs, but for x86 I called trap_init from the
+> code that caught the kgdbwait.  At that time (since I retired, I have
+> not looked at the actual kernel code) it could be called again later by
+> the kernel code.  I.e. I did not try to reorder the kernel bring up
+> code, but just added an additional call to trap_init and then only in
+> the case of finding a kgdbwait.
 > 
-> recompiling kernel is time consuming.....
+> As such, this would need to be arch specific...
+> 
+>>>
+>>
+>> BTW, do you know if EXCEPTION_STACK_READY fails for other archs in
+>> parse_early_param as well? It should, because my under standing of
+>> trap_init is that it's the functions to arm things like... exception
+>> handlers? And that raises the question of the deeper purpose of this
+>> check (and the invocation of kgdb_early_init from the argument parsing
+>> function). Sigh, KGDB is still a quite improvable piece of code.
+> 
+> Likely.  Once you get it in the main line kernel, one would hope that
+> other arch code would be forth coming as many more "eyes" will be in play.
 
-given that this has been in fedora/rhel for 5 years with no complaints...
-it's extremely rare, and if you are someone who's going to use it to do some weird
-form of kernel debugging, you already know that way ahead of time, when you
-compile your kernel.
-(Note: I don't know of any tools that do kernel debugging this way. At all)
+Meanwhile I realized that there is early_trap_init - for x86-32 only! I
+assume now we are only lacking the same for x86-64 to get kgdb running
+there already during early_param-parsing.
+
+Jan
