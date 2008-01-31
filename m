@@ -1,137 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765112AbYAaQ2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933476AbYAaQ3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765112AbYAaQ2x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:28:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbYAaQ2p
+	id S933476AbYAaQ3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762701AbYAaQ2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:28:45 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49667 "EHLO smtp5.pp.htv.fi"
+	Thu, 31 Jan 2008 11:28:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:46788 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757041AbYAaQ2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:28:43 -0500
-Date: Thu, 31 Jan 2008 18:29:20 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, wli@holomorphy.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, sparclinux@vger.kernel.org
-Subject: sparc compile error caused by x86 arch updates
-Message-ID: <20080131162920.GE19700@cs181133002.pp.htv.fi>
-References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu> <20080131161235.GB19700@cs181133002.pp.htv.fi> <20080131161523.GA12347@elte.hu>
+	id S1761598AbYAaQ2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:28:47 -0500
+Date: Thu, 31 Jan 2008 17:28:11 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: huang ying <huang.ying.caritas@gmail.com>
+cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: add executable mapping support to ioremap
+In-Reply-To: <851fc09e0801310522s2d690c3ejef661e5ce6847f73@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0801311720280.9204@apollo.tec.linutronix.de>
+References: <1201764967.12950.25.camel@caritas-dev.intel.com>  <alpine.LFD.1.00.0801311324270.9204@apollo.tec.linutronix.de> <851fc09e0801310522s2d690c3ejef661e5ce6847f73@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080131161523.GA12347@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 05:15:23PM +0100, Ingo Molnar wrote:
+On Thu, 31 Jan 2008, huang ying wrote:
+
+> On Jan 31, 2008 9:00 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Thu, 31 Jan 2008, Huang, Ying wrote:
+> >
+> > > This patch makes ioremap() can be used to map pages as executable,
+> > > this is needed by EFI support.
+> >
+> > > +extern void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
+> > > +                            enum ioremap_mode mode,
+> > > +                            enum ioremap_xmode xmode);
+> > > +
+> >
+> > Why do you want to add a new API?
+> >
+> >     addr = ioremap(phys_addr, len);
+> >     set_memory_x(addr);
+> >
+> > should do what you want already. I think Arjan was not very clear in
+> > his reply yesterday.
 > 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Thu, Jan 31, 2008 at 05:00:33PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Adrian Bunk <bunk@kernel.org> wrote:
-> > > 
-> > > > You tested x86 but broke more than half a dozen other archtectures, 
-> > > > with at least 3 different commits breaking other architectures.
-> > > 
-> > > Note that all known breakages are fixed in current -git, except for the 
-> > > s390 problem that Martin/Nick posted the fix.
-> > 
-> > What about the breakages caused by commit 
-> > a5a19c63f4e55e32dc0bc3d936d7f94793d8b380 (this commit broke the 
-> > defconfig compilation on at least avr32, blackfin, sh, sparc and uml)?
-> 
-> the patch below fixes that.
+> In current implementation, change_page_attr() can be used to change
+> identity map only.  At least I can find __pa() are used in
+> change_page_attr_addr() to get physical address. So I think
+> change_page_attr() should be fixed firstly.
 
-The sparc breakage (might not have been reported until now and I 
-bisected it just a few minutes ago) is caused by the following part of 
-commit a5a19c63f4e55e32dc0bc3d936d7f94793d8b380:
+There is nothing to fix. It works on virtual addresses. 
 
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -6,6 +6,7 @@
- #include <linux/mmzone.h>
- #include <linux/list.h>
- #include <linux/sched.h>
-+#include <linux/pagemap.h>
- 
- #include <asm/atomic.h>
- #include <asm/page.h>
+The __pa() in change_page_attr_addr() is only used to check for the
+high alias mapping of the kernel, but the call to change_page_attr
+uses the virtual address.
 
+Thanks,
 
-The compile error with the sparc defconfig is:
-
-<--  snip  -->
-
-...
-  CC      init/main.o
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/highmem.h:24,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:10,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swap.h:9,
-                 from include2/asm/pgtable.h:15,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:39,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/dma-mapping.h:17,
-                 from include2/asm/dma-mapping.h:6,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/dma-mapping.h:52,
-                 from include2/asm/sbus.h:10,
-                 from include2/asm/dma.h:13,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/bootmem.h:8,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:26:
-include2/asm/highmem.h: In function 'kmap':
-include2/asm/highmem.h:60: error: implicit declaration of function 'PageHighMem'
-include2/asm/highmem.h:61: error: implicit declaration of function 'page_address'
-include2/asm/highmem.h:61: warning: return makes pointer from integer without a cast
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swap.h:9,
-                 from include2/asm/pgtable.h:15,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:39,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/dma-mapping.h:17,
-                 from include2/asm/dma-mapping.h:6,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/dma-mapping.h:52,
-                 from include2/asm/sbus.h:10,
-                 from include2/asm/dma.h:13,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/bootmem.h:8,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:26:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h: In function 'lock_page':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:169: error: implicit declaration of function 'TestSetPageLocked'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h: In function 'wait_on_page_locked':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:199: error: implicit declaration of function 'PageLocked'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:200: error: 'PG_locked' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:200: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:200: error: for each function it appears in.)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h: In function 'wait_on_page_writeback':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:208: error: implicit declaration of function 'PageWriteback'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pagemap.h:209: error: 'PG_writeback' undeclared (first use in this function)
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/dma-mapping.h:17,
-                 from include2/asm/dma-mapping.h:6,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/dma-mapping.h:52,
-                 from include2/asm/sbus.h:10,
-                 from include2/asm/dma.h:13,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/bootmem.h:8,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:26:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h: At top level:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:556: error: conflicting types for 'page_address'
-include2/asm/highmem.h:61: error: previous implicit declaration of 'page_address' was here
-make[2]: *** [init/main.o] Error 1
-make[1]: *** [init] Error 2
-make: *** [sub-make] Error 2
-
-<--  snip  -->
-
-
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+     tglx
