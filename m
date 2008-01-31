@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764602AbYAaK45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933180AbYAaK6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764602AbYAaK45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:56:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764758AbYAaK4s
+	id S933180AbYAaK6R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765573AbYAaK6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:56:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52270 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761757AbYAaK4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:56:48 -0500
-Date: Thu, 31 Jan 2008 11:56:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix sparse warnings in intel_cacheinfo.c
-Message-ID: <20080131105634.GE27157@elte.hu>
-References: <1201775890.23523.25.camel@brick>
-MIME-Version: 1.0
+	Thu, 31 Jan 2008 05:58:01 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:40999 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764758AbYAaK6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:58:00 -0500
+Date: Thu, 31 Jan 2008 12:32:24 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, hugh@veritas.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, npiggin@suse.de,
+       mztabzr@0pointer.de, mpm@selenic.com
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+Message-ID: <20080131113224.GB31090@one.firstfloor.org>
+References: <20080130144049.73596898.akpm@linux-foundation.org> <1201769040.28547.245.camel@lappy> <20080131011227.257b9437.akpm@linux-foundation.org> <1201772118.28547.254.camel@lappy> <20080131014702.705f1040.akpm@linux-foundation.org> <1201773206.28547.259.camel@lappy> <p73ve5a47yr.fsf@bingen.suse.de> <20080131021949.92715ba4.akpm@linux-foundation.org> <20080131110610.GA31090@one.firstfloor.org> <20080131055209.6adede04@riellaptop.surriel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1201775890.23523.25.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080131055209.6adede04@riellaptop.surriel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 31, 2008 at 05:52:09AM -0500, Rik van Riel wrote:
+> On Thu, 31 Jan 2008 12:06:10 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > Yeah, the 2.5 switch to physical scanning killed us there.
+> > > 
+> > > I still don't know why my
+> > > allocate-swapspace-according-to-virtual-address change didn't
+> > > help.  Much.  Marcelo played with that a bit too.
+> > 
+> > I've been thinking about just always doing swap on > page clusters. 
+> > Any reason swapping couldn't be done on e.g. 1MB chunks? 
+> 
+> Don't malloc() and free() hopelessly fragment memory
+> over time, ensuring that little related data can be
+> found inside each 1MB chunk if the process is large
+> enough?  (say, firefox)
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+Even if they do (I don't know if it's true or not) it does not really 
+matter because on modern hard disks/systems it does not cost less to 
+transfer 1MB versus 4K. The actual threshold seems to be rising in fact.
 
-> arch/x86/kernel/cpu/intel_cacheinfo.c:355:7: warning: symbol 'i' shadows an earlier one
-> arch/x86/kernel/cpu/intel_cacheinfo.c:296:39: originally declared here
-> arch/x86/kernel/cpu/intel_cacheinfo.c:367:18: warning: incorrect type in argument 2 (different signedness)
+The only drawback is that the swap might be full sooner, but 
+I would actually consider this a feature because it would likely
+end many prolonged oom death dances much sooner.
 
-thanks, applied.
-
-	Ingo
+-Andi 
