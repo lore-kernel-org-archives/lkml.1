@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932327AbYAaKCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765803AbYAaKGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932327AbYAaKCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYAaKCW
+	id S1765803AbYAaKGS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYAaKGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:02:22 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:14635 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753239AbYAaKCV (ORCPT
+	Thu, 31 Jan 2008 05:06:07 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43658 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752570AbYAaKGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:02:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GsbcX/DcbgPhrN4wSh6kNoWdEzSLw3vzPr1Ef71+ctSO9mNZnc2jGHnlJCmcEJT9zRDtExYpe72LRORyqJNcXNz82i8CdFb39lzNgzsaXyOLlvuE711mby52TdRfmwy44Dzq+b8TdXvaYIS/X1hBn/EKP4ae1s3cPZ9nyu/axeE=
-Subject: Re: about relocs.c on x86
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080131095223.GA11867@elte.hu>
-References: <86802c440801310007oe8693c7q177d41a87c27ca7@mail.gmail.com>
-	 <20080131095223.GA11867@elte.hu>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 02:02:20 -0800
-Message-Id: <1201773740.23523.17.camel@brick>
+	Thu, 31 Jan 2008 05:06:03 -0500
+Date: Thu, 31 Jan 2008 02:05:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: hugh@veritas.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       npiggin@suse.de, riel@redhat.com, mztabzr@0pointer.de, mpm@selenic.com
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+Message-Id: <20080131020516.be42c495.akpm@linux-foundation.org>
+In-Reply-To: <1201773206.28547.259.camel@lappy>
+References: <1201714139.28547.237.camel@lappy>
+	<20080130144049.73596898.akpm@linux-foundation.org>
+	<1201769040.28547.245.camel@lappy>
+	<20080131011227.257b9437.akpm@linux-foundation.org>
+	<1201772118.28547.254.camel@lappy>
+	<20080131014702.705f1040.akpm@linux-foundation.org>
+	<1201773206.28547.259.camel@lappy>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 10:52 +0100, Ingo Molnar wrote:
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+On Thu, 31 Jan 2008 10:53:26 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
 > 
-> > why not rename relocs.c to relocs_32.c?
+> On Thu, 2008-01-31 at 01:47 -0800, Andrew Morton wrote:
+> > On Thu, 31 Jan 2008 10:35:18 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > > 
-> > it is only used for 32 bit, even it is host app.
+> > > 
+> > > On Thu, 2008-01-31 at 01:12 -0800, Andrew Morton wrote:
+> > > 
+> > > > Implementation-wise: make_pages_present() _can_ be converted to do this. 
+> > > > But it's a lot of patching, and the result will be a cleaner, faster and
+> > > > smaller core MM.  Whereas your approach is easy, but adds more code and
+> > > > leaves the old stuff slow-and-dirty.
+> > > > 
+> > > > Guess which approach is preferred? ;)
+> > > 
+> > > Ok, I'll look at using make_pages_present().
+> > 
+> > Am still curious to know what inspired this change.  What are the use
+> > cases?  Performance testing results, etc?
 > 
-> during the big first phase of unification we generally kept file names 
-> untouched if they were only present in one of the previous 
-> architectures. I.e. pure 32-bit and pure 64-bit files were not renamed 
-> to _32/_64.
+> Ah, that is Lennarts Pulse Audio thing, he has samples in memory which
+> might not have been used for a while, and he wants to be able to
+> pre-fetch those when he suspects they might need to be played. So that
+> once the audio thread comes along and stuffs them down /dev/dsp its all
+> nice in memory.
 > 
-> Now that we've got lots of unified 32/64-bit files it might make sense 
-> to rename the 'standalone' ones into _32/_64 if they share the same 
-> directory with 32/64-bit source files - to reduce the confusion. And 
-> given that for example arch/x86/boot/compressed/misc.c is unified while 
-> arch/x86/boot/compressed/relocs.c is 32-bit only, i'd agree with your 
-> observation. Feel free to send a rename patch for such cases.
+> Since its all soft real-time at best he feels its better to do a best
+> effort at not hitting swap than it is to strain the system with mlock
+> usage.
 
-I'd argue that eliminating the _32/_64 suffixes through unification and
-not adding any more would be better.  Renaming at this point seems like
-the wrong side of the cost/benefit line.  When the makefiles finally get
-unified, that would be a natural list of what is 32 bit-only and what
-is 64 bit-only, and additional suffixes wouldn't add much to that.
-
-Just another voice,
-
-Harvey
-
+hrm.  Does he know about pthread_create()?
