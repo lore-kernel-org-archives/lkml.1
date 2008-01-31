@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbYAaJxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbYAaJz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932273AbYAaJxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 04:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYAaJxo
+	id S932509AbYAaJz3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 04:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYAaJzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 04:53:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53446 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754682AbYAaJxn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 04:53:43 -0500
-Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hugh@veritas.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       npiggin@suse.de, riel@redhat.com, mztabzr@0pointer.de, mpm@selenic.com
-In-Reply-To: <20080131014702.705f1040.akpm@linux-foundation.org>
-References: <1201714139.28547.237.camel@lappy>
-	 <20080130144049.73596898.akpm@linux-foundation.org>
-	 <1201769040.28547.245.camel@lappy>
-	 <20080131011227.257b9437.akpm@linux-foundation.org>
-	 <1201772118.28547.254.camel@lappy>
-	 <20080131014702.705f1040.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 10:53:26 +0100
-Message-Id: <1201773206.28547.259.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Thu, 31 Jan 2008 04:55:20 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:46371 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754682AbYAaJzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 04:55:19 -0500
+Message-ID: <47A19AC2.7040709@sw.ru>
+Date: Thu, 31 Jan 2008 12:54:10 +0300
+From: Kirill Korotaev <dev@sw.ru>
+Organization: SWsoft
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to change
+ an ID
+References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru> <47A18E47.5050206@bull.net>
+In-Reply-To: <47A18E47.5050206@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Why user space can need this API? for checkpointing only?
+Then I would not consider it for inclusion until it is clear how to implement checkpointing.
 
-On Thu, 2008-01-31 at 01:47 -0800, Andrew Morton wrote:
-> On Thu, 31 Jan 2008 10:35:18 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+As for me personally - I'm against exporting such APIs, since they are not needed in real-life user space applications and maintaining it forever for compatibility doesn't worth it.
+Also such APIs allow creation of non-GPL checkpointing in user-space, which can be of concern as well.
+
+Kirill
+
+
+Pierre Peiffer wrote:
+> Hi again,
 > 
-> > 
-> > On Thu, 2008-01-31 at 01:12 -0800, Andrew Morton wrote:
-> > 
-> > > Implementation-wise: make_pages_present() _can_ be converted to do this. 
-> > > But it's a lot of patching, and the result will be a cleaner, faster and
-> > > smaller core MM.  Whereas your approach is easy, but adds more code and
-> > > leaves the old stuff slow-and-dirty.
-> > > 
-> > > Guess which approach is preferred? ;)
-> > 
-> > Ok, I'll look at using make_pages_present().
+> 	Thinking more about this, I think I must clarify why I choose this way.
+> In fact, the idea of these patches is to provide the missing user APIs (or
+> extend the existing ones) that allow to set or update _all_ properties of all
+> IPCs, as needed in the case of the checkpoint/restart of an application (the
+> current user API does not allow to specify an ID for a created IPC, for
+> example). And this, without changing the existing API of course.
 > 
-> Am still curious to know what inspired this change.  What are the use
-> cases?  Performance testing results, etc?
-
-Ah, that is Lennarts Pulse Audio thing, he has samples in memory which
-might not have been used for a while, and he wants to be able to
-pre-fetch those when he suspects they might need to be played. So that
-once the audio thread comes along and stuffs them down /dev/dsp its all
-nice in memory.
-
-Since its all soft real-time at best he feels its better to do a best
-effort at not hitting swap than it is to strain the system with mlock
-usage.
-
+> 	And msgget(), semget() and shmget() does not have any parameter we can use to
+> specify an ID.
+> 	That's why I've decided to not change these routines and add a new control
+> command, IP_SETID, with which we can can change the ID of an IPC. (that looks to
+> me more straightforward and logical)
+> 
+> 	Now, this patch is, in fact, only a preparation for the patch 10/15 which
+> really complete the user API by adding this IPC_SETID command.
+> 
+> (... continuing below ...)
+> 
+> Alexey Dobriyan wrote:
+>> On Tue, Jan 29, 2008 at 05:02:38PM +0100, pierre.peiffer@bull.net wrote:
+>>> This patch provides three new API to change the ID of an existing
+>>> System V IPCs.
+>>>
+>>> These APIs are:
+>>> 	long msg_chid(struct ipc_namespace *ns, int id, int newid);
+>>> 	long sem_chid(struct ipc_namespace *ns, int id, int newid);
+>>> 	long shm_chid(struct ipc_namespace *ns, int id, int newid);
+>>>
+>>> They return 0 or an error code in case of failure.
+>>>
+>>> They may be useful for setting a specific ID for an IPC when preparing
+>>> a restart operation.
+>>>
+>>> To be successful, the following rules must be respected:
+>>> - the IPC exists (of course...)
+>>> - the new ID must satisfy the ID computation rule.
+>>> - the entry in the idr corresponding to the new ID must be free.
+>>>  ipc/util.c          |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+>>>  ipc/util.h          |    1 +
+>>>  8 files changed, 197 insertions(+)
+>> For the record, OpenVZ uses "create with predefined ID" method which
+>> leads to less code. For example, change at the end is all we want from
+>> ipc/util.c .
+> 
+> And in fact, you do that from kernel space, you don't have the constraint to fit
+> the existing user API.
+> Again, this patch, even if it presents a new kernel API, is in fact a
+> preparation for the next patch which introduces a new user API.
+> 
+> Do you think that this could fit your need ?
+> 
