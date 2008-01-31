@@ -1,64 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933060AbYAaKrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933319AbYAaKsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933060AbYAaKrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764361AbYAaKrG
+	id S933319AbYAaKsB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764579AbYAaKrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:47:06 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53848 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757659AbYAaKrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:47:04 -0500
-Date: Thu, 31 Jan 2008 12:47:38 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080131104738.GA30750@cs181133002.pp.htv.fi>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu> <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com> <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 31 Jan 2008 05:47:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57930 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764400AbYAaKrt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:47:49 -0500
+Subject: Re: High wake up latencies with FAIR_USER_SCHED
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, dhaval@linux.vnet.ibm.com
+In-Reply-To: <3d8471ca0801281213l5ec62984i763afb22216cb423@mail.gmail.com>
+References: <3d8471ca0801271201o5a41955cg552ef06a2f821285@mail.gmail.com>
+	 <20080128023129.GD1044@linux.vnet.ibm.com>
+	 <3d8471ca0801280857m2ea8518ds2ad8d5346f756a0e@mail.gmail.com>
+	 <3d8471ca0801281213l5ec62984i763afb22216cb423@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 11:47:41 +0100
+Message-Id: <1201776461.28547.289.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 11:33:29AM -0800, Luck, Tony wrote:
-> > I'm having trouble replicating this error.  With the latest linux-2.6.git
-> > plus the patch I just sent, I get the following errors:
-> >
-> > drivers/input/mouse/psmouse-base.c:45: error: __param_proto causes a section type conflict
-> > drivers/md/md.c:5881: error: __param_start_ro causes a section type conflict
+
+On Mon, 2008-01-28 at 21:13 +0100, Guillaume Chazarain wrote:
+> Unfortunately it seems to not be completely fixed, with this script:
 > 
-> Weird.  psmouse-base.c builds ok for me.  Perhaps there is a compiler
-> version difference?  I'm running a rather old 3.4.6 that came with
-> my RHEL 4.5 release.
->...
+> #!/usr/bin/python
+> 
+> import os
+> import time
+> 
+> SLEEP_TIME = 0.1
+> SAMPLES = 5
+> PRINT_DELAY = 0.5
+> 
+> def print_wakeup_latency():
+>     times = []
+>     last_print = 0
+>     while True:
+>         start = time.time()
+>         time.sleep(SLEEP_TIME)
+>         end = time.time()
+>         times.insert(0, end - start - SLEEP_TIME)
+>         del times[SAMPLES:]
+>         if end > last_print + PRINT_DELAY:
+>             copy = times[:]
+>             copy.sort()
+>             print '%f ms' % (copy[len(copy)/2] * 1000)
+>             last_print = end
+> 
+> if os.fork() == 0:
+>     if os.fork() == 0:
+>         os.setuid(1)
+>         while True:
+>             pass
+>     else:
+>         os.setuid(2)
+>         while True:
+>             pass
+> else:
+>     os.setuid(1)
+>     print_wakeup_latency()
+> 
+> I get seemingly unpredictable latencies (with or without the patch applied):
+> 
+> # ./sched.py
+> 14.810944 ms
+> 19.829893 ms
+> 1.968050 ms
+> 8.021021 ms
+> -0.017977 ms
+> 4.926109 ms
+> 11.958027 ms
+> 5.995893 ms
+> 1.992130 ms
+> 0.007057 ms
+> 0.217819 ms
+> -0.004864 ms
+> 5.907202 ms
+> 6.547832 ms
+> -0.012970 ms
+> 0.209951 ms
+> -0.002003 ms
+> 4.989052 ms
+> 
+> Without FAIR_USER_SCHED, latencies are consistently in the noise.
+> Also, I forgot to mention that I'm on a single CPU.
+> 
+> Thanks for the help.
 
-It depends on the compiler version.
+Does something like this help?
 
-And you were in the Cc of Ivan's patch that fixes it... [1]
 
-> -Tony
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -267,8 +267,12 @@ static u64 sched_slice(struct cfs_rq *cf
+ {
+ 	u64 slice = __sched_period(cfs_rq->nr_running);
+ 
+-	slice *= se->load.weight;
+-	do_div(slice, cfs_rq->load.weight);
++	for_each_sched_entity(se) {
++		cfs_rq = cfs_rq_of(se);
++
++		slice *= se->load.weight;
++		do_div(slice, cfs_rq->load.weight);
++	}
+ 
+ 	return slice;
+ }
 
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/12/27/29
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
