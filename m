@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765595AbYAaIeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765217AbYAaIiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765595AbYAaIeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 03:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbYAaIeO
+	id S1765217AbYAaIiX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 03:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYAaIiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 03:34:14 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39106 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756513AbYAaIeN (ORCPT
+	Thu, 31 Jan 2008 03:38:15 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:48803 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755648AbYAaIiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 03:34:13 -0500
-Message-ID: <47A187AE.1000809@bull.net>
-Date: Thu, 31 Jan 2008 09:32:46 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Thu, 31 Jan 2008 03:38:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=LOa+wFPjizSnDK/+EAdnRr37s5BCrAeh9EnLSJ4AUozXINZ/W3T75Q7dZKxn87Eja4veb/9BVuFK6wM+XzKhxow9BakSi0K9A8PvoHOHmDRs4ooSlVQyCnShRn8F4INqRmVB5+gW3VI/OmqenAA3ll5SrfXrZDF1PtObw95Jqv8=
+Message-ID: <38b2ab8a0801310038o2906ab68ta8893240576d806d@mail.gmail.com>
+Date: Thu, 31 Jan 2008 09:38:10 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [Kbuild] How to clean a particular directory ?
 MIME-Version: 1.0
-To: pierre.peiffer@bull.net
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [PATCH 2.6.24-rc8-mm1 05/15] IPC/semaphores: remove one unused
- parameter from semctl_down()
-References: <20080129160229.612172683@bull.net> <20080129161758.154775218@bull.net>
-In-Reply-To: <20080129161758.154775218@bull.net>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/01/2008 09:42:53,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/01/2008 09:42:55,
-	Serialize complete at 31/01/2008 09:42:55
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pierre.peiffer@bull.net wrote:
-> From: Pierre Peiffer <pierre.peiffer@bull.net>
-> 
-> semctl_down() takes one unused parameter: semnum.
-> This patch proposes to get rid of it.
-> 
-> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> ---
->  ipc/sem.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> Index: b/ipc/sem.c
-> ===================================================================
-> --- a/ipc/sem.c
-> +++ b/ipc/sem.c
-> @@ -882,8 +882,8 @@ static inline unsigned long copy_semid_f
->   * to be held in write mode.
->   * NOTE: no locks must be held, the rw_mutex is taken inside this function.
->   */
-> -static int semctl_down(struct ipc_namespace *ns, int semid, int semnum,
-> -		int cmd, int version, union semun arg)
-> +static int semctl_down(struct ipc_namespace *ns, int semid,
-> +		       int cmd, int version, union semun arg)
->  {
->  	struct sem_array *sma;
->  	int err;
-> @@ -974,7 +974,7 @@ asmlinkage long sys_semctl (int semid, i
->  		return err;
->  	case IPC_RMID:
->  	case IPC_SET:
-> -		err = semctl_down(ns,semid,semnum,cmd,version,arg);
-> +		err = semctl_down(ns, semid, cmd, version, arg);
->  		return err;
->  	default:
->  		return -EINVAL;
-> 
+Hello,
 
-Looks like semnum is only used in semctl_main(). Why not removing it 
-from semctl_nolock() too?
+I'd like to clean a particular directory in the kernel tree.
 
-Regards,
-Nadia
+I tried several things such as:
 
+$ make drivers/char clean
+$ make -f scripts/Makefile.clean obj=drivers/char
 
+But it doesn't work.
 
+Could anybody give me  a hint ?
+
+Thanks
+-- 
+Francis
