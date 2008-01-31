@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbYAaO65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763625AbYAaPAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbYAaO65 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 09:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbYAaO6s
+	id S1763625AbYAaPAh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 10:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbYAaPA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 09:58:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33770 "EHLO mx3.mail.elte.hu"
+	Thu, 31 Jan 2008 10:00:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34140 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753566AbYAaO6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 09:58:46 -0500
-Date: Thu, 31 Jan 2008 15:58:30 +0100
+	id S1755805AbYAaPA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 10:00:26 -0500
+Date: Thu, 31 Jan 2008 16:00:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: fix sparse warning in kernel/scx200_32.c
-Message-ID: <20080131145830.GD27855@elte.hu>
-References: <1201751829.23523.5.camel@brick>
+To: Patrick McHardy <kaber@trash.net>
+Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: [build bug] ip_queue.c:(.init.text+0x322c): undefined
+	reference to `net_ipv4_ctl_path'
+Message-ID: <20080131150008.GA9386@elte.hu>
+References: <20080130164554.GA2800@elte.hu> <47A0BAB5.3080207@trash.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1201751829.23523.5.camel@brick>
+In-Reply-To: <47A0BAB5.3080207@trash.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,11 +37,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+* Patrick McHardy <kaber@trash.net> wrote:
 
-> arch/x86/kernel/scx200_32.c:68:72: warning: Using plain integer as 
-> NULL pointer
+>> config attached.
+>
+> Thanks, the reason is CONFIG_SYSCTL=n. I've queued this patch (might 
+> not apply to Linus' tree due to local changes) to fix the build error 
+> and a runtime error with CONFIG_PROC_FS=n.
 
-thanks, applied.
+it applied fine here and it resolved the build problem. Thanks,
 
 	Ingo
