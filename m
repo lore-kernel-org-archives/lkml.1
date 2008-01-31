@@ -1,72 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbYAaQVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933173AbYAaQWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933092AbYAaQVW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbYAaQVI
+	id S933173AbYAaQWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbYAaQWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:21:08 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48315 "EHLO smtp5.pp.htv.fi"
+	Thu, 31 Jan 2008 11:22:23 -0500
+Received: from ns2.suse.de ([195.135.220.15]:40790 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757504AbYAaQVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:21:04 -0500
-Date: Thu, 31 Jan 2008 18:21:42 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, davem@davemloft.net,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] kill hotplug init/exit section annotations
-Message-ID: <20080131162141.GC19700@cs181133002.pp.htv.fi>
-References: <20080130200336.GN29368@does.not.exist> <1201726817.3292.84.camel@localhost.localdomain> <20080130212011.GA26621@uranus.ravnborg.org> <1201729295.3292.94.camel@localhost.localdomain> <20080130223219.GT29368@does.not.exist> <20080131074436.GA31966@uranus.ravnborg.org> <1201795051.3131.13.camel@localhost.localdomain> <20080131081120.27505dc0@laptopd505.fenrus.org>
+	id S1757599AbYAaQWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:22:22 -0500
+Date: Thu, 31 Jan 2008 17:22:20 +0100
+From: Andi Kleen <ak@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, ebiederm@xmission.com, vgoyal@redhat.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/9] Handle kernel near memory hole in
+	clear_kernel_mapping
+Message-ID: <20080131162220.GA25989@bingen.suse.de>
+References: <20080129606.610336873@suse.de> <20080129050629.9D3DA1B416E@basil.firstfloor.org> <alpine.LFD.1.00.0801311514060.9204@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131081120.27505dc0@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.1.00.0801311514060.9204@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 08:11:20AM -0800, Arjan van de Ven wrote:
-> On Thu, 31 Jan 2008 09:57:31 -0600
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > +#define overlaps(as, ae, bs, be) ((ae) >= (bs) && (as) <= (be))
 > 
-> > No-one seems to see much value in these, and they cause about 90% of
-> > our problems with __init/__exit markers, so simply eliminate them.
-> > Rather than run over the whole tree removing them, this patch
-> > #defines them to be nops.
-> > 
-> > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > 
-> > ---
-> > 
-> > I'll probably be going after __exit after this one, but it makes sense
-> > to split them up, since the hotplug annotation removal looks
-> > uncontroversial, whereas __exit and discard section removal might
-> > produce more robust debate.  I also think doing the hotplug removal
-> > gives us 90% of the benefits and removes 90% of the section mismatch
-> > problems.
+> inline function please and a bit more intuituive arrangement of
+> arguments.
+
+Which one do you prefer? (to be honest the current one is "intuitive"
+to me) 
+
+
+> 
+> > +void __init clear_kernel_mapping(unsigned long address, unsigned long size)
+> > +{
+> > +	int sh = PMD_SHIFT;
+> > +	unsigned long kernel = __pa(__START_KERNEL_map);
+> > +
+> > +	/*
+> > +	 * Note that we cannot unmap the kernel itself because the unmapped
+> > +	 * holes here are always at least 2MB aligned.
+> 
+> That's not enforced. The unmap code just does not split pages.
+
+It is -- there are BUG_ONs for this in __clear_kernel_mapping
+
+> 
+> > +	 * This just applies to the trailing areas of the 40MB kernel mapping.
+> 
+> How is this ensured, that it only affects the end of the 40MB mapping ?
+
+It is enforced in the callers (actually there is only a single caller -- 
+the GART code ) by not calling it overlapping for the kernel itself.
+Given that could be checked too, but that would be probably overkill
+for an internal function.
+
+> 
+> > +	 */
+> > +	if (overlaps(kernel >> sh, (kernel + KERNEL_TEXT_SIZE) >> sh,
+> > +			__pa(address) >> sh, __pa(address + size) >> sh)) {
+> 
+> This checks:
+> 
+>      (kernel_end + 1) >= gart_start && kernel_start <= gart_end
+> 
+> One off error:  kernel + KERNEL_TEXT_SIZE 
+> needs to be:    kernel + KERNEL_TEXT_SIZE - 1
+
+Ok.
+
+> 
+> Also there is no sanity check, whether the area is inside real kernel text.
+
+Hmm I can add one, but if that happens the caller is likely seriously
+confused and will likely cause other problems anyways. 
+
+I don't think it can happen for the GART code which is currently
+the only caller.
+
+> 
+> > +		printk(KERN_WARNING
+> > +			"Kernel mapping at %lx within 2MB of memory hole\n",
+> > +				kernel);
 > 
 > 
-> Since hotplug is so fundamental nowadays the value no longer outweighs the pain/cost
-> to me, so 
+> > +		__clear_kernel_mapping(__START_KERNEL_map+__pa(address), size);
+> 
+> Doh! This is unmapping the wrong place. According to __phys_addr():
+> 
+>      paddr = vaddr - __START_KERNEL_map + phys_base;
 
-Granted for normal hotplug.
+Hmm true -- that will only affect relocatable kernels, but for those
+it's wrong. Given that the patch was supposed to fix a case 
+that only happens relocatable kernels that's quite ironic :)
 
-But my computer has neither CPU hotplug not memory hotplug, and I don't 
-see the point for removing these annotations (and they are anyway not 
-what causes problems in normal drivers).
+Actually thinking about it again you can just drop it for now.
+It is orthogonal to gbpages. I think I added it to the series
+when I was planning to do kernel mapping as GB pages, but that
+turned out to be a bad idea anyways.
 
-> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+Thanks for the review,
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Andi
