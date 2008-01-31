@@ -1,69 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbYAaKbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbYAaKcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932911AbYAaKbw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762067AbYAaKbn
+	id S933092AbYAaKcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbYAaKbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:31:43 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:36352 "EHLO
-	outbound5-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752222AbYAaKbl (ORCPT
+	Thu, 31 Jan 2008 05:31:48 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58568 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765566AbYAaKbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:31:41 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0JVI7R2-01-781-01
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Message-ID: <47A1A335.9090400@amd.com>
-Date: Thu, 31 Jan 2008 11:30:13 +0100
-From: "Thomas Dahlmann" <thomas.dahlmann@amd.com>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
-MIME-Version: 1.0
-To: "Roel Kluin" <12o3l@tiscali.nl>
-cc: info-linux@geode.amd.com, "lkml" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][drivers/usb/gadget/amd5536udc.c] duplicate
- use_dma_ppb_du => 2nd use_dma_ppb
-References: <47A08FD5.20105@tiscali.nl>
-In-Reply-To: <47A08FD5.20105@tiscali.nl>
-X-OriginalArrivalTime: 31 Jan 2008 10:27:13.0201 (UTC)
- FILETIME=[D7FE0210:01C863F3]
-X-WSS-ID: 6BBF7D3107S9492661-01-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 05:31:47 -0500
+Date: Thu, 31 Jan 2008 12:06:10 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       hugh@veritas.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       npiggin@suse.de, riel@redhat.com, mztabzr@0pointer.de, mpm@selenic.com
+Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
+Message-ID: <20080131110610.GA31090@one.firstfloor.org>
+References: <1201714139.28547.237.camel@lappy> <20080130144049.73596898.akpm@linux-foundation.org> <1201769040.28547.245.camel@lappy> <20080131011227.257b9437.akpm@linux-foundation.org> <1201772118.28547.254.camel@lappy> <20080131014702.705f1040.akpm@linux-foundation.org> <1201773206.28547.259.camel@lappy> <p73ve5a47yr.fsf@bingen.suse.de> <20080131021949.92715ba4.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131021949.92715ba4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fix is correct.
+> Yeah, the 2.5 switch to physical scanning killed us there.
+> 
+> I still don't know why my allocate-swapspace-according-to-virtual-address
+> change didn't help.  Much.  Marcelo played with that a bit too.
 
-Thanks,
-Thomas
+I've been thinking about just always doing swap on > page clusters. 
+Any reason swapping couldn't be done on e.g. 1MB chunks? 
 
-Roel Kluin wrote:
-> Untested patch below, please confirm it's the right fix.
-> --
-> duplicate use_dma_ppb_du, 2nd should be use_dma_ppb
->
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-> index c72e962..fbc10f9 100644
-> --- a/drivers/usb/gadget/amd5536udc.c
-> +++ b/drivers/usb/gadget/amd5536udc.c
-> @@ -205,7 +205,7 @@ static void print_regs(struct udc *dev)
->  		DBG(dev, "DMA mode       = PPBNDU (packet per buffer "
->  			"WITHOUT desc. update)\n");
->  		dev_info(&dev->pdev->dev, "DMA mode (%s)\n", "PPBNDU");
-> -	} else if (use_dma && use_dma_ppb_du && use_dma_ppb_du) {
-> +	} else if (use_dma && use_dma_ppb && use_dma_ppb_du) {
->  		DBG(dev, "DMA mode       = PPBDU (packet per buffer "
->  			"WITH desc. update)\n");
->  		dev_info(&dev->pdev->dev, "DMA mode (%s)\n", "PPBDU");
->
->
->   
-
-
-
+-Andi
