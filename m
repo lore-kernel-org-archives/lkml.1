@@ -1,97 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYAaSrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934373AbYAaSsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933661AbYAaSrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763034AbYAaSrW
+	id S934373AbYAaSsu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:48:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763225AbYAaSsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:47:22 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49856 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759674AbYAaSrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:47:20 -0500
-Subject: Re: [patch] vfs: create /proc/<pid>/mountinfo
-From: Ram Pai <linuxram@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk,
-       a.p.zijlstra@chello.nl
-In-Reply-To: <E1JKVY6-0001wd-BE@pomaz-ex.szeredi.hu>
-References: <E1JJqxt-0004r2-Vf@pomaz-ex.szeredi.hu>
-	 <20080130160839.828c4363.akpm@linux-foundation.org>
-	 <E1JKVY6-0001wd-BE@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 10:45:23 -0800
-Message-Id: <1201805123.10358.23.camel@ram.us.ibm.com>
+	Thu, 31 Jan 2008 13:48:40 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47997 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761406AbYAaSsi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 13:48:38 -0500
+Date: Thu, 31 Jan 2008 10:48:11 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       davem@davemloft.net, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] kill hotplug init/exit section annotations
+Message-ID: <20080131104811.4c2d558f@laptopd505.fenrus.org>
+In-Reply-To: <20080131183425.GA2893@uranus.ravnborg.org>
+References: <20080130212011.GA26621@uranus.ravnborg.org>
+	<1201729295.3292.94.camel@localhost.localdomain>
+	<20080130223219.GT29368@does.not.exist>
+	<20080131074436.GA31966@uranus.ravnborg.org>
+	<1201795051.3131.13.camel@localhost.localdomain>
+	<20080131081120.27505dc0@laptopd505.fenrus.org>
+	<20080131162141.GC19700@cs181133002.pp.htv.fi>
+	<20080131090749.72781689@laptopd505.fenrus.org>
+	<20080131171436.GG19700@cs181133002.pp.htv.fi>
+	<20080131094801.63a048f0@laptopd505.fenrus.org>
+	<20080131183425.GA2893@uranus.ravnborg.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 10:17 +0100, Miklos Szeredi wrote:
-> > > From: Ram Pai <linuxram@us.ibm.com>
+On Thu, 31 Jan 2008 19:34:25 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-...snipped...
-
-> IDR ids are 'int' but they are always positive (AFAICT), but yeah,
-> maybe this is confusing.
+> On Thu, Jan 31, 2008 at 09:48:01AM -0800, Arjan van de Ven wrote:
+> > On Thu, 31 Jan 2008 19:14:36 +0200
+> > Adrian Bunk <bunk@kernel.org> wrote:
+> > > > cpuhotplug is required for suspend/resume.
+> > > 
+> > > Not on UP computers.
+> > > 
+> > 
+> > great! someone who still has one of those and uses a kernel without
+> > it. Can you look at your system.map and see how many kilobytes
+> > you've gained? Eg how many kilobytes are in these sections exactly?
+> I have one. A Atmel AT91 board equipped with an 9263.
+> So lets take a look at the defconfig build for the evaluation board.
 > 
-> > The new exported-to-everyone dentry_path() probably could do with a bit
-> > more documentation - it's the sort of thing which people keep on wanting
-> > and using.
 > 
-> OK.
+> o-arm/vmlinux.o:     file format elf32-littlearm
 > 
-> > How does dentry_path() differ from d_path() and why do we need both and can
-> > we get some sharing/consolidation happening here?
-
-d_path displays the path from the rootfs, whereas dentry_path displays
-the path from the root of that filesystem.
-
+>   0 .text         001cdefc  00000000  00000000  00000400  2**10
+>   2 .init.text    000165e8  00000000  00000000  001ce6c0  2**5
+>  26 .init.data    000032ec  00000000  00000000  002578cc  2**2
 > 
-> Tried that but not easy, without removing some of the
-> microoptimizations in d_path(), which I'm not sure are really
-> important, but...
-
-this patch was intially developed with Al Viro. He preferred to keep the
-two functions separate. BTW: this patch owes credits to Al Viro for his
-initial set of ideas.
-
+> ---
 > 
-> > Why do d_path() and dentry_path() have differing conventions for displaying
-> > a deleted file and can we fix that?
+>   4 .devinit.text 00001558  00000000  00000000  001e5270  2**2
+>   9 .exit.text    00000bc8  00000000  00000000  001e8d2c  2**2
+>  10 .cpuinit.text 00000924  00000000  00000000  001e98f4  2**2
+>  11 .meminit.text 000004cc  00000000  00000000  001ea218  2**2
+>  12 .devexit.text 00000160  00000000  00000000  001ea6e4  2**2
+>  38 .cpuinit.data 00000040  00000000  00000000  0025afc0  2**2
+>  39 .meminit.data 0000000c  00000000  00000000  0025b000  2**2
 > 
-> I think Ram chose a different convention in dentry_path() in order to
-> make sure, there was no space in the resulting path.  But spaces would
-> be escaped anyway, so this isn't really important.  So yes, this could
-> be fixed.
-
-
-my patch was generated about  a year or so back using probably the
-2.6.18 code base which had the "//deleted" convention. That got copied
-in my patch. But since then I see that the original code has changed to
-use the " (deleted)" convention. 
-
-Yes this patch has to be changed to be consistent with the existing
-code. 
-
-
 > 
-> > This patch adds a lot of code which is, I guess, unused if
-> > CONFIG_PROC_FS=n.  Fixable?
+> __devinit alone gives a net win of 5464 bytes.
+> That is only ~3% of total .text size but this is non-swapable
+> memory where everything is worth it.
 
-yes. good observation. I will send a patch with this optimization and
-the above mentioned change. 
-
-RP
-
-> 
-> Possibly yes.  A good chunk of namespace.c could be surrounded by an
-> #ifdef, which would save even more, than was added by this particular
-> patch.
-
-
-> Thanks,
-> Miklos
-
+now how much of this is lost again because you have to round the stuff to pagesize?
