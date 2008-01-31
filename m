@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759633AbYAaJNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765457AbYAaJOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759633AbYAaJNm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 04:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYAaJN0
+	id S1765457AbYAaJOI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 04:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYAaJN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 04:13:26 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38969 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751026AbYAaJNY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 04:13:24 -0500
-Date: Thu, 31 Jan 2008 01:12:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: hugh@veritas.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       npiggin@suse.de, riel@redhat.com, mztabzr@0pointer.de, mpm@selenic.com
-Subject: Re: [PATCH] mm: MADV_WILLNEED implementation for anonymous memory
-Message-Id: <20080131011227.257b9437.akpm@linux-foundation.org>
-In-Reply-To: <1201769040.28547.245.camel@lappy>
-References: <1201714139.28547.237.camel@lappy>
-	<20080130144049.73596898.akpm@linux-foundation.org>
-	<1201769040.28547.245.camel@lappy>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 04:13:28 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:14587 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751786AbYAaJNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 04:13:25 -0500
+Date: Thu, 31 Jan 2008 18:12:34 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kobject: Always build in kernel/ksysfs.o.
+Message-ID: <20080131091234.GA14631@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008 09:44:00 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+kernel/ksysfs.c seems to be a random dumping group for misc globals
+that the rest of the tree depend on. This has caused problems with
+exports in the past when sysfs is disabled, which can already be
+observed in commit-id 51107301b629640f9ab76fe23bf385e187b9ac29.
 
-> 
-> On Wed, 2008-01-30 at 14:40 -0800, Andrew Morton wrote:
-> > On Wed, 30 Jan 2008 18:28:59 +0100
-> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > Implement MADV_WILLNEED for anonymous pages by walking the page tables and
-> > > starting asynchonous swap cache reads for all encountered swap pages.
-> > 
-> > Why cannot this use (a perhaps suitably-modified) make_pages_present()?
-> 
-> Because make_pages_present() relies on page faults to bring data in and
-> will thus wait for all data to be present before returning.
-> 
-> This solution is async; it will just issue a read for the requested
-> pages and moves on.
-> 
+The latest one is the kernel_kobj usage, which presently results in:
 
-I of course realise that.  I also realise that swapin_readahead() is
-_supposed_ to make the difference moot.
+fs/built-in.o: In function `debugfs_init':
+inode.c:(.init.text+0xc34): undefined reference to `kernel_kobj'
+make: *** [.tmp_vmlinux1] Error 1
 
-There's something you guys aren't telling us.  Several things, actually. 
-Please don't do that.
+kernel/ksysfs.c itself at this point only contains globals and some
+basic sysfs initialization, the sysfs initialization code is optimized
+out when we build with sysfs disabled. Given that, it's easier to just
+build in unconditionally, rather than trying to find some other random
+place to dump and initialize the globals.
 
+Additionally, the current trend seems to be decoupling of kobjects from
+sysfs, in which case it still makes sense to perform the kernel_kobj
+initialization that happens here even if sysfs is disabled, as
+lib/kobject.o is built-in unconditionally.
 
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-Implementation-wise: make_pages_present() _can_ be converted to do this. 
-But it's a lot of patching, and the result will be a cleaner, faster and
-smaller core MM.  Whereas your approach is easy, but adds more code and
-leaves the old stuff slow-and-dirty.
+---
 
-Guess which approach is preferred? ;)
+ kernel/Makefile |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 8885627..db9af70 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -9,7 +9,7 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
+ 	    rcupdate.o extable.o params.o posix-timers.o \
+ 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+ 	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o \
+-	    utsname.o notifier.o
++	    utsname.o notifier.o ksysfs.o
+ 
+ obj-$(CONFIG_SYSCTL) += sysctl_check.o
+ obj-$(CONFIG_STACKTRACE) += stacktrace.o
+@@ -49,7 +49,6 @@ obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
+ obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
+ obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
+ obj-$(CONFIG_KPROBES) += kprobes.o
+-obj-$(CONFIG_SYSFS) += ksysfs.o
+ obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
+ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+ obj-$(CONFIG_SECCOMP) += seccomp.o
