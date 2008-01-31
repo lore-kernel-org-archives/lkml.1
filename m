@@ -1,88 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbYAaBXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbYAaB0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756931AbYAaBXz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 20:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYAaBXr
+	id S1758670AbYAaB0A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 20:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYAaBZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 20:23:47 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:55835 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbYAaBXq (ORCPT
+	Wed, 30 Jan 2008 20:25:52 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:43790 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754031AbYAaBZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 20:23:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NBu/1ysnYm+yqvj/LROXSuWeMFWSy+Tk7Ptfg69P12+g1bgG/ZUpXDTQJYRcP4uWcW86fSAxh27451Wt/cbDEu1n2MDLwx4gdoKEtGK/zCX0Vj784FYvHBCgArRti8CxltItAh4+6HOagU+F3G7HeJRWdfOHBSgkBzKMYoQN8jQ=
-Message-ID: <524f69650801301723w2f186f73h2cb30a6a30793def@mail.gmail.com>
-Date: Wed, 30 Jan 2008 19:23:44 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [2.6 patch] remove smbfs
-Cc: "Adrian Bunk" <bunk@kernel.org>, sfrench@samba.org,
-       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0801302003560.13036@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Jan 2008 20:25:51 -0500
+Date: Thu, 31 Jan 2008 09:46:36 +0900 (JST)
+Message-Id: <20080131.094636.94558620.tshibata@ab.jp.nec.com>
+To: greg@kroah.com, linux-kernel@vger.kernel.org
+Cc: tshibata@ab.jp.nec.com
+Subject: [Patch] Add translation of stable_kernel_rules.txt
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Thu_Jan_31_09_46_36_2008_307)--"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080128220835.GF8767@does.not.exist>
-	 <Pine.LNX.4.64.0801301923450.13036@fbirervta.pbzchgretzou.qr>
-	 <524f69650801301053s370c9a2fpd03bf31616e37d9c@mail.gmail.com>
-	 <Pine.LNX.4.64.0801302003560.13036@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 1:05 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Jan 30 2008 12:53, Steve French wrote:
-> >I have mounted to Windows98 a few months ago with no problems (other
-> >than a few restrictions like you can't set the file times via utimes).
-> > For mounts to Windows98 note that you have to specify the server
-> >netbios name on the mount (since it is not the same as the DNS name).
-> >In your example your would need to specify "servernetbiosname=WIN98"
-> >in the mount options (until mount.cifs autoretries with
-> >servernetbiosname assumed to be the beginning of the UNC name - note
-> >that later servers have a dummy netbios name that is used so this
-> >mount option is only needed for OS/2 and Win9x).
->
-> Ok that works. I had tried "netbiosname" but not "servernetbiosname"
-> (only fuzzy memories from the last win98 encounter and the suggestion
-> to use netbiossomething).
->
-> I think servernetbiosname should implicitly be assumed to be the
-> same as the //hostpart/ when it's not explicitly specified, no?
+----Next_Part(Thu_Jan_31_09_46_36_2008_307)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-Unfortunately, it is not quite that easy since there is a default
-"dummy" netbiosname that you are supposed to specify.
+Hello, 
 
-The default netbios name is supposed to be "*SMBSERVER" in the RFC1001
-session init request (this allows you to connect to the default
-netbiosname on the target ip address), but for servers older than
-about 1997, and Windows9x, that name is not supported by default and
-that field in the session initialize request must contain the actual
-netbiosname.   Although using the host name of the server is a good
-first guess - the netbiosname does not have to match the tcp host name
-(and often differs in more than simply being uppercase and limited to
-15 bytes).
+Add translation of stable_kernel_rules.txt into Documentation/ja_JP.
 
-There is retry which can be tried.  When the server does not listen on
-port 445 and mount fails to *SMBSERVER on port 139 (and retry using
-the uppercased tcp name as the netbios name fails) - we can try to do
-an "adapter status" rfc1001 call to the ip address of the target and
-pick the first netbiosname (or at least the first one that ends with
-the server suffix - ie a byte of 0x20 for byte 16 of the netbios
-name).   This complicates the mount.cifs helpers retry logic and
-adding rfc1001 adapter status code into the kernel also would be a few
-hundred lines of kernel code for little benefit if any for current
-servers, but it could be done.   Simply adding the one retry (for
-failed mounts using servernetbiosname=<target-host-name> would
-probably take care of most cases.
+Contents are reviewed by Japanese translation community called "JF".
+Thanks a lot!
+
+As always, I am attaching the patch because of UTF-8.
+
+Singed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+
+---
 
 
+----Next_Part(Thu_Jan_31_09_46_36_2008_307)--
+Content-Type: Application/Octet-Stream
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="Add-ja_JP-stable_kernel_rules.txt"
 
--- 
-Thanks,
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vamFfSlAvc3RhYmxlX2tlcm5lbF9ydWxlcy50eHQg
+Yi9Eb2N1bWVudGF0aW9uL2phX0pQL3N0YWJsZV9rZXJuZWxfcnVsZXMudHh0Cm5ldyBmaWxlIG1v
+ZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLjM5NWU1OGMKLS0tIC9kZXYvbnVsbAorKysgYi9Eb2N1
+bWVudGF0aW9uL2phX0pQL3N0YWJsZV9rZXJuZWxfcnVsZXMudHh0CkBAIC0wLDAgKzEsNzkgQEAK
+K05PVEU6CitUaGlzIGlzIEphcGFuZXNlIHRyYW5zbGF0ZWQgdmVyc2lvbiBvZiAiRG9jdW1lbnRh
+dGlvbi9zdGFibGVfa2VybmVsX3J1bGVzLnR4dCIuCitUaGlzIG9uZSBpcyBtYWludGFpbmVkIGJ5
+IFRzdWdpa2F6dSBTaGliYXRhIDx0c2hpYmF0YUBhYi5qcC5uZWMuY29tPgorYW5kIEpGIFByb2pl
+Y3QgdGVhbSA8d3d3LmxpbnV4Lm9yLmpwL0pGPi4KK0lmIHlvdSBmaW5kIGRpZmZlcmVuY2Ugd2l0
+aCBvcmlnaW5hbCBmaWxlIG9yIHByb2JsZW0gaW4gdHJhbnNsYXRpb24sCitwbGVhc2UgY29udGFj
+dCBtYWludGFpbmVyIG9mIHRoaXMgZmlsZSBvciBKRiBwcm9qZWN0LgorCitQbGVhc2UgYWxzbyBu
+b3RlIHRoYXQgcHVycG9zZSBvZiB0aGlzIGZpbGUgaXMgZWFzaWVyIHRvIHJlYWQgZm9yIG5vbgor
+RW5nbGlzaCBuYXRpdmVzIGFuZCBkbyBubyBpbnRlbmRlZCB0byBmb3JrLiBTbywgaWYgeW91IGhh
+dmUgYW55Citjb21tZW50IG9yIHVwZGF0ZSBvZiB0aGlzIGZpbGUsIHBsZWFzZSB0cnkgdG8gdXBk
+YXRlIE9yaWdpbmFsKEVuZ2xpc2gpCitmaWxlIGF0IGZpcnN0LgorCis9PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09CivjgZPjgozjga/jgIEKK2xpbnV4LTIuNi4yNC9Eb2N1bWVudGF0
+aW9uL3N0YWJsZV9rZXJuZWxfcnVsZXMudHh0Civjga7lkozoqLPjgafjgZnjgIIKKwor57+76Kiz
+5Zuj5L2T77yaIEpGIOODl+ODreOCuOOCp+OCr+ODiCA8IGh0dHA6Ly93d3cubGludXgub3IuanAv
+SkYvID4KK+e/u+ios+aXpe+8miAyMDA3LzEyLzMwCivnv7voqLPogIXvvJogVHN1Z2lrYXp1IFNo
+aWJhdGEgPHRzaGliYXRhIGF0IGFiIGRvdCBqcCBkb3QgbmVjIGRvdCBjb20+CivmoKHmraPogIXv
+vJog5q2m5LqV5Ly45YWJ44GV44KT44CBPHRha2VpIGF0IHdlYm1hc3RlcnMgZG90IGdyIGRvdCBq
+cD4KKyAgICAgICAgIOOBi+OBreOBk+OBleOCkyAoU2VpamkgS2FuZWtvKSA8c2thbmVrbyBhdCBh
+MiBkb3QgbWJuIGRvdCBvciBkb3QganA+CisgICAgICAgICDlsI/mnpcg6ZuF5YW444GV44KTIChN
+YXNhbm9yaSBLb2JheWFzaSkgPHphcDAzMjE2IGF0IG5pZnR5IGRvdCBuZSBkb3QganA+CisgICAg
+ICAgICDph47lj6PjgZXjgpMgKEtlbmppIE5vZ3VjaGkpIDx0b2t5bzI0NiBhdCBnbWFpbCBkb3Qg
+Y29tPgorICAgICAgICAg56We5a6u5L+h5aSq6YOO44GV44KTIDxqaW4gYXQgbGliamluZ3UgZG90
+IGpwPgorPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQorCivjgZrjgaPjgajnn6Xj
+gorjgZ/jgYvjgaPjgZ8gTGludXggMi42IC1zdGFibGUg44Oq44Oq44O844K544Gu5YWo44GmCisK
+KyItc3RhYmxlIiDjg4Tjg6rjg7zjgavjganjga7jgojjgYbjgarnqK7poZ7jga7jg5Hjg4Pjg4Hj
+gYzlj5fjgZHlhaXjgozjgonjgozjgovjgYvjgIHjganjga7jgojjgYbjgaoKK+OCguOBruOBjOWP
+l+OBkeWFpeOCjOOCieOCjOOBquOBhOOBi+OAgeOBq+OBpOOBhOOBpuOBruimj+WJhy0KKworIC0g
+5piO44KJ44GL44Gr5q2j44GX44GP44CB44OG44K544OI44GV44KM44Gm44GE44KL44KC44Gu44Gn
+44Gq44GR44KM44Gw44Gq44KJ44Gq44GE44CCCisgLSDmlofohIgo5aSJ5pu06KGM44Gu5YmN5b6M
+KeOCkuWQq+OCgeOBpiAxMDAg6KGM44KI44KK5aSn44GN44GP44Gm44Gv44GE44GR44Gq44GE44CC
+CisgLSDjgZ/jgaDkuIDlgIvjga7jgZPjgajjgaDjgZHjgpLkv67mraPjgZfjgabjgYTjgovjgbnj
+gY3jgIIKKyAtIOeahuOCkuaCqeOBvuOBm+OBpuOBhOOCi+acrOeJqeOBruODkOOCsOOCkuS/ruat
+o+OBl+OBquOBkeOCjOOBsOOBquOCieOBquOBhOOAgigi44GT44KM44Gv44OQ44Kw44GnCisgICDj
+gYLjgovjgYvjgoLjgZfjgozjgarjgYTjgYwuLi4iIOOBruOCiOOBhuOBquOCguOBruOBp+OBr+OB
+quOBhCkKKyAtIOODk+ODq+ODieOCqOODqeODvChDT05GSUdfQlJPS0VO44Gr44Gq44Gj44Gm44GE
+44KL44KC44Gu44KS6Zmk44GPKSwgb29wcywg44OP44Oz44Kw44CB44OH44O8CisgICDjgr/noLTl
+o4rjgIHnj77lrp/jga7jgrvjgq3jg6Xjg6rjg4bjgqPllY/poYzjgIHjgZ3jga7ku5YgIuOBguOB
+guOAgeOBk+OCjOOBr+ODgOODoeOBoOOBrSLjgajjgYTjgYYKKyAgIOOCiOOBhuOBquOCguOBruOC
+kuS/ruato+OBl+OBquOBkeOCjOOBsOOBquOCieOBquOBhOOAguefreOBj+iogOOBiOOBsOOAgemH
+jeWkp+OBquWVj+mhjOOAggorIC0g44Gp44Gu44KI44GG44Gr56u25ZCI54q25oWL44GM55m655Sf
+44GZ44KL44GL44Gu6Kqs5piO44KC5LiA57eS44Gr5pu444GL44KM44Gm44GE44Gq44GE6ZmQ44KK
+44CBCisgICAi55CG6KuW55qE44Gr44Gv56u25ZCI54q25oWL44Gr44Gq44KLIuOCiOOBhuOBquOC
+guOBruOBr+S4jeWPr+OAggorIC0g44GE44GL44Gq44KL5Lqb57Sw44Gq5L+u5q2j44KC5ZCr44KB
+44KL44GT44Go44Gv44Gn44GN44Gq44GE44CCKOOCueODmuODq+OBruS/ruato+OAgeepuueZveOB
+ruOCr+ODquODvAorICAg44Oz44Ki44OD44OX44Gq44GpKQorIC0g5a++5b+c44GZ44KL44K144OW
+44K344K544OG44Og44Oh44Oz44OG44OK44GM5Y+X44GR5YWl44KM44Gf44KC44Gu44Gn44Gq44GR
+44KM44Gw44Gq44KJ44Gq44GE44CCCisgLSBEb2N1bWVudGF0aW9uL1N1Ym1pdHRpbmdQYXRjaGVz
+IOOBruimj+WJh+OBq+W+k+OBo+OBn+OCguOBruOBp+OBquOBkeOCjOOBsOOBquOCieOBquOBhOOA
+ggorCistc3RhYmxlIOODhOODquODvOOBq+ODkeODg+ODgeOCkumAgeS7mOOBmeOCi+aJi+e2muOB
+jS0KKworIC0g5LiK6KiY44Gu6KaP5YmH44Gr5b6T44Gj44Gm44GE44KL44GL44KS56K66KqN44GX
+44Gf5b6M44Gr44CBc3RhYmxlQGtlcm5lbC5vcmcg44Gr44OR44OD44OBCisgICDjgpLpgIHjgovj
+gIIKKyAtIOmAgeS/oeiAheOBr+ODkeODg+ODgeOBjOOCreODpeODvOOBq+WPl+OBkeS7mOOBkeOC
+ieOCjOOBn+mam+OBq+OBryBBQ0sg44KS44CB5Y205LiL44GV44KM44Gf5aC05ZCICisgICDjgavj
+ga8gTkFLIOOCkuWPl+OBkeWPluOCi+OAguOBk+OBruWPjeW/nOOBr+mWi+eZuuiAheOBn+OBoeOB
+ruOCueOCseOCuOODpeODvOODq+OBq+OCiOOBo+OBpuOAgeaVsAorICAg5pel44GL44GL44KL5aC0
+5ZCI44GM44GC44KL44CCCisgLSDjgoLjgZflj5fjgZHlj5bjgonjgozjgZ/jgonjgIHjg5Hjg4Pj
+g4Hjga/ku5bjga7plovnmbrogIXjgZ/jgaHjga7jg6zjg5Pjg6Xjg7zjga7jgZ/jgoHjgasKKyAg
+IC1zdGFibGUg44Kt44Ol44O844Gr6L+95Yqg44GV44KM44KL44CCCisgLSDjgrvjgq3jg6Xjg6rj
+g4bjgqPjg5Hjg4Pjg4Hjga/jgZPjga7jgqjjgqTjg6rjgqLjgrkgKHN0YWJsZUBrZXJuZWwub3Jn
+KSDjgavpgIHjgonjgozjgovjgbkKKyAgIOOBjeOBp+OBr+OBquOBj+OAgeS7o+OCj+OCiuOBqyBz
+ZWN1cml0eUBrZXJuZWwub3JnIOOBruOCouODieODrOOCueOBq+mAgeOCieOCjOOCi+OAggorCivj
+g6zjg5Pjg6Xjg7zjgrXjgqTjgq/jg6stCisKKyAtIC1zdGFibGUg44Oh44Oz44OG44OK44GM44Os
+44OT44Ol44O844K144Kk44Kv44Or44KS5rG644KB44KL44Go44GN44CB44OR44OD44OB44Gv44Os
+44OT44Ol44O85aeUCisgICDlk6HkvJrjgajjg5Hjg4Pjg4HjgYzlvbHpn7/jgZnjgovpoJjln5/j
+ga7jg6Hjg7Pjg4bjg4oo5o+Q5L6b6ICF44GM44Gd44Gu6aCY5Z+f44Gu44Oh44Oz44OG44OK44Gn
+54ShCisgICDjgYTpmZDjgoop44Gr6YCB44KJ44KM44CBbGludXgta2VybmVsIOODoeODvOODquOD
+s+OCsOODquOCueODiOOBq0ND44GV44KM44KL44CCCisgLSDjg6zjg5Pjg6Xjg7zlp5Tlk6HkvJrj
+ga8gNDjmmYLplpPjga7plpPjgasgQUNLIOOBiyBOQUsg44KS5Ye644GZ44CCCisgLSDjgoLjgZfj
+g5Hjg4Pjg4HjgYzlp5Tlk6HkvJrjga7jg6Hjg7Pjg5DjgYvjgonljbTkuIvjgozjgovjgYvjgIHj
+g6Hjg7Pjg4bjg4rpgZTjgoTjg6Hjg7Pjg5DjgYzmsJfku5gKKyAgIOOBi+OBquOBi+OBo+OBn+WV
+j+mhjOOBjOaMgeOBoeOBguOBjOOCiuOAgWxpbnV4LWtlcm5lbCDjg6Hjg7Pjg5DjgYzjg5Hjg4Pj
+g4HjgavnlbDorbDjgpLllLHjgYgKKyAgIOOBn+WgtOWQiOOBq+OBr+OAgeODkeODg+ODgeOBr+OC
+reODpeODvOOBi+OCieWJiumZpOOBleOCjOOCi+OAggorIC0g44Os44OT44Ol44O844K144Kk44Kv
+44Or44Gu5pyA5b6M44Gr44CBQUNLIOOCkuWPl+OBkeOBn+ODkeODg+ODgeOBr+acgOaWsOOBriAt
+c3RhYmxlIOODquODquODvAorICAg44K544Gr6L+95Yqg44GV44KM44CB44Gd44Gu5b6M44Gr5paw
+44GX44GEIC1zdGFibGUg44Oq44Oq44O844K544GM6KGM44KP44KM44KL44CCCisgLSDjgrvjgq3j
+g6Xjg6rjg4bjgqPjg5Hjg4Pjg4Hjga/jgIHpgJrluLjjga7jg6zjg5Pjg6Xjg7zjgrXjgqTjgq/j
+g6vjgpLpgJrjgonjgZrjgIHjgrvjgq3jg6Xjg6rjg4bjgqMKKyAgIOOCq+ODvOODjeODq+ODgeOD
+vOODoOOBi+OCieebtOaOpSAtc3RhYmxlIOODhOODquODvOOBq+WPl+OBkeS7mOOBkeOCieOCjOOC
+i+OAggorICAg44GT44Gu5omL57aa44GN44Gu6Kmz57Sw44Gr44Gk44GE44Gm44GvIGtlcm5lbCBz
+ZWN1cml0eSDjg4Hjg7zjg6DjgavllY/jgYTlkIjjgo/jgZvjgovjgZPjgajjgIIKKwor44Os44OT
+44Ol44O85aeU5ZOh5LyaLQorCisgLSDjgZPjga7lp5Tlk6HkvJrjga/jgIHjgZPjga7jgr/jgrnj
+gq/jgavjgaTjgYTjgabmtLvli5XjgZnjgovlpJrjgY/jga7jg5zjg6njg7Pjg4bjgqPjgqLjgajj
+gIHlsJHmlbDjga4KKyAgIOmdnuODnOODqeODs+ODhuOCo+OCouOBruOCq+ODvOODjeODq+mWi+eZ
+uuiAhemBlOOBp+ani+aIkOOBleOCjOOBpuOBhOOCi+OAggorCg==
 
-Steve
+----Next_Part(Thu_Jan_31_09_46_36_2008_307)----
