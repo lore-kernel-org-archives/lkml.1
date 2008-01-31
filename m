@@ -1,46 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934010AbYAaQvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933485AbYAaQwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934010AbYAaQvi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765631AbYAaQvT
+	id S933485AbYAaQwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759774AbYAaQwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:51:19 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59007 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765121AbYAaQvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:51:18 -0500
-Date: Thu, 31 Jan 2008 11:51:17 -0500
-To: Lars Noschinski <lklml@ml.noschinski.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How does ext2 implement sparse files?
-Message-ID: <20080131165117.GC26259@csclub.uwaterloo.ca>
-References: <20080131152823.GA29422@lars.home.noschinski.de>
+	Thu, 31 Jan 2008 11:52:23 -0500
+Received: from gw.goop.org ([64.81.55.164]:58501 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759629AbYAaQwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:52:21 -0500
+Message-ID: <47A1FCB7.6010101@goop.org>
+Date: Thu, 31 Jan 2008 08:52:07 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131152823.GA29422@lars.home.noschinski.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 arch updates for v2.6.25
+References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu> <20080131161235.GB19700@cs181133002.pp.htv.fi> <20080131161523.GA12347@elte.hu> <20080131162423.GD19700@cs181133002.pp.htv.fi> <20080131164653.GA24494@elte.hu>
+In-Reply-To: <20080131164653.GA24494@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 04:28:23PM +0100, Lars Noschinski wrote:
-> For an university project, we had to write a toy filesystem (ext2-like),
-> for which I would like to implement sparse file support. For this, I
-> digged through the ext2 source code; but I could not find the point,
-> where ext2 detects holes.
-> 
-> As far as I can see from fs/buffer.c, an hole is a buffer_head which is
-> not mapped, but uptodate. But I cannot find a relevant source line,
-> where ext2 makes usage of this information.
-> 
-> Any hints would be greatly appreciated,
+Ingo Molnar wrote:
+> * Adrian Bunk <bunk@stusta.de> wrote:
+>
+>   
+>>>> What about the breakages caused by commit 
+>>>> a5a19c63f4e55e32dc0bc3d936d7f94793d8b380 (this commit broke the 
+>>>> defconfig compilation on at least avr32, blackfin, sh, sparc and uml)?
+>>>>         
+>>> the patch below fixes that.
+>>>       
+>> Is it safe, or why did Jeremy state in the commit
+>> "I removed this include to avoid an include cycle"?
+>>     
+>
+> that is an x86.git complication alone, and only affects 32-bit PAE: it 
+> is solved by the uninlining patch (that i've queued up to before the 
+> asm-generic/tlb.h revert/fix).
+>
+> 	Ingo
+>
+> ------------->
+> Subject: x86: uninline __pte_free_tlb() and __pmd_free_tlb()
+> From: Ingo Molnar <mingo@elte.hu>
+>
+> this also removes an include file dependency.
+>   
 
-While I don't actually know, I always thought it was up to the
-application to create files with holes by seeking over the holes before
-writing data.  That seems like the simplest way to me.
+Yes, that simplifies things a lot.
 
---
-Len Sorensen
+    J
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/mm/pgtable_32.c     |   19 +++++++++++++++++++
+>  include/asm-x86/pgalloc_32.h |   19 ++-----------------
+>  2 files changed, 21 insertions(+), 17 deletions(-)
+>
+> Index: linux/arch/x86/mm/pgtable_32.c
+> ===================================================================
+> --- linux.orig/arch/x86/mm/pgtable_32.c
+> +++ linux/arch/x86/mm/pgtable_32.c
+> @@ -376,3 +376,22 @@ void check_pgt_cache(void)
+>  {
+>  	quicklist_trim(0, pgd_dtor, 25, 16);
+>  }
+> +
+> +void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+> +{
+> +	paravirt_release_pt(page_to_pfn(pte));
+> +	tlb_remove_page(tlb, pte);
+> +}
+> +
+> +void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
+> +{
+> +	/* This is called just after the pmd has been detached from
+> +	   the pgd, which requires a full tlb flush to be recognized
+> +	   by the CPU.  Rather than incurring multiple tlb flushes
+> +	   while the address space is being pulled down, make the tlb
+> +	   gathering machinery do a full flush when we're done. */
+> +	tlb->fullmm = 1;
+> +
+> +	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
+> +	tlb_remove_page(tlb, virt_to_page(pmd));
+> +}
+> Index: linux/include/asm-x86/pgalloc_32.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/pgalloc_32.h
+> +++ linux/include/asm-x86/pgalloc_32.h
+> @@ -51,11 +51,7 @@ static inline void pte_free(struct page 
+>  }
+>  
+>  
+> -static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+> -{
+> -	paravirt_release_pt(page_to_pfn(pte));
+> -	tlb_remove_page(tlb, pte);
+> -}
+> +extern void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte);
+>  
+>  #ifdef CONFIG_X86_PAE
+>  /*
+> @@ -72,18 +68,7 @@ static inline void pmd_free(pmd_t *pmd)
+>  	free_page((unsigned long)pmd);
+>  }
+>  
+> -static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
+> -{
+> -	/* This is called just after the pmd has been detached from
+> -	   the pgd, which requires a full tlb flush to be recognized
+> -	   by the CPU.  Rather than incurring multiple tlb flushes
+> -	   while the address space is being pulled down, make the tlb
+> -	   gathering machinery do a full flush when we're done. */
+> -	tlb->fullmm = 1;
+> -
+> -	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
+> -	tlb_remove_page(tlb, virt_to_page(pmd));
+> -}
+> +extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
+>  
+>  static inline void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd)
+>  {
+>   
+
