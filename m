@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934313AbYAaN7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933769AbYAaOHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934313AbYAaN7w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 08:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766010AbYAaN7m
+	id S933769AbYAaOHb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 09:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765995AbYAaOHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 08:59:42 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:46276 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764705AbYAaN7j (ORCPT
+	Thu, 31 Jan 2008 09:07:17 -0500
+Received: from fmmailgate04.web.de ([217.72.192.242]:50657 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765640AbYAaOHP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 08:59:39 -0500
-Date: Thu, 31 Jan 2008 19:32:23 +0530
-From: Sudhir Kumar <skumar@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc8-mm1 Kernel BUG while bootup
-Message-ID: <20080131140223.GA6568@in.ibm.com>
-Reply-To: skumar@linux.vnet.ibm.com
-References: <20080122135800.GA6084@in.ibm.com> <20080122155329.GA30119@elte.hu> <20080128145722.GB25517@in.ibm.com> <20080128151300.GB12205@elte.hu>
+	Thu, 31 Jan 2008 09:07:15 -0500
+Date: Thu, 31 Jan 2008 15:04:28 +0100
+Message-Id: <137932353@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128151300.GB12205@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+From: devzero@web.de
+To: arjan@infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: =?iso-8859-15?Q?Re:_[PATCH]_x86:_introduce_/dev/mem_restrictions_with_?=
+ =?iso-8859-15?Q?a_config_option?=
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+TVJWr5JT71VW29/GTy56PdHhSYB6PZ6oGnZMewIyeu1hJS
+ OcDggKZV5pAM0Y1rxrkR1Xa55vz51fIaDWlR+tFwaEITnnHZnQ=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 04:13:00PM +0100, Ingo Molnar wrote:
-> 
-> * Sudhir Kumar <skumar@linux.vnet.ibm.com> wrote:
-> 
-> > I applied all the hot fixes patches but still the bug is there. (crash 
-> > at early boot).
-> > 
-> > As I replied your earlier mail in which the patch sent by you does not 
-> > apply (reverse). can you please look into the problem ?
-> 
-> could you test latest x86.git:
-> 
->    http://redhat.com/~mingo/x86.git/README
-> 
-> does that crash too?
+nice !
 
-Sorry , unable to do that as the instrunctions at above location
-do not work.
-Something else I can try ?
-> 
-> 	Ingo
+did you think about some boot-time param , e.g. "insecure-devmem" or something like that?
+
+recompiling kernel is time consuming.....
+
+
+
+
+
+
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] x86: introduce /dev/mem restrictions with a config option
+
+This patch introduces a restriction on /dev/mem: Only non-memory can be
+read or written unless the newly introduced config option is set.
+
+The X server needs access to /dev/mem for the PCI space, but it doesn't need
+access to memory; both the file permissions and SELinux permissions of /dev/mem
+just make X effectively super-super powerful. With the exception of the
+BIOS area, there's just no valid app that uses /dev/mem on actual memory.
+Other popular users of /dev/mem are rootkits and the like.
+(note: mmap access of memory via /dev/mem was already not allowed since
+a really long time)
+
+People who want to use /dev/mem for kernel debugging can enable the config
+option.
+
+The restrictions of this patch have been in the Fedora and RHEL kernels for
+at least 4 years without any problems.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+_______________________________________________________________________
+Jetzt neu! Schützen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
+kostenlos testen. http://www.pc-sicherheit.web.de/startseite/?mc=022220
+
