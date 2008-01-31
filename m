@@ -1,171 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762701AbYAaQnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933563AbYAaQoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762701AbYAaQnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 11:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYAaQmy
+	id S933563AbYAaQoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 11:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYAaQoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 11:42:54 -0500
-Received: from styx.suse.cz ([82.119.242.94]:50708 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755959AbYAaQmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 11:42:52 -0500
-Date: Thu, 31 Jan 2008 17:42:50 +0100
-From: Jan Kara <jack@suse.cz>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 07/10] udf: replace all adds to little endians
-	variables with le*_add_cpu
-Message-ID: <20080131164250.GG1461@duck.suse.cz>
-References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-8-git-send-email-marcin.slusarz@gmail.com>
+	Thu, 31 Jan 2008 11:44:09 -0500
+Received: from gw.goop.org ([64.81.55.164]:36261 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757453AbYAaQoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 11:44:07 -0500
+Message-ID: <47A1FAC7.6030501@goop.org>
+Date: Thu, 31 Jan 2008 08:43:51 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201727040-6769-8-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andi Kleen <andi@firstfloor.org>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] GBPAGES: Fix global bit for 64bit
+References: <20080131131931.GA15586@basil.nowhere.org>
+In-Reply-To: <20080131131931.GA15586@basil.nowhere.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 30-01-08 22:03:57, marcin.slusarz@gmail.com wrote:
-> replace all:
-> 	little_endian_variable = cpu_to_leX(leX_to_cpu(little_endian_variable) +
-> 	                                    expression_in_cpu_byteorder);
-> with:
-> 	leX_add_cpu(&little_endian_variable, expression_in_cpu_byteorder);
-> sparse didn't generate any new warning with this patch
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com
-> Cc: Jan Kara <jack@suse.cz>
-  Acked-by: Jan Kara <jack@suse.cz>
+Andi Kleen wrote:
+> [Ideally apply before the patch to enable gbpages direct mapping]
+>
+> The gbpages direct patch assumed that __PAGE_KERNEL contains _PAGE_GLOBAL
+> (I think because that was true at some point in git-x86 and i forgot
+> to remove it again when forward porting) 
+>
+> This is currently true on 32bit, but not on 64bit which does not make 
+> much sense. Add it to 64bit too. Also get rid of the obsolete MAKE_GLOBAL.
+>   
 
-									Honza
-> ---
->  fs/udf/balloc.c |   13 ++++---------
->  fs/udf/ialloc.c |   12 ++++--------
->  fs/udf/inode.c  |   16 ++++------------
->  3 files changed, 12 insertions(+), 29 deletions(-)
-> 
-> diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
-> index d721a1a..a95fcfe 100644
-> --- a/fs/udf/balloc.c
-> +++ b/fs/udf/balloc.c
-> @@ -149,8 +149,7 @@ static bool udf_add_free_space(struct udf_sb_info *sbi,
->  		return false;
+Last time when my patch to do this was in the tree, it caused random 
+things to fail, even after increasing the strength of various tlb 
+flushes.  Did you change something to fix this?
+
+    J
+
+> Signed-off-by: Andi Kleen <ak@suse.de>
+>
+> Index: linux/include/asm-x86/pgtable.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/pgtable.h
+> +++ linux/include/asm-x86/pgtable.h
+> @@ -69,11 +69,13 @@
+>  #define _PAGE_KERNEL (_PAGE_KERNEL_EXEC | _PAGE_NX)
 >  
->  	lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
-> -	lvid->freeSpaceTable[partition] = cpu_to_le32(le32_to_cpu(
-> -					lvid->freeSpaceTable[partition]) + cnt);
-> +	le32_add_cpu(&lvid->freeSpaceTable[partition], cnt);
->  	return true;
->  }
+>  #ifndef __ASSEMBLY__
+> +/* These are set up based on CPUID capabilities */
+>  extern pteval_t __PAGE_KERNEL, __PAGE_KERNEL_EXEC;
+>  #endif	/* __ASSEMBLY__ */
+>  #else
+> +/* 64bit can assume more CPUID capabilities */
+>  #define __PAGE_KERNEL_EXEC						\
+> -	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
+> +	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
+>  #define __PAGE_KERNEL		(__PAGE_KERNEL_EXEC | _PAGE_NX)
+>  #endif
 >  
-> @@ -589,10 +588,8 @@ static void udf_table_free_blocks(struct super_block *sb,
->  					sptr = oepos.bh->b_data + epos.offset;
->  					aed = (struct allocExtDesc *)
->  						oepos.bh->b_data;
-> -					aed->lengthAllocDescs =
-> -						cpu_to_le32(le32_to_cpu(
-> -							aed->lengthAllocDescs) +
-> -								adsize);
-> +					le32_add_cpu(&aed->lengthAllocDescs,
-> +							adsize);
->  				} else {
->  					sptr = iinfo->i_ext.i_data +
->  								epos.offset;
-> @@ -645,9 +642,7 @@ static void udf_table_free_blocks(struct super_block *sb,
->  				mark_inode_dirty(table);
->  			} else {
->  				aed = (struct allocExtDesc *)epos.bh->b_data;
-> -				aed->lengthAllocDescs =
-> -					cpu_to_le32(le32_to_cpu(
-> -					    aed->lengthAllocDescs) + adsize);
-> +				le32_add_cpu(&aed->lengthAllocDescs, adsize);
->  				udf_update_tag(epos.bh->b_data, epos.offset);
->  				mark_buffer_dirty(epos.bh);
->  			}
-> diff --git a/fs/udf/ialloc.c b/fs/udf/ialloc.c
-> index 8436031..93b40cc 100644
-> --- a/fs/udf/ialloc.c
-> +++ b/fs/udf/ialloc.c
-> @@ -47,11 +47,9 @@ void udf_free_inode(struct inode *inode)
->  		struct logicalVolIntegrityDescImpUse *lvidiu =
->  							udf_sb_lvidiu(sbi);
->  		if (S_ISDIR(inode->i_mode))
-> -			lvidiu->numDirs =
-> -				cpu_to_le32(le32_to_cpu(lvidiu->numDirs) - 1);
-> +			le32_add_cpu(&lvidiu->numDirs, -1);
->  		else
-> -			lvidiu->numFiles =
-> -				cpu_to_le32(le32_to_cpu(lvidiu->numFiles) - 1);
-> +			le32_add_cpu(&lvidiu->numFiles, -1);
+> @@ -86,22 +88,16 @@ extern pteval_t __PAGE_KERNEL, __PAGE_KE
+>  #define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
+>  #define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
 >  
->  		mark_buffer_dirty(sbi->s_lvid_bh);
->  	}
-> @@ -105,11 +103,9 @@ struct inode *udf_new_inode(struct inode *dir, int mode, int *err)
->  		lvhd = (struct logicalVolHeaderDesc *)
->  				(lvid->logicalVolContentsUse);
->  		if (S_ISDIR(mode))
-> -			lvidiu->numDirs =
-> -				cpu_to_le32(le32_to_cpu(lvidiu->numDirs) + 1);
-> +			le32_add_cpu(&lvidiu->numDirs, 1);
->  		else
-> -			lvidiu->numFiles =
-> -				cpu_to_le32(le32_to_cpu(lvidiu->numFiles) + 1);
-> +			le32_add_cpu(&lvidiu->numFiles, 1);
->  		iinfo->i_unique = uniqueID = le64_to_cpu(lvhd->uniqueID);
->  		if (!(++uniqueID & 0x00000000FFFFFFFFUL))
->  			uniqueID += 16;
-> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> index 3483274..68db2ea 100644
-> --- a/fs/udf/inode.c
-> +++ b/fs/udf/inode.c
-> @@ -1778,9 +1778,7 @@ int8_t udf_add_aext(struct inode *inode, struct extent_position *epos,
+> -#ifdef CONFIG_X86_32
+> -# define MAKE_GLOBAL(x)			__pgprot((x))
+> -#else
+> -# define MAKE_GLOBAL(x)			__pgprot((x) | _PAGE_GLOBAL)
+> -#endif
+> -
+> -#define PAGE_KERNEL			MAKE_GLOBAL(__PAGE_KERNEL)
+> -#define PAGE_KERNEL_RO			MAKE_GLOBAL(__PAGE_KERNEL_RO)
+> -#define PAGE_KERNEL_EXEC		MAKE_GLOBAL(__PAGE_KERNEL_EXEC)
+> -#define PAGE_KERNEL_RX			MAKE_GLOBAL(__PAGE_KERNEL_RX)
+> -#define PAGE_KERNEL_NOCACHE		MAKE_GLOBAL(__PAGE_KERNEL_NOCACHE)
+> -#define PAGE_KERNEL_EXEC_NOCACHE	MAKE_GLOBAL(__PAGE_KERNEL_EXEC_NOCACHE)
+> -#define PAGE_KERNEL_LARGE		MAKE_GLOBAL(__PAGE_KERNEL_LARGE)
+> -#define PAGE_KERNEL_LARGE_EXEC		MAKE_GLOBAL(__PAGE_KERNEL_LARGE_EXEC)
+> -#define PAGE_KERNEL_VSYSCALL		MAKE_GLOBAL(__PAGE_KERNEL_VSYSCALL)
+> -#define PAGE_KERNEL_VSYSCALL_NOCACHE	MAKE_GLOBAL(__PAGE_KERNEL_VSYSCALL_NOCACHE)
+> +#define PAGE_KERNEL			__pgprot(__PAGE_KERNEL)
+> +#define PAGE_KERNEL_RO			__pgprot(__PAGE_KERNEL_RO)
+> +#define PAGE_KERNEL_EXEC		__pgprot(__PAGE_KERNEL_EXEC)
+> +#define PAGE_KERNEL_RX			__pgprot(__PAGE_KERNEL_RX)
+> +#define PAGE_KERNEL_NOCACHE		__pgprot(__PAGE_KERNEL_NOCACHE)
+> +#define PAGE_KERNEL_EXEC_NOCACHE	__pgprot(__PAGE_KERNEL_EXEC_NOCACHE)
+> +#define PAGE_KERNEL_LARGE		__pgprot(__PAGE_KERNEL_LARGE)
+> +#define PAGE_KERNEL_LARGE_EXEC		__pgprot(__PAGE_KERNEL_LARGE_EXEC)
+> +#define PAGE_KERNEL_VSYSCALL		__pgprot(__PAGE_KERNEL_VSYSCALL)
+> +#define PAGE_KERNEL_VSYSCALL_NOCACHE	__pgprot(__PAGE_KERNEL_VSYSCALL_NOCACHE)
 >  
->  			if (epos->bh) {
->  				aed = (struct allocExtDesc *)epos->bh->b_data;
-> -				aed->lengthAllocDescs =
-> -					cpu_to_le32(le32_to_cpu(
-> -					aed->lengthAllocDescs) + adsize);
-> +				le32_add_cpu(&aed->lengthAllocDescs, adsize);
->  			} else {
->  				iinfo->i_lenAlloc += adsize;
->  				mark_inode_dirty(inode);
-> @@ -1830,9 +1828,7 @@ int8_t udf_add_aext(struct inode *inode, struct extent_position *epos,
->  		mark_inode_dirty(inode);
->  	} else {
->  		aed = (struct allocExtDesc *)epos->bh->b_data;
-> -		aed->lengthAllocDescs =
-> -			cpu_to_le32(le32_to_cpu(aed->lengthAllocDescs) +
-> -				    adsize);
-> +		le32_add_cpu(&aed->lengthAllocDescs, adsize);
->  		if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
->  				UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
->  			udf_update_tag(epos->bh->b_data,
-> @@ -2046,9 +2042,7 @@ int8_t udf_delete_aext(struct inode *inode, struct extent_position epos,
->  			mark_inode_dirty(inode);
->  		} else {
->  			aed = (struct allocExtDesc *)oepos.bh->b_data;
-> -			aed->lengthAllocDescs =
-> -				cpu_to_le32(le32_to_cpu(aed->lengthAllocDescs) -
-> -					    (2 * adsize));
-> +			le32_add_cpu(&aed->lengthAllocDescs, -(2 * adsize));
->  			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
->  			    UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
->  				udf_update_tag(oepos.bh->b_data,
-> @@ -2065,9 +2059,7 @@ int8_t udf_delete_aext(struct inode *inode, struct extent_position epos,
->  			mark_inode_dirty(inode);
->  		} else {
->  			aed = (struct allocExtDesc *)oepos.bh->b_data;
-> -			aed->lengthAllocDescs =
-> -				cpu_to_le32(le32_to_cpu(aed->lengthAllocDescs) -
-> -					    adsize);
-> +			le32_add_cpu(&aed->lengthAllocDescs, -adsize);
->  			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
->  			    UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
->  				udf_update_tag(oepos.bh->b_data,
-> -- 
-> 1.5.3.7
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+>  /*         xwr */
+>  #define __P000	PAGE_NONE
+>   
+
