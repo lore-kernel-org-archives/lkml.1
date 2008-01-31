@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934768AbYAaST3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934682AbYAaSUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934768AbYAaST3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 13:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934347AbYAaSTF
+	id S934682AbYAaSUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 13:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765113AbYAaSUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 13:19:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:4702 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934296AbYAaSTC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 13:19:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=k+73/p5b3qhNkz6hRULBHR51McO+S0vYBCE1hZ/AziGHyaH+QfsKIJGGjwR764lBrXIX184jeMfAWijPPKCyKg08cBmI83oP+WGquK/5MN6MIkGH3y0F89m/3YP8/jhcamjRYgOpl4sYBfYkZjEqaqCEL5gT8PyvQcQcHeiJzPE=
-Date: Thu, 31 Jan 2008 19:18:21 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/10] udf: truncate: create function for updating of
-	Allocation Ext Descriptor
-Message-ID: <20080131181813.GA6222@joi>
-References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-7-git-send-email-marcin.slusarz@gmail.com> <20080131170858.GK1461@duck.suse.cz>
+	Thu, 31 Jan 2008 13:20:32 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:57995 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755805AbYAaSUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 13:20:30 -0500
+Date: Thu, 31 Jan 2008 20:21:08 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, wli@holomorphy.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       sparclinux@vger.kernel.org
+Subject: Re: sparc compile error caused by x86 arch updates
+Message-ID: <20080131182108.GI19700@cs181133002.pp.htv.fi>
+References: <20080130011550.GA31853@elte.hu> <20080131155739.GA19700@cs181133002.pp.htv.fi> <20080131160033.GA11501@elte.hu> <20080131161235.GB19700@cs181133002.pp.htv.fi> <20080131161523.GA12347@elte.hu> <20080131162920.GE19700@cs181133002.pp.htv.fi> <47A1FC6D.6090305@goop.org> <20080131174331.GA11881@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080131170858.GK1461@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080131174331.GA11881@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 06:08:58PM +0100, Jan Kara wrote:
-> On Wed 30-01-08 22:03:56, marcin.slusarz@gmail.com wrote:
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Cc: Jan Kara <jack@suse.cz>
->   There are at least a few other places in inode.c which do exactly what
-> you do in udf_update_alloc_ext_desc() so these should be converted as well.
+On Thu, Jan 31, 2008 at 06:43:31PM +0100, Ingo Molnar wrote:
+> 
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> 
+> > But I guess I overlooked the comment...
+> >
+> > I guess the fix is to scatter linux/pagemap.h into the appropriate 
+> > places where these macros are used (asm-generic/tlb.h, for a start).
+> 
+> no. The fix is always to undo the damage ASAP, to keep the window of 
+> breakage minimized.
+> 
+> Adrian, could you please check whether latest x86.git:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+> 
+> resolves the Sparc build failure you were seeing? All known issues are 
+> fixed in it. (let me know if you know about more)
 
-I noticed that too, but it's not clear to me how to do it properly.
+Compiles here on sparc.
 
-Marcin
+> 	Ingo
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
