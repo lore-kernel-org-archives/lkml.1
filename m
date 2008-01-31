@@ -1,142 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbYAaB0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbYAaB01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbYAaB0A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 20:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYAaBZw
+	id S1760970AbYAaB01 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 20:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759355AbYAaB0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 20:25:52 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:43790 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754031AbYAaBZv (ORCPT
+	Wed, 30 Jan 2008 20:26:06 -0500
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:3282 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758902AbYAaB0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 20:25:51 -0500
-Date: Thu, 31 Jan 2008 09:46:36 +0900 (JST)
-Message-Id: <20080131.094636.94558620.tshibata@ab.jp.nec.com>
-To: greg@kroah.com, linux-kernel@vger.kernel.org
-Cc: tshibata@ab.jp.nec.com
-Subject: [Patch] Add translation of stable_kernel_rules.txt
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
- =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
-Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
- boundary="--Next_Part(Thu_Jan_31_09_46_36_2008_307)--"
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Jan 2008 20:26:04 -0500
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: Mostly revert "e1000/e1000e: Move PCI-Express device IDs over       to e1000e"
+Cc: akpm@linux-foundation.org, auke-jan.h.kok@intel.com, davem@davemloft.net,
+       jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       randy.dunlap@oracle.com, torvalds@linux-foundation.org
+In-reply-To: <20080130235836.GV29368@does.not.exist>
+References: <200801292359.m0TNxb75011826@hera.kernel.org> <20080129212314.91b9bb5b.randy.dunlap@oracle.com> <alpine.LFD.1.00.0801301631400.3426@www.l.google.com> <20080130235836.GV29368@does.not.exist>
+Message-Id: <E1JKOBl-0007ne-EE@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Thu, 31 Jan 2008 02:26:01 +0100
+X-OriginalArrivalTime: 31 Jan 2008 01:26:01.0835 (UTC) FILETIME=[3D8CC3B0:01C863A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-----Next_Part(Thu_Jan_31_09_46_36_2008_307)--
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Adrian Bunk wrote:
+>> Jeff, Auke, would something like this be acceptable? It makes it very
+>> obvious in the driver table which entries are for the PCIE versions that
+>> would be handled by the E1000E driver if it is enabled..
+> 
+> I don't like it:
+> We should aim at having exactly one driver for one card.
 
-Hello, 
+There is one thing I don't understand, but that may well be just me...
 
-Add translation of stable_kernel_rules.txt into Documentation/ja_JP.
+>From Linus' original patch:
+> +++ b/drivers/net/e1000/e1000_main.c
+> +     INTEL_E1000_ETHERNET_DEVICE(0x108C),
 
-Contents are reviewed by Japanese translation community called "JF".
-Thanks a lot!
+So, apparently support for 8086:108c was removed from the e1000 driver.
 
-As always, I am attaching the patch because of UTF-8.
+>From my lspci:
+$ lspci -nn | grep Ether
+01:00.0 Ethernet controller [0200]: Intel Corporation 82573E Gigabit Ethernet Controller (Copper) [8086:108c] (rev 03)
 
-Singed-off-by: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+But when I look at where that card is sitting:
+$ readlink pci/devices/0000\:01\:00.0/driver
+../../../../bus/pci/drivers/e1000
 
----
+So, it's on the PCI bus, not on the PCI-Express bus (which I also have, but
+which has no devices on it).
 
+Or does the e1000e driver also support cards on the PCI bus?
 
-----Next_Part(Thu_Jan_31_09_46_36_2008_307)--
-Content-Type: Application/Octet-Stream
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="Add-ja_JP-stable_kernel_rules.txt"
+If that's the case then the original changelog entry "Move PCI-Express
+device IDs over to e1000e" is misleading as it's not only PCI-Express
+devices...
 
-ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vamFfSlAvc3RhYmxlX2tlcm5lbF9ydWxlcy50eHQg
-Yi9Eb2N1bWVudGF0aW9uL2phX0pQL3N0YWJsZV9rZXJuZWxfcnVsZXMudHh0Cm5ldyBmaWxlIG1v
-ZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLjM5NWU1OGMKLS0tIC9kZXYvbnVsbAorKysgYi9Eb2N1
-bWVudGF0aW9uL2phX0pQL3N0YWJsZV9rZXJuZWxfcnVsZXMudHh0CkBAIC0wLDAgKzEsNzkgQEAK
-K05PVEU6CitUaGlzIGlzIEphcGFuZXNlIHRyYW5zbGF0ZWQgdmVyc2lvbiBvZiAiRG9jdW1lbnRh
-dGlvbi9zdGFibGVfa2VybmVsX3J1bGVzLnR4dCIuCitUaGlzIG9uZSBpcyBtYWludGFpbmVkIGJ5
-IFRzdWdpa2F6dSBTaGliYXRhIDx0c2hpYmF0YUBhYi5qcC5uZWMuY29tPgorYW5kIEpGIFByb2pl
-Y3QgdGVhbSA8d3d3LmxpbnV4Lm9yLmpwL0pGPi4KK0lmIHlvdSBmaW5kIGRpZmZlcmVuY2Ugd2l0
-aCBvcmlnaW5hbCBmaWxlIG9yIHByb2JsZW0gaW4gdHJhbnNsYXRpb24sCitwbGVhc2UgY29udGFj
-dCBtYWludGFpbmVyIG9mIHRoaXMgZmlsZSBvciBKRiBwcm9qZWN0LgorCitQbGVhc2UgYWxzbyBu
-b3RlIHRoYXQgcHVycG9zZSBvZiB0aGlzIGZpbGUgaXMgZWFzaWVyIHRvIHJlYWQgZm9yIG5vbgor
-RW5nbGlzaCBuYXRpdmVzIGFuZCBkbyBubyBpbnRlbmRlZCB0byBmb3JrLiBTbywgaWYgeW91IGhh
-dmUgYW55Citjb21tZW50IG9yIHVwZGF0ZSBvZiB0aGlzIGZpbGUsIHBsZWFzZSB0cnkgdG8gdXBk
-YXRlIE9yaWdpbmFsKEVuZ2xpc2gpCitmaWxlIGF0IGZpcnN0LgorCis9PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09CivjgZPjgozjga/jgIEKK2xpbnV4LTIuNi4yNC9Eb2N1bWVudGF0
-aW9uL3N0YWJsZV9rZXJuZWxfcnVsZXMudHh0Civjga7lkozoqLPjgafjgZnjgIIKKwor57+76Kiz
-5Zuj5L2T77yaIEpGIOODl+ODreOCuOOCp+OCr+ODiCA8IGh0dHA6Ly93d3cubGludXgub3IuanAv
-SkYvID4KK+e/u+ios+aXpe+8miAyMDA3LzEyLzMwCivnv7voqLPogIXvvJogVHN1Z2lrYXp1IFNo
-aWJhdGEgPHRzaGliYXRhIGF0IGFiIGRvdCBqcCBkb3QgbmVjIGRvdCBjb20+CivmoKHmraPogIXv
-vJog5q2m5LqV5Ly45YWJ44GV44KT44CBPHRha2VpIGF0IHdlYm1hc3RlcnMgZG90IGdyIGRvdCBq
-cD4KKyAgICAgICAgIOOBi+OBreOBk+OBleOCkyAoU2VpamkgS2FuZWtvKSA8c2thbmVrbyBhdCBh
-MiBkb3QgbWJuIGRvdCBvciBkb3QganA+CisgICAgICAgICDlsI/mnpcg6ZuF5YW444GV44KTIChN
-YXNhbm9yaSBLb2JheWFzaSkgPHphcDAzMjE2IGF0IG5pZnR5IGRvdCBuZSBkb3QganA+CisgICAg
-ICAgICDph47lj6PjgZXjgpMgKEtlbmppIE5vZ3VjaGkpIDx0b2t5bzI0NiBhdCBnbWFpbCBkb3Qg
-Y29tPgorICAgICAgICAg56We5a6u5L+h5aSq6YOO44GV44KTIDxqaW4gYXQgbGliamluZ3UgZG90
-IGpwPgorPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQorCivjgZrjgaPjgajnn6Xj
-gorjgZ/jgYvjgaPjgZ8gTGludXggMi42IC1zdGFibGUg44Oq44Oq44O844K544Gu5YWo44GmCisK
-KyItc3RhYmxlIiDjg4Tjg6rjg7zjgavjganjga7jgojjgYbjgarnqK7poZ7jga7jg5Hjg4Pjg4Hj
-gYzlj5fjgZHlhaXjgozjgonjgozjgovjgYvjgIHjganjga7jgojjgYbjgaoKK+OCguOBruOBjOWP
-l+OBkeWFpeOCjOOCieOCjOOBquOBhOOBi+OAgeOBq+OBpOOBhOOBpuOBruimj+WJhy0KKworIC0g
-5piO44KJ44GL44Gr5q2j44GX44GP44CB44OG44K544OI44GV44KM44Gm44GE44KL44KC44Gu44Gn
-44Gq44GR44KM44Gw44Gq44KJ44Gq44GE44CCCisgLSDmlofohIgo5aSJ5pu06KGM44Gu5YmN5b6M
-KeOCkuWQq+OCgeOBpiAxMDAg6KGM44KI44KK5aSn44GN44GP44Gm44Gv44GE44GR44Gq44GE44CC
-CisgLSDjgZ/jgaDkuIDlgIvjga7jgZPjgajjgaDjgZHjgpLkv67mraPjgZfjgabjgYTjgovjgbnj
-gY3jgIIKKyAtIOeahuOCkuaCqeOBvuOBm+OBpuOBhOOCi+acrOeJqeOBruODkOOCsOOCkuS/ruat
-o+OBl+OBquOBkeOCjOOBsOOBquOCieOBquOBhOOAgigi44GT44KM44Gv44OQ44Kw44GnCisgICDj
-gYLjgovjgYvjgoLjgZfjgozjgarjgYTjgYwuLi4iIOOBruOCiOOBhuOBquOCguOBruOBp+OBr+OB
-quOBhCkKKyAtIOODk+ODq+ODieOCqOODqeODvChDT05GSUdfQlJPS0VO44Gr44Gq44Gj44Gm44GE
-44KL44KC44Gu44KS6Zmk44GPKSwgb29wcywg44OP44Oz44Kw44CB44OH44O8CisgICDjgr/noLTl
-o4rjgIHnj77lrp/jga7jgrvjgq3jg6Xjg6rjg4bjgqPllY/poYzjgIHjgZ3jga7ku5YgIuOBguOB
-guOAgeOBk+OCjOOBr+ODgOODoeOBoOOBrSLjgajjgYTjgYYKKyAgIOOCiOOBhuOBquOCguOBruOC
-kuS/ruato+OBl+OBquOBkeOCjOOBsOOBquOCieOBquOBhOOAguefreOBj+iogOOBiOOBsOOAgemH
-jeWkp+OBquWVj+mhjOOAggorIC0g44Gp44Gu44KI44GG44Gr56u25ZCI54q25oWL44GM55m655Sf
-44GZ44KL44GL44Gu6Kqs5piO44KC5LiA57eS44Gr5pu444GL44KM44Gm44GE44Gq44GE6ZmQ44KK
-44CBCisgICAi55CG6KuW55qE44Gr44Gv56u25ZCI54q25oWL44Gr44Gq44KLIuOCiOOBhuOBquOC
-guOBruOBr+S4jeWPr+OAggorIC0g44GE44GL44Gq44KL5Lqb57Sw44Gq5L+u5q2j44KC5ZCr44KB
-44KL44GT44Go44Gv44Gn44GN44Gq44GE44CCKOOCueODmuODq+OBruS/ruato+OAgeepuueZveOB
-ruOCr+ODquODvAorICAg44Oz44Ki44OD44OX44Gq44GpKQorIC0g5a++5b+c44GZ44KL44K144OW
-44K344K544OG44Og44Oh44Oz44OG44OK44GM5Y+X44GR5YWl44KM44Gf44KC44Gu44Gn44Gq44GR
-44KM44Gw44Gq44KJ44Gq44GE44CCCisgLSBEb2N1bWVudGF0aW9uL1N1Ym1pdHRpbmdQYXRjaGVz
-IOOBruimj+WJh+OBq+W+k+OBo+OBn+OCguOBruOBp+OBquOBkeOCjOOBsOOBquOCieOBquOBhOOA
-ggorCistc3RhYmxlIOODhOODquODvOOBq+ODkeODg+ODgeOCkumAgeS7mOOBmeOCi+aJi+e2muOB
-jS0KKworIC0g5LiK6KiY44Gu6KaP5YmH44Gr5b6T44Gj44Gm44GE44KL44GL44KS56K66KqN44GX
-44Gf5b6M44Gr44CBc3RhYmxlQGtlcm5lbC5vcmcg44Gr44OR44OD44OBCisgICDjgpLpgIHjgovj
-gIIKKyAtIOmAgeS/oeiAheOBr+ODkeODg+ODgeOBjOOCreODpeODvOOBq+WPl+OBkeS7mOOBkeOC
-ieOCjOOBn+mam+OBq+OBryBBQ0sg44KS44CB5Y205LiL44GV44KM44Gf5aC05ZCICisgICDjgavj
-ga8gTkFLIOOCkuWPl+OBkeWPluOCi+OAguOBk+OBruWPjeW/nOOBr+mWi+eZuuiAheOBn+OBoeOB
-ruOCueOCseOCuOODpeODvOODq+OBq+OCiOOBo+OBpuOAgeaVsAorICAg5pel44GL44GL44KL5aC0
-5ZCI44GM44GC44KL44CCCisgLSDjgoLjgZflj5fjgZHlj5bjgonjgozjgZ/jgonjgIHjg5Hjg4Pj
-g4Hjga/ku5bjga7plovnmbrogIXjgZ/jgaHjga7jg6zjg5Pjg6Xjg7zjga7jgZ/jgoHjgasKKyAg
-IC1zdGFibGUg44Kt44Ol44O844Gr6L+95Yqg44GV44KM44KL44CCCisgLSDjgrvjgq3jg6Xjg6rj
-g4bjgqPjg5Hjg4Pjg4Hjga/jgZPjga7jgqjjgqTjg6rjgqLjgrkgKHN0YWJsZUBrZXJuZWwub3Jn
-KSDjgavpgIHjgonjgozjgovjgbkKKyAgIOOBjeOBp+OBr+OBquOBj+OAgeS7o+OCj+OCiuOBqyBz
-ZWN1cml0eUBrZXJuZWwub3JnIOOBruOCouODieODrOOCueOBq+mAgeOCieOCjOOCi+OAggorCivj
-g6zjg5Pjg6Xjg7zjgrXjgqTjgq/jg6stCisKKyAtIC1zdGFibGUg44Oh44Oz44OG44OK44GM44Os
-44OT44Ol44O844K144Kk44Kv44Or44KS5rG644KB44KL44Go44GN44CB44OR44OD44OB44Gv44Os
-44OT44Ol44O85aeUCisgICDlk6HkvJrjgajjg5Hjg4Pjg4HjgYzlvbHpn7/jgZnjgovpoJjln5/j
-ga7jg6Hjg7Pjg4bjg4oo5o+Q5L6b6ICF44GM44Gd44Gu6aCY5Z+f44Gu44Oh44Oz44OG44OK44Gn
-54ShCisgICDjgYTpmZDjgoop44Gr6YCB44KJ44KM44CBbGludXgta2VybmVsIOODoeODvOODquOD
-s+OCsOODquOCueODiOOBq0ND44GV44KM44KL44CCCisgLSDjg6zjg5Pjg6Xjg7zlp5Tlk6HkvJrj
-ga8gNDjmmYLplpPjga7plpPjgasgQUNLIOOBiyBOQUsg44KS5Ye644GZ44CCCisgLSDjgoLjgZfj
-g5Hjg4Pjg4HjgYzlp5Tlk6HkvJrjga7jg6Hjg7Pjg5DjgYvjgonljbTkuIvjgozjgovjgYvjgIHj
-g6Hjg7Pjg4bjg4rpgZTjgoTjg6Hjg7Pjg5DjgYzmsJfku5gKKyAgIOOBi+OBquOBi+OBo+OBn+WV
-j+mhjOOBjOaMgeOBoeOBguOBjOOCiuOAgWxpbnV4LWtlcm5lbCDjg6Hjg7Pjg5DjgYzjg5Hjg4Pj
-g4HjgavnlbDorbDjgpLllLHjgYgKKyAgIOOBn+WgtOWQiOOBq+OBr+OAgeODkeODg+ODgeOBr+OC
-reODpeODvOOBi+OCieWJiumZpOOBleOCjOOCi+OAggorIC0g44Os44OT44Ol44O844K144Kk44Kv
-44Or44Gu5pyA5b6M44Gr44CBQUNLIOOCkuWPl+OBkeOBn+ODkeODg+ODgeOBr+acgOaWsOOBriAt
-c3RhYmxlIOODquODquODvAorICAg44K544Gr6L+95Yqg44GV44KM44CB44Gd44Gu5b6M44Gr5paw
-44GX44GEIC1zdGFibGUg44Oq44Oq44O844K544GM6KGM44KP44KM44KL44CCCisgLSDjgrvjgq3j
-g6Xjg6rjg4bjgqPjg5Hjg4Pjg4Hjga/jgIHpgJrluLjjga7jg6zjg5Pjg6Xjg7zjgrXjgqTjgq/j
-g6vjgpLpgJrjgonjgZrjgIHjgrvjgq3jg6Xjg6rjg4bjgqMKKyAgIOOCq+ODvOODjeODq+ODgeOD
-vOODoOOBi+OCieebtOaOpSAtc3RhYmxlIOODhOODquODvOOBq+WPl+OBkeS7mOOBkeOCieOCjOOC
-i+OAggorICAg44GT44Gu5omL57aa44GN44Gu6Kmz57Sw44Gr44Gk44GE44Gm44GvIGtlcm5lbCBz
-ZWN1cml0eSDjg4Hjg7zjg6DjgavllY/jgYTlkIjjgo/jgZvjgovjgZPjgajjgIIKKwor44Os44OT
-44Ol44O85aeU5ZOh5LyaLQorCisgLSDjgZPjga7lp5Tlk6HkvJrjga/jgIHjgZPjga7jgr/jgrnj
-gq/jgavjgaTjgYTjgabmtLvli5XjgZnjgovlpJrjgY/jga7jg5zjg6njg7Pjg4bjgqPjgqLjgajj
-gIHlsJHmlbDjga4KKyAgIOmdnuODnOODqeODs+ODhuOCo+OCouOBruOCq+ODvOODjeODq+mWi+eZ
-uuiAhemBlOOBp+ani+aIkOOBleOCjOOBpuOBhOOCi+OAggorCg==
+Hmmm. Or does which driver is loaded decide on which bus the device ends up?
 
-----Next_Part(Thu_Jan_31_09_46_36_2008_307)----
+Confused,
+FJP
