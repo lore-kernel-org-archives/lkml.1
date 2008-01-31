@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbYAaTgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933022AbYAaThw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932356AbYAaTgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 14:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763446AbYAaTg1
+	id S933022AbYAaThw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 14:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760484AbYAaThk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 14:36:27 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:57504 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756532AbYAaTg0 (ORCPT
+	Thu, 31 Jan 2008 14:37:40 -0500
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:37305 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760038AbYAaThi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 14:36:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qqp9hyK7YqHfcjoVRIXH75J1FUYUoqTLuLKI45nvd/CIiMdsktLUfe9gzQtpy1f197Ty0O/dxfJQdBPmBuoWbosC6WijbEn4AuuuS14+H3c2q7rXRRTzwjy8/QKe7sVSl9d71f7w10VeNKrpfK/VrlssULocslSAZja5UrgNINM=
-Message-ID: <3efb10970801311136y12670f12x6e4fdd44de3677b9@mail.gmail.com>
-Date: Thu, 31 Jan 2008 20:36:25 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-Cc: michael <trimarchi@gandalf.sssup.it>, fabio@gandalf.sssup.it,
-       "Andrew Victor" <linux@maxim.org.za>,
-       "Chip Coldwell" <coldwell@redhat.com>,
-       "Marc Pignat" <marc.pignat@hevs.ch>,
-       "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>
+	Thu, 31 Jan 2008 14:37:38 -0500
+Date: Thu, 31 Jan 2008 13:37:32 -0600 (CST)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Bill Fink <billfink@mindspring.com>
+cc: SANGTAE HA <sangtae.ha@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+In-Reply-To: <20080131123627.599be68f.billfink@mindspring.com>
+Message-ID: <Pine.LNX.4.63.0801311328030.14403@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
+ <20080130.055333.192844925.davem@davemloft.net>
+ <Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>
+ <20080130082136.1017631d@deepthought> <Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
+ <649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
+ <20080131064533.ef0ae932.billfink@mindspring.com>
+ <Pine.LNX.4.63.0801310951060.10967@trinity.phys.uwm.edu>
+ <20080131123627.599be68f.billfink@mindspring.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080129224316.GA23155@gandalf.sssup.it>
-	 <479FB2D7.4020804@gandalf.sssup.it>
-	 <20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
-	 <47A051A7.7030004@gandalf.sssup.it>
-	 <20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
-	 <47A09723.7020000@gandalf.sssup.it>
-	 <20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>
-	 <47A12A2E.5040309@gandalf.sssup.it>
-	 <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>
-X-Google-Sender-Auth: 3bc16c26a7233fd0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Haavard,
+Hi Bill,
 
-> It seems to be very sensitive to network traffic though...could it have
-> something to do with softirq scheduling? Could you try the patch below
-> and see if you can trigger the error message?
+>>> I see similar results on my test systems
+>>
+>> Thanks for this report and for confirming our observations.  Could you
+>> please confirm that a single-port bidrectional UDP link runs at wire
+>> speed?  This helps to localize the problem to the TCP stack or interaction
+>> of the TCP stack with the e1000 driver and hardware.
+>
+> Yes, a single-port bidirectional UDP test gets full GigE line rate
+> in both directions with no packet loss.
 
-Funny that you mention this.
-The largest latencies I currently have on RT (and rm9200) occur when
-using a telnet session or NFS filesystems, thus while using network.
-The impact on hardware Interrupt latencies are limited (<85us), so the
-interrupt handler should still be able to keep up the receive buffer,
-but context switches between threads can stall for a longer time under
-some conditions.
-A long shot, but can it be that the ringbuffer overflows, and that
-therefor characters are lost?
+Thanks for confirming this.  And thanks also for nuttcp!  I just 
+recognized you as the author.
 
-
-Kind Regards,
-
-Remy
+Cheers,
+ 	Bruce
