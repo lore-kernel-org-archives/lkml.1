@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932276AbYAaKjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933339AbYAaKji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932276AbYAaKjF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 05:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765651AbYAaKim
+	id S933339AbYAaKji (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 05:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765881AbYAaKio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 05:38:42 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33188 "EHLO pasmtpA.tele.dk"
+	Thu, 31 Jan 2008 05:38:44 -0500
+Received: from sacred.ru ([62.205.161.221]:45286 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759858AbYAaKil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 05:38:41 -0500
-Date: Thu, 31 Jan 2008 11:38:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: about relocs.c on x86
-Message-ID: <20080131103842.GA550@uranus.ravnborg.org>
-References: <86802c440801310007oe8693c7q177d41a87c27ca7@mail.gmail.com> <20080131095223.GA11867@elte.hu> <1201773740.23523.17.camel@brick> <20080131101111.GB11867@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131101111.GB11867@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	id S1763214AbYAaKim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 05:38:42 -0500
+Message-ID: <47A1A527.9040705@openvz.org>
+Date: Thu, 31 Jan 2008 13:38:31 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make nf_ct_path[] static
+References: <20080130200259.GE29368@does.not.exist>
+In-Reply-To: <20080130200259.GE29368@does.not.exist>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 31 Jan 2008 13:38:18 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk wrote:
+> This patch makes the needlessly global nf_ct_path[] static.
 > 
-> no strong opinion from me - but i think it should be obvious to the 
-> developer when they are looking at a .c file that it's 32-bit only (or 
-> 64-bit only). I.e. the default is that whatever .c file we look at is 
-> unified - and in that sense relocs.c breaks that general expectation.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I for one would like to see when stuff is 32 bit only and when
-shared across 32 and 64 bit. 
-And this type of info is useful when I do greps so hiding the information
-in a Makefiel is then no good.
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
 
-It helps your understanding when you get the most correct picture of
-where a certain symbol is used - a functionality I often need.
-And this is by no menas limited to a narrow x86 view but across
-the full kernel.
+Thanks, Adrian!
 
-So I, and this is no news for Ingo, would like to see what is
-solely for 32 bit to be marked as such.
+> ---
+> 6396fbcebe3eb61f7e6eb1a671920a515912b005 
+> diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
+> index 696074a..5bd38a6 100644
+> --- a/net/netfilter/nf_conntrack_standalone.c
+> +++ b/net/netfilter/nf_conntrack_standalone.c
+> @@ -380,7 +380,7 @@ static ctl_table nf_ct_netfilter_table[] = {
+>  	{ .ctl_name = 0 }
+>  };
+>  
+> -struct ctl_path nf_ct_path[] = {
+> +static struct ctl_path nf_ct_path[] = {
+>  	{ .procname = "net", .ctl_name = CTL_NET, },
+>  	{ }
+>  };
+> 
+> 
 
-And we are heading with full speed to the situation for x86 where
-the number of foo_32.c, foo_64.c are minimal.
-But that said we will likely see a small decrease in speed now.
-
-As for the Makefiles - I looked at them last time and only
-issue that kept me away for unifying them was that I did
-not understand the linking order requirments and I did not see
-enough benefit at that time to invest the time to unify them.
-Each of the remaining Makefile should be unifyable in less
-than 10 steps each. It is just work that are waitng to be done.
-
-	Sam
