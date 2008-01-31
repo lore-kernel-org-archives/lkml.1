@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbYAaPvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762988AbYAaPyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763585AbYAaPvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 10:51:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbYAaPux
+	id S1762988AbYAaPyv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 10:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757173AbYAaPyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 10:50:53 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:50031 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756793AbYAaPuv (ORCPT
+	Thu, 31 Jan 2008 10:54:41 -0500
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:50280 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757101AbYAaPyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 10:50:51 -0500
-Message-ID: <47A1EE54.6000005@vlnb.net>
-Date: Thu, 31 Jan 2008 18:50:44 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Thu, 31 Jan 2008 10:54:40 -0500
+Date: Thu, 31 Jan 2008 09:54:26 -0600 (CST)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Bill Fink <billfink@mindspring.com>
+cc: SANGTAE HA <sangtae.ha@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+In-Reply-To: <20080131064533.ef0ae932.billfink@mindspring.com>
+Message-ID: <Pine.LNX.4.63.0801310951060.10967@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
+ <20080130.055333.192844925.davem@davemloft.net>
+ <Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>
+ <20080130082136.1017631d@deepthought> <Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
+ <649aecc70801301617m6331bcb8i8ce60366e182c739@mail.gmail.com>
+ <20080131064533.ef0ae932.billfink@mindspring.com>
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       FUJITA Tomonori <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp,
-       rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <adazluoe2t3.fsf@cisco.com>	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>	 <20080130195635T.tomof@acm.org>	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org> <e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com>
-In-Reply-To: <e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche wrote:
-> On Jan 31, 2008 2:25 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> 
->>Since this particular code is located in a non-data path critical
->>section, the kernel vs. user discussion is a wash.  If we are talking
->>about data path, yes, the relevance of DD tests in kernel designs are
->>suspect :p.  For those IB testers who are interested, perhaps having a
->>look with disktest from the Linux Test Project would give a better
->>comparision between the two implementations on a RDMA capable fabric
->>like IB for best case performance.  I think everyone is interested in
->>seeing just how much data path overhead exists between userspace and
->>kernel space in typical and heavy workloads, if if this overhead can be
->>minimized to make userspace a better option for some of this very
->>complex code.
-> 
-> I can run disktest on the same setups I ran dd on. This will take some
-> time however.
+Hi Bill,
 
-Disktest was already referenced in the beginning of the performance 
-comparison thread, but its results are not very interesting if we are 
-going to find out, which implementation is more effective, because in 
-the modes, in which usually people run this utility, it produces latency 
-insensitive workload (multiple threads working in parallel). So, such 
-multithreaded disktests results will be different between STGT and SCST 
-only if STGT's implementation will get target CPU bound. If CPU on the 
-target is powerful enough, even extra busy loops in the STGT or SCST hot 
-path code will change nothing.
+> I see similar results on my test systems
 
-Additionally, multithreaded disktest over RAM disk is a good example of 
-a synthetic benchmark, which has almost no relation with real life 
-workloads. But people like it, because it produces nice looking results.
+Thanks for this report and for confirming our observations.  Could you 
+please confirm that a single-port bidrectional UDP link runs at wire 
+speed?  This helps to localize the problem to the TCP stack or interaction 
+of the TCP stack with the e1000 driver and hardware.
 
-Actually, I don't know what kind of conclusions it is possible to make 
-from disktest's results (maybe only how throughput gets bigger or slower 
-with increasing number of threads?), it's a good stress test tool, but 
-not more.
-
-> Disktest is new to me -- any hints with regard to suitable
-> combinations of command line parameters are welcome. The most recent
-> version I could find on http://ltp.sourceforge.net/ is ltp-20071231.
-> 
-> Bart Van Assche.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+Cheers,
+ 	Bruce
