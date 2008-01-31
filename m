@@ -1,151 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbYAaV6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934329AbYAaV6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933208AbYAaV6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 16:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761116AbYAaV6B
+	id S934329AbYAaV6i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 16:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbYAaV6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 16:58:01 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54219 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760629AbYAaV57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 16:57:59 -0500
-Date: Thu, 31 Jan 2008 16:52:26 -0500
-From: Josef Bacik <jbacik@redhat.com>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Josef Bacik <jbacik@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
-Message-ID: <20080131215226.GC29679@unused.rdu.redhat.com>
-References: <20080131161417.GA29679@unused.rdu.redhat.com> <20080131193543.GS23836@webber.adilger.int>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080131193543.GS23836@webber.adilger.int>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 31 Jan 2008 16:58:21 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:14513 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933060AbYAaV6T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 16:58:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:from;
+        b=DYpUve8MGXhD+La47wPIaVmWOiNCkEZmuSQpV/ZSZO1nLc6eMyW766GRLxepOCJIJaRKOb83hJT8nD4D1mBpPh2cTVqAq2k2clnI1BzPbDMPYzM+JmkAZ3XHA133IYmQPUX3S1t6/bZWvn8ElZN7mbScI/YWaEh4vnivE7YVTk8=
+Date: Thu, 31 Jan 2008 22:58:11 +0100
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh <linux-sh@vger.kernel.org>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: [PATCH/KCONFIG] - Add SUPERH depends to sound/soc/sh/Kconfig
+Message-Id: <20080131225811.a175de2c.Kristoffer.ericson@gmail.com>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg"
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 12:35:43PM -0700, Andreas Dilger wrote:
-> On Jan 31, 2008  11:14 -0500, Josef Bacik wrote:
-> [snip excellent analysis]
-> > So you get into this situation where
-> > t_nr_buffers (the actual number of buffers that are on the transaction) is
-> > greater than the number of buffers accounted for via t_outstanding_credits.
-> > This presents a problem since as we loop through writting buffers to the
-> > journal, we decrement t_outstanding_credits, and if t_nr_buffers is more than
-> > t_outstanding_credits then we end up with a negative number for
-> > t_outstanding_credits
-> > 
-> > Signed-off-by: Josef Bacik <jbacik@redhat.com>
-> 
-> Do you know what kernel this problem was introduced in, or is this a
-> long standing problem?  Presumably the same is needed for jbd2?
-> 
-> Once we have some decent amount of testing going on with ext4, I think
-> it makes sense to merge the jbd2 changes back into jbd and return to
-> a single code base, since there is nothing in the jbd2 code that ext3
-> can't also work with (i.e. all of the changes are properly isolated
-> with compatibility flags and such).
-> 
-> > @@ -1056,7 +1056,7 @@ static inline int jbd_space_needed(journal_t *journal)
-> >  	int nblocks = journal->j_max_transaction_buffers;
-> >  	if (journal->j_committing_transaction)
-> >  		nblocks += journal->j_committing_transaction->
-> > -					t_outstanding_credits;
-> > +					t_nr_buffers;
-> 
-> (trivial) this can be moved back onto the previous line.
-> 
-> > @@ -1168,7 +1168,7 @@ static inline int jbd_space_needed(journal_t *journal)
-> >  	int nblocks = journal->j_max_transaction_buffers;
-> >  	if (journal->j_committing_transaction)
-> >  		nblocks += journal->j_committing_transaction->
-> > -					t_outstanding_credits;
-> > +					t_nr_buffers;
-> 
-> Same...
->
+This is a multi-part message in MIME format.
 
-The original issue was reported on RHEL4, so thats 2.6.9, and looking through
-the old-bkcvs git tree I can't see where this was introduced, so it's probably
-existed before that.  The same problem looks to exist in jbd2 though I haven't
-tested it myself, I just went ahead and included the fixes.  Here is the updated
-patch, thanks much for the comments.
+--Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Currently you will see an empty "SoC Audio support for SuperH" menu 
+when building for other archs (example pxa).
+This patch adds "depends on SUPERH" to remove that empty menu.
 
+signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+diff --git a/sound/soc/sh/Kconfig b/sound/soc/sh/Kconfig
+index f03220d..4c1e013 100644
+--- a/sound/soc/sh/Kconfig
++++ b/sound/soc/sh/Kconfig
+@@ -1,4 +1,5 @@
+ menu "SoC Audio support for SuperH"
++	depends on SUPERH
  
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index 31853eb..e385a5c 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -561,13 +561,6 @@ void journal_commit_transaction(journal_t *journal)
- 			continue;
- 		}
- 
--		/*
--		 * start_this_handle() uses t_outstanding_credits to determine
--		 * the free space in the log, but this counter is changed
--		 * by journal_next_log_block() also.
--		 */
--		commit_transaction->t_outstanding_credits--;
--
- 		/* Bump b_count to prevent truncate from stumbling over
-                    the shadowed buffer!  @@@ This can go if we ever get
-                    rid of the BJ_IO/BJ_Shadow pairing of buffers. */
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 4f302d2..c0f93f5 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -580,7 +580,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
- 	stats.u.run.rs_logging = jiffies;
- 	stats.u.run.rs_flushing = jbd2_time_diff(stats.u.run.rs_flushing,
- 						 stats.u.run.rs_logging);
--	stats.u.run.rs_blocks = commit_transaction->t_outstanding_credits;
-+	stats.u.run.rs_blocks = commit_transaction->t_nr_buffers;
- 	stats.u.run.rs_blocks_logged = 0;
- 
- 	descriptor = NULL;
-@@ -655,13 +655,6 @@ void jbd2_journal_commit_transaction(journal_t *journal)
- 			continue;
- 		}
- 
--		/*
--		 * start_this_handle() uses t_outstanding_credits to determine
--		 * the free space in the log, but this counter is changed
--		 * by jbd2_journal_next_log_block() also.
--		 */
--		commit_transaction->t_outstanding_credits--;
--
- 		/* Bump b_count to prevent truncate from stumbling over
-                    the shadowed buffer!  @@@ This can go if we ever get
-                    rid of the BJ_IO/BJ_Shadow pairing of buffers. */
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index d9ecd13..eaeb3db 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -1055,8 +1055,7 @@ static inline int jbd_space_needed(journal_t *journal)
- {
- 	int nblocks = journal->j_max_transaction_buffers;
- 	if (journal->j_committing_transaction)
--		nblocks += journal->j_committing_transaction->
--					t_outstanding_credits;
-+		nblocks += journal->j_committing_transaction->t_nr_buffers;
- 	return nblocks;
- }
- 
-diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
-index 2cbf6fd..acf9d34 100644
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -1167,8 +1167,7 @@ static inline int jbd_space_needed(journal_t *journal)
- {
- 	int nblocks = journal->j_max_transaction_buffers;
- 	if (journal->j_committing_transaction)
--		nblocks += journal->j_committing_transaction->
--					t_outstanding_credits;
-+		nblocks += journal->j_committing_transaction->t_nr_buffers;
- 	return nblocks;
- }
- 
+ config SND_SOC_PCM_SH7760
+ 	tristate "SoC Audio support for Renesas SH7760"
+
+
+--Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg
+Content-Type: application/octet-stream;
+ name="SoC-SuperH-add-depends.patch"
+Content-Disposition: attachment;
+ filename="SoC-SuperH-add-depends.patch"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL3NvdW5kL3NvYy9zaC9LY29uZmlnIGIvc291bmQvc29jL3NoL0tjb25maWcK
+aW5kZXggZjAzMjIwZC4uNGMxZTAxMyAxMDA2NDQKLS0tIGEvc291bmQvc29jL3NoL0tjb25maWcK
+KysrIGIvc291bmQvc29jL3NoL0tjb25maWcKQEAgLTEsNCArMSw1IEBACiBtZW51ICJTb0MgQXVk
+aW8gc3VwcG9ydCBmb3IgU3VwZXJIIgorCWRlcGVuZHMgb24gU1VQRVJICiAKIGNvbmZpZyBTTkRf
+U09DX1BDTV9TSDc3NjAKIAl0cmlzdGF0ZSAiU29DIEF1ZGlvIHN1cHBvcnQgZm9yIFJlbmVzYXMg
+U0g3NzYwIgo=
+
+--Multipart=_Thu__31_Jan_2008_22_58_11_+0100_T.LFLr8sW.nawaOg--
