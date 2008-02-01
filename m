@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbYBAVYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbYBAV02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761354AbYBAVYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbYBAVYL
+	id S1761395AbYBAV02 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 16:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYBAV0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 16:24:11 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:36633 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751497AbYBAVYK (ORCPT
+	Fri, 1 Feb 2008 16:26:21 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:20635 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757633AbYBAV0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 16:24:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=SpUSxO55QeA+gxWGmfd0cDdVVNdNL1Fz2xIqgK2FL88R5BqSXpHKABD2b7awnrmbknGPCY9KFwXPD4oTsVq09y2kH8w0+rMz3Kst0KvR2/PzALcBLB+GY50fGS6B7P+LkpKh3Ixt8Xa6+LIfRkNEAF+bHMcFAkrKYRY3YTy3vCI=  ;
-X-YMail-OSG: yJ59y40VM1kZ7uWw_y03hrzPjc6TMFQgarDWsWehKC7Y.LmPlJr9pQW6h9OSU4ii_YT_30hvKw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Removing dev.power.power_state (WAS: Feature Removals for 2.6.25)
-Date: Fri, 1 Feb 2008 13:24:07 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Harvey.Harrison@gmail.com
-References: <Pine.LNX.4.44L0.0802011019370.3839-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802011019370.3839-100000@iolanthe.rowland.org>
+	Fri, 1 Feb 2008 16:26:20 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [build bug] undefined reference to `i2c_attach_client'
+X-Message-Flag: Warning: May contain useful information
+References: <20080201120945.GA14632@elte.hu> <20080201135836.GA20294@elte.hu>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 01 Feb 2008 13:26:18 -0800
+In-Reply-To: <20080201135836.GA20294@elte.hu> (Ingo Molnar's message of "Fri, 1 Feb 2008 14:58:36 +0100")
+Message-ID: <aday7a4jrlx.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802011324.07760.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 01 Feb 2008 21:26:18.0795 (UTC) FILETIME=[156A87B0:01C86519]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 February 2008, Alan Stern wrote:
->
-> I can look at the USB and SCSI stuff.  It shouldn't be all that bad.  
-> The userspace interface has been gone for quite some time now, and most 
-> of the remaining uses of that field are write-only.
+ > > randconfig testing found the following build bug in latest -git:
+ > > 
+ > >  drivers/built-in.o: In function `v4l2_i2c_attach':
+ > >  : undefined reference to `i2c_attach_client'
 
-It's that "most" which can make trouble.  :)
-
-- Dave
+I hit this too -- it seems that commit 8ffbc655 ("V4L/DVB (6451):
+v4l2: add support for bus-based I2C drivers"), which added
+v4l2_i2c_attach() without adding any dependency on CONFIG_I2C.  Not
+sure what the correct fix is -- either CONFIG_VIDEO_DEV needs to
+select/depend on CONFIG_I2C, or v4l2_i2c_attach() should only be built
+if CONFIG_I2C is on.
