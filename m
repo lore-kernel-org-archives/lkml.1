@@ -1,40 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbYBADd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYBADlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbYBADd6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 22:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBADds
+	id S1759974AbYBADlA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 22:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYBADkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 22:33:48 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:38923 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbYBADdr (ORCPT
+	Thu, 31 Jan 2008 22:40:49 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37613 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752201AbYBADks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 22:33:47 -0500
-Message-ID: <47A292D1.1040600@linux.vnet.ibm.com>
-Date: Fri, 01 Feb 2008 09:02:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
+	Thu, 31 Jan 2008 22:40:48 -0500
+Date: Fri, 1 Feb 2008 09:10:26 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 To: Paul Menage <menage@google.com>
-CC: vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+Cc: vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, Ingo Molnar <mingo@elte.hu>,
-       containers@lists.osdl.org, dhaval@linux.vnet.ibm.com,
-       Balbir Singh <balbir@in.ibm.com>, pj@sgi.com,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+       containers@lists.osdl.org, Balbir Singh <balbir@in.ibm.com>, pj@sgi.com
 Subject: Re: [RFC] Default child of a cgroup
+Message-ID: <20080201034026.GA12475@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 References: <20080131024049.GA9544@linux.vnet.ibm.com> <6599ad830801311839x33cf2ebco9f501571fc129b11@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <6599ad830801311839x33cf2ebco9f501571fc129b11@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-
-[snip]
+On Thu, Jan 31, 2008 at 06:39:56PM -0800, Paul Menage wrote:
+> On Jan 30, 2008 6:40 PM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> >
+> > Here are some questions that arise in this picture:
+> >
+> > 1. What is the relationship of the task-group in A/tasks with the
+> >    task-group in A/a1/tasks? In otherwords do they form siblings
+> >    of the same parent A?
+> 
+> I'd argue the same as Balbir - tasks in A/tasks are are children of A
+> and are siblings of a1, a2, etc.
+> 
+> >
+> > 2. Somewhat related to the above question, how much resource should the
+> >    task-group A/a1/tasks get in relation to A/tasks? Is it 1/2 of parent
+> >    A's share or 1/(1 + N) of parent A's share (where N = number of tasks
+> >    in A/tasks)?
+> 
+> Each process in A should have a scheduler weight that's derived from
+> its static_prio field. Similarly each subgroup of A will have a
+> scheduler weight that's determined by its cpu.shares value. So the cpu
+> share of any child (be it a task or a subgroup) would be equal to its
+> own weight divided by the sum of weights of all children.
+> 
+> So yes, if a task in A forks lots of children, those children could
+> end up getting a disproportionate amount of the CPU compared to tasks
+> in A/a1 - but that's the same as the situation without cgroups. If you
+> want to control cpu usage between different sets of processes in A,
+> they should be in sibling cgroups, not directly in A.
+> 
+> Is there a restriction in CFS that stops a given group from
+> simultaneously holding tasks and sub-groups? If so, couldn't we change
+> CFS to make it possible rather than enforcing awkward restructions on
+> cgroups?
+> 
+> If we really can't change CFS in that way, then an alternative would
+> be similar to Peter's suggestion - make cpu_cgroup_can_attach() fail
+> if the cgroup has children, and make cpu_cgroup_create() fail if the
+> cgroup has any tasks - that way you limit the restriction to just the
+> hierarchy that has CFS attached to it, rather than generically for all
+> cgroups
+> 
 > BTW, I noticed this code in cpu_cgroup_create():
 > 
 >         /* we support only 1-level deep hierarchical scheduler atm */
@@ -44,14 +80,10 @@ Paul Menage wrote:
 > Is anyone working on allowing more levels?
 > 
 
-Yes, Dhaval nad Vatsa are looking at removing that limitation.
-This discussion is a side-effect of the multi-hierarchy discussion/implementation.
+Yes, I am looking at it.
 
 > Paul
 
-
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+regards,
+Dhaval
