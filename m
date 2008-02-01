@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYBATLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYBATLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbYBATLe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 14:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYBATLW
+	id S1758064AbYBATLs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 14:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYBATL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 14:11:22 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:39008 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753359AbYBATLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 14:11:22 -0500
-Date: Fri, 1 Feb 2008 19:11:19 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
-Message-ID: <20080201191119.GI18688@csn.ul.ie>
-References: <20080201184254.174020@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080201184254.174020@gmx.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 1 Feb 2008 14:11:27 -0500
+Received: from hpsmtp-eml13.KPNXCHANGE.COM ([213.75.38.113]:53794 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754643AbYBATLY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 14:11:24 -0500
+To: netdev@vger.kernel.org
+Subject: Re: Typo in net/netfilter/xt_iprange.c (git tree)
+Cc: jim.lkml@gmail.com, linux-kernel@vger.kernel.org
+In-reply-To: <47A32BEB.9040008@gmail.com>
+References: <47A32BEB.9040008@gmail.com>
+Message-Id: <E1JL1II-0002Qy-9u@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Fri, 01 Feb 2008 20:11:22 +0100
+X-OriginalArrivalTime: 01 Feb 2008 19:11:22.0323 (UTC) FILETIME=[3B8AF230:01C86506]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (01/02/08 19:42), Gerhard Pircher didst pronounce:
-> 
-> I'm trying to get the 2.6.24 Linux kernel booting on my AmigaOne machine
-> (it's a desktop PowerPC G4 machine with 1.5GB RAM). I have written the
-> device tree and platform setup files for arch/powerpc, which seem to be
-> working so far.
-> Kernel version 2.6.24-rc2 was booting fine with my patches until the
-> kernel executes the INIT command. But kernel release v2.6.24 dies early
-> during the boot process (even before the radeonfb driver initializes and
-> outputs kernel messages). Bisecting revealed that this commit causes my
-> machine to fail booting:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=44048d700bcbfaf4bcca6e2e0a73d89d01ec0878
-> (Revert "Bias the placement of kernel pages at lower PFNs")
-> 
-> The machine boots fine, if I revert the patch. But I wonder what side
-> effects this patch may have? Can somebody shed some light on this?
-> 
+Forward to netdev list.
 
-With this patch, early boot would use pages from lower PFNs. Without the
-patch, it would use memory from higher PFNs. That is the only real
-difference.
+--------------- Forwarded message (begin)
+Subject: Typo in net/netfilter/xt_iprange.c (git tree)
+From: Jiri Moravec <...>
+Date: Fri, 01 Feb 2008 15:50:15 +0100
 
-1. Is there any chance that all of your memory is not being properly
-   initialised?
-2. Any chance of seeing a dmesg log?
-3. If you boot with the patch reverted and then do something to consume
-all memory like build loads of kernel trees simultaneously, do you see
-any problems?
+Function iprange_mt4 belong to IPv4 family - AF_INET. Right?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	.name      = "iprange",
+	.revision  = 1,
+	.family    = AF_INET6, <---------- Typo?
+	.match     = iprange_mt4,
+	.matchsize = sizeof(struct xt_iprange_mtinfo),
+	.me        = THIS_MODULE,
+--------------- Forwarded message (end)
