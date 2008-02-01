@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbYBASQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbYBASRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758708AbYBASQy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbYBASQN
+	id S1759003AbYBASRS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbYBASQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:16:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45644 "EHLO mx1.redhat.com"
+	Fri, 1 Feb 2008 13:16:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45648 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754044AbYBASQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:16:10 -0500
-Message-ID: <47A3617A.4060603@redhat.com>
-Date: Fri, 01 Feb 2008 19:14:18 +0100
+	id S1754237AbYBASQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 13:16:11 -0500
+Message-ID: <47A3617D.10006@redhat.com>
+Date: Fri, 01 Feb 2008 19:14:21 +0100
 From: Jerome Marchand <jmarchan@redhat.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: axboe@kernel.dk, "Ed L. Cashin" <ecashin@coraid.com>
-Subject: [Patch 3/6] Enhanced partition statistics: aoe fix
+Subject: [Patch 4/6] Enhanced partition statistics: sysfs
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updates the enhanced partition statistics in ATA over Ethernet driver
-(not tested).
+Reports enhanced partition statistics in sysfs.
 
 Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
 ---
- drivers/block/aoe/aoecmd.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/drivers/block/aoe/aoecmd.c linux-2.6/drivers/block/aoe/aoecmd.c
---- linux-2.6.orig/drivers/block/aoe/aoecmd.c	2008-01-31 16:43:55.000000000 +0100
-+++ linux-2.6/drivers/block/aoe/aoecmd.c	2008-01-31 17:40:46.000000000 +0100
-@@ -648,10 +648,10 @@ aoecmd_ata_rsp(struct sk_buff *skb)
- 			struct gendisk *disk = d->gd;
- 			const int rw = bio_data_dir(buf->bio);
+ fs/partitions/check.c |   22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/fs/partitions/check.c linux-2.6/fs/partitions/check.c
+--- linux-2.6.orig/fs/partitions/check.c	2008-01-31 17:38:43.000000000 +0100
++++ linux-2.6/fs/partitions/check.c	2008-01-31 17:55:42.000000000 +0100
+@@ -216,9 +216,25 @@ static ssize_t part_stat_show(struct dev
+ {
+ 	struct hd_struct *p = dev_to_part(dev);
  
--			disk_stat_inc(disk, ios[rw]);
--			disk_stat_add(disk, ticks[rw], duration);
--			disk_stat_add(disk, sectors[rw], n_sect);
--			disk_stat_add(disk, io_ticks, duration);
-+			all_stat_inc(disk, ios[rw], buf->sector);
-+			all_stat_add(disk, ticks[rw], duration, buf->sector);
-+			all_stat_add(disk, sectors[rw], n_sect, buf->sector);
-+			all_stat_add(disk, io_ticks, duration, buf->sector);
- 			n = (buf->flags & BUFFL_FAIL) ? -EIO : 0;
- 			bio_endio(buf->bio, n);
- 			mempool_free(buf, d->bufpool);
+-	return sprintf(buf, "%8u %8llu %8u %8llu\n",
+-		       p->ios[0], (unsigned long long)p->sectors[0],
+-		       p->ios[1], (unsigned long long)p->sectors[1]);
++	preempt_disable();
++	part_round_stats(p);
++	preempt_enable();
++	return sprintf(buf,
++		"%8lu %8lu %8llu %8u "
++		"%8lu %8lu %8llu %8u "
++		"%8u %8u %8u"
++		"\n",
++		part_stat_read(p, ios[READ]),
++		part_stat_read(p, merges[READ]),
++		(unsigned long long)part_stat_read(p, sectors[READ]),
++		jiffies_to_msecs(part_stat_read(p, ticks[READ])),
++		part_stat_read(p, ios[WRITE]),
++		part_stat_read(p, merges[WRITE]),
++		(unsigned long long)part_stat_read(p, sectors[WRITE]),
++		jiffies_to_msecs(part_stat_read(p, ticks[WRITE])),
++		p->in_flight,
++		jiffies_to_msecs(part_stat_read(p, io_ticks)),
++		jiffies_to_msecs(part_stat_read(p, time_in_queue)));
+ }
+ 
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
 
