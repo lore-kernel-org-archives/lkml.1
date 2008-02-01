@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYBAKTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbYBAKTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757932AbYBAKTT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbYBAKTJ
+	id S1761010AbYBAKTd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbYBAKTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:19:09 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39946 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754693AbYBAKTG (ORCPT
+	Fri, 1 Feb 2008 05:19:21 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:59953 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760615AbYBAKTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:19:06 -0500
-Date: Fri, 1 Feb 2008 02:19:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kenichi Okuyama" <kenichi.okuyama@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] NULL pointer check for vma->vm_mm
-Message-Id: <20080201021917.5db3448d.akpm@linux-foundation.org>
-In-Reply-To: <3fd7d7a70802010024q22b4d179mf56e6d4b60e4f574@mail.gmail.com>
-References: <3fd7d7a70801312339p2a142096p83ed286c81379728@mail.gmail.com>
-	<20080131235544.346b938a.akpm@linux-foundation.org>
-	<3fd7d7a70802010024q22b4d179mf56e6d4b60e4f574@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 1 Feb 2008 05:19:19 -0500
+From: Stefan Roese <sr@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] pci: Fix bus resource assignment on 32 bits with 64b resources
+Date: Fri, 1 Feb 2008 11:18:56 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <greg@kroah.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+References: <20071210063216.89DBBDDE1E@ozlabs.org>
+In-Reply-To: <20071210063216.89DBBDDE1E@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802011118.57610.sr@denx.de>
+X-Provags-ID: V01U2FsdGVkX18ByycwN7g/2pnvsFUrVs5jiIlEs40xasAOawV
+ WEN9zaGKCWHWV2gMGrx64GPOOmU9LS7xAPCm27jpkKha++dFJn
+ p4uftsnQaGxbJfb7cjweqUE+xVVMKQK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008 17:24:17 +0900 "Kenichi Okuyama" <kenichi.okuyama@gmail.com> wrote:
+On Monday 10 December 2007, Benjamin Herrenschmidt wrote:
+> The current pci_assign_unassigned_resources() code doesn't work properly
+> on 32 bits platforms with 64 bits resources. The main reason is the use
+> of unsigned long in various places instead of resource_size_t.
+>
+> This fixes it, along with some tricks to avoid casting to 64 bits on
+> platforms that don't need it in every printk around.
+>
+> This is a pre-requisite for making powerpc use the generic code instead of
+> its own half-useful implementation.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> First of all, thank you for looking at the patch.
-> 
-> I do agree that if mm is NULL, system will call Oops anyway.
-> However, since it's oops, it does not stop the system, nor call kdump.
+Checking Linus's latest git repository, it seems this patch (and the 2nd from 
+this series) hasn't been applied till now. This is just a reminder, that it 
+gets in in this merge-window.
 
-That would be a huge bug in kdump?  Surely it dumps when the kernel oopses?
+Thanks.
 
-> By calling BUG_ON(), it'll gives us chance of calling kdump at the first chance.
-> 
-> Since this is very rare to happen, I thought we should capture the incident
-> whenever possible. On other hand, because BUG_ON macro is very light,
-> I thought this will not harm any performance...
-> 
-> Forgive me in advance if I was wrong.
-> I still think checking mm with BUG_ON here is better than counting on Oops.
-
-But there are probably a million potential NULL-pointer dereferences in the 
-kernel.  Why single out this one?
+Best regards,
+Stefan
