@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbYBAUTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbYBAUXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbYBAUTw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 15:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYBAUTp
+	id S1758491AbYBAUXP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 15:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbYBAUXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 15:19:45 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39299 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755600AbYBAUTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 15:19:44 -0500
-Date: Fri, 1 Feb 2008 21:19:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] serial: silence section mismatch warnings in 8250_pci
-Message-ID: <20080201201948.GB15905@uranus.ravnborg.org>
-References: <1201896087-15867-1-git-send-email-sam@ravnborg.org>
+	Fri, 1 Feb 2008 15:23:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60459 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754714AbYBAUW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 15:22:59 -0500
+Date: Fri, 1 Feb 2008 12:22:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bastian Blank <bastian@waldi.eu.org>
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix ext4 bitops
+Message-Id: <20080201122257.9524c2bb.akpm@linux-foundation.org>
+In-Reply-To: <20080201200208.GA28274@wavehammer.waldi.eu.org>
+References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201896087-15867-1-git-send-email-sam@ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+On Fri, 1 Feb 2008 21:02:08 +0100
+Bastian Blank <bastian@waldi.eu.org> wrote:
 
-Again I rely on you to pick up the patches.
-But let me know if you prefer another route toward mainline.
+> Fix ext4 bitops.
+> 
 
-And I obviously expect the Cc: people to review the changes
-albeit this serie is trivial.
+This is incomplete.  Please tell us what was "fixed".
 
-This is on top of my local tree and not -mm - so yell at me
-and drop anything that does not apply.
+If it was a build error then please quote the compile error output in the
+changelog, as well as the usual description of what the problem is, and how
+it was fixed.
 
-	Sam
+> 
+> diff --git a/include/asm-s390/bitops.h b/include/asm-s390/bitops.h
+> index dba6fec..47844fc 100644
+> --- a/include/asm-s390/bitops.h
+> +++ b/include/asm-s390/bitops.h
+> @@ -762,6 +762,8 @@ static inline int sched_find_first_bit(unsigned long *b)
+>   *    23 22 21 20 19 18 17 16 31 30 29 28 27 26 25 24
+>   */
+>  
+> +#include <asm-generic/bitops/le.h>
+> +
+>  #define ext2_set_bit(nr, addr)       \
+>  	__test_and_set_bit((nr)^(__BITOPS_WORDSIZE - 8), (unsigned long *)addr)
+>  #define ext2_set_bit_atomic(lock, nr, addr)       \
+
+
