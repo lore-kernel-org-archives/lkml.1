@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYBAONZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbYBAORe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbYBAONZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 09:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYBAONT
+	id S1756543AbYBAORe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 09:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYBAOR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 09:13:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46459 "EHLO mx3.mail.elte.hu"
+	Fri, 1 Feb 2008 09:17:27 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:48151 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbYBAONS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 09:13:18 -0500
-Date: Fri, 1 Feb 2008 15:12:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: 2.6.24-rc8-mm1 Kernel BUG while bootup
-Message-ID: <20080201141251.GA25080@elte.hu>
-References: <20080122135800.GA6084@in.ibm.com> <20080122155329.GA30119@elte.hu> <20080128145722.GB25517@in.ibm.com> <20080128151300.GB12205@elte.hu> <20080131140223.GA6568@in.ibm.com>
-MIME-Version: 1.0
+	id S1753606AbYBAOR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 09:17:26 -0500
+Date: Fri, 1 Feb 2008 17:20:17 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] hrtimer_nanosleep: use -EINTR, not -ERESTARTNOHAND
+Message-ID: <20080201142017.GA25774@tv-sign.ru>
+References: <20080201133755.GA25620@tv-sign.ru> <alpine.LFD.1.00.0802011438020.9204@apollo.tec.linutronix.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131140223.GA6568@in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.LFD.1.00.0802011438020.9204@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sudhir Kumar <skumar@linux.vnet.ibm.com> wrote:
-
-> >    http://redhat.com/~mingo/x86.git/README
-> > 
-> > does that crash too?
+On 02/01, Thomas Gleixner wrote:
+>
+> On Fri, 1 Feb 2008, Oleg Nesterov wrote:
 > 
-> Sorry , unable to do that as the instrunctions at above location do 
-> not work. Something else I can try ?
+> > hrtimer_nanosleep:
+> > 
+> > 	/* Absolute timers do not update the rmtp value and restart: */
+> > 	return -ERESTARTNOHAND;
+> > 
+> > This is not right, -ERESTARTNOHAND means we will do restart if there is no
+> > in fact pending signal, and worse, this restart will use the same unchanged
+> > "__user *rmtp" parameter.
+> 
+> -ERESTARTNOHAND is safe here. We want to restart the timer.
 
-hm, those instructions work fine here, if i do them anew. It ends 
-with:
+Ah. I was greatly confused by the comment, it says "do not ... restart",
+now I understand what this _actually_ means.
 
- earth4:~/tmp/linux.trees.git> git-checkout x86/mm
- warning: You appear to be on a branch yet to be born.
- warning: Forcing checkout of x86/mm.
- ...
- HEAD is now at 063f7f2... kgdb: cleanups
+And yes, I was wrong. If restart is wanted, it is safe to use the original
+*rqtp, the timer is HRTIMER_MODE_ABS.
 
-i've got git-core-1.5.3.8-1.fc8.
+Thanks Thomas!
 
-	Ingo
+Andrew, please ignore this patch.
+
+Oleg.
+
