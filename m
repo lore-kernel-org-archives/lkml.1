@@ -1,202 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYBAO0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYBAOad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYBAO0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 09:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbYBAO0n
+	id S1756937AbYBAOad (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 09:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYBAOa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 09:26:43 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:35699 "EHLO mail.screens.ru"
+	Fri, 1 Feb 2008 09:30:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59243 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754056AbYBAO0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 09:26:42 -0500
-Date: Fri, 1 Feb 2008 17:29:05 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Toyo Abe <toyoa@mvista.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] hrtimer_nanosleep: fix *rmtp handling
-Message-ID: <20080201142905.GA25833@tv-sign.ru>
-References: <20080201133758.GA25623@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754581AbYBAOaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 09:30:25 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
+Date: Fri, 1 Feb 2008 15:28:16 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ijc@hellion.org.uk>,
+       Mika Penttil? <mika.penttila@kolumbus.fi>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Len Brown <lenb@kernel.org>
+References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <200801281802.01748.rjw@sisk.pl> <20080201135125.GA16249@elte.hu>
+In-Reply-To: <20080201135125.GA16249@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080201133758.GA25623@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Message-Id: <200802011528.17423.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Andrew, the same patch, but re-diffed without the first one in series).
+On Friday, 1 of February 2008, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > >  arch/x86/kernel/built-in.o: In function `wakeup_start':
+> > >  : undefined reference to `swsusp_pg_dir'
+> > > 
+> > > config attached.
+> > 
+> > I see.  CONFIG_HIBERNATION && CONFIG_ACPI -> CONFIG_ACPI_SLEEP and the 
+> > Makefile in arch/x86/kernel/acpi/ wants to build wakeup.S, which is 
+> > not necessary.  Hmm.
+> > 
+> > We can do a couple of things:
+> > (1) make wakeup_$(BITS).o depend on CONFIG_SUSPEND (alone)
+> >     This will build it if CONFIG_SUSPEND is set, but CONFIG_ACPI is not
+> >     (still, that's consistent with the change in question).
+> > (2) make wakeup_$(BITS).o depend on CONFIG_SUSPEND and CONFIG_ACPI
+> > (3) define CONFIG_ACPI_SUSPEND depending on ACPI and SUSPEND and
+> >     make wakeup_$(BITS).o as well as swsusp_pg_dir depend on that (most
+> >     elegant)
+> > 
+> > Which one do you prefer?
+> 
+> no strong preference here - pick the one you like best and send a patch 
+> please :-)
 
+Here you go, but I think it falls into the ACPI category.
 
-[PATCH 2/5] hrtimer_nanosleep: fix *rmtp handling
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Spotted by Pavel Emelyanov and Alexey Dobriyan.
+Since hibernation uses its own temporary page tables for restoring
+the image kernel, swsusp_pg_dir is only needed for ACPI resume from
+RAM.  Also, some files under arch/x86/kernel/acpi need only be compiled
+if ACPI suspend to RAM is going to be used.
 
-hrtimer_nanosleep() sets restart_block->arg1 = rmtp, but this rmtp points to
-the local variable which lives in the caller's stack frame. This means that
-if sys_restart_syscall() actually happens and it is interrupted as well, we
-don't update the user-space variable, but write into the already dead stack
-frame.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/acpi/Makefile |    2 +-
+ arch/x86/mm/init_32.c         |   10 +++++-----
+ drivers/acpi/Kconfig          |    5 +++++
+ 3 files changed, 11 insertions(+), 6 deletions(-)
 
-Change the callers to pass "__user *rmtp" to hrtimer_nanosleep(), and change
-hrtimer_nanosleep() to use copy_to_user() to actually update *rmtp.
-
-Small problem remains. man 2 nanosleep states that *rtmp should be written if
-nanosleep() was interrupted (it says nothing whether it is OK to update *rmtp
-if nanosleep returns 0), but (with or without this patch) we can dirty *rem
-even if nanosleep() returns 0.
-
-NOTE: this patch doesn't change compat_sys_nanosleep(), because it has other
-bugs. Fixed by the next patch.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
- include/linux/hrtimer.h |    2 -
- kernel/hrtimer.c        |   51 +++++++++++++++++++++++++-----------------------
- kernel/posix-timers.c   |   14 +------------
- 3 files changed, 30 insertions(+), 37 deletions(-)
-
---- MM/include/linux/hrtimer.h~HRT_RMTP	2008-01-27 17:07:39.000000000 +0300
-+++ MM/include/linux/hrtimer.h	2008-01-31 14:01:53.000000000 +0300
-@@ -313,7 +313,7 @@ static inline u64 hrtimer_forward_now(st
- 
- /* Precise sleep: */
- extern long hrtimer_nanosleep(struct timespec *rqtp,
--			      struct timespec *rmtp,
-+			      struct timespec __user *rmtp,
- 			      const enum hrtimer_mode mode,
- 			      const clockid_t clockid);
- extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
---- MM/kernel/hrtimer.c~HRT_RMTP	2008-02-01 13:43:52.000000000 +0300
-+++ MM/kernel/hrtimer.c	2008-02-01 13:56:44.000000000 +0300
-@@ -1317,11 +1317,26 @@ static int __sched do_nanosleep(struct h
- 	return t->task == NULL;
+Index: linux-2.6/arch/x86/mm/init_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_32.c
++++ linux-2.6/arch/x86/mm/init_32.c
+@@ -423,23 +423,23 @@ static void __init pagetable_init(void)
+ 	paravirt_pagetable_setup_done(pgd_base);
  }
  
-+static int update_rmtp(struct hrtimer *timer, struct timespec __user *rmtp)
-+{
-+	struct timespec rmt;
-+	ktime_t rem;
-+
-+	rem = ktime_sub(timer->expires, timer->base->get_time());
-+	if (rem.tv64 <= 0)
-+		return 0;
-+	rmt = ktime_to_timespec(rem);
-+
-+	if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
-+		return -EFAULT;
-+
-+	return 1;
-+}
-+
- long __sched hrtimer_nanosleep_restart(struct restart_block *restart)
- {
- 	struct hrtimer_sleeper t;
--	struct timespec *rmtp;
--	ktime_t time;
-+	struct timespec __user  *rmtp;
- 
- 	restart->fn = do_no_restart_syscall;
- 
-@@ -1331,12 +1346,11 @@ long __sched hrtimer_nanosleep_restart(s
- 	if (do_nanosleep(&t, HRTIMER_MODE_ABS))
- 		return 0;
- 
--	rmtp = (struct timespec *)restart->arg1;
-+	rmtp = (struct timespec __user *)restart->arg1;
- 	if (rmtp) {
--		time = ktime_sub(t.timer.expires, t.timer.base->get_time());
--		if (time.tv64 <= 0)
--			return 0;
--		*rmtp = ktime_to_timespec(time);
-+		int ret = update_rmtp(&t.timer, rmtp);
-+		if (ret <= 0)
-+			return ret;
- 	}
- 
- 	restart->fn = hrtimer_nanosleep_restart;
-@@ -1345,12 +1359,11 @@ long __sched hrtimer_nanosleep_restart(s
- 	return -ERESTART_RESTARTBLOCK;
- }
- 
--long hrtimer_nanosleep(struct timespec *rqtp, struct timespec *rmtp,
-+long hrtimer_nanosleep(struct timespec *rqtp, struct timespec __user *rmtp,
- 		       const enum hrtimer_mode mode, const clockid_t clockid)
- {
- 	struct restart_block *restart;
- 	struct hrtimer_sleeper t;
--	ktime_t rem;
- 
- 	hrtimer_init(&t.timer, clockid, mode);
- 	t.timer.expires = timespec_to_ktime(*rqtp);
-@@ -1362,10 +1375,9 @@ long hrtimer_nanosleep(struct timespec *
- 		return -ERESTARTNOHAND;
- 
- 	if (rmtp) {
--		rem = ktime_sub(t.timer.expires, t.timer.base->get_time());
--		if (rem.tv64 <= 0)
--			return 0;
--		*rmtp = ktime_to_timespec(rem);
-+		int ret = update_rmtp(&t.timer, rmtp);
-+		if (ret <= 0)
-+			return ret;
- 	}
- 
- 	restart = &current_thread_info()->restart_block;
-@@ -1381,8 +1393,7 @@ long hrtimer_nanosleep(struct timespec *
- asmlinkage long
- sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
- {
--	struct timespec tu, rmt;
--	int ret;
-+	struct timespec tu;
- 
- 	if (copy_from_user(&tu, rqtp, sizeof(tu)))
- 		return -EFAULT;
-@@ -1390,15 +1401,7 @@ sys_nanosleep(struct timespec __user *rq
- 	if (!timespec_valid(&tu))
- 		return -EINVAL;
- 
--	ret = hrtimer_nanosleep(&tu, rmtp ? &rmt : NULL, HRTIMER_MODE_REL,
--				CLOCK_MONOTONIC);
--
--	if (ret && rmtp) {
--		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
--			return -EFAULT;
--	}
--
--	return ret;
-+	return hrtimer_nanosleep(&tu, rmtp, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
- }
- 
+-#if defined(CONFIG_HIBERNATION) || defined(CONFIG_ACPI)
++#ifdef CONFIG_ACPI_SUSPEND
  /*
---- MM/kernel/posix-timers.c~HRT_RMTP	2008-01-27 17:07:40.000000000 +0300
-+++ MM/kernel/posix-timers.c	2008-02-01 13:18:51.000000000 +0300
-@@ -982,20 +982,10 @@ sys_clock_getres(const clockid_t which_c
- static int common_nsleep(const clockid_t which_clock, int flags,
- 			 struct timespec *tsave, struct timespec __user *rmtp)
- {
--	struct timespec rmt;
--	int ret;
--
--	ret = hrtimer_nanosleep(tsave, rmtp ? &rmt : NULL,
-+	return hrtimer_nanosleep(tsave, rmtp,
- 				flags & TIMER_ABSTIME ?
--				HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
-+					HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
- 				which_clock);
--
--	if (ret && rmtp) {
--		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
--			return -EFAULT;
--	}
--
--	return ret;
- }
+- * Swap suspend & friends need this for resume because things like the intel-agp
++ * ACPI suspend needs this for resume, because things like the intel-agp
+  * driver might have split up a kernel 4MB mapping.
+  */
+-char __nosavedata swsusp_pg_dir[PAGE_SIZE]
++char swsusp_pg_dir[PAGE_SIZE]
+ 	__attribute__ ((aligned(PAGE_SIZE)));
  
- asmlinkage long
-
+ static inline void save_pg_dir(void)
+ {
+ 	memcpy(swsusp_pg_dir, swapper_pg_dir, PAGE_SIZE);
+ }
+-#else
++#else /* !CONFIG_ACPI_SUSPEND */
+ static inline void save_pg_dir(void)
+ {
+ }
+-#endif
++#endif /* !CONFIG_ACPI_SUSPEND */
+ 
+ void zap_low_mappings(void)
+ {
+Index: linux-2.6/drivers/acpi/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/acpi/Kconfig
++++ linux-2.6/drivers/acpi/Kconfig
+@@ -42,6 +42,11 @@ menuconfig ACPI
+ 
+ if ACPI
+ 
++config ACPI_SUSPEND
++	bool
++	depends on SUSPEND
++	default y
++
+ config ACPI_SLEEP
+ 	bool
+ 	depends on PM_SLEEP
+Index: linux-2.6/arch/x86/kernel/acpi/Makefile
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/Makefile
++++ linux-2.6/arch/x86/kernel/acpi/Makefile
+@@ -1,5 +1,5 @@
+ obj-$(CONFIG_ACPI)		+= boot.o
+-obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
++obj-$(CONFIG_ACPI_SUSPEND)	+= sleep.o wakeup_$(BITS).o
+ 
+ ifneq ($(CONFIG_ACPI_PROCESSOR),)
+ obj-y				+= cstate.o processor.o
