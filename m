@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762271AbYBAXeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbYBAXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762271AbYBAXeh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 18:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759603AbYBAXe3
+	id S1762621AbYBAXfi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 18:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759603AbYBAXfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 18:34:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47589 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755359AbYBAXe1 (ORCPT
+	Fri, 1 Feb 2008 18:35:30 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56156 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759558AbYBAXfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 18:34:27 -0500
-Date: Fri, 1 Feb 2008 15:34:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       sparclinux@vger.kernel.org, hch@lst.de
-Subject: Re: 2.6.24-rc8-mm1: sparc64 warning at fs/file_table.c:49
- __fput+0x1a8/0x1e0()
-Message-Id: <20080201153411.ec20cdc6.akpm@linux-foundation.org>
-In-Reply-To: <1201043638.7585.47.camel@nimitz.home.sr71.net>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801222130.24136.m.kozlowski@tuxland.pl>
-	<20080122130228.e7596163.akpm@linux-foundation.org>
-	<1201043638.7585.47.camel@nimitz.home.sr71.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 18:35:30 -0500
+Date: Fri, 1 Feb 2008 17:35:28 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/4] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080201233528.GE12099@sgi.com>
+References: <20080201050439.009441434@sgi.com> <20080201050623.344041545@sgi.com> <20080201220952.GA3875@sgi.com> <Pine.LNX.4.64.0802011517430.20608@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802011517430.20608@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008 15:13:58 -0800
-Dave Hansen <haveblue@us.ibm.com> wrote:
+On Fri, Feb 01, 2008 at 03:19:32PM -0800, Christoph Lameter wrote:
+> On Fri, 1 Feb 2008, Robin Holt wrote:
+> 
+> > We are getting this callout when we transition the pte from a read-only
+> > to read-write.  Jack and I can not see a reason we would need that
+> > callout.  It is causing problems for xpmem in that a write fault goes
+> > to get_user_pages which gets back to do_wp_page that does the callout.
+> 
+> Right. You placed it there in the first place. So we can drop the code 
+> from do_wp_page?
 
-> @@ -566,10 +567,26 @@ static void mark_files_ro(struct super_b
->  {
->  	struct file *f;
->  
-> +retry:
->  	file_list_lock();
->  	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
-> -		if (S_ISREG(f->f_path.dentry->d_inode->i_mode) && file_count(f))
-> -			f->f_mode &= ~FMODE_WRITE;
-> +		struct vfsmount mnt;
-> +		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
-> +		       continue;
-> +		if (!file_count(f))
-> +			continue;
-> +		if (!(f->f_mode & FMODE_WRITE))
-> +			continue;
-> +		f->f_mode &= ~FMODE_WRITE;
-> +		f->f_mnt_write_state |= FILE_MNT_WRITE_RELEASED;
-> +		mnt = f->f_path.mnt;
-> +		file_list_unlock();
-> +		/*
-> +		 * This can sleep, so we can't hold
-> +		 * the file_list_lock() spinlock.
-> +		 */
-> +		mnt_drop_write(mnt);
-> +		goto retry;
->  	}
->  	file_list_unlock();
->  }
-> _
+No, we need a callout when we are becoming more restrictive, but not
+when becoming more permissive.  I would have to guess that is the case
+for any of these callouts.  It is for both GRU and XPMEM.  I would
+expect the same is true for KVM, but would like a ruling from Andrea on
+that.
 
-this doesn't even compile.  How much confidence am I supposed
-to have that once I've fixed it, it will actually work?
+Thanks,
+Robin
