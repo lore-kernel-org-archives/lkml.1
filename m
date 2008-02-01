@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbYBAP1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYBAP2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755801AbYBAP1z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 10:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYBAP1r
+	id S1758009AbYBAP2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 10:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYBAP2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 10:27:47 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:36489 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752120AbYBAP1q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 10:27:46 -0500
-Date: Fri, 1 Feb 2008 10:27:46 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Salvador Eduardo Tropea <salvador@inti.gov.ar>
-cc: USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Should nonblocking I/O calls to a disconnected device get an error?
- [was: Problem: hiddev stops sending events after some error recoveries]
-In-Reply-To: <47A3071B.9090908@inti.gov.ar>
-Message-ID: <Pine.LNX.4.44L0.0802011022430.3839-100000@iolanthe.rowland.org>
+	Fri, 1 Feb 2008 10:28:08 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:20122 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753372AbYBAP2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 10:28:06 -0500
+Message-ID: <47A33A85.5020308@msgid.tls.msk.ru>
+Date: Fri, 01 Feb 2008 18:28:05 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.14pre (X11/20071018)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: swsusp on an AMD x2-64, 2.6.24: regression?
+References: <47A24072.4090001@msgid.tls.msk.ru> <20080131231219.GA14355@elf.ucw.cz> <47A2F168.8070407@msgid.tls.msk.ru> <200802011225.11571.rjw@sisk.pl> <47A33512.8050401@msgid.tls.msk.ru>
+In-Reply-To: <47A33512.8050401@msgid.tls.msk.ru>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Salvador Eduardo Tropea wrote:
+Michael Tokarev wrote:
+> Rafael J. Wysocki wrote:
+[]
+>> I guess it's a special variation of
+>> http://bugzilla.kernel.org/show_bug.cgi?id=9528
+>>
+>> Please try to hibernate in the shutdown mode (ie. echo
+>> "shutdown" into /sys/power/disk before hibernation).
 
-> Now, I tried unplugging the device while executing a NONBLOCKing
-> program. I didn't get any I/O error. It means I was wrong about the
-> difference between unplugging the device and the effect of a recovery
-> like the one I mentioned previously. You are right, but IMHO that's odd,
-> the device should also inform I/O error when reading using a NONBLOCKing
-> file handler. Currently a program must use blocking reads in order to
-> get notified about the problem. It looks bad and lacks consistency. What
-> do you think?
+[yes it works with shutdown...]
 
-I don't know.  Other people have debated this issue in the past, but I 
-can't remember what the final decision was or the reasons for it.
+> In any way, this is definitely progress, and that bug
+> seems to be the same as I'm seeing here.
+> 
+> Now... I see there's a new BIOS for this mobo available
+> (it's ASUS M2NPV-VM motherboard, Geforce6150/Nforce430(?)),
+> which is more recent compared with what I have here.  Trying
+> it now (will try to reflash it without a floppy - it turns
+> out to be quite.. challenging task ;)
 
-Alan Stern
+Ok, updated the bios (using freedos virtual boot floppy provided
+by memdisk from syslinux), and... now it all works correctly!
 
+I was definitely blaming linux for the regression - obviously,
+as "before-kernel" worked, while "current-kernel" does not
+anymore.  But the problem seems to be due to some bios buglet.
+Oh well... ;)
+
+> Thanks!
+!
+
+Now I can go on with my other.. question, namely the UPS thingie... :)
+
+/mjt
