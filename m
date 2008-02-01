@@ -1,156 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbYBAOd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYBAOha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbYBAOd0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 09:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYBAOdS
+	id S1756930AbYBAOha (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 09:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYBAOhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 09:33:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50966 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753606AbYBAOdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 09:33:17 -0500
-Date: Fri, 1 Feb 2008 15:33:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [BUG] 2.6.24-git6 soft lockup detected while running
-	libhugetlbfs
-Message-ID: <20080201143302.GC26232@elte.hu>
-References: <47A01C30.7020309@linux.vnet.ibm.com> <20080130165947.GA6336@elte.hu> <47A0AE4E.5090400@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A0AE4E.5090400@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 1 Feb 2008 09:37:21 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:46170 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753660AbYBAOhT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 09:37:19 -0500
+X-YMail-OSG: CTKq0eoVM1kbMuVtH568H8kCHR5xL7ZVeudqIZkgBU4XPZ6W5vCh3PXigTsdL7.YZ7a.jadlrJPVSbvZQ4JZNFZ9aADtokNuQGD671SYmwRH2dEyHg--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: FUJITA Tomonori <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp,
+       Roland Dreier <rdreier@cisco.com>,
+       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, vst@vlnb.net, linux-scsi@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Mike Mazarick <mazarick@bellsouth.net>
+In-Reply-To: <e2e108260802010525r2e371286qb954db1fad88ff24@mail.gmail.com>
+References: <adazluoe2t3.fsf@cisco.com>
+	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+	 <20080130195635T.tomof@acm.org>
+	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
+	 <1201862364.11265.267.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010304p304614e9p78b0aca43b24246@mail.gmail.com>
+	 <1201867517.11265.294.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010525r2e371286qb954db1fad88ff24@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 06:36:51 -0800
+Message-Id: <1201876611.11265.296.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-02-01 at 14:25 +0100, Bart Van Assche wrote:
+> On Feb 1, 2008 1:05 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+> >
+> > All of the kernel and C userspace code is open source and available from
+> > linux-iscsi.org and licensed under the GPL.
+> 
+> I found a statement on a web page that the ERL2 implementation is not
+> included in the GPL version (http://zaal.org/iscsi/index.html). The
+> above implies that this statement is incorrect. Tomo, are you the
+> maintainer of this web page ?
+> 
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+This was mentioned in the context of the Core-iSCSI Initiator module.
 
-> The CONFIG_NO_HZ is not set and the system seems not be truly locked 
-> up ,btw wc -l of the softlockup messages is around 108 times, while 
-> running the libhugetlbfs only and this is reproducible with the 
-> 2.6.24-git7 also.
+> I'll try to measure the performance of the LIO Target Stack on the
+> same setup on which I ran the other performance tests.
+> 
 
-Peter just fixed a handful of bugs in this area - does the patch below 
-help?
+Great!
 
-	Ingo
+--nab
 
------------------->
-Subject: debug: softlockup looping fix
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Rafael J. Wysocki reported weird, multi-seconds delays during
-suspend/resume and bisected it back to:
-
-  commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
-  Author: Ingo Molnar <mingo@elte.hu>
-  Date:   Fri Jan 25 21:08:02 2008 +0100
-
-      softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
-
-fix it:
-
- - restore the old wakeup mechanism
- - fix break usage in do_each_thread() { } while_each_thread().
- - fix the hotplug switch stmt, a fall-through case was broken.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/softlockup.c |   30 ++++++++++++++++++++----------
- 1 file changed, 20 insertions(+), 10 deletions(-)
-
-Index: linux/kernel/softlockup.c
-===================================================================
---- linux.orig/kernel/softlockup.c
-+++ linux/kernel/softlockup.c
-@@ -101,6 +101,10 @@ void softlockup_tick(void)
- 
- 	now = get_timestamp(this_cpu);
- 
-+	/* Wake up the high-prio watchdog task every second: */
-+	if (now > (touch_timestamp + 1))
-+		wake_up_process(per_cpu(watchdog_task, this_cpu));
-+
- 	/* Warn about unreasonable delays: */
- 	if (now <= (touch_timestamp + softlockup_thresh))
- 		return;
-@@ -191,11 +195,11 @@ static void check_hung_uninterruptible_t
- 	read_lock(&tasklist_lock);
- 	do_each_thread(g, t) {
- 		if (!--max_count)
--			break;
-+			goto unlock;
- 		if (t->state & TASK_UNINTERRUPTIBLE)
- 			check_hung_task(t, now);
- 	} while_each_thread(g, t);
--
-+ unlock:
- 	read_unlock(&tasklist_lock);
- }
- 
-@@ -218,14 +222,19 @@ static int watchdog(void *__bind_cpu)
- 	 * debug-printout triggers in softlockup_tick().
- 	 */
- 	while (!kthread_should_stop()) {
-+		set_current_state(TASK_INTERRUPTIBLE);
- 		touch_softlockup_watchdog();
--		msleep_interruptible(10000);
-+		schedule();
-+
-+		if (kthread_should_stop())
-+			break;
- 
- 		if (this_cpu != check_cpu)
- 			continue;
- 
- 		if (sysctl_hung_task_timeout_secs)
- 			check_hung_uninterruptible_tasks(this_cpu);
-+
- 	}
- 
- 	return 0;
-@@ -259,13 +268,6 @@ cpu_callback(struct notifier_block *nfb,
- 		wake_up_process(per_cpu(watchdog_task, hotcpu));
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--		if (!per_cpu(watchdog_task, hotcpu))
--			break;
--		/* Unbind so it can run.  Fall thru. */
--		kthread_bind(per_cpu(watchdog_task, hotcpu),
--			     any_online_cpu(cpu_online_map));
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		if (hotcpu == check_cpu) {
-@@ -275,6 +277,14 @@ cpu_callback(struct notifier_block *nfb,
- 			check_cpu = any_online_cpu(temp_cpu_online_map);
- 		}
- 		break;
-+
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+		if (!per_cpu(watchdog_task, hotcpu))
-+			break;
-+		/* Unbind so it can run.  Fall thru. */
-+		kthread_bind(per_cpu(watchdog_task, hotcpu),
-+			     any_online_cpu(cpu_online_map));
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		p = per_cpu(watchdog_task, hotcpu);
