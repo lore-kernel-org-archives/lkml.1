@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYBAKDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbYBAKE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbYBAKDL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYBAKC5
+	id S1759971AbYBAKE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYBAKEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:02:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35378 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbYBAKC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:02:56 -0500
-Date: Fri, 1 Feb 2008 11:02:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Nick Piggin <npiggin@suse.de>, heiko.carstens@de.ibm.com,
-       linux390@de.ibm.com
-Subject: Re: x86 arch updates also broke s390
-Message-ID: <20080201100235.GA5519@elte.hu>
-References: <20080130011550.GA31853@elte.hu> <20080131003310.GW29368@does.not.exist> <1201772094.18221.32.camel@localhost> <20080201094839.GA29836@elte.hu> <1201859653.27899.2.camel@localhost>
+	Fri, 1 Feb 2008 05:04:52 -0500
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:62534
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755166AbYBAKEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 05:04:50 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAF99okd8qNBs/2dsb2JhbACtbw
+X-IronPort-AV: E=Sophos;i="4.25,289,1199631600"; 
+   d="scan'208";a="220644519"
+Message-ID: <47A2EEBD.3050705@eyal.emu.id.au>
+Date: Fri, 01 Feb 2008 21:04:45 +1100
+From: Eyal Lebedinsky <eyal@eyal.emu.id.au>
+Organization: Eyal at Home
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201859653.27899.2.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Clemens Ladisch <clemens@ladisch.de>
+CC: list linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23.14 snd_hda_intel problem
+References: <47A25998.1000501@eyal.emu.id.au> <47A2DEAC.7000004@ladisch.de>
+In-Reply-To: <47A2DEAC.7000004@ladisch.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Clemens
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+My /etc/modprobe.conf now contains:
+	alias snd-card-0 snd-hda-intel
+	options snd-card-0 index=0
+	options snd-hda-intel index=0
+and and I should add
+	options snd-usb-audio index=1
+right?
 
-> On Fri, 2008-02-01 at 10:48 +0100, Ingo Molnar wrote:
-> > > Defining GENERIC_LOCKBREAK in arch/s390/Kconfig takes care of it.
-> > I'll 
-> > > cook up a patch and queue it in git390.
-> > 
-> > the one below should do the trick.
+Any idea why has this changed between the two minor kernel revisions though?
+
+Thanks
+	Eyal
+
+Clemens Ladisch wrote:
+> Eyal Lebedinsky wrote:
+>> A recent update to 2.6.23.14-64.fc7 lost sound. The boot log now has
+>> 	hda-intel: Error creating card!
+>> 	HDA Intel: probe of 0000:00:1b.0 failed with error -12
 > 
-> Thanks but I already queued a different one (see below). The other 
-> architectures that define GENERIC_LOCKBREAK have the "depends on SMP 
-> && PREEMPT" line as well. The line does make sense if you look at the 
-> way how spin_is_contended is used, no ?
+> The two lines before:
+> | usbcore: registered new interface driver snd-usb-audio
+> | cannot find the slot for index 0 (range 0-0), error: -16
+> 
+> ... show that a USB audio device was loaded as the first card (at
+> index 0), and that the HDA device doesn't load because it tries to go
+> to the same index.
+> 
+> Use the sound card configuration utility of your distribution to
+> configure the USB audio device to be the second device, or add the line
+>   options snd-usb-audio index=1
+> to /etc/modprobe.conf.
+> 
+> HTH
+> Clemens
 
-yes, you are right and your fix is the correct one. Currently, if we 
-define GENERIC_LOCKBREAK on UP then we get accesses to the non-existing 
-lock->need_lockbreak field.
-
-[ btw., this is really a small uncleanliness in the generic code: it
-  should be possible for an architecture to just enable
-  GENERIC_LOCKBREAK unconditionally, to indicate that it intends to "let
-  the generic code do this". Then the generic code, when it does not
-  have a field (such as on UP), should just not access it. But this is a
-  small detail. ]
-
-	Ingo
+-- 
+Eyal Lebedinsky	(eyal@eyal.emu.id.au)
