@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbYBAK6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761523AbYBALB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759426AbYBAK6n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYBAK6g
+	id S1761523AbYBALB4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:01:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760326AbYBALBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:58:36 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:55670 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753287AbYBAK6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:58:35 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Newall <davidn@davidnewall.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <47A272D8.7030106@zytor.com>
-References: <1201815920-24669-1-git-send-email-ijc@hellion.org.uk>
-	 <1201815920-24669-2-git-send-email-ijc@hellion.org.uk>
-	 <1201815920-24669-3-git-send-email-ijc@hellion.org.uk>
-	 <47A26B2F.8080001@davidnewall.com>  <47A272D8.7030106@zytor.com>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 10:58:14 +0000
-Message-Id: <1201863494.25409.76.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] x86: add a crc32 checksum to the kernel image.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Fri, 1 Feb 2008 06:01:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49980 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760198AbYBALBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 06:01:35 -0500
+Date: Fri, 1 Feb 2008 12:01:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [bug] as_merged_requests(): possible recursive locking detected
+Message-ID: <20080201110123.GF27178@elte.hu>
+References: <20080131221436.GA3760@elte.hu> <20080201084056.GH15220@kernel.dk> <20080201104537.GA27178@elte.hu> <20080201104733.GM15220@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080201104733.GM15220@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-01-31 at 17:16 -0800, H. Peter Anvin wrote:
-> David Newall wrote:
-> > Isn't a crc32 calculation already defined?  Yes; in lib/crc32.c.  One is
-> > surely enough.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Fri, Feb 01 2008, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > Are you sure this triggered with the as fixup in place? It looks like 
+> > > the same bug.
+> > 
+> > most definitely a separate bug.
 > 
-> As long as it can be included in user-space code we should use that one.
+> yeah, I didn't read it carefully enough. Nikanth found the reason.
 
-I don't think it can. There is a main function surrounded by #ifdef
-UNITTEST which might once have worked but now there is far too much
-kernel gunk in there (as you might expect).
+/me processes his mbox some more and sees the mails
 
-If I can work up the enthusiasm I might break out the core algorithm
-into a separate file that can be used in both the kernel and userspace.
+am i right that lockdep complained about real lockup potential here? 
+(i.e. it caught a real bug) So there's no need to change anything on the 
+lockdep side, right?
 
-Ian.
-
--- 
-Ian Campbell
-Current Noise: Reverend Bizarre - Cirith Ungol
-
-"Would I turn on the gas if my pal Mugsy were in there?"
-   "You might, rabbit, you might!"
-		-- Looney Tunes, Bugs and Thugs (1954, Friz Freleng)
-
+	Ingo
