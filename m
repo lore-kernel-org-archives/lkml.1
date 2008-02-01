@@ -1,80 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760290AbYBAHRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbYBAHZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760290AbYBAHRv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbYBAHRl
+	id S1762336AbYBAHZi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYBAHZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:17:41 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:21183 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754473AbYBAHRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:17:40 -0500
-Message-ID: <47A2C791.8000303@msgid.tls.msk.ru>
-Date: Fri, 01 Feb 2008 10:17:37 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: hibernate/suspend-to-disk: to turn power or not?
-References: <47A0CD90.5080208@msgid.tls.msk.ru> <200801302211.10622.rjw@sisk.pl> <47A10886.5050707@msgid.tls.msk.ru> <20080131144030.GC983@elf.ucw.cz>
-In-Reply-To: <20080131144030.GC983@elf.ucw.cz>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 1 Feb 2008 02:25:29 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:13440 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYBAHZ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:25:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=iPLJOhCcQBwy1q9qRw03BNOzlgn78NcAVVjb03FfkRVqh4OschGQTD3TFYXYl974JhWbIgf5SvVhYVozqsFOkigzSoupcw4H2xzgB06KnZ/GHw2hEFc3wuQPqUEbsBzC0yWu5WN3WWyFmLuaV0ODpCVlTXMuKC2h9bISWpQV/R4=
+Subject: [PATCH] x86: sparse warnings in pageattr.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 23:25:24 -0800
+Message-Id: <1201850724.23523.95.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-[]
->> I'm looking at the uswsusp source (while the kernel compiles),
->> and have a question here.  Is it possible to call some external
->> application (typically a shell script) to do the final work after
->> when the image has been written?  I mean in principle - I
->> understand there are some limitations here, but I don't know
->> which exactly.
-> 
-> No, you can't exec() anything. That would write mtime back to disk and
-> cause badness.
+Adjust the definition of lookup_address to take an unsigned long
+level argument.  Adjust callers in xen/mmu.c that pass in a
+dummy variable.
 
-Now that's.. interesting.
+arch/x86/mm/pageattr.c:99:38: warning: incorrect type in argument 2 (different signedness)
+arch/x86/mm/pageattr.c:99:38:    expected int *level
+arch/x86/mm/pageattr.c:99:38:    got unsigned int *<noident>
+arch/x86/mm/pageattr.c:215:33: warning: incorrect type in argument 2 (different signedness)
+arch/x86/mm/pageattr.c:215:33:    expected int *level
+arch/x86/mm/pageattr.c:215:33:    got unsigned int *<noident>
 
-s2disk writes to a swap device/file, which should update
-mtime of this device node/file.  Isn't it something which
-also causes the same badness?
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/mm/pageattr.c    |    5 +++--
+ arch/x86/xen/mmu.c        |    6 +++---
+ include/asm-x86/pgtable.h |    2 +-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-Also, if the only concern is mtime update, what's really
-wrong with it?  I mean, regardless of whether such update
-will finally hit the disk or not, there's not much difference
-really - it updates just mtime field, and there should be
-no harm in that.  Unless such update first goes to a
-journal (in a journalling filesystem) - which DOES modify
-some on-disk structures.
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index e297bd6..d29cb9a 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -142,7 +142,7 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long address)
+ 	return prot;
+ }
+ 
+-pte_t *lookup_address(unsigned long address, int *level)
++pte_t *lookup_address(unsigned long address, unsigned int *level)
+ {
+ 	pgd_t *pgd = pgd_offset_k(address);
+ 	pud_t *pud;
+@@ -254,7 +254,8 @@ __change_page_attr(unsigned long address, unsigned long pfn,
+ 		   pgprot_t mask_set, pgprot_t mask_clr)
+ {
+ 	struct page *kpte_page;
+-	int level, err = 0;
++	unsigned int level;
++	int err = 0;
+ 	pte_t *kpte;
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 45aa771..0144395 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -58,7 +58,7 @@
+ 
+ xmaddr_t arbitrary_virt_to_machine(unsigned long address)
+ {
+-	int level;
++	unsigned int level;
+ 	pte_t *pte = lookup_address(address, &level);
+ 	unsigned offset = address & PAGE_MASK;
+ 
+@@ -71,7 +71,7 @@ void make_lowmem_page_readonly(void *vaddr)
+ {
+ 	pte_t *pte, ptev;
+ 	unsigned long address = (unsigned long)vaddr;
+-	int level;
++	unsigned int level;
+ 
+ 	pte = lookup_address(address, &level);
+ 	BUG_ON(pte == NULL);
+@@ -86,7 +86,7 @@ void make_lowmem_page_readwrite(void *vaddr)
+ {
+ 	pte_t *pte, ptev;
+ 	unsigned long address = (unsigned long)vaddr;
+-	int level;
++	unsigned int level;
+ 
+ 	pte = lookup_address(address, &level);
+ 	BUG_ON(pte == NULL);
+diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
+index cd2524f..de27abf 100644
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -251,7 +251,7 @@ enum {
+  * NOTE: the return type is pte_t but if the pmd is PSE then we return it
+  * as a pte too.
+  */
+-extern pte_t *lookup_address(unsigned long address, int *level);
++extern pte_t *lookup_address(unsigned long address, unsigned int *level);
+ 
+ /* local pte updates need not use xchg for locking */
+ static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
+-- 
+1.5.4.rc4.1142.gf5a97
 
->> it typically involves writing/reading something to/from
->> a given serial port (/dev/ttySxx), or to an USB device,
 
-> Create libups.so, and link s2disk to it?
 
-And what's the difference here again?  We'll open a serial
-port and write something to it - which, again, will update
-mtime of that device node.  Unless the said node is on a
-tmpfs, exactly the same badness will happen.  Not all the
-world is udev, after all.
-
-So I don't get the reason why we can't exec something here,
-still.  (And, for example, call splashy commands as external
-processes, instead of linking all this cruft into s2disk and
-resume.)
-
-What I'm thinking about here is - s2ram mlock()s its memory.
-If it will fork/exec something, that something will obviously
-NOT be locked like that.  Is it of some concern?  Probably
-not, because that something will be executed after we've
-taken the snapshot.
-
-/mjt
