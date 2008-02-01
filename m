@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764229AbYBALHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764794AbYBALIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764229AbYBALHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbYBALHi
+	id S1764794AbYBALIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYBALIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:07:38 -0500
-Received: from mx2.suse.de ([195.135.220.15]:38496 "EHLO mx2.suse.de"
+	Fri, 1 Feb 2008 06:08:20 -0500
+Received: from smtp23.orange.fr ([193.252.22.30]:9223 "EHLO smtp23.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbYBALHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:07:37 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 2/4] x86: set_memory_xx enhancement
-Date: Fri, 1 Feb 2008 12:07:29 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <1201858492.4051.18.camel@caritas-dev.intel.com>
-In-Reply-To: <1201858492.4051.18.camel@caritas-dev.intel.com>
+	id S1751143AbYBALIT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 06:08:19 -0500
+X-ME-UUID: 20080201110817376.5BC9E1C02C4C@mwinf2341.orange.fr
+Message-ID: <47A2FD9A.8020809@cosmosbay.com>
+Date: Fri, 01 Feb 2008 12:08:10 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802011207.29626.ak@suse.de>
+To: Shuduo Sang <sangshuduo@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Lars Noschinski <lklml@ml.noschinski.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: How does ext2 implement sparse files?
+References: <20080131152823.GA29422@lars.home.noschinski.de>	 <p73myql50d2.fsf@bingen.suse.de> <ee101c360802010234m4a7199e7g4cc9131484529b1c@mail.gmail.com>
+In-Reply-To: <ee101c360802010234m4a7199e7g4cc9131484529b1c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 February 2008 10:34:52 Huang, Ying wrote:
-> This patch makes set_memory_xx can be used on arbitrary memory mapping
-> (besides identity mapping), such as memory mapped with ioremap. The
-> physical address is added to the set_memory_xx functions as another
-> parameter.
+Shuduo Sang a écrit :
+> On Feb 1, 2008 2:14 AM, Andi Kleen <andi@firstfloor.org> wrote:
+>   
+>> Lars Noschinski <lklml@ml.noschinski.de> writes:
+>>
+>>     
+>>> For an university project, we had to write a toy filesystem (ext2-like),
+>>> for which I would like to implement sparse file support. For this, I
+>>> digged through the ext2 source code; but I could not find the point,
+>>> where ext2 detects holes.
+>>>
+>>> As far as I can see from fs/buffer.c, an hole is a buffer_head which is
+>>> not mapped, but uptodate. But I cannot find a relevant source line,
+>>> where ext2 makes usage of this information.
+>>>       
+>> It does not explicitely detect holes; holey data is just never written
+>> so no space for it is allocated.
+>>
+>>     
+>
+> does anybody know how to make a hole in a large file which already has
+> real content from user space application?
+> In my project I need this function to delete a piece of content from
+> an exist large effectively.
+> thanks.
+>
+>   
+Some OSes use fcntl() F_FREESP/F_FREESP64 to be able to free allocated 
+space in files (ie make holes if supported by underlying fs)
 
-Well as you can see it's incredible complicated. And it's not even 
-needed because there is no need to change the direct mapping and 
-add more TLB misses for all users who happen to share the same 2MB area 
-just to get an executable mapping somewhere. All this effort is only
-really needed for uncacheable mappings where the architecture requires
-coherency. Or for mappings where cache coherency is not ensured.
+AFAIK, linux can generically do this only at the end of a file 
+(ftruncate()) , not at random points.
 
-It would be much simpler to just fix ioremap to allow executable
-mappings again. And remove set_memory_x() again because it is much
-less efficient than ioremap for this.
+XFS has special support for FREESP (it comes from IRIX), implemented as 
+an ioctl()
+
+Check for XFS_IOC_FREESP and XFS_IOC_UNRESVSP in fs/xfs/xfs_fs.h
 
 
--Andi
+
+
+
