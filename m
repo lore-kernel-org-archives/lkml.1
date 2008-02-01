@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbYBAXnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762666AbYBAXnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762104AbYBAXnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 18:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760170AbYBAXnD
+	id S1762666AbYBAXnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 18:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761577AbYBAXni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 18:43:03 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56992 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759896AbYBAXnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 18:43:02 -0500
-Date: Sat, 2 Feb 2008 00:43:15 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Sterba <dsterba@suse.cz>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jkosina@suse.cz, benm@symmetric.co.nz, stephen@symmetric.co.nz
-Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
-Message-ID: <20080201234315.GA1761@elf.ucw.cz>
-References: <20080128171929.GA3906@ds.suse.cz> <20080130134046.GB5139@elf.ucw.cz> <200802011621.27239.dsterba@suse.cz>
+	Fri, 1 Feb 2008 18:43:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33334 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760170AbYBAXnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 18:43:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
+Date: Sat, 2 Feb 2008 00:39:58 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200802010237.59320.rjw@sisk.pl> <200802011250.18699.rjw@sisk.pl> <1201867797.32654.52.camel@lappy>
+In-Reply-To: <1201867797.32654.52.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802011621.27239.dsterba@suse.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200802020040.05519.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > +static irqreturn_t ipwireless_handle_v1_interrupt(int irq,
-> > > +						  struct ipw_hardware *hw)
-> > > +{
-> > > +	unsigned short irqn;
-> > > +	unsigned short ack;
-> > > +
-> > > +	irqn = inw(hw->base_port + IOIR);
-> > > +
-> > > +	/* Check if card is present */
-> > > +	if (irqn == (unsigned short) 0xFFFF) {
-> > > +		if (++hw->bad_interrupt_count >= 100) {
-> > > +			/*
-> > > +			 * It is necessary to disable the interrupt at this
-> > > +			 * point, or the kernel hangs, interrupting repeatedly
-> > > +			 * forever.
-> > > +			 */
-> > > +			hw->irq = irq;
-> > > +			hw->removed = 1;
-> > > +			disable_irq_nosync(irq);
-> > > +			printk(KERN_DEBUG IPWIRELESS_PCCARD_NAME
-> > > +					": Mr. Fluffy is not happy!\n");
-> > > +		}
-> > > +		return IRQ_HANDLED;
-> >
-> > Not sure how this is supposed to work. If you assume unshared
-> > interrupts, it should be possible to return something and make core
-> > care.
-> >
-> > If you are assuming shared interrupts, either you should disable on
-> > first 0xFFFF (are you sure cast is needed, btw?), or not at all,
-> > because it could be the other device sedning you 100 of those...
-> >
-> > ...so which one is it?
+On Friday, 1 of February 2008, Peter Zijlstra wrote:
 > 
-> Shared. It'll check if device has interrupt pending, else exit.
-
-can you remove bad_interrupt_count? It seems very random in presence
-of shared interrupt.
-
-> > > +static int config_ipwireless(struct ipw_dev *ipw)
-> > > +{
-> > > +	struct pcmcia_device *link = ipw->link;
-> > > +	int ret;
-> > > +	config_info_t conf;
-> > > +	tuple_t tuple;
-> > > +	unsigned short buf[64];
-> > > +	cisparse_t parse;
-> > > +	unsigned short cor_value;
-> > > +	win_req_t reqAM;
-> > > +	win_req_t reqCM;
-> >
-> > Hiding structs BehindTypedefsIsEvil.
+> On Fri, 2008-02-01 at 12:50 +0100, Rafael J. Wysocki wrote:
+> > On Friday, 1 of February 2008, Peter Zijlstra wrote:
 > 
-> Unfortunatelly PCMCIA subsystem is full of these and all drivers use them. 
-> I'll stay consistent for now.
+> > > > It arts run as root, or does it use RLIMIT_RTPRIO to allow users to
+> > > > execute realtime tasks?
+> > 
+> > artswrapper is setuid root and RLIMIT_RTPRIO is apparently not used.
+> > Still, artswrapper is running as a regular user, so it most probably drops
+> > privileges early.
+> > 
+> > BTW, it fails while running the artsmessage utility used for displaying arts
+> > error messages, so I guess there's an error in arts that this thing tries to
+> > display and deadlocks (or something like that).
+> > 
+> > Should I test the patch nevertheless?
+> 
+> Don't think that would help any in this situation. The thing to look out
+> for are RT tasks running with a different uid than 0.
+> 
+> This patch would only stop a task from obtaining RT class scheduling
+> when already in a (misconfigured) group. If the task is RT and then
+> switches group another - similar - thing is needed.
+> 
+> Does this artsmessage thing also run with RT priority?
 
-Sorry if they were not yours.
+Well, it's in a strange state (after it's broken).  From top:
 
-> Updated patch v4 will follow.
+PR = -51
+NI = 0
+S = R
+%CPU = 0.0
+%MEM = 0.0
 
-Thanks!
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Here's the corresponding trace from sysrq+t:
+
+artswrapper   R  running task     5128  5776      1
+ ffff81007a8dbd88 0000000000000046 000000015c4321b0 ffff81006aa6e5c8
+ ffffffff806daa00 ffffffff806daa00 ffffffff806daa00 ffffffff806daa00
+ ffffffff806daa00 ffffffff806daa00 ffffffff806d7a60 ffffffff806daa00
+Call Trace:
+ [<ffffffff8022fdb7>] ? try_to_wake_up+0x77/0x200
+ [<ffffffff8023573d>] __cond_resched+0x2d/0x60
+ [<ffffffff804ddce1>] _cond_resched+0x31/0x40
+ [<ffffffff804ddd24>] wait_for_common+0x34/0x170
+ [<ffffffff8022fdb7>] ? try_to_wake_up+0x77/0x200
+ [<ffffffff804ddec8>] wait_for_completion+0x18/0x20
+ [<ffffffff80235aba>] sched_exec+0xba/0xf0
+ [<ffffffff802b5a64>] do_execve+0x64/0x220
+ [<ffffffff802097c6>] sys_execve+0x46/0x70
+ [<ffffffff8020bab7>] stub_execve+0x67/0xb0
