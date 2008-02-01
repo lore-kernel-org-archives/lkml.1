@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYBAPmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbYBAPo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbYBAPmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 10:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYBAPmI
+	id S1757472AbYBAPo4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 10:44:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYBAPou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 10:42:08 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48873 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754027AbYBAPmG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 10:42:06 -0500
-X-Greylist: delayed 1254 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Feb 2008 10:42:06 EST
-Message-Id: <1201879272.2433.1234541483@webmail.messagingengine.com>
-X-Sasl-Enc: uhg92/PNnAc++zTqsarPs2uu1NiiigTHWZNgxLtV5PuF 1201879272
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="ISO-8859-1"
+	Fri, 1 Feb 2008 10:44:50 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:53588 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYBAPot (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 10:44:49 -0500
+Date: Fri, 1 Feb 2008 10:44:37 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: any point in running the kernel cleanup scripts now?
+Message-ID: <alpine.LFD.1.00.0802011043010.29671@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080201145649.GA12318@mailshack.com>
-   <20080201150312.GB13992@uranus.ravnborg.org>
-Subject: Re: Avoid section mismatch involving arch_register_cpu
-In-Reply-To: <20080201150312.GB13992@uranus.ravnborg.org>
-Date: Fri, 01 Feb 2008 16:21:12 +0100
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 1 Feb 2008 16:03:12 +0100, "Sam Ravnborg" <sam@ravnborg.org>
-said:
-> Hi Alexander.
-> 
-> See below for my take on the same warning.
-> It is already in x86.git pending merge.
+  given that we're currently in the midst of a frenetic merge window,
+is there any value to running some cleanup scripts and updating the
+results here?
 
-Hi!
+http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup
 
-The patch you forwarded is in Linus' tree already. It only
-changed one warning into another one, however. My guess is
-that you did not see the new warning due to inlining, but I
-compiled with CONFIG_CC_OPTIMIZE_FOR_SIZE=y.
+  or is more reasonable to just wait until that window is over and
+we're at rc1?
 
-Greetings,
-    Alexander
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+rday
+--
 
--- 
-http://www.fastmail.fm - And now for something completely different…
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+Home page:                                         http://crashcourse.ca
+Fedora Cookbook:    http://crashcourse.ca/wiki/index.php/Fedora_Cookbook
+========================================================================
