@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933693AbYBAEom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbYBAEpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933693AbYBAEom (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 23:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbYBAEmE
+	id S933231AbYBAEpO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 23:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYBAEmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 23:42:04 -0500
-Received: from mga10.intel.com ([192.55.52.92]:46275 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754433AbYBAEly (ORCPT
+	Thu, 31 Jan 2008 23:42:06 -0500
+Received: from mga05.intel.com ([192.55.52.89]:61252 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754507AbYBAEly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 31 Jan 2008 23:41:54 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,288,1199692800"; 
-   d="scan'208";a="511516574"
+   d="scan'208";a="511516545"
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 13/37] PM: Make PM_TRACE more architecture independent
-Date: Thu, 31 Jan 2008 23:36:44 -0500
-Message-Id: <76eb98a092c3481b3c1f1b9c67c97e77b8cdcea0.1201840183.git.len.brown@intel.com>
+Subject: [PATCH 03/37] Hibernation: Mark SNAPSHOT_SET_SWAP_FILE ioctl as deprecated (rev. 2)
+Date: Thu, 31 Jan 2008 23:36:34 -0500
+Message-Id: <dbb027badbbd8ae51e914eca50774755d207826a.1201840183.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.5.4.rc5.16.gc0279
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -31,73 +30,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-When trying to debug a suspend failure I started implementing
-PM_TRACE for powerpc. I then noticed that I'm debugging a suspend
-failure and so PM_TRACE isn't useful at all, but thought that
-nonetheless this could be useful in the future.
+Mark the SNAPSHOT_SET_SWAP_FILE ioctl belonging to the hibernation userland
+interface as deprecated.
 
-Basically, to support PM_TRACE, you add a Kconfig option that
-selects PM_TRACE and provides the infrastructure as per the
-help text of PM_TRACE.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/base/power/Makefile |    2 +-
- kernel/power/Kconfig        |   23 ++++++++++++++++++++++-
- 2 files changed, 23 insertions(+), 2 deletions(-)
+ Documentation/power/userland-swsusp.txt |   14 ++------------
+ kernel/power/power.h                    |    1 -
+ kernel/power/user.c                     |    9 +++++----
+ 3 files changed, 7 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index de28dfd..911208b 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,6 +1,6 @@
- obj-$(CONFIG_PM)	+= sysfs.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o
--obj-$(CONFIG_PM_TRACE)	+= trace.o
-+obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+diff --git a/Documentation/power/userland-swsusp.txt b/Documentation/power/userland-swsusp.txt
+index 381e9c0..0785500 100644
+--- a/Documentation/power/userland-swsusp.txt
++++ b/Documentation/power/userland-swsusp.txt
+@@ -67,23 +67,13 @@ SNAPSHOT_GET_SWAP_PAGE - allocate a swap page from the resume partition
+ SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated with
+ 	SNAPSHOT_GET_SWAP_PAGE
  
- ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
- ccflags-$(CONFIG_PM_VERBOSE)   += -DDEBUG
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 8e186c6..06a08f7 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -44,9 +44,30 @@ config PM_VERBOSE
- 	---help---
- 	This option enables verbose messages from the Power Management code.
+-SNAPSHOT_SET_SWAP_FILE - set the resume partition (the last ioctl() argument
+-	should specify the device's major and minor numbers in the old
+-	two-byte format, as returned by the stat() function in the .st_rdev
+-	member of the stat structure)
+-
+ SNAPSHOT_SET_SWAP_AREA - set the resume partition and the offset (in <PAGE_SIZE>
+ 	units) from the beginning of the partition at which the swap header is
+ 	located (the last ioctl() argument should point to a struct
+ 	resume_swap_area, as defined in kernel/power/power.h, containing the
+-	resume device specification, as for the SNAPSHOT_SET_SWAP_FILE ioctl(),
+-	and the offset); for swap partitions the offset is always 0, but it is
+-	different to zero for swap files (please see
++	resume device specification and the offset); for swap partitions the
++	offset is always 0, but it is different from zero for swap files (see
+ 	Documentation/swsusp-and-swap-files.txt for details).
+-	The SNAPSHOT_SET_SWAP_AREA ioctl() is considered as a replacement for
+-	SNAPSHOT_SET_SWAP_FILE which is regarded as obsolete.   It is
+-	recommended to always use this call, because the code to set the resume
+-	partition may be removed from future kernels
  
-+config CAN_PM_TRACE
-+	def_bool y
-+	depends on PM_DEBUG && PM_SLEEP && EXPERIMENTAL
-+
- config PM_TRACE
-+	bool
-+	help
-+	  This enables code to save the last PM event point across
-+	  reboot. The architecture needs to support this, x86 for
-+	  example does by saving things in the RTC, see below.
-+
-+	  The architecture specific code must provide the extern
-+	  functions from <linux/resume-trace.h> as well as the
-+	  <asm/resume-trace.h> header with a TRACE_RESUME() macro.
-+
-+	  The way the information is presented is architecture-
-+	  dependent, x86 will print the information during a
-+	  late_initcall.
-+
-+config PM_TRACE_RTC
- 	bool "Suspend/resume event tracing"
--	depends on PM_DEBUG && X86 && PM_SLEEP && EXPERIMENTAL
-+	depends on CAN_PM_TRACE
-+	depends on X86
-+	select PM_TRACE
- 	default n
- 	---help---
- 	This enables some cheesy code to save the last PM event point in the
+ SNAPSHOT_PLATFORM_SUPPORT - enable/disable the hibernation platform support,
+ 	depending on the argument value (enable, if the argument is nonzero)
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 6ca85fd..8837ea3 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -154,7 +154,6 @@ struct resume_swap_area {
+ #define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
+ #define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
+ #define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
+-#define SNAPSHOT_SET_SWAP_FILE		_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
+ #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
+ #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
+ 							struct resume_swap_area)
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index de3fb43..5e866e0 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -29,10 +29,11 @@
+ #include "power.h"
+ 
+ /*
+- * NOTE: The SNAPSHOT_PMOPS ioctl is obsolete and will be removed in the
+- * future.  It is only preserved here for compatibility with existing userland
+- * utilities.
++ * NOTE: The SNAPSHOT_SET_SWAP_FILE and SNAPSHOT_PMOPS ioctls are obsolete and
++ * will be removed in the future.  They are only preserved here for
++ * compatibility with existing userland utilities.
+  */
++#define SNAPSHOT_SET_SWAP_FILE	_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
+ #define SNAPSHOT_PMOPS		_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
+ 
+ #define PMOPS_PREPARE	1
+@@ -260,7 +261,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		free_all_swap_pages(data->swap);
+ 		break;
+ 
+-	case SNAPSHOT_SET_SWAP_FILE:
++	case SNAPSHOT_SET_SWAP_FILE: /* This ioctl is deprecated */
+ 		if (!swsusp_swap_in_use()) {
+ 			/*
+ 			 * User space encodes device types as two-byte values,
 -- 
 1.5.4.rc5.16.gc0279
 
