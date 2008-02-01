@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763851AbYBAHls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935490AbYBAHmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763851AbYBAHls (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935017AbYBAHim
+	id S935490AbYBAHmN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935109AbYBAHiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:38:42 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:48061 "EHLO snapgear.com"
+	Fri, 1 Feb 2008 02:38:55 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:48068 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935028AbYBAHik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:38:40 -0500
-Date: Fri, 1 Feb 2008 17:37:39 +1000
+	id S935086AbYBAHiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:38:52 -0500
+Date: Fri, 1 Feb 2008 17:37:28 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200802010737.m117bdaN022701@goober>
+Message-Id: <200802010737.m117bSX5022691@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU 04/06]: move ColdFire timers.c to its own coldfire directory
+Subject: [M68KNOMMU 02/06]: move ColdFire head.S to its own coldfire directory
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move common ColdFire CPU timers.c to common coldfire platform directory.
+Move common ColdFire CPU head.S to common coldfire platform directory.
 
 Currently the common ColdFire CPU family code sits in the
 arch/m68knommu/platform/5307 directory. This is confusing, the files
@@ -31,321 +31,455 @@ though, so it doesn't make sense to move it to arch/m68knommu/kernel.
 Signed-off-by: Greg Ungerer <gerg@uclinux.org
 
 
-diff -Naurp linux-2.6.24/arch/m68knommu/platform/5307/timers.c linux-2.6.24.1/arch/m68knommu/platform/5307/timers.c
---- linux-2.6.24/arch/m68knommu/platform/5307/timers.c	2008-01-25 08:58:37.000000000 +1000
-+++ linux-2.6.24.1/arch/m68knommu/platform/5307/timers.c	1970-01-01 10:00:00.000000000 +1000
-@@ -1,155 +0,0 @@
--/***************************************************************************/
+diff -Naurp linux-2.6.24/arch/m68knommu/platform/5307/head.S linux-2.6.24.1/arch/m68knommu/platform/5307/head.S
+--- linux-2.6.24/arch/m68knommu/platform/5307/head.S	2008-01-25 08:58:37.000000000 +1000
++++ linux-2.6.24.1/arch/m68knommu/platform/5307/head.S	1970-01-01 10:00:00.000000000 +1000
+@@ -1,222 +0,0 @@
+-/*****************************************************************************/
 -
 -/*
-- *	timers.c -- generic ColdFire hardware timer support.
+- *	head.S -- common startup code for ColdFire CPUs.
 - *
-- *	Copyright (C) 1999-2007, Greg Ungerer (gerg@snapgear.com)
+- *	(C) Copyright 1999-2006, Greg Ungerer <gerg@snapgear.com>.
 - */
 -
--/***************************************************************************/
+-/*****************************************************************************/
 -
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/sched.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <asm/io.h>
--#include <asm/traps.h>
--#include <asm/machdep.h>
+-#include <linux/sys.h>
+-#include <linux/linkage.h>
+-#include <asm/asm-offsets.h>
 -#include <asm/coldfire.h>
--#include <asm/mcftimer.h>
+-#include <asm/mcfcache.h>
 -#include <asm/mcfsim.h>
 -
--/***************************************************************************/
+-/*****************************************************************************/
 -
 -/*
-- *	By default use timer1 as the system clock timer.
+- *	If we don't have a fixed memory size, then lets build in code
+- *	to auto detect the DRAM size. Obviously this is the prefered
+- *	method, and should work for most boards. It won't work for those
+- *	that do not have their RAM starting at address 0, and it only
+- *	works on SDRAM (not boards fitted with SRAM).
 - */
--#define	TA(a)	(MCF_MBAR + MCFTIMER_BASE1 + (a))
+-#if CONFIG_RAMSIZE != 0
+-.macro GET_MEM_SIZE
+-	movel	#CONFIG_RAMSIZE,%d0	/* hard coded memory size */
+-.endm
 -
+-#elif defined(CONFIG_M5206) || defined(CONFIG_M5206e) || \
+-      defined(CONFIG_M5249) || defined(CONFIG_M527x) || \
+-      defined(CONFIG_M528x) || defined(CONFIG_M5307) || \
+-      defined(CONFIG_M5407)
 -/*
-- *	Default the timer and vector to use for ColdFire. Some ColdFire
-- *	CPU's and some boards may want different. Their sub-architecture
-- *	startup code (in config.c) can change these if they want.
+- *	Not all these devices have exactly the same DRAM controller,
+- *	but the DCMR register is virtually identical - give or take
+- *	a couple of bits. The only exception is the 5272 devices, their
+- *	DRAM controller is quite different.
 - */
--unsigned int	mcf_timervector = 29;
--unsigned int	mcf_profilevector = 31;
--unsigned int	mcf_timerlevel = 5;
+-.macro GET_MEM_SIZE
+-	movel	MCF_MBAR+MCFSIM_DMR0,%d0 /* get mask for 1st bank */
+-	btst	#0,%d0			/* check if region enabled */
+-	beq	1f
+-	andl	#0xfffc0000,%d0
+-	beq	1f
+-	addl	#0x00040000,%d0		/* convert mask to size */
+-1:
+-	movel	MCF_MBAR+MCFSIM_DMR1,%d1 /* get mask for 2nd bank */
+-	btst	#0,%d1			/* check if region enabled */
+-	beq	2f
+-	andl	#0xfffc0000, %d1
+-	beq	2f
+-	addl	#0x00040000,%d1
+-	addl	%d1,%d0			/* total mem size in d0 */
+-2:
+-.endm
 -
--/*
-- *	These provide the underlying interrupt vector support.
-- *	Unfortunately it is a little different on each ColdFire.
-- */
--extern void mcf_settimericr(int timer, int level);
--extern int mcf_timerirqpending(int timer);
+-#elif defined(CONFIG_M5272)
+-.macro GET_MEM_SIZE
+-	movel	MCF_MBAR+MCFSIM_CSOR7,%d0 /* get SDRAM address mask */
+-	andil	#0xfffff000,%d0		/* mask out chip select options */
+-	negl	%d0			/* negate bits */
+-.endm
 -
--#if defined(CONFIG_M532x)
--#define	__raw_readtrr	__raw_readl
--#define	__raw_writetrr	__raw_writel
+-#elif defined(CONFIG_M520x)
+-.macro GET_MEM_SIZE
+-	clrl	%d0
+-	movel	MCF_MBAR+MCFSIM_SDCS0, %d2 /* Get SDRAM chip select 0 config */
+-	andl	#0x1f, %d2		/* Get only the chip select size */
+-	beq	3f			/* Check if it is enabled */
+-	addql	#1, %d2			/* Form exponent */
+-	moveql	#1, %d0
+-	lsll	%d2, %d0		/* 2 ^ exponent */
+-3:
+-	movel	MCF_MBAR+MCFSIM_SDCS1, %d2 /* Get SDRAM chip select 1 config */
+-	andl	#0x1f, %d2		/* Get only the chip select size */
+-	beq	4f			/* Check if it is enabled */
+-	addql	#1, %d2			/* Form exponent */
+-	moveql	#1, %d1
+-	lsll	%d2, %d1		/* 2 ^ exponent */
+-	addl	%d1, %d0		/* Total size of SDRAM in d0 */
+-4:
+-.endm
+-
 -#else
--#define	__raw_readtrr	__raw_readw
--#define	__raw_writetrr	__raw_writew
+-#error "ERROR: I don't know how to probe your boards memory size?"
 -#endif
 -
--/***************************************************************************/
+-/*****************************************************************************/
 -
--static irqreturn_t hw_tick(int irq, void *dummy)
--{
--	/* Reset the ColdFire timer */
--	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, TA(MCFTIMER_TER));
--
--	return arch_timer_interrupt(irq, dummy);
--}
--
--/***************************************************************************/
--
--static struct irqaction coldfire_timer_irq = {
--	.name	 = "timer",
--	.flags	 = IRQF_DISABLED | IRQF_TIMER,
--	.handler = hw_tick,
--};
--
--/***************************************************************************/
--
--static int ticks_per_intr;
--
--void hw_timer_init(void)
--{
--	setup_irq(mcf_timervector, &coldfire_timer_irq);
--
--	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
--	ticks_per_intr = (MCF_BUSCLK / 16) / HZ;
--	__raw_writetrr(ticks_per_intr - 1, TA(MCFTIMER_TRR));
--	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
--		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, TA(MCFTIMER_TMR));
--
--	mcf_settimericr(1, mcf_timerlevel);
--
--#ifdef CONFIG_HIGHPROFILE
--	coldfire_profile_init();
+-/*
+- *	Boards and platforms can do specific early hardware setup if
+- *	they need to. Most don't need this, define away if not required.
+- */
+-#ifndef PLATFORM_SETUP
+-#define	PLATFORM_SETUP
 -#endif
--}
 -
--/***************************************************************************/
+-/*****************************************************************************/
 -
--unsigned long hw_timer_offset(void)
--{
--	unsigned long tcn, offset;
+-.global	_start
+-.global _rambase
+-.global _ramvec
+-.global	_ramstart
+-.global	_ramend
 -
--	tcn = __raw_readw(TA(MCFTIMER_TCN));
--	offset = ((tcn + 1) * (1000000 / HZ)) / ticks_per_intr;
+-/*****************************************************************************/
 -
--	/* Check if we just wrapped the counters and maybe missed a tick */
--	if ((offset < (1000000 / HZ / 2)) && mcf_timerirqpending(1))
--		offset += 1000000 / HZ;
--	return offset;
--}
--
--/***************************************************************************/
--#ifdef CONFIG_HIGHPROFILE
--/***************************************************************************/
+-.data
 -
 -/*
-- *	By default use timer2 as the profiler clock timer.
+- *	During startup we store away the RAM setup. These are not in the
+- *	bss, since their values are determined and written before the bss
+- *	has been cleared.
 - */
--#define	PA(a)	(MCF_MBAR + MCFTIMER_BASE2 + (a))
+-_rambase:
+-.long	0
+-_ramvec:
+-.long	0
+-_ramstart:
+-.long	0
+-_ramend:
+-.long	0
+-
+-/*****************************************************************************/
+-
+-.text
 -
 -/*
-- *	Choose a reasonably fast profile timer. Make it an odd value to
-- *	try and get good coverage of kernel operations.
+- *	This is the codes first entry point. This is where it all
+- *	begins...
 - */
--#define	PROFILEHZ	1013
 -
--/*
-- *	Use the other timer to provide high accuracy profiling info.
-- */
--irqreturn_t coldfire_profile_tick(int irq, void *dummy)
--{
--	/* Reset ColdFire timer2 */
--	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, PA(MCFTIMER_TER));
--	if (current->pid)
--		profile_tick(CPU_PROFILING, regs);
--	return IRQ_HANDLED;
--}
+-_start:
+-	nop					/* filler */
+-	movew	#0x2700, %sr			/* no interrupts */
 -
--/***************************************************************************/
+-	/*
+-	 *	Do any platform or board specific setup now. Most boards
+-	 *	don't need anything. Those exceptions are define this in
+-	 *	their board specific includes.
+-	 */
+-	PLATFORM_SETUP
 -
--void coldfire_profile_init(void)
--{
--	printk(KERN_INFO "PROFILE: lodging TIMER2 @ %dHz as profile timer\n", PROFILEHZ);
+-	/*
+-	 *	Create basic memory configuration. Set VBR accordingly,
+-	 *	and size memory.
+-	 */
+-	movel	#CONFIG_VECTORBASE,%a7
+-	movec   %a7,%VBR			/* set vectors addr */
+-	movel	%a7,_ramvec
 -
--	/* Set up TIMER 2 as high speed profile clock */
--	__raw_writew(MCFTIMER_TMR_DISABLE, PA(MCFTIMER_TMR));
+-	movel	#CONFIG_RAMBASE,%a7		/* mark the base of RAM */
+-	movel	%a7,_rambase
 -
--	__raw_writetrr(((MCF_CLK / 16) / PROFILEHZ), PA(MCFTIMER_TRR));
--	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
--		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, PA(MCFTIMER_TMR));
+-	GET_MEM_SIZE				/* macro code determines size */
+-	addl	%a7,%d0
+-	movel	%d0,_ramend			/* set end ram addr */
 -
--	request_irq(mcf_profilevector, coldfire_profile_tick,
--		(IRQF_DISABLED | IRQ_FLG_FAST), "profile timer", NULL);
--	mcf_settimericr(2, 7);
--}
+-	/*
+-	 *	Now that we know what the memory is, lets enable cache
+-	 *	and get things moving. This is Coldfire CPU specific.
+-	 */
+-	CACHE_ENABLE				/* enable CPU cache */
 -
--/***************************************************************************/
--#endif	/* CONFIG_HIGHPROFILE */
--/***************************************************************************/
-diff -Naurp linux-2.6.24/arch/m68knommu/platform/coldfire/timers.c linux-2.6.24.1/arch/m68knommu/platform/coldfire/timers.c
---- linux-2.6.24/arch/m68knommu/platform/coldfire/timers.c	1970-01-01 10:00:00.000000000 +1000
-+++ linux-2.6.24.1/arch/m68knommu/platform/coldfire/timers.c	2008-01-25 08:58:37.000000000 +1000
-@@ -0,0 +1,155 @@
-+/***************************************************************************/
+-
+-#ifdef CONFIG_ROMFS_FS
+-	/*
+-	 *	Move ROM filesystem above bss :-)
+-	 */
+-	lea	_sbss,%a0			/* get start of bss */
+-	lea	_ebss,%a1			/* set up destination  */
+-	movel	%a0,%a2				/* copy of bss start */
+-
+-	movel	8(%a0),%d0			/* get size of ROMFS */
+-	addql	#8,%d0				/* allow for rounding */
+-	andl	#0xfffffffc, %d0		/* whole words */
+-
+-	addl	%d0,%a0				/* copy from end */
+-	addl	%d0,%a1				/* copy from end */
+-	movel	%a1,_ramstart			/* set start of ram */
+-
+-_copy_romfs:
+-	movel	-(%a0),%d0			/* copy dword */
+-	movel	%d0,-(%a1)
+-	cmpl	%a0,%a2				/* check if at end */
+-	bne	_copy_romfs
+-
+-#else /* CONFIG_ROMFS_FS */
+-	lea	_ebss,%a1
+-	movel	%a1,_ramstart
+-#endif /* CONFIG_ROMFS_FS */
+-
+-
+-	/*
+-	 *	Zero out the bss region.
+-	 */
+-	lea	_sbss,%a0			/* get start of bss */
+-	lea	_ebss,%a1			/* get end of bss */
+-	clrl	%d0				/* set value */
+-_clear_bss:
+-	movel	%d0,(%a0)+			/* clear each word */
+-	cmpl	%a0,%a1				/* check if at end */
+-	bne	_clear_bss
+-
+-	/*
+-	 *	Load the current task pointer and stack.
+-	 */
+-	lea	init_thread_union,%a0
+-	lea	THREAD_SIZE(%a0),%sp
+-
+-	/*
+-	 *	Assember start up done, start code proper.
+-	 */
+-	jsr	start_kernel			/* start Linux kernel */
+-
+-_exit:
+-	jmp	_exit				/* should never get here */
+-
+-/*****************************************************************************/
+diff -Naurp linux-2.6.24/arch/m68knommu/platform/coldfire/head.S linux-2.6.24.1/arch/m68knommu/platform/coldfire/head.S
+--- linux-2.6.24/arch/m68knommu/platform/coldfire/head.S	1970-01-01 10:00:00.000000000 +1000
++++ linux-2.6.24.1/arch/m68knommu/platform/coldfire/head.S	2008-01-25 08:58:37.000000000 +1000
+@@ -0,0 +1,222 @@
++/*****************************************************************************/
 +
 +/*
-+ *	timers.c -- generic ColdFire hardware timer support.
++ *	head.S -- common startup code for ColdFire CPUs.
 + *
-+ *	Copyright (C) 1999-2007, Greg Ungerer (gerg@snapgear.com)
++ *	(C) Copyright 1999-2006, Greg Ungerer <gerg@snapgear.com>.
 + */
 +
-+/***************************************************************************/
++/*****************************************************************************/
 +
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <asm/io.h>
-+#include <asm/traps.h>
-+#include <asm/machdep.h>
++#include <linux/sys.h>
++#include <linux/linkage.h>
++#include <asm/asm-offsets.h>
 +#include <asm/coldfire.h>
-+#include <asm/mcftimer.h>
++#include <asm/mcfcache.h>
 +#include <asm/mcfsim.h>
 +
-+/***************************************************************************/
++/*****************************************************************************/
 +
 +/*
-+ *	By default use timer1 as the system clock timer.
++ *	If we don't have a fixed memory size, then lets build in code
++ *	to auto detect the DRAM size. Obviously this is the prefered
++ *	method, and should work for most boards. It won't work for those
++ *	that do not have their RAM starting at address 0, and it only
++ *	works on SDRAM (not boards fitted with SRAM).
 + */
-+#define	TA(a)	(MCF_MBAR + MCFTIMER_BASE1 + (a))
++#if CONFIG_RAMSIZE != 0
++.macro GET_MEM_SIZE
++	movel	#CONFIG_RAMSIZE,%d0	/* hard coded memory size */
++.endm
 +
++#elif defined(CONFIG_M5206) || defined(CONFIG_M5206e) || \
++      defined(CONFIG_M5249) || defined(CONFIG_M527x) || \
++      defined(CONFIG_M528x) || defined(CONFIG_M5307) || \
++      defined(CONFIG_M5407)
 +/*
-+ *	Default the timer and vector to use for ColdFire. Some ColdFire
-+ *	CPU's and some boards may want different. Their sub-architecture
-+ *	startup code (in config.c) can change these if they want.
++ *	Not all these devices have exactly the same DRAM controller,
++ *	but the DCMR register is virtually identical - give or take
++ *	a couple of bits. The only exception is the 5272 devices, their
++ *	DRAM controller is quite different.
 + */
-+unsigned int	mcf_timervector = 29;
-+unsigned int	mcf_profilevector = 31;
-+unsigned int	mcf_timerlevel = 5;
++.macro GET_MEM_SIZE
++	movel	MCF_MBAR+MCFSIM_DMR0,%d0 /* get mask for 1st bank */
++	btst	#0,%d0			/* check if region enabled */
++	beq	1f
++	andl	#0xfffc0000,%d0
++	beq	1f
++	addl	#0x00040000,%d0		/* convert mask to size */
++1:
++	movel	MCF_MBAR+MCFSIM_DMR1,%d1 /* get mask for 2nd bank */
++	btst	#0,%d1			/* check if region enabled */
++	beq	2f
++	andl	#0xfffc0000, %d1
++	beq	2f
++	addl	#0x00040000,%d1
++	addl	%d1,%d0			/* total mem size in d0 */
++2:
++.endm
 +
-+/*
-+ *	These provide the underlying interrupt vector support.
-+ *	Unfortunately it is a little different on each ColdFire.
-+ */
-+extern void mcf_settimericr(int timer, int level);
-+extern int mcf_timerirqpending(int timer);
++#elif defined(CONFIG_M5272)
++.macro GET_MEM_SIZE
++	movel	MCF_MBAR+MCFSIM_CSOR7,%d0 /* get SDRAM address mask */
++	andil	#0xfffff000,%d0		/* mask out chip select options */
++	negl	%d0			/* negate bits */
++.endm
 +
-+#if defined(CONFIG_M532x)
-+#define	__raw_readtrr	__raw_readl
-+#define	__raw_writetrr	__raw_writel
++#elif defined(CONFIG_M520x)
++.macro GET_MEM_SIZE
++	clrl	%d0
++	movel	MCF_MBAR+MCFSIM_SDCS0, %d2 /* Get SDRAM chip select 0 config */
++	andl	#0x1f, %d2		/* Get only the chip select size */
++	beq	3f			/* Check if it is enabled */
++	addql	#1, %d2			/* Form exponent */
++	moveql	#1, %d0
++	lsll	%d2, %d0		/* 2 ^ exponent */
++3:
++	movel	MCF_MBAR+MCFSIM_SDCS1, %d2 /* Get SDRAM chip select 1 config */
++	andl	#0x1f, %d2		/* Get only the chip select size */
++	beq	4f			/* Check if it is enabled */
++	addql	#1, %d2			/* Form exponent */
++	moveql	#1, %d1
++	lsll	%d2, %d1		/* 2 ^ exponent */
++	addl	%d1, %d0		/* Total size of SDRAM in d0 */
++4:
++.endm
++
 +#else
-+#define	__raw_readtrr	__raw_readw
-+#define	__raw_writetrr	__raw_writew
++#error "ERROR: I don't know how to probe your boards memory size?"
 +#endif
 +
-+/***************************************************************************/
++/*****************************************************************************/
 +
-+static irqreturn_t hw_tick(int irq, void *dummy)
-+{
-+	/* Reset the ColdFire timer */
-+	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, TA(MCFTIMER_TER));
-+
-+	return arch_timer_interrupt(irq, dummy);
-+}
-+
-+/***************************************************************************/
-+
-+static struct irqaction coldfire_timer_irq = {
-+	.name	 = "timer",
-+	.flags	 = IRQF_DISABLED | IRQF_TIMER,
-+	.handler = hw_tick,
-+};
-+
-+/***************************************************************************/
-+
-+static int ticks_per_intr;
-+
-+void hw_timer_init(void)
-+{
-+	setup_irq(mcf_timervector, &coldfire_timer_irq);
-+
-+	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
-+	ticks_per_intr = (MCF_BUSCLK / 16) / HZ;
-+	__raw_writetrr(ticks_per_intr - 1, TA(MCFTIMER_TRR));
-+	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
-+		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, TA(MCFTIMER_TMR));
-+
-+	mcf_settimericr(1, mcf_timerlevel);
-+
-+#ifdef CONFIG_HIGHPROFILE
-+	coldfire_profile_init();
++/*
++ *	Boards and platforms can do specific early hardware setup if
++ *	they need to. Most don't need this, define away if not required.
++ */
++#ifndef PLATFORM_SETUP
++#define	PLATFORM_SETUP
 +#endif
-+}
 +
-+/***************************************************************************/
++/*****************************************************************************/
 +
-+unsigned long hw_timer_offset(void)
-+{
-+	unsigned long tcn, offset;
++.global	_start
++.global _rambase
++.global _ramvec
++.global	_ramstart
++.global	_ramend
 +
-+	tcn = __raw_readw(TA(MCFTIMER_TCN));
-+	offset = ((tcn + 1) * (1000000 / HZ)) / ticks_per_intr;
++/*****************************************************************************/
 +
-+	/* Check if we just wrapped the counters and maybe missed a tick */
-+	if ((offset < (1000000 / HZ / 2)) && mcf_timerirqpending(1))
-+		offset += 1000000 / HZ;
-+	return offset;
-+}
-+
-+/***************************************************************************/
-+#ifdef CONFIG_HIGHPROFILE
-+/***************************************************************************/
++.data
 +
 +/*
-+ *	By default use timer2 as the profiler clock timer.
++ *	During startup we store away the RAM setup. These are not in the
++ *	bss, since their values are determined and written before the bss
++ *	has been cleared.
 + */
-+#define	PA(a)	(MCF_MBAR + MCFTIMER_BASE2 + (a))
++_rambase:
++.long	0
++_ramvec:
++.long	0
++_ramstart:
++.long	0
++_ramend:
++.long	0
++
++/*****************************************************************************/
++
++.text
 +
 +/*
-+ *	Choose a reasonably fast profile timer. Make it an odd value to
-+ *	try and get good coverage of kernel operations.
++ *	This is the codes first entry point. This is where it all
++ *	begins...
 + */
-+#define	PROFILEHZ	1013
 +
-+/*
-+ *	Use the other timer to provide high accuracy profiling info.
-+ */
-+irqreturn_t coldfire_profile_tick(int irq, void *dummy)
-+{
-+	/* Reset ColdFire timer2 */
-+	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, PA(MCFTIMER_TER));
-+	if (current->pid)
-+		profile_tick(CPU_PROFILING, regs);
-+	return IRQ_HANDLED;
-+}
++_start:
++	nop					/* filler */
++	movew	#0x2700, %sr			/* no interrupts */
 +
-+/***************************************************************************/
++	/*
++	 *	Do any platform or board specific setup now. Most boards
++	 *	don't need anything. Those exceptions are define this in
++	 *	their board specific includes.
++	 */
++	PLATFORM_SETUP
 +
-+void coldfire_profile_init(void)
-+{
-+	printk(KERN_INFO "PROFILE: lodging TIMER2 @ %dHz as profile timer\n", PROFILEHZ);
++	/*
++	 *	Create basic memory configuration. Set VBR accordingly,
++	 *	and size memory.
++	 */
++	movel	#CONFIG_VECTORBASE,%a7
++	movec   %a7,%VBR			/* set vectors addr */
++	movel	%a7,_ramvec
 +
-+	/* Set up TIMER 2 as high speed profile clock */
-+	__raw_writew(MCFTIMER_TMR_DISABLE, PA(MCFTIMER_TMR));
++	movel	#CONFIG_RAMBASE,%a7		/* mark the base of RAM */
++	movel	%a7,_rambase
 +
-+	__raw_writetrr(((MCF_CLK / 16) / PROFILEHZ), PA(MCFTIMER_TRR));
-+	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
-+		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, PA(MCFTIMER_TMR));
++	GET_MEM_SIZE				/* macro code determines size */
++	addl	%a7,%d0
++	movel	%d0,_ramend			/* set end ram addr */
 +
-+	request_irq(mcf_profilevector, coldfire_profile_tick,
-+		(IRQF_DISABLED | IRQ_FLG_FAST), "profile timer", NULL);
-+	mcf_settimericr(2, 7);
-+}
++	/*
++	 *	Now that we know what the memory is, lets enable cache
++	 *	and get things moving. This is Coldfire CPU specific.
++	 */
++	CACHE_ENABLE				/* enable CPU cache */
 +
-+/***************************************************************************/
-+#endif	/* CONFIG_HIGHPROFILE */
-+/***************************************************************************/
++
++#ifdef CONFIG_ROMFS_FS
++	/*
++	 *	Move ROM filesystem above bss :-)
++	 */
++	lea	_sbss,%a0			/* get start of bss */
++	lea	_ebss,%a1			/* set up destination  */
++	movel	%a0,%a2				/* copy of bss start */
++
++	movel	8(%a0),%d0			/* get size of ROMFS */
++	addql	#8,%d0				/* allow for rounding */
++	andl	#0xfffffffc, %d0		/* whole words */
++
++	addl	%d0,%a0				/* copy from end */
++	addl	%d0,%a1				/* copy from end */
++	movel	%a1,_ramstart			/* set start of ram */
++
++_copy_romfs:
++	movel	-(%a0),%d0			/* copy dword */
++	movel	%d0,-(%a1)
++	cmpl	%a0,%a2				/* check if at end */
++	bne	_copy_romfs
++
++#else /* CONFIG_ROMFS_FS */
++	lea	_ebss,%a1
++	movel	%a1,_ramstart
++#endif /* CONFIG_ROMFS_FS */
++
++
++	/*
++	 *	Zero out the bss region.
++	 */
++	lea	_sbss,%a0			/* get start of bss */
++	lea	_ebss,%a1			/* get end of bss */
++	clrl	%d0				/* set value */
++_clear_bss:
++	movel	%d0,(%a0)+			/* clear each word */
++	cmpl	%a0,%a1				/* check if at end */
++	bne	_clear_bss
++
++	/*
++	 *	Load the current task pointer and stack.
++	 */
++	lea	init_thread_union,%a0
++	lea	THREAD_SIZE(%a0),%sp
++
++	/*
++	 *	Assember start up done, start code proper.
++	 */
++	jsr	start_kernel			/* start Linux kernel */
++
++_exit:
++	jmp	_exit				/* should never get here */
++
++/*****************************************************************************/
