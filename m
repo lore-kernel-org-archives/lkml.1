@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbYBAIY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYBAI3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850AbYBAIY3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 03:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYBAIYV
+	id S1755325AbYBAI3W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 03:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYBAI3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 03:24:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:25921 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbYBAIYU (ORCPT
+	Fri, 1 Feb 2008 03:29:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40032 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753472AbYBAI3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 03:24:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=e9NVSe4FA9dP56JswL3tWVIFbw7tGQX+0Su1HdRnpdCt32GUISzv/rj3R6FPVewATFCd/D24MiPxAhQ7s3535pvyiwx6XSCEC6oxg7lNNobkUswNM54mxtziS1JDgij9kRUdyoquiyMOjV0wbs0A3r23sRWxEz8y/LUOo9uW0Lg=
-Message-ID: <3fd7d7a70802010024q22b4d179mf56e6d4b60e4f574@mail.gmail.com>
-Date: Fri, 1 Feb 2008 17:24:17 +0900
-From: "Kenichi Okuyama" <kenichi.okuyama@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch] NULL pointer check for vma->vm_mm
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080131235544.346b938a.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+	Fri, 1 Feb 2008 03:29:11 -0500
+Date: Fri, 1 Feb 2008 00:28:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] per-process securebits
+Message-Id: <20080201002837.d84fc029.akpm@linux-foundation.org>
+In-Reply-To: <47A2D439.9050704@kernel.org>
+References: <47A2D439.9050704@kernel.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3fd7d7a70801312339p2a142096p83ed286c81379728@mail.gmail.com>
-	 <20080131235544.346b938a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Andrew, all,
+On Fri, 01 Feb 2008 00:11:37 -0800 "Andrew G. Morgan" <morgan@kernel.org> wrote:
 
-First of all, thank you for looking at the patch.
+> [This patch represents a no-op unless CONFIG_SECURITY_FILE_CAPABILITIES
+>  is enabled at configure time.]
 
-I do agree that if mm is NULL, system will call Oops anyway.
-However, since it's oops, it does not stop the system, nor call kdump.
+Patches like this scare the pants off me.
 
-By calling BUG_ON(), it'll gives us chance of calling kdump at the first chance.
+I'd have to recommend that distributors not enable this feature (if we
+merge it) until they have 100% convinced themselves that it is 100%
+correct.
 
-Since this is very rare to happen, I thought we should capture the incident
-whenever possible. On other hand, because BUG_ON macro is very light,
-I thought this will not harm any performance...
+Can you please provide us with a reprise of
 
-Forgive me in advance if I was wrong.
-I still think checking mm with BUG_ON here is better than counting on Oops.
+- what was the bug which caused us to cripple capability inheritance back
+  in the days of yore?  (Some sendmail thing?)
 
-best regards,
+- Why was that security hole considered unfixable?
 
+- How does this change avoid reintroducing that hole?
 
+> Filesystem capability support makes it possible to do away with
+> (set)uid-0 based privilege and use capabilities instead. That is, with
+> filesystem support for capabilities but without this present patch,
+> it is (conceptually) possible to manage a system with capabilities
+> alone and never need to obtain privilege via (set)uid-0.
+> 
+> Of course, conceptually isn't quite the same as currently possible
+> since few user applications, certainly not enough to run a viable
+> system, are currently prepared to leverage capabilities to exercise
+> privilege. Further, many applications exist that may never get
+> upgraded in this way, and the kernel will continue to want to support
+> their setuid-0 base privilege needs.
 
-2008/2/1, Andrew Morton <akpm@linux-foundation.org>:
-> On Fri, 1 Feb 2008 16:39:07 +0900 "Kenichi Okuyama" <kenichi.okuyama@gmail.com> wrote:
+Are you saying that plain old setuid(0) apps will fail to work with
+CONFIG_SECURITY_FILE_CAPABILITIES=y?
+
+> Where pure-capability applications evolve and replace setuid-0
+> binaries, it is desirable that there be a mechanisms by which they
+> can contain their privilege. In addition to leveraging the per-process
+> bounding and inheritable sets, this should include suppressing the
+> privilege of the uid-0 superuser from the process' tree of children.
+> 
+> The feature added by this patch can be leveraged to suppress the
+> privilege associated with (set)uid-0. This suppression requires
+> CAP_SETPCAP to initiate, and only immediately affects the 'current'
+> process (it is inherited through fork()/exec()). This
+> reimplementation differs significantly from the historical support for
+> securebits which was system-wide, unwieldy and which has ultimately
+> withered to a dead relic in the source of the modern kernel.
+> 
+> With this patch applied a process, that is capable(CAP_SETPCAP), can
+> now drop all legacy privilege (through uid=0) for itself and all
+> subsequently fork()'d/exec()'d children with:
+> 
+>   prctl(PR_SET_SECUREBITS, 0x2f);
+> 
+> Applying the following patch to progs/capsh.c from libcap-2.05
+> adds support for this new prctl interface to capsh.c:
+> 
+> ...
 >
-> > Dear all,
-> >
-> > I was looking at the ./mm/rmap.c .. I found that, in function
-> > "page_referenced_one()",
-> >    struct mm_struct *mm = vma->vm_mm;
-> > was being refererred without NULL check.
-> >
-> > Though I do agree that this works for most of the cases, I thought it
-> > is better to add
-> > BUG_ON() for case of mm being NULL.
-> >
-> > attached is the patch for this
->
-> If we dereference NULL then the kernel will display basically the same
-> information as would a BUG, and it takes the same action.  So adding a
-> BUG_ON here really doesn't gain us anything.
->
-> Also, I think vma->vm_mm == 0 is not a valid state, so this just shouldn't
-> happen - the code is OK to assume that a particular invariant is being
-> honoured.
->
->
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
 
+Really?  I'd feel a lot more comfortable if yesterday's version 1 had led
+to a stream of comments from suitably-knowledgeable kernel developers which
+indicated that those developers had scrutinised this code from every
+conceivable angle and had declared themselves 100% happy with it.
 
--- 
-奥山　健一(Kenichi Okuyama) [煤背会: No. 0x00000001]
-URL: http://www.dd.iij4u.or.jp/~okuyamak/
-     http://developer.osdl.jp/projects/doubt/
+Maybe I'm over-reacting here.  Feel free to tell me if I am :) But as I
+told you outside the bathroom today: I _really_ don't want to read about
+this patch on bugtraq two years hence.
+
