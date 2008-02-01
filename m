@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYBAQ6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbYBARAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbYBAQ6y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 11:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYBAQ6r
+	id S1759244AbYBARAg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYBARA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 11:58:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56524 "EHLO mx3.mail.elte.hu"
+	Fri, 1 Feb 2008 12:00:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56846 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755781AbYBAQ6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 11:58:45 -0500
-Date: Fri, 1 Feb 2008 17:58:35 +0100
+	id S1756260AbYBARA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 12:00:27 -0500
+Date: Fri, 1 Feb 2008 18:00:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] scheduler and futex updates
-Message-ID: <20080201165835.GA437@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 updates
+Message-ID: <20080201170009.GA1799@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,434 +33,584 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Linus, please pull the latest scheduler git tree from:
+Linus, please pull the latest x86 git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-Fixes, plus the futex "bitset filter" conditional futex wakeup API 
-variant that Ulrich asked for to reduce the number of false wakeups in 
-user-space rwlocks. Thanks,
+Fixes and debug patches only. Thanks,
 
 	Ingo
 
 ------------------>
-Heiko Carstens (1):
-      latencytop: Change Kconfig dependency.
+Alexander van Heukelum (1):
+      x86: avoid section mismatch involving arch_register_cpu
 
-Peter Zijlstra (1):
-      hrtimer: fix hrtimer_init_sleeper() users
+Harvey Harrison (3):
+      x86: make early_console static in early_printk.c
+      x86: fix sparse warnings in cpu/common.c
+      x86: fixes for lookup_address args
 
-Thomas Gleixner (5):
-      timekeeping: update xtime_cache when time(zone) changes
-      tick-sched: add more debug information
-      x86: replace LOCK_PREFIX in futex.h
-      futex: Remove warn on in return fixup path
-      futex: Add bitset conditional wait/wakeup functionality
+Sam Ravnborg (4):
+      x86: silence section mismatch warning in smpboot_64.c
+      x86: fix section mismatch warnings when referencing notifiers
+      x86: fix section mismatch warning in acpi/boot.c
+      x86: fix section mismatch warning in kernel/pci-calgary
 
- arch/x86/Kconfig            |    3 +++
- include/asm-x86/futex.h     |    6 +++---
- include/linux/futex.h       |   10 ++++++++++
- include/linux/thread_info.h |    1 +
- include/linux/tick.h        |    4 ++++
- include/linux/time.h        |    1 +
- kernel/futex.c              |   42 ++++++++++++++++++++++++++++++++----------
- kernel/futex_compat.c       |    3 ++-
- kernel/hrtimer.c            |    2 ++
- kernel/time.c               |    1 +
- kernel/time/tick-sched.c    |    2 ++
- kernel/time/timekeeping.c   |    6 ++++--
- kernel/time/timer_list.c    |    2 ++
- lib/Kconfig.debug           |    2 +-
- 14 files changed, 68 insertions(+), 17 deletions(-)
+Yinghai Lu (4):
+      x86_64: add debug name for early_res
+      x86_64: make bootmap_start page align v6
+      x86: fix comments in vmlinux_64.lds
+      x86: remove unneeded round_up
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 65b4491..93e6667 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -44,6 +44,9 @@ config LOCKDEP_SUPPORT
- config STACKTRACE_SUPPORT
- 	def_bool y
- 
-+config HAVE_LATENCYTOP_SUPPORT
-+	def_bool y
-+
- config SEMAPHORE_SLEEPERS
- 	def_bool y
- 
-diff --git a/include/asm-x86/futex.h b/include/asm-x86/futex.h
-index 62828d6..9d91926 100644
---- a/include/asm-x86/futex.h
-+++ b/include/asm-x86/futex.h
-@@ -30,7 +30,7 @@
- "1:	movl	%2, %0\n					\
- 	movl	%0, %3\n"					\
- 	insn "\n"						\
--"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n			\
-+"2:	lock; cmpxchgl %3, %2\n					\
- 	jnz	1b\n						\
- 3:	.section .fixup,\"ax\"\n				\
- 4:	mov	%5, %1\n					\
-@@ -72,7 +72,7 @@ futex_atomic_op_inuser(int encoded_op, int __user *uaddr)
- 		__futex_atomic_op1("xchgl %0, %2", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ADD:
--		__futex_atomic_op1(LOCK_PREFIX "xaddl %0, %2", ret, oldval,
-+		__futex_atomic_op1("lock; xaddl %0, %2", ret, oldval,
- 				   uaddr, oparg);
- 		break;
- 	case FUTEX_OP_OR:
-@@ -111,8 +111,8 @@ futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
- 		return -EFAULT;
- 
- 	__asm__ __volatile__(
--		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
- 
-+		"1:	lock; cmpxchgl %3, %1			\n"
- 		"2:	.section .fixup, \"ax\"			\n"
- 		"3:	mov     %2, %0				\n"
- 		"	jmp     2b				\n"
-diff --git a/include/linux/futex.h b/include/linux/futex.h
-index 1a15f8e..90048fb 100644
---- a/include/linux/futex.h
-+++ b/include/linux/futex.h
-@@ -21,6 +21,8 @@ union ktime;
- #define FUTEX_LOCK_PI		6
- #define FUTEX_UNLOCK_PI		7
- #define FUTEX_TRYLOCK_PI	8
-+#define FUTEX_WAIT_BITSET	9
-+#define FUTEX_WAKE_BITSET	10
- 
- #define FUTEX_PRIVATE_FLAG	128
- #define FUTEX_CMD_MASK		~FUTEX_PRIVATE_FLAG
-@@ -33,6 +35,8 @@ union ktime;
- #define FUTEX_LOCK_PI_PRIVATE	(FUTEX_LOCK_PI | FUTEX_PRIVATE_FLAG)
- #define FUTEX_UNLOCK_PI_PRIVATE	(FUTEX_UNLOCK_PI | FUTEX_PRIVATE_FLAG)
- #define FUTEX_TRYLOCK_PI_PRIVATE (FUTEX_TRYLOCK_PI | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_WAIT_BITSET_PRIVATE	(FUTEX_WAIT_BITS | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_WAKE_BITSET_PRIVATE	(FUTEX_WAKE_BITS | FUTEX_PRIVATE_FLAG)
- 
- /*
-  * Support for robust futexes: the kernel cleans up held futexes at
-@@ -111,6 +115,12 @@ struct robust_list_head {
-  */
- #define ROBUST_LIST_LIMIT	2048
- 
-+/*
-+ * bitset with all bits set for the FUTEX_xxx_BITSET OPs to request a
-+ * match of any bit.
-+ */
-+#define FUTEX_BITSET_MATCH_ANY	0xffffffff
-+
- #ifdef __KERNEL__
- long do_futex(u32 __user *uaddr, int op, u32 val, union ktime *timeout,
- 	      u32 __user *uaddr2, u32 val2, u32 val3);
-diff --git a/include/linux/thread_info.h b/include/linux/thread_info.h
-index dfbdfb9..421323e 100644
---- a/include/linux/thread_info.h
-+++ b/include/linux/thread_info.h
-@@ -23,6 +23,7 @@ struct restart_block {
- 			u32 *uaddr;
- 			u32 val;
- 			u32 flags;
-+			u32 bitset;
- 			u64 time;
- 		} futex;
- 	};
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 0fadf95..a881c65 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -39,6 +39,8 @@ enum tick_nohz_mode {
-  * @idle_calls:		Total number of idle calls
-  * @idle_sleeps:	Number of idle calls, where the sched tick was stopped
-  * @idle_entrytime:	Time when the idle call was entered
-+ * @idle_waketime:	Time when the idle was interrupted
-+ * @idle_exittime:	Time when the idle state was left
-  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
-  * @sleep_length:	Duration of the current idle sleep
-  */
-@@ -53,6 +55,8 @@ struct tick_sched {
- 	unsigned long			idle_sleeps;
- 	int				idle_active;
- 	ktime_t				idle_entrytime;
-+	ktime_t				idle_waketime;
-+	ktime_t				idle_exittime;
- 	ktime_t				idle_sleeptime;
- 	ktime_t				idle_lastupdate;
- 	ktime_t				sleep_length;
-diff --git a/include/linux/time.h b/include/linux/time.h
-index b04136d..ceaab9f 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -122,6 +122,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
- extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
- extern int timekeeping_is_continuous(void);
- extern void update_wall_time(void);
-+extern void update_xtime_cache(u64 nsec);
- 
- /**
-  * timespec_to_ns - Convert timespec to nanoseconds
-diff --git a/kernel/futex.c b/kernel/futex.c
-index db9824d..a6baaec 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -109,6 +109,9 @@ struct futex_q {
- 	/* Optional priority inheritance state: */
- 	struct futex_pi_state *pi_state;
- 	struct task_struct *task;
-+
-+	/* Bitset for the optional bitmasked wakeup */
-+	u32 bitset;
- };
- 
- /*
-@@ -722,7 +725,7 @@ double_lock_hb(struct futex_hash_bucket *hb1, struct futex_hash_bucket *hb2)
-  * to this virtual address:
-  */
- static int futex_wake(u32 __user *uaddr, struct rw_semaphore *fshared,
--		      int nr_wake)
-+		      int nr_wake, u32 bitset)
+ arch/x86/boot/compressed/vmlinux_64.lds |    2 +-
+ arch/x86/kernel/acpi/boot.c             |    8 ++++++-
+ arch/x86/kernel/cpu/common.c            |   20 +++++++++---------
+ arch/x86/kernel/cpuid.c                 |    2 +-
+ arch/x86/kernel/e820_64.c               |   23 +++++++++++++-------
+ arch/x86/kernel/early_printk.c          |    2 +-
+ arch/x86/kernel/efi_64.c                |    2 +-
+ arch/x86/kernel/head64.c                |    6 ++--
+ arch/x86/kernel/microcode.c             |    2 +-
+ arch/x86/kernel/msr.c                   |    2 +-
+ arch/x86/kernel/pci-calgary_64.c        |    4 +-
+ arch/x86/kernel/setup_64.c              |    3 +-
+ arch/x86/kernel/smpboot_64.c            |    2 +-
+ arch/x86/kernel/topology.c              |    3 +-
+ arch/x86/mm/fault.c                     |    2 +-
+ arch/x86/mm/init_64.c                   |   13 +++--------
+ arch/x86/mm/ioremap.c                   |    3 +-
+ arch/x86/mm/numa_64.c                   |   34 +++++++++++++++++-------------
+ arch/x86/mm/pageattr-test.c             |    4 +-
+ include/asm-x86/cpu.h                   |    3 +-
+ include/asm-x86/e820_64.h               |    4 +-
+ 21 files changed, 79 insertions(+), 65 deletions(-)
+
+diff --git a/arch/x86/boot/compressed/vmlinux_64.lds b/arch/x86/boot/compressed/vmlinux_64.lds
+index f6e5b44..7e5c720 100644
+--- a/arch/x86/boot/compressed/vmlinux_64.lds
++++ b/arch/x86/boot/compressed/vmlinux_64.lds
+@@ -3,7 +3,7 @@ OUTPUT_ARCH(i386:x86-64)
+ ENTRY(startup_64)
+ SECTIONS
  {
- 	struct futex_hash_bucket *hb;
- 	struct futex_q *this, *next;
-@@ -730,6 +733,9 @@ static int futex_wake(u32 __user *uaddr, struct rw_semaphore *fshared,
- 	union futex_key key;
- 	int ret;
- 
-+	if (!bitset)
-+		return -EINVAL;
+-	/* Be careful parts of head_64.S assume startup_64 is at
++	/* Be careful parts of head_64.S assume startup_32 is at
+ 	 * address 0.
+ 	 */
+ 	. = 0;
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 0ca27c7..d2a5843 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -496,7 +496,8 @@ EXPORT_SYMBOL(acpi_register_gsi);
+  *  ACPI based hotplug support for CPU
+  */
+ #ifdef CONFIG_ACPI_HOTPLUG_CPU
+-int acpi_map_lsapic(acpi_handle handle, int *pcpu)
 +
- 	futex_lock_mm(fshared);
- 
- 	ret = get_futex_key(uaddr, fshared, &key);
-@@ -746,6 +752,11 @@ static int futex_wake(u32 __user *uaddr, struct rw_semaphore *fshared,
- 				ret = -EINVAL;
- 				break;
- 			}
-+
-+			/* Check if one of the bits is set in both bitsets */
-+			if (!(this->bitset & bitset))
-+				continue;
-+
- 			wake_futex(this);
- 			if (++ret >= nr_wake)
- 				break;
-@@ -1156,7 +1167,7 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
- static long futex_wait_restart(struct restart_block *restart);
- 
- static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
--		      u32 val, ktime_t *abs_time)
-+		      u32 val, ktime_t *abs_time, u32 bitset)
++static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
  {
- 	struct task_struct *curr = current;
- 	DECLARE_WAITQUEUE(wait, curr);
-@@ -1167,7 +1178,11 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
- 	struct hrtimer_sleeper t;
- 	int rem = 0;
- 
-+	if (!bitset)
-+		return -EINVAL;
-+
- 	q.pi_state = NULL;
-+	q.bitset = bitset;
-  retry:
- 	futex_lock_mm(fshared);
- 
-@@ -1252,6 +1267,8 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
- 			t.timer.expires = *abs_time;
- 
- 			hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_ABS);
-+			if (!hrtimer_active(&t.timer))
-+				t.task = NULL;
- 
- 			/*
- 			 * the timer could have already expired, in which
-@@ -1293,6 +1310,7 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
- 		restart->futex.uaddr = (u32 *)uaddr;
- 		restart->futex.val = val;
- 		restart->futex.time = abs_time->tv64;
-+		restart->futex.bitset = bitset;
- 		restart->futex.flags = 0;
- 
- 		if (fshared)
-@@ -1319,7 +1337,8 @@ static long futex_wait_restart(struct restart_block *restart)
- 	restart->fn = do_no_restart_syscall;
- 	if (restart->futex.flags & FLAGS_SHARED)
- 		fshared = &current->mm->mmap_sem;
--	return (long)futex_wait(uaddr, fshared, restart->futex.val, &t);
-+	return (long)futex_wait(uaddr, fshared, restart->futex.val, &t,
-+				restart->futex.bitset);
- }
- 
- 
-@@ -1535,9 +1554,6 @@ static int futex_lock_pi(u32 __user *uaddr, struct rw_semaphore *fshared,
- 				owner = rt_mutex_owner(&q.pi_state->pi_mutex);
- 				res = fixup_pi_state_owner(uaddr, &q, owner);
- 
--				WARN_ON(rt_mutex_owner(&q.pi_state->pi_mutex) !=
--					owner);
--
- 				/* propagate -EFAULT, if the fixup failed */
- 				if (res)
- 					ret = res;
-@@ -1943,7 +1959,8 @@ retry:
- 		 * PI futexes happens in exit_pi_state():
- 		 */
- 		if (!pi && (uval & FUTEX_WAITERS))
--				futex_wake(uaddr, &curr->mm->mmap_sem, 1);
-+			futex_wake(uaddr, &curr->mm->mmap_sem, 1,
-+				   FUTEX_BITSET_MATCH_ANY);
- 	}
+ 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+ 	union acpi_object *obj;
+@@ -551,6 +552,11 @@ int acpi_map_lsapic(acpi_handle handle, int *pcpu)
  	return 0;
  }
-@@ -2043,10 +2060,14 @@ long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
  
- 	switch (cmd) {
- 	case FUTEX_WAIT:
--		ret = futex_wait(uaddr, fshared, val, timeout);
-+		val3 = FUTEX_BITSET_MATCH_ANY;
-+	case FUTEX_WAIT_BITSET:
-+		ret = futex_wait(uaddr, fshared, val, timeout, val3);
- 		break;
- 	case FUTEX_WAKE:
--		ret = futex_wake(uaddr, fshared, val);
-+		val3 = FUTEX_BITSET_MATCH_ANY;
-+	case FUTEX_WAKE_BITSET:
-+		ret = futex_wake(uaddr, fshared, val, val3);
- 		break;
- 	case FUTEX_FD:
- 		/* non-zero val means F_SETOWN(getpid()) & F_SETSIG(val) */
-@@ -2086,7 +2107,8 @@ asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
- 	u32 val2 = 0;
- 	int cmd = op & FUTEX_CMD_MASK;
++/* wrapper to silence section mismatch warning */
++int __ref acpi_map_lsapic(acpi_handle handle, int *pcpu)
++{
++	return _acpi_map_lsapic(handle, pcpu);
++}
+ EXPORT_SYMBOL(acpi_map_lsapic);
  
--	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI)) {
-+	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI ||
-+		      cmd == FUTEX_WAIT_BITSET)) {
- 		if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
- 			return -EFAULT;
- 		if (!timespec_valid(&ts))
-diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
-index 0a43def..133d558 100644
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -167,7 +167,8 @@ asmlinkage long compat_sys_futex(u32 __user *uaddr, int op, u32 val,
- 	int val2 = 0;
- 	int cmd = op & FUTEX_CMD_MASK;
- 
--	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI)) {
-+	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI ||
-+		      cmd == FUTEX_WAIT_BITSET)) {
- 		if (get_compat_timespec(&ts, utime))
- 			return -EFAULT;
- 		if (!timespec_valid(&ts))
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index bd5d6b5..1069998 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1315,6 +1315,8 @@ static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mod
- 
- 	} while (t->task && !signal_pending(current));
- 
-+	__set_current_state(TASK_RUNNING);
-+
- 	return t->task == NULL;
- }
- 
-diff --git a/kernel/time.c b/kernel/time.c
-index 09d3c45..4064c05 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -129,6 +129,7 @@ static inline void warp_clock(void)
- 	write_seqlock_irq(&xtime_lock);
- 	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
- 	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
-+	update_xtime_cache(0);
- 	write_sequnlock_irq(&xtime_lock);
- 	clock_was_set();
- }
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 63f24b5..88267f0 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -137,6 +137,7 @@ void tick_nohz_update_jiffies(void)
- 
- 	cpu_clear(cpu, nohz_cpu_mask);
- 	now = ktime_get();
-+	ts->idle_waketime = now;
- 
- 	local_irq_save(flags);
- 	tick_do_update_jiffies64(now);
-@@ -400,6 +401,7 @@ void tick_nohz_restart_sched_tick(void)
- 	 * Cancel the scheduled timer and restore the tick
- 	 */
- 	ts->tick_stopped  = 0;
-+	ts->idle_exittime = now;
- 	hrtimer_cancel(&ts->sched_timer);
- 	ts->sched_timer.expires = ts->idle_tick;
- 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 092a236..cd5dbc4 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -47,7 +47,7 @@ struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
- static unsigned long total_sleep_time;		/* seconds */
- 
- static struct timespec xtime_cache __attribute__ ((aligned (16)));
--static inline void update_xtime_cache(u64 nsec)
-+void update_xtime_cache(u64 nsec)
+ int acpi_unmap_lsapic(int cpu)
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index d608c9e..b7b2142 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -258,10 +258,10 @@ static int __cpuinit have_cpuid_p(void)
+ void __init cpu_detect(struct cpuinfo_x86 *c)
  {
- 	xtime_cache = xtime;
- 	timespec_add_ns(&xtime_cache, nsec);
-@@ -145,6 +145,7 @@ int do_settimeofday(struct timespec *tv)
+ 	/* Get vendor name */
+-	cpuid(0x00000000, &c->cpuid_level,
+-	      (int *)&c->x86_vendor_id[0],
+-	      (int *)&c->x86_vendor_id[8],
+-	      (int *)&c->x86_vendor_id[4]);
++	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
++	      (unsigned int *)&c->x86_vendor_id[0],
++	      (unsigned int *)&c->x86_vendor_id[8],
++	      (unsigned int *)&c->x86_vendor_id[4]);
  
- 	set_normalized_timespec(&xtime, sec, nsec);
- 	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
-+	update_xtime_cache(0);
+ 	c->x86 = 4;
+ 	if (c->cpuid_level >= 0x00000001) {
+@@ -283,7 +283,7 @@ void __init cpu_detect(struct cpuinfo_x86 *c)
+ static void __cpuinit early_get_cap(struct cpuinfo_x86 *c)
+ {
+ 	u32 tfms, xlvl;
+-	int ebx;
++	unsigned int ebx;
  
- 	clock->error = 0;
- 	ntp_clear();
-@@ -252,8 +253,8 @@ void __init timekeeping_init(void)
- 	xtime.tv_nsec = 0;
- 	set_normalized_timespec(&wall_to_monotonic,
- 		-xtime.tv_sec, -xtime.tv_nsec);
-+	update_xtime_cache(0);
- 	total_sleep_time = 0;
--
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 	memset(&c->x86_capability, 0, sizeof c->x86_capability);
+ 	if (have_cpuid_p()) {
+@@ -343,14 +343,14 @@ static void __init early_cpu_detect(void)
+ static void __cpuinit generic_identify(struct cpuinfo_x86 * c)
+ {
+ 	u32 tfms, xlvl;
+-	int ebx;
++	unsigned int ebx;
+ 
+ 	if (have_cpuid_p()) {
+ 		/* Get vendor name */
+-		cpuid(0x00000000, &c->cpuid_level,
+-		      (int *)&c->x86_vendor_id[0],
+-		      (int *)&c->x86_vendor_id[8],
+-		      (int *)&c->x86_vendor_id[4]);
++		cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
++		      (unsigned int *)&c->x86_vendor_id[0],
++		      (unsigned int *)&c->x86_vendor_id[8],
++		      (unsigned int *)&c->x86_vendor_id[4]);
+ 		
+ 		get_cpu_vendor(c, 0);
+ 		/* Initialize the standard set of capabilities */
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index dec66e4..a63432d 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -170,7 +170,7 @@ static int __cpuinit cpuid_class_cpu_callback(struct notifier_block *nfb,
+ 	return err ? NOTIFY_BAD : NOTIFY_OK;
  }
  
-@@ -290,6 +291,7 @@ static int timekeeping_resume(struct sys_device *dev)
+-static struct notifier_block __cpuinitdata cpuid_class_cpu_notifier =
++static struct notifier_block __refdata cpuid_class_cpu_notifier =
+ {
+ 	.notifier_call = cpuid_class_cpu_callback,
+ };
+diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
+index c617174..9f65b4c 100644
+--- a/arch/x86/kernel/e820_64.c
++++ b/arch/x86/kernel/e820_64.c
+@@ -54,30 +54,33 @@ static unsigned long __initdata end_user_pfn = MAXMEM>>PAGE_SHIFT;
+ 
+ struct early_res {
+ 	unsigned long start, end;
++	char name[16];
+ };
+ static struct early_res early_res[MAX_EARLY_RES] __initdata = {
+-	{ 0, PAGE_SIZE },			/* BIOS data page */
++	{ 0, PAGE_SIZE, "BIOS data page" },			/* BIOS data page */
+ #ifdef CONFIG_SMP
+-	{ SMP_TRAMPOLINE_BASE, SMP_TRAMPOLINE_BASE + 2*PAGE_SIZE },
++	{ SMP_TRAMPOLINE_BASE, SMP_TRAMPOLINE_BASE + 2*PAGE_SIZE, "SMP_TRAMPOLINE" },
+ #endif
+ 	{}
+ };
+ 
+-void __init reserve_early(unsigned long start, unsigned long end)
++void __init reserve_early(unsigned long start, unsigned long end, char *name)
+ {
+ 	int i;
+ 	struct early_res *r;
+ 	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
+ 		r = &early_res[i];
+ 		if (end > r->start && start < r->end)
+-			panic("Overlapping early reservations %lx-%lx to %lx-%lx\n",
+-			      start, end, r->start, r->end);
++			panic("Overlapping early reservations %lx-%lx %s to %lx-%lx %s\n",
++			      start, end - 1, name?name:"", r->start, r->end - 1, r->name);
  	}
- 	/* Make sure that we have the correct xtime reference */
- 	timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
-+	update_xtime_cache(0);
- 	/* re-base the last cycle value */
- 	clock->cycle_last = clocksource_read(clock);
- 	clock->error = 0;
-diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
-index 12c5f4c..d3d94c1 100644
---- a/kernel/time/timer_list.c
-+++ b/kernel/time/timer_list.c
-@@ -166,6 +166,8 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
- 		P(idle_calls);
- 		P(idle_sleeps);
- 		P_ns(idle_entrytime);
-+		P_ns(idle_waketime);
-+		P_ns(idle_exittime);
- 		P_ns(idle_sleeptime);
- 		P(last_jiffies);
- 		P(next_jiffies);
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 89f4035..0d8a5a4 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -581,7 +581,7 @@ config LATENCYTOP
- 	select STACKTRACE
- 	select SCHEDSTATS
- 	select SCHED_DEBUG
--	depends on X86 || X86_64
-+	depends on HAVE_LATENCYTOP_SUPPORT
- 	help
- 	  Enable this option if you want to use the LatencyTOP tool
- 	  to find out which userspace is blocking on what kernel operations.
+ 	if (i >= MAX_EARLY_RES)
+ 		panic("Too many early reservations");
+ 	r = &early_res[i];
+ 	r->start = start;
+ 	r->end = end;
++	if (name)
++		strncpy(r->name, name, sizeof(r->name) - 1);
+ }
+ 
+ void __init early_res_to_bootmem(void)
+@@ -85,6 +88,8 @@ void __init early_res_to_bootmem(void)
+ 	int i;
+ 	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
+ 		struct early_res *r = &early_res[i];
++		printk(KERN_INFO "early res: %d [%lx-%lx] %s\n", i,
++			r->start, r->end - 1, r->name);
+ 		reserve_bootmem_generic(r->start, r->end - r->start);
+ 	}
+ }
+@@ -166,12 +171,13 @@ int __init e820_all_mapped(unsigned long start, unsigned long end,
+ }
+ 
+ /*
+- * Find a free area in a specific range.
++ * Find a free area with specified alignment in a specific range.
+  */
+ unsigned long __init find_e820_area(unsigned long start, unsigned long end,
+-				    unsigned size)
++				    unsigned size, unsigned long align)
+ {
+ 	int i;
++	unsigned long mask = ~(align - 1);
+ 
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		struct e820entry *ei = &e820.map[i];
+@@ -185,7 +191,8 @@ unsigned long __init find_e820_area(unsigned long start, unsigned long end,
+ 			continue;
+ 		while (bad_addr(&addr, size) && addr+size <= ei->addr+ei->size)
+ 			;
+-		last = PAGE_ALIGN(addr) + size;
++		addr = (addr + align - 1) & mask;
++		last = addr + size;
+ 		if (last > ei->addr + ei->size)
+ 			continue;
+ 		if (last > end)
+diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
+index b7d6c23..cff84cd 100644
+--- a/arch/x86/kernel/early_printk.c
++++ b/arch/x86/kernel/early_printk.c
+@@ -193,7 +193,7 @@ static struct console simnow_console = {
+ };
+ 
+ /* Direct interface for emergencies */
+-struct console *early_console = &early_vga_console;
++static struct console *early_console = &early_vga_console;
+ static int early_console_initialized = 0;
+ 
+ void early_printk(const char *fmt, ...)
+diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
+index 4b73992..674f237 100644
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -44,7 +44,7 @@ static void __init early_mapping_set_exec(unsigned long start,
+ 					  int executable)
+ {
+ 	pte_t *kpte;
+-	int level;
++	unsigned int level;
+ 
+ 	while (start < end) {
+ 		kpte = lookup_address((unsigned long)__va(start), &level);
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index a317336..24dbf56 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -75,7 +75,7 @@ static __init void reserve_ebda(void)
+ 	if (ebda_size > 64*1024)
+ 		ebda_size = 64*1024;
+ 
+-	reserve_early(ebda_addr, ebda_addr + ebda_size);
++	reserve_early(ebda_addr, ebda_addr + ebda_size, "EBDA");
+ }
+ 
+ void __init x86_64_start_kernel(char * real_mode_data)
+@@ -105,14 +105,14 @@ void __init x86_64_start_kernel(char * real_mode_data)
+ 	pda_init(0);
+ 	copy_bootdata(__va(real_mode_data));
+ 
+-	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end));
++	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA BSS");
+ 
+ 	/* Reserve INITRD */
+ 	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
+ 		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+ 		unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
+ 		unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
+-		reserve_early(ramdisk_image, ramdisk_end);
++		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
+ 	}
+ 
+ 	reserve_ebda();
+diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
+index 6ff447f..f2702d0 100644
+--- a/arch/x86/kernel/microcode.c
++++ b/arch/x86/kernel/microcode.c
+@@ -797,7 +797,7 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block __cpuinitdata mc_cpu_notifier = {
++static struct notifier_block __refdata mc_cpu_notifier = {
+ 	.notifier_call = mc_cpu_callback,
+ };
+ 
+diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+index 21f6e3c..bd82850 100644
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -168,7 +168,7 @@ static int __cpuinit msr_class_cpu_callback(struct notifier_block *nfb,
+ 	return err ? NOTIFY_BAD : NOTIFY_OK;
+ }
+ 
+-static struct notifier_block __cpuinitdata msr_class_cpu_notifier = {
++static struct notifier_block __refdata msr_class_cpu_notifier = {
+ 	.notifier_call = msr_class_cpu_callback,
+ };
+ 
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index 21f34db..1fe7f04 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -1006,7 +1006,7 @@ static void __init calgary_set_split_completion_timeout(void __iomem *bbar,
+ 	readq(target); /* flush */
+ }
+ 
+-static void calioc2_handle_quirks(struct iommu_table *tbl, struct pci_dev *dev)
++static void __init calioc2_handle_quirks(struct iommu_table *tbl, struct pci_dev *dev)
+ {
+ 	unsigned char busnum = dev->bus->number;
+ 	void __iomem *bbar = tbl->bbar;
+@@ -1022,7 +1022,7 @@ static void calioc2_handle_quirks(struct iommu_table *tbl, struct pci_dev *dev)
+ 	writel(cpu_to_be32(val), target);
+ }
+ 
+-static void calgary_handle_quirks(struct iommu_table *tbl, struct pci_dev *dev)
++static void __init calgary_handle_quirks(struct iommu_table *tbl, struct pci_dev *dev)
+ {
+ 	unsigned char busnum = dev->bus->number;
+ 
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 77fb87b..18df70c 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -182,7 +182,8 @@ contig_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ 	unsigned long bootmap_size, bootmap;
+ 
+ 	bootmap_size = bootmem_bootmap_pages(end_pfn)<<PAGE_SHIFT;
+-	bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT, bootmap_size);
++	bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT, bootmap_size,
++				 PAGE_SIZE);
+ 	if (bootmap == -1L)
+ 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
+ 	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, end_pfn);
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index cc64b80..d53bd6f 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -1019,7 +1019,7 @@ static void remove_siblinginfo(int cpu)
+ 	cpu_clear(cpu, cpu_sibling_setup_map);
+ }
+ 
+-void remove_cpu_from_maps(void)
++static void __ref remove_cpu_from_maps(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+index 78cbb65..e6757aa 100644
+--- a/arch/x86/kernel/topology.c
++++ b/arch/x86/kernel/topology.c
+@@ -57,11 +57,10 @@ void arch_unregister_cpu(int num)
+ }
+ EXPORT_SYMBOL(arch_unregister_cpu);
+ #else
+-int arch_register_cpu(int num)
++static int __init arch_register_cpu(int num)
+ {
+ 	return register_cpu(&per_cpu(cpu_devices, num).cpu, num);
+ }
+-EXPORT_SYMBOL(arch_register_cpu);
+ #endif /*CONFIG_HOTPLUG_CPU*/
+ 
+ static int __init topology_init(void)
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index e28cc52..e4440d0 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -382,7 +382,7 @@ static void show_fault_oops(struct pt_regs *regs, unsigned long error_code,
+ 
+ #ifdef CONFIG_X86_PAE
+ 	if (error_code & PF_INSTR) {
+-		int level;
++		unsigned int level;
+ 		pte_t *pte = lookup_address(address, &level);
+ 
+ 		if (pte && pte_present(*pte) && !pte_exec(*pte))
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index cc50a13..eabcaed 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -354,17 +354,10 @@ static void __init find_early_table_space(unsigned long end)
+ 	 * need roughly 0.5KB per GB.
+ 	 */
+ 	start = 0x8000;
+-	table_start = find_e820_area(start, end, tables);
++	table_start = find_e820_area(start, end, tables, PAGE_SIZE);
+ 	if (table_start == -1UL)
+ 		panic("Cannot find space for the kernel page tables");
+ 
+-	/*
+-	 * When you have a lot of RAM like 256GB, early_table will not fit
+-	 * into 0x8000 range, find_e820_area() will find area after kernel
+-	 * bss but the table_start is not page aligned, so need to round it
+-	 * up to avoid overlap with bss:
+-	 */
+-	table_start = round_up(table_start, PAGE_SIZE);
+ 	table_start >>= PAGE_SHIFT;
+ 	table_end = table_start;
+ 
+@@ -420,7 +413,9 @@ void __init_refok init_memory_mapping(unsigned long start, unsigned long end)
+ 		mmu_cr4_features = read_cr4();
+ 	__flush_tlb_all();
+ 
+-	reserve_early(table_start << PAGE_SHIFT, table_end << PAGE_SHIFT);
++	if (!after_bootmem)
++		reserve_early(table_start << PAGE_SHIFT,
++				 table_end << PAGE_SHIFT, "PGTABLE");
+ }
+ 
+ #ifndef CONFIG_NUMA
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index a177d76..c004d94 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -75,7 +75,8 @@ static int ioremap_change_attr(unsigned long paddr, unsigned long size,
+ {
+ 	unsigned long vaddr = (unsigned long)__va(paddr);
+ 	unsigned long nrpages = size >> PAGE_SHIFT;
+-	int err, level;
++	unsigned int level;
++	int err;
+ 
+ 	/* No change for pages after the last mapping */
+ 	if ((paddr + size - 1) >= (max_pfn_mapped << PAGE_SHIFT))
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index dc3b1f7..a920d09 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -84,26 +84,24 @@ static int __init populate_memnodemap(const struct bootnode *nodes,
+ 
+ static int __init allocate_cachealigned_memnodemap(void)
+ {
+-	unsigned long pad, pad_addr;
++	unsigned long addr;
+ 
+ 	memnodemap = memnode.embedded_map;
+ 	if (memnodemapsize <= ARRAY_SIZE(memnode.embedded_map))
+ 		return 0;
+ 
+-	pad = L1_CACHE_BYTES - 1;
+-	pad_addr = 0x8000;
+-	nodemap_size = pad + sizeof(s16) * memnodemapsize;
+-	nodemap_addr = find_e820_area(pad_addr, end_pfn<<PAGE_SHIFT,
+-				      nodemap_size);
++	addr = 0x8000;
++	nodemap_size = round_up(sizeof(s16) * memnodemapsize, L1_CACHE_BYTES);
++	nodemap_addr = find_e820_area(addr, end_pfn<<PAGE_SHIFT,
++				      nodemap_size, L1_CACHE_BYTES);
+ 	if (nodemap_addr == -1UL) {
+ 		printk(KERN_ERR
+ 		       "NUMA: Unable to allocate Memory to Node hash map\n");
+ 		nodemap_addr = nodemap_size = 0;
+ 		return -1;
+ 	}
+-	pad_addr = (nodemap_addr + pad) & ~pad;
+-	memnodemap = phys_to_virt(pad_addr);
+-	reserve_early(nodemap_addr, nodemap_addr + nodemap_size);
++	memnodemap = phys_to_virt(nodemap_addr);
++	reserve_early(nodemap_addr, nodemap_addr + nodemap_size, "MEMNODEMAP");
+ 
+ 	printk(KERN_DEBUG "NUMA: Allocated memnodemap from %lx - %lx\n",
+ 	       nodemap_addr, nodemap_addr + nodemap_size);
+@@ -164,15 +162,16 @@ int early_pfn_to_nid(unsigned long pfn)
+ }
+ 
+ static void * __init early_node_mem(int nodeid, unsigned long start,
+-				    unsigned long end, unsigned long size)
++				    unsigned long end, unsigned long size,
++				    unsigned long align)
+ {
+-	unsigned long mem = find_e820_area(start, end, size);
++	unsigned long mem = find_e820_area(start, end, size, align);
+ 	void *ptr;
+ 
+ 	if (mem != -1L)
+ 		return __va(mem);
+-	ptr = __alloc_bootmem_nopanic(size,
+-				SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS));
++
++	ptr = __alloc_bootmem_nopanic(size, align, __pa(MAX_DMA_ADDRESS));
+ 	if (ptr == NULL) {
+ 		printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
+ 		       size, nodeid);
+@@ -198,7 +197,8 @@ void __init setup_node_bootmem(int nodeid, unsigned long start,
+ 	start_pfn = start >> PAGE_SHIFT;
+ 	end_pfn = end >> PAGE_SHIFT;
+ 
+-	node_data[nodeid] = early_node_mem(nodeid, start, end, pgdat_size);
++	node_data[nodeid] = early_node_mem(nodeid, start, end, pgdat_size,
++					   SMP_CACHE_BYTES);
+ 	if (node_data[nodeid] == NULL)
+ 		return;
+ 	nodedata_phys = __pa(node_data[nodeid]);
+@@ -211,8 +211,12 @@ void __init setup_node_bootmem(int nodeid, unsigned long start,
+ 	/* Find a place for the bootmem map */
+ 	bootmap_pages = bootmem_bootmap_pages(end_pfn - start_pfn);
+ 	bootmap_start = round_up(nodedata_phys + pgdat_size, PAGE_SIZE);
++	/*
++	 * SMP_CAHCE_BYTES could be enough, but init_bootmem_node like
++	 * to use that to align to PAGE_SIZE
++	 */
+ 	bootmap = early_node_mem(nodeid, bootmap_start, end,
+-					bootmap_pages<<PAGE_SHIFT);
++				 bootmap_pages<<PAGE_SHIFT, PAGE_SIZE);
+ 	if (bootmap == NULL)  {
+ 		if (nodedata_phys < start || nodedata_phys >= end)
+ 			free_bootmem((unsigned long)node_data[nodeid],
+diff --git a/arch/x86/mm/pageattr-test.c b/arch/x86/mm/pageattr-test.c
+index 06353d4..7573e78 100644
+--- a/arch/x86/mm/pageattr-test.c
++++ b/arch/x86/mm/pageattr-test.c
+@@ -42,7 +42,7 @@ static __init int print_split(struct split_state *s)
+ 	s->max_exec = 0;
+ 	for (i = 0; i < max_pfn_mapped; ) {
+ 		unsigned long addr = (unsigned long)__va(i << PAGE_SHIFT);
+-		int level;
++		unsigned int level;
+ 		pte_t *pte;
+ 
+ 		pte = lookup_address(addr, &level);
+@@ -106,7 +106,7 @@ static __init int exercise_pageattr(void)
+ 	unsigned long *bm;
+ 	pte_t *pte, pte0;
+ 	int failed = 0;
+-	int level;
++	unsigned int level;
+ 	int i, k;
+ 	int err;
+ 
+diff --git a/include/asm-x86/cpu.h b/include/asm-x86/cpu.h
+index 85ece5f..73f2ea8 100644
+--- a/include/asm-x86/cpu.h
++++ b/include/asm-x86/cpu.h
+@@ -10,8 +10,9 @@
+ struct x86_cpu {
+ 	struct cpu cpu;
+ };
+-extern int arch_register_cpu(int num);
++
+ #ifdef CONFIG_HOTPLUG_CPU
++extern int arch_register_cpu(int num);
+ extern void arch_unregister_cpu(int);
+ #endif
+ 
+diff --git a/include/asm-x86/e820_64.h b/include/asm-x86/e820_64.h
+index 51e4170..a560c4f 100644
+--- a/include/asm-x86/e820_64.h
++++ b/include/asm-x86/e820_64.h
+@@ -15,7 +15,7 @@
+ 
+ #ifndef __ASSEMBLY__
+ extern unsigned long find_e820_area(unsigned long start, unsigned long end, 
+-				    unsigned size);
++				    unsigned size, unsigned long align);
+ extern void add_memory_region(unsigned long start, unsigned long size, 
+ 			      int type);
+ extern void setup_memory_region(void);
+@@ -41,7 +41,7 @@ extern void finish_e820_parsing(void);
+ extern struct e820map e820;
+ extern void update_e820(void);
+ 
+-extern void reserve_early(unsigned long start, unsigned long end);
++extern void reserve_early(unsigned long start, unsigned long end, char *name);
+ extern void early_res_to_bootmem(void);
+ 
+ #endif/*!__ASSEMBLY__*/
