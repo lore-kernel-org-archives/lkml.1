@@ -1,227 +1,992 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbYBAU5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYBAU6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760346AbYBAU5H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 15:57:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbYBAU4y
+	id S1758012AbYBAU6V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 15:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbYBAU6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 15:56:54 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58289 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753058AbYBAU4x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 15:56:53 -0500
-Date: Fri, 1 Feb 2008 20:30:46 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: unionfs_copy_attr_times oopses
-Message-ID: <Pine.LNX.4.64.0802011905230.32485@blonde.site>
+	Fri, 1 Feb 2008 15:58:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44877 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753246AbYBAU54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 15:57:56 -0500
+Message-ID: <47A387C9.1000506@redhat.com>
+Date: Fri, 01 Feb 2008 15:57:45 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1949175734-1201897846=:32485"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH 0/3] enhanced ESTALE error handling (v2)
+References: <4790C756.2040704@redhat.com>
+In-Reply-To: <4790C756.2040704@redhat.com>
+Content-Type: multipart/mixed;
+ boundary="------------030304000004030600060205"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This is a multi-part message in MIME format.
+--------------030304000004030600060205
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
---8323584-1949175734-1201897846=:32485
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Hi.
 
-Hi Erez,
+Here is version 2 of a patch set which modifies the system to
+enhance the ESTALE error handling for system calls which take
+pathnames as arguments.
 
-Aside from the occasional "unionfs: new lower inode mtime" messages
-on directories (which I've got into the habit of ignoring now), the
-only problem I'm still suffering with unionfs over tmpfs (not tested
-any other fs's below it recently) is oops in unionfs_copy_attr_times.
+The error, ESTALE, was originally introduced to handle the
+situation where a file handle, which NFS uses to uniquely
+identify a file on the server, no longer refers to a valid file
+on the server.  This can happen when the file is removed on the
+server, either by an application on the server, some other
+client accessing the server, or sometimes even by another
+mounted file system from the same client.  The NFS server also
+returns this error when the file resides upon a file system
+which is no longer exported.  Additionally, some NFS servers
+even change the file handle when a file is renamed, although
+this practice is discouraged.
 
-I believe I'm working with your latest: 2.6.24-rc8-mm1 plus the four
-patches you posted to lkml on 26 Jan.  But this problem has been around
-for a while before that: I'd been hoping to debug it myself, but taken
-too long to make too little progress, so now handing over to you.
+This error occurs even if a file or directory, with the same
+name, is recreated on the server without the client being
+aware of it.  The file handle refers to a specific instance
+of a file and deleting the file and then recreating it creates
+a new instance of the file.
 
-The oops occurs while doing repeated "make -j20" kernel builds in a
-unionfs mount of a tmpfs (though I doubt tmpfs is relevant): most of
-my testing was while swapping, but today I find that's irrelevant,
-and it should happen much quicker without.  SMP kernels (4 cpus),
-I haven't tried UP; happens with or without PREEMPT, may just be
-coincidence that it happens quicker on the machines with PREEMPT.
+The error, ESTALE, is usually seen when cached directory
+information is used to convert a pathname to a dentry/inode pair.
+The information is discovered to be out of date or stale when a
+subsequent operation is sent to the NFS server.  This can easily
+happen in system calls such as stat(2) when the pathname is
+converted a dentry/inode pair using cached information, but then
+a subsequent GETATTR call to the server discovers that the file
+handle is no longer valid.
 
-Most commonly it's unionfs_copy_attr_times called from unionfs_create,
-but that's probably just the most common route in this workload:
-I've seen it also when called from unionfs_rename or unionfs_open or
-unionfs_unlink.  It looks like there's a locking or refcounting bug,
-hence a race: the unionfs_inode_info which unionfs_copy_attr_times
-is working on gets changed underneath it, so it oopses on NULL
-lower_inodes.  It took me far too long to realize that ibstart
-(and ibend) are -1 when it oopses, yet the function returns
-immediately if ibstart is negative on entry.  I've not a clue
-what it is that's changing it.
+This error can also occur when a change is made on the server
+in between looking up different components of the pathname to
+be looked up or between a successful lookup and a subsequent
+operation.
 
-What I did make progress with yesterday was a workaround patch, which
-additionally makes the problem more manifest: by WARNing in much more
-common cases which were invisible (didn't go so far as to oops) before.
-The oops had typically taken 12 hours to happen, but I'm getting like
-one warning per hour (varies from machine to machine) with the patch
-while swapping, and now much more frequently giving it more memory.
+System calls which take pathnames as arguments should never see
+ESTALE errors from situations like this.  These system calls
+should either fail with an ENOENT error if the pathname can not
+be successfully be translated to a dentry/inode pair or succeed
+or fail based on their own semantics.  In the above example,
+stat(2), restarting at the pathname lookup will either cause the
+system call to succeed or fail, depending upon whether the
+file really exists or not.
 
-I've two patches.  The first isn't interesting, so I just attached
-it.  It moves unionfs_copy_attr_times (and unionfs_copy_attr_all)
-from inline in fanout.h to out-of-line in copyup.c: the function's
-too big and too widely used to be suitable for inlining, this reduces
-kernel text by about 6k.  But since making that patch, I've seen that
-copyup.c is really about copying up the data, and you may well prefer
-to move the functions to subr.c or elsewhere.
+ESTALE errors which occur during the lookup process can be
+handled by dropping the dentry which refers to the non-existent
+file from the dcache and then restarting the lookup process.
+Care is taken to ensure that forward progress is always being
+made in order to avoiding infinite loops.
 
-The patch to go on top of that is appended below: makes unionfs_copy
-_attr_times more paranoid about the fields it's accessing; but this
-can only be a temporary workaround - so long as there's such a race,
-it could be accessing freed/reused memory with unpredictable results.
+ESTALE errors which occur during operations subsequent to the
+lookup process can be handled by unwinding appropriately and
+then performing the lookup process again.  Eventually, either
+the lookup process will succeed or fail correctly or the
+subsequent operation will succeed or fail on its own merits.
 
-Most of the warnings I see with this patch are the first, on bend < 0:
-the old "bindex <= ibend(upper)" condition would often have terminated
-the loop in that case, without noticing the discrepancy that ibend
-had gone negative.  Occasionally I'm seeing the second warning, on
-lower_inodes, which would correspond to the oops: here's a trace
-(cutting out the ? lines, just stale addresses left on the stack):
+This support is desired in order to tighten up recovery from
+discovering stale resources due to the loose cache consistency
+semantics that file systems such as NFS employ.  In particular,
+there are several large Red Hat customers, converting from
+Solaris to Linux, who desire this support in order that their
+applications environments continue to work.
 
-WARNING: at fs/unionfs/copyup.c:906 unionfs_copy_attr_times+0x5f/0xcc()
-Modules linked in: acpi_cpufreq snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device thermal button processor
-Pid: 13791, comm: cc1 Not tainted 2.6.24-rc8-mm1 #19
- [<c0124ce6>] warn_on_slowpath+0x3e/0x51
- [<c01d5f63>] unionfs_copy_attr_times+0x5f/0xcc
- [<c01d169d>] unionfs_create+0x160/0x1e7
- [<c0173b8f>] vfs_create+0x62/0xa8
- [<c0173d85>] __open_namei_create+0x44/0x8e
- [<c0173f55>] open_pathname+0x14d/0x55c
- [<c016b7d9>] do_sys_open+0x41/0xbd
- [<c016b868>] sys_open+0x13/0x15
- [<c01040ee>] sysenter_past_esp+0x5f/0x85
+The loose consistency model of file systems such as NFS is
+exacerbated by the large granularity of timestamps available
+for files on file systems such ext3.  The NFS client may not
+be able to detect changes in directories due to multiple
+changes occurring in the same second, for example.
 
---- a/fs/unionfs/copyup.c	2008-01-29 16:59:13.000000000 +0000
-+++ b/fs/unionfs/copyup.c	2008-01-31 12:24:58.000000000 +0000
-@@ -887,13 +887,25 @@ void unionfs_postcopyup_release(struct d
- /* copy a/m/ctime from the lower branch with the newest times */
- void unionfs_copy_attr_times(struct inode *upper)
- {
--	int bindex;
-+	int bindex, bend;
- 	struct inode *lower;
-+	struct inode **lower_inodes;
- 
--	if (!upper || ibstart(upper) < 0)
-+	if (!upper)
- 		return;
--	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
--		lower = unionfs_lower_inode_idx(upper, bindex);
-+	bindex = ibstart(upper);
-+	if (bindex < 0)
-+		return;
-+	while (1) {
-+		bend = ibend(upper);
-+		if (WARN_ON(bend < 0))
-+			break;
-+		if (bindex > bend)
-+			break;
-+		lower_inodes = UNIONFS_I(upper)->lower_inodes;
-+		if (WARN_ON(!lower_inodes))
-+			break;
-+		lower = lower_inodes[bindex++];
- 		if (!lower)
- 			continue; /* not all lower dir objects may exist */
- 		if (unlikely(timespec_compare(&upper->i_mtime,
---8323584-1949175734-1201897846=:32485
-Content-Type: TEXT/x-patch; charset=US-ASCII; name=copyup1.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0802012030460.32485@blonde.site>
-Content-Description: out-of-lining
-Content-Disposition: attachment; filename=copyup1.patch
+Please note that system calls which do not take pathnames as
+arguments or perhaps use file descriptors to identify the
+file to be manipulated may still fail with ESTALE errors.
+There is no recovery possible with these systems calls like
+there is with system calls which take pathnames as arguments.
 
-LS0tIGEvZnMvdW5pb25mcy9jb3B5dXAuYwkyMDA4LTAxLTI3IDEzOjAwOjI0
-LjAwMDAwMDAwMCArMDAwMA0KKysrIGIvZnMvdW5pb25mcy9jb3B5dXAuYwky
-MDA4LTAxLTI3IDE2OjUwOjM0LjAwMDAwMDAwMCArMDAwMA0KQEAgLTg4Mywz
-ICs4ODMsNTIgQEAgdm9pZCB1bmlvbmZzX3Bvc3Rjb3B5dXBfcmVsZWFzZShz
-dHJ1Y3QgZA0KIAlzZXRfZGJlbmQoZGVudHJ5LCBiaW5kZXgpOw0KIAlpYmVu
-ZChkZW50cnktPmRfaW5vZGUpID0gaWJzdGFydChkZW50cnktPmRfaW5vZGUp
-ID0gYmluZGV4Ow0KIH0NCisNCisvKiBjb3B5IGEvbS9jdGltZSBmcm9tIHRo
-ZSBsb3dlciBicmFuY2ggd2l0aCB0aGUgbmV3ZXN0IHRpbWVzICovDQordm9p
-ZCB1bmlvbmZzX2NvcHlfYXR0cl90aW1lcyhzdHJ1Y3QgaW5vZGUgKnVwcGVy
-KQ0KK3sNCisJaW50IGJpbmRleDsNCisJc3RydWN0IGlub2RlICpsb3dlcjsN
-CisNCisJaWYgKCF1cHBlciB8fCBpYnN0YXJ0KHVwcGVyKSA8IDApDQorCQly
-ZXR1cm47DQorCWZvciAoYmluZGV4ID0gaWJzdGFydCh1cHBlcik7IGJpbmRl
-eCA8PSBpYmVuZCh1cHBlcik7IGJpbmRleCsrKSB7DQorCQlsb3dlciA9IHVu
-aW9uZnNfbG93ZXJfaW5vZGVfaWR4KHVwcGVyLCBiaW5kZXgpOw0KKwkJaWYg
-KCFsb3dlcikNCisJCQljb250aW51ZTsgLyogbm90IGFsbCBsb3dlciBkaXIg
-b2JqZWN0cyBtYXkgZXhpc3QgKi8NCisJCWlmICh1bmxpa2VseSh0aW1lc3Bl
-Y19jb21wYXJlKCZ1cHBlci0+aV9tdGltZSwNCisJCQkJCSAgICAgICZsb3dl
-ci0+aV9tdGltZSkgPCAwKSkNCisJCQl1cHBlci0+aV9tdGltZSA9IGxvd2Vy
-LT5pX210aW1lOw0KKwkJaWYgKHVubGlrZWx5KHRpbWVzcGVjX2NvbXBhcmUo
-JnVwcGVyLT5pX2N0aW1lLA0KKwkJCQkJICAgICAgJmxvd2VyLT5pX2N0aW1l
-KSA8IDApKQ0KKwkJCXVwcGVyLT5pX2N0aW1lID0gbG93ZXItPmlfY3RpbWU7
-DQorCQlpZiAodW5saWtlbHkodGltZXNwZWNfY29tcGFyZSgmdXBwZXItPmlf
-YXRpbWUsDQorCQkJCQkgICAgICAmbG93ZXItPmlfYXRpbWUpIDwgMCkpDQor
-CQkJdXBwZXItPmlfYXRpbWUgPSBsb3dlci0+aV9hdGltZTsNCisJfQ0KK30N
-CisNCisvKg0KKyAqIEEgdW5pb25mcy9mYW5vdXQgdmVyc2lvbiBvZiBmc3N0
-YWNrX2NvcHlfYXR0cl9hbGwuICBVc2VzIGENCisgKiB1bmlvbmZzX2dldF9u
-bGlua3MgdG8gcHJvcGVybHkgY2FsY2x1YXRlIHRoZSBudW1iZXIgb2YgbGlu
-a3MgdG8gYSBmaWxlLg0KKyAqIEFsc28sIGNvcGllcyB0aGUgbWF4KCkgb2Yg
-YWxsIGEvbS9jdGltZXMgZm9yIGFsbCBsb3dlciBpbm9kZXMgKHdoaWNoIGlz
-DQorICogaW1wb3J0YW50IGlmIHRoZSBsb3dlciBpbm9kZSBpcyBhIGRpcmVj
-dG9yeSB0eXBlKQ0KKyAqLw0KK3ZvaWQgdW5pb25mc19jb3B5X2F0dHJfYWxs
-KHN0cnVjdCBpbm9kZSAqZGVzdCwgY29uc3Qgc3RydWN0IGlub2RlICpzcmMp
-DQorew0KKwlkZXN0LT5pX21vZGUgPSBzcmMtPmlfbW9kZTsNCisJZGVzdC0+
-aV91aWQgPSBzcmMtPmlfdWlkOw0KKwlkZXN0LT5pX2dpZCA9IHNyYy0+aV9n
-aWQ7DQorCWRlc3QtPmlfcmRldiA9IHNyYy0+aV9yZGV2Ow0KKw0KKwl1bmlv
-bmZzX2NvcHlfYXR0cl90aW1lcyhkZXN0KTsNCisNCisJZGVzdC0+aV9ibGti
-aXRzID0gc3JjLT5pX2Jsa2JpdHM7DQorCWRlc3QtPmlfZmxhZ3MgPSBzcmMt
-PmlfZmxhZ3M7DQorDQorCS8qDQorCSAqIFVwZGF0ZSB0aGUgbmxpbmtzIEFG
-VEVSIHVwZGF0aW5nIHRoZSBhYm92ZSBmaWVsZHMsIGJlY2F1c2UgdGhlDQor
-CSAqIGdldF9saW5rcyBjYWxsYmFjayBtYXkgZGVwZW5kIG9uIHRoZW0uDQor
-CSAqLw0KKwlkZXN0LT5pX25saW5rID0gdW5pb25mc19nZXRfbmxpbmtzKGRl
-c3QpOw0KK30NCi0tLSBhL2ZzL3VuaW9uZnMvZmFub3V0LmgJMjAwOC0wMS0x
-NyAxNjo1MToxNC4wMDAwMDAwMDAgKzAwMDANCisrKyBiL2ZzL3VuaW9uZnMv
-ZmFub3V0LmgJMjAwOC0wMS0yNyAxNjo0ODoxMi4wMDAwMDAwMDAgKzAwMDAN
-CkBAIC0zMTQsNTMgKzMxNCw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCB2ZXJp
-ZnlfbG9ja2VkKHN0cnVjdCANCiB9DQogDQogLyogY29weSBhL20vY3RpbWUg
-ZnJvbSB0aGUgbG93ZXIgYnJhbmNoIHdpdGggdGhlIG5ld2VzdCB0aW1lcyAq
-Lw0KLXN0YXRpYyBpbmxpbmUgdm9pZCB1bmlvbmZzX2NvcHlfYXR0cl90aW1l
-cyhzdHJ1Y3QgaW5vZGUgKnVwcGVyKQ0KLXsNCi0JaW50IGJpbmRleDsNCi0J
-c3RydWN0IGlub2RlICpsb3dlcjsNCi0NCi0JaWYgKCF1cHBlciB8fCBpYnN0
-YXJ0KHVwcGVyKSA8IDApDQotCQlyZXR1cm47DQotCWZvciAoYmluZGV4ID0g
-aWJzdGFydCh1cHBlcik7IGJpbmRleCA8PSBpYmVuZCh1cHBlcik7IGJpbmRl
-eCsrKSB7DQotCQlsb3dlciA9IHVuaW9uZnNfbG93ZXJfaW5vZGVfaWR4KHVw
-cGVyLCBiaW5kZXgpOw0KLQkJaWYgKCFsb3dlcikNCi0JCQljb250aW51ZTsg
-Lyogbm90IGFsbCBsb3dlciBkaXIgb2JqZWN0cyBtYXkgZXhpc3QgKi8NCi0J
-CWlmICh1bmxpa2VseSh0aW1lc3BlY19jb21wYXJlKCZ1cHBlci0+aV9tdGlt
-ZSwNCi0JCQkJCSAgICAgICZsb3dlci0+aV9tdGltZSkgPCAwKSkNCi0JCQl1
-cHBlci0+aV9tdGltZSA9IGxvd2VyLT5pX210aW1lOw0KLQkJaWYgKHVubGlr
-ZWx5KHRpbWVzcGVjX2NvbXBhcmUoJnVwcGVyLT5pX2N0aW1lLA0KLQkJCQkJ
-ICAgICAgJmxvd2VyLT5pX2N0aW1lKSA8IDApKQ0KLQkJCXVwcGVyLT5pX2N0
-aW1lID0gbG93ZXItPmlfY3RpbWU7DQotCQlpZiAodW5saWtlbHkodGltZXNw
-ZWNfY29tcGFyZSgmdXBwZXItPmlfYXRpbWUsDQotCQkJCQkgICAgICAmbG93
-ZXItPmlfYXRpbWUpIDwgMCkpDQotCQkJdXBwZXItPmlfYXRpbWUgPSBsb3dl
-ci0+aV9hdGltZTsNCi0JfQ0KLX0NCi0NCi0vKg0KLSAqIEEgdW5pb25mcy9m
-YW5vdXQgdmVyc2lvbiBvZiBmc3N0YWNrX2NvcHlfYXR0cl9hbGwuICBVc2Vz
-IGENCi0gKiB1bmlvbmZzX2dldF9ubGlua3MgdG8gcHJvcGVybHkgY2FsY2x1
-YXRlIHRoZSBudW1iZXIgb2YgbGlua3MgdG8gYSBmaWxlLg0KLSAqIEFsc28s
-IGNvcGllcyB0aGUgbWF4KCkgb2YgYWxsIGEvbS9jdGltZXMgZm9yIGFsbCBs
-b3dlciBpbm9kZXMgKHdoaWNoIGlzDQotICogaW1wb3J0YW50IGlmIHRoZSBs
-b3dlciBpbm9kZSBpcyBhIGRpcmVjdG9yeSB0eXBlKQ0KLSAqLw0KLXN0YXRp
-YyBpbmxpbmUgdm9pZCB1bmlvbmZzX2NvcHlfYXR0cl9hbGwoc3RydWN0IGlu
-b2RlICpkZXN0LA0KLQkJCQkJIGNvbnN0IHN0cnVjdCBpbm9kZSAqc3JjKQ0K
-LXsNCi0JZGVzdC0+aV9tb2RlID0gc3JjLT5pX21vZGU7DQotCWRlc3QtPmlf
-dWlkID0gc3JjLT5pX3VpZDsNCi0JZGVzdC0+aV9naWQgPSBzcmMtPmlfZ2lk
-Ow0KLQlkZXN0LT5pX3JkZXYgPSBzcmMtPmlfcmRldjsNCi0NCi0JdW5pb25m
-c19jb3B5X2F0dHJfdGltZXMoZGVzdCk7DQotDQotCWRlc3QtPmlfYmxrYml0
-cyA9IHNyYy0+aV9ibGtiaXRzOw0KLQlkZXN0LT5pX2ZsYWdzID0gc3JjLT5p
-X2ZsYWdzOw0KLQ0KLQkvKg0KLQkgKiBVcGRhdGUgdGhlIG5saW5rcyBBRlRF
-UiB1cGRhdGluZyB0aGUgYWJvdmUgZmllbGRzLCBiZWNhdXNlIHRoZQ0KLQkg
-KiBnZXRfbGlua3MgY2FsbGJhY2sgbWF5IGRlcGVuZCBvbiB0aGVtLg0KLQkg
-Ki8NCi0JZGVzdC0+aV9ubGluayA9IHVuaW9uZnNfZ2V0X25saW5rcyhkZXN0
-KTsNCi19DQordm9pZCB1bmlvbmZzX2NvcHlfYXR0cl90aW1lcyhzdHJ1Y3Qg
-aW5vZGUgKnVwcGVyKTsNCit2b2lkIHVuaW9uZnNfY29weV9hdHRyX2FsbChz
-dHJ1Y3QgaW5vZGUgKmRlc3QsIGNvbnN0IHN0cnVjdCBpbm9kZSAqc3JjKTsN
-CiANCiAjZW5kaWYJLyogbm90IF9GQU5PVVRfSCAqLw0K
+This support was tested using the attached programs and
+running multiple copies on mounted file systems which do not
+share superblocks.  When two or more copies of this program
+are running, many ESTALE errors can be seen over the network.
+Without these patches, the test program errors out almost
+immediately.  With these patches, the test program runs
+for as long one desires.
 
---8323584-1949175734-1201897846=:32485--
+Comments?
+
+   Thanx...
+
+      ps
+
+--------------030304000004030600060205
+Content-Type: text/x-csrc;
+ name="syscallgen.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="syscallgen.c"
+
+#
+#define _XOPEN_SOURCE 500
+#define _LARGEFILE64_SOURCE
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/statfs.h>
+#include <sys/inotify.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+
+void mkdir_test(void);
+void link_test(void);
+void open_test(void);
+void access_test(void);
+void chmod_test(void);
+void chown_test(void);
+void readlink_test(void);
+void utimes_test(void);
+void chdir_test(void);
+void chroot_test(void);
+void rename_test(void);
+void exec_test(void);
+void mknod_test(void);
+void statfs_test(void);
+void truncate_test(void);
+void xattr_test(void);
+void inotify_test(void);
+
+struct tests {
+	void (*test)(void);
+};
+
+struct tests tests[] = {
+	mkdir_test,
+	link_test,
+	open_test,
+	access_test,
+	chmod_test,
+	chown_test,
+	readlink_test,
+	utimes_test,
+	chdir_test,
+	chroot_test,
+	rename_test,
+	exec_test,
+	mknod_test,
+	statfs_test,
+	truncate_test,
+	xattr_test,
+	inotify_test
+};
+
+pid_t test_pids[sizeof(tests) / sizeof(tests[0])];
+
+pid_t parent_pid;
+
+void kill_tests(int);
+
+int
+main(int argc, char *argv[])
+{
+	int i;
+
+	parent_pid = getpid();
+
+	sigset(SIGINT, kill_tests);
+
+	sighold(SIGINT);
+
+	for (i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+		test_pids[i] = fork();
+		if (test_pids[i] == 0) {
+			for (;;)
+				(*tests[i].test)();
+			/* NOTREACHED */
+		}
+	}
+
+	sigrelse(SIGINT);
+
+	pause();
+}
+
+void
+kill_tests(int sig)
+{
+	int i;
+
+	for (i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+		if (test_pids[i] != -1) {
+			if (kill(test_pids[i], SIGTERM) < 0)
+				perror("kill");
+		}
+	}
+
+	exit(0);
+}
+
+void
+check_error(int error, char *operation)
+{
+
+	if (error < 0 && errno == ESTALE) {
+		perror(operation);
+		kill(parent_pid, SIGINT);
+		pause();
+	}
+}
+
+void
+check_error_child(int error, char *operation)
+{
+
+	if (error < 0 && errno == ESTALE) {
+		perror(operation);
+		kill(parent_pid, SIGINT);
+		exit(1);
+	}
+}
+
+void
+do_stats(char *file)
+{
+	int error;
+	struct stat stbuf;
+	struct stat64 stbuf64;
+
+	error = stat(file, &stbuf);
+	check_error(error, "stat");
+
+	error = stat64(file, &stbuf64);
+	check_error(error, "stat64");
+
+	error = lstat(file, &stbuf);
+	check_error(error, "lstat");
+
+	error = lstat64(file, &stbuf64);
+	check_error(error, "lstat64");
+}
+
+void
+do_stats_child(char *file)
+{
+	int error;
+	struct stat stbuf;
+	struct stat64 stbuf64;
+
+	error = stat(file, &stbuf);
+	check_error_child(error, "stat");
+
+	error = stat64(file, &stbuf64);
+	check_error_child(error, "stat64");
+
+	error = lstat(file, &stbuf);
+	check_error_child(error, "lstat");
+
+	error = lstat64(file, &stbuf64);
+	check_error_child(error, "lstat64");
+}
+
+char *mkdir_dirs[] = {
+	"mkdir/a",
+	"mkdir/a/b",
+	"mkdir/a/b/c",
+	"mkdir/a/b/c/d",
+	"mkdir/a/b/c/d/e",
+	"mkdir/a/b/c/d/e/f",
+	"mkdir/a/b/c/d/e/f/g",
+	"mkdir/a/b/c/d/e/f/g/h",
+	"mkdir/a/b/c/d/e/f/g/h/i",
+	"mkdir/a/b/c/d/e/f/g/h/i/j",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y",
+	"mkdir/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z",
+	NULL
+};
+
+void
+mkdir_test()
+{
+	int i;
+	int error;
+
+	error = mkdir("mkdir", 0755);
+	check_error(error, "mkdir");
+
+	for (i = 0; mkdir_dirs[i] != NULL; i++) {
+		error = mkdir(mkdir_dirs[i], 0755);
+		check_error(error, "mkdir");
+		do_stats(mkdir_dirs[i]);
+	}
+
+	while (--i >= 0) {
+		do_stats(mkdir_dirs[i]);
+		error = rmdir(mkdir_dirs[i]);
+		check_error(error, "rmdir");
+	}
+
+	error = rmdir("mkdir");
+	check_error(error, "rmdir");
+}
+
+char *link_file_a = "link/a";
+char *link_file_b = "link/b";
+
+void
+link_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("link", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(link_file_a, O_CREAT, 0644);
+	check_error(fd, "open");
+
+	(void) close(fd);
+
+	do_stats(link_file_a);
+
+	error = link(link_file_a, link_file_b);
+	check_error(error, "link");
+	do_stats(link_file_a);
+	do_stats(link_file_b);
+
+	error = unlink(link_file_a);
+	check_error(error, "unlink");
+	do_stats(link_file_a);
+	do_stats(link_file_b);
+
+	error = link(link_file_b, link_file_a);
+	check_error(error, "link");
+	do_stats(link_file_a);
+	do_stats(link_file_b);
+
+	error = unlink(link_file_b);
+	check_error(error, "unlink");
+	do_stats(link_file_a);
+	do_stats(link_file_b);
+
+	error = unlink(link_file_a);
+	check_error(error, "unlink");
+	do_stats(link_file_a);
+	do_stats(link_file_b);
+
+	error = rmdir("link");
+	check_error(error, "rmdir");
+}
+
+char *open_file = "open/a";
+
+void
+open_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("open", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(open_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(open_file);
+
+	fd = open(open_file, O_RDWR);
+	check_error(fd, "open: O_RDWR");
+
+	(void) close(fd);
+
+	do_stats(open_file);
+
+	error = unlink(open_file);
+	check_error(error, "unlink");
+
+	error = rmdir("open");
+	check_error(error, "rmdir");
+}
+
+char *access_file = "access/a";
+
+void
+access_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("access", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(access_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(access_file);
+
+	error = access(access_file, F_OK);
+	check_error(error, "access");
+
+	do_stats(access_file);
+
+	error = unlink(access_file);
+	check_error(error, "unlink");
+
+	error = rmdir("access");
+	check_error(error, "rmdir");
+}
+
+char *chmod_file = "chmod/a";
+
+void
+chmod_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("chmod", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(chmod_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(chmod_file);
+
+	error = chmod(chmod_file, 0600);
+	check_error(error, "chmod");
+
+	do_stats(chmod_file);
+
+	error = unlink(chmod_file);
+	check_error(error, "unlink");
+
+	error = rmdir("chmod");
+	check_error(error, "rmdir");
+}
+
+char *chown_file = "chown/a";
+
+void
+chown_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("chown", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(chown_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(chown_file);
+
+	error = chown(chown_file, 4597, 4597);
+	check_error(error, "chown");
+
+	do_stats(chown_file);
+
+	error = lchown(chown_file, 4596, 4596);
+	check_error(error, "lchown");
+
+	do_stats(chown_file);
+
+	error = unlink(chown_file);
+	check_error(error, "unlink");
+
+	error = rmdir("chown");
+	check_error(error, "rmdir");
+}
+
+char *readlink_file = "readlink/a";
+
+void
+readlink_test()
+{
+	int error;
+	char buf[BUFSIZ];
+
+	error = mkdir("readlink", 0755);
+	check_error(error, "mkdir");
+
+	error = symlink("b", readlink_file);
+	check_error(error, "symlink");
+
+	do_stats(readlink_file);
+
+	error = readlink(readlink_file, buf, sizeof(buf));
+	check_error(error, "readlink");
+
+	do_stats(readlink_file);
+
+	error = unlink(readlink_file);
+	check_error(error, "unlink");
+
+	error = rmdir("readlink");
+	check_error(error, "rmdir");
+}
+
+char *utimes_file = "utimes/a";
+
+void
+utimes_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("utimes", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(utimes_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(utimes_file);
+
+	error = utime(utimes_file, NULL);
+	check_error(error, "utime");
+
+	do_stats(utimes_file);
+
+	error = utimes(utimes_file, NULL);
+	check_error(error, "utimes");
+
+	do_stats(utimes_file);
+
+	error = unlink(utimes_file);
+	check_error(error, "unlink");
+
+	error = rmdir("utimes");
+	check_error(error, "rmdir");
+}
+
+char *chdir_dir = "chdir/dir";
+
+void
+chdir_test()
+{
+	int error;
+	int pid;
+	int status;
+
+	error = mkdir("chdir", 0755);
+	check_error(error, "mkdir");
+
+	pid = fork();
+	if (pid == 0) {
+		error = mkdir(chdir_dir, 0755);
+		check_error_child(error, "mkdir");
+
+		do_stats_child(chdir_dir);
+
+		error = chdir(chdir_dir);
+		check_error_child(error, "chdir");
+
+		do_stats_child(chdir_dir);
+
+		exit(0);
+	}
+
+	(void) wait(&status);
+
+	do_stats(chdir_dir);
+
+	error = rmdir(chdir_dir);
+	check_error(error, "rmdir");
+
+	error = rmdir("chdir");
+	check_error(error, "rmdir");
+}
+
+char *chroot_dir = "chroot/dir";
+
+void
+chroot_test()
+{
+	int error;
+	int pid;
+	int status;
+
+	error = mkdir("chroot", 0755);
+	check_error(error, "mkdir");
+
+	pid = fork();
+	if (pid == 0) {
+		error = mkdir(chroot_dir, 0755);
+		check_error_child(error, "mkdir");
+
+		do_stats_child(chroot_dir);
+
+		error = chroot(chroot_dir);
+		check_error_child(error, "chroot");
+
+		do_stats_child(chroot_dir);
+
+		exit(0);
+	}
+
+	(void) wait(&status);
+
+	do_stats(chroot_dir);
+
+	error = rmdir(chroot_dir);
+	check_error(error, "rmdir");
+
+	error = rmdir("chroot");
+	check_error(error, "rmdir");
+}
+
+char *rename_file_a = "rename/a";
+char *rename_file_b = "rename/b";
+
+void
+rename_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("rename", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(rename_file_a, O_CREAT, 0644);
+	check_error(fd, "open");
+
+	(void) close(fd);
+
+	do_stats(rename_file_a);
+
+	error = rename(rename_file_a, rename_file_b);
+	check_error(error, "rename");
+
+	do_stats(rename_file_a);
+	do_stats(rename_file_b);
+
+	error = rename(rename_file_b, rename_file_a);
+	check_error(error, "rename");
+
+	do_stats(rename_file_a);
+	do_stats(rename_file_b);
+
+	error = unlink(rename_file_a);
+	check_error(error, "unlink");
+
+	error = rmdir("rename");
+	check_error(error, "rmdir");
+}
+
+char *exec_file = "exec/a";
+char *exec_source_file = "exec_test";
+
+void
+exec_test()
+{
+	int error;
+	int pid;
+	int status;
+
+	error = mkdir("exec", 0755);
+	check_error(error, "mkdir");
+
+	error = link(exec_source_file, exec_file);
+	check_error(error, "link");
+	do_stats(exec_file);
+
+	pid = fork();
+	if (pid == 0) {
+		error = execl(exec_file, exec_file, NULL);
+		check_error_child(error, "execl");
+
+		exit(1);
+	}
+
+	wait(&status);
+
+	do_stats(exec_file);
+
+	error = unlink(exec_file);
+	check_error(error, "unlink");
+
+	error = rmdir("exec");
+	check_error(error, "rmdir");
+}
+
+char *mknod_file = "mknod/a";
+
+void
+mknod_test()
+{
+	int error;
+
+	error = mkdir("mknod", 0755);
+	check_error(error, "mkdir");
+
+	error = mknod(mknod_file, S_IFCHR | 0644, 0);
+	check_error(error, "mknod");
+
+	do_stats(mknod_file);
+
+	error = unlink(mknod_file);
+	check_error(error, "unlink");
+
+	error = rmdir("mknod");
+	check_error(error, "rmdir");
+}
+
+char *statfs_dir = "statfs/a";
+
+void
+statfs_test()
+{
+	int error;
+	struct statfs stbuf;
+	struct statfs64 stbuf64;
+
+	error = mkdir("statfs", 0755);
+	check_error(error, "mkdir");
+
+	do_stats("statfs");
+
+	error = mkdir(statfs_dir, 0755);
+	check_error(error, "mkdir");
+
+	do_stats(statfs_dir);
+
+	error = statfs(statfs_dir, &stbuf);
+	check_error(error, "statfs");
+
+	error = statfs64(statfs_dir, &stbuf64);
+	check_error(error, "statfs64");
+
+	error = rmdir(statfs_dir);
+	check_error(error, "rmdir");
+
+	error = rmdir("statfs");
+	check_error(error, "rmdir");
+}
+
+char *truncate_file = "truncate/a";
+
+void
+truncate_test()
+{
+	int error;
+	int fd;
+
+	error = mkdir("truncate", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(truncate_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(truncate_file);
+
+	error = truncate(truncate_file, 1024);
+	check_error(error, "truncate");
+
+	do_stats(truncate_file);
+
+	error = unlink(truncate_file);
+	check_error(error, "unlink");
+
+	error = rmdir("truncate");
+	check_error(error, "rmdir");
+}
+
+char *xattr_file = "xattr/a";
+
+#define ACL_USER_OBJ	(0x01)
+#define ACL_USER	(0x02)
+#define ACL_GROUP_OBJ	(0x04)
+#define ACL_MASK	(0x10)
+#define ACL_OTHER	(0x20)
+
+struct posix_acl_xattr_entry {
+	unsigned short e_tag;
+	unsigned short e_perm;
+	unsigned int e_id;
+};
+
+#define POSIX_ACL_XATTR_VERSION	0x0002
+
+struct posix_acl_xattr_header {
+	unsigned int a_version;
+	struct posix_acl_xattr_entry a_entries[5];
+};
+
+void
+xattr_test()
+{
+	int error;
+	int fd;
+	char buf[1024];
+	struct posix_acl_xattr_header ents;
+
+	error = mkdir("xattr", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(xattr_file, O_CREAT | O_RDWR, 0444);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(xattr_file);
+
+	error = getxattr(xattr_file, "system.posix_acl_access", buf,
+			sizeof (buf));
+	check_error(error, "getxattr");
+	error = lgetxattr(xattr_file, "system.posix_acl_access", buf,
+			sizeof (buf));
+	check_error(error, "lgetxattr");
+
+	ents.a_version = POSIX_ACL_XATTR_VERSION;
+	ents.a_entries[0].e_tag = ACL_USER_OBJ;
+	ents.a_entries[0].e_perm = 06;
+	ents.a_entries[0].e_id = -1;
+	ents.a_entries[1].e_tag = ACL_USER;
+	ents.a_entries[1].e_perm = 06;
+	ents.a_entries[1].e_id = 10;
+	ents.a_entries[2].e_tag = ACL_GROUP_OBJ;
+	ents.a_entries[2].e_perm = 06;
+	ents.a_entries[2].e_id = -1;
+	ents.a_entries[3].e_tag = ACL_MASK;
+	ents.a_entries[3].e_perm = 06;
+	ents.a_entries[3].e_id = -1;
+	ents.a_entries[4].e_tag = ACL_OTHER;
+	ents.a_entries[4].e_perm = 06;
+	ents.a_entries[4].e_id = -1;
+
+	error = setxattr(xattr_file, "system.posix_acl_access",
+			&ents, sizeof (ents), 0);
+	check_error(error, "setxattr");
+
+	do_stats(xattr_file);
+
+	error = lsetxattr(xattr_file, "system.posix_acl_access",
+			&ents, sizeof (ents), 0);
+	check_error(error, "lsetxattr");
+
+	do_stats(xattr_file);
+
+	error = getxattr(xattr_file, "system.posix_acl_access", buf,
+			sizeof (buf));
+	check_error(error, "getxattr");
+	error = lgetxattr(xattr_file, "system.posix_acl_access", buf,
+			sizeof (buf));
+	check_error(error, "lgetxattr");
+
+	error = listxattr(xattr_file, buf, sizeof (buf));
+	check_error(error, "listxattr");
+	error = llistxattr(xattr_file, buf, sizeof (buf));
+	check_error(error, "llistxattr");
+
+	error = removexattr(xattr_file, "system.posix_acl_access");
+	check_error(error, "removexattr");
+
+	do_stats(xattr_file);
+
+	error = setxattr(xattr_file, "system.posix_acl_access",
+			&ents, sizeof (ents), 0);
+	check_error(error, "setxattr");
+
+	do_stats(xattr_file);
+
+	error = lremovexattr(xattr_file, "system.posix_acl_access");
+	check_error(error, "lremovexattr");
+
+	do_stats(xattr_file);
+
+	error = unlink(xattr_file);
+	check_error(error, "unlink");
+
+	error = rmdir("xattr");
+	check_error(error, "rmdir");
+}
+
+char *inotify_file = "inotify/a";
+
+void
+inotify_test()
+{
+	int error;
+	int fd;
+	int wd;
+
+	error = mkdir("inotify", 0755);
+	check_error(error, "mkdir");
+
+	fd = open(inotify_file, O_CREAT | O_RDWR, 0644);
+	check_error(fd, "open: O_CREAT");
+
+	(void) close(fd);
+
+	do_stats(inotify_file);
+
+	fd = inotify_init();
+	check_error(error, "inotify_init");
+
+	do_stats(inotify_file);
+
+	wd = inotify_add_watch(fd, inotify_file, IN_ALL_EVENTS);
+	check_error(wd, "inotify_add_watch");
+
+	do_stats(inotify_file);
+
+	error = inotify_rm_watch(fd, wd);
+	check_error(error, "inotify_rm_watch");
+
+	(void) close(fd);
+
+	do_stats(inotify_file);
+
+	error = unlink(inotify_file);
+	check_error(error, "unlink");
+
+	error = rmdir("inotify");
+	check_error(error, "rmdir");
+}
+
+--------------030304000004030600060205
+Content-Type: text/x-csrc;
+ name="exec_test.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="exec_test.c"
+
+#include <stdlib.h>
+
+main()
+{
+	exit(0);
+}
+
+--------------030304000004030600060205--
