@@ -1,219 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbYBASQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYBASQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbYBASQb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYBASQL
+	id S1758242AbYBASQn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbYBASQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:16:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45641 "EHLO mx1.redhat.com"
+	Fri, 1 Feb 2008 13:16:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45642 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753592AbYBASQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:16:08 -0500
-Message-ID: <47A36174.7040600@redhat.com>
-Date: Fri, 01 Feb 2008 19:14:12 +0100
+	id S1753813AbYBASQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 13:16:09 -0500
+Message-ID: <47A36178.1000607@redhat.com>
+Date: Fri, 01 Feb 2008 19:14:16 +0100
 From: Jerome Marchand <jmarchan@redhat.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: axboe@kernel.dk, "Ed L. Cashin" <ecashin@coraid.com>
-Subject: [Patch 1/6] Enhanced partition statistics: core statistics
+Subject: [Patch 2/6] Enhanced partition statistics: update partition statitics
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contain the core infrastructure of enhanced partition
-statistics. It adds to struct hd_struct the same stats data as struct
-gendisk and define basics function to manipulate them.
+Updates the enhanced partition statistics in generic block layer
+besides the disk statistics.
 
 Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
 ---
- include/linux/genhd.h |  132 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 131 insertions(+), 1 deletion(-)
-diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/include/linux/genhd.h linux-2.6/include/linux/genhd.h
---- linux-2.6.orig/include/linux/genhd.h	2008-01-31 16:43:28.000000000 +0100
-+++ linux-2.6/include/linux/genhd.h	2008-01-31 16:47:12.000000000 +0100
-@@ -101,6 +101,13 @@ struct hd_struct {
- #ifdef CONFIG_FAIL_MAKE_REQUEST
- 	int make_it_fail;
- #endif
-+	unsigned long stamp;
-+	int in_flight;
-+#ifdef	CONFIG_SMP
-+	struct disk_stats *dkstats;
-+#else
-+	struct disk_stats dkstats;
-+#endif
- };
+ block/blk-core.c      |   34 ++++++++++++++++++++++++++++++----
+ block/blk-merge.c     |    6 ++++++
+ fs/partitions/check.c |    7 +++++++
+ include/linux/genhd.h |    1 +
+ 4 files changed, 44 insertions(+), 4 deletions(-)
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/block/blk-core.c linux-2.6/block/blk-core.c
+--- linux-2.6.orig/block/blk-core.c	2008-01-31 16:44:09.000000000 +0100
++++ linux-2.6/block/blk-core.c	2008-01-31 17:31:26.000000000 +0100
+@@ -59,10 +59,15 @@ static void drive_stat_acct(struct reque
+ 		return;
  
- #define GENHD_FL_REMOVABLE			1
-@@ -158,6 +165,20 @@ struct gendisk {
-  * The __ variants should only be called in critical sections. The full
-  * variants disable/enable preemption.
-  */
-+static inline struct hd_struct *get_part(struct gendisk *gendiskp,
-+					 sector_t sector)
+ 	if (!new_io) {
+-		__disk_stat_inc(rq->rq_disk, merges[rw]);
++		__all_stat_inc(rq->rq_disk, merges[rw], rq->sector);
+ 	} else {
++		struct hd_struct *part = get_part(rq->rq_disk, rq->sector);
+ 		disk_round_stats(rq->rq_disk);
+ 		rq->rq_disk->in_flight++;
++		if (part) {
++			part_round_stats(part);
++			part->in_flight++;
++		}
+ 	}
+ }
+ 
+@@ -990,6 +995,21 @@ void disk_round_stats(struct gendisk *di
+ 
+ EXPORT_SYMBOL_GPL(disk_round_stats);
+ 
++void part_round_stats(struct hd_struct *part)
 +{
-+	struct hd_struct *part;
-+	int i;
-+	for (i = 0; i < gendiskp->minors - 1; i++) {
-+		part = gendiskp->part[i];
-+		if (part && part->start_sect <= sector
-+		    && sector < part->start_sect + part->nr_sects)
-+			return part;
++	unsigned long now = jiffies;
++
++	if (now == part->stamp)
++		return;
++
++	if (part->in_flight) {
++		__part_stat_add(part, time_in_queue,
++				part->in_flight * (now - part->stamp));
++		__part_stat_add(part, io_ticks, (now - part->stamp));
 +	}
-+	return NULL;
++	part->stamp = now;
 +}
 +
- #ifdef	CONFIG_SMP
- #define __disk_stat_add(gendiskp, field, addnd) 	\
- 	(per_cpu_ptr(gendiskp->dkstats, smp_processor_id())->field += addnd)
-@@ -177,15 +198,62 @@ static inline void disk_stat_set_all(str
- 		memset(per_cpu_ptr(gendiskp->dkstats, i), value,
- 				sizeof (struct disk_stats));
- }		
-+
-+#define __part_stat_add(part, field, addnd)				\
-+	(per_cpu_ptr(part->dkstats, smp_processor_id())->field += addnd)
-+
-+#define __all_stat_add(gendiskp, field, addnd, sector)		\
-+({								\
-+	struct hd_struct *part = get_part(gendiskp, sector);	\
-+	if (part)						\
-+		__part_stat_add(part, field, addnd);		\
-+	__disk_stat_add(gendiskp, field, addnd);		\
-+})
-+
-+#define part_stat_read(part, field)					\
-+({									\
-+	typeof(part->dkstats->field) res = 0;				\
-+	int i;								\
-+	for_each_possible_cpu(i)					\
-+		res += per_cpu_ptr(part->dkstats, i)->field;		\
-+	res;								\
-+})
-+
-+static inline void part_stat_set_all(struct hd_struct *part, int value)	{
-+	int i;
-+	for_each_possible_cpu(i)
-+		memset(per_cpu_ptr(part->dkstats, i), value,
-+		       sizeof(struct disk_stats));
-+}
- 				
- #else
- #define __disk_stat_add(gendiskp, field, addnd) \
- 				(gendiskp->dkstats.field += addnd)
- #define disk_stat_read(gendiskp, field)	(gendiskp->dkstats.field)
+ /*
+  * queue lock must be held
+  */
+@@ -1528,7 +1548,8 @@ static int __end_that_request_first(stru
+ 	if (blk_fs_request(req) && req->rq_disk) {
+ 		const int rw = rq_data_dir(req);
  
--static inline void disk_stat_set_all(struct gendisk *gendiskp, int value)	{
-+static inline void disk_stat_set_all(struct gendisk *gendiskp, int value)
-+{
- 	memset(&gendiskp->dkstats, value, sizeof (struct disk_stats));
- }
-+
-+#define __part_stat_add(part, field, addnd) \
-+	(part->dkstats.field += addnd)
-+
-+#define __all_stat_add(gendiskp, field, addnd, sector)		\
-+({								\
-+	struct hd_struct *part = get_part(gendiskp, sector);	\
-+	if (part)						\
-+		part->dkstats.field += addnd;			\
-+	__disk_stat_add(gendiskp, field, addnd);		\
-+})
-+
-+#define part_stat_read(part, field)	(part->dkstats.field)
-+
-+static inline void part_stat_set_all(struct hd_struct *part, int value)
-+{
-+	memset(&part->dkstats, value, sizeof(struct disk_stats));
-+}
-+
- #endif
+-		disk_stat_add(req->rq_disk, sectors[rw], nr_bytes >> 9);
++		all_stat_add(req->rq_disk, sectors[rw],
++			     nr_bytes >> 9, req->sector);
+ 	}
  
- #define disk_stat_add(gendiskp, field, addnd)			\
-@@ -206,6 +274,45 @@ static inline void disk_stat_set_all(str
- #define disk_stat_sub(gendiskp, field, subnd) \
- 		disk_stat_add(gendiskp, field, -subnd)
+ 	total_bytes = bio_nbytes = 0;
+@@ -1712,11 +1733,16 @@ static void end_that_request_last(struct
+ 	if (disk && blk_fs_request(req) && req != &req->q->bar_rq) {
+ 		unsigned long duration = jiffies - req->start_time;
+ 		const int rw = rq_data_dir(req);
++		struct hd_struct *part = get_part(disk, req->sector);
  
-+#define part_stat_add(gendiskp, field, addnd)		\
-+	do {						\
-+		preempt_disable();			\
-+		__part_stat_add(gendiskp, field, addnd);\
-+		preempt_enable();			\
-+	} while (0)
-+
-+#define __part_stat_dec(gendiskp, field) __part_stat_add(gendiskp, field, -1)
-+#define part_stat_dec(gendiskp, field) part_stat_add(gendiskp, field, -1)
-+
-+#define __part_stat_inc(gendiskp, field) __part_stat_add(gendiskp, field, 1)
-+#define part_stat_inc(gendiskp, field) part_stat_add(gendiskp, field, 1)
-+
-+#define __part_stat_sub(gendiskp, field, subnd) \
-+		__part_stat_add(gendiskp, field, -subnd)
-+#define part_stat_sub(gendiskp, field, subnd) \
-+		part_stat_add(gendiskp, field, -subnd)
-+
-+#define all_stat_add(gendiskp, field, addnd, sector)		\
-+	do {							\
-+		preempt_disable();				\
-+		__all_stat_add(gendiskp, field, addnd, sector);	\
-+		preempt_enable();				\
-+	} while (0)
-+
-+#define __all_stat_dec(gendiskp, field, sector) \
-+		__all_stat_add(gendiskp, field, -1, sector)
-+#define all_stat_dec(gendiskp, field, sector) \
-+		all_stat_add(gendiskp, field, -1, sector)
-+
-+#define __all_stat_inc(gendiskp, field, sector) \
-+		__all_stat_add(gendiskp, field, 1, sector)
-+#define all_stat_inc(gendiskp, field, sector) \
-+		all_stat_add(gendiskp, field, 1, sector)
-+
-+#define __all_stat_sub(gendiskp, field, subnd, sector) \
-+		__all_stat_add(gendiskp, field, -subnd, sector)
-+#define all_stat_sub(gendiskp, field, subnd, sector) \
-+		all_stat_add(gendiskp, field, -subnd, sector)
+-		__disk_stat_inc(disk, ios[rw]);
+-		__disk_stat_add(disk, ticks[rw], duration);
++		__all_stat_inc(disk, ios[rw], req->sector);
++		__all_stat_add(disk, ticks[rw], duration, req->sector);
+ 		disk_round_stats(disk);
+ 		disk->in_flight--;
++		if (part) {
++			part_round_stats(part);
++			part->in_flight--;
++		}
+ 	}
  
- /* Inlines to alloc and free disk stats in struct gendisk */
- #ifdef  CONFIG_SMP
-@@ -221,6 +328,20 @@ static inline void free_disk_stats(struc
+ 	if (req->end_io)
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/block/blk-merge.c linux-2.6/block/blk-merge.c
+--- linux-2.6.orig/block/blk-merge.c	2008-01-31 16:44:09.000000000 +0100
++++ linux-2.6/block/blk-merge.c	2008-01-31 17:36:44.000000000 +0100
+@@ -454,8 +454,14 @@ static int attempt_merge(struct request_
+ 	elv_merge_requests(q, req, next);
+ 
+ 	if (req->rq_disk) {
++		struct hd_struct *part
++			= get_part(req->rq_disk, req->sector);
+ 		disk_round_stats(req->rq_disk);
+ 		req->rq_disk->in_flight--;
++		if (part) {
++			part_round_stats(part);
++			part->in_flight--;
++		}
+ 	}
+ 
+ 	req->ioprio = ioprio_best(req->ioprio, next->ioprio);
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/fs/partitions/check.c linux-2.6/fs/partitions/check.c
+--- linux-2.6.orig/fs/partitions/check.c	2008-01-31 16:42:56.000000000 +0100
++++ linux-2.6/fs/partitions/check.c	2008-01-31 17:31:26.000000000 +0100
+@@ -18,6 +18,7 @@
+ #include <linux/fs.h>
+ #include <linux/kmod.h>
+ #include <linux/ctype.h>
++#include <linux/genhd.h>
+ 
+ #include "check.h"
+ 
+@@ -273,6 +274,7 @@ static struct attribute_group *part_attr
+ static void part_release(struct device *dev)
  {
- 	free_percpu(disk->dkstats);
+ 	struct hd_struct *p = dev_to_part(dev);
++	free_part_stats(p);
+ 	kfree(p);
  }
-+
-+static inline int init_part_stats(struct hd_struct *part)
-+{
-+	part->dkstats = alloc_percpu(struct disk_stats);
-+	if (!part->dkstats)
-+		return 0;
-+	return 1;
-+}
-+
-+static inline void free_part_stats(struct hd_struct *part)
-+{
-+	free_percpu(part->dkstats);
-+}
-+
- #else	/* CONFIG_SMP */
- static inline int init_disk_stats(struct gendisk *disk)
- {
-@@ -230,6 +351,15 @@ static inline int init_disk_stats(struct
- static inline void free_disk_stats(struct gendisk *disk)
- {
- }
-+
-+static inline int init_part_stats(struct hd_struct *part)
-+{
-+	return 1;
-+}
-+
-+static inline void free_part_stats(struct hd_struct *part)
-+{
-+}
- #endif	/* CONFIG_SMP */
+ 
+@@ -314,6 +316,7 @@ void delete_partition(struct gendisk *di
+ 	p->nr_sects = 0;
+ 	p->ios[0] = p->ios[1] = 0;
+ 	p->sectors[0] = p->sectors[1] = 0;
++	part_stat_set_all(p, 0);
+ 	kobject_put(p->holder_dir);
+ 	device_del(&p->dev);
+ 	put_device(&p->dev);
+@@ -328,6 +331,10 @@ void add_partition(struct gendisk *disk,
+ 	if (!p)
+ 		return;
+ 
++	if (!init_part_stats(p)) {
++		kfree(p);
++		return;
++	}
+ 	p->start_sect = start;
+ 	p->nr_sects = len;
+ 	p->partno = part;
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6.orig/include/linux/genhd.h linux-2.6/include/linux/genhd.h
+--- linux-2.6.orig/include/linux/genhd.h	2008-01-31 17:00:48.000000000 +0100
++++ linux-2.6/include/linux/genhd.h	2008-01-31 17:30:36.000000000 +0100
+@@ -364,6 +364,7 @@ static inline void free_part_stats(struc
  
  /* drivers/block/ll_rw_blk.c */
+ extern void disk_round_stats(struct gendisk *disk);
++extern void part_round_stats(struct hd_struct *part);
+ 
+ /* drivers/block/genhd.c */
+ extern int get_blkdev_list(char *, int);
 
