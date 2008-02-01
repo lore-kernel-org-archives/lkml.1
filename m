@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761921AbYBACL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbYBACXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761921AbYBACL7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 21:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYBACLt
+	id S1760395AbYBACXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 21:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYBACXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 21:11:49 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54979
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753960AbYBACLs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 21:11:48 -0500
-Date: Thu, 31 Jan 2008 18:12:09 -0800 (PST)
-Message-Id: <20080131.181209.193710785.davem@davemloft.net>
-To: davidn@davidnewall.com
-Cc: kaber@trash.net, kadlec@blackhole.kfki.hu, jeff.chua.linux@gmail.com,
-       linux-kernel@vger.kernel.org, ole@ans.pl, cups-bugs@easysw.com,
-       netfilter-devel@vger.kernel.org
-Subject: Re: cups slow on linux-2.6.24
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47A26C12.9020801@davidnewall.com>
-References: <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
-	<47A21945.2050005@trash.net>
-	<47A26C12.9020801@davidnewall.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Jan 2008 21:23:25 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:60443 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752434AbYBACXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 21:23:24 -0500
+Date: Thu, 31 Jan 2008 20:23:22 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080201022321.GZ26420@sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <20080131232842.GQ7185@v2.random> <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Newall <davidn@davidnewall.com>
-Date: Fri, 01 Feb 2008 11:17:14 +1030
-
-> Patrick McHardy wrote:
-> > Jozsef Kadlecsik wrote:
-> >> Strange, but there are a lot of incorrect checksum packets. How does
-> >> it come on the loopback interface?
-> >
-> > Loopback doesn't perform full checksumming, so thats expected.
+On Thu, Jan 31, 2008 at 05:37:21PM -0800, Christoph Lameter wrote:
+> On Fri, 1 Feb 2008, Andrea Arcangeli wrote:
 > 
-> The question remains: How do loopback packets get incorrect checksum? 
-> Where and how can they get corrupted?
+> > I appreciate the review! I hope my entirely bug free and
+> > strightforward #v5 will strongly increase the probability of getting
+> > this in sooner than later. If something else it shows the approach I
+> > prefer to cover GRU/KVM 100%, leaving the overkill mutex locking
+> > requirements only to the mmu notifier users that can't deal with the
+> > scalar and finegrined and already-taken/trashed PT lock.
+> 
+> Mutex locking? Could you be more specific?
 
-There are zeros there, which is an incorrect checksum most
-of the time.
+I think he is talking about the external locking that xpmem will need
+to do to ensure we are not able to refault pages inside of regions that
+are undergoing recall/page table clearing.  At least that has been my
+understanding to this point.
 
-Tcpdump is just not knowledgable about this and tries to
-validate the checksum as if it were computed correctly.
+Thanks,
+Robin
