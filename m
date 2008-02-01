@@ -1,145 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbYBAVLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbYBAVNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761549AbYBAVLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760352AbYBAVL2
+	id S1761236AbYBAVNI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 16:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYBAVM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 16:11:28 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:50560 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759286AbYBAVL1 (ORCPT
+	Fri, 1 Feb 2008 16:12:56 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:27390 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757600AbYBAVMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 16:11:27 -0500
-Date: Fri, 1 Feb 2008 22:11:25 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove old definition of setup_per_cpu_areas
-Message-ID: <20080201211125.GA31779@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20080201201615.GA29187@wavehammer.waldi.eu.org>
+	Fri, 1 Feb 2008 16:12:55 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=MoiKWSf19WbNMeqGdecCLwoIMxXbExczZ+TP+XH+xyz4JW9M6Lv2AVMFuGIt3XohFylpWeululv1tCpm2R62qnyN9yBLAQVX7fgjKj6ftDh7//hFqZxDWLGYTJBXQ4Kx5s0Uq2ey+O9gXs4uVA8TH/1zpdkDREtMJHwd5AWU4d4=  ;
+X-YMail-OSG: 6mwWQfgVM1lBsPytgj_Yk13WDY8.csinB9183Ver3E8lMYq.JUp4ZcSSs7d41d97ck_i9Mys_Q--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.24-git] spi: remove more dev->power.power_state usage
+Date: Fri, 1 Feb 2008 13:03:15 -0800
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080201201615.GA29187@wavehammer.waldi.eu.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200802011303.15859.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01, 2008 at 09:16:15PM +0100, Bastian Blank wrote:
-> Remove old definition of setup_per_cpu_areas.
+Remove some more references to dev->power.power_state.  That field
+is overdue for removal, but we can't do that while it's still
+referenced in the kernel.  The only reason to update it was to make
+the /sys/devices/.../power/state files (now removed) work better.
 
-This was completely wrong. Lets try it again.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/spi/pxa2xx_spi.c |   17 -----------------
+ drivers/spi/spi_imx.c    |   11 -----------
+ 2 files changed, 28 deletions(-)
 
-Adopt x86 percpu changes for powerpc and ia64.
-
-dd5af90a7f3d79e04b7eace9a98644dbf2038f4d replaced the config variable
-ARCH_SETS_UP_PER_CPU_AREA with HAVE_SETUP_PER_CPU_AREA and moved
-percpu_modcopy into kernel/module.c.
-
-Do the same for ia64 and powerpc.
-
-| init/main.c:376: error: static declaration of ‘setup_per_cpu_areas’ follows non-static declaration
-| include/asm/percpu.h:33: error: previous declaration of ‘setup_per_cpu_areas’ was here
-
-Signed-off-by: Bastian Blank <waldi@debian.org>
-
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 5a41e75..c9307c9 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -80,7 +80,7 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default y
- 
--config ARCH_SETS_UP_PER_CPU_AREA
-+config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
- config DMI
-diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
-index e699eb6..bbcdcfd 100644
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -941,13 +941,3 @@ module_arch_cleanup (struct module *mod)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
+--- at91.orig/drivers/spi/pxa2xx_spi.c	2008-02-01 12:27:39.000000000 -0800
++++ at91/drivers/spi/pxa2xx_spi.c	2008-02-01 12:28:11.000000000 -0800
+@@ -1526,17 +1526,6 @@ static void pxa2xx_spi_shutdown(struct p
  }
  
--#ifdef CONFIG_SMP
--void
--percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
+ #ifdef CONFIG_PM
+-static int suspend_devices(struct device *dev, void *pm_message)
 -{
--	unsigned int i;
--	for_each_possible_cpu(i) {
--		memcpy(pcpudst + per_cpu_offset(i), src, size);
--	}
--}
--#endif /* CONFIG_SMP */
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fb85f6b..bb16443 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -42,7 +42,7 @@ config GENERIC_HARDIRQS
- 	bool
- 	default y
- 
--config ARCH_SETS_UP_PER_CPU_AREA
-+config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
- config IRQ_PER_CPU
-diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
-index 26f5791..73fc05d 100644
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -66,7 +66,7 @@ config AUDIT_ARCH
- 	bool
- 	default y
- 
--config ARCH_SETS_UP_PER_CPU_AREA
-+config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
- config ARCH_NO_VIRT_TO_BUS
-diff --git a/include/asm-ia64/percpu.h b/include/asm-ia64/percpu.h
-index 0095bcf..a4af49f 100644
---- a/include/asm-ia64/percpu.h
-+++ b/include/asm-ia64/percpu.h
-@@ -38,8 +38,9 @@ DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
- #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
- #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
- 
--extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
-+#ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
- extern void setup_per_cpu_areas (void);
-+#endif
- extern void *per_cpu_init(void);
- 
- #else /* ! SMP */
-diff --git a/include/asm-powerpc/percpu.h b/include/asm-powerpc/percpu.h
-index cc1cbf6..ea8cbb7 100644
---- a/include/asm-powerpc/percpu.h
-+++ b/include/asm-powerpc/percpu.h
-@@ -21,16 +21,9 @@
- #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
- #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
- 
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset(__i),		\
--		       (src), (size));				\
--} while (0)
+-	pm_message_t *state = pm_message;
 -
-+#ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
- extern void setup_per_cpu_areas(void);
-+#endif
+-	if (dev->power.power_state.event != state->event) {
+-		dev_warn(dev, "pm state does not match request\n");
+-		return -1;
+-	}
+-
+-	return 0;
+-}
  
- #else /* ! SMP */
+ static int pxa2xx_spi_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+@@ -1544,12 +1533,6 @@ static int pxa2xx_spi_suspend(struct pla
+ 	struct ssp_device *ssp = drv_data->ssp;
+ 	int status = 0;
  
+-	/* Check all childern for current power state */
+-	if (device_for_each_child(&pdev->dev, &state, suspend_devices) != 0) {
+-		dev_warn(&pdev->dev, "suspend aborted\n");
+-		return -1;
+-	}
+-
+ 	status = stop_queue(drv_data);
+ 	if (status != 0)
+ 		return status;
+--- at91.orig/drivers/spi/spi_imx.c	2008-02-01 12:27:39.000000000 -0800
++++ at91/drivers/spi/spi_imx.c	2008-02-01 12:28:30.000000000 -0800
+@@ -1686,17 +1686,6 @@ static void spi_imx_shutdown(struct plat
+ }
+ 
+ #ifdef CONFIG_PM
+-static int suspend_devices(struct device *dev, void *pm_message)
+-{
+-	pm_message_t *state = pm_message;
+-
+-	if (dev->power.power_state.event != state->event) {
+-		dev_warn(dev, "pm state does not match request\n");
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+ 
+ static int spi_imx_suspend(struct platform_device *pdev, pm_message_t state)
+ {
