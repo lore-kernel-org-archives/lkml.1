@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762914AbYBAJ6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763692AbYBAJ6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762914AbYBAJ6T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759331AbYBAJyQ
+	id S1763692AbYBAJ6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbYBAJzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:54:16 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:41860 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759295AbYBAJyP (ORCPT
+	Fri, 1 Feb 2008 04:55:18 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:49686 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758263AbYBAJzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:54:15 -0500
-Subject: Re: x86 arch updates also broke s390
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Nick Piggin <npiggin@suse.de>, heiko.carstens@de.ibm.com,
-       linux390@de.ibm.com
-In-Reply-To: <20080201094839.GA29836@elte.hu>
-References: <20080130011550.GA31853@elte.hu>
-	 <20080131003310.GW29368@does.not.exist>
-	 <1201772094.18221.32.camel@localhost>  <20080201094839.GA29836@elte.hu>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 01 Feb 2008 10:54:13 +0100
-Message-Id: <1201859653.27899.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 04:55:15 -0500
+From: Andi Kleen <ak@suse.de>
+Message-Id: <200802011055.370582801@suse.de>
+To: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/3] CPA: Don't flush caches on CPUs that support self-snoop
+Date: Fri,  1 Feb 2008 10:55:13 +0100 (CET)
+X-OriginalArrivalTime: 01 Feb 2008 09:48:55.0907 (UTC) FILETIME=[A91C8330:01C864B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-01 at 10:48 +0100, Ingo Molnar wrote:
-> > Defining GENERIC_LOCKBREAK in arch/s390/Kconfig takes care of it.
-> I'll 
-> > cook up a patch and queue it in git390.
-> 
-> the one below should do the trick.
 
-Thanks but I already queued a different one (see below). The other
-architectures that define GENERIC_LOCKBREAK have the "depends on SMP &&
-PREEMPT" line as well. The line does make sense if you look at the way
-how spin_is_contended is used, no ?
+The specification of SS in the public manuals is a little unclear,
+but I got confirmation from Intel that SS implies that there is no cache
+flush needed on caching attribute changes.
 
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
-Subject: [PATCH] Define GENERIC_LOCKBREAK.
+ arch/x86/mm/pageattr.c       |    5 ++++-
+ include/asm-x86/cpufeature.h |    1 +
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-Fix compile error:
-
-  CC      arch/s390/kernel/asm-offsets.s
-In file included from 
-arch/s390/kernel/asm-offsets.c:7:
-include/linux/sched.h: In function 'spin_needbreak':
-include/linux/sched.h:1931: error: implicit declaration of function
-'__raw_spin_is_contended'
-make[2]: *** [arch/s390/kernel/asm-offsets.s] Error 1
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/Kconfig |    5 +++++
- 1 file changed, 5 insertions(+)
-
-diff -urpN linux-2.6/arch/s390/Kconfig
-linux-2.6-patched/arch/s390/Kconfig
---- linux-2.6/arch/s390/Kconfig	2008-01-31 13:57:33.000000000 +0100
-+++ linux-2.6-patched/arch/s390/Kconfig	2008-01-31 13:57:42.000000000
-+0100
-@@ -47,6 +47,11 @@ config NO_IOMEM
- config NO_DMA
- 	def_bool y
+Index: linux/arch/x86/mm/pageattr.c
+===================================================================
+--- linux.orig/arch/x86/mm/pageattr.c
++++ linux/arch/x86/mm/pageattr.c
+@@ -60,7 +60,7 @@ static void __cpa_flush_all(void *arg)
+ 	 */
+ 	__flush_tlb_all();
  
-+config GENERIC_LOCKBREAK
-+	bool
-+	default y
-+	depends on SMP && PREEMPT
+-	if (boot_cpu_data.x86_model >= 4)
++	if (!cpu_has_ss && boot_cpu_data.x86_model >= 4)
+ 		wbinvd();
+ }
+ 
+@@ -91,6 +91,9 @@ static void cpa_flush_range(unsigned lon
+ 
+ 	on_each_cpu(__cpa_flush_range, NULL, 1, 1);
+ 
++	if (cpu_has_ss)
++		return;
 +
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-
-
+ 	/*
+ 	 * We only need to flush on one CPU,
+ 	 * clflush is a MESI-coherent instruction that
+Index: linux/include/asm-x86/cpufeature.h
+===================================================================
+--- linux.orig/include/asm-x86/cpufeature.h
++++ linux/include/asm-x86/cpufeature.h
+@@ -153,6 +153,7 @@
+ #define cpu_has_mtrr		boot_cpu_has(X86_FEATURE_MTRR)
+ #define cpu_has_mmx		boot_cpu_has(X86_FEATURE_MMX)
+ #define cpu_has_fxsr		boot_cpu_has(X86_FEATURE_FXSR)
++#define cpu_has_ss		boot_cpu_has(X86_FEATURE_SELFSNOOP)
+ #define cpu_has_xmm		boot_cpu_has(X86_FEATURE_XMM)
+ #define cpu_has_xmm2		boot_cpu_has(X86_FEATURE_XMM2)
+ #define cpu_has_xmm3		boot_cpu_has(X86_FEATURE_XMM3)
