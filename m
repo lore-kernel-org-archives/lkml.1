@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbYBAQgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYBAQh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759124AbYBAQgi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 11:36:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYBAQgX
+	id S1759243AbYBAQh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 11:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbYBAQhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 11:36:23 -0500
-Received: from gw.goop.org ([64.81.55.164]:44185 "EHLO mail.goop.org"
+	Fri, 1 Feb 2008 11:37:18 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52450 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756736AbYBAQgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 11:36:23 -0500
-Message-ID: <47A34A61.80000@goop.org>
-Date: Fri, 01 Feb 2008 08:35:45 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
-Subject: Re: [PATCH 0 of 4] x86: cleanups from pmd lifetime series
-References: <patchbomb.1201564120@localhost> <20080201162656.GE15156@elte.hu>
-In-Reply-To: <20080201162656.GE15156@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754845AbYBAQhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 11:37:16 -0500
+Date: Fri, 1 Feb 2008 17:37:18 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Avoid section mismatch involving arch_register_cpu
+Message-ID: <20080201163718.GD13992@uranus.ravnborg.org>
+References: <20080201145649.GA12318@mailshack.com> <20080201150312.GB13992@uranus.ravnborg.org> <1201879272.2433.1234541483@webmail.messagingengine.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201879272.2433.1234541483@webmail.messagingengine.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> FYI, only this one applied to the latest x86.git tree, could you please 
-> resend? I guess the pgalloc.h related revert interfered.
->   
+On Fri, Feb 01, 2008 at 04:21:12PM +0100, Alexander van Heukelum wrote:
+> 
+> On Fri, 1 Feb 2008 16:03:12 +0100, "Sam Ravnborg" <sam@ravnborg.org>
+> said:
+> > Hi Alexander.
+> > 
+> > See below for my take on the same warning.
+> > It is already in x86.git pending merge.
+> 
+> Hi!
+> 
+> The patch you forwarded is in Linus' tree already. It only
+> changed one warning into another one, however. My guess is
+> that you did not see the new warning due to inlining, but I
+> compiled with CONFIG_CC_OPTIMIZE_FOR_SIZE=y.
 
-OK.  I'll do a quick rebase to this morning's tree and resend.
+You are right - now I actually looked at your patch.
 
-    J
+	Sam
