@@ -1,75 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761032AbYBADxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763212AbYBADxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761032AbYBADxB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 22:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYBADww
+	id S1763212AbYBADxm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 22:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBADxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 22:52:52 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:51371 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753176AbYBADwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 22:52:51 -0500
-Date: Thu, 31 Jan 2008 21:52:49 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 1/3] mmu_notifier: Core code
-Message-ID: <20080201035249.GE26420@sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.553249048@sgi.com>
+	Thu, 31 Jan 2008 22:53:34 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:32916 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753344AbYBADxc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 22:53:32 -0500
+Date: Fri, 1 Feb 2008 09:23:25 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, Ingo Molnar <mingo@elte.hu>, menage@google.com,
+       containers@lists.osdl.org, Balbir Singh <balbir@in.ibm.com>, pj@sgi.com
+Subject: Re: [RFC] Default child of a cgroup
+Message-ID: <20080201035325.GB12475@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080131024049.GA9544@linux.vnet.ibm.com> <47A20EC8.4050006@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131045812.553249048@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <47A20EC8.4050006@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: linux-2.6/include/linux/mmu_notifier.h
-...
-> +struct mmu_notifier_ops {
-...
-> +	/*
-> +	 * invalidate_range_begin() and invalidate_range_end() must paired.
-> +	 * Multiple invalidate_range_begin/ends may be nested or called
-> +	 * concurrently. That is legit. However, no new external references
-> +	 * may be established as long as any invalidate_xxx is running or
-> +	 * any invalidate_range_begin() and has not been completed through a
-> +	 * corresponding call to invalidate_range_end().
-> +	 *
-> +	 * Locking within the notifier needs to serialize events correspondingly.
-> +	 *
-> +	 * If all invalidate_xx notifier calls take a driver lock then it is possible
-> +	 * to run follow_page() under the same lock. The lock can then guarantee
-> +	 * that no page is removed. That way we can avoid increasing the refcount
-> +	 * of the pages.
-> +	 *
-> +	 * invalidate_range_begin() must clear all references in the range
-> +	 * and stop the establishment of new references.
-> +	 *
-> +	 * invalidate_range_end() reenables the establishment of references.
-> +	 *
-> +	 * atomic indicates that the function is called in an atomic context.
-> +	 * We can sleep if atomic == 0.
-> +	 */
-> +	void (*invalidate_range_begin)(struct mmu_notifier *mn,
-> +				 struct mm_struct *mm,
-> +				 unsigned long start, unsigned long end,
-> +				 int atomic);
-> +
-> +	void (*invalidate_range_end)(struct mmu_notifier *mn,
-> +				 struct mm_struct *mm, int atomic);
+On Thu, Jan 31, 2008 at 11:39:12PM +0530, Balbir Singh wrote:
+> Srivatsa Vaddagiri wrote:
+> > Hi,
+> > 	As we were implementing multiple-hierarchy support for CPU
+> > controller, we hit some oddities in its implementation, partly related
+> > to current cgroups implementation. Peter and I have been debating on the 
+> > exact solution and I thought of bringing that discussion to lkml.
+> > 
+> > Consider the cgroup filesystem structure for managing cpu resource.
+> > 
+> > 	# mount -t cgroup -ocpu,cpuacct none /cgroup
+> > 	# mkdir /cgroup/A
+> > 	# mkdir /cgroup/B
+> > 	# mkdir /cgroup/A/a1
+> > 
+> > will result in:
+> > 
+> > 	/cgroup
+> > 	   |------<tasks>
+> > 	   |------<cpuacct.usage>
+> >  	   |------<cpu.shares>
+> > 	   |
+> > 	   |----[A]
+> > 	   |     |----<tasks>
+> > 	   |     |----<cpuacct.usage>
+> > 	   |     |----<cpu.shares>
+> > 	   |     |
+> > 	   |     |---[a1]
+> > 	   |           |----<tasks>
+> > 	   |   	       |----<cpuacct.usage>
+> > 	   |           |----<cpu.shares>
+> > 	   |           |
+> > 	   |
+> > 	   |----[B]
+> > 	   |     |----<tasks>
+> > 	   |     |----<cpuacct.usage>
+> > 	   |     |----<cpu.shares>
+> > 	   |     
+> > 
+> > 
+> > Here are some questions that arise in this picture:
+> > 
+> > 1. What is the relationship of the task-group in A/tasks with the
+> >    task-group in A/a1/tasks? In otherwords do they form siblings
+> >    of the same parent A?
+> > 
+> 
+> I consider them to be the same relationship between directories and files.
+> A/tasks are siblings of A/a1 and A/other children, *but* the entities of
+> interest are A and A/a1.
+> 
+> > 2. Somewhat related to the above question, how much resource should the 
+> >    task-group A/a1/tasks get in relation to A/tasks? Is it 1/2 of parent
+> >    A's share or 1/(1 + N) of parent A's share (where N = number of tasks
+> >    in A/tasks)?
+> > 
+> 
+> I propose that it gets 1/2 of the bandwidth, here is why
+> 
+> 1. Assume that a task in A/tasks forks 1000 children, what happens to the
+> bandwidth of A/a1's tasks then? We have no control over how many tasks can be
+> created on A/tasks as a consequence of moving one task to A/tasks. Doing it the
+> other way would mean, that A/a1/tasks will get 1/1001 of the bandwidth (sounds
+> very unfair and prone to Denial of Service/Fairness)
+> 
+> 
+> > 3. What should A/cpuacct.usage reflect? CPU usage of A/tasks? Or CPU usage
+> >    of all siblings put together? It can reflect only one, in which case
+> >    user has to manually derive the other component of the statistics.
+> > 
+> 
+> It should reflect the accumulated usage of A's children and the tasks in A.
+> 
 
-I think we need to pass in the same start-end here as well.  Without it,
-the first invalidate_range would have to block faulting for all addresses
-and would need to remain blocked until the last invalidate_range has
-completed.  While this would work, (and will probably be how we implement
-it for the short term), it is far from ideal.
+I've been taking the root group as an example, and extending it. The
+root group does not reflect the usage of all the tasks in it. (IIRC,
+can't seem to find the stats file there now, please correct me if I am
+wrong)
+
+> > It seems to me that tasks in A/tasks form what can be called the
+> > "default" child group of A, in which case:
+> > 
+> > 4. Modifications to A/cpu.shares should affect the parent or its default
+> >    child group (A/tasks)?
+> > 
+> > To avoid these ambiguities, it may be good if cgroup create this
+> > "default child group" automatically whenever a cgroup is created?
+> > Something like below (not the absence of tasks file in some directories
+> > now):
+> > 
+> 
+> I think the concept makes sense, but creating a default child is going to be
+> confusing, as it is not really a child of A.
+> 
+
+For all practical purposes, it is the same as the init_task_group which
+is at the parent level.
+
+> > 
+> > 	/cgroup
+> > 	   |
+> > 	   |------<cpuacct.usage>
+> >  	   |------<cpu.shares>
+> > 	   |
+> >   	   |---[def_child]
+> > 	   |     |----<tasks>
+> > 	   |     |----<cpuacct.usage>
+> > 	   |     |----<cpu.shares>
+> > 	   |     |
+> > 	   |
+> > 	   |----[A]
+> > 	   |     |
+> > 	   |     |----<cpuacct.usage>
+> > 	   |     |----<cpu.shares>
+> > 	   |     |
+> > 	   |     |---[def_child]
+> > 	   |     |     |----<tasks>
+> > 	   |   	 |     |----<cpuacct.usage>
+> > 	   |     |     |----<cpu.shares>
+> > 	   |     |     |
+> > 	   |     | 
+> > 	   |     |---[a1]
+> > 	   |           |
+> > 	   |   	       |----<cpuacct.usage>
+> > 	   |           |----<cpu.shares>
+> > 	   |           |
+> > 	   | 	       |---[def_child]
+> > 	   |	       |       |---<tasks>
+> > 	   |	       |       |---<cpuacct.usage>
+> > 	   | 	       |       |---<cpu.shares>
+> > 	   |	       |       |
+> > 	   |
+> > 	   |----[B]
+> > 	   |     |
+> > 	   |     |----<cpuacct.usage>
+> > 	   |     |----<cpu.shares>
+> > 	   |     | 
+> > 	   |     |---[def_child]
+> > 	   |     |     |----<tasks>
+> > 	   |   	 |     |----<cpuacct.usage>
+> > 	   |     |     |----<cpu.shares>
+> > 	   |     |     |
+> > 
+> > Note that user cannot create subdirectories under def_child with this
+> > scheme! I am also not sure what impact this will have on other resources
+> > like cpusets ..
+> > 
+> 
+> Which means we'll need special logic in the cgroup filesystem to handle
+> def_child. Not a very good idea.
+> 
+
+Not really. That issue would come into play if every task group was
+assigned a control group. The task group is not exposed to the outside
+world. (That's why its a hidden task group)
 
 Thanks,
-Robin
+-- 
+regards,
+Dhaval
