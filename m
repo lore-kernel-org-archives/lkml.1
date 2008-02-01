@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbYBAIJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYBAILh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbYBAIJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 03:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYBAIJP
+	id S1754831AbYBAILh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 03:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYBAIL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 03:09:15 -0500
-Received: from ns.suse.de ([195.135.220.2]:36621 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbYBAIJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 03:09:14 -0500
-From: Frank Seidel <fseidel@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH v2 0/3] nozomi: driver updates to current git tree
-Date: Fri, 1 Feb 2008 09:09:11 +0100
-User-Agent: KMail/1.9.5
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>, jirislaby@gmail.com,
+	Fri, 1 Feb 2008 03:11:28 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:32521 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbYBAIL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 03:11:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k526FwZRloW9EWfJPPXDBfU2/JqnDtR5Sx605KMJHST1bJOu5HPS7Gqv7mlrwLQEDHik1CiEIqawIbVPp2G2QxjIPGa/aFv5RhxM/sAdGQx17sL9kbdY18wtYJbShIwvjaGPxot3bb2DIEIJ638ytTqavSO4eOFZ4ZUQhYTZacE=
+Message-ID: <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
+Date: Fri, 1 Feb 2008 09:11:24 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Cc: "FUJITA Tomonori" <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp,
+       rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-References: <200801312210.30722.fseidel@suse.de> <20080201072815.GA5345@uranus.ravnborg.org> <200802010859.14583.fseidel@suse.de>
-In-Reply-To: <200802010859.14583.fseidel@suse.de>
-Organization: SuSE Linux Products GmbH
+In-Reply-To: <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802010909.11634.fseidel@suse.de>
+References: <adazluoe2t3.fsf@cisco.com>
+	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+	 <20080130195635T.tomof@acm.org>
+	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanups and constification of nozomi driver
+On Jan 31, 2008 2:25 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+>
+> The PyX storage engine supports a scatterlist linked list algorithm that
+> ...
 
-Mostly trivial cleanups and updates and constification
-and annotations of vars.
-Patches are based on current linus git tree (while
-[PATCH v2 1/3] is already in Gregs gregkh-2.6 tree).
+Which parts of the PyX source code are licensed under the GPL and
+which parts are closed source ? A Google query for PyX + iSCSI showed
+information about licensing deals. Licensing deals can only be closed
+for software that is not entirely licensed under the GPL.
 
-Signed-off-by: Frank Seidel <fseidel@suse.de>
-
- nozomi.c |  174 ++++++++++++++++++++++-----------------------------------------
- 1 file changed, 61 insertions(+), 113 deletions(-)
+Bart Van Assche.
