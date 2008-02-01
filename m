@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764063AbYBAMNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765150AbYBAMN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764063AbYBAMNh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:13:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758781AbYBAMN3
+	id S1765150AbYBAMN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763692AbYBAMNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:13:29 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56921 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758743AbYBAMN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:13:29 -0500
-Date: Fri, 1 Feb 2008 13:13:31 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: torvalds@linux-foundation.org, gerg@uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [M68KNOMMU]: platform setup for 520x ColdFire parts
-Message-ID: <20080201121331.GA12815@uranus.ravnborg.org>
-References: <200802010734.m117YAx4022578@goober> <20080201084817.GB10969@uranus.ravnborg.org> <47A30604.6070602@snapgear.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A30604.6070602@snapgear.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 1 Feb 2008 07:13:48 -0500
+Received: from mail-relay-02.mailcluster.net ([77.221.130.214]:44454 "EHLO
+	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758781AbYBAMNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:13:47 -0500
+Message-ID: <47A3078C.10704@vlnb.net>
+Date: Fri, 01 Feb 2008 14:50:36 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
+MIME-Version: 1.0
+To: David Dillow <dillowda@ornl.gov>
+CC: Bart Van Assche <bart.vanassche@gmail.com>,
+       landman@scalableinformatics.com, James.Bottomley@hansenpartnership.com,
+       linux-scsi@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       fujita.tomonori@lab.ntt.co.jp, scst-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
+       torvalds@linux-foundation.org
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+References: <adazluoe2t3.fsf@cisco.com> <20080130083239E.fujita.tomonori@lab.ntt.co.jp> <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com> <20080130195635T.tomof@acm.org> <1201785938.7280.105.camel@haakon2.linux-iscsi.org> <e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com> <47A1EE54.6000005@vlnb.net> <47A1F67C.4020300@scalableinformatics.com> <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com> <1201803135.21160.8.camel@lap75545.ornl.gov>
+In-Reply-To: <1201803135.21160.8.camel@lap75545.ornl.gov>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01, 2008 at 09:44:04PM +1000, Greg Ungerer wrote:
+David Dillow wrote:
+> On Thu, 2008-01-31 at 18:08 +0100, Bart Van Assche wrote:
 > 
-> Hi Sam,
+>>If anyone has a suggestion for a better test than dd to compare the
+>>performance of SCSI storage protocols, please let it know.
 > 
-> Sam Ravnborg wrote:
-> >On Fri, Feb 01, 2008 at 05:34:10PM +1000, Greg Ungerer wrote:
-> >>Switch to platform style configuration for 520x ColdFire parts.
-> >>Initial support is for the UARTs. DMA support moved to common code
-> >>for all ColdFire parts.
-> >>
-> >>+static struct mcf_platform_uart m520x_uart_platform[] = {
-> >>+	{
-> >>+		.mapbase	= MCF_MBAR + MCFUART_BASE1,
-> >>+		.irq		= MCFINT_VECBASE + MCFINT_UART0,
-> >>+	},
-> >>+	{
-> >>+		.mapbase 	= MCF_MBAR + MCFUART_BASE2,
-> >>+		.irq		= MCFINT_VECBASE + MCFINT_UART1,
-> >>+	},
-> >>+	{
-> >>+		.mapbase 	= MCF_MBAR + MCFUART_BASE3,
-> >>+		.irq		= MCFINT_VECBASE + MCFINT_UART2,
-> >>+	},
-> >>+	{ },
-> >>+};
-> >const?
-> >Same comments for the rest of the patch and the other similar patches.
-> >
-> >Note: Use __initdataconst for const data as replacement for __initdata.
 > 
-> I am confused, __initdataconst?
+> xdd on /dev/sda, sdb, etc. using -dio to do direct IO seems to work
+> decently, though it is hard (ie, impossible) to get a repeatable
+> sequence of IO when using higher queue depths, as it uses threads to
+> generate multiple requests.
 
-Newly introduced...
-We only had __*initdata before and therefore we could not
-annotate both non-const and const data in a mix - gcc would barf out.
+This utility seems to be a good one, but it's basically the same as 
+disktest, although much more advanced.
 
-So we added a new member of the set of annotations:
-__initconst used to annotate const data.
-[I see - I had a spelling error above - I guess that why I confused you]
+> You may also look at sgpdd_survey from Lustre's iokit, but I've not done
+> much with that -- it uses the sg devices to send lowlevel SCSI commands.
 
-	Sam
+Yes, it might be worth to try. Since fundamentally it's the same as 
+O_DIRECT dd, but with a bit less overhead on the initiator side (hence 
+less initiator side latency), most likely it will show ever bigger 
+difference, than it is with dd.
+
+> I've been playing around with some benchmark code using libaio, but it's
+> not in generally usable shape.
+> 
+> xdd:
+> http://www.ioperformance.com/products.htm
+> 
+> Lustre IO Kit:
+> http://manual.lustre.org/manual/LustreManual16_HTML/DynamicHTML-20-1.html
+
