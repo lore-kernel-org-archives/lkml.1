@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbYBAMLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765526AbYBAMLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbYBAMLA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764482AbYBAMK2
+	id S1765526AbYBAMLZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764512AbYBAMKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:10:28 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:55010 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764355AbYBAMK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:10:26 -0500
-Date: Fri, 1 Feb 2008 06:10:25 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: Extending mmu_notifiers to handle __xip_unmap in a sleepable
-	context?
-Message-ID: <20080201121024.GN26420@sgi.com>
-References: <20080201050439.009441434@sgi.com> <20080201115841.GM26420@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080201115841.GM26420@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 1 Feb 2008 07:10:30 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50467 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764434AbYBAMK1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:10:27 -0500
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
+	(bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200802011250.18699.rjw@sisk.pl>
+References: <200802010237.59320.rjw@sisk.pl>
+	 <1201851896.32654.34.camel@lappy> <1201859458.32654.41.camel@lappy>
+	 <200802011250.18699.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 13:09:56 +0100
+Message-Id: <1201867797.32654.52.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Argh,
 
-Here is the correct one.  Sorry
+On Fri, 2008-02-01 at 12:50 +0100, Rafael J. Wysocki wrote:
+> On Friday, 1 of February 2008, Peter Zijlstra wrote:
 
-On Fri, Feb 01, 2008 at 05:58:41AM -0600, Robin Holt wrote:
-> With this set of patches, I think we have enough to get xpmem working
-> with most types of mappings.  In the past, we operated without any of
-> these callouts by significantly restricting why types of mappings could
-> remotely fault and what types of operations the user could do.  With
-> this set, I am certain we can continue to meet the above assumptions.
+> > > It arts run as root, or does it use RLIMIT_RTPRIO to allow users to
+> > > execute realtime tasks?
 > 
-> That said, I would like to discuss __xip_unmap in more detail.
+> artswrapper is setuid root and RLIMIT_RTPRIO is apparently not used.
+> Still, artswrapper is running as a regular user, so it most probably drops
+> privileges early.
 > 
-> Currently, it is calling mmu_notifier _begin and _end under the
-> i_mmap_lock.  I _THINK_ the following will make it so we could support
-> __xip_unmap (although I don't recall ever seeing that done on ia64 and
-> don't even know what the circumstances are for its use).
+> BTW, it fails while running the artsmessage utility used for displaying arts
+> error messages, so I guess there's an error in arts that this thing tries to
+> display and deadlocks (or something like that).
+> 
+> Should I test the patch nevertheless?
 
-Index: mmu_notifiers-cl-v5/mm/filemap_xip.c
-===================================================================
---- mmu_notifiers-cl-v5.orig/mm/filemap_xip.c	2008-02-01 05:38:32.000000000 -0600
-+++ mmu_notifiers-cl-v5/mm/filemap_xip.c	2008-02-01 06:09:09.000000000 -0600
-@@ -184,6 +184,10 @@ __xip_unmap (struct address_space * mapp
- 	if (!page)
- 		return;
- 
-+	if (unlikely(PageExternalRmap(page))) {
-+		mmu_rmap_notifier(invalidate_page, page);
-+		ClearPageExternalRmap(page);
-+	}
- 	spin_lock(&mapping->i_mmap_lock);
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
- 		mm = vma->vm_mm;
+Don't think that would help any in this situation. The thing to look out
+for are RT tasks running with a different uid than 0.
+
+This patch would only stop a task from obtaining RT class scheduling
+when already in a (misconfigured) group. If the task is RT and then
+switches group another - similar - thing is needed.
+
+Does this artsmessage thing also run with RT priority?
+
+
+
