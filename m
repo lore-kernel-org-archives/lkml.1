@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYBAP4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbYBAP6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbYBAP4i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 10:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbYBAP4a
+	id S1758307AbYBAP6j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 10:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbYBAP6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 10:56:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57697 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754460AbYBAP43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 10:56:29 -0500
-Date: Fri, 1 Feb 2008 16:56:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2.6 patch] unexport touch_all_softlockup_watchdogs
-Message-ID: <20080201155602.GC32085@elte.hu>
-References: <20080128221452.GL8767@does.not.exist>
+	Fri, 1 Feb 2008 10:58:32 -0500
+Received: from twinlark.arctic.org ([208.69.40.136]:40738 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986AbYBAP6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 10:58:32 -0500
+Date: Fri, 1 Feb 2008 07:58:22 -0800 (PST)
+From: dean gaudet <dean@arctic.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Joachim Deguara <joachim.deguara@amd.com>,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Dean Roe <roe@cray.com>
+Subject: Re: [PATCH] x86: add PCI IDs to k8topology_64.c II
+In-Reply-To: <20080129080927.GA1414@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.00.0802010757030.7110@twinlark.arctic.org>
+References: <200801281211.28214.joachim.deguara@amd.com> <p73y7a970nd.fsf@bingen.suse.de> <200801282012.47190.yinghai.lu@sun.com> <20080129045659.GA31847@one.firstfloor.org> <20080129080927.GA1414@one.firstfloor.org>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128221452.GL8767@does.not.exist>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Jan 2008, Andi Kleen wrote:
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+> > SRAT is essentially just a two dimensional table with node distances.
+> 
+> Sorry, that was actually SLIT. SRAT is not two dimensional, but also
+> relatively simple. SLIT you don't really need to implement.
 
-> This patch removes the unused 
-> EXPORT_SYMBOL(touch_all_softlockup_watchdogs).
+yeah but i'd heartily recommend implementing SLIT too.  mind you it's 
+almost universal non-existence means i've had to resort to userland 
+measurements to determine node distances and that won't change.  i guess i 
+just wanted to grumble somewhere.
 
-NACK. Please use your brain Adrian, this is part of an API vector. 
-Another similarly bogus patch you did is:
-
-   http://lkml.org/lkml/2008/1/31/376
-
-Either we unexport all of them, or none of them. Or we remove all 
-aspects of an individual API call, or no aspects of it. You are sending 
-export removal patches without apparently checking their contexts. This 
-is the fourth bogus patch of yours that i've come across within a 24 
-hour timeframe. Yes, sometimes unused symbol exports should be removed 
-because they are just silly or unnecessary, but not all the time.
-
-Same goes for your 'static' keyword patches. We should do it like the 
-spelling fixes: send _one_ large 'add static' patch near the end of the 
-release and we'll commit it without asking. Currently you are wasting a 
-little bit from many people's time, by getting these tiny little "remove 
-static" patches into every tree, every month, all the time. It's an 
-utterly wasteful way to spend our time.
-
-Perhaps you might want to spend some of your time to write some new, 
-useful Linux kernel code and start maintaining it for a change, so that 
-you can get the feel for the real problems and real issues that the 
-Linux kernel is facing these days. Hint: it's not the extra exports and 
-it's not the 'static' markers, and it's not the dead code either that 
-you are removing so eagerly. You are not a newbie anymore.
- 
-	Ingo
+-dean
