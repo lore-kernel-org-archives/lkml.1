@@ -1,139 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYBAOad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYBAOb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbYBAOad (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 09:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYBAOa0
+	id S1757333AbYBAOb2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 09:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbYBAObU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 09:30:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59243 "EHLO ogre.sisk.pl"
+	Fri, 1 Feb 2008 09:31:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59262 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754581AbYBAOaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 09:30:25 -0500
+	id S1754185AbYBAObT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 09:31:19 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-Date: Fri, 1 Feb 2008 15:28:16 +0100
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Subject: Re: 2.6.24-git9 ACPI oops - regression
+Date: Fri, 1 Feb 2008 15:29:19 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       Mika Penttil? <mika.penttila@kolumbus.fi>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+Cc: linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Len Brown <lenb@kernel.org>
-References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <200801281802.01748.rjw@sisk.pl> <20080201135125.GA16249@elte.hu>
-In-Reply-To: <20080201135125.GA16249@elte.hu>
+References: <20080201132551.GA4199@ics.muni.cz>
+In-Reply-To: <20080201132551.GA4199@ics.muni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802011528.17423.rjw@sisk.pl>
+Message-Id: <200802011529.20167.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 1 of February 2008, Ingo Molnar wrote:
+[Relevant CCs added.]
+
+On Friday, 1 of February 2008, Lukas Hejtmanek wrote:
+> Hello,
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> I encountered oops on my laptop Lenovo T61 and dock. If I press undock on the
+> dock, I got the following oops:
 > 
-> > >  arch/x86/kernel/built-in.o: In function `wakeup_start':
-> > >  : undefined reference to `swsusp_pg_dir'
-> > > 
-> > > config attached.
-> > 
-> > I see.  CONFIG_HIBERNATION && CONFIG_ACPI -> CONFIG_ACPI_SLEEP and the 
-> > Makefile in arch/x86/kernel/acpi/ wants to build wakeup.S, which is 
-> > not necessary.  Hmm.
-> > 
-> > We can do a couple of things:
-> > (1) make wakeup_$(BITS).o depend on CONFIG_SUSPEND (alone)
-> >     This will build it if CONFIG_SUSPEND is set, but CONFIG_ACPI is not
-> >     (still, that's consistent with the change in question).
-> > (2) make wakeup_$(BITS).o depend on CONFIG_SUSPEND and CONFIG_ACPI
-> > (3) define CONFIG_ACPI_SUSPEND depending on ACPI and SUSPEND and
-> >     make wakeup_$(BITS).o as well as swsusp_pg_dir depend on that (most
-> >     elegant)
-> > 
-> > Which one do you prefer?
+> [79721.755165] BUG: unable to handle kernel paging request at 000000340000000e
+> [79721.755165] IP: [<ffffffff8034d147>] acpi_ns_map_handle_to_node+0x14/0x1d
+> [79721.755165] PGD 7203a067 PUD 0
+> [79721.755165] Oops: 0000 [1] SMP
+> [79721.755165] CPU 1
+> [79721.755165] Modules linked in: usb_storage i915 drm rfcomm l2cap bluetooth fuse arc4 ecb crypto_blkcipher ehci_hcd uhci_hcd e1000e snd_hda_intel intel_agp thinkpad_acpi [last unloaded: cfg80211]
+> [79721.755165] Pid: 69, comm: kacpi_notify Not tainted 2.6.24-git9 #4
+> [79721.755165] RIP: 0010:[<ffffffff8034d147>]  [<ffffffff8034d147>] acpi_ns_map_handle_to_node+0x14/0x1d
+> [79721.755165] RSP: 0018:ffff81007d197d28  EFLAGS: 00010246
+> [79721.755165] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> [79721.755165] RDX: 0000000000017567 RSI: 000000100002c0d0 RDI: 0000003400000006
+> [79721.755165] RBP: 0000000000000000 R08: ffff810003c00000 R09: 0000000000000000
+> [79721.755165] R10: 0000000000000002 R11: 0000000000000001 R12: 0000003400000006
+> [79721.755165] R13: 0000000000000000 R14: ffff81007d197d68 R15: ffff81007d197d70
+> [79721.755165] FS:  0000000000000000(0000) GS:ffff81007d00e380(0000) knlGS:0000000000000000
+> [79721.755165] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> [79721.755165] CR2: 000000340000000e CR3: 000000007200a000 CR4: 00000000000006a0
+> [79721.755165] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [79721.755165] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [79721.755165] Process kacpi_notify (pid: 69, threadinfo ffff81007d196000, task ffff81007d18ef20)
+> [79721.755165] Stack:  ffffffff8034e19f ffff8100519e8800 ffff81007d197de0 0000000000000001
+> [79721.755165]  0000000000000000 0000000000000001 ffffffff80357d3d ffff81007d02cdc0
+> [79721.755165]  0000000000000000 0000003400000006 0000000000000000 ffffffff8058cbaa
+> [79721.755165] Call Trace:
+> [79721.755165]  [<ffffffff8034e19f>] acpi_get_next_object+0x3b/0x99
+> [79721.755165]  [<ffffffff80357d3d>] acpi_bus_trim+0x57/0x109
+> [79721.755165]  [<ffffffff8035b28b>] hotplug_dock_devices+0x97/0x117
+> [79721.755166]  [<ffffffff8035b3a9>] handle_eject_request+0x4e/0xd3
+> [79721.755166]  [<ffffffff8033e04a>] acpi_os_execute_notify+0x0/0x2c
+> [79721.755166]  [<ffffffff80356088>] acpi_bus_get_device+0x1d/0x2e
+> [79721.755166]  [<ffffffff803560b0>] acpi_bus_notify+0x17/0x4c
+> [79721.755166]  [<ffffffff8033e04a>] acpi_os_execute_notify+0x0/0x2c
+> [79721.755166]  [<ffffffff80343a1d>] acpi_ev_notify_dispatch+0x57/0x60
+> [79721.755166]  [<ffffffff8033e06d>] acpi_os_execute_notify+0x23/0x2c
+> [79721.755166]  [<ffffffff802460bf>] run_workqueue+0xbf/0x160
+> [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> [79721.755166]  [<ffffffff80246b9f>] worker_thread+0x9f/0x100
+> [79721.755166]  [<ffffffff80249e50>] autoremove_wake_function+0x0/0x30
+> [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> [79721.755166]  [<ffffffff80249a4b>] kthread+0x4b/0x80
+> [79721.755166]  [<ffffffff8020d128>] child_rip+0xa/0x12
+> [79721.755166]  [<ffffffff80249a00>] kthread+0x0/0x80
+> [79721.755166]  [<ffffffff8020d11e>] child_rip+0x0/0x12
+> [79721.755166]
+> [79721.755166]
+> [79721.755166] Code: 00 c3 49 ff c1 48 83 c6 04 41 ff c8 45 85 c0 75 a8 31 c0 c6 06 00 c3 48 8d 47 ff 48 83 f8 fd 76 08 48 8b 05 dc 49 39 00 c3 31 c0 <80> 7f 08 0f 48 0f 44 c7 c3 48 89 f8 c3 31 c0 48 85 ff 74 0d f6
+> [79721.755166] RIP  [<ffffffff8034d147>] acpi_ns_map_handle_to_node+0x14/0x1d
+> [79721.755166]  RSP <ffff81007d197d28>
+> [79721.755166] CR2: 000000340000000e
+> [79721.755166] ---[ end trace 05a1f30122eb8809 ]---
 > 
-> no strong preference here - pick the one you like best and send a patch 
-> please :-)
-
-Here you go, but I think it falls into the ACPI category.
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Since hibernation uses its own temporary page tables for restoring
-the image kernel, swsusp_pg_dir is only needed for ACPI resume from
-RAM.  Also, some files under arch/x86/kernel/acpi need only be compiled
-if ACPI suspend to RAM is going to be used.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/acpi/Makefile |    2 +-
- arch/x86/mm/init_32.c         |   10 +++++-----
- drivers/acpi/Kconfig          |    5 +++++
- 3 files changed, 11 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -423,23 +423,23 @@ static void __init pagetable_init(void)
- 	paravirt_pagetable_setup_done(pgd_base);
- }
- 
--#if defined(CONFIG_HIBERNATION) || defined(CONFIG_ACPI)
-+#ifdef CONFIG_ACPI_SUSPEND
- /*
-- * Swap suspend & friends need this for resume because things like the intel-agp
-+ * ACPI suspend needs this for resume, because things like the intel-agp
-  * driver might have split up a kernel 4MB mapping.
-  */
--char __nosavedata swsusp_pg_dir[PAGE_SIZE]
-+char swsusp_pg_dir[PAGE_SIZE]
- 	__attribute__ ((aligned(PAGE_SIZE)));
- 
- static inline void save_pg_dir(void)
- {
- 	memcpy(swsusp_pg_dir, swapper_pg_dir, PAGE_SIZE);
- }
--#else
-+#else /* !CONFIG_ACPI_SUSPEND */
- static inline void save_pg_dir(void)
- {
- }
--#endif
-+#endif /* !CONFIG_ACPI_SUSPEND */
- 
- void zap_low_mappings(void)
- {
-Index: linux-2.6/drivers/acpi/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/acpi/Kconfig
-+++ linux-2.6/drivers/acpi/Kconfig
-@@ -42,6 +42,11 @@ menuconfig ACPI
- 
- if ACPI
- 
-+config ACPI_SUSPEND
-+	bool
-+	depends on SUSPEND
-+	default y
-+
- config ACPI_SLEEP
- 	bool
- 	depends on PM_SLEEP
-Index: linux-2.6/arch/x86/kernel/acpi/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/Makefile
-+++ linux-2.6/arch/x86/kernel/acpi/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_ACPI)		+= boot.o
--obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
-+obj-$(CONFIG_ACPI_SUSPEND)	+= sleep.o wakeup_$(BITS).o
- 
- ifneq ($(CONFIG_ACPI_PROCESSOR),)
- obj-y				+= cstate.o processor.o
