@@ -1,164 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbYBAKcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbYBAKcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbYBAKcJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYBAKbz
+	id S1757776AbYBAKcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:32:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYBAKcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:31:55 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:19247 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918AbYBAKby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:31:54 -0500
-Date: Fri, 1 Feb 2008 11:31:51 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [bug] as_merged_requests(): possible recursive locking detected
-Message-ID: <20080201103151.GL15220@kernel.dk>
-References: <20080131221436.GA3760@elte.hu> <1201860191.10128.0.camel@nikanth-laptop.blr.novell.com> <20080201101212.GK15220@kernel.dk>
+	Fri, 1 Feb 2008 05:32:25 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:45635 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756905AbYBAKcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 05:32:23 -0500
+Date: Fri, 1 Feb 2008 04:32:21 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/3] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080201103221.GH26420@sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com> <20080201042408.GG26420@sgi.com> <Pine.LNX.4.64.0801312042500.20675@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080201101212.GK15220@kernel.dk>
+In-Reply-To: <Pine.LNX.4.64.0801312042500.20675@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01 2008, Jens Axboe wrote:
-> On Fri, Feb 01 2008, Nikanth Karthikesan wrote:
-> > On Thu, 2008-01-31 at 23:14 +0100, Ingo Molnar wrote:
-> > > 
-> > > Jens,
-> > > 
-> > > AS still has some locking issues - see the lockdep warning below that 
-> > > the x86 test-rig just triggered. Config attached. Never saw this one 
-> > > before. Can send more info if needed.
-> > > 
+On Thu, Jan 31, 2008 at 08:43:58PM -0800, Christoph Lameter wrote:
+> On Thu, 31 Jan 2008, Robin Holt wrote:
+> 
+> > > Index: linux-2.6/mm/memory.c
+> > ...
+> > > @@ -1668,6 +1678,7 @@ gotten:
+> > >  		page_cache_release(old_page);
+> > >  unlock:
+> > >  	pte_unmap_unlock(page_table, ptl);
+> > > +	mmu_notifier(invalidate_range_end, mm, 0);
 > > 
-> > The io_contexts are swapped. And while swapping, the locks were also
-> > getting swapped, which will change the order of locking after that. This
-> > may be the cause of these warning. I am not sure whether not swapping
-> > the locks is the right way to fix this. Using a field of spinlock_t
-> > itself to order locking might be better, instead of the address of the
-> > container.
-> > 
-> > Now while adding a new member to io_context, one should not forget to
-> > add it here. Also copying whole io_context and then restoring the locks
-> > might have a window where this warning could be triggered.
+> > I think we can get an _end call without the _begin call before it.
 > 
-> Oops, the locks should definitely be left alone. It's not just the
-> locking order, but also it would confuse lockdep.
+> If that would be true then also the pte would have been left locked.
 > 
-> > diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-> > index 6d16755..b9c6e39 100644
-> > --- a/block/blk-ioc.c
-> > +++ b/block/blk-ioc.c
-> > @@ -179,9 +179,32 @@ EXPORT_SYMBOL(copy_io_context);
-> >  void swap_io_context(struct io_context **ioc1, struct io_context **ioc2)
-> >  {
-> >  	struct io_context *temp;
-> > +
-> > +	/*
-> > +	 * Do not swap the locks to preserve locking order
-> > +	 */
-> > +
-> >  	temp = *ioc1;
-> > -	*ioc1 = *ioc2;
-> > -	*ioc2 = temp;
-> > +
-> > +	(*ioc1)->refcount = (*ioc2)->refcount;
-> > +	(*ioc1)->nr_tasks = (*ioc2)->nr_tasks;
-> > +	(*ioc1)->ioprio = (*ioc2)->ioprio;
-> > +	(*ioc1)->ioprio_changed = (*ioc2)->ioprio_changed;
-> > +	(*ioc1)->last_waited = (*ioc2)->last_waited;
-> > +	(*ioc1)->nr_batch_requests = (*ioc2)->nr_batch_requests;
-> > +	(*ioc1)->aic = (*ioc2)->aic;
-> > +	(*ioc1)->radix_root = (*ioc2)->radix_root;
-> > +	(*ioc1)->ioc_data = (*ioc2)->ioc_data;
-> > +
-> > +	(*ioc2)->refcount = (temp)->refcount;
-> > +	(*ioc2)->nr_tasks = (temp)->nr_tasks;
-> > +	(*ioc2)->ioprio = (temp)->ioprio;
-> > +	(*ioc2)->ioprio_changed = (temp)->ioprio_changed;
-> > +	(*ioc2)->last_waited = (temp)->last_waited;
-> > +	(*ioc2)->nr_batch_requests = (temp)->nr_batch_requests;
-> > +	(*ioc2)->aic = (temp)->aic;
-> > +	(*ioc2)->radix_root = (temp)->radix_root;
-> > +	(*ioc2)->ioc_data = (temp)->ioc_data;
-> >  }
-> >  EXPORT_SYMBOL(swap_io_context);
-> 
-> Ugh, that's pretty horrible. How about moving the lock first in the
-> struct and just doing memcpy()? Still ugly, but better.
-> 
-> I think the right solution is to remove swap_io_context() and fix the io
-> context referencing in as-iosched.c instead.
+> We always hit unlock. Maybe I just do not see it?
 
-IOW, the below. I don't know why Nick originally wanted to swap io
-contexts for a rq <-> rq merge, there seems little (if any) benefit to
-doing so.
+Maybe I haven't looked closely enough, but let's start with some common
+assumptions.  Looking at do_wp_page from 2.6.24 (I believe that is what
+my work area is based upon).  On line 1559, the function begins being
+declared.
 
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 9603684..852803e 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -1266,22 +1266,8 @@ static void as_merged_requests(struct request_queue *q, struct request *req,
- 	 */
- 	if (!list_empty(&req->queuelist) && !list_empty(&next->queuelist)) {
- 		if (time_before(rq_fifo_time(next), rq_fifo_time(req))) {
--			struct io_context *rioc = RQ_IOC(req);
--			struct io_context *nioc = RQ_IOC(next);
--
- 			list_move(&req->queuelist, &next->queuelist);
- 			rq_set_fifo_time(req, rq_fifo_time(next));
--			/*
--			 * Don't copy here but swap, because when anext is
--			 * removed below, it must contain the unused context
--			 */
--			if (rioc != nioc) {
--				double_spin_lock(&rioc->lock, &nioc->lock,
--								rioc < nioc);
--				swap_io_context(&rioc, &nioc);
--				double_spin_unlock(&rioc->lock, &nioc->lock,
--								rioc < nioc);
--			}
- 		}
- 	}
- 
-diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-index 6d16755..80245dc 100644
---- a/block/blk-ioc.c
-+++ b/block/blk-ioc.c
-@@ -176,15 +176,6 @@ void copy_io_context(struct io_context **pdst, struct io_context **psrc)
- }
- EXPORT_SYMBOL(copy_io_context);
- 
--void swap_io_context(struct io_context **ioc1, struct io_context **ioc2)
--{
--	struct io_context *temp;
--	temp = *ioc1;
--	*ioc1 = *ioc2;
--	*ioc2 = temp;
--}
--EXPORT_SYMBOL(swap_io_context);
--
- int __init blk_ioc_init(void)
- {
- 	iocontext_cachep = kmem_cache_create("blkdev_ioc",
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index baba233..bbe3cf4 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -39,7 +39,6 @@ void exit_io_context(void);
- struct io_context *get_io_context(gfp_t gfp_flags, int node);
- struct io_context *alloc_io_context(gfp_t gfp_flags, int node);
- void copy_io_context(struct io_context **pdst, struct io_context **psrc);
--void swap_io_context(struct io_context **ioc1, struct io_context **ioc2);
- 
- struct request;
- typedef void (rq_end_io_fn)(struct request *, int);
+On lines 1614 and 1630, we do "goto unlock" where the _end callout is
+soon made.  The _begin callout does not come until after those branches
+have been taken (occurs on line 1648).
 
--- 
-Jens Axboe
-
+Thanks,
+Robin
