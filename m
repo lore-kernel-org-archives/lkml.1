@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYBAQcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbYBAQc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758730AbYBAQcO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 11:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYBAQb7
+	id S1758914AbYBAQc5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 11:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYBAQct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 11:31:59 -0500
-Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:54353 "EHLO
-	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754335AbYBAQb6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 11:31:58 -0500
-X-Greylist: delayed 815 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Feb 2008 11:31:58 EST
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:Received:Received:
-   From:To:Date:Subject:Thread-Topic:Thread-Index:Message-ID:
-   Accept-Language:Content-Language:X-MS-Has-Attach:
-   X-MS-TNEF-Correlator:acceptlanguage:Content-Type:
-   Content-Transfer-Encoding:MIME-Version;
-  b=OGpunsRgEqzEJmFRXb79V7e0WnKWBPKijUXz2HvqU0XEbeSIrq13e4sv
-   YvwenWfz/yHRN4bcPnNGiFZHSXkHtnGRUgZjQLD+/xkm2b35p16KykLmW
-   W4A6EUqM1ob5TAs;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.25,290,1199660400"; 
-   d="scan'208";a="25156727"
-From: "Cestonaro, Thilo" <Thilo.Cestonaro@fujitsu-siemens.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 1 Feb 2008 17:17:25 +0100
-Subject: pci_alloc_consistent and memory >= 4GB pre CONFIG_ZONE_DMA32
-Thread-Topic: pci_alloc_consistent and memory >= 4GB pre CONFIG_ZONE_DMA32
-Thread-Index: Achk7e7H+TRzVclfTVqsKjJFk8dBQw==
-Message-ID: <1C27BF3FB8EE3A4D8F901C22ADE1DE0768043556ED@ABGEX72E.FSC.NET>
-Accept-Language: de-DE, en-US
-Content-Language: de-DE
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: de-DE, en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+	Fri, 1 Feb 2008 11:32:49 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:38092 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755253AbYBAQcs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 11:32:48 -0500
+Subject: Re: [PATCH][v4] ipwireless: driver for 3G PC Card
+From: Marcel Holtmann <marcel@holtmann.org>
+To: dsterba@suse.cz
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jkosina@suse.cz, benm@symmetric.co.nz, stephen@symmetric.co.nz
+In-Reply-To: <20080201153707.GA24859@ds.suse.cz>
+References: <20080201153707.GA24859@ds.suse.cz>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 17:32:59 +0100
+Message-Id: <1201883579.15090.14.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+Hi David,
 
-I've a problem with pci_alloc_consistent with Kernel 2.6.5 and memory >= 4GB on a x86_64 machine.
-The device can't use the dma_addr which I retrieve from pci_alloc_consistent.
-But if the machine has less then 4GB it works fine.
+> +irqreturn_t ipwireless_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+> +{
+> +	struct ipw_hardware *hw = dev_id;
+> +
+> +	if (hw->hw_version == HW_VERSION_1)
+> +		return ipwireless_handle_v1_interrupt(irq, hw);
+> +	else
+> +		return ipwireless_handle_v2_v3_interrupt(irq, hw);
+> +}
 
-How can I prove that the adress I get from pci_alloc_consistent is dma compatible?
-Should pci_alloc_consistent not be used in environments before CONFIG_ZONE_DMA32?
+why is this not static? I think the interrupt routine should be in the
+file where you actually claim the interrupt.
 
-Is there a better way to get dma compatible memory since 2.6.1 (except using kmalloc and GFP_DMA, cause just below 16MB is not enough memory)?
+> +/*
+> + * Associate the specified network with this hardware, so it will receive events
+> + * from it.
+> + */
+> +void ipwireless_associate_network(struct ipw_hardware *hw,
+> +				  struct ipw_network *network)
+> +{
+> +	hw->network = network;
+> +}
 
-I'm very appreciative for any answer / help.
+I think a #define would be simpler in this case.
 
-Ciao Thilo
+> +module_param(tty_major, int, 0);
+> +module_param_named(debug, ipwireless_debug, int, 0);
+> +module_param_named(loopback, ipwireless_loopback, int, 0);
+> +module_param_named(out_queue, ipwireless_out_queue, int, 0);
+> +MODULE_PARM_DESC(tty_major, "ttyIPWp major number [0]");
+
+Why is allowing to change the major still needed. I think we passed the
+bridge of the need for static numbers a long long long time ago.
+
+> +static const char drv_name[] = IPWIRELESS_PCCARD_NAME;
+
+This looks useless to. Do we need that?
+
+Regards
+
+Marcel
+
+
