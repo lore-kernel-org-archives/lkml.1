@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbYBAUrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760595AbYBAUr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbYBAUrg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 15:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYBAUr1
+	id S1760595AbYBAUr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 15:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759789AbYBAUro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 15:47:27 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49331 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbYBAUr0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 15:47:26 -0500
-Date: Fri, 1 Feb 2008 20:47:25 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] audit updates
-Message-ID: <20080201204724.GM27894@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Fri, 1 Feb 2008 15:47:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34885 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759780AbYBAUrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 15:47:43 -0500
+Message-ID: <47A3856D.70906@redhat.com>
+Date: Fri, 01 Feb 2008 15:47:41 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Gene Heskett <gene.heskett@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: log spamming
+References: <200802011044.42919.gene.heskett@gmail.com>
+In-Reply-To: <200802011044.42919.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Misc audit updates and fixes.  Please pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b46
+Gene Heskett wrote:
+> Greetings;
+> 
+> I just rebooted to a new config of 2.6.24, basically trying to strip out the 
+> building of modules I don't use.  And I enabled a couple of checks that 
+> weren't checked in the kernel-hacking menu.  .config posted on request.
+> 
+> Now the messages log is being spammed at 2-5 second intervals by these:
+> Feb  1 10:41:08 coyote kernel: [ 3085.501037] MCE: The hardware reports a non 
+> fatal, correctable incident occurred on CPU 0.
+> Feb  1 10:41:08 coyote kernel: [ 3085.501042] Bank 1: d400400000000152
+> Feb  1 10:41:08 coyote kernel: [ 3085.501045] MCE: The hardware reports a non 
+> fatal, correctable incident occurred on CPU 0.
+> Feb  1 10:41:08 coyote kernel: [ 3085.501048] Bank 2: d40040000000017a
+> 
+> Always the same 2 addresses.  Is this telling me I should be running memtest86 
+> for a couple of cycles?
 
-Shortlog:
+Those two addresses are in the same cache line, but they are *not* in the same 
+128-bit ECC block.  This is probably a northbridge problem, not a RAM problem. 
+It's not necessarily a hardware problem.  I wouldn't be surprised if you swapped 
+CPUs and still got the same result, due to BIOS misconfiguration.
 
-Al Viro (2):
-      switch audit_get_loginuid() to task_struct *
-      get rid of loginuid races
-
-Andrew Morton (1):
-      [patch 1/2] kernel/audit.c: warning fix
-
-Eric Paris (11):
-      [AUDIT] return EINTR not ERESTART*
-      [AUDIT] collect uid, loginuid, and comm in OBJ_PID records
-      [AUDIT] add session id to audit messages
-      [AUDIT] Add End of Event record
-      [AUDIT] do not panic on exclude messages in audit_log_pid_context()
-      [AUDIT] include audit type in audit message when using printk
-      [AUDIT] break large execve argument logging into smaller messages
-      [AUDIT] make audit=0 really stop audit messages
-      [AUDIT] clean up audit_receive_msg()
-      [AUDIT] create context if auditing was ever enabled
-      [AUDIT] ratelimit printk messages audit
-
-Klaus Heinrich Kiwi (1):
-      [AUDIT] Add uid, gid fields to ANOM_PROMISCUOUS message
-
-Richard Knutsson (1):
-      [patch 2/2] audit: complement va_copy with va_end()
-
-Diffstat:
- Documentation/filesystems/proc.txt |    7 -
- drivers/char/tty_audit.c           |   19 +-
- fs/proc/base.c                     |    2 +-
- include/linux/audit.h              |   13 +-
- include/linux/init_task.h          |    8 +
- include/linux/sched.h              |    4 +
- kernel/audit.c                     |  434 +++++++++++++++---------------------
- kernel/auditfilter.c               |   54 +++--
- kernel/auditsc.c                   |  349 +++++++++++++++++++++--------
- kernel/sysctl.c                    |   11 -
- net/core/dev.c                     |   15 +-
- net/key/af_key.c                   |   14 +-
- net/netlink/af_netlink.c           |    2 +-
- net/xfrm/xfrm_state.c              |    2 +-
- security/selinux/selinuxfs.c       |   17 +-
- security/selinux/ss/services.c     |    5 +-
- 16 files changed, 533 insertions(+), 423 deletions(-)
+	-- Chris
