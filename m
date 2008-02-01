@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934806AbYBAEqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbYBAErJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934806AbYBAEqm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 23:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764424AbYBAEmN
+	id S1761213AbYBAErJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 23:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764706AbYBAEmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 23:42:13 -0500
-Received: from mga10.intel.com ([192.55.52.92]:64964 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757604AbYBAEl4 (ORCPT
+	Thu, 31 Jan 2008 23:42:15 -0500
+Received: from mga05.intel.com ([192.55.52.89]:61252 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756184AbYBAElz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 23:41:56 -0500
+	Thu, 31 Jan 2008 23:41:55 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,288,1199692800"; 
-   d="scan'208";a="511516606"
+   d="scan'208";a="511516559"
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@suse.cz>,
+       Alan Stern <stern@rowland.harvard.edu>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 23/37] Suspend: Clean up Kconfig (V2)
-Date: Thu, 31 Jan 2008 23:36:54 -0500
-Message-Id: <9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
+Subject: [PATCH 08/37] Hibernation: Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers (rev. 2)
+Date: Thu, 31 Jan 2008 23:36:39 -0500
+Message-Id: <f0c5038e08f04af6f6aa0536c7efed6e128520fe.1201840183.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.5.4.rc5.16.gc0279
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -31,182 +31,152 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-This cleans up the suspend Kconfig and removes the need to
-declare centrally which architectures support suspend. All
-architectures that currently support suspend are modified
-accordingly.
+Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers to the PM core, to be used
+in analogy with the existing PM_HIBERNATION_PREPARE and PM_POST_HIBERNATION
+notifiers.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Russell King <rmk@arm.linux.org.uk>
-Acked-by: Paul Mackerras <paulus@samba.org>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: "Rafael J. Wysocki" <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/arm/Kconfig      |    3 +++
- arch/blackfin/Kconfig |    4 ++++
- arch/frv/Kconfig      |    5 +++++
- arch/mips/Kconfig     |    4 ++++
- arch/powerpc/Kconfig  |    4 ++++
- arch/sh/Kconfig       |    4 ++++
- arch/x86/Kconfig      |    4 ++++
- kernel/power/Kconfig  |   21 +++------------------
- 8 files changed, 31 insertions(+), 18 deletions(-)
+ Documentation/power/notifiers.txt |    8 ++++++++
+ include/linux/notifier.h          |    2 ++
+ kernel/power/disk.c               |    5 +++++
+ kernel/power/user.c               |   31 +++++++++++++++++++------------
+ 4 files changed, 34 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 77201d3..a00d8b9 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1035,6 +1035,9 @@ menu "Power management options"
+diff --git a/Documentation/power/notifiers.txt b/Documentation/power/notifiers.txt
+index 9293e4b..ae1b7ec 100644
+--- a/Documentation/power/notifiers.txt
++++ b/Documentation/power/notifiers.txt
+@@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory state has been restored from a
+ 			hibernation.  Device drivers' .resume() callbacks have
+ 			been executed and tasks have been thawed.
  
- source "kernel/power/Kconfig"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
++PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
++			If all goes well the restored kernel will issue a
++			PM_POST_HIBERNATION notification.
 +
- endmenu
- 
- source "net/Kconfig"
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index fc7ca86..4802eb7 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -898,6 +898,10 @@ endmenu
- menu "Power management options"
- source "kernel/power/Kconfig"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
++PM_POST_RESTORE		An error occurred during the hibernation restore.
++			Device drivers' .resume() callbacks have been executed
++			and tasks have been thawed.
 +
- choice
- 	prompt "Select PM Wakeup Event Source"
- 	default PM_WAKEUP_GPIO_BY_SIC_IWR
-diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
-index 43153e7..2e25b95 100644
---- a/arch/frv/Kconfig
-+++ b/arch/frv/Kconfig
-@@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
- #	  should probably wait a while.
+ PM_SUSPEND_PREPARE	The system is preparing for a suspend.
  
- menu "Power management options"
+ PM_POST_SUSPEND		The system has just resumed or an error occured during
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index 5dfbc68..f4df400 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -228,6 +228,8 @@ static inline int notifier_to_errno(int ret)
+ #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+ #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+ #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
++#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
++#define PM_POST_RESTORE		0x0006 /* Restore failed */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index b138b43..6597365 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -499,6 +499,10 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
++	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++	if (error)
++		goto Finish;
 +
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source kernel/power/Kconfig
- endmenu
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Finish;
+@@ -522,6 +526,7 @@ static int software_resume(void)
+  Done:
+ 	free_basic_memory_bitmaps();
+  Finish:
++	pm_notifier_call_chain(PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index b902a7e..f5512cb 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -67,6 +67,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
++	int error;
  
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 4fad0a3..e387f3a 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2086,6 +2086,10 @@ endmenu
- 
- menu "Power management options"
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source "kernel/power/Kconfig"
- 
- endmenu
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 68f0cf7..824140d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -166,6 +166,10 @@ config ARCH_HIBERNATION_POSSIBLE
- 	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
- 	default y
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-+
- config PPC_DCR_NATIVE
- 	bool
- 	default n
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 1cd9c8f..b30c4c3 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -882,6 +882,10 @@ endmenu
- menu "Power management options (EXPERIMENTAL)"
- depends on EXPERIMENTAL && SYS_SUPPORTS_PM
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !SMP
-+
- source kernel/power/Kconfig
- 
- endmenu
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 9c511dd..340e81a 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -113,6 +113,10 @@ config ARCH_HIBERNATION_POSSIBLE
- 	def_bool y
- 	depends on !SMP || !X86_VOYAGER
- 
-+config ARCH_SUSPEND_POSSIBLE
-+	def_bool y
-+	depends on !X86_VOYAGER
-+
- config ZONE_DMA32
- 	bool
- 	default X86_64
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index fd76d54..f8153fd 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -85,7 +85,7 @@ config PM_TRACE_RTC
- config PM_SLEEP_SMP
- 	bool
- 	depends on SMP
--	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-+	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
- 	depends on PM_SLEEP
- 	select HOTPLUG_CPU
- 	default y
-@@ -95,29 +95,14 @@ config PM_SLEEP
- 	depends on SUSPEND || HIBERNATION
- 	default y
- 
--config SUSPEND_UP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
--		   || SUPERH || FRV
--	depends on !SMP
--	default y
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
+ 		return -EBUSY;
+@@ -87,9 +88,19 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 		data->swap = swsusp_resume_device ?
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
++		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	} else {
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
++		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_HIBERNATION);
++	}
++	if (error) {
++		atomic_inc(&snapshot_device_available);
++		return error;
+ 	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+@@ -111,6 +122,8 @@ static int snapshot_release(struct inode *inode, struct file *filp)
+ 		thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 	}
++	pm_notifier_call_chain(data->mode == O_WRONLY ?
++			PM_POST_HIBERNATION : PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	return 0;
+ }
+@@ -174,18 +187,13 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		if (data->frozen)
+ 			break;
+ 		mutex_lock(&pm_mutex);
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+-		if (!error) {
+-			printk("Syncing filesystems ... ");
+-			sys_sync();
+-			printk("done.\n");
 -
--config SUSPEND_SMP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) \
--		   || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
--	depends on SMP
--	default y
--
- config SUSPEND
- 	bool "Suspend to RAM and standby"
--	depends on PM
--	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
-+	depends on PM && ARCH_SUSPEND_POSSIBLE
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
- 	  powered and thus its contents are preserved, such as the
--	  suspend-to-RAM state (i.e. the ACPI S3 state).
-+	  suspend-to-RAM state (e.g. the ACPI S3 state).
- 
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
+-			error = freeze_processes();
+-			if (error)
+-				thaw_processes();
+-		}
++		printk("Syncing filesystems ... ");
++		sys_sync();
++		printk("done.\n");
++
++		error = freeze_processes();
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			data->frozen = 1;
+@@ -196,7 +204,6 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 			break;
+ 		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+-		pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 		mutex_unlock(&pm_mutex);
+ 		data->frozen = 0;
+ 		break;
 -- 
 1.5.4.rc5.16.gc0279
 
