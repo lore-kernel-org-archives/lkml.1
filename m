@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935691AbYBAHqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934830AbYBAHr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935691AbYBAHqx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935168AbYBAHjn
+	id S934830AbYBAHr1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:47:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbYBAHjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:39:43 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:48082 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934815AbYBAHjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:39:41 -0500
-Date: Fri, 1 Feb 2008 17:38:26 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200802010738.m117cQt1022734@goober>
-To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: remove unused CONFIG_DISKtel symbol
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Fri, 1 Feb 2008 02:39:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49434 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934870AbYBAHjv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:39:51 -0500
+Date: Thu, 31 Jan 2008 23:40:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: yi.y.yang@intel.com
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] Add new string functions strict_strto* and
+ convert kernel params to use them, take 2
+Message-Id: <20080131234005.ab6962f3.akpm@linux-foundation.org>
+In-Reply-To: <1201817503.3925.5.camel@yangyi-dev.bj.intel.com>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	<1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
+	<1201562058.12722.9.camel@yangyi-dev.bj.intel.com>
+	<1201650080.3875.1.camel@yangyi-dev.bj.intel.com>
+	<1201742302.6500.7.camel@yangyi-dev.bj.intel.com>
+	<1201817503.3925.5.camel@yangyi-dev.bj.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unused CONFIG_DISKtel define.
+On Fri, 01 Feb 2008 06:11:43 +0800 Yi Yang <yi.y.yang@intel.com> wrote:
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+> --- a/include/linux/kernel.h	2008-01-31 00:41:46.000000000 +0800
+> --- b/include/linux/kernel.h	2008-02-01 04:30:49.000000000 +0800
 
-
-diff -Naurp linux-2.6.24/include/asm-m68knommu/mcfuart.h linux-2.6.24-uc0/include/asm-m68knommu/mcfuart.h
---- linux-2.6.24/include/asm-m68knommu/mcfuart.h	2008-01-25 08:58:37.000000000 +1000
-+++ linux-2.6.24-uc0/include/asm-m68knommu/mcfuart.h	2007-07-13 11:28:58.000000000 +1000
-@@ -12,7 +12,6 @@
- #define	mcfuart_h
- /****************************************************************************/
- 
--
- /*
-  *	Define the base address of the UARTS within the MBAR address
-  *	space.
-@@ -33,7 +32,7 @@
- #define MCFUART_BASE2		0x240           /* Base address of UART2 */
- #define MCFUART_BASE3		0x280           /* Base address of UART3 */
- #elif defined(CONFIG_M5249) || defined(CONFIG_M5307) || defined(CONFIG_M5407)
--#if defined(CONFIG_NETtel) || defined(CONFIG_DISKtel) || defined(CONFIG_SECUREEDGEMP3)
-+#if defined(CONFIG_NETtel) || defined(CONFIG_SECUREEDGEMP3)
- #define MCFUART_BASE1		0x200           /* Base address of UART1 */
- #define MCFUART_BASE2		0x1c0           /* Base address of UART2 */
- #else
+This isn't a patch.  I wonder how that happened?
