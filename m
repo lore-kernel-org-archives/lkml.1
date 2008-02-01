@@ -1,51 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762037AbYBALLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbYBALO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762037AbYBALLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbYBALK6
+	id S1760644AbYBALO3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYBALOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:10:58 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:38879 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755373AbYBALK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:10:57 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Are Section mismatches out of control?
-Date: Fri, 1 Feb 2008 12:10:52 +0100
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080201104718.GA11717@uranus.ravnborg.org>
-In-Reply-To: <20080201104718.GA11717@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 1 Feb 2008 06:14:21 -0500
+Received: from hu-out-0506.google.com ([72.14.214.232]:13565 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754683AbYBALOU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 06:14:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=CfYhETLkkEeRomhPmEnznsq6JcoetYtWqMFzxRsrdy1qzj23FJcgG7ZmQA5sZT4/+29SkrNftus/ZLMP6PcBnyYZ3njWd53OKh/kOdtOpc0d7SACWzwFKwk4IMVEa2k/KMelX3gzzf1LeQytnGKXowtJKLsJj/P3eLNg+Ru5feg=
+Subject: [PATCH] x86: fixes for lookup_address args
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 03:13:34 -0800
+Message-Id: <1201864414.23523.111.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802011210.52655.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 February 2008 11:47:18 Sam Ravnborg wrote:
-> James said in a related posting that the Section mismatch
-> warnings were getting out of control.
+Signedness mismatches in level argument.
 
-My question is: where are crashes? If the sections were
-really in such bad shape and since we poison (and sometimes
-even unmap) init after boot we should in theory see a lot 
-of oops reports from this if there were really accesses to
-them after boot.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Ingo, my other patch changing lookup_address was truncated and
+missed the other call sites, here's the rest.  You can either
+fold this into that patch or apply separately.
 
-Where are they?
+ arch/x86/kernel/efi_64.c    |    2 +-
+ arch/x86/mm/fault.c         |    2 +-
+ arch/x86/mm/ioremap.c       |    3 ++-
+ arch/x86/mm/pageattr-test.c |    4 ++--
+ 4 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
+index 4b73992..674f237 100644
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -44,7 +44,7 @@ static void __init early_mapping_set_exec(unsigned long start,
+ 					  int executable)
+ {
+ 	pte_t *kpte;
+-	int level;
++	unsigned int level;
+ 
+ 	while (start < end) {
+ 		kpte = lookup_address((unsigned long)__va(start), &level);
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index e28cc52..e4440d0 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -382,7 +382,7 @@ static void show_fault_oops(struct pt_regs *regs, unsigned long error_code,
+ 
+ #ifdef CONFIG_X86_PAE
+ 	if (error_code & PF_INSTR) {
+-		int level;
++		unsigned int level;
+ 		pte_t *pte = lookup_address(address, &level);
+ 
+ 		if (pte && pte_present(*pte) && !pte_exec(*pte))
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index a177d76..c004d94 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -75,7 +75,8 @@ static int ioremap_change_attr(unsigned long paddr, unsigned long size,
+ {
+ 	unsigned long vaddr = (unsigned long)__va(paddr);
+ 	unsigned long nrpages = size >> PAGE_SHIFT;
+-	int err, level;
++	unsigned int level;
++	int err;
+ 
+ 	/* No change for pages after the last mapping */
+ 	if ((paddr + size - 1) >= (max_pfn_mapped << PAGE_SHIFT))
+diff --git a/arch/x86/mm/pageattr-test.c b/arch/x86/mm/pageattr-test.c
+index 06353d4..7573e78 100644
+--- a/arch/x86/mm/pageattr-test.c
++++ b/arch/x86/mm/pageattr-test.c
+@@ -42,7 +42,7 @@ static __init int print_split(struct split_state *s)
+ 	s->max_exec = 0;
+ 	for (i = 0; i < max_pfn_mapped; ) {
+ 		unsigned long addr = (unsigned long)__va(i << PAGE_SHIFT);
+-		int level;
++		unsigned int level;
+ 		pte_t *pte;
+ 
+ 		pte = lookup_address(addr, &level);
+@@ -106,7 +106,7 @@ static __init int exercise_pageattr(void)
+ 	unsigned long *bm;
+ 	pte_t *pte, pte0;
+ 	int failed = 0;
+-	int level;
++	unsigned int level;
+ 	int i, k;
+ 	int err;
+ 
+-- 
+1.5.4.rc4.1142.gf5a97
 
 
-> The total figure for this build is 106 warnings.
 
-The interesting question is how many true bugs are in these warnings.
-
--Andi
