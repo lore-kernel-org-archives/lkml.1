@@ -1,85 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932313AbYBAF3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763174AbYBAFdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932313AbYBAF3r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 00:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbYBAF3i
+	id S1763174AbYBAFdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 00:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYBAFdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 00:29:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:44237 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYBAF3h (ORCPT
+	Fri, 1 Feb 2008 00:33:10 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60800 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751205AbYBAFdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 00:29:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XjS03SBukg5qjKlzuNg5PfYHZCQeN9Xe5+IBF/CjZ03JCGArOTGES5uQ5IDPmibzMwdbXqfXsoeSGBCrlALSvSi15WJga+nZNOUHQuX+fRim4OkGPXHRiyYL9d6ejLi9MfPjqF209bB4FX6JK8U5jMjtsTiksPmUcvhOC34MbYs=
-Message-ID: <29495f1d0801312129g5cc0bad1x8bdbb4a378feb1ef@mail.gmail.com>
-Date: Thu, 31 Jan 2008 21:29:34 -0800
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Reinaldo Carvalho" <reinaldow@gmail.com>
-Subject: Re: missing asm-x86_64 detection
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <ec36785a0801311513g4172b915w7bdb7ca97035efde@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 00:33:09 -0500
+Date: Fri, 1 Feb 2008 05:33:05 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Santiago Garcia Mantinan <manty@manty.net>
+Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
+Subject: Re: dl2k stopped working on 2.6.24
+Message-ID: <20080201053305.GK27894@ZenIV.linux.org.uk>
+References: <20080125211153.GA10203@dis.manty.net> <20080128233334.GA14326@dis.manty.net> <20080131215541.GA22018@dis.manty.net> <20080131213711.GM8953@1wt.eu> <20080201000442.GA26357@dis.manty.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ec36785a0801311513g4172b915w7bdb7ca97035efde@mail.gmail.com>
+In-Reply-To: <20080201000442.GA26357@dis.manty.net>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/31/08, Reinaldo Carvalho <reinaldow@gmail.com> wrote:
-> :/# uname -a
-> Linux devil 2.6.22.16-amd64 #15 SMP Sat Jan 19 13:58:02 BRT 2008
-> x86_64 GNU/Linux
->
-> :/# cd /usr/src/linux-2.6.22
-> :/# patch -p1 -R < ../patch-2.6.22.16
-> :/# patch -p1 < ../patch-2.6.23
-> :/# patch -p1 < ../patch-2.6.24
-> :/# cd /usr/src/ ; mv linux-2.6.22 linux-2.6.24; cd linux-2.6.24
-> :/usr/src/linux-2.6.24# make oldconfig
-> :/usr/src/linux-2.6.24# make all
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
-> ERROR: the symlink include/asm points to asm-x86_64 but asm-x86 was expected
->        set ARCH or save .config and run 'make mrproper' to fix it
-> make: ** [include/asm] Erro 1
->
-> :/usr/src/linux-2.6.24# cp .config ../config-2.6.24
-> :/usr/src/linux-2.6.24# make mrproper
->   CLEAN   scripts/basic
->   CLEAN   scripts/genksyms
->   CLEAN   scripts/kconfig
->   CLEAN   scripts/mod
->   CLEAN   scripts
->   CLEAN   include/config
->   CLEAN   .config .config.old include/asm .version
-> include/linux/autoconf.h include/linux/version.h
-> include/linux/utsrelease.h Module.symvers
-> devil:/usr/src/linux-2.6.24# cp ../config-2.6.24 .config
-> devil:/usr/src/linux-2.6.24# make oldconfig
-> devil:/usr/src/linux-2.6.24# make all
-> scripts/kconfig/conf -s arch/x86/Kconfig
->   CHK     include/linux/version.h
->   UPD     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86
->   CC      arch/x86/kernel/asm-offsets.s
->   GEN     include/asm-x86/asm-offsets.h
-> ...
->
-> system is x86_64!
+On Fri, Feb 01, 2008 at 01:04:42AM +0100, Santiago Garcia Mantinan wrote:
+> > I have today compiled dl2k from git, the version with the 2007-12-23 patches
+> > from Al Viro: dl2k endianness fixes (.24 fodder?) Right before the Al Viro
+> > patches. This seems to be working perfectly on my system.
+> 
+> Ok, I've been applying Al's patches one by one, everything went fine till I
+> applied the "dl2k: MSCR, MSSR, ESR, PHY_SCR fixes" patch. With this patch I
+> experimented the behaviour I commented on my first message.
+> 
+> I don't know what else to try now, any ideas?
+> 
+> Regards...
 
-And your point? The archs are being merged into just x86 (instead of
-x86_32 and x86_64 being separate). That's why the asm-x86_64 symlink
-was complained about above.
+Very interesting.  Relevant part seems to be
+-               mscr.image = mii_read (dev, phy_addr, MII_MSCR);
+-               mssr.image = mii_read (dev, phy_addr, MII_MSSR);
+-               if (mscr.bits.media_1000BT_FD & mssr.bits.lp_1000BT_FD) {
++               mscr = mii_read (dev, phy_addr, MII_MSCR);
++               mssr = mii_read (dev, phy_addr, MII_MSSR);
++               if (mscr & MII_MSCR_1000BT_FD && mssr & MII_MSSR_LP_1000BT_FD) {
+                        np->speed = 1000;
+                        np->full_duplex = 1;
+                        printk (KERN_INFO "Auto 1000 Mbps, Full duplex\n");
+-               } else if (mscr.bits.media_1000BT_HD & mssr.bits.lp_1000BT_HD) {
++               } else if (mscr & MII_MSCR_1000BT_HD && mssr & MII_MSSR_LP_1000BT_HD) {
+                        np->speed = 1000;
+                        np->full_duplex = 0;
+                        printk (KERN_INFO "Auto 1000 Mbps, Half duplex\n");
 
-There is no error. Check your config that CONFIG_64BIT and
-CONFIG_X86_64 are set.
+More specifically, this:
+-               if (mscr.bits.media_1000BT_FD & mssr.bits.lp_1000BT_FD) {
++               if (mscr & MII_MSCR_1000BT_FD && mssr & MII_MSSR_LP_1000BT_FD) {
 
-Thanks,
-Nish
+We used to have mscr declared as
+typedef union t_MII_MSCR {
+       u16 image;
+       struct {
+               u16 _bit_7_0:8; // bit 7:0
+               u16 media_1000BT_HD:1;  // bit 8
+               u16 media_1000BT_FD:1;  // bit 9
+               u16 port_type:1;        // bit 10
+               u16 cfg_value:1;        // bit 11
+               u16 cfg_enable:1;       // bit 12
+               u16 test_mode:3;        // bit 15:13
+       } bits;
+} MSCR_t, *PMSCR_t;
+
+and mssr as
+typedef union t_MII_MSSR {
+       u16 image;
+       struct {
+               u16 idle_err_count:8;   // bit 7:0
+               u16 _bit_9_8:2; // bit 9:8
+               u16 lp_1000BT_HD:1;     // bit 10
+               u16 lp_1000BT_FD:1;     // bit 11
+               u16 remote_rcv_status:1;        // bit 12
+               u16 local_rcv_status:1; // bit 13
+               u16 cfg_resolution:1;   // bit 14
+               u16 cfg_fault:1;        // bit 15
+       } bits;
+} MSSR_t, *PMSSR_t;
+
+so it looks like these constants had not been right...  Damn right, they
+had not - 
+        MII_MSSR_LP_1000BT_HD = 0x0800,
+        MII_MSSR_LP_1000BT_FD = 0x0400,
+and that has HD at bit 11 and FD at bit 10 - swapped, IOW.  Driver had them
+defined wrong all along, but they were not used until now, so bug had not been
+noticed.
+
+See if the patch below takes care of all of that:
+
+diff --git a/drivers/net/dl2k.h b/drivers/net/dl2k.h
+index d66c605..266ec87 100644
+--- a/drivers/net/dl2k.h
++++ b/drivers/net/dl2k.h
+@@ -388,8 +388,8 @@ enum _mii_mssr {
+ 	MII_MSSR_CFG_RES = 0x4000,
+ 	MII_MSSR_LOCAL_RCV_STATUS = 0x2000,
+ 	MII_MSSR_REMOTE_RCVR = 0x1000,
+-	MII_MSSR_LP_1000BT_HD = 0x0800,
+-	MII_MSSR_LP_1000BT_FD = 0x0400,
++	MII_MSSR_LP_1000BT_FD = 0x0800,
++	MII_MSSR_LP_1000BT_HD = 0x0400,
+ 	MII_MSSR_IDLE_ERR_COUNT = 0x00ff,
+ };
+ 
+
