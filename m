@@ -1,36 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYBAPpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbYBAPr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbYBAPpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 10:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYBAPpg
+	id S1757660AbYBAPr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 10:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYBAPrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 10:45:36 -0500
-Received: from gw.goop.org ([64.81.55.164]:53677 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754206AbYBAPpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 10:45:35 -0500
-Message-ID: <47A33E80.7090509@goop.org>
-Date: Fri, 01 Feb 2008 07:45:04 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ian Campbell <ijc@hellion.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: PAE swapper_pg_dir needs to be page-sized
-References: <47A251E9.4050606@goop.org> <1201856044.3804.1.camel@cthulhu.hellion.org.uk> <20080201132821.GB11070@elte.hu>
-In-Reply-To: <20080201132821.GB11070@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 10:47:49 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:50906 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbYBAPrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 10:47:48 -0500
+Date: Fri, 01 Feb 2008 10:44:42 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: log spamming
+To: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200802011044.42919.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> thanks, applied. I'm wondering, where did we break that?
->   
+Greetings;
 
-In the "PAE from boot" patch, I would guess.
+I just rebooted to a new config of 2.6.24, basically trying to strip out the 
+building of modules I don't use.  And I enabled a couple of checks that 
+weren't checked in the kernel-hacking menu.  .config posted on request.
 
-    J
+Now the messages log is being spammed at 2-5 second intervals by these:
+Feb  1 10:41:08 coyote kernel: [ 3085.501037] MCE: The hardware reports a non 
+fatal, correctable incident occurred on CPU 0.
+Feb  1 10:41:08 coyote kernel: [ 3085.501042] Bank 1: d400400000000152
+Feb  1 10:41:08 coyote kernel: [ 3085.501045] MCE: The hardware reports a non 
+fatal, correctable incident occurred on CPU 0.
+Feb  1 10:41:08 coyote kernel: [ 3085.501048] Bank 2: d40040000000017a
+
+Always the same 2 addresses.  Is this telling me I should be running memtest86 
+for a couple of cycles?
+
+Thanks.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+"It is the creationists who blasphemously are claiming that God is cheating
+ us in a stupid way."
+-- J. W. Nienhuys
