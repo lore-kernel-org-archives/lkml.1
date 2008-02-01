@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYBAHl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763851AbYBAHls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYBAHl1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935034AbYBAHik
+	id S1763851AbYBAHls (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:41:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935017AbYBAHim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:38:40 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:48054 "EHLO snapgear.com"
+	Fri, 1 Feb 2008 02:38:42 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:48061 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935017AbYBAHii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:38:38 -0500
-Date: Fri, 1 Feb 2008 17:37:36 +1000
+	id S935028AbYBAHik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:38:40 -0500
+Date: Fri, 1 Feb 2008 17:37:39 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200802010737.m117ba6v022697@goober>
+Message-Id: <200802010737.m117bdaN022701@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU 03/06]: move ColdFire pit.c to its own coldfire directory
+Subject: [M68KNOMMU 04/06]: move ColdFire timers.c to its own coldfire directory
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move common ColdFire CPU pit.c to common coldfire platform directory.
+Move common ColdFire CPU timers.c to common coldfire platform directory.
 
 Currently the common ColdFire CPU family code sits in the
 arch/m68knommu/platform/5307 directory. This is confusing, the files
@@ -31,33 +31,30 @@ though, so it doesn't make sense to move it to arch/m68knommu/kernel.
 Signed-off-by: Greg Ungerer <gerg@uclinux.org
 
 
-diff -Naurp linux-2.6.24/arch/m68knommu/platform/5307/pit.c linux-2.6.24.1/arch/m68knommu/platform/5307/pit.c
---- linux-2.6.24/arch/m68knommu/platform/5307/pit.c	2008-01-25 08:58:37.000000000 +1000
-+++ linux-2.6.24.1/arch/m68knommu/platform/5307/pit.c	1970-01-01 10:00:00.000000000 +1000
-@@ -1,97 +0,0 @@
+diff -Naurp linux-2.6.24/arch/m68knommu/platform/5307/timers.c linux-2.6.24.1/arch/m68knommu/platform/5307/timers.c
+--- linux-2.6.24/arch/m68knommu/platform/5307/timers.c	2008-01-25 08:58:37.000000000 +1000
++++ linux-2.6.24.1/arch/m68knommu/platform/5307/timers.c	1970-01-01 10:00:00.000000000 +1000
+@@ -1,155 +0,0 @@
 -/***************************************************************************/
 -
 -/*
-- *	pit.c -- Freescale ColdFire PIT timer. Currently this type of
-- *	         hardware timer only exists in the Freescale ColdFire
-- *		 5270/5271, 5282 and other CPUs.
+- *	timers.c -- generic ColdFire hardware timer support.
 - *
 - *	Copyright (C) 1999-2007, Greg Ungerer (gerg@snapgear.com)
-- *	Copyright (C) 2001-2004, SnapGear Inc. (www.snapgear.com)
 - */
 -
 -/***************************************************************************/
 -
 -#include <linux/kernel.h>
--#include <linux/sched.h>
--#include <linux/param.h>
 -#include <linux/init.h>
+-#include <linux/sched.h>
 -#include <linux/interrupt.h>
 -#include <linux/irq.h>
--#include <asm/machdep.h>
 -#include <asm/io.h>
+-#include <asm/traps.h>
+-#include <asm/machdep.h>
 -#include <asm/coldfire.h>
--#include <asm/mcfpit.h>
+-#include <asm/mcftimer.h>
 -#include <asm/mcfsim.h>
 -
 -/***************************************************************************/
@@ -65,100 +62,158 @@ diff -Naurp linux-2.6.24/arch/m68knommu/platform/5307/pit.c linux-2.6.24.1/arch/
 -/*
 - *	By default use timer1 as the system clock timer.
 - */
--#define	TA(a)	(MCF_IPSBAR + MCFPIT_BASE1 + (a))
+-#define	TA(a)	(MCF_MBAR + MCFTIMER_BASE1 + (a))
+-
+-/*
+- *	Default the timer and vector to use for ColdFire. Some ColdFire
+- *	CPU's and some boards may want different. Their sub-architecture
+- *	startup code (in config.c) can change these if they want.
+- */
+-unsigned int	mcf_timervector = 29;
+-unsigned int	mcf_profilevector = 31;
+-unsigned int	mcf_timerlevel = 5;
+-
+-/*
+- *	These provide the underlying interrupt vector support.
+- *	Unfortunately it is a little different on each ColdFire.
+- */
+-extern void mcf_settimericr(int timer, int level);
+-extern int mcf_timerirqpending(int timer);
+-
+-#if defined(CONFIG_M532x)
+-#define	__raw_readtrr	__raw_readl
+-#define	__raw_writetrr	__raw_writel
+-#else
+-#define	__raw_readtrr	__raw_readw
+-#define	__raw_writetrr	__raw_writew
+-#endif
 -
 -/***************************************************************************/
 -
 -static irqreturn_t hw_tick(int irq, void *dummy)
 -{
--	unsigned short pcsr;
--
 -	/* Reset the ColdFire timer */
--	pcsr = __raw_readw(TA(MCFPIT_PCSR));
--	__raw_writew(pcsr | MCFPIT_PCSR_PIF, TA(MCFPIT_PCSR));
+-	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, TA(MCFTIMER_TER));
 -
 -	return arch_timer_interrupt(irq, dummy);
 -}
 -
 -/***************************************************************************/
 -
--static struct irqaction coldfire_pit_irq = {
+-static struct irqaction coldfire_timer_irq = {
 -	.name	 = "timer",
 -	.flags	 = IRQF_DISABLED | IRQF_TIMER,
 -	.handler = hw_tick,
 -};
 -
+-/***************************************************************************/
+-
+-static int ticks_per_intr;
+-
 -void hw_timer_init(void)
 -{
--	volatile unsigned char *icrp;
--	volatile unsigned long *imrp;
+-	setup_irq(mcf_timervector, &coldfire_timer_irq);
 -
--	setup_irq(MCFINT_VECBASE + MCFINT_PIT1, &coldfire_pit_irq);
+-	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
+-	ticks_per_intr = (MCF_BUSCLK / 16) / HZ;
+-	__raw_writetrr(ticks_per_intr - 1, TA(MCFTIMER_TRR));
+-	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
+-		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, TA(MCFTIMER_TMR));
 -
--	icrp = (volatile unsigned char *) (MCF_IPSBAR + MCFICM_INTC0 +
--		MCFINTC_ICR0 + MCFINT_PIT1);
--	*icrp = ICR_INTRCONF;
+-	mcf_settimericr(1, mcf_timerlevel);
 -
--	imrp = (volatile unsigned long *) (MCF_IPSBAR + MCFICM_INTC0 + MCFPIT_IMR);
--	*imrp &= ~MCFPIT_IMR_IBIT;
--
--	/* Set up PIT timer 1 as poll clock */
--	__raw_writew(MCFPIT_PCSR_DISABLE, TA(MCFPIT_PCSR));
--	__raw_writew(((MCF_CLK / 2) / 64) / HZ, TA(MCFPIT_PMR));
--	__raw_writew(MCFPIT_PCSR_EN | MCFPIT_PCSR_PIE | MCFPIT_PCSR_OVW |
--		MCFPIT_PCSR_RLD | MCFPIT_PCSR_CLK64, TA(MCFPIT_PCSR));
+-#ifdef CONFIG_HIGHPROFILE
+-	coldfire_profile_init();
+-#endif
 -}
 -
 -/***************************************************************************/
 -
 -unsigned long hw_timer_offset(void)
 -{
--	volatile unsigned long *ipr;
--	unsigned long pmr, pcntr, offset;
+-	unsigned long tcn, offset;
 -
--	ipr = (volatile unsigned long *) (MCF_IPSBAR + MCFICM_INTC0 + MCFPIT_IMR);
+-	tcn = __raw_readw(TA(MCFTIMER_TCN));
+-	offset = ((tcn + 1) * (1000000 / HZ)) / ticks_per_intr;
 -
--	pmr = __raw_readw(TA(MCFPIT_PMR));
--	pcntr = __raw_readw(TA(MCFPIT_PCNTR));
--
--	/*
--	 * If we are still in the first half of the upcount and a
--	 * timer interrupt is pending, then add on a ticks worth of time.
--	 */
--	offset = ((pmr - pcntr) * (1000000 / HZ)) / pmr;
--	if ((offset < (1000000 / HZ / 2)) && (*ipr & MCFPIT_IMR_IBIT))
+-	/* Check if we just wrapped the counters and maybe missed a tick */
+-	if ((offset < (1000000 / HZ / 2)) && mcf_timerirqpending(1))
 -		offset += 1000000 / HZ;
--	return offset;	
+-	return offset;
 -}
 -
 -/***************************************************************************/
-diff -Naurp linux-2.6.24/arch/m68knommu/platform/coldfire/pit.c linux-2.6.24.1/arch/m68knommu/platform/coldfire/pit.c
---- linux-2.6.24/arch/m68knommu/platform/coldfire/pit.c	1970-01-01 10:00:00.000000000 +1000
-+++ linux-2.6.24.1/arch/m68knommu/platform/coldfire/pit.c	2008-01-25 08:58:37.000000000 +1000
-@@ -0,0 +1,97 @@
+-#ifdef CONFIG_HIGHPROFILE
+-/***************************************************************************/
+-
+-/*
+- *	By default use timer2 as the profiler clock timer.
+- */
+-#define	PA(a)	(MCF_MBAR + MCFTIMER_BASE2 + (a))
+-
+-/*
+- *	Choose a reasonably fast profile timer. Make it an odd value to
+- *	try and get good coverage of kernel operations.
+- */
+-#define	PROFILEHZ	1013
+-
+-/*
+- *	Use the other timer to provide high accuracy profiling info.
+- */
+-irqreturn_t coldfire_profile_tick(int irq, void *dummy)
+-{
+-	/* Reset ColdFire timer2 */
+-	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, PA(MCFTIMER_TER));
+-	if (current->pid)
+-		profile_tick(CPU_PROFILING, regs);
+-	return IRQ_HANDLED;
+-}
+-
+-/***************************************************************************/
+-
+-void coldfire_profile_init(void)
+-{
+-	printk(KERN_INFO "PROFILE: lodging TIMER2 @ %dHz as profile timer\n", PROFILEHZ);
+-
+-	/* Set up TIMER 2 as high speed profile clock */
+-	__raw_writew(MCFTIMER_TMR_DISABLE, PA(MCFTIMER_TMR));
+-
+-	__raw_writetrr(((MCF_CLK / 16) / PROFILEHZ), PA(MCFTIMER_TRR));
+-	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
+-		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, PA(MCFTIMER_TMR));
+-
+-	request_irq(mcf_profilevector, coldfire_profile_tick,
+-		(IRQF_DISABLED | IRQ_FLG_FAST), "profile timer", NULL);
+-	mcf_settimericr(2, 7);
+-}
+-
+-/***************************************************************************/
+-#endif	/* CONFIG_HIGHPROFILE */
+-/***************************************************************************/
+diff -Naurp linux-2.6.24/arch/m68knommu/platform/coldfire/timers.c linux-2.6.24.1/arch/m68knommu/platform/coldfire/timers.c
+--- linux-2.6.24/arch/m68knommu/platform/coldfire/timers.c	1970-01-01 10:00:00.000000000 +1000
++++ linux-2.6.24.1/arch/m68knommu/platform/coldfire/timers.c	2008-01-25 08:58:37.000000000 +1000
+@@ -0,0 +1,155 @@
 +/***************************************************************************/
 +
 +/*
-+ *	pit.c -- Freescale ColdFire PIT timer. Currently this type of
-+ *	         hardware timer only exists in the Freescale ColdFire
-+ *		 5270/5271, 5282 and other CPUs.
++ *	timers.c -- generic ColdFire hardware timer support.
 + *
 + *	Copyright (C) 1999-2007, Greg Ungerer (gerg@snapgear.com)
-+ *	Copyright (C) 2001-2004, SnapGear Inc. (www.snapgear.com)
 + */
 +
 +/***************************************************************************/
 +
 +#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/param.h>
 +#include <linux/init.h>
++#include <linux/sched.h>
 +#include <linux/interrupt.h>
 +#include <linux/irq.h>
-+#include <asm/machdep.h>
 +#include <asm/io.h>
++#include <asm/traps.h>
++#include <asm/machdep.h>
 +#include <asm/coldfire.h>
-+#include <asm/mcfpit.h>
++#include <asm/mcftimer.h>
 +#include <asm/mcfsim.h>
 +
 +/***************************************************************************/
@@ -166,70 +221,131 @@ diff -Naurp linux-2.6.24/arch/m68knommu/platform/coldfire/pit.c linux-2.6.24.1/a
 +/*
 + *	By default use timer1 as the system clock timer.
 + */
-+#define	TA(a)	(MCF_IPSBAR + MCFPIT_BASE1 + (a))
++#define	TA(a)	(MCF_MBAR + MCFTIMER_BASE1 + (a))
++
++/*
++ *	Default the timer and vector to use for ColdFire. Some ColdFire
++ *	CPU's and some boards may want different. Their sub-architecture
++ *	startup code (in config.c) can change these if they want.
++ */
++unsigned int	mcf_timervector = 29;
++unsigned int	mcf_profilevector = 31;
++unsigned int	mcf_timerlevel = 5;
++
++/*
++ *	These provide the underlying interrupt vector support.
++ *	Unfortunately it is a little different on each ColdFire.
++ */
++extern void mcf_settimericr(int timer, int level);
++extern int mcf_timerirqpending(int timer);
++
++#if defined(CONFIG_M532x)
++#define	__raw_readtrr	__raw_readl
++#define	__raw_writetrr	__raw_writel
++#else
++#define	__raw_readtrr	__raw_readw
++#define	__raw_writetrr	__raw_writew
++#endif
 +
 +/***************************************************************************/
 +
 +static irqreturn_t hw_tick(int irq, void *dummy)
 +{
-+	unsigned short pcsr;
-+
 +	/* Reset the ColdFire timer */
-+	pcsr = __raw_readw(TA(MCFPIT_PCSR));
-+	__raw_writew(pcsr | MCFPIT_PCSR_PIF, TA(MCFPIT_PCSR));
++	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, TA(MCFTIMER_TER));
 +
 +	return arch_timer_interrupt(irq, dummy);
 +}
 +
 +/***************************************************************************/
 +
-+static struct irqaction coldfire_pit_irq = {
++static struct irqaction coldfire_timer_irq = {
 +	.name	 = "timer",
 +	.flags	 = IRQF_DISABLED | IRQF_TIMER,
 +	.handler = hw_tick,
 +};
 +
++/***************************************************************************/
++
++static int ticks_per_intr;
++
 +void hw_timer_init(void)
 +{
-+	volatile unsigned char *icrp;
-+	volatile unsigned long *imrp;
++	setup_irq(mcf_timervector, &coldfire_timer_irq);
 +
-+	setup_irq(MCFINT_VECBASE + MCFINT_PIT1, &coldfire_pit_irq);
++	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
++	ticks_per_intr = (MCF_BUSCLK / 16) / HZ;
++	__raw_writetrr(ticks_per_intr - 1, TA(MCFTIMER_TRR));
++	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
++		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, TA(MCFTIMER_TMR));
 +
-+	icrp = (volatile unsigned char *) (MCF_IPSBAR + MCFICM_INTC0 +
-+		MCFINTC_ICR0 + MCFINT_PIT1);
-+	*icrp = ICR_INTRCONF;
++	mcf_settimericr(1, mcf_timerlevel);
 +
-+	imrp = (volatile unsigned long *) (MCF_IPSBAR + MCFICM_INTC0 + MCFPIT_IMR);
-+	*imrp &= ~MCFPIT_IMR_IBIT;
-+
-+	/* Set up PIT timer 1 as poll clock */
-+	__raw_writew(MCFPIT_PCSR_DISABLE, TA(MCFPIT_PCSR));
-+	__raw_writew(((MCF_CLK / 2) / 64) / HZ, TA(MCFPIT_PMR));
-+	__raw_writew(MCFPIT_PCSR_EN | MCFPIT_PCSR_PIE | MCFPIT_PCSR_OVW |
-+		MCFPIT_PCSR_RLD | MCFPIT_PCSR_CLK64, TA(MCFPIT_PCSR));
++#ifdef CONFIG_HIGHPROFILE
++	coldfire_profile_init();
++#endif
 +}
 +
 +/***************************************************************************/
 +
 +unsigned long hw_timer_offset(void)
 +{
-+	volatile unsigned long *ipr;
-+	unsigned long pmr, pcntr, offset;
++	unsigned long tcn, offset;
 +
-+	ipr = (volatile unsigned long *) (MCF_IPSBAR + MCFICM_INTC0 + MCFPIT_IMR);
++	tcn = __raw_readw(TA(MCFTIMER_TCN));
++	offset = ((tcn + 1) * (1000000 / HZ)) / ticks_per_intr;
 +
-+	pmr = __raw_readw(TA(MCFPIT_PMR));
-+	pcntr = __raw_readw(TA(MCFPIT_PCNTR));
-+
-+	/*
-+	 * If we are still in the first half of the upcount and a
-+	 * timer interrupt is pending, then add on a ticks worth of time.
-+	 */
-+	offset = ((pmr - pcntr) * (1000000 / HZ)) / pmr;
-+	if ((offset < (1000000 / HZ / 2)) && (*ipr & MCFPIT_IMR_IBIT))
++	/* Check if we just wrapped the counters and maybe missed a tick */
++	if ((offset < (1000000 / HZ / 2)) && mcf_timerirqpending(1))
 +		offset += 1000000 / HZ;
-+	return offset;	
++	return offset;
 +}
 +
++/***************************************************************************/
++#ifdef CONFIG_HIGHPROFILE
++/***************************************************************************/
++
++/*
++ *	By default use timer2 as the profiler clock timer.
++ */
++#define	PA(a)	(MCF_MBAR + MCFTIMER_BASE2 + (a))
++
++/*
++ *	Choose a reasonably fast profile timer. Make it an odd value to
++ *	try and get good coverage of kernel operations.
++ */
++#define	PROFILEHZ	1013
++
++/*
++ *	Use the other timer to provide high accuracy profiling info.
++ */
++irqreturn_t coldfire_profile_tick(int irq, void *dummy)
++{
++	/* Reset ColdFire timer2 */
++	__raw_writeb(MCFTIMER_TER_CAP | MCFTIMER_TER_REF, PA(MCFTIMER_TER));
++	if (current->pid)
++		profile_tick(CPU_PROFILING, regs);
++	return IRQ_HANDLED;
++}
++
++/***************************************************************************/
++
++void coldfire_profile_init(void)
++{
++	printk(KERN_INFO "PROFILE: lodging TIMER2 @ %dHz as profile timer\n", PROFILEHZ);
++
++	/* Set up TIMER 2 as high speed profile clock */
++	__raw_writew(MCFTIMER_TMR_DISABLE, PA(MCFTIMER_TMR));
++
++	__raw_writetrr(((MCF_CLK / 16) / PROFILEHZ), PA(MCFTIMER_TRR));
++	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
++		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, PA(MCFTIMER_TMR));
++
++	request_irq(mcf_profilevector, coldfire_profile_tick,
++		(IRQF_DISABLED | IRQ_FLG_FAST), "profile timer", NULL);
++	mcf_settimericr(2, 7);
++}
++
++/***************************************************************************/
++#endif	/* CONFIG_HIGHPROFILE */
 +/***************************************************************************/
