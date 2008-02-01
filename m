@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYBAPIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbYBAPLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbYBAPIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 10:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbYBAPID
+	id S1757129AbYBAPLx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 10:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbYBAPLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 10:08:03 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1912 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753494AbYBAPIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 10:08:01 -0500
-Message-ID: <47A335CA.1020301@myri.com>
-Date: Fri, 01 Feb 2008 10:07:54 -0500
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+	Fri, 1 Feb 2008 10:11:46 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:7636 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753892AbYBAPLp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 10:11:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GlfklOYuIfsLDINUuhaSXVebaXZv1aiUa4nYgoRRy7XMlROjQe5IhE06Y/rkulZ++hQRUrEq9Z/gkCemaTTyOa+TmbpJ7QlVX+wN556G1RwhyOvddLebE8snJrj8NglM0sgpIxHpFKinZH52pSPp42TV4CgOJFk+muPyfkX6B8Q=
+Message-ID: <b647ffbd0802010711q744f5023mdbfccd9540556b70@mail.gmail.com>
+Date: Fri, 1 Feb 2008 16:11:43 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Steven Rostedt" <srostedt@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1201867497.32654.49.camel@lappy>
 MIME-Version: 1.0
-To: AndrewL733 <AndrewL733@aol.com>
-CC: linux-kernel@vger.kernel.org, Myricom Technical Support <help@myri.com>
-Subject: Re: [Myricom help #56546] Re: 2.6.24 Page Allocation Failure
-References: <2517DBDB-3596-4815-89AB-E08B55F11E8E@aol.com>
-In-Reply-To: <2517DBDB-3596-4815-89AB-E08B55F11E8E@aol.com>
-Content-Type: multipart/mixed;
- boundary="------------050908060303090308020509"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200801272229.48955.rjw@sisk.pl> <200801280226.22013.rjw@sisk.pl>
+	 <1201795128.32654.22.camel@lappy> <200801312154.33754.rjw@sisk.pl>
+	 <1201867497.32654.49.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050908060303090308020509
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On 01/02/2008, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-AndrewL733 wrote:
- > The cause of this problem seems to be compiling the Myricom driver with
- > the ALLOC_ORDER=2 option. When I use the in-kernel driver, (1.3.2) or
- > recompile the Myricom 1.4.0 driver WITHOUT the option, the problem seems
- > to go away even after heavy hammering of the system.
- >
- > The ALLOC_ORDER=2 compiling option doesn't seem to cause any problem for
- > the Myricom 1.4.0 driver in the 2.6.22 kernel but it does cause the
- > problem when I run it in 2.6.24.
+> ---
+>  - restore the old wakeup mechanism
 
-High order allocations are much harder to satisfy than single page
-allocations, which is why we default MYRI10GE_ALLOC_ORDER to zero.
-Part of the reason why we receive into pages rather than plain skbs is
-to be able to use jumbo frames without high order allocations.  In
-your case, I suspect that "something" changed enough between 2.6.22
-and 2.6.24 that caused the high order allocations to start failing
-under the same workload.  I don't know enough about the VM system
-to know what changed.
+and how does it change behavior, logically-wise?
 
-In some quick experiments here, it seems that most of the cost of
-these failures is the console messages that they generate.  The driver
-is written such that failures like this can be tolerated.  I think the
-warning should just be disabled for our rx buffer allocations.
+do we somehow miss a 'wake-up' from kthread_stop() so that its caller
+gets blocked until watchdog's msleep_interruptible(10000) timeouts? On
+average, it would take +-5 sec. and might explain the first
+observation of Ravael -- "...adds a 5 - 10 sec delay..." (although,
+lately he reported up to +30 sec. delays).
 
-I've attached a patch (against 1.4.0) which does this.  When running a
-memory hog which repeatedly reads one byte per page of an array larger
-than physical memory, I still see line rate with this patch applied.
-Without the patch, I see a few hundred Mb/s and constant page
-allocation warnings.  Please note that this disables the warnings just
-for our rx buffer allocations.  Other allocations done elsewhere in
-the system may still generate warnings if the system is under heavy
-memory pressure.
+(/me goint to also try reproducing it later today)
 
-Drew
+> [ ... ]
 
---------------050908060303090308020509
-Content-Type: text/plain; x-mac-type="0"; x-mac-creator="0";
- name="nowarn.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="nowarn.diff"
-
-Index: myri10ge.c
-===================================================================
-RCS file: /repository/myrige/linux/myri10ge.c,v
-retrieving revision 1.313
-diff -u -r1.313 myri10ge.c
---- myri10ge.c	17 Jan 2008 15:04:30 -0000	1.313
-+++ myri10ge.c	1 Feb 2008 15:00:39 -0000
-@@ -1655,7 +1655,8 @@
- 			get_page(rx->page);
- 		} else {
- 			/* we need a new page */
--			page = myri10ge_alloc_pages(GFP_ATOMIC | __GFP_COMP, MYRI10GE_ALLOC_ORDER);
-+			page = myri10ge_alloc_pages(GFP_ATOMIC | __GFP_COMP | __GFP_NOWARN,
-+						    MYRI10GE_ALLOC_ORDER);
- 			if (unlikely(page == NULL)) {
- 				if (rx->fill_cnt - rx->cnt < 16)
- 					rx->watchdog_needed = 1;
-
---------------050908060303090308020509--
+-- 
+Best regards,
+Dmitry Adamushko
