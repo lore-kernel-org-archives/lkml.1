@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761462AbYBAMAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763629AbYBAMBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761462AbYBAMAi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYBAMAb
+	id S1763629AbYBAMBT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbYBAMBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:00:31 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44254
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754683AbYBAMAa (ORCPT
+	Fri, 1 Feb 2008 07:01:07 -0500
+Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:47984 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755569AbYBAMBF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:00:30 -0500
-Date: Fri, 1 Feb 2008 13:00:28 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-Message-ID: <20080201120028.GW7185@v2.random>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <20080131232842.GQ7185@v2.random> <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
+	Fri, 1 Feb 2008 07:01:05 -0500
+Message-ID: <47A30790.8080402@vlnb.net>
+Date: Fri, 01 Feb 2008 14:50:40 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+CC: landman@scalableinformatics.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-scsi@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James.Bottomley@hansenpartnership.com, scst-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
+       torvalds@linux-foundation.org
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+References: <adazluoe2t3.fsf@cisco.com>	<20080130083239E.fujita.tomonori@lab.ntt.co.jp>	<e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>	<20080130195635T.tomof@acm.org>	<1201785938.7280.105.camel@haakon2.linux-iscsi.org>	<e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com>	<47A1EE54.6000005@vlnb.net> <47A1F67C.4020300@scalableinformatics.com> <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com>
+In-Reply-To: <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 05:37:21PM -0800, Christoph Lameter wrote:
-> On Fri, 1 Feb 2008, Andrea Arcangeli wrote:
+Bart Van Assche wrote:
+> On Jan 31, 2008 5:25 PM, Joe Landman <landman@scalableinformatics.com> wrote:
 > 
-> > I appreciate the review! I hope my entirely bug free and
-> > strightforward #v5 will strongly increase the probability of getting
-> > this in sooner than later. If something else it shows the approach I
-> > prefer to cover GRU/KVM 100%, leaving the overkill mutex locking
-> > requirements only to the mmu notifier users that can't deal with the
-> > scalar and finegrined and already-taken/trashed PT lock.
+>>Vladislav Bolkhovitin wrote:
+>>
+>>>Actually, I don't know what kind of conclusions it is possible to make
+>>>from disktest's results (maybe only how throughput gets bigger or slower
+>>>with increasing number of threads?), it's a good stress test tool, but
+>>>not more.
+>>
+>>Unfortunately, I agree.  Bonnie++, dd tests, and a few others seem to
+>>bear far closer to "real world" tests than disktest and iozone, the
+>>latter of which does more to test the speed of RAM cache and system call
+>>performance than actual IO.
 > 
-> Mutex locking? Could you be more specific?
+> 
+> I have ran some tests with Bonnie++, but found out that on a fast
+> network like IB the filesystem used for the test has a really big
+> impact on the test results.
+> 
+> If anyone has a suggestion for a better test than dd to compare the
+> performance of SCSI storage protocols, please let it know.
 
-Robin understanding was correct on this point. Also I think if you add
-start,end to range_end (like suggested a few times by me and once
-by Robin) I may get away without a lock thanks to the page pin. That's
-one strong reason why start,end are needed in range_end.
+I would suggest you to try something from real life, like:
 
-The only one that will definitely be forced to add a new lock around
-follow_page, in addition to the very _scalable_ PT lock, is GRU.
+  - Copying large file tree over a single or multiple IB links
 
-> I hope you will continue to do reviews of the other mmu notifier patchset?
+  - Measure of some DB engine's TPC
 
-Sure. I will also create a new KVM patch to plug on top of your
-versions (I already did for V2/V3 even if it never worked, but that
-might have a build problem, see kvm-devel for details). To be clear,
-as long as anything is merged that avoids me to use kprobes to make
-KVM swap work, I'm satisfied. I thought my approach had several
-advantages in simplicity, and being more obviously safe (in not
-relaying entirely on the page pin and creating a window of time where
-the linux pte writes to a page and the sptes writes to another one,
-remember populate_range), and it avoids introducing external locks in
-the GRU follow_page path. My approach was supposed to be in addition
-of the range_start/end needed by xpmem that can't possibly take
-advanage of the scalar PT lock and it definitely requires external
-lock to serialize xpmem fault against linux pagefault (not the case
-for GRU/KVM).
+  - etc.
+
+> Bart Van Assche.
+> 
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Microsoft
+> Defy all challenges. Microsoft(R) Visual Studio 2008.
+> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+> _______________________________________________
+> Scst-devel mailing list
+> Scst-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/scst-devel
+> 
+
