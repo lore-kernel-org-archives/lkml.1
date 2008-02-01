@@ -1,81 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYBARjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYBARkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757156AbYBARjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 12:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYBARjZ
+	id S1753125AbYBARkD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:40:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYBARjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 12:39:25 -0500
-Received: from wx-out-0506.google.com ([66.249.82.225]:32434 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbYBARjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 12:39:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fo0kx7Y89IwKGoTn0USNDZ5lPg/4fvDk8aFij3kjt7GF1uMJaMPMsK0Fh/p2OM4U9jB8QFTr6wR7eaMCSdqqw/kk6GzmN695+N+dmWOEp+NZRZpIbakoZrQGAyqzkk0/oRYTZ96CIM1M8TT7CguAy6bgroK0OFXs5EwVRMvhkTA=
-Message-ID: <3fd7d7a70802010939q67770628r47ca8a23fb26ca1d@mail.gmail.com>
-Date: Sat, 2 Feb 2008 02:39:23 +0900
-From: "Kenichi Okuyama" <kenichi.okuyama@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch] NULL pointer check for vma->vm_mm
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080201021917.5db3448d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 1 Feb 2008 12:39:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49413 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753580AbYBARju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 12:39:50 -0500
+Date: Fri, 01 Feb 2008 12:39:27 -0500 (EST)
+Message-Id: <20080201.123927.71085228.k-ueda@ct.jp.nec.com>
+To: petkovbb@gmail.com, petkovbb@googlemail.com
+Cc: jens.axboe@oracle.com, nai.xia@gmail.com, rdreier@cisco.com,
+       bzolnier@gmail.com, flo@rfc822.org, linux-kernel@vger.kernel.org,
+       j-nomura@ce.jp.nec.com, linux-ide@vger.kernel.org, k-ueda@ct.jp.nec.com
+Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 &&
+ -g8561b089
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080201075117.GC4500@gollum.tnic>
+References: <20080131213740.GA4500@gollum.tnic>
+	<20080131.173556.38717303.k-ueda@ct.jp.nec.com>
+	<20080201075117.GC4500@gollum.tnic>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3fd7d7a70801312339p2a142096p83ed286c81379728@mail.gmail.com>
-	 <20080131235544.346b938a.akpm@linux-foundation.org>
-	 <3fd7d7a70802010024q22b4d179mf56e6d4b60e4f574@mail.gmail.com>
-	 <20080201021917.5db3448d.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Andrew,
-Sorry that it took very long before I could reply.
+Hi Boris,
 
-2008/2/1, Andrew Morton <akpm@linux-foundation.org>:
-> On Fri, 1 Feb 2008 17:24:17 +0900 "Kenichi Okuyama" <kenichi.okuyama@gmail.com> wrote:
->
-> > First of all, thank you for looking at the patch.
-> >
-> > I do agree that if mm is NULL, system will call Oops anyway.
-> However, since it's oops, it does not stop the system, nor call kdump.
->
-> That would be a huge bug in kdump?  Surely it dumps when the kernel oopses?
+On Fri, 1 Feb 2008 08:51:17 +0100, Borislav Petkov wrote:
+> > > > The below fix should be enough. It's perfectly legal to have leftover
+> > > > byte counts when the drive signals completion, happens all the time for
+> > > > eg user issued commands where you don't know an exact byte count.
+> > > 
+> > > Actually, this behavior has been the case even before
+> > > the __blk_end_request() changes.
+> > > I did test plain 2.6.24 with the following
+> > > 
+> > > 
+> > > --- linux-2.6/drivers/ide/ide-cd.c	2008-01-31 22:18:59.000000000 +0100
+> > > +++ linux-2.6/drivers/ide/ide-cd.c-new	2008-01-31 22:18:50.000000000 +0100
+> > > @@ -1711,8 +1711,12 @@ static ide_startstop_t cdrom_newpc_intr(
+> > >  	/*
+> > >  	 * If DRQ is clear, the command has completed.
+> > >  	 */
+> > > -	if ((stat & DRQ_STAT) == 0)
+> > > +	if ((stat & DRQ_STAT) == 0) {
+> > > +		blk_dump_rq_flags(rq, "ide-cd: rq still having bio");
+> > > +		printk("backup: data_len=%u  bi_size=%u\n",
+> > > +				rq->data_len, rq->bio->bi_size);
+> > >  		goto end_request;
+> > > +	}
+> > >  
+> > >  	/*
+> > >  	 * check which way to transfer data
+> > > 
+> > > 
+> > > to see whether we've been getting residual byte counts:
+> > > 
+> > > Jan 31 22:10:06 gollum kernel: [   26.702877] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
+> > > Jan 31 22:10:06 gollum kernel: [   26.702945]
+> > > Jan 31 22:10:06 gollum kernel: [   26.702946] sector 2673511, nr/cnr 0/0
+> > > Jan 31 22:10:06 gollum kernel: [   26.703052] bio dfa8ec40, biotail dfa8ec40, buffer 00000000, data 00000000, len 158
+> > > Jan 31 22:10:06 gollum kernel: [   26.703122] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> > > Jan 31 22:10:06 gollum kernel: [   26.703877] backup: data_len=158  bi_size=158
+> > > 
+> > > ... so we've been simply silently ignoring this until now so
+> > > i guess we don't need to BUG() for something that's totally benign.
+> 
+> Hi Kiyoshi,
+>  
+> > end_that_request_last() is not called when __blk_end_reuqest()
+> > returns 1.  Then, the issuer isn't waken up.
+> > So I think the BUG() or error messages should be there.
+> 
+> you mean, end_that_request_last() isn't called when __end_that_request_first()
+> returns an error and this is the case only for fs and pc requests.
+> Otherwise it _is_ called, thus simulating somewhat the previous behavior.
+> However, we never BUG()'ged on residual byte counts before and
+> this driver has been in the kernel tree for ages, so what puzzles
+> me now is how is BUG()'ing here better than before and shouldn't we
+> simply issue a warning instead of killing the interrupt handler...
 
-I'm sorry.
-Oops did dump on my home pc. But it didn't on my office pc.
-I'll take back the patch, and check what I've done wrong at office.
+The Jens' patch passes the residual byte counts to __blk_end_request(),
+so __end_that_reqeust_first() should never return 1 and we should never
+BUG() on the residual byte counts, unless inconsistency happens such as
+the size of remaining bios is bigger than the residual byte counts.
 
+So if __blk_end_request() returns 1 even with the Jens' patch,
+it means that the block layer or the driver really have a bug.
+And then, the request and the bios could leak or the issuer
+would wait forever because end_that_request_last() isn't called.
 
-> But there are probably a million potential NULL-pointer dereferences in the
-> kernel.  Why single out this one?
+The previous behavior might ignore such inconsistency and leak only
+the bios because it was calling end_that_request_last() anyway.
+I would like to BUG() in such cases personally, but I don't object
+strongly if you prefer not to BUG().
 
-I was interested in "Bad swap file entry" problem.
-
-I expereiced this myself. After (quite a lot of ) "Bad swap file
-entry" error log from kernel, it Oopsed three times, then kernel was
-dead ( It's almost three years from now, so this was without kdump ).
-
-I did find that three Oops happened inside page_referenced() function,
-and that it was due to NULL pointer. In 2.6.24, it was only this "mm"
-and one more in page_referenced_file() that did not have NULL pointer
-check.
-
-So I was really thinking about two more patches. One for "mappers"
-NULL pointer check, and other one is to add msr printout when Oops or
-Pank happens , to make sure that when Oops or Paniced, still my PC is
-not broken.
-
-
-I needed the evidence so that I don't have to worry about
-broken Memory, nor broken Cache.
-and I think we still do not have MSRs dumped out as
-part of kdump..
-# Am I wrong again??
--- 
-Kenichi Okuyama
-URL: http://www.dd.iij4u.or.jp/~okuyamak/
+Thanks,
+Kiyoshi Ueda
