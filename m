@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYBAJvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbYBAJx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbYBAJvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYBAJu7
+	id S1757885AbYBAJx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYBAJxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:50:59 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41728 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756388AbYBAJu5 (ORCPT
+	Fri, 1 Feb 2008 04:53:17 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:58361 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754202AbYBAJxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:50:57 -0500
-Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
-	(bisected)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1201851896.32654.34.camel@lappy>
-References: <200802010237.59320.rjw@sisk.pl>
-	 <200802010304.06703.rjw@sisk.pl>  <1201851896.32654.34.camel@lappy>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 10:50:58 +0100
-Message-Id: <1201859458.32654.41.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 04:53:16 -0500
+From: Andi Kleen <ak@suse.de>
+References: <200802011053.107168490@suse.de>
+In-Reply-To: <200802011053.107168490@suse.de>
+To: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/12] GBPAGES: Add feature macros for the gbpages cpuid bit
+Message-Id: <20080201095314.2E08D1B416F@basil.firstfloor.org>
+Date: Fri,  1 Feb 2008 10:53:14 +0100 (CET)
+X-OriginalArrivalTime: 01 Feb 2008 09:46:56.0717 (UTC) FILETIME=[62118FD0:01C864B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-02-01 at 08:44 +0100, Peter Zijlstra wrote:
-> On Fri, 2008-02-01 at 03:04 +0100, Rafael J. Wysocki wrote:
-> > On Friday, 1 of February 2008, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > This is related to the problem I reported earlier this week:
-> > > http://lkml.org/lkml/2008/1/30/554
-> > > 
-> > > Apparently artswrapper, run by KDE in openSUSE 10.3 with a real time priority,
-> > > is mishandled by the scheduler.  The problem is that after the user logs out,
-> > > artswrapper stays in TASK_RUNNING forever and prevents other tasks from being
-> > > scheduled on the CPU occupied by it.  In this state it also breaks suspend and
-> > > hibernation (it cannot be frozen).
-> > > 
-> > > Since the problem is 100% reproducible on my test boxes, I carried out a
-> > > bisection which turned out the following commit:
-> > > 
-> > > commit 6f505b16425a51270058e4a93441fe64de3dd435
-> > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Date:   Fri Jan 25 21:08:30 2008 +0100
-> > > 
-> > >     sched: rt group scheduling
-> > > 
-> > > I'm now checking if the problem disappears after reverting this patch (along a
-> > > couple of dependent ones).
-> > 
-> > Yes, it does.
-> > 
-> > Please let me know what I can do to debug it further.
-> 
-> It arts run as root, or does it use RLIMIT_RTPRIO to allow users to
-> execute realtime tasks?
-> 
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-If the latter, does this help:
+---
+ include/asm-x86/cpufeature.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ba4c880..bb76cbc 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4563,6 +4563,15 @@ recheck:
- 			return -EPERM;
- 	}
+Index: linux/include/asm-x86/cpufeature.h
+===================================================================
+--- linux.orig/include/asm-x86/cpufeature.h
++++ linux/include/asm-x86/cpufeature.h
+@@ -49,6 +49,7 @@
+ #define X86_FEATURE_MP		(1*32+19) /* MP Capable. */
+ #define X86_FEATURE_NX		(1*32+20) /* Execute Disable */
+ #define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */
++#define X86_FEATURE_GBPAGES	(1*32+26) /* GB pages */
+ #define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */
+ #define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */
+ #define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */
+@@ -175,6 +176,7 @@
+ #define cpu_has_pebs		boot_cpu_has(X86_FEATURE_PEBS)
+ #define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
+ #define cpu_has_bts		boot_cpu_has(X86_FEATURE_BTS)
++#define cpu_has_gbpages 	boot_cpu_has(X86_FEATURE_GBPAGES)
  
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+	/*
-+	 * Do not allow realtime tasks into groups that have no runtime
-+	 * assigned.
-+	 */
-+	if (rt_policy(policy) && task_group(p)->rt_ratio == 0)
-+		return -EPERM;
-+#endif
-+
- 	retval = security_task_setscheduler(p, policy, param);
- 	if (retval)
- 		return retval;
-
-
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
