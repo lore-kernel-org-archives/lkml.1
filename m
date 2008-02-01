@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934991AbYBABDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934944AbYBABEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934991AbYBABDT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 20:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765122AbYBABDJ
+	id S934944AbYBABEw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 20:04:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYBABEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 20:03:09 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45721 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934351AbYBABDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 20:03:08 -0500
-Date: Fri, 1 Feb 2008 02:03:19 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz
-Subject: Re: how to tell i386 from x86-64 kernel
-Message-ID: <20080201010319.GA5112@elf.ucw.cz>
-References: <20080201004212.GA2818@elf.ucw.cz> <2c0942db0801311646s40368a89r537a7d576ba57981@mail.gmail.com>
+	Thu, 31 Jan 2008 20:04:41 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48142 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbYBABEk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 20:04:40 -0500
+Date: Fri, 1 Feb 2008 02:04:39 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [1/2] POHMELFS - network filesystem with local coherent cache.
+In-Reply-To: <11972872493911@2ka.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0802010159460.4864@fbirervta.pbzchgretzou.qr>
+References: <11972872493911@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c0942db0801311646s40368a89r537a7d576ba57981@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-01-31 16:46:57, Ray Lee wrote:
-> On Jan 31, 2008 4:42 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Quiz: on a booted system, how do you tell 32bit from 64bit kernel?
-> 
-> Uhm, is this a trick question? What's wrong with uname(2)?
 
-No, it is a tricky question. You are right, uname -a tells me. Sorry.
+On Jan 31 2008 22:17, Evgeniy Polyakov wrote:
+>
+>POHMELFS stands for Parallel Optimized Host Message Exchange
+>Layered File System. It allows to mount remote servers to local
+>directory via network. This filesystem supports local caching
+>and writeback flushing.
+>POHMELFS is a brick in a future distributed filesystem.
 
-Still, it would be nice to print it as a first message of dmesg, so
-that it automatically gets included with problem reports... on
-easy-to-see place.
+A brick is usually something that is in the way -
+Or you also say "the user has bricked his machine"
+when it's quite unusable :)
+Hope you did not mean /that/.
 
-								Pavel
+>This set includes two patches:
+> * network filesystem with write-through cache (slow, but works with
+> 	remote userspace server)
+> * hack to show how local cache works and how faster it is compared
+> 	to async NFS (see below). hack disables writeback flush and
+>	performs local allocation of the objects only.
+>
+>Now, some vaporware aka food for thoughts and your brains.
+>
+>A small benchmark of the local cached mode (above hack):
+>
+>$ time tar -xf /home/zbr/threading.tar
+>
+>	POHMELFS	NFS v3 (async)
+>real    0m0.043s	0m1.679s
+>
+>Which is damn 40 times!
 
-Linux version 2.6.24-rc8 (pavel@amd) (gcc version 4.1.3 20071209 (prerelease) (Debian 4.1.2-18)) #65 SMP Thu Jan 31 00:02:37 CET 2008
-BIOS-provided physical RAM map:
+Needs a bigger data set to compare. But what is much more
+important: does it use a single port for networing, or some
+firewall-unfriendly-by-default multiple dynamic-port-allocation
+like NFS?
+
+>Next task is to think about how to generically solve the problem with
+>syncing local changes with remote server, when remote server maintains inodes with
+>completely different numbers.
+>This, among others, will allow offline work with automatic syncing after reconnect.
+
+What will happen when both nodes change an inode in disconnected state?
+Which inode wins out?
+
+>This is not intended for inclusion, CRFS by Zach Brown is a bit ahead of POHMELFS,
+>but it is not generic enough (because of above problem), works only with BTRFS,
+>and was closed by Oracle so far :)
+
+btrfs is all we need :p
 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Where's the parallelism that is advertised by the "POH" in pohmelfs?
