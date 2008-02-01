@@ -1,49 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761950AbYBALsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbYBALwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761950AbYBALsf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760669AbYBALs0
+	id S1760801AbYBALwe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbYBALw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:48:26 -0500
-Received: from mail.suse.de ([195.135.220.2]:58537 "EHLO mx1.suse.de"
+	Fri, 1 Feb 2008 06:52:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58511 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755325AbYBALsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:48:25 -0500
-Subject: Re: Fwd: [bug] as_merged_requests(): possible recursive locking
-	detected
-From: Nikanth Karthikesan <knikanth@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <47A35177.BANGALORE.BLR.100.174746A.1.1085C.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
-References: <20080131221436.GA3760@elte.hu>
-	 <20080201084056.GH15220@kernel.dk> <20080201104537.GA27178@elte.hu>
-	 <20080201104733.GM15220@kernel.dk> <20080201110123.GF27178@elte.hu>
-	 <20080201112238.GN15220@kernel.dk>
-	 <47A35177.BANGALORE.BLR.100.174746A.1.1085C.1@1:7.BANGALORE.BLR.100.0.1.0.1@16>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 17:23:42 +0530
-Message-Id: <1201866822.12473.6.camel@nikanth-laptop.blr.novell.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	id S1753372AbYBALwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 06:52:25 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
+Date: Fri, 1 Feb 2008 12:50:17 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200802010237.59320.rjw@sisk.pl> <1201851896.32654.34.camel@lappy> <1201859458.32654.41.camel@lappy>
+In-Reply-To: <1201859458.32654.41.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802011250.18699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > am i right that lockdep complained about real lockup potential here?
-> > (i.e. it caught a real bug) So there's no need to change anything on the
-> > lockdep side, right?
+On Friday, 1 of February 2008, Peter Zijlstra wrote:
 > 
-> Right, no bug in lockdep, the locking code and swap_io_context() are
-> just screwed up.
+> On Fri, 2008-02-01 at 08:44 +0100, Peter Zijlstra wrote:
+> > On Fri, 2008-02-01 at 03:04 +0100, Rafael J. Wysocki wrote:
+> > > On Friday, 1 of February 2008, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > > 
+> > > > This is related to the problem I reported earlier this week:
+> > > > http://lkml.org/lkml/2008/1/30/554
+> > > > 
+> > > > Apparently artswrapper, run by KDE in openSUSE 10.3 with a real time priority,
+> > > > is mishandled by the scheduler.  The problem is that after the user logs out,
+> > > > artswrapper stays in TASK_RUNNING forever and prevents other tasks from being
+> > > > scheduled on the CPU occupied by it.  In this state it also breaks suspend and
+> > > > hibernation (it cannot be frozen).
+> > > > 
+> > > > Since the problem is 100% reproducible on my test boxes, I carried out a
+> > > > bisection which turned out the following commit:
+> > > > 
+> > > > commit 6f505b16425a51270058e4a93441fe64de3dd435
+> > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > Date:   Fri Jan 25 21:08:30 2008 +0100
+> > > > 
+> > > >     sched: rt group scheduling
+> > > > 
+> > > > I'm now checking if the problem disappears after reverting this patch (along a
+> > > > couple of dependent ones).
+> > > 
+> > > Yes, it does.
+> > > 
+> > > Please let me know what I can do to debug it further.
+> > 
+> > It arts run as root, or does it use RLIMIT_RTPRIO to allow users to
+> > execute realtime tasks?
+
+artswrapper is setuid root and RLIMIT_RTPRIO is apparently not used.
+Still, artswrapper is running as a regular user, so it most probably drops
+privileges early.
+
+BTW, it fails while running the artsmessage utility used for displaying arts
+error messages, so I guess there's an error in arts that this thing tries to
+display and deadlocks (or something like that).
+
+Should I test the patch nevertheless?
+
+> If the latter, does this help:
 > 
-
-I doubt a bug in lockdep. Here we just swap the pointers but use the
-addresses themselves to order locks. And we do not change the
-contents(lock) in those addresses. So it could be a lockdep bug.
-
-Thanks
-Nikanth Karthikesan
-
-
-
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index ba4c880..bb76cbc 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4563,6 +4563,15 @@ recheck:
+>  			return -EPERM;
+>  	}
+>  
+> +#ifdef CONFIG_FAIR_GROUP_SCHED
+> +	/*
+> +	 * Do not allow realtime tasks into groups that have no runtime
+> +	 * assigned.
+> +	 */
+> +	if (rt_policy(policy) && task_group(p)->rt_ratio == 0)
+> +		return -EPERM;
+> +#endif
+> +
+>  	retval = security_task_setscheduler(p, policy, param);
+>  	if (retval)
+>  		return retval;
+> 
