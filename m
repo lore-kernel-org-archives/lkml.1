@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbYBAJqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbYBAJrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbYBAJqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbYBAJqM
+	id S1757314AbYBAJrr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYBAJrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:46:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40463 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbYBAJqL (ORCPT
+	Fri, 1 Feb 2008 04:47:40 -0500
+Received: from greensrv.RZ.UniBw-Muenchen.de ([137.193.10.35]:59414 "EHLO
+	GreenSrv.rz.unibw-muenchen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752887AbYBAJrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:46:11 -0500
-Subject: Re: What's the status of x2APIC support in Linux kernel?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Rijndael Cosque <rijcos@gmail.com>
-Cc: linux-kernel@vger.kernel.org, travis@sgi.com
-In-Reply-To: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com>
-References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 10:46:13 +0100
-Message-Id: <1201859173.32654.38.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Fri, 1 Feb 2008 04:47:39 -0500
+X-Remarks: If SPAM is relayed via GreenSrv.rz.unibw-muenchen.de to outside of unibw-muenchen.de, please report it to abuse@unibw-muenchen.de
+Message-ID: <47A2EAAF.90600@pc0312b.rz.unibw-muenchen.de>
+Date: Fri, 01 Feb 2008 10:47:27 +0100
+From: Claude Frantz <claude@pc0312b.rz.unibw-muenchen.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: permission denied while load kernel module using modprobe
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello !
 
-On Fri, 2008-02-01 at 16:43 +0800, Rijndael Cosque wrote:
-> Hi all,
-> 
-> I found the x2APIC spec via http://www.intel.com/products/processor/manuals/.
-> 
-> Looks at present there is no x2APIC support in Linux kernel 2.6.24?
-> 
-> Is there any experimental patch available for Linux kernel? -- I
-> googled "x2APIC Linux";  looks no patch for now?
+As user "root" I'm trying to load the ath_pci module from madwifi using
+the "modprobe" command, which is the recommanded way. But I get the
+following diag in the log:
 
-I think SGI has an implementation hidden away somewhere, Mike?
+modprobe: WARNING: Could not open '/lib/modules/2.6.23.8-34.fc7/net/ath_hal.ko': Permission denied 
+modprobe: WARNING: Could not open '/lib/modules/2.6.23.8-34.fc7/net/wlan.ko': Permission denied 
+modprobe: FATAL: Could not open '/lib/modules/2.6.23.8-34.fc7/net/ath_rate_sample.ko': Permission denied 
+kernel: Error loading module "ath_rate_sample"
 
+
+Fedora 7 using kernel 2.6.23.8-34.fc7 as you can see above.
+All components in /lib/modules/2.6.23.8-34.fc7/net/ have the permission -rwxr-xr-x 
+and the directory itself has drwxr-xr-x 
+
+Which permission is wrong here ?
+
+Thanks a lot !
+
+Claude
