@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYBANwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYBAN6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbYBANwX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYBANwO
+	id S1755483AbYBAN6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYBAN6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:52:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50807 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755113AbYBANwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:52:13 -0500
-Date: Fri, 1 Feb 2008 14:51:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       Mika Penttil? <mika.penttila@kolumbus.fi>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
-	format.
-Message-ID: <20080201135125.GA16249@elte.hu>
-References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <20080128150022.GE27928@elte.hu> <20080128161239.GA28906@elte.hu> <200801281802.01748.rjw@sisk.pl>
+	Fri, 1 Feb 2008 08:58:32 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:36889 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752090AbYBAN6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 08:58:31 -0500
+Message-ID: <47A325BC.6030305@ru.mvista.com>
+Date: Fri, 01 Feb 2008 16:59:24 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801281802.01748.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       kgdb-bugreport@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Kgdb-bugreport] [PATCH 4/5] KGDB-8250: refactor configuration
+References: <479FBAE8.3070809@web.de> <479FC57D.5030104@web.de>
+In-Reply-To: <479FC57D.5030104@web.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Jan Kiszka wrote:
 
-> >  arch/x86/kernel/built-in.o: In function `wakeup_start':
-> >  : undefined reference to `swsusp_pg_dir'
-> > 
-> > config attached.
-> 
-> I see.  CONFIG_HIBERNATION && CONFIG_ACPI -> CONFIG_ACPI_SLEEP and the 
-> Makefile in arch/x86/kernel/acpi/ wants to build wakeup.S, which is 
-> not necessary.  Hmm.
-> 
-> We can do a couple of things:
-> (1) make wakeup_$(BITS).o depend on CONFIG_SUSPEND (alone)
->     This will build it if CONFIG_SUSPEND is set, but CONFIG_ACPI is not
->     (still, that's consistent with the change in question).
-> (2) make wakeup_$(BITS).o depend on CONFIG_SUSPEND and CONFIG_ACPI
-> (3) define CONFIG_ACPI_SUSPEND depending on ACPI and SUSPEND and
->     make wakeup_$(BITS).o as well as swsusp_pg_dir depend on that (most
->     elegant)
-> 
-> Which one do you prefer?
+> Sorry, previous version was missing some __init[data] attributes which
+> were dropped in an intermediate stage. Here comes an updated patch:
 
-no strong preference here - pick the one you like best and send a patch 
-please :-)
+> <---snip--->
 
-	Ingo
+> This major refactoring of the quite complex kgdb8250 configuration does
+> the following:
+
+>  - ensures that static configurations according to SERIAL_PORT_DFNS are
+>    always loaded first
+>  - tries to pull more accurate configuration via serial8250_get_port_def
+>    if simple-config is used
+>  - detects empty/invalid simple-configs
+>  - enforces KGDB_PORT_NUM <= SERIAL_8250_NR_UARTS at kconfig level
+>  - removes kgdb8250_add_port and its hook in serial_core (calling
+>    serial8250_get_port_def in demand should provide us the same
+>    information)
+
+    You left powerpc-lite.patch broken with this change as it has multiple 
+calls to kgdb8250_add_port()...
+
+> Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
+
+> Index: b/drivers/serial/serial_core.c
+> ===================================================================
+> --- a/drivers/serial/serial_core.c
+> +++ b/drivers/serial/serial_core.c
+[...]
+> @@ -2370,12 +2369,6 @@ int uart_add_one_port(struct uart_driver
+>  	 */
+>  	port->flags &= ~UPF_DEAD;
+>  
+> -#if defined(CONFIG_KGDB_8250)
+> -	/* Add any 8250-like ports we find later. */
+> -	if (port->type <= PORT_MAX_8250)
+> -		kgdb8250_add_port(port->line, port);
+> -#endif
+> -
+
+    I'm afraid this wasn't correct from the very start since this can add 
+ports with .iotype that 8250_kgdb.c does not support. So, nothing to regret 
+here...
+
+WBR, Sergei
