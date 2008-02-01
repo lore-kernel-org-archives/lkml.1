@@ -1,228 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYBAJG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbYBAJIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbYBAJG3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYBAJGD
+	id S1753282AbYBAJIf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:08:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYBAJID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:06:03 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:59799 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbYBAJF7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:05:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OO7UDMsYWo8Lrwv6Y0tNlm/Y4zgyZz+tyQGxeWzctFKAW4LMttB0t8QweIhtmT7+8MYuoODfM/ri13KCJ/dPWFRR2u4ez/tc7LHNHkok8R8MCUfHeH0pFM70g/2rIqC6Zu1hQ4/Jcyixh2Xi9M0mKPC5EJyePUvIQ/p+0JUhN5M=
-Message-ID: <386072610802010105w78a6a558rbd17bd516e912f4c@mail.gmail.com>
-Date: Fri, 1 Feb 2008 17:05:55 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: [PATCH 23/37] Suspend: Clean up Kconfig (V2)
-Cc: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Pavel Machek" <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Len Brown" <len.brown@intel.com>
-In-Reply-To: <9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
+	Fri, 1 Feb 2008 04:08:03 -0500
+Received: from namei.org ([69.55.235.186]:38303 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751342AbYBAJH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 04:07:59 -0500
+Date: Fri, 1 Feb 2008 20:07:01 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Andrew G. Morgan" <morgan@kernel.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] per-process securebits
+In-Reply-To: <20080201002837.d84fc029.akpm@linux-foundation.org>
+Message-ID: <Xine.LNX.4.64.0802011941140.16283@us.intercode.com.au>
+References: <47A2D439.9050704@kernel.org> <20080201002837.d84fc029.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <edae89f5d1eb1fbe1cab74333db5a8e29776900e.1201840183.git.len.brown@intel.com>
-	 <9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 1, 2008 12:36 PM, Len Brown <lenb@kernel.org> wrote:
-> From: Johannes Berg <johannes@sipsolutions.net>
->
-> This cleans up the suspend Kconfig and removes the need to
-> declare centrally which architectures support suspend. All
-> architectures that currently support suspend are modified
-> accordingly.
->
+On Fri, 1 Feb 2008, Andrew Morton wrote:
 
-Thanks, OK for Blackfin
+> Really?  I'd feel a lot more comfortable if yesterday's version 1 had led
+> to a stream of comments from suitably-knowledgeable kernel developers which
+> indicated that those developers had scrutinised this code from every
+> conceivable angle and had declared themselves 100% happy with it.
 
-Acked-by: Bryan Wu <bryan.wu@analog.com>
+FWIW, I've reviewed the patch in detail a couple of times, and don't see 
+any issues with it that haven't already been raised by Serge.
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Acked-by: Russell King <rmk@arm.linux.org.uk>
-> Acked-by: Paul Mackerras <paulus@samba.org>
-> Acked-by: Ralf Baechle <ralf@linux-mips.org>
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
-> Cc: Pavel Machek <pavel@suse.cz>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/arm/Kconfig      |    3 +++
->  arch/blackfin/Kconfig |    4 ++++
->  arch/frv/Kconfig      |    5 +++++
->  arch/mips/Kconfig     |    4 ++++
->  arch/powerpc/Kconfig  |    4 ++++
->  arch/sh/Kconfig       |    4 ++++
->  arch/x86/Kconfig      |    4 ++++
->  kernel/power/Kconfig  |   21 +++------------------
->  8 files changed, 31 insertions(+), 18 deletions(-)
->
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 77201d3..a00d8b9 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -1035,6 +1035,9 @@ menu "Power management options"
->
->  source "kernel/power/Kconfig"
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +
->  endmenu
->
->  source "net/Kconfig"
-> diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-> index fc7ca86..4802eb7 100644
-> --- a/arch/blackfin/Kconfig
-> +++ b/arch/blackfin/Kconfig
-> @@ -898,6 +898,10 @@ endmenu
->  menu "Power management options"
->  source "kernel/power/Kconfig"
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  choice
->         prompt "Select PM Wakeup Event Source"
->         default PM_WAKEUP_GPIO_BY_SIC_IWR
-> diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
-> index 43153e7..2e25b95 100644
-> --- a/arch/frv/Kconfig
-> +++ b/arch/frv/Kconfig
-> @@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
->  #        should probably wait a while.
->
->  menu "Power management options"
-> +
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  source kernel/power/Kconfig
->  endmenu
->
-> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-> index 4fad0a3..e387f3a 100644
-> --- a/arch/mips/Kconfig
-> +++ b/arch/mips/Kconfig
-> @@ -2086,6 +2086,10 @@ endmenu
->
->  menu "Power management options"
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  source "kernel/power/Kconfig"
->
->  endmenu
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 68f0cf7..824140d 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -166,6 +166,10 @@ config ARCH_HIBERNATION_POSSIBLE
->         depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
->         default y
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-> +
->  config PPC_DCR_NATIVE
->         bool
->         default n
-> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-> index 1cd9c8f..b30c4c3 100644
-> --- a/arch/sh/Kconfig
-> +++ b/arch/sh/Kconfig
-> @@ -882,6 +882,10 @@ endmenu
->  menu "Power management options (EXPERIMENTAL)"
->  depends on EXPERIMENTAL && SYS_SUPPORTS_PM
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !SMP
-> +
->  source kernel/power/Kconfig
->
->  endmenu
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 9c511dd..340e81a 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -113,6 +113,10 @@ config ARCH_HIBERNATION_POSSIBLE
->         def_bool y
->         depends on !SMP || !X86_VOYAGER
->
-> +config ARCH_SUSPEND_POSSIBLE
-> +       def_bool y
-> +       depends on !X86_VOYAGER
-> +
->  config ZONE_DMA32
->         bool
->         default X86_64
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index fd76d54..f8153fd 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -85,7 +85,7 @@ config PM_TRACE_RTC
->  config PM_SLEEP_SMP
->         bool
->         depends on SMP
-> -       depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-> +       depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
->         depends on PM_SLEEP
->         select HOTPLUG_CPU
->         default y
-> @@ -95,29 +95,14 @@ config PM_SLEEP
->         depends on SUSPEND || HIBERNATION
->         default y
->
-> -config SUSPEND_UP_POSSIBLE
-> -       bool
-> -       depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
-> -                  || SUPERH || FRV
-> -       depends on !SMP
-> -       default y
-> -
-> -config SUSPEND_SMP_POSSIBLE
-> -       bool
-> -       depends on (X86 && !X86_VOYAGER) \
-> -                  || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
-> -       depends on SMP
-> -       default y
-> -
->  config SUSPEND
->         bool "Suspend to RAM and standby"
-> -       depends on PM
-> -       depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
-> +       depends on PM && ARCH_SUSPEND_POSSIBLE
->         default y
->         ---help---
->           Allow the system to enter sleep states in which main memory is
->           powered and thus its contents are preserved, such as the
-> -         suspend-to-RAM state (i.e. the ACPI S3 state).
-> +         suspend-to-RAM state (e.g. the ACPI S3 state).
->
->  config HIBERNATION
->         bool "Hibernation (aka 'suspend to disk')"
-> --
-> 1.5.4.rc5.16.gc0279
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+You can add my reviewed-by.
+
+I think it does need more eyes, and some time baking in -mm.  
+
+File capabilities are at least marked experimental, although it's not 
+clear what the criteria would be to unmark them.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
