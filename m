@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935237AbYBAEtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934882AbYBAEuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935237AbYBAEtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 23:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYBAEmg
+	id S934882AbYBAEuW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 23:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYBAEmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 23:42:36 -0500
-Received: from mga05.intel.com ([192.55.52.89]:61252 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759450AbYBAEmE (ORCPT
+	Thu, 31 Jan 2008 23:42:38 -0500
+Received: from mga10.intel.com ([192.55.52.92]:46275 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759118AbYBAEmC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 23:42:04 -0500
+	Thu, 31 Jan 2008 23:42:02 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,288,1199692800"; 
-   d="scan'208";a="511516576"
+   d="scan'208";a="511516610"
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 14/37] PM: Convert PM notifiers to out-of-line code
-Date: Thu, 31 Jan 2008 23:36:45 -0500
-Message-Id: <8ff7d174bef41a219ea7a2d4e99cfd4e8aae0c8c.1201840183.git.len.brown@intel.com>
+Subject: [PATCH 25/37] suspend: fix ia64 allmodconfig build
+Date: Thu, 31 Jan 2008 23:36:56 -0500
+Message-Id: <fbfe034f5ef51cdd8338a868a2101608f8c45757.1201840183.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.5.4.rc5.16.gc0279
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -31,113 +30,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This patch (as1008b) converts the PM notifier routines from inline
-calls to out-of-line code.  It also prevents pm_chain_head from
-being created when CONFIG_PM_SLEEP isn't enabled, and EXPORTs the
-notifier registration and unregistration routines.
+kernel/power/main.c:488: error: ‘pm_test_attr’ undeclared here (not in a function)
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/linux/suspend.h |   13 ++-----------
- kernel/power/main.c     |   28 ++++++++++++++++++++++++++--
- kernel/power/power.h    |   12 ++++--------
- 3 files changed, 32 insertions(+), 21 deletions(-)
+ kernel/power/main.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 40280df..51283e0 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -213,17 +213,8 @@ void save_processor_state(void);
- void restore_processor_state(void);
- 
- /* kernel/power/main.c */
--extern struct blocking_notifier_head pm_chain_head;
--
--static inline int register_pm_notifier(struct notifier_block *nb)
--{
--	return blocking_notifier_chain_register(&pm_chain_head, nb);
--}
--
--static inline int unregister_pm_notifier(struct notifier_block *nb)
--{
--	return blocking_notifier_chain_unregister(&pm_chain_head, nb);
--}
-+extern int register_pm_notifier(struct notifier_block *nb);
-+extern int unregister_pm_notifier(struct notifier_block *nb);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
 diff --git a/kernel/power/main.c b/kernel/power/main.c
-index fc717b8..0a9f269 100644
+index 5688168..050a607 100644
 --- a/kernel/power/main.c
 +++ b/kernel/power/main.c
-@@ -24,13 +24,37 @@
+@@ -53,10 +53,6 @@ int pm_notifier_call_chain(unsigned long val)
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
  
- #include "power.h"
- 
--BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+-#endif /* CONFIG_PM_SLEEP */
 -
- DEFINE_MUTEX(pm_mutex);
- 
- unsigned int pm_flags;
- EXPORT_SYMBOL(pm_flags);
- 
-+#ifdef CONFIG_PM_SLEEP
-+
-+/* Routines for PM-transition notifications */
-+
-+static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
-+
-+int register_pm_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&pm_chain_head, nb);
-+}
-+EXPORT_SYMBOL_GPL(register_pm_notifier);
-+
-+int unregister_pm_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_unregister(&pm_chain_head, nb);
-+}
-+EXPORT_SYMBOL_GPL(unregister_pm_notifier);
-+
-+int pm_notifier_call_chain(unsigned long val)
-+{
-+	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
-+			== NOTIFY_BAD) ? -EINVAL : 0;
-+}
-+
-+#endif /* CONFIG_PM_SLEEP */
-+
+-#ifdef CONFIG_SUSPEND
+-
  #ifdef CONFIG_PM_DEBUG
  int pm_test_level = TEST_NONE;
  
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index f9f0d4d..a9732fd 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -172,14 +172,10 @@ static inline int suspend_devices_and_enter(suspend_state_t state)
- }
- #endif /* !CONFIG_SUSPEND */
+@@ -132,6 +128,7 @@ power_attr(pm_test);
+ static inline int suspend_test(int level) { return 0; }
+ #endif /* !CONFIG_PM_DEBUG */
  
--/* kernel/power/common.c */
--extern struct blocking_notifier_head pm_chain_head;
--
--static inline int pm_notifier_call_chain(unsigned long val)
--{
--	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
--			== NOTIFY_BAD) ? -EINVAL : 0;
--}
-+#ifdef CONFIG_PM_SLEEP
-+/* kernel/power/main.c */
-+extern int pm_notifier_call_chain(unsigned long val);
-+#endif
++#endif /* CONFIG_PM_SLEEP */
  
- #ifdef CONFIG_HIGHMEM
- unsigned int count_highmem_pages(void);
+ #ifdef CONFIG_SUSPEND
+ 
+@@ -495,7 +492,7 @@ static struct attribute * g[] = {
+ #ifdef CONFIG_PM_TRACE
+ 	&pm_trace_attr.attr,
+ #endif
+-#ifdef CONFIG_PM_DEBUG
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
+ 	&pm_test_attr.attr,
+ #endif
+ 	NULL,
 -- 
 1.5.4.rc5.16.gc0279
 
