@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764927AbYBAN3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764219AbYBANa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764927AbYBAN3D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:29:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763006AbYBAN2x
+	id S1764219AbYBANa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756979AbYBANaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:28:53 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46573 "EHLO pasmtpA.tele.dk"
+	Fri, 1 Feb 2008 08:30:12 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47471 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756217AbYBAN2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:28:52 -0500
-Date: Fri, 1 Feb 2008 14:28:54 +0100
+	id S1754739AbYBANaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 08:30:11 -0500
+Date: Fri, 1 Feb 2008 14:30:13 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Holger Wolf <wolf@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] latencytop: Change Kconfig dependency.
-Message-ID: <20080201132854.GB13251@uranus.ravnborg.org>
-References: <20080201130636.GA29660@osiris.boeblingen.de.ibm.com>
+       Ingo Molnar <mingo@elte.hu>, Holger Wolf <wolf@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] latencytop s390 support.
+Message-ID: <20080201133013.GC13251@uranus.ravnborg.org>
+References: <20080201130811.GB29660@osiris.boeblingen.de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080201130636.GA29660@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080201130811.GB29660@osiris.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01, 2008 at 02:06:36PM +0100, Heiko Carstens wrote:
+On Fri, Feb 01, 2008 at 02:08:11PM +0100, Heiko Carstens wrote:
+> Subject: [PATCH] latencytop s390 support.
+> 
 > From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> Change latencytop Kconfig entry so it doesn't list the archictectures
-> that support it. Instead introduce HAVE_LATENCY_SUPPORT which any
-> architecture can set. Should reduce patch conflicts.
-> 
-> Cc: Arjan van de Ven <arjan@linux.intel.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > Cc: Holger Wolf <wolf@linux.vnet.ibm.com>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 > ---
 > 
-> If ok, should this go in via the x86 tree?
+> Will go in via the s390 git tree if acceptable.
 > 
->  arch/x86/Kconfig  |    3 +++
->  lib/Kconfig.debug |    2 +-
->  2 files changed, 4 insertions(+), 1 deletion(-)
+>  arch/s390/Kconfig             |    3 +++
+>  arch/s390/kernel/stacktrace.c |   31 +++++++++++++++++++++++--------
+>  2 files changed, 26 insertions(+), 8 deletions(-)
 > 
-> Index: linux-2.6/arch/x86/Kconfig
+> Index: linux-2.6/arch/s390/Kconfig
 > ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig
-> +++ linux-2.6/arch/x86/Kconfig
-> @@ -44,6 +44,9 @@ config LOCKDEP_SUPPORT
+> --- linux-2.6.orig/arch/s390/Kconfig
+> +++ linux-2.6/arch/s390/Kconfig
+> @@ -20,6 +20,9 @@ config LOCKDEP_SUPPORT
 >  config STACKTRACE_SUPPORT
 >  	def_bool y
 >  
 > +config HAVE_LATENCYTOP_SUPPORT
 > +	def_bool y
 > +
-No.
-Please do:
- config X86
-+	select HAVE_LATENCYTOP_SUPPORT
 
-Yes - this is a valid use of select.
+Same comment as for the x86 version.
+Use:
 
-See Documentation/kbuild/kconfig-language.txt
+ config S390
+	select HAVE_....
 
-Sam
+	Sam
