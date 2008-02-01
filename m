@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764424AbYBAC0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761301AbYBACbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764424AbYBAC0p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 21:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbYBAC0h
+	id S1761301AbYBACbY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 21:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYBACbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 21:26:37 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46457 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752434AbYBAC0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 21:26:37 -0500
-Date: Thu, 31 Jan 2008 18:26:36 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+	Thu, 31 Jan 2008 21:31:16 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:34634 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753405AbYBACbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 21:31:15 -0500
+Date: Thu, 31 Jan 2008 20:31:13 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-In-Reply-To: <20080201022321.GZ26420@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801311824360.25839@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random>
- <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com>
- <20080131232842.GQ7185@v2.random> <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
- <20080201022321.GZ26420@sgi.com>
+Subject: Re: [patch 1/3] mmu_notifier: Core code
+Message-ID: <20080201023113.GB26420@sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131045812.553249048@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080131045812.553249048@sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Robin Holt wrote:
+Christoph,
 
-> > Mutex locking? Could you be more specific?
-> 
-> I think he is talking about the external locking that xpmem will need
-> to do to ensure we are not able to refault pages inside of regions that
-> are undergoing recall/page table clearing.  At least that has been my
-> understanding to this point.
+Jack has repeatedly pointed out needing an unregister outside the
+mmap_sem.  I still don't see the benefit to not having the lock in the mm.
 
-Right this has to be something like rw spinlock. Its needed for both 
-GRU/XPmem. Not sure about KVM.
+Thanks,
+Robin
 
-Take the read lock for invalidate operations. These can occur 
-concurrently. (Or a simpler implementation for the GRU may just use a 
-spinlock).
-
-The write lock must be held for populate operations.
-
-Lock can be refined as needed by the notifier driver. F.e. locking could 
-be restricted to certain ranges.
-
+Index: mmu_notifiers-cl-v4/include/linux/mm_types.h
+===================================================================
+--- mmu_notifiers-cl-v4.orig/include/linux/mm_types.h	2008-01-31 19:56:08.000000000 -0600
++++ mmu_notifiers-cl-v4/include/linux/mm_types.h	2008-01-31 19:56:58.000000000 -0600
+@@ -155,6 +155,7 @@ struct vm_area_struct {
+ 
+ struct mmu_notifier_head {
+ #ifdef CONFIG_MMU_NOTIFIER
++	spinlock_t	list_lock;
+ 	struct hlist_head head;
+ #endif
+ };
+Index: mmu_notifiers-cl-v4/mm/mmu_notifier.c
+===================================================================
+--- mmu_notifiers-cl-v4.orig/mm/mmu_notifier.c	2008-01-31 19:56:08.000000000 -0600
++++ mmu_notifiers-cl-v4/mm/mmu_notifier.c	2008-01-31 20:26:31.000000000 -0600
+@@ -60,25 +60,19 @@ int mmu_notifier_age_page(struct mm_stru
+  * Note that all notifiers use RCU. The updates are only guaranteed to be
+  * visible to other processes after a RCU quiescent period!
+  */
+-void __mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
+-{
+-	hlist_add_head_rcu(&mn->hlist, &mm->mmu_notifier.head);
+-}
+-EXPORT_SYMBOL_GPL(__mmu_notifier_register);
+-
+ void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
+ {
+-	down_write(&mm->mmap_sem);
+-	__mmu_notifier_register(mn, mm);
+-	up_write(&mm->mmap_sem);
++	spin_lock(&mm->mmu_notifier.list_lock);
++	hlist_add_head_rcu(&mn->hlist, &mm->mmu_notifier.head);
++	spin_unlock(&mm->mmu_notifier.list_lock);
+ }
+ EXPORT_SYMBOL_GPL(mmu_notifier_register);
+ 
+ void mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
+ {
+-	down_write(&mm->mmap_sem);
++	spin_lock(&mm->mmu_notifier.list_lock);
+ 	hlist_del_rcu(&mn->hlist);
+-	up_write(&mm->mmap_sem);
++	spin_unlock(&mm->mmu_notifier.list_lock);
+ }
+ EXPORT_SYMBOL_GPL(mmu_notifier_unregister);
+ 
