@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764805AbYBADDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbYBADEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764805AbYBADDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 22:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbYBADDo
+	id S932457AbYBADEf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 22:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYBADE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 22:03:44 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47259 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752446AbYBADDn (ORCPT
+	Thu, 31 Jan 2008 22:04:26 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:46974 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbYBADEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 22:03:43 -0500
-Date: Thu, 31 Jan 2008 19:03:43 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jack Steiner <steiner@sgi.com>
-cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com
-Subject: Re: [patch 1/3] mmu_notifier: Core code
-In-Reply-To: <20080201030104.GA29417@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801311901580.6272@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.553249048@sgi.com>
- <20080201023113.GB26420@sgi.com> <Pine.LNX.4.64.0801311838070.26594@schroedinger.engr.sgi.com>
- <20080201030104.GA29417@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Jan 2008 22:04:25 -0500
+Date: Fri, 01 Feb 2008 12:03:59 +0900 (JST)
+Message-Id: <20080201.120359.51771100.miyoshi@linux.bs1.fc.nec.co.jp>
+To: t-sato@yk.jp.nec.com
+Cc: tytso@MIT.EDU, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature
+From: Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>
+In-Reply-To: <01cb01c861af$8515d230$41a8400a@bsd.tnes.nec.co.jp>
+References: <20080125121851.GA3361@dmon-lap.sw.ru>
+	<20080125133329.GB8184@mit.edu>
+	<01cb01c861af$8515d230$41a8400a@bsd.tnes.nec.co.jp>
+X-Mailer: Mew version 5.1.50 on XEmacs 21.4.19 (Constant Variable)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Jan 2008, Jack Steiner wrote:
 
-> I currently unlink the mmu_notifier when the last GRU mapping is closed. For
-> example, if a user does a:
+Sato-san,
+
+> > What you *could* do is to start putting processes to sleep if they
+> > attempt to write to the frozen filesystem, and then detect the
+> > deadlock case where the process holding the file descriptor used to
+> > freeze the filesystem gets frozen because it attempted to write to the
+> > filesystem --- at which point it gets some kind of signal (which
+> > defaults to killing the process), and the filesystem is unfrozen and
+> > as part of the unfreeze you wake up all of the processes that were put
+> > to sleep for touching the frozen filesystem.
 > 
->         gru_create_context();
->         ...
->         gru_destroy_context();
-> 
-> the mmu_notifier is unlinked and all task tables allocated
-> by the driver are freed. Are you suggesting that I leave tables
-> allocated until the task terminates??
+> I don't think close() usually writes to journal and the deadlock occurs.
+> Is there the special case which close() writes to journal in case of
+> getting signal?
 
-You are in user space and calling into the kernel somehow. The 
-mmap_sem is not held at that point so its no trouble to use the unregister 
-function. After that wait for rcu and then free your tables.
+I am afraid that Ted-san is concerning about the fact that the freeze
+program can touch the target filesystem by mistake (rather than just
+close() and its journal behavior)
 
-> I assumed that I would need to use call_rcu() or synchronize_rcu()
-> before the table is actually freed. That's still on my TODO list.
+# cd /mnt
+# freeze /mnt > ./logfile
 
-Right.
+This is more unclear to admins than "rm -rf /" case.
+So we need to implement some bail-out mechanism as he pointed out,
+such that if kernel noticed that the freezer is trying to touch
+the target filesystem, kernel would kill the freezer and
+automatically unfreeze the filesystem again.
 
+Regards, 
