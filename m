@@ -1,91 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbYBATNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbYBATO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbYBATNU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 14:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYBATNN
+	id S1758737AbYBATO1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 14:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYBATOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 14:13:13 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47015 "EHLO
+	Fri, 1 Feb 2008 14:14:18 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47057 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752652AbYBATNM (ORCPT
+	with ESMTP id S1754531AbYBATOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 14:13:12 -0500
-Date: Fri, 1 Feb 2008 11:13:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/3] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080201103221.GH26420@sgi.com>
-Message-ID: <Pine.LNX.4.64.0802011105030.18163@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com>
- <20080201042408.GG26420@sgi.com> <Pine.LNX.4.64.0801312042500.20675@schroedinger.engr.sgi.com>
- <20080201103221.GH26420@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 1 Feb 2008 14:14:17 -0500
+Message-Id: <20080201191415.284635000@sgi.com>
+References: <20080201191414.961558000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 01 Feb 2008 11:14:16 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] init: move setup of nr_cpu_ids to as early as possible
+Content-Disposition: inline; filename=mv-set-nr_cpu_ids
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Robin Holt wrote:
+Move the setting of nr_cpu_ids from sched_init() to init/main.c,
+so that it's available as early as possible.
 
-> Maybe I haven't looked closely enough, but let's start with some common
-> assumptions.  Looking at do_wp_page from 2.6.24 (I believe that is what
-> my work area is based upon).  On line 1559, the function begins being
-> declared.
+Based on the linux-2.6.git + x86.git
 
-Aah I looked at the wrong file.
-
-> On lines 1614 and 1630, we do "goto unlock" where the _end callout is
-> soon made.  The _begin callout does not come until after those branches
-> have been taken (occurs on line 1648).
-
-There are actually two cases...
-
+Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- mm/memory.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ init/main.c    |   21 +++++++++++++++++++++
+ kernel/sched.c |    7 -------
+ 2 files changed, 21 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-02-01 11:04:21.000000000 -0800
-+++ linux-2.6/mm/memory.c	2008-02-01 11:12:12.000000000 -0800
-@@ -1611,8 +1611,10 @@ static int do_wp_page(struct mm_struct *
- 			page_table = pte_offset_map_lock(mm, pmd, address,
- 							 &ptl);
- 			page_cache_release(old_page);
--			if (!pte_same(*page_table, orig_pte))
--				goto unlock;
-+			if (!pte_same(*page_table, orig_pte)) {
-+				pte_unmap_unlock(page_table, ptl);
-+				goto check_dirty;
-+			}
+--- a/init/main.c
++++ b/init/main.c
+@@ -363,10 +363,30 @@ static void __init smp_init(void)
+ #endif
  
- 			page_mkwrite = 1;
- 		}
-@@ -1628,7 +1630,8 @@ static int do_wp_page(struct mm_struct *
- 		if (ptep_set_access_flags(vma, address, page_table, entry,1))
- 			update_mmu_cache(vma, address, entry);
- 		ret |= VM_FAULT_WRITE;
--		goto unlock;
-+		pte_unmap_unlock(page_table, ptl);
-+		goto check_dirty;
+ static inline void setup_per_cpu_areas(void) { }
++static inline void setup_nr_cpu_ids(void) { }
+ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
+ 
+ #else
+ 
++/*
++ * Setup number of possible processor ids.
++ * This is different than setup_max_cpus as it accounts
++ * for zero bits embedded between one bits in the cpu
++ * possible map due to disabled cpu cores.
++ */
++int nr_cpu_ids __read_mostly = NR_CPUS;
++EXPORT_SYMBOL(nr_cpu_ids);
++
++static void __init setup_nr_cpu_ids(void)
++{
++	int cpu, highest_cpu = 0;
++
++	for_each_possible_cpu(cpu)
++		highest_cpu = cpu;
++
++	nr_cpu_ids = highest_cpu + 1;
++}
++
+ #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+ 
+@@ -542,6 +562,7 @@ asmlinkage void __init start_kernel(void
+ 	setup_arch(&command_line);
+ 	setup_command_line(command_line);
+ 	unwind_setup();
++	setup_nr_cpu_ids();
+ 	setup_per_cpu_areas();
+ 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+ 
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5925,10 +5925,6 @@ void __init migration_init(void)
+ 
+ #ifdef CONFIG_SMP
+ 
+-/* Number of possible processor ids */
+-int nr_cpu_ids __read_mostly = NR_CPUS;
+-EXPORT_SYMBOL(nr_cpu_ids);
+-
+ #ifdef CONFIG_SCHED_DEBUG
+ 
+ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level)
+@@ -7161,7 +7157,6 @@ static void init_tg_rt_entry(struct rq *
+ 
+ void __init sched_init(void)
+ {
+-	int highest_cpu = 0;
+ 	int i, j;
+ 
+ #ifdef CONFIG_SMP
+@@ -7213,7 +7208,6 @@ void __init sched_init(void)
+ #endif
+ 		init_rq_hrtick(rq);
+ 		atomic_set(&rq->nr_iowait, 0);
+-		highest_cpu = i;
  	}
  
- 	/*
-@@ -1684,10 +1687,10 @@ gotten:
- 		page_cache_release(new_page);
- 	if (old_page)
- 		page_cache_release(old_page);
--unlock:
- 	pte_unmap_unlock(page_table, ptl);
- 	mmu_notifier(invalidate_range_end, mm,
- 				address, address + PAGE_SIZE, 0);
-+check_dirty:
- 	if (dirty_page) {
- 		if (vma->vm_file)
- 			file_update_time(vma->vm_file);
+ 	set_load_weight(&init_task);
+@@ -7223,7 +7217,6 @@ void __init sched_init(void)
+ #endif
+ 
+ #ifdef CONFIG_SMP
+-	nr_cpu_ids = highest_cpu + 1;
+ 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
+ #endif
+ 
+
+-- 
