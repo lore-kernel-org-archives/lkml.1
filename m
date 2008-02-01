@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764794AbYBALIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765333AbYBALIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764794AbYBALIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYBALIU
+	id S1765333AbYBALIo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764435AbYBALIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:08:20 -0500
-Received: from smtp23.orange.fr ([193.252.22.30]:9223 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbYBALIT convert rfc822-to-8bit (ORCPT
+	Fri, 1 Feb 2008 06:08:23 -0500
+Received: from hu-out-0506.google.com ([72.14.214.237]:10079 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764329AbYBALIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:08:19 -0500
-X-ME-UUID: 20080201110817376.5BC9E1C02C4C@mwinf2341.orange.fr
-Message-ID: <47A2FD9A.8020809@cosmosbay.com>
-Date: Fri, 01 Feb 2008 12:08:10 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Shuduo Sang <sangshuduo@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Lars Noschinski <lklml@ml.noschinski.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: How does ext2 implement sparse files?
-References: <20080131152823.GA29422@lars.home.noschinski.de>	 <p73myql50d2.fsf@bingen.suse.de> <ee101c360802010234m4a7199e7g4cc9131484529b1c@mail.gmail.com>
-In-Reply-To: <ee101c360802010234m4a7199e7g4cc9131484529b1c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Fri, 1 Feb 2008 06:08:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=n4ICB02FtEpLxlhYwPdrvG/de6jiDUbcDfJ4zz2x0ScaLFycP20XcnvCNDIrUrTlPtH92JcX7KeWUyJFursrlyJzEBdW6/FlT0pyLuyKQvgkTIrz45P5CGlNLvVMNfo6Ayc0nZdmSraesbKOK5GVIQ+x8qhgvfVBOKe75v3YSfE=
+Subject: Re: [PATCH] x86: sparse errors from string_32.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080201105624.GD27178@elte.hu>
+References: <1201846516.23523.87.camel@brick>
+	 <20080201105624.GD27178@elte.hu>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 03:07:55 -0800
+Message-Id: <1201864075.23523.106.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shuduo Sang a écrit :
-> On Feb 1, 2008 2:14 AM, Andi Kleen <andi@firstfloor.org> wrote:
->   
->> Lars Noschinski <lklml@ml.noschinski.de> writes:
->>
->>     
->>> For an university project, we had to write a toy filesystem (ext2-like),
->>> for which I would like to implement sparse file support. For this, I
->>> digged through the ext2 source code; but I could not find the point,
->>> where ext2 detects holes.
->>>
->>> As far as I can see from fs/buffer.c, an hole is a buffer_head which is
->>> not mapped, but uptodate. But I cannot find a relevant source line,
->>> where ext2 makes usage of this information.
->>>       
->> It does not explicitely detect holes; holey data is just never written
->> so no space for it is allocated.
->>
->>     
->
-> does anybody know how to make a hole in a large file which already has
-> real content from user space application?
-> In my project I need this function to delete a piece of content from
-> an exist large effectively.
-> thanks.
->
->   
-Some OSes use fcntl() F_FREESP/F_FREESP64 to be able to free allocated 
-space in files (ie make holes if supported by underlying fs)
+On Fri, 2008-02-01 at 11:56 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> 
+> >  		case 1:
+> > -			*(unsigned char *)s = pattern;
+> > +			*(unsigned char *)s = pattern & 0xff;
+> 
+> i've applied your fix - but wouldnt it be cleaner to just cast the 
+> pattern variable to unsigned char instead?
 
-AFAIK, linux can generically do this only at the end of a file 
-(ftruncate()) , not at random points.
+I'm not sure, I went with this solution because of the explicit length
+being tested in the case statements.  The compiler can see it's all
+constant at this point anyway...if you want a cast-patch instead, just
+ask.
 
-XFS has special support for FREESP (it comes from IRIX), implemented as 
-an ioctl()
-
-Check for XFS_IOC_FREESP and XFS_IOC_UNRESVSP in fs/xfs/xfs_fs.h
-
-
-
-
+Harvey
 
