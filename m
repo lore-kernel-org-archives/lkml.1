@@ -1,56 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbYBAOXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYBAO0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbYBAOXU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 09:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYBAOXN
+	id S1756846AbYBAO0u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 09:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbYBAO0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 09:23:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38934 "EHLO mx2.mail.elte.hu"
+	Fri, 1 Feb 2008 09:26:43 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:35699 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753660AbYBAOXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 09:23:12 -0500
-Date: Fri, 1 Feb 2008 15:22:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: sleepy linux self-test
-Message-ID: <20080201142255.GA26232@elte.hu>
-References: <20080130131748.GA3796@elf.ucw.cz> <20080130193626.GA15384@elte.hu> <20080130232606.GB5937@elf.ucw.cz>
-MIME-Version: 1.0
+	id S1754056AbYBAO0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 09:26:42 -0500
+Date: Fri, 1 Feb 2008 17:29:05 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Toyo Abe <toyoa@mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] hrtimer_nanosleep: fix *rmtp handling
+Message-ID: <20080201142905.GA25833@tv-sign.ru>
+References: <20080201133758.GA25623@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080130232606.GB5937@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0002]
+In-Reply-To: <20080201133758.GA25623@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Andrew, the same patch, but re-diffed without the first one in series).
 
-* Pavel Machek <pavel@ucw.cz> wrote:
 
-> index b8b2de3..222d22d 100644
-> --- a/kernel/power/sleepy.c
-> +++ b/kernel/power/sleepy.c
-> @@ -31,7 +31,8 @@ int ksleepyd(void *data)
->  {
->  	msleep(5000);
->  	while (1) {
-> -		set_alarm(5);
-> +		if (set_alarm(5))
-> +			return -EFAULT;
->  		pm_suspend(PM_SUSPEND_MEM);
->  		msleep(500000);
+[PATCH 2/5] hrtimer_nanosleep: fix *rmtp handling
 
-could you send me a clean patch against mainline please? The above chunk 
-didnt apply because there's no ksleepyd (only test_sleep()). Thanks,
+Spotted by Pavel Emelyanov and Alexey Dobriyan.
 
-	Ingo
+hrtimer_nanosleep() sets restart_block->arg1 = rmtp, but this rmtp points to
+the local variable which lives in the caller's stack frame. This means that
+if sys_restart_syscall() actually happens and it is interrupted as well, we
+don't update the user-space variable, but write into the already dead stack
+frame.
+
+Change the callers to pass "__user *rmtp" to hrtimer_nanosleep(), and change
+hrtimer_nanosleep() to use copy_to_user() to actually update *rmtp.
+
+Small problem remains. man 2 nanosleep states that *rtmp should be written if
+nanosleep() was interrupted (it says nothing whether it is OK to update *rmtp
+if nanosleep returns 0), but (with or without this patch) we can dirty *rem
+even if nanosleep() returns 0.
+
+NOTE: this patch doesn't change compat_sys_nanosleep(), because it has other
+bugs. Fixed by the next patch.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+ include/linux/hrtimer.h |    2 -
+ kernel/hrtimer.c        |   51 +++++++++++++++++++++++++-----------------------
+ kernel/posix-timers.c   |   14 +------------
+ 3 files changed, 30 insertions(+), 37 deletions(-)
+
+--- MM/include/linux/hrtimer.h~HRT_RMTP	2008-01-27 17:07:39.000000000 +0300
++++ MM/include/linux/hrtimer.h	2008-01-31 14:01:53.000000000 +0300
+@@ -313,7 +313,7 @@ static inline u64 hrtimer_forward_now(st
+ 
+ /* Precise sleep: */
+ extern long hrtimer_nanosleep(struct timespec *rqtp,
+-			      struct timespec *rmtp,
++			      struct timespec __user *rmtp,
+ 			      const enum hrtimer_mode mode,
+ 			      const clockid_t clockid);
+ extern long hrtimer_nanosleep_restart(struct restart_block *restart_block);
+--- MM/kernel/hrtimer.c~HRT_RMTP	2008-02-01 13:43:52.000000000 +0300
++++ MM/kernel/hrtimer.c	2008-02-01 13:56:44.000000000 +0300
+@@ -1317,11 +1317,26 @@ static int __sched do_nanosleep(struct h
+ 	return t->task == NULL;
+ }
+ 
++static int update_rmtp(struct hrtimer *timer, struct timespec __user *rmtp)
++{
++	struct timespec rmt;
++	ktime_t rem;
++
++	rem = ktime_sub(timer->expires, timer->base->get_time());
++	if (rem.tv64 <= 0)
++		return 0;
++	rmt = ktime_to_timespec(rem);
++
++	if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
++		return -EFAULT;
++
++	return 1;
++}
++
+ long __sched hrtimer_nanosleep_restart(struct restart_block *restart)
+ {
+ 	struct hrtimer_sleeper t;
+-	struct timespec *rmtp;
+-	ktime_t time;
++	struct timespec __user  *rmtp;
+ 
+ 	restart->fn = do_no_restart_syscall;
+ 
+@@ -1331,12 +1346,11 @@ long __sched hrtimer_nanosleep_restart(s
+ 	if (do_nanosleep(&t, HRTIMER_MODE_ABS))
+ 		return 0;
+ 
+-	rmtp = (struct timespec *)restart->arg1;
++	rmtp = (struct timespec __user *)restart->arg1;
+ 	if (rmtp) {
+-		time = ktime_sub(t.timer.expires, t.timer.base->get_time());
+-		if (time.tv64 <= 0)
+-			return 0;
+-		*rmtp = ktime_to_timespec(time);
++		int ret = update_rmtp(&t.timer, rmtp);
++		if (ret <= 0)
++			return ret;
+ 	}
+ 
+ 	restart->fn = hrtimer_nanosleep_restart;
+@@ -1345,12 +1359,11 @@ long __sched hrtimer_nanosleep_restart(s
+ 	return -ERESTART_RESTARTBLOCK;
+ }
+ 
+-long hrtimer_nanosleep(struct timespec *rqtp, struct timespec *rmtp,
++long hrtimer_nanosleep(struct timespec *rqtp, struct timespec __user *rmtp,
+ 		       const enum hrtimer_mode mode, const clockid_t clockid)
+ {
+ 	struct restart_block *restart;
+ 	struct hrtimer_sleeper t;
+-	ktime_t rem;
+ 
+ 	hrtimer_init(&t.timer, clockid, mode);
+ 	t.timer.expires = timespec_to_ktime(*rqtp);
+@@ -1362,10 +1375,9 @@ long hrtimer_nanosleep(struct timespec *
+ 		return -ERESTARTNOHAND;
+ 
+ 	if (rmtp) {
+-		rem = ktime_sub(t.timer.expires, t.timer.base->get_time());
+-		if (rem.tv64 <= 0)
+-			return 0;
+-		*rmtp = ktime_to_timespec(rem);
++		int ret = update_rmtp(&t.timer, rmtp);
++		if (ret <= 0)
++			return ret;
+ 	}
+ 
+ 	restart = &current_thread_info()->restart_block;
+@@ -1381,8 +1393,7 @@ long hrtimer_nanosleep(struct timespec *
+ asmlinkage long
+ sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
+ {
+-	struct timespec tu, rmt;
+-	int ret;
++	struct timespec tu;
+ 
+ 	if (copy_from_user(&tu, rqtp, sizeof(tu)))
+ 		return -EFAULT;
+@@ -1390,15 +1401,7 @@ sys_nanosleep(struct timespec __user *rq
+ 	if (!timespec_valid(&tu))
+ 		return -EINVAL;
+ 
+-	ret = hrtimer_nanosleep(&tu, rmtp ? &rmt : NULL, HRTIMER_MODE_REL,
+-				CLOCK_MONOTONIC);
+-
+-	if (ret && rmtp) {
+-		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
+-			return -EFAULT;
+-	}
+-
+-	return ret;
++	return hrtimer_nanosleep(&tu, rmtp, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
+ }
+ 
+ /*
+--- MM/kernel/posix-timers.c~HRT_RMTP	2008-01-27 17:07:40.000000000 +0300
++++ MM/kernel/posix-timers.c	2008-02-01 13:18:51.000000000 +0300
+@@ -982,20 +982,10 @@ sys_clock_getres(const clockid_t which_c
+ static int common_nsleep(const clockid_t which_clock, int flags,
+ 			 struct timespec *tsave, struct timespec __user *rmtp)
+ {
+-	struct timespec rmt;
+-	int ret;
+-
+-	ret = hrtimer_nanosleep(tsave, rmtp ? &rmt : NULL,
++	return hrtimer_nanosleep(tsave, rmtp,
+ 				flags & TIMER_ABSTIME ?
+-				HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
++					HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
+ 				which_clock);
+-
+-	if (ret && rmtp) {
+-		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
+-			return -EFAULT;
+-	}
+-
+-	return ret;
+ }
+ 
+ asmlinkage long
+
