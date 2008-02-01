@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935278AbYBAFBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935363AbYBAFCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935278AbYBAFBn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 00:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935503AbYBAEx1
+	id S935363AbYBAFCO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 00:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935583AbYBAExn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 23:53:27 -0500
-Received: from science.horizon.com ([192.35.100.1]:16768 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S935500AbYBAExY (ORCPT
+	Thu, 31 Jan 2008 23:53:43 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:13603 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935266AbYBAExl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 23:53:24 -0500
-Message-ID: <20080201045320.11859.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-Date: Thu, 31 Jan 2008 23:53:20 -0500
-To: hpa@zytor.com, ijc@hellion.org.uk
-Cc: linux@horizon.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com
-Subject: There are smaller ways to encode a CRC32 table...
+	Thu, 31 Jan 2008 23:53:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ViwIXM3OuzdC+Da7uIvA+4kZE6vBv3VCd11s3SJsiLp39B1fo1oH2krZwqGAsUn5ond6OxaH7o8manTx1eXRjVmOjJaDXjBzcNmRI9M2qql4rhCFaV0+oiaYMUxEQsH2SIlGcUZUCOel8Nq2E1Gxq/Zl7vUbW0MzOuRdmJJqmEk=
+Message-ID: <75b66ecd0801312053h6e736edfw2c757528ac9dea4d@mail.gmail.com>
+Date: Thu, 31 Jan 2008 23:53:40 -0500
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Reinaldo Carvalho" <reinaldow@gmail.com>
+Subject: Re: missing asm-x86_64 detection
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <ec36785a0801311513g4172b915w7bdb7ca97035efde@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ec36785a0801311513g4172b915w7bdb7ca97035efde@mail.gmail.com>
+X-Google-Sender-Auth: a049e53e7e846dfc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The code to fill it in is smaller than the table itself.
-Is it worth complicating things with some INIT code to reduce
-the stored image size?  (The table is not compressible.)
+On Jan 31, 2008 6:13 PM, Reinaldo Carvalho <reinaldow@gmail.com> wrote:
+> system is x86_64!
+>
+> :/# grep model\ name /proc/cpuinfo
+> model name      : AMD Turion(tm) 64 X2
+> model name      : AMD Turion(tm) 64 X2
 
-#define CRC32POLY	0xedb88320	/* CRC32 polynomial, little-endian */
+What does "head -20 /usr/src/config-2.6.24" say?
 
-static uint32_t crctab32[256];
-
-void
-crc32init(void)
-{
-	unsigned i, j;
-	uint32_t crc = 1;
-
-	crctab32[0] = 0;
-
-	for (i = 128; i; i >>= 1) {
-		crc = (crc >> 1) ^ ((crc & 1) ? CRC32POLY : 0);
-		for (j = 0; j < 256; j += 2*i)
-			crctab32[i+j] = crc ^ crctab32[j];
-	}
-}
-
-The above code basically computes the CRCs of the bytes 0x80, 0x40, ... 0x01,
-and applies the identity crctab32[i^j] = crctab32[i] ^ crctab32[j].
-
-And BTW, storing the inverse of the CRC only catches trailing (after the CRC)
-all-zero padding.  If this is not a problem, it's not necessary, although you
-still might want to do it just for consistency.  This inversion changes the
-CRC of the entire image (body + CRC) from all-zero to a fixed non-zero value.
-(To be precise, to the (non-inverted) CRC of 0xffffffff.)
+Lee
