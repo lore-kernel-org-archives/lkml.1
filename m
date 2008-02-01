@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYBATRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYBATRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbYBATRG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 14:17:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbYBATQj
+	id S1761362AbYBATRb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 14:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbYBATRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 14:16:39 -0500
-Received: from gw.goop.org ([64.81.55.164]:35756 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758031AbYBATQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 14:16:37 -0500
-Message-ID: <47A36FF2.8000804@goop.org>
-Date: Fri, 01 Feb 2008 11:16:02 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 1 Feb 2008 14:17:11 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:58811 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754714AbYBATRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 14:17:09 -0500
+Date: Fri, 1 Feb 2008 11:17:08 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: Extending mmu_notifiers to handle __xip_unmap in a sleepable
+ context?
+In-Reply-To: <20080201115841.GM26420@sgi.com>
+Message-ID: <Pine.LNX.4.64.0802011115180.18163@schroedinger.engr.sgi.com>
+References: <20080201050439.009441434@sgi.com> <20080201115841.GM26420@sgi.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [12/12] GBPAGES: Switch direct mapping setup over to
- set_pte
-References: <200802011053.107168490@suse.de> <20080201095325.6419E1B416F@basil.firstfloor.org> <47A358DB.4010602@goop.org> <200802011858.41269.ak@suse.de>
-In-Reply-To: <200802011858.41269.ak@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Why?  64-bit Xen will need this to be set_pmd if its an update to L2 of
->> the table.
->>     
->
-> Then change_page_attr() and hugepages will already not work because they both 
-> do exactly that.
->
-> And I didn't want to duplicate this manual code for the GBpages case, so i 
-> changed it everywhere to the standard way.
+On Fri, 1 Feb 2008, Robin Holt wrote:
 
-It's a bit moot because Xen doesn't support any kind of large page yet, 
-but there has been some work in that area.  The main problem with using 
-set_pte is that Xen supports trap'n'emulate for pte-level accesses, but 
-not for upper levels.
+> Currently, it is calling mmu_notifier _begin and _end under the
+> i_mmap_lock.  I _THINK_ the following will make it so we could support
+> __xip_unmap (although I don't recall ever seeing that done on ia64 and
+> don't even know what the circumstances are for its use).
 
-Looks like you're right about the rest of cpa; may as well make it all 
-consistent for now, and we can fix it later when the need arises.
+Its called under lock yes.
 
-    J
+The problem with this fix is that we currently have the requirement that 
+the rmap invalidate_all call requires the pagelock to be held. That is not 
+the case here. So I used _begin/_end to skirt the issue.
+
+If you do not need the Pagelock to be held (it holds off modifications on 
+the page!) then we are fine.
+
