@@ -1,51 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbYBAJx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbYBAJxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbYBAJx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYBAJxR
+	id S1758622AbYBAJxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYBAJxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:53:17 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:58361 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754202AbYBAJxQ (ORCPT
+	Fri, 1 Feb 2008 04:53:18 -0500
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:7564 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753270AbYBAJxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Feb 2008 04:53:16 -0500
 From: Andi Kleen <ak@suse.de>
-References: <200802011053.107168490@suse.de>
-In-Reply-To: <200802011053.107168490@suse.de>
+Message-Id: <200802011053.107168490@suse.de>
 To: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/12] GBPAGES: Add feature macros for the gbpages cpuid bit
-Message-Id: <20080201095314.2E08D1B416F@basil.firstfloor.org>
-Date: Fri,  1 Feb 2008 10:53:14 +0100 (CET)
-X-OriginalArrivalTime: 01 Feb 2008 09:46:56.0717 (UTC) FILETIME=[62118FD0:01C864B7]
+Subject: [PATCH] [0/12] GBPAGES patchkit for 2.6.25 v3
+Date: Fri,  1 Feb 2008 10:53:13 +0100 (CET)
+X-OriginalArrivalTime: 01 Feb 2008 09:46:55.0952 (UTC) FILETIME=[619CD500:01C864B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+This patchkit implements support for the 1GB pages of AMD Fam10h CPUs 
+in the kernel direct mapping. 
 
----
- include/asm-x86/cpufeature.h |    2 ++
- 1 file changed, 2 insertions(+)
+Change to previous versions:
+- Incorporated feedback from Thomas Gleixner
+- Switch direct mapping setup over to set_pte() / pte_pfn()
+- Split up patches some more
 
-Index: linux/include/asm-x86/cpufeature.h
-===================================================================
---- linux.orig/include/asm-x86/cpufeature.h
-+++ linux/include/asm-x86/cpufeature.h
-@@ -49,6 +49,7 @@
- #define X86_FEATURE_MP		(1*32+19) /* MP Capable. */
- #define X86_FEATURE_NX		(1*32+20) /* Execute Disable */
- #define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */
-+#define X86_FEATURE_GBPAGES	(1*32+26) /* GB pages */
- #define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */
- #define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */
- #define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */
-@@ -175,6 +176,7 @@
- #define cpu_has_pebs		boot_cpu_has(X86_FEATURE_PEBS)
- #define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
- #define cpu_has_bts		boot_cpu_has(X86_FEATURE_BTS)
-+#define cpu_has_gbpages 	boot_cpu_has(X86_FEATURE_GBPAGES)
- 
- #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
- # define cpu_has_invlpg		1
+Includes one not strictly required cleanup patch now (the last one) 
+
+I believe this patchkit is ready for the 2.6.25 merge.
+
+-Andi
