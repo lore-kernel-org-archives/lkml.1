@@ -1,38 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYBAKza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbYBAK4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755951AbYBAKza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbYBAKzT
+	id S1760708AbYBAK4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYBAK42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:55:19 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49100 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757359AbYBAKzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:55:17 -0500
-Date: Fri, 1 Feb 2008 04:55:16 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 1/4] mmu_notifier: Core code
-Message-ID: <20080201105516.GK26420@sgi.com>
-References: <20080201050439.009441434@sgi.com> <20080201050623.112641539@sgi.com>
+	Fri, 1 Feb 2008 05:56:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58193 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755569AbYBAK40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 05:56:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH] feature-removal: Document suspend/hibernate deprecations
+Date: Fri, 1 Feb 2008 11:54:00 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Len Brown <lenb@kernel.org>, linux-pm@lists.linux-foundation.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1201840628-23136-1-git-send-email-lenb@kernel.org> <1201844914.23523.84.camel@brick>
+In-Reply-To: <1201844914.23523.84.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080201050623.112641539@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200802011154.01492.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK.  Now that release has been moved, I think I agree with you that the
-down_write(mmap_sem) can be used as our lock again and still work for
-Jack.  I would like a ruling from Jack as well.
+On Friday, 1 of February 2008, Harvey Harrison wrote:
+> Let this appear as deprecated in 2.6.25, remove after three
+> releases (2.6.28).
 
-Thanks,
-Robin
+Thanks, I'll post a more complete version of the patch later today.
+
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Something like this should be included if you are deprecating
+> userspace functionality.  I tried to come up with a useful
+> reason from your changelogs, but you should fill this in.
+> 
+>  Documentation/feature-removal-schedule.txt |   25 +++++++++++++++++++++++++
+>  1 files changed, 25 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 181bff0..cb005de 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -354,3 +354,28 @@ Why:	The support code for the old firmware hurts code readability/maintainabilit
+>  	and slightly hurts runtime performance. Bugfixes for the old firmware
+>  	are not provided by Broadcom anymore.
+>  Who:	Michael Buesch <mb@bu3sch.de>
+> +
+> +---------------------------
+> +
+> +What:	SNAPSHOT_PMOPS ioctl
+> +When:	2.6.28
+> +Why:	Badly designed interface, obsoleted by SNAPSHOT_PLATFORM_SUPPORT and
+> +	SNAPSHOT_POWER_OFF
+> +Who:	Len Brown <len.brown@intel.com>
+> +
+> +---------------------------
+> +
+> +What:	SNAPSHOT_SET_SWAP_FILE ioctl
+> +When:	2.6.28
+> +Why:	Insert reason here
+> +Who:	Len Brown <len.brown@intel.com>
+> +
+> +---------------------------
+> +
+> +What:	SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE ioctls
+> +When:	2.6.28
+> +Why:	Defined in a non-portable manner, new numbers introduced, old numbers
+> +	deprecated.
+> +Who:	Len Brown <len.brown@intel.com>
+> +
+> +---------------------------
