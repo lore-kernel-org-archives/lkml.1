@@ -1,40 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934830AbYBAHr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935863AbYBAHrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934830AbYBAHr1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbYBAHjx
+	id S935863AbYBAHrr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763316AbYBAHkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:39:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49434 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934870AbYBAHjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:39:51 -0500
-Date: Thu, 31 Jan 2008 23:40:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: yi.y.yang@intel.com
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] Add new string functions strict_strto* and
- convert kernel params to use them, take 2
-Message-Id: <20080131234005.ab6962f3.akpm@linux-foundation.org>
-In-Reply-To: <1201817503.3925.5.camel@yangyi-dev.bj.intel.com>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	<1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
-	<1201562058.12722.9.camel@yangyi-dev.bj.intel.com>
-	<1201650080.3875.1.camel@yangyi-dev.bj.intel.com>
-	<1201742302.6500.7.camel@yangyi-dev.bj.intel.com>
-	<1201817503.3925.5.camel@yangyi-dev.bj.intel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 1 Feb 2008 02:40:14 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:49707 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934804AbYBAHkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:40:09 -0500
+Date: Fri, 1 Feb 2008 10:39:46 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [1/2] POHMELFS - network filesystem with local coherent cache.
+Message-ID: <20080201073946.GA893@2ka.mipt.ru>
+References: <11972872493911@2ka.mipt.ru> <Pine.LNX.4.64.0802010159460.4864@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802010159460.4864@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 Feb 2008 06:11:43 +0800 Yi Yang <yi.y.yang@intel.com> wrote:
+Hi.
 
-> --- a/include/linux/kernel.h	2008-01-31 00:41:46.000000000 +0800
-> --- b/include/linux/kernel.h	2008-02-01 04:30:49.000000000 +0800
+On Fri, Feb 01, 2008 at 02:04:39AM +0100, Jan Engelhardt (jengelh@computergmbh.de) wrote:
+> >POHMELFS stands for Parallel Optimized Host Message Exchange
+> >Layered File System. It allows to mount remote servers to local
+> >directory via network. This filesystem supports local caching
+> >and writeback flushing.
+> >POHMELFS is a brick in a future distributed filesystem.
+> 
+> A brick is usually something that is in the way -
+> Or you also say "the user has bricked his machine"
+> when it's quite unusable :)
+> Hope you did not mean /that/.
 
-This isn't a patch.  I wonder how that happened?
+No, this brick as a building block :)
+
+> >This set includes two patches:
+> > * network filesystem with write-through cache (slow, but works with
+> > 	remote userspace server)
+> > * hack to show how local cache works and how faster it is compared
+> > 	to async NFS (see below). hack disables writeback flush and
+> >	performs local allocation of the objects only.
+> >
+> >Now, some vaporware aka food for thoughts and your brains.
+> >
+> >A small benchmark of the local cached mode (above hack):
+> >
+> >$ time tar -xf /home/zbr/threading.tar
+> >
+> >	POHMELFS	NFS v3 (async)
+> >real    0m0.043s	0m1.679s
+> >
+> >Which is damn 40 times!
+> 
+> Needs a bigger data set to compare. But what is much more
+> important: does it use a single port for networing, or some
+> firewall-unfriendly-by-default multiple dynamic-port-allocation
+> like NFS?
+
+It uses single port, configurable at mount time.
+POHMELFS client can connect to different addresses (including ipv6) and
+via different protocols (like sctp). Metadata server will provide that
+information dynamically, so pohmelfs client will be able to connect to
+different nodes and perform operations in parallell.
+
+> >Next task is to think about how to generically solve the problem with
+> >syncing local changes with remote server, when remote server maintains inodes with
+> >completely different numbers.
+> >This, among others, will allow offline work with automatic syncing after reconnect.
+> 
+> What will happen when both nodes change an inode in disconnected state?
+> Which inode wins out?
+
+Who will be online first. Second node will be told that there is a
+merge collision and it has to be resolved by hands.
+
+> >This is not intended for inclusion, CRFS by Zach Brown is a bit ahead of POHMELFS,
+> >but it is not generic enough (because of above problem), works only with BTRFS,
+> >and was closed by Oracle so far :)
+> 
+> btrfs is all we need :p
+
+Well, at least it has some very interesting ideas.
+Although there are things which are not that good imho, time will
+show, maybe there will be another state-of-the-art filesystem at the
+moment...
+
+This was for information.
+ 
+> Where's the parallelism that is advertised by the "POH" in pohmelfs?
+
+First, clients work with local caches and sync them either in writeback
+or via cache coherency algorithm. This work is effectively parallel.
+Second, pohmelfs as in distributed filesystem is developed as a transport
+layer to eliminate mount operation for each different node, so that
+after client asks for data it would be just sent to different server.
+This allows to make parallel transactions. Essentially it looks like
+mounting different remote server to virtual directory working with it,
+except that connection setup should be done not at mount time, but at
+run time.
+
+-- 
+	Evgeniy Polyakov
