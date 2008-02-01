@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbYBAL6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761462AbYBAMAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763251AbYBAL6y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYBAL6p
+	id S1761462AbYBAMAi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYBAMAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:58:45 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:52053 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757552AbYBAL6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:58:44 -0500
-Date: Fri, 1 Feb 2008 05:58:41 -0600
-From: Robin Holt <holt@sgi.com>
+	Fri, 1 Feb 2008 07:00:31 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44254
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754683AbYBAMAa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:00:30 -0500
+Date: Fri, 1 Feb 2008 13:00:28 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        daniel.blueman@quadrics.com
-Subject: Extending mmu_notifiers to handle __xip_unmap in a sleepable
-	context?
-Message-ID: <20080201115841.GM26420@sgi.com>
-References: <20080201050439.009441434@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080201120028.GW7185@v2.random>
+References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <20080131232842.GQ7185@v2.random> <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080201050439.009441434@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 31, 2008 at 05:37:21PM -0800, Christoph Lameter wrote:
+> On Fri, 1 Feb 2008, Andrea Arcangeli wrote:
+> 
+> > I appreciate the review! I hope my entirely bug free and
+> > strightforward #v5 will strongly increase the probability of getting
+> > this in sooner than later. If something else it shows the approach I
+> > prefer to cover GRU/KVM 100%, leaving the overkill mutex locking
+> > requirements only to the mmu notifier users that can't deal with the
+> > scalar and finegrined and already-taken/trashed PT lock.
+> 
+> Mutex locking? Could you be more specific?
 
-With this set of patches, I think we have enough to get xpmem working
-with most types of mappings.  In the past, we operated without any of
-these callouts by significantly restricting why types of mappings could
-remotely fault and what types of operations the user could do.  With
-this set, I am certain we can continue to meet the above assumptions.
+Robin understanding was correct on this point. Also I think if you add
+start,end to range_end (like suggested a few times by me and once
+by Robin) I may get away without a lock thanks to the page pin. That's
+one strong reason why start,end are needed in range_end.
 
-That said, I would like to discuss __xip_unmap in more detail.
+The only one that will definitely be forced to add a new lock around
+follow_page, in addition to the very _scalable_ PT lock, is GRU.
 
-Currently, it is calling mmu_notifier _begin and _end under the
-i_mmap_lock.  I _THINK_ the following will make it so we could support
-__xip_unmap (although I don't recall ever seeing that done on ia64 and
-don't even know what the circumstances are for its use).
+> I hope you will continue to do reviews of the other mmu notifier patchset?
 
-Thanks,
-Robin
-
-Index: mmu_notifiers-cl-v5/mm/filemap_xip.c
-===================================================================
---- mmu_notifiers-cl-v5.orig/mm/filemap_xip.c	2008-02-01 05:38:32.000000000 -0600
-+++ mmu_notifiers-cl-v5/mm/filemap_xip.c	2008-02-01 05:39:08.000000000 -0600
-@@ -184,6 +184,7 @@ __xip_unmap (struct address_space * mapp
- 	if (!page)
- 		return;
- 
-+	mmu_rmap_notifier(invalidate_page, page);
- 	spin_lock(&mapping->i_mmap_lock);
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
- 		mm = vma->vm_mm;
+Sure. I will also create a new KVM patch to plug on top of your
+versions (I already did for V2/V3 even if it never worked, but that
+might have a build problem, see kvm-devel for details). To be clear,
+as long as anything is merged that avoids me to use kprobes to make
+KVM swap work, I'm satisfied. I thought my approach had several
+advantages in simplicity, and being more obviously safe (in not
+relaying entirely on the page pin and creating a window of time where
+the linux pte writes to a page and the sptes writes to another one,
+remember populate_range), and it avoids introducing external locks in
+the GRU follow_page path. My approach was supposed to be in addition
+of the range_start/end needed by xpmem that can't possibly take
+advanage of the scalar PT lock and it definitely requires external
+lock to serialize xpmem fault against linux pagefault (not the case
+for GRU/KVM).
