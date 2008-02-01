@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbYBANgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbYBANhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932596AbYBANgn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759174AbYBANfm
+	id S1761024AbYBANhG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:37:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760032AbYBANfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:35:42 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:57837 "EHLO mail.screens.ru"
+	Fri, 1 Feb 2008 08:35:43 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:57842 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757269AbYBANfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:35:41 -0500
-Date: Fri, 1 Feb 2008 16:38:00 +0300
+	id S1759624AbYBANfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 08:35:43 -0500
+Date: Fri, 1 Feb 2008 16:38:05 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Cc: Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
        Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Toyo Abe <toyoa@mvista.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] compat_sys_nanosleep: fix *rmtp/restarts handling
-Message-ID: <20080201133800.GA25626@tv-sign.ru>
+Subject: [PATCH 5/5] hrtimer_nanosleep_restart: don't play with restart_block->fn
+Message-ID: <20080201133805.GA25632@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,82 +26,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-COMPLETELY UNTESTED.
-
-Spotted by Pavel Emelyanov and Alexey Dobriyan.
-
-compat_sys_nanosleep() implicitly uses hrtimer_nanosleep_restart(), this can't
-work. Make a suitable compat_nanosleep_restart() helper.
-
-Also, set ->addr_limit = KERNEL_DS before doing hrtimer_nanosleep(), this func
-was changed by the previous patch and now takes the "__user *" parameter.
+hrtimer_nanosleep_restart() clears/restores restart_block->fn. This is
+pointless and complicates its usage. Note that if sys_restart_syscall()
+doesn't actually happen, we have a bogus "pending" restart->fn anyway,
+this is harmless.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- MM/kernel/compat.c~3_COMPAT_NANOSLEEP	2008-02-01 14:27:16.000000000 +0300
-+++ MM/kernel/compat.c	2008-02-01 14:50:01.000000000 +0300
-@@ -40,10 +40,37 @@ int put_compat_timespec(const struct tim
- 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
- }
+--- MM/kernel/hrtimer.c~5_RESTART_FN	2008-02-01 13:56:44.000000000 +0300
++++ MM/kernel/hrtimer.c	2008-02-01 15:15:15.000000000 +0300
+@@ -1338,8 +1338,6 @@ long __sched hrtimer_nanosleep_restart(s
+ 	struct hrtimer_sleeper t;
+ 	struct timespec __user  *rmtp;
  
-+static long compat_nanosleep_restart(struct restart_block *restart)
-+{
-+	long err;
-+	mm_segment_t oldfs;
-+	struct timespec tu;
-+	struct compat_timespec *rmtp = (struct compat_timespec *)(restart->arg1);
-+
-+	restart->arg1 = (unsigned long)&tu;
-+	oldfs = get_fs();
-+	set_fs(KERNEL_DS);
-+	err = hrtimer_nanosleep_restart(restart);
-+	set_fs(oldfs);
-+
-+	if (err) {
-+		if (rmtp && put_compat_timespec(&tu, rmtp))
-+			return -EFAULT;
-+
-+		if (err == -ERESTART_RESTARTBLOCK) {
-+			restart->fn = compat_nanosleep_restart;
-+			restart->arg1 = (unsigned long)rmtp;
-+		}
-+	}
-+
-+	return err;
-+}
-+
- asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
- 				     struct compat_timespec __user *rmtp)
- {
- 	struct timespec tu, rmt;
-+	mm_segment_t oldfs;
- 	long ret;
+-	restart->fn = do_no_restart_syscall;
+-
+ 	hrtimer_init(&t.timer, restart->arg0, HRTIMER_MODE_ABS);
+ 	t.timer.expires.tv64 = ((u64)restart->arg3 << 32) | (u64) restart->arg2;
  
- 	if (get_compat_timespec(&tu, rqtp))
-@@ -52,12 +79,23 @@ asmlinkage long compat_sys_nanosleep(str
- 	if (!timespec_valid(&tu))
- 		return -EINVAL;
- 
-+	oldfs = get_fs();
-+	set_fs(KERNEL_DS);
- 	ret = hrtimer_nanosleep(&tu, rmtp ? &rmt : NULL, HRTIMER_MODE_REL,
- 				CLOCK_MONOTONIC);
-+	set_fs(oldfs);
- 
--	if (ret && rmtp) {
--		if (put_compat_timespec(&rmt, rmtp))
-+	if (ret) {
-+		if (rmtp && put_compat_timespec(&rmt, rmtp))
- 			return -EFAULT;
-+
-+		if (err == -ERESTART_RESTARTBLOCK) {
-+			struct restart_block *restart
-+				= &current_thread_info()->restart_block;
-+
-+			restart->fn = compat_nanosleep_restart;
-+			restart->arg1 = (unsigned long)rmtp;
-+		}
+@@ -1353,8 +1351,6 @@ long __sched hrtimer_nanosleep_restart(s
+ 			return ret;
  	}
  
- 	return ret;
+-	restart->fn = hrtimer_nanosleep_restart;
+-
+ 	/* The other values in restart are already filled in */
+ 	return -ERESTART_RESTARTBLOCK;
+ }
+--- MM/kernel/compat.c~5_RESTART_FN	2008-02-01 15:05:28.000000000 +0300
++++ MM/kernel/compat.c	2008-02-01 15:16:01.000000000 +0300
+@@ -57,10 +57,8 @@ static long compat_nanosleep_restart(str
+ 		if (rmtp && put_compat_timespec(&tu, rmtp))
+ 			return -EFAULT;
+ 
+-		if (err == -ERESTART_RESTARTBLOCK) {
+-			restart->fn = compat_nanosleep_restart;
++		if (err == -ERESTART_RESTARTBLOCK)
+ 			restart->arg1 = (unsigned long)rmtp;
+-		}
+ 	}
+ 
+ 	return err;
 
