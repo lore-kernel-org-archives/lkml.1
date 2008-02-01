@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965035AbYBABhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934789AbYBABhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965035AbYBABhW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 20:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYBABhK
+	id S934789AbYBABhw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 20:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYBABhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 20:37:10 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:55696 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbYBABhJ (ORCPT
+	Thu, 31 Jan 2008 20:37:38 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45356 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965081AbYBABhY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 20:37:09 -0500
-Date: Fri, 1 Feb 2008 02:37:08 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Justin Banks <justin.banks@bakbone.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: how to tell i386 from x86-64 kernel
-In-Reply-To: <960D0E79B4E503448AD14B5E40A5C1C7BB54CE@USX1.corp.bb>
-Message-ID: <Pine.LNX.4.64.0802010229250.4864@fbirervta.pbzchgretzou.qr>
-References: <960D0E79B4E503448AD14B5E40A5C1C7BB54CE@USX1.corp.bb>
+	Thu, 31 Jan 2008 20:37:24 -0500
+Date: Thu, 31 Jan 2008 17:37:21 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+In-Reply-To: <20080131232842.GQ7185@v2.random>
+Message-ID: <Pine.LNX.4.64.0801311733140.24297@schroedinger.engr.sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random>
+ <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com>
+ <20080131232842.GQ7185@v2.random>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 1 Feb 2008, Andrea Arcangeli wrote:
 
-don't strip Ccs, thanks. (and try not to tofu either.)
+> I appreciate the review! I hope my entirely bug free and
+> strightforward #v5 will strongly increase the probability of getting
+> this in sooner than later. If something else it shows the approach I
+> prefer to cover GRU/KVM 100%, leaving the overkill mutex locking
+> requirements only to the mmu notifier users that can't deal with the
+> scalar and finegrined and already-taken/trashed PT lock.
 
-On Jan 31 2008 17:01, Justin Banks wrote:
->
->uname -a will tell you, though.
+Mutex locking? Could you be more specific?
 
-No. uname is generally not a reliable source to tell you the bitness (or 
-more precisely, the arch). It may even happen that you cannot find out 
-at all if access permissions are set 'correctly'.
-You may find ELF64 files flying around in the filesystem, and while that 
-is a strong indication of a 64-bit kernel being running, it is not a 
-definite Yes.
+I hope you will continue to do reviews of the other mmu notifier patchset?
 
 
-02:31 ccgmbh:~ > uname -a
-Linux ccgmbh 2.6.23.10-ccj62-regular #1 SMP 2007/10/26 14:17:15 UTC i686 
-athlon i386 GNU/Linux
-
-02:32 ccgmbh:~ > file `which uname`
-/bin/uname: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), for 
-GNU/Linux 2.6.4, dynamically linked (uses shared libs), stripped
