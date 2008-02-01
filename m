@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYBASee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbYBASeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbYBASee (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYBASeD
+	id S1759207AbYBASeq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbYBASeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:34:03 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:35574 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbYBASd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:33:59 -0500
-Date: Fri, 01 Feb 2008 10:51:36 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] make loglevel related commandline to early_param
-In-reply-to: <p73bq704zqs.fsf@bingen.suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Message-id: <200802011051.36943.yinghai.lu@sun.com>
-Organization: SUN
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200802010240.37799.yinghai.lu@sun.com>
- <p73bq704zqs.fsf@bingen.suse.de>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Fri, 1 Feb 2008 13:34:24 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:49156 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757433AbYBASeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 13:34:23 -0500
+Date: Fri, 1 Feb 2008 19:34:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       net-dev-mailing list <netdev@vger.kernel.org>
+Subject: Re: [BUILD FAILURE]2.6.24-git10 section type conflict
+Message-ID: <20080201183425.GB14759@uranus.ravnborg.org>
+References: <20080201182627.GB14251@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080201182627.GB14251@in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 February 2008 04:39:39 am Andi Kleen wrote:
-> Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+On Fri, Feb 01, 2008 at 11:56:27PM +0530, Sudhir Kumar wrote:
+> Hi All,
+> I found the following kernel build failure for 2.6.24-git10
+> on my machine:
 > 
-> > diff --git a/init/main.c b/init/main.c
-> > index cb81ed1..a774a93 100644
-> > --- a/init/main.c
-> > +++ b/init/main.c
-> > @@ -232,22 +232,18 @@ EXPORT_SYMBOL(loops_per_jiffy);
-> >  
-> >  static int __init debug_kernel(char *str)
-> >  {
-> > -	if (*str)
-> > -		return 0;
-> >  	console_loglevel = 10;
-> >  	return 1;
-> 
-> The return semantics changes with early_param so you need to change that in all cases to return 0
-> (and negative value for errors) 
-> 
+>   CC [M]  drivers/scsi/lpfc/lpfc_attr.o
+> drivers/net/sis190.c:329: error: sis190_pci_tbl causes a section type
+> conflict
+> make[2]: *** [drivers/net/sis190.o] Error 1
+> make[1]: *** [drivers/net] Error 2
+> make[1]: *** Waiting for unfinished jobs....
+>   CC [M]  drivers/scsi/lpfc/lpfc_vport.o
 
+Known issue with fix already pushed upstream.
+A workaround is to delete __devinitdata from the
+corresponding .c (sis190.c) file.
 
-thanks. I will send another one.
-
-YH
+	Sam
