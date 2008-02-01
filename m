@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760937AbYBAVyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759930AbYBAWDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760937AbYBAVyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbYBAVyj
+	id S1759930AbYBAWDz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 17:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYBAWDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 16:54:39 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:59693 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbYBAVyi (ORCPT
+	Fri, 1 Feb 2008 17:03:44 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:40482 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753202AbYBAWDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 16:54:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=shAO4GG3vxa7OoVXNvULPg1MVJDuszD6kiCxSJQxr4uCW1ouOwN59SrsF5VMiutkbXtyVlPG61zlunM6jXrgfLGigpJXSS/6Ho0aKeYDLtk4NCGFbwRaSuNH9AQgIrxolrUinmXyuLOg73BEGq/RBgAFwMxcCvEbOgB0MDhhz5M=
-Message-ID: <b647ffbd0802011354ra2b9494ub59475abad4466aa@mail.gmail.com>
-Date: Fri, 1 Feb 2008 22:54:35 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Steven Rostedt" <srostedt@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080201171022.GC2159@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200801272229.48955.rjw@sisk.pl> <200801280226.22013.rjw@sisk.pl>
-	 <1201795128.32654.22.camel@lappy> <200801312154.33754.rjw@sisk.pl>
-	 <1201867497.32654.49.camel@lappy>
-	 <b647ffbd0802010711q744f5023mdbfccd9540556b70@mail.gmail.com>
-	 <20080201171022.GC2159@elte.hu>
+	Fri, 1 Feb 2008 17:03:43 -0500
+To: staubach@redhat.com
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <47A39471.4010105@redhat.com> (message from Peter Staubach on
+	Fri, 01 Feb 2008 16:51:45 -0500)
+Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
+References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com>
+Message-Id: <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 01 Feb 2008 23:03:25 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/02/2008, Ingo Molnar <mingo@elte.hu> wrote:
->
-> thanks - i cannot reproduce it on my usual suspend/resume testbox
-> because e1000 broke on it, and this is a pretty annoying regression.
-> We'll have to undo the hung-tasks detection feature if it's not fixed
-> quickly. (there's no point in debugging features that _add_ bugs)
+> > This doesn't apply to -mm, because the ro-mounts stuff touches a lot
+> > of the same places as this patch.  You probably need to rebase this on
+> > top of those changes.
+> >
+> >   
+> >> This patch adds handling for the error, ESTALE, to the system
+> >> calls which take pathnames as arguments.  The algorithm used
+> >> is to detect that an ESTALE error has occurred during an
+> >> operation subsequent to the lookup process and then to unwind
+> >> appropriately and then to perform the lookup process again.
+> >> Eventually, either the lookup process will return an error
+> >> or a valid dentry/inode combination and then operation can
+> >> succeed or fail based on its own merits.
+> >>     
+> >
+> > If a broken NFS server or FUSE filesysem keeps returning ESTALE, this
+> > goes into an infinite loop.  How are we planning to deal with that?
+> >
+> >   
+> 
+> Would you describe the situation that would cause the kernel to
+> go into an infinite loop, please?
 
-I can reproduce it and Peter's patch does fix it for me.
+The patch basically does:
 
-e.g.
-root@earth:/sys/devices/system/cpu/cpu1# time echo 0 > online
-real    0m6.743s
-root@earth:/sys/devices/system/cpu/cpu1# time echo 0 > online
-real    0m7.770s
+	do {
+		...
+		error = inode->i_op->foo()
+		...
+	} while (error == ESTALE);
 
-I've observed delays from ~3 s. up to ~8 s. (out of ~20 tests) so the
-10s. delay of msleep_interruptible() might be related but
-I'm still looking for the reason why this fix helps (and what goes
-wrong with the current code).
+What is the guarantee, that ->foo() will not always return ESTALE?
 
-
->
->         Ingo
->
-
--- 
-Best regards,
-Dmitry Adamushko
+Miklos
