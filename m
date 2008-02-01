@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbYBAGJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbYBAGKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764029AbYBAGJU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 01:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYBAGJM
+	id S932429AbYBAGKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 01:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYBAGKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 01:09:12 -0500
-Received: from xenotime.net ([66.160.160.81]:33153 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750925AbYBAGJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 01:09:11 -0500
-Date: Thu, 31 Jan 2008 22:09:08 -0800 (PST)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: linux-kernel@vger.kernel.org
-cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       mporter@kernel.crashing.org
-Subject: [PATCH] docbook: rapidio: fix fatal filename error
-Message-ID: <Pine.LNX.4.64.0801312207010.14603@shark.he.net>
+	Fri, 1 Feb 2008 01:10:18 -0500
+Received: from stinky.trash.net ([213.144.137.162]:37831 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYBAGKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 01:10:16 -0500
+Message-ID: <47A2B7C1.7070505@trash.net>
+Date: Fri, 01 Feb 2008 07:10:09 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: David Newall <davidn@davidnewall.com>
+CC: David Miller <davem@davemloft.net>, kadlec@blackhole.kfki.hu,
+       jeff.chua.linux@gmail.com, linux-kernel@vger.kernel.org, ole@ans.pl,
+       cups-bugs@easysw.com, netfilter-devel@vger.kernel.org
+Subject: Re: cups slow on linux-2.6.24
+References: <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>	<47A21945.2050005@trash.net>	<47A26C12.9020801@davidnewall.com> <20080131.181209.193710785.davem@davemloft.net> <47A2B71A.4090203@davidnewall.com>
+In-Reply-To: <47A2B71A.4090203@davidnewall.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+David Newall wrote:
+> I'm not debating that checksums are wrong. The question was how and
+> where? It's not as if there are any unreliable communication paths in a
+> loopback interface, so it's surprising that they could be wrong. How? Where?
+> 
 
-Fix docbook fatal error (files were renamed):
-docproc: linux-2.6.24-git9/arch/ppc/kernel/rio.c: No such file or directory
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
-  Documentation/DocBook/rapidio.tmpl |    6 +++---
-  1 file changed, 3 insertions(+), 3 deletions(-)
-
---- linux-2.6.24-git9.orig/Documentation/DocBook/rapidio.tmpl
-+++ linux-2.6.24-git9/Documentation/DocBook/rapidio.tmpl
-@@ -133,9 +133,9 @@
-  !Idrivers/rapidio/rio-sysfs.c
-       </sect1>
-       <sect1><title>PPC32 support</title>
--!Iarch/ppc/kernel/rio.c
--!Earch/ppc/syslib/ppc85xx_rio.c
--!Iarch/ppc/syslib/ppc85xx_rio.c
-+!Iarch/powerpc/kernel/rio.c
-+!Earch/powerpc/sysdev/fsl_rio.c
-+!Iarch/powerpc/sysdev/fsl_rio.c
-       </sect1>
-    </chapter>
+As I said, loopback doesn't perform full checksum calculation.
+Its simply an optimization, nothing to worry about ...
 
