@@ -1,93 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYBAJll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbYBAJme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757750AbYBAJll (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756886AbYBAJlY
+	id S1758239AbYBAJme (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbYBAJm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:41:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36713 "EHLO mx3.mail.elte.hu"
+	Fri, 1 Feb 2008 04:42:27 -0500
+Received: from mga03.intel.com ([143.182.124.21]:48163 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756580AbYBAJlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:41:21 -0500
-Date: Fri, 1 Feb 2008 10:40:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "Giacomo A. Catenazzi" <cate@cateee.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Valdis.Kletnieks@vt.edu,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: using LKML for subsystem development
-Message-ID: <20080201094057.GA27910@elte.hu>
-References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org> <4799A773.2030702@cateee.net> <22000.1201255093@turing-police.cc.vt.edu> <200801251258.08707.rjw@sisk.pl> <4799D770.2070203@cateee.net> <479A75D4.6070607@s5r6.in-berlin.de> <479A8203.40804@s5r6.in-berlin.de> <20080126112820.GA10563@elte.hu> <479B42C4.7020507@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479B42C4.7020507@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754204AbYBAJmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 04:42:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,289,1199692800"; 
+   d="scan'208";a="373856712"
+Subject: [PATCH 4/4] x86: efi update for set_memory_xx
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 01 Feb 2008 17:35:00 +0800
+Message-Id: <1201858500.4051.20.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 01 Feb 2008 09:33:55.0338 (UTC) FILETIME=[905496A0:01C864B5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The patch updates EFI runtime memory mapping code according to the
+changes to set_memory_xx.
 
-(a late reply - the merge window made me ignore this thread ;-)
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+---
+ arch/x86/kernel/efi.c    |   48 +++++++++++++++++++++++------------------------
+ arch/x86/kernel/efi_64.c |   40 ++++++++++++++++++++++++++-------------
+ include/asm-x86/efi.h    |    8 +++++--
+ 3 files changed, 57 insertions(+), 39 deletions(-)
 
-> > (or if that's still too much, follow the time-deferred lkml updates 
-> > of lwn.net)
-> > 
-> > Realize it: it's _far_ easier to filter down a too verbose source of 
-> > information, than to put scattered, inaccessible pieces of 
-> > information back together. It's far easier to get a cup of water 
-> > from the open firehose than it is to gather the drops once they 
-> > spilled on the ground.
-> 
-> Correct.
+--- a/arch/x86/kernel/efi.c
++++ b/arch/x86/kernel/efi.c
+@@ -379,31 +379,20 @@ void __init efi_init(void)
+ #endif
+ }
+ 
+-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+ static void __init runtime_code_page_mkexec(void)
+ {
+ 	efi_memory_desc_t *md;
+-	unsigned long end;
++	unsigned long pages;
+ 	void *p;
+ 
+-	if (!(__supported_pte_mask & _PAGE_NX))
+-		return;
+-
+ 	/* Make EFI runtime service code area executable */
+ 	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
+ 		md = p;
+-		end = md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT);
+-		if (md->type == EFI_RUNTIME_SERVICES_CODE &&
+-		    (end >> PAGE_SHIFT) <= max_pfn_mapped) {
+-			set_memory_x(md->virt_addr, md->num_pages);
+-			set_memory_uc(md->virt_addr, md->num_pages);
+-		}
++		pages = (md->num_pages << EFI_PAGE_SHIFT) >> PAGE_SHIFT;
++		if (md->type == EFI_RUNTIME_SERVICES_CODE)
++			set_memory_x(md->virt_addr, md->phys_addr, pages);
+ 	}
+-	__flush_tlb_all();
+ }
+-#else
+-static inline void __init runtime_code_page_mkexec(void) { }
+-#endif
+ 
+ /*
+  * This function will switch the EFI runtime services to virtual mode.
+@@ -417,25 +406,35 @@ void __init efi_enter_virtual_mode(void)
+ {
+ 	efi_memory_desc_t *md;
+ 	efi_status_t status;
+-	unsigned long end;
++	unsigned long end, size, pages;
+ 	void *p;
++	int cache;
+ 
+ 	efi.systab = NULL;
+ 	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
+ 		md = p;
+ 		if (!(md->attribute & EFI_MEMORY_RUNTIME))
+ 			continue;
+-		end = md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT);
+-		if ((md->attribute & EFI_MEMORY_WB) &&
+-		    ((end >> PAGE_SHIFT) <= max_pfn_mapped))
++		size = md->num_pages << EFI_PAGE_SHIFT;
++		pages = size >> PAGE_SHIFT;
++		end = md->phys_addr + size;
++		cache = !!(md->attribute & EFI_MEMORY_WB);
++		if ((end >> PAGE_SHIFT) <= max_pfn_mapped) {
+ 			md->virt_addr = (unsigned long)__va(md->phys_addr);
++			if (!cache)
++				set_memory_uc(md->virt_addr, md->phys_addr,
++					      pages);
++		} else if (cache)
++			md->virt_addr = (unsigned long)efi_ioremap_cache(
++				md->phys_addr, size);
+ 		else
+-			md->virt_addr = (unsigned long)
+-				efi_ioremap(md->phys_addr,
+-					    md->num_pages << EFI_PAGE_SHIFT);
+-		if (!md->virt_addr)
++			md->virt_addr = (unsigned long)efi_ioremap_nocache(
++				md->phys_addr, size);
++		if (!md->virt_addr) {
+ 			printk(KERN_ERR PFX "ioremap of 0x%llX failed!\n",
+ 			       (unsigned long long)md->phys_addr);
++			continue;
++		}
+ 		if ((md->phys_addr <= (unsigned long)efi_phys.systab) &&
+ 		    ((unsigned long)efi_phys.systab < end))
+ 			efi.systab = (efi_system_table_t *)(unsigned long)
+@@ -473,7 +472,8 @@ void __init efi_enter_virtual_mode(void)
+ 	efi.get_next_high_mono_count = virt_efi_get_next_high_mono_count;
+ 	efi.reset_system = virt_efi_reset_system;
+ 	efi.set_virtual_address_map = virt_efi_set_virtual_address_map;
+-	runtime_code_page_mkexec();
++	if (__supported_pte_mask & _PAGE_NX)
++		runtime_code_page_mkexec();
+ 	early_iounmap(memmap.map, memmap.nr_map * memmap.desc_size);
+ 	memmap.map = NULL;
+ }
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -54,10 +54,10 @@ static void __init early_mapping_set_exe
+ 		else
+ 			set_pte(kpte, __pte((pte_val(*kpte) | _PAGE_NX) & \
+ 					    __supported_pte_mask));
+-		if (level == 4)
+-			start = (start + PMD_SIZE) & PMD_MASK;
+-		else
++		if (level == PG_LEVEL_4K)
+ 			start = (start + PAGE_SIZE) & PAGE_MASK;
++		else
++			start = (start + PMD_SIZE) & PMD_MASK;
+ 	}
+ }
+ 
+@@ -109,26 +109,40 @@ void __init efi_reserve_bootmem(void)
+ 				memmap.nr_map * memmap.desc_size);
+ }
+ 
+-void __iomem * __init efi_ioremap(unsigned long offset,
+-				  unsigned long size)
++static void __iomem __init *__efi_ioremap(unsigned long phys_addr,
++					  unsigned long size,
++					  int cache)
+ {
+ 	static unsigned pages_mapped;
+-	unsigned long last_addr;
+-	unsigned i, pages;
++	unsigned long addr, pages;
++	pgprot_t prot;
+ 
+-	last_addr = offset + size - 1;
+-	offset &= PAGE_MASK;
+-	pages = (PAGE_ALIGN(last_addr) - offset) >> PAGE_SHIFT;
++	/* phys_addr and size must be page aligned */
++	if ((phys_addr & ~PAGE_MASK) || (size & ~PAGE_MASK))
++		return NULL;
++	pages = size >> PAGE_SHIFT;
+ 	if (pages_mapped + pages > MAX_EFI_IO_PAGES)
+ 		return NULL;
+ 
+-	for (i = 0; i < pages; i++) {
++	prot = cache ? PAGE_KERNEL : PAGE_KERNEL_NOCACHE;
++	for (addr = phys_addr; addr < phys_addr + size; addr += PAGE_SIZE) {
+ 		__set_fixmap(FIX_EFI_IO_MAP_FIRST_PAGE - pages_mapped,
+-			     offset, PAGE_KERNEL_EXEC_NOCACHE);
+-		offset += PAGE_SIZE;
++			     addr, prot);
+ 		pages_mapped++;
+ 	}
+ 
+ 	return (void __iomem *)__fix_to_virt(FIX_EFI_IO_MAP_FIRST_PAGE - \
+ 					     (pages_mapped - pages));
+ }
++
++void __iomem __init *efi_ioremap_cache(unsigned long phys_addr,
++				       unsigned long size)
++{
++	return __efi_ioremap(phys_addr, size, 1);
++}
++
++void __iomem __init *efi_ioremap_nocache(unsigned long phys_addr,
++					 unsigned long size)
++{
++	return __efi_ioremap(phys_addr, size, 0);
++}
+--- a/include/asm-x86/efi.h
++++ b/include/asm-x86/efi.h
+@@ -33,7 +33,8 @@ extern unsigned long asmlinkage efi_call
+ #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)	\
+ 	efi_call_virt(f, a1, a2, a3, a4, a5, a6)
+ 
+-#define efi_ioremap(addr, size)			ioremap(addr, size)
++#define efi_ioremap_cache(addr, size)		ioremap_cache(addr, size)
++#define efi_ioremap_nocache(addr, size)		ioremap_nocache(addr, size)
+ 
+ #else /* !CONFIG_X86_32 */
+ 
+@@ -86,7 +87,10 @@ extern u64 efi_call6(void *fp, u64 arg1,
+ 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
+ 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
+ 
+-extern void *efi_ioremap(unsigned long offset, unsigned long size);
++extern void __iomem *efi_ioremap_cache(unsigned long phys_addr,
++				       unsigned long size);
++extern void __iomem *efi_ioremap_nocache(unsigned long phys_addr,
++					 unsigned long size);
+ 
+ #endif /* CONFIG_X86_32 */
+ 
 
-so you agree with me on this one? Even though you clearly do not realize 
-it, you've in essence conceded my whole point.
-
-The "off-lkml" practice makes us lose information, in a largely 
-irreversible way - and that's the end of the argument. Q.E.D.
-
-just let me show you an example of the conflict of logic in your 
-argument:
-
-> [ people ]
->
->   - who are afraid of subscribing to a high-volume mailinglist (even 
->     if they have the technical means at their disposal to manage that 
->     volume),
-
-on one side you have people who are _willing_ to participate, who'd like 
-to help out, who'd like to follow the development of Linux, but cannot 
-for some areas because it's split into 150 small mailing lists with no 
-coherent way to access and manage them.
-
-on the other side you talk about people who are 'afraid' of 
-participating in Linux development, even though "they have the technical 
-means at their disposal to manage that volume". I.e., they "could" 
-participate, but they "dont want to" - for time constraints or just 
-excuses like "it's difficult to filter".
-
-and your solution: you advocate destroying information by pulling it off 
-lkml for the sake of the _second_ group of people? That's perverse.
-
-all the other arguments you say are just totally immaterial. Yes, we 
-could and should make lkml a better place (you could have volunteered to 
-summarize lkml discussions of your favorite topic on a separate list, 
-you could forward interesting topics to people you know dont read all of 
-it, etc. etc.,) but your proposed solution of _destroying lkml_ by 
-pulling off development into those lists is just about the most stupid 
-solution a person could have come up with.
-
-	Ingo
