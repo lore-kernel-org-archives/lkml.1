@@ -1,118 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765286AbYBANIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764020AbYBANK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765286AbYBANIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764344AbYBANIR
+	id S1764020AbYBANK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbYBANKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:08:17 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:33247 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764175AbYBANIQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:08:16 -0500
-Date: Fri, 1 Feb 2008 14:08:11 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Holger Wolf <wolf@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] latencytop s390 support.
-Message-ID: <20080201130811.GB29660@osiris.boeblingen.de.ibm.com>
+	Fri, 1 Feb 2008 08:10:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59766 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754663AbYBANKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 08:10:48 -0500
+Date: Fri, 1 Feb 2008 14:10:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PATCH/RFC: bzImage payload as compressed ELF file.
+Message-ID: <20080201131030.GB1477@elte.hu>
+References: <1201560133.17053.36.camel@cthulhu.hellion.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1201560133.17053.36.camel@cthulhu.hellion.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] latencytop s390 support.
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+* Ian Campbell <ijc@hellion.org.uk> wrote:
 
-Cc: Holger Wolf <wolf@linux.vnet.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+> Hi Peter,
+> 
+> This patch switches the payload of a bzImage file to be in compressed 
+> ELF format. There are several rough edges which need to be addressed 
+> before it could go any further but I'd be interested to hear your 
+> opinion of the general approach before I spend time cleaning it up.
+> 
+> I'm mainly interested in something along these lines to allow the Xen 
+> bootloader to load a bzImage so that distros don't have to maintain 
+> two kernel packages with the same basic bits in different file 
+> formats, I think it would probably be of use to the kexec and/or 
+> lguest folks too.
 
-Will go in via the s390 git tree if acceptable.
+this looks quite interesting to me. Peter, what do you think?
 
- arch/s390/Kconfig             |    3 +++
- arch/s390/kernel/stacktrace.c |   31 +++++++++++++++++++++++--------
- 2 files changed, 26 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/arch/s390/Kconfig
-===================================================================
---- linux-2.6.orig/arch/s390/Kconfig
-+++ linux-2.6/arch/s390/Kconfig
-@@ -20,6 +20,9 @@ config LOCKDEP_SUPPORT
- config STACKTRACE_SUPPORT
- 	def_bool y
- 
-+config HAVE_LATENCYTOP_SUPPORT
-+	def_bool y
-+
- config RWSEM_GENERIC_SPINLOCK
- 	bool
- 
-Index: linux-2.6/arch/s390/kernel/stacktrace.c
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/stacktrace.c
-+++ linux-2.6/arch/s390/kernel/stacktrace.c
-@@ -14,7 +14,8 @@
- static unsigned long save_context_stack(struct stack_trace *trace,
- 					unsigned long sp,
- 					unsigned long low,
--					unsigned long high)
-+					unsigned long high,
-+					int savesched)
- {
- 	struct stack_frame *sf;
- 	struct pt_regs *regs;
-@@ -47,10 +48,12 @@ static unsigned long save_context_stack(
- 			return sp;
- 		regs = (struct pt_regs *)sp;
- 		addr = regs->psw.addr & PSW_ADDR_INSN;
--		if (!trace->skip)
--			trace->entries[trace->nr_entries++] = addr;
--		else
--			trace->skip--;
-+		if (savesched || !in_sched_functions(addr)) {
-+			if (!trace->skip)
-+				trace->entries[trace->nr_entries++] = addr;
-+			else
-+				trace->skip--;
-+		}
- 		if (trace->nr_entries >= trace->max_entries)
- 			return sp;
- 		low = sp;
-@@ -66,15 +69,27 @@ void save_stack_trace(struct stack_trace
- 	orig_sp = sp & PSW_ADDR_INSN;
- 	new_sp = save_context_stack(trace, orig_sp,
- 				    S390_lowcore.panic_stack - PAGE_SIZE,
--				    S390_lowcore.panic_stack);
-+				    S390_lowcore.panic_stack, 1);
- 	if (new_sp != orig_sp)
- 		return;
- 	new_sp = save_context_stack(trace, new_sp,
- 				    S390_lowcore.async_stack - ASYNC_SIZE,
--				    S390_lowcore.async_stack);
-+				    S390_lowcore.async_stack, 1);
- 	if (new_sp != orig_sp)
- 		return;
- 	save_context_stack(trace, new_sp,
- 			   S390_lowcore.thread_info,
--			   S390_lowcore.thread_info + THREAD_SIZE);
-+			   S390_lowcore.thread_info + THREAD_SIZE, 1);
-+}
-+
-+void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
-+{
-+	unsigned long sp, low, high;
-+
-+	sp = tsk->thread.ksp & PSW_ADDR_INSN;
-+	low = (unsigned long) task_stack_page(tsk);
-+	high = (unsigned long) task_pt_regs(tsk);
-+	save_context_stack(trace, sp, low, high, 0);
-+	if (trace->nr_entries < trace->max_entries)
-+		trace->entries[trace->nr_entries++] = ULONG_MAX;
- }
+	Ingo
