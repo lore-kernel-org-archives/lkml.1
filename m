@@ -1,43 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764304AbYBAMKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764884AbYBAMKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764304AbYBAMKW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762954AbYBAMKB
+	id S1764884AbYBAMKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763150AbYBAMKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:10:01 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47275 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762908AbYBAMJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:09:59 -0500
-Date: Fri, 1 Feb 2008 13:09:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>
-Subject: [build bug] undefined reference to `i2c_attach_client'
-Message-ID: <20080201120945.GA14632@elte.hu>
+	Fri, 1 Feb 2008 07:10:06 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41103
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763030AbYBAMKE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:10:04 -0500
+Date: Fri, 1 Feb 2008 13:09:55 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080201120955.GX7185@v2.random>
+References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2353]
+In-Reply-To: <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 31, 2008 at 05:44:24PM -0800, Christoph Lameter wrote:
+> The trouble is that the invalidates are much more expensive if you have to 
+> send theses to remote partitions (XPmem). And its really great if you can 
+> simple tear down everything. Certainly this is a significant improvement 
+> over the earlier approach but you still have the invalidate_page calls in 
+> ptep_clear_flush. So they fire needlessly?
 
-randconfig testing found the following build bug in latest -git:
+Dunno, they certainly fire more frequently than yours, even _pages
+fires more frequently than range_start,end but don't forget why!
+That's because I've a different spinlock for every 512
+ptes/4k-grub-tlbs that are being invalidated... So it pays off in
+scalability. I'm unsure if gru could play tricks with your patch, to
+still allow faults to still happen in parallel if they're on virtual
+addresses not in the same 2M naturally aligned chunk.
 
- drivers/built-in.o: In function `v4l2_i2c_attach':
- : undefined reference to `i2c_attach_client'
+> Serializing access in the device driver makes sense and comes with 
+> additional possiblity of not having to increment page counts all the time. 
+> So you trade one cacheline dirtying for many that are necessary if you 
+> always increment the page count.
 
-config attached.
+Note that my #v5 doesn't require to increase the page count all the
+time, so GRU will work fine with #v5.
 
-	Ingo
+See this comment in my patch:
+
+    /*
+     * invalidate_page[s] is called in atomic context
+     * after any pte has been updated and before
+     * dropping the PT lock required to update any Linux pte.
+     * Once the PT lock will be released the pte will have its
+     * final value to export through the secondary MMU.
+     * Before this is invoked any secondary MMU is still ok
+     * to read/write to the page previously pointed by the
+     * Linux pte because the old page hasn't been freed yet.
+     * If required set_page_dirty has to be called internally
+     * to this method.
+     */
+
+
+invalidate_page[s] is always called before the page is freed. This
+will require modifications to the tlb flushing code logic to take
+advantage of _pages in certain places. For now it's just safe.
+
+> How does KVM insure the consistency of the shadow page tables? Atomic ops?
+
+A per-VM mmu_lock spinlock is taken to serialize the access, plus
+atomic ops for the cpu.
+
+> The GRU has no page table on its own. It populates TLB entries on demand 
+> using the linux page table. There is no way it can figure out when to 
+> drop page counts again. The invalidate calls are turned directly into tlb 
+> flushes.
+
+Yes, this is why it can't serialize follow_page with only the PT lock
+with your patch. KVM may do it once you add start,end to range_end
+only thanks to the additional pin on the page.
