@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbYBAV02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbYBAV2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761395AbYBAV02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYBAV0V
+	id S1761621AbYBAV2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 16:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbYBAV2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 16:26:21 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:20635 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757633AbYBAV0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 16:26:20 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [build bug] undefined reference to `i2c_attach_client'
-X-Message-Flag: Warning: May contain useful information
-References: <20080201120945.GA14632@elte.hu> <20080201135836.GA20294@elte.hu>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 01 Feb 2008 13:26:18 -0800
-In-Reply-To: <20080201135836.GA20294@elte.hu> (Ingo Molnar's message of "Fri, 1 Feb 2008 14:58:36 +0100")
-Message-ID: <aday7a4jrlx.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Fri, 1 Feb 2008 16:28:03 -0500
+Received: from [212.12.190.188] ([212.12.190.188]:55698 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757815AbYBAV2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 16:28:00 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Chris Mason <chris.mason@oracle.com>
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+Date: Sat, 2 Feb 2008 00:26:00 +0300
+User-Agent: KMail/1.5
+Cc: Jan Kara <jack@suse.cz>, Andreas Dilger <adilger@sun.com>,
+       Chris Snook <csnook@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200801242336.00340.a1426z@gawab.com> <20080131171040.GL1461@duck.suse.cz> <200801311214.55287.chris.mason@oracle.com>
+In-Reply-To: <200801311214.55287.chris.mason@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 01 Feb 2008 21:26:18.0795 (UTC) FILETIME=[156A87B0:01C86519]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200802020026.00998.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > randconfig testing found the following build bug in latest -git:
- > > 
- > >  drivers/built-in.o: In function `v4l2_i2c_attach':
- > >  : undefined reference to `i2c_attach_client'
+Chris Mason wrote:
+> On Thursday 31 January 2008, Jan Kara wrote:
+> > On Thu 31-01-08 11:56:01, Chris Mason wrote:
+> > > On Thursday 31 January 2008, Al Boldi wrote:
+> > > > The big difference between ordered and writeback is that once the
+> > > > slowdown starts, ordered goes into ~100% iowait, whereas writeback
+> > > > continues 100% user.
+> > >
+> > > Does data=ordered write buffers in the order they were dirtied?  This
+> > > might explain the extreme problems in transactional workloads.
+> >
+> >   Well, it does but we submit them to block layer all at once so
+> > elevator should sort the requests for us...
+>
+> nr_requests is fairly small, so a long stream of random requests should
+> still end up being random IO.
+>
+> Al, could you please compare the write throughput from vmstat for the
+> data=ordered vs data=writeback runs?  I would guess the data=ordered one
+> has a lower overall write throughput.
 
-I hit this too -- it seems that commit 8ffbc655 ("V4L/DVB (6451):
-v4l2: add support for bus-based I2C drivers"), which added
-v4l2_i2c_attach() without adding any dependency on CONFIG_I2C.  Not
-sure what the correct fix is -- either CONFIG_VIDEO_DEV needs to
-select/depend on CONFIG_I2C, or v4l2_i2c_attach() should only be built
-if CONFIG_I2C is on.
+That's what I would have guessed, but it's actually going up 4x fold for 
+mysql from 559mb to 2135mb, while the db-size ends up at 549mb.
+
+This may mean that data=ordered isn't buffering redundant writes; or worse.
+
+
+Thanks!
+
+--
+Al
+
