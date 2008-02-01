@@ -1,111 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYBARHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbYBARHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbYBARHg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 12:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbYBARH2
+	id S1760042AbYBARHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759578AbYBARHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 12:07:28 -0500
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:59490 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755325AbYBARH1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 12:07:27 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAM3gokdMQWYq/2dsb2JhbACBWK0O
-Date: Fri, 1 Feb 2008 12:02:19 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: John Stultz <johnstul@us.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 06/23 -v8] handle accurate time keeping over long delays
-Message-ID: <20080201170219.GA19397@Krystal>
-References: <20080130210357.927754294@goodmis.org> <20080130210525.701268662@goodmis.org> <20080131121037.GB8493@Krystal> <1201800297.6789.14.camel@jstultz-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 1 Feb 2008 12:07:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60456 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759346AbYBARHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 12:07:35 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-git9 ACPI oops - regression
+Date: Fri, 1 Feb 2008 12:07:03 -0500
+User-Agent: KMail/1.9.5
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+References: <20080201132551.GA4199@ics.muni.cz> <200802011529.20167.rjw@sisk.pl>
+In-Reply-To: <200802011529.20167.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1201800297.6789.14.camel@jstultz-laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:58:34 up 89 days, 22:04,  5 users,  load average: 2.74, 1.27,
-	0.83
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200802011207.03211.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* John Stultz (johnstul@us.ibm.com) wrote:
+On Friday 01 February 2008 09:29, Rafael J. Wysocki wrote:
+> [Relevant CCs added.]
 > 
-> On Thu, 2008-01-31 at 07:10 -0500, Mathieu Desnoyers wrote:
-> > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > From: John Stultz <johnstul@us.ibm.com>
-> > > 
-> > > Handle accurate time even if there's a long delay between
-> > > accumulated clock cycles.
-> > > 
+> On Friday, 1 of February 2008, Lukas Hejtmanek wrote:
+> > Hello,
 > > 
-> > About this one.. we talked a lot about the importance of timekeeping at
-> > the first Montreal Tracing Summit this week. Actually, someone
-> > mentioned a very interesting point : in order to be able to synchronize
-> > traces taken from the machine with traces taken on external hardware
-> > (i.e. memory bus tracer on Freescale), taking the "real" counter value
-> > rather that using the "cumulated cycles" approach (which creates a
-> > virtual counted instead) would be better.
+> > I encountered oops on my laptop Lenovo T61 and dock. If I press undock on the
+> > dock, I got the following oops:
+
+this worked in 2.6.24?
+You are running the "dock" driver in both cases?
+
+Assuming yes...
+Since the dock driver itself hasn't changed, nor has the ACPI core,
+something in the framwork changed....
+
+Is this reproducible?
+If yes, please open a bugzilla entry here:
+
+http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+Component = Config-hotplug
+
+and attach the output from acpidump
+
+thanks,
+-Len
+
+
+> > [79721.755165] BUG: unable to handle kernel paging request at 000000340000000e
+> > [79721.755165] IP: [<ffffffff8034d147>] acpi_ns_map_handle_to_node+0x14/0x1d
+> > [79721.755165] PGD 7203a067 PUD 0
+> > [79721.755165] Oops: 0000 [1] SMP
+> > [79721.755165] CPU 1
+> > [79721.755165] Modules linked in: usb_storage i915 drm rfcomm l2cap bluetooth fuse arc4 ecb crypto_blkcipher ehci_hcd uhci_hcd e1000e snd_hda_intel intel_agp thinkpad_acpi [last unloaded: cfg80211]
+> > [79721.755165] Pid: 69, comm: kacpi_notify Not tainted 2.6.24-git9 #4
+> > [79721.755165] RIP: 0010:[<ffffffff8034d147>]  [<ffffffff8034d147>] acpi_ns_map_handle_to_node+0x14/0x1d
+> > [79721.755165] RSP: 0018:ffff81007d197d28  EFLAGS: 00010246
+> > [79721.755165] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> > [79721.755165] RDX: 0000000000017567 RSI: 000000100002c0d0 RDI: 0000003400000006
+> > [79721.755165] RBP: 0000000000000000 R08: ffff810003c00000 R09: 0000000000000000
+> > [79721.755165] R10: 0000000000000002 R11: 0000000000000001 R12: 0000003400000006
+> > [79721.755165] R13: 0000000000000000 R14: ffff81007d197d68 R15: ffff81007d197d70
+> > [79721.755165] FS:  0000000000000000(0000) GS:ffff81007d00e380(0000) knlGS:0000000000000000
+> > [79721.755165] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > [79721.755165] CR2: 000000340000000e CR3: 000000007200a000 CR4: 00000000000006a0
+> > [79721.755165] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [79721.755165] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [79721.755165] Process kacpi_notify (pid: 69, threadinfo ffff81007d196000, task ffff81007d18ef20)
+> > [79721.755165] Stack:  ffffffff8034e19f ffff8100519e8800 ffff81007d197de0 0000000000000001
+> > [79721.755165]  0000000000000000 0000000000000001 ffffffff80357d3d ffff81007d02cdc0
+> > [79721.755165]  0000000000000000 0000003400000006 0000000000000000 ffffffff8058cbaa
+> > [79721.755165] Call Trace:
+> > [79721.755165]  [<ffffffff8034e19f>] acpi_get_next_object+0x3b/0x99
+> > [79721.755165]  [<ffffffff80357d3d>] acpi_bus_trim+0x57/0x109
+> > [79721.755165]  [<ffffffff8035b28b>] hotplug_dock_devices+0x97/0x117
+> > [79721.755166]  [<ffffffff8035b3a9>] handle_eject_request+0x4e/0xd3
+> > [79721.755166]  [<ffffffff8033e04a>] acpi_os_execute_notify+0x0/0x2c
+> > [79721.755166]  [<ffffffff80356088>] acpi_bus_get_device+0x1d/0x2e
+> > [79721.755166]  [<ffffffff803560b0>] acpi_bus_notify+0x17/0x4c
+> > [79721.755166]  [<ffffffff8033e04a>] acpi_os_execute_notify+0x0/0x2c
+> > [79721.755166]  [<ffffffff80343a1d>] acpi_ev_notify_dispatch+0x57/0x60
+> > [79721.755166]  [<ffffffff8033e06d>] acpi_os_execute_notify+0x23/0x2c
+> > [79721.755166]  [<ffffffff802460bf>] run_workqueue+0xbf/0x160
+> > [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> > [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> > [79721.755166]  [<ffffffff80246b9f>] worker_thread+0x9f/0x100
+> > [79721.755166]  [<ffffffff80249e50>] autoremove_wake_function+0x0/0x30
+> > [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> > [79721.755166]  [<ffffffff80246b00>] worker_thread+0x0/0x100
+> > [79721.755166]  [<ffffffff80249a4b>] kthread+0x4b/0x80
+> > [79721.755166]  [<ffffffff8020d128>] child_rip+0xa/0x12
+> > [79721.755166]  [<ffffffff80249a00>] kthread+0x0/0x80
+> > [79721.755166]  [<ffffffff8020d11e>] child_rip+0x0/0x12
+> > [79721.755166]
+> > [79721.755166]
+> > [79721.755166] Code: 00 c3 49 ff c1 48 83 c6 04 41 ff c8 45 85 c0 75 a8 31 c0 c6 06 00 c3 48 8d 47 ff 48 83 f8 fd 76 08 48 8b 05 dc 49 39 00 c3 31 c0 <80> 7f 08 0f 48 0f 44 c7 c3 48 89 f8 c3 31 c0 48 85 ff 74 0d f6
+> > [79721.755166] RIP  [<ffffffff8034d147>] acpi_ns_map_handle_to_node+0x14/0x1d
+> > [79721.755166]  RSP <ffff81007d197d28>
+> > [79721.755166] CR2: 000000340000000e
+> > [79721.755166] ---[ end trace 05a1f30122eb8809 ]---
 > > 
-> > So I would recommend using an algorithm that would return a clock value
-> > which is the same as the underlying hardware counter.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> Hmm. It is an interesting issue. Clearly having the raw cycle value
-> match up so hardware analysis could be mapped to software timestamps
-> would be useful(although obscure) feature. However with the variety of
-> clocksources, dealing properly with the clocksource wrap issue (ACPI PM
-> for instance wraps about every 5 seconds) also has to be addressed.
-> 
-> I think you were mentioning an idea that required some work on the read
-> side to handle the wraps, basically managing the high order bits by
-> hand. This sounds like it would be an additional feature that could be
-> added on to the infrastructure being provided in the
-> get_monotonic_cycles() patch. No?
-> 
-
-Yup, exactly.
-
-> 
-> However, all of the above is a separate issue then what this (the
-> timekeeping over long delay) patch addresses, as it is not really
-> directly related to the get_monotonic_cycles() patch, but instead allows
-> for correct timekeeping, making update_wall_time() to function properly
-> if it was deferred for longer then the clocksource's wrap time.
-> 
-
-I agree, that could apply on top of the monotonic cycles patch. It's
-just a different way to see it : dealing with wrapping TSC bits,
-returning the LSBs given by the hardware, rather than simply
-accumulating time. This is what the patch I sent earlier (which I use in
-LTTng) does. I currently expects 32 LSBs to be given by the hardware,
-but it would be trivial to extend it to support any given number of
-hardware LSBs.
-
-Mathieu
-
-> thanks
-> -john
-> 
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
