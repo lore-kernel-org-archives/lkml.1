@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763629AbYBAMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764022AbYBAMCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763629AbYBAMBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbYBAMBH
+	id S1764022AbYBAMCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbYBAMCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:01:07 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:47984 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755569AbYBAMBF (ORCPT
+	Fri, 1 Feb 2008 07:02:15 -0500
+Received: from smtprelay10.ispgateway.de ([80.67.29.24]:48824 "EHLO
+	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756676AbYBAMCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:01:05 -0500
-Message-ID: <47A30790.8080402@vlnb.net>
-Date: Fri, 01 Feb 2008 14:50:40 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Fri, 1 Feb 2008 07:02:15 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Feb 2008 07:02:14 EST
+Date: Fri, 1 Feb 2008 12:55:30 +0100
+From: Lars Noschinski <lkml@ml.noschinski.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How does ext2 implement sparse files?
+Message-ID: <20080201115530.GB14567@lars.home.noschinski.de>
+References: <20080131152823.GA29422@lars.home.noschinski.de> <p73myql50d2.fsf@bingen.suse.de>
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: landman@scalableinformatics.com, fujita.tomonori@lab.ntt.co.jp,
-       linux-scsi@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James.Bottomley@hansenpartnership.com, scst-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-References: <adazluoe2t3.fsf@cisco.com>	<20080130083239E.fujita.tomonori@lab.ntt.co.jp>	<e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>	<20080130195635T.tomof@acm.org>	<1201785938.7280.105.camel@haakon2.linux-iscsi.org>	<e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com>	<47A1EE54.6000005@vlnb.net> <47A1F67C.4020300@scalableinformatics.com> <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com>
-In-Reply-To: <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <p73myql50d2.fsf@bingen.suse.de>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-Df-Sender: 336680
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche wrote:
-> On Jan 31, 2008 5:25 PM, Joe Landman <landman@scalableinformatics.com> wrote:
-> 
->>Vladislav Bolkhovitin wrote:
+[Sorry for using an invalid mail address in my previous post]
+
+* Andi Kleen <andi@firstfloor.org> [08-02-01 10:28]:
+>Lars Noschinski <lklml@ml.noschinski.de> writes:
+>
+>> For an university project, we had to write a toy filesystem (ext2-like),
+>> for which I would like to implement sparse file support. For this, I
+>> digged through the ext2 source code; but I could not find the point,
+>> where ext2 detects holes.
 >>
->>>Actually, I don't know what kind of conclusions it is possible to make
->>>from disktest's results (maybe only how throughput gets bigger or slower
->>>with increasing number of threads?), it's a good stress test tool, but
->>>not more.
->>
->>Unfortunately, I agree.  Bonnie++, dd tests, and a few others seem to
->>bear far closer to "real world" tests than disktest and iozone, the
->>latter of which does more to test the speed of RAM cache and system call
->>performance than actual IO.
-> 
-> 
-> I have ran some tests with Bonnie++, but found out that on a fast
-> network like IB the filesystem used for the test has a really big
-> impact on the test results.
-> 
-> If anyone has a suggestion for a better test than dd to compare the
-> performance of SCSI storage protocols, please let it know.
+>> As far as I can see from fs/buffer.c, an hole is a buffer_head which is
+>> not mapped, but uptodate. But I cannot find a relevant source line,
+>> where ext2 makes usage of this information.
+>
+>It does not explicitely detect holes; holey data is just never written
+>so no space for it is allocated.
 
-I would suggest you to try something from real life, like:
+Thanks for the answers. No that I know that, it is kind of obvious. I
+was irritated yesterday by a bug a bug in our implementation (number of
+used blocks is reported as filesize/blocksize); so I was expecting the
+VFS to issue write requests for empty pages (which would be sillly, I
+know).
 
-  - Copying large file tree over a single or multiple IB links
-
-  - Measure of some DB engine's TPC
-
-  - etc.
-
-> Bart Van Assche.
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2008.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> _______________________________________________
-> Scst-devel mailing list
-> Scst-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/scst-devel
-> 
-
+Thanks,
+     Lars.
