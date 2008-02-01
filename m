@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbYBAJtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbYBAJu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757701AbYBAJtK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYBAJs5
+	id S1756657AbYBAJu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbYBAJuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:48:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51660 "EHLO mx3.mail.elte.hu"
+	Fri, 1 Feb 2008 04:50:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52064 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbYBAJs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:48:56 -0500
-Date: Fri, 1 Feb 2008 10:48:39 +0100
+	id S1753769AbYBAJuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 04:50:50 -0500
+Date: Fri, 1 Feb 2008 10:50:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Nick Piggin <npiggin@suse.de>, heiko.carstens@de.ibm.com,
-       linux390@de.ibm.com
-Subject: Re: x86 arch updates also broke s390
-Message-ID: <20080201094839.GA29836@elte.hu>
-References: <20080130011550.GA31853@elte.hu> <20080131003310.GW29368@does.not.exist> <1201772094.18221.32.camel@localhost>
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
+Message-ID: <20080201095034.GA29960@elte.hu>
+References: <20080131201430.GA9375@cs181133002.pp.htv.fi> <20080131203122.GA6457@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1201772094.18221.32.camel@localhost>
+In-Reply-To: <20080131203122.GA6457@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,38 +37,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Defining GENERIC_LOCKBREAK in arch/s390/Kconfig takes care of it. I'll 
-> cook up a patch and queue it in git390.
+> > And that from a person who on the other hand wants to introduce (and 
+> > tries to force on other people) deprecation periods for unused 
+> > EXPORT_SYMBOL's.
+> 
+> why does this bother you? The API makes total sense. This is a 
+> completely sensible API (with a full implementation) to use 
+> non-temporal copies. I mean, if this was some legacy API that nobody 
+> uses anymore i'd agree, but this is about the ability to access 
+> user-space memory via SSE2+ non-temporal stores.
 
-the one below should do the trick.
+Adrian, you have still not answered the (obvious) question: why do such 
+currently-unused exports bother you?
 
 	Ingo
-
------------------>
-Subject: s390: enable GENERIC_LOCKBREAK
-From: Ingo Molnar <mingo@elte.hu>
-
-the recent need_lockbreak cleanups broke s390 build: enable
-GENERIC_LOCKBREAK.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/s390/Kconfig |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux/arch/s390/Kconfig
-===================================================================
---- linux.orig/arch/s390/Kconfig
-+++ linux/arch/s390/Kconfig
-@@ -22,6 +22,9 @@ config RWSEM_GENERIC_SPINLOCK
- config RWSEM_XCHGADD_ALGORITHM
- 	def_bool y
- 
-+config GENERIC_LOCKBREAK
-+	def_bool y
-+
- config ARCH_HAS_ILOG2_U32
- 	bool
- 	default n
