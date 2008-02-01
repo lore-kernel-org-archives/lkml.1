@@ -1,241 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYBAFSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbYBAF20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYBAFSr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 00:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbYBAFSZ
+	id S1758872AbYBAF20 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 00:28:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYBAF2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 00:18:25 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61840 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751918AbYBAFSX (ORCPT
+	Fri, 1 Feb 2008 00:28:15 -0500
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:37955 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750763AbYBAF2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 00:18:23 -0500
-Message-ID: <47A2AB60.5000403@ak.jp.nec.com>
-Date: Fri, 01 Feb 2008 14:17:20 +0900
-From: Kohei KaiGai <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 1 Feb 2008 00:28:13 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=1gpzgPkh356uXRMgPNfiArfDH3WEL4w5FVcWvPAsW3T3G1QVeHtsRnKpZROj5aAXjj1KttoSmbPyDoyt/flEvBcSbUfW90X724up90d4uahpz4SX4YLp2lFIn826ymPB7DCq8ndhC1tbPVy+7B5IxcIJ/VW+XcrSepAuQbgtCDs=  ;
+X-YMail-OSG: 26ow2koVM1n_JztPBzHhEvlSsCJ5Wko3F3mjYjxup5BvWDYJ0FiVV4ZK6SYFPIpSmKrqHWwmCw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: linux-kernel@vger.kernel.org
+Subject: Removing dev.power.power_state (WAS: Feature Removals for 2.6.25)
+Date: Thu, 31 Jan 2008 21:28:09 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-pm@lists.linux-foundation.org, Harvey.Harrison@gmail.com,
+       Alan Stern <stern@rowland.harvard.edu>
 MIME-Version: 1.0
-To: "Andrew G. Morgan" <morgan@kernel.org>
-CC: akpm@osdl.org, serue@us.ibm.com, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/3] exporting capability code/name pairs (try #3)
-References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com>
-In-Reply-To: <4799CAE0.7010400@ak.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801312128.10700.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> All that being said, the friendliness factor of this is somewhat
->> undeniable, and so I can see why folk might want it in the kernel
->> anyway. If so, would it possible to move this code into
->> security/capability.c and not in the main kernel per-se - protected with
->> a configuration option? If it does appear in the kernel, we'll obviously
->> add your libcap changes too. If it doesn't, then perhaps we can meet
->> your needs with a slight modification to your libcap patch to read the
->> capabilities from an optional /etc/XXX file - and make text visibility
->> of 'late breaking' capabilities something that the admin can tweak as
->> needed?
-> 
-> I think optional configuration file is not a good idea.
-> It can make unneeded confusion.
-> 
-> If necessary, I'll move this features into security/capability.c and
-> add a Kconfig option to select it.
+Quoth Harvey Harrison:
 
-The following patch enables to export the list of capabilities supported
-on the running kernel, under /sys/kernel/capability .
+> Ping?
+> What:	dev->power.power_state
+> When:	July 2007
+> Why:	Broken design for runtime control over driver power states, confusing
+> 	driver-internal runtime power management with:  mechanisms to support
+> 	system-wide sleep state transitions; event codes that distinguish
+> 	different phases of swsusp "sleep" transitions; and userspace policy
+> 	inputs.  This framework was never widely used, and most attempts to
+> 	use it were broken.  Drivers should instead be exposing domain-specific
+> 	interfaces either to kernel or to userspace.
+> Who:	Pavel Machek <pavel@suse.cz>
 
-Changelog from the previous version:
-- Implementation is moved into security/capability.c from kernel/capability.c
-- A Kconfig option SECURITY_CAPABILITIES_EXPORT is added to tuen on/off this feature.
+A lot of the infrastructure using that has already been deleted, and
+there are some incremental improvements pending for 2.6.25:
 
-[kaigai@saba ~]$ for x in /sys/kernel/capability/*
-> do
->   echo "$x --> `cat $x`"
-> done
-/sys/kernel/capability/cap_audit_control --> 30
-/sys/kernel/capability/cap_audit_write --> 29
-    - snip -
-/sys/kernel/capability/cap_sys_time --> 25
-/sys/kernel/capability/cap_sys_tty_config --> 26
-/sys/kernel/capability/index --> 31
-/sys/kernel/capability/version --> 0x19980330
-[kaigai@saba ~]$
+ - drivers/input/touchscreen/ads7846.c ... patch fixing this
+   should be in either MM or the input queue
 
-Thanks,
+ - Documentation/power/devices.txt ... patch fixing this is
+   in the suspend tree, due to merge RSN
 
-Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
-----
- scripts/mkcapnames.sh |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
- security/Kconfig      |    9 ++++++++
- security/Makefile     |   11 ++++++++++
- security/capability.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 119 insertions(+), 0 deletions(-)
+ - drivers/spi/spi.c ... patch fixing this is in MM, due to
+   merge with other SPI patches
 
-diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
-index e69de29..262478e 100644
---- a/scripts/mkcapnames.sh
-+++ b/scripts/mkcapnames.sh
-@@ -0,0 +1,50 @@
-+#!/bin/sh
-+
-+#
-+# generate a cap_names.h file from include/linux/capability.h
-+#
-+
-+BASEDIR=`dirname $0`
-+
-+echo '#ifndef CAP_NAMES_H'
-+echo '#define CAP_NAMES_H'
-+echo
-+echo '/*'
-+echo ' * Do NOT edit this file directly.'
-+echo ' * This file is generated from include/linux/capability.h automatically'
-+echo ' */'
-+echo
-+echo '#ifndef SYSFS_CAPABILITY_ENTRY'
-+echo '#error cap_names.h should be included from kernel/capability.c'
-+echo '#else'
-+
-+echo 'SYSFS_CAPABILITY_ENTRY(version, "0x%08x\n", _LINUX_CAPABILITY_VERSION);'
-+
-+cat ${BASEDIR}/../include/linux/capability.h	\
-+    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'	\
-+    | awk 'BEGIN {
-+            max_code = -1;
-+        }
-+        {
-+            if ($3 > max_code)
-+                max_code = $3;
-+            printf("SYSFS_CAPABILITY_ENTRY(%s, \"%%u\\n\", %s);\n", tolower($2), $2);
-+        }
-+        END {
-+            printf("SYSFS_CAPABILITY_ENTRY(index, \"%%u\\n\", %u);\n", max_code);
-+        }'
-+
-+echo
-+echo 'static struct attribute *capability_attrs[] = {'
-+echo '        &version_attr.attr,'
-+echo '        &index_attr.attr,'
-+
-+cat ${BASEDIR}/../include/linux/capability.h    \
-+    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'   \
-+    | awk '{ printf ("        &%s_attr.attr,\n", tolower($2)); }'
-+
-+echo '        NULL,'
-+echo '};'
-+
-+echo '#endif	/* SYSFS_CAPABILITY_ENTRY */'
-+echo '#endif	/* CAP_NAMES_H */'
-diff --git a/security/Kconfig b/security/Kconfig
-index 8086e61..e4d330c 100644
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -90,6 +90,15 @@ config SECURITY_FILE_CAPABILITIES
+ - drivers/pcmcia/ds.c ... at least I *think* that patch got sent
 
- 	  If in doubt, answer N.
+But there are still quite a few users left, and a new one was (sigh)
+recently added.
 
-+config SECURITY_CAPABILITIES_EXPORT
-+	bool "Exporting capabilities kernel supported"
-+	depends on SECURITY_CAPABILITIES && SYSFS
-+	help
-+          This enables to export any capabilities which are supported
-+	  in the running kernel.
-+	
-+	  If you are unsure how to answer this question, answer Y.
-+
- config SECURITY_ROOTPLUG
- 	bool "Root Plug Support"
- 	depends on USB=y && SECURITY
-diff --git a/security/Makefile b/security/Makefile
-index ef87df2..90a856d 100644
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -16,3 +16,14 @@ obj-$(CONFIG_SECURITY)			+= security.o dummy.o inode.o
- obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
- obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
-+
-+ifeq ($(CONFIG_SECURITY_CAPABILITIES_EXPORT),y)
-+# cap_names.h contains the code/name pair of capabilities.
-+# It is generated using include/linux/capability.h automatically.
-+$(obj)/capability.o: $(obj)/cap_names.h
-+quiet_cmd_cap_names  = CAPS    $@
-+      cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
-+targets += cap_names.h
-+$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
-+	$(call if_changed,cap_names)
-+endif
-diff --git a/security/capability.c b/security/capability.c
-index 9e99f36..06e0f0a 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -20,6 +20,8 @@
- #include <linux/netlink.h>
- #include <linux/ptrace.h>
- #include <linux/moduleparam.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
+ - drivers/rtc/rtc-sa1100.c ... new usage, merged last week
 
- static struct security_operations capability_ops = {
- 	.ptrace =			cap_ptrace,
-@@ -58,6 +60,53 @@ static int secondary;
- static int capability_disable;
- module_param_named(disable, capability_disable, int, 0);
+ - drivers/usb/... has various users, HCDs look easy enough to fix but
+   the other bits will take more thought
 
-+#ifdef CONFIG_SECURITY_CAPABILITIES_EXPORT
-+/*
-+ * Export the list of capabilities on /sys/kernel/capability
-+ */
-+struct capability_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct kobject *kobj,
-+			struct capability_attribute *attr,
-+			char *buffer);
-+	ssize_t (*store)(struct kobject *kobj,
-+			 struct capability_attribute *attr,
-+			 const char *buffer, size_t count);
-+};
-+
-+#define SYSFS_CAPABILITY_ENTRY(_name, _fmt, ...)			\
-+	static ssize_t _name##_show(struct kobject *kobj,		\
-+				    struct capability_attribute *attr,	\
-+				    char *buffer)			\
-+	{                                                               \
-+		return scnprintf(buffer, PAGE_SIZE, _fmt, __VA_ARGS__);	\
-+	}								\
-+	static struct capability_attribute _name##_attr = __ATTR_RO(_name)
-+/*
-+ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
-+ * This script parses include/linux/capability.h
-+ */
-+#include "cap_names.h"
-+
-+static struct attribute_group capability_attr_group = {
-+	.name = "capability",
-+	.attrs = capability_attrs,
-+};
-+
-+static int __init capability_export_names(void)
-+{
-+	int rc;
-+
-+	rc = sysfs_create_group(kernel_kobj, &capability_attr_group);
-+	if (rc) {
-+		printk(KERN_ERR "Unable to export capabilities\n");
-+		return rc;
-+	}
-+	return 0;
-+}
-+__initcall(capability_export_names);
-+#endif
-+
- static int __init capability_init (void)
- {
- 	if (capability_disable) {
+ - drivers/ata/... has some too
 
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+ - drivers/ide/ppc/pmac.c
+
+ - drivers/spi/... some controller drivers use this (look easy to fix)
+
+ - drivers/scsi/mesh.c
+
+ - drivers/input/serio/... has a few users
+
+ - ... more ...
+
+I'll probably send in a few more patches for easy stuff in areas
+that I touch semi-frequently, but other folk should fix ATA, IDE,
+SCSI, SERIO, and so forth.  It'd be good if Alan would help fix
+the USB stuff too.  I'm not sure what Pavel's doing there...
+
+- Dave
+
