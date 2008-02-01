@@ -1,136 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbYBAFSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYBAFSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762984AbYBAFSb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 00:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbYBAFSU
+	id S1754158AbYBAFSr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 00:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbYBAFSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 00:18:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:24308 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbYBAFST (ORCPT
+	Fri, 1 Feb 2008 00:18:25 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61840 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYBAFSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 00:18:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ldNAlMSElUuwpo4DrdIGkYEF734+KolgNbF6g6hvnbsru1df7HgU5jPCGdJWrmW4o+3NU+Z/g4COjEmmzWuce+vSofBHigOifFw92d0q6ERASA4ontXv0/zz88/HOrCIQN610auTCWlYYo3ckXB1nKrQ4DN3Xx9x1DxT6IxH2DA=
-Subject: Re: Feature Removals for 2.6.25
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Jiri Slaby <jirislaby@gmail.com>,
-       Pavel Machek <pavel@suse.cz>, Christoph Hellwig <hch@lst.de>,
-       Dominik Brodowski <linux@brodo.de>, Andi Kleen <ak@suse.de>,
-       Adrian Bunk <bunk@stusta.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Nick Piggin <npiggin@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>
-In-Reply-To: <47A2A5D8.4080700@linux.intel.com>
-References: <1201829922.23523.68.camel@brick>
-	 <47A2A5D8.4080700@linux.intel.com>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 21:18:11 -0800
-Message-Id: <1201843092.23523.80.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 1 Feb 2008 00:18:23 -0500
+Message-ID: <47A2AB60.5000403@ak.jp.nec.com>
+Date: Fri, 01 Feb 2008 14:17:20 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: "Andrew G. Morgan" <morgan@kernel.org>
+CC: akpm@osdl.org, serue@us.ibm.com, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/3] exporting capability code/name pairs (try #3)
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com>
+In-Reply-To: <4799CAE0.7010400@ak.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-31 at 20:53 -0800, Arjan van de Ven wrote:
-> > 
-> > ---------------------------
-> > 
-> > What:	CONFIG_FORCED_INLINING
-> > When:	June 2006
-> > Why:	Config option is there to see if gcc is good enough. (in january
-> >         2006). If it is, the behavior should just be the default. If it's not,
-> > 	the option should just go away entirely.
-> > Who:    Arjan van de Ven
-> > 
-> > Patch submitted to Arjan, maybe 2.6.25?
+>> All that being said, the friendliness factor of this is somewhat
+>> undeniable, and so I can see why folk might want it in the kernel
+>> anyway. If so, would it possible to move this code into
+>> security/capability.c and not in the main kernel per-se - protected with
+>> a configuration option? If it does appear in the kernel, we'll obviously
+>> add your libcap changes too. If it doesn't, then perhaps we can meet
+>> your needs with a slight modification to your libcap patch to read the
+>> capabilities from an optional /etc/XXX file - and make text visibility
+>> of 'late breaking' capabilities something that the admin can tweak as
+>> needed?
 > 
-> Ingo picked it up, but no rush for .25, .26 is fine for this as well
+> I think optional configuration file is not a good idea.
+> It can make unneeded confusion.
 > 
+> If necessary, I'll move this features into security/capability.c and
+> add a Kconfig option to select it.
 
-OK, it shouldn't be any change from what's there now, but no rush.
+The following patch enables to export the list of capabilities supported
+on the running kernel, under /sys/kernel/capability .
 
-> > 
-> > What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
-> > 	(temporary transition config option provided until then)
-> > 	The transition config option will also be removed at the same time.
-> > When:	before 2.6.19
-> > Why:	Unused symbols are both increasing the size of the kernel binary
-> > 	and are often a sign of "wrong API"
-> > Who:	Arjan van de Ven <arjan@linux.intel.com>
-> 
-> this is an ongoing work; symbols get marked unused and then garbage collected
-> when they're due; for example akpm has several of that kind in his pile right now
+Changelog from the previous version:
+- Implementation is moved into security/capability.c from kernel/capability.c
+- A Kconfig option SECURITY_CAPABILITIES_EXPORT is added to tuen on/off this feature.
 
-How do they get marked?  As this is an ongoing effort, should this be
-moved to the top of the file, and the actual symbols+date be listed?
-That would make it easy to figure out what's going away.
+[kaigai@saba ~]$ for x in /sys/kernel/capability/*
+> do
+>   echo "$x --> `cat $x`"
+> done
+/sys/kernel/capability/cap_audit_control --> 30
+/sys/kernel/capability/cap_audit_write --> 29
+    - snip -
+/sys/kernel/capability/cap_sys_time --> 25
+/sys/kernel/capability/cap_sys_tty_config --> 26
+/sys/kernel/capability/index --> 31
+/sys/kernel/capability/version --> 0x19980330
+[kaigai@saba ~]$
 
-Something like the following (grep found me two example symbols)
+Thanks,
 
-Harvey
+Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+----
+ scripts/mkcapnames.sh |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
+ security/Kconfig      |    9 ++++++++
+ security/Makefile     |   11 ++++++++++
+ security/capability.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 119 insertions(+), 0 deletions(-)
 
----
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH] feature-removal: document symbols going away
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- Documentation/feature-removal-schedule.txt |   25 +++++++++++++++----------
- 1 files changed, 15 insertions(+), 10 deletions(-)
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 3a46d1f..0c418e6 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -5,6 +5,21 @@ the work.  When the feature is removed from the kernel, it should also
- be removed from this file.
- 
- ---------------------------
-+What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
-+	(temporary transition config option provided until then)
-+	The transition config option will also be removed at the same time.
-+Why:	Unused symbols are both increasing the size of the kernel binary
-+	and are often a sign of "wrong API"
-+Who:	Arjan van de Ven <arjan@linux.intel.com>
+diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
+index e69de29..262478e 100644
+--- a/scripts/mkcapnames.sh
++++ b/scripts/mkcapnames.sh
+@@ -0,0 +1,50 @@
++#!/bin/sh
 +
-+When: 2.6.25
-+fs/open.c:sys_open
-+fs/read_write.c:sys_read
++#
++# generate a cap_names.h file from include/linux/capability.h
++#
 +
-+When: 2.6.26
++BASEDIR=`dirname $0`
 +
++echo '#ifndef CAP_NAMES_H'
++echo '#define CAP_NAMES_H'
++echo
++echo '/*'
++echo ' * Do NOT edit this file directly.'
++echo ' * This file is generated from include/linux/capability.h automatically'
++echo ' */'
++echo
++echo '#ifndef SYSFS_CAPABILITY_ENTRY'
++echo '#error cap_names.h should be included from kernel/capability.c'
++echo '#else'
 +
-+---------------------------
- 
- What:	MXSER
- When:	December 2007
-@@ -137,16 +152,6 @@ Who:    Adrian Bunk <bunk@stusta.de>
- 
- ---------------------------
- 
--What:	Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
--	(temporary transition config option provided until then)
--	The transition config option will also be removed at the same time.
--When:	before 2.6.19
--Why:	Unused symbols are both increasing the size of the kernel binary
--	and are often a sign of "wrong API"
--Who:	Arjan van de Ven <arjan@linux.intel.com>
--
-----------------------------
--
- What:	USB driver API moves to EXPORT_SYMBOL_GPL
- When:	February 2008
- Files:	include/linux/usb.h, drivers/usb/core/driver.c
++echo 'SYSFS_CAPABILITY_ENTRY(version, "0x%08x\n", _LINUX_CAPABILITY_VERSION);'
++
++cat ${BASEDIR}/../include/linux/capability.h	\
++    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'	\
++    | awk 'BEGIN {
++            max_code = -1;
++        }
++        {
++            if ($3 > max_code)
++                max_code = $3;
++            printf("SYSFS_CAPABILITY_ENTRY(%s, \"%%u\\n\", %s);\n", tolower($2), $2);
++        }
++        END {
++            printf("SYSFS_CAPABILITY_ENTRY(index, \"%%u\\n\", %u);\n", max_code);
++        }'
++
++echo
++echo 'static struct attribute *capability_attrs[] = {'
++echo '        &version_attr.attr,'
++echo '        &index_attr.attr,'
++
++cat ${BASEDIR}/../include/linux/capability.h    \
++    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'   \
++    | awk '{ printf ("        &%s_attr.attr,\n", tolower($2)); }'
++
++echo '        NULL,'
++echo '};'
++
++echo '#endif	/* SYSFS_CAPABILITY_ENTRY */'
++echo '#endif	/* CAP_NAMES_H */'
+diff --git a/security/Kconfig b/security/Kconfig
+index 8086e61..e4d330c 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -90,6 +90,15 @@ config SECURITY_FILE_CAPABILITIES
+
+ 	  If in doubt, answer N.
+
++config SECURITY_CAPABILITIES_EXPORT
++	bool "Exporting capabilities kernel supported"
++	depends on SECURITY_CAPABILITIES && SYSFS
++	help
++          This enables to export any capabilities which are supported
++	  in the running kernel.
++	
++	  If you are unsure how to answer this question, answer Y.
++
+ config SECURITY_ROOTPLUG
+ 	bool "Root Plug Support"
+ 	depends on USB=y && SECURITY
+diff --git a/security/Makefile b/security/Makefile
+index ef87df2..90a856d 100644
+--- a/security/Makefile
++++ b/security/Makefile
+@@ -16,3 +16,14 @@ obj-$(CONFIG_SECURITY)			+= security.o dummy.o inode.o
+ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+ obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
++
++ifeq ($(CONFIG_SECURITY_CAPABILITIES_EXPORT),y)
++# cap_names.h contains the code/name pair of capabilities.
++# It is generated using include/linux/capability.h automatically.
++$(obj)/capability.o: $(obj)/cap_names.h
++quiet_cmd_cap_names  = CAPS    $@
++      cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
++targets += cap_names.h
++$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
++	$(call if_changed,cap_names)
++endif
+diff --git a/security/capability.c b/security/capability.c
+index 9e99f36..06e0f0a 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -20,6 +20,8 @@
+ #include <linux/netlink.h>
+ #include <linux/ptrace.h>
+ #include <linux/moduleparam.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
+
+ static struct security_operations capability_ops = {
+ 	.ptrace =			cap_ptrace,
+@@ -58,6 +60,53 @@ static int secondary;
+ static int capability_disable;
+ module_param_named(disable, capability_disable, int, 0);
+
++#ifdef CONFIG_SECURITY_CAPABILITIES_EXPORT
++/*
++ * Export the list of capabilities on /sys/kernel/capability
++ */
++struct capability_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct kobject *kobj,
++			struct capability_attribute *attr,
++			char *buffer);
++	ssize_t (*store)(struct kobject *kobj,
++			 struct capability_attribute *attr,
++			 const char *buffer, size_t count);
++};
++
++#define SYSFS_CAPABILITY_ENTRY(_name, _fmt, ...)			\
++	static ssize_t _name##_show(struct kobject *kobj,		\
++				    struct capability_attribute *attr,	\
++				    char *buffer)			\
++	{                                                               \
++		return scnprintf(buffer, PAGE_SIZE, _fmt, __VA_ARGS__);	\
++	}								\
++	static struct capability_attribute _name##_attr = __ATTR_RO(_name)
++/*
++ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
++ * This script parses include/linux/capability.h
++ */
++#include "cap_names.h"
++
++static struct attribute_group capability_attr_group = {
++	.name = "capability",
++	.attrs = capability_attrs,
++};
++
++static int __init capability_export_names(void)
++{
++	int rc;
++
++	rc = sysfs_create_group(kernel_kobj, &capability_attr_group);
++	if (rc) {
++		printk(KERN_ERR "Unable to export capabilities\n");
++		return rc;
++	}
++	return 0;
++}
++__initcall(capability_export_names);
++#endif
++
+ static int __init capability_init (void)
+ {
+ 	if (capability_disable) {
+
 -- 
-1.5.4.rc4.1142.gf5a97
-
-
-
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
