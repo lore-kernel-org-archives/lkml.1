@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYBARkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYBARkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbYBARkD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 12:40:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYBARjv
+	id S1757750AbYBARkk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYBARk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 12:39:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49413 "EHLO mx1.redhat.com"
+	Fri, 1 Feb 2008 12:40:27 -0500
+Received: from mail.suse.de ([195.135.220.2]:40934 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753580AbYBARju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 12:39:50 -0500
-Date: Fri, 01 Feb 2008 12:39:27 -0500 (EST)
-Message-Id: <20080201.123927.71085228.k-ueda@ct.jp.nec.com>
-To: petkovbb@gmail.com, petkovbb@googlemail.com
-Cc: jens.axboe@oracle.com, nai.xia@gmail.com, rdreier@cisco.com,
-       bzolnier@gmail.com, flo@rfc822.org, linux-kernel@vger.kernel.org,
-       j-nomura@ce.jp.nec.com, linux-ide@vger.kernel.org, k-ueda@ct.jp.nec.com
-Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 &&
- -g8561b089
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <20080201075117.GC4500@gollum.tnic>
-References: <20080131213740.GA4500@gollum.tnic>
-	<20080131.173556.38717303.k-ueda@ct.jp.nec.com>
-	<20080201075117.GC4500@gollum.tnic>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1751650AbYBARkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 12:40:25 -0500
+Date: Fri, 1 Feb 2008 09:29:52 -0800
+From: Greg KH <gregkh@suse.de>
+To: Gilles Espinasse <g.esp@free.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080201172952.GA32679@suse.de>
+References: <1201877107.47a3307340b38@imp.free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201877107.47a3307340b38@imp.free.fr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
-
-On Fri, 1 Feb 2008 08:51:17 +0100, Borislav Petkov wrote:
-> > > > The below fix should be enough. It's perfectly legal to have leftover
-> > > > byte counts when the drive signals completion, happens all the time for
-> > > > eg user issued commands where you don't know an exact byte count.
-> > > 
-> > > Actually, this behavior has been the case even before
-> > > the __blk_end_request() changes.
-> > > I did test plain 2.6.24 with the following
-> > > 
-> > > 
-> > > --- linux-2.6/drivers/ide/ide-cd.c	2008-01-31 22:18:59.000000000 +0100
-> > > +++ linux-2.6/drivers/ide/ide-cd.c-new	2008-01-31 22:18:50.000000000 +0100
-> > > @@ -1711,8 +1711,12 @@ static ide_startstop_t cdrom_newpc_intr(
-> > >  	/*
-> > >  	 * If DRQ is clear, the command has completed.
-> > >  	 */
-> > > -	if ((stat & DRQ_STAT) == 0)
-> > > +	if ((stat & DRQ_STAT) == 0) {
-> > > +		blk_dump_rq_flags(rq, "ide-cd: rq still having bio");
-> > > +		printk("backup: data_len=%u  bi_size=%u\n",
-> > > +				rq->data_len, rq->bio->bi_size);
-> > >  		goto end_request;
-> > > +	}
-> > >  
-> > >  	/*
-> > >  	 * check which way to transfer data
-> > > 
-> > > 
-> > > to see whether we've been getting residual byte counts:
-> > > 
-> > > Jan 31 22:10:06 gollum kernel: [   26.702877] ide-cd: rq still having bio: dev hdc: type=2, flags=114c8
-> > > Jan 31 22:10:06 gollum kernel: [   26.702945]
-> > > Jan 31 22:10:06 gollum kernel: [   26.702946] sector 2673511, nr/cnr 0/0
-> > > Jan 31 22:10:06 gollum kernel: [   26.703052] bio dfa8ec40, biotail dfa8ec40, buffer 00000000, data 00000000, len 158
-> > > Jan 31 22:10:06 gollum kernel: [   26.703122] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
-> > > Jan 31 22:10:06 gollum kernel: [   26.703877] backup: data_len=158  bi_size=158
-> > > 
-> > > ... so we've been simply silently ignoring this until now so
-> > > i guess we don't need to BUG() for something that's totally benign.
+On Fri, Feb 01, 2008 at 03:45:07PM +0100, Gilles Espinasse wrote:
+> >FYI, this is a patch that will be sent out in the next round to Linus
+> >for inclusion in 2.6.25.
+> >
+> >If anyone has any objections about it, please let me know.
+> >
+> ..
+> > There are no known closed source USB drivers in the wild, so this
+> > patch should cause no problems.
 > 
-> Hi Kiyoshi,
->  
-> > end_that_request_last() is not called when __blk_end_reuqest()
-> > returns 1.  Then, the issuer isn't waken up.
-> > So I think the BUG() or error messages should be there.
+> There is the unicorn usb adsl modem driver (STM unicorn chip).
+> http://www.bewan.com/bewan/drivers/A1012-A1006-A904-A888-A983-0.9.3.tgz
+> There is some sources and a binary blob to be linked.
 > 
-> you mean, end_that_request_last() isn't called when __end_that_request_first()
-> returns an error and this is the case only for fs and pc requests.
-> Otherwise it _is_ called, thus simulating somewhat the previous behavior.
-> However, we never BUG()'ged on residual byte counts before and
-> this driver has been in the kernel tree for ages, so what puzzles
-> me now is how is BUG()'ing here better than before and shouldn't we
-> simply issue a warning instead of killing the interrupt handler...
+> The only things I know from the binary blob is that sources should be 150 000
+> lines of C++.
 
-The Jens' patch passes the residual byte counts to __blk_end_request(),
-so __end_that_reqeust_first() should never return 1 and we should never
-BUG() on the residual byte counts, unless inconsistency happens such as
-the size of remaining bios is bigger than the residual byte counts.
+Wow, larger than all the in-kernel USB drivers, and the USB core
+combined.  That's an impressive display of horrible code :)
 
-So if __blk_end_request() returns 1 even with the Jens' patch,
-it means that the block layer or the driver really have a bug.
-And then, the request and the bios could leak or the issuer
-would wait forever because end_that_request_last() isn't called.
+> Driver compile with gcc-3 but not with gcc-4 (because of the binary blob).
 
-The previous behavior might ignore such inconsistency and leak only
-the bios because it was calling end_that_request_last() anyway.
-I would like to BUG() in such cases personally, but I don't object
-strongly if you prefer not to BUG().
+So they aren't even being used by modern distros, so there's not much to
+worry about here...
 
-Thanks,
-Kiyoshi Ueda
+thanks for the info.
+
+greg k-h
