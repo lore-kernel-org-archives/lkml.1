@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbYBAOqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYBAOrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbYBAOqw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 09:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbYBAOqp
+	id S1758229AbYBAOrY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 09:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYBAOrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 09:46:45 -0500
-Received: from postfix1-g20.free.fr ([212.27.60.42]:58756 "EHLO
-	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753038AbYBAOqp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 09:46:45 -0500
-Message-ID: <1201877107.47a3307340b38@imp.free.fr>
-Date: Fri, 01 Feb 2008 15:45:07 +0100
-From: Gilles Espinasse <g.esp@free.fr>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: RE: [PATCH] USB: mark USB drivers as being GPL only 
+	Fri, 1 Feb 2008 09:47:16 -0500
+Received: from ns2.optonet.cz ([78.156.128.11]:2568 "EHLO on-dns-srv02"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752460AbYBAOrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 09:47:15 -0500
+X-Greylist: delayed 1277 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Feb 2008 09:47:14 EST
+Message-ID: <47A32BEB.9040008@gmail.com>
+Date: Fri, 01 Feb 2008 15:25:47 +0100
+From: Jiri Moravec <jim.lkml@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071027)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.8
-X-Originating-IP: 192.54.193.51
+To: linux-kernel@vger.kernel.org
+Subject: Typo in net/netfilter/xt_iprange.c (git tree)
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Feb 2008 14:25:51.0849 (UTC) FILETIME=[58FC0D90:01C864DE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->FYI, this is a patch that will be sent out in the next round to Linus
->for inclusion in 2.6.25.
->
->If anyone has any objections about it, please let me know.
->
-..
-> There are no known closed source USB drivers in the wild, so this
-> patch should cause no problems.
+Function iprange_mt4 belong to IPv4 family - AF_INET. Right?
 
-There is the unicorn usb adsl modem driver (STM unicorn chip).
-http://www.bewan.com/bewan/drivers/A1012-A1006-A904-A888-A983-0.9.3.tgz
-There is some sources and a binary blob to be linked.
+	.name      = "iprange",
+	.revision  = 1,
+	.family    = AF_INET6, <---------- Typo?
+	.match     = iprange_mt4,
+	.matchsize = sizeof(struct xt_iprange_mtinfo),
+	.me        = THIS_MODULE,
 
-The only things I know from the binary blob is that sources should be 150 000
-lines of C++.
 
-Driver compile with gcc-3 but not with gcc-4 (because of the binary blob).
 
-Gilles
