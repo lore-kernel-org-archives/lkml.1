@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbYBAQWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYBAQZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbYBAQWs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 11:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYBAQWf
+	id S1758188AbYBAQZF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 11:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYBAQY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 11:22:35 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:1107 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753845AbYBAQWf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 11:22:35 -0500
-Date: Fri, 1 Feb 2008 17:22:32 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Holger Wolf <wolf@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] latencytop: Change Kconfig dependency.
-Message-ID: <20080201162232.GD29660@osiris.boeblingen.de.ibm.com>
-References: <20080201130636.GA29660@osiris.boeblingen.de.ibm.com> <20080201132854.GB13251@uranus.ravnborg.org>
+	Fri, 1 Feb 2008 11:24:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58371 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752005AbYBAQYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 11:24:55 -0500
+Date: Fri, 1 Feb 2008 17:24:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/7] X86: Clean up arch/x86/math-emu/errors.c
+Message-ID: <20080201162437.GD15156@elte.hu>
+References: <20080129000721.68d6bfdd@paolo-desktop> <4d8e3fd30801311502m3d022b87h4dc0095340225b8a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080201132854.GB13251@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4d8e3fd30801311502m3d022b87h4dc0095340225b8a@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +config HAVE_LATENCYTOP_SUPPORT
-> > +	def_bool y
-> > +
-> No.
-> Please do:
->  config X86
-> +	select HAVE_LATENCYTOP_SUPPORT
-> 
-> Yes - this is a valid use of select.
-> 
-> See Documentation/kbuild/kconfig-language.txt
 
-Ok, I wasn't aware of that. For now I'll leave it as is
-as Ingo requested.
+* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+
+> Ingo, are you interested in these patches?
+> 
+> #7 can be discarted
+> #6 needs to be redone
+> #3 is unclear
+> #1,2,4,5 should be ok
+
+they are all whitespace damaged - all tabs are converted to a single 
+space or something like that.
+
+	Ingo
