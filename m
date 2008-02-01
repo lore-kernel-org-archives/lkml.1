@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYBAMdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYBAMjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761328AbYBAMdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYBAMdL
+	id S1761940AbYBAMjt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbYBAMjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:33:11 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50312 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753388AbYBAMdK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:33:10 -0500
-X-Sasl-enc: +YVjsaQikjnbV/t7X8YOFcxsciDN2X68uym6uIru8Zmq 1201869187
-Message-ID: <47A311F2.2020603@ladisch.de>
-Date: Fri, 01 Feb 2008 13:34:58 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 1 Feb 2008 07:39:41 -0500
+Received: from mx1.suse.de ([195.135.220.2]:38095 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755810AbYBAMjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:39:40 -0500
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make loglevel related commandline to early_param
+From: Andi Kleen <andi@firstfloor.org>
+References: <200802010240.37799.yinghai.lu@sun.com>
+Date: Fri, 01 Feb 2008 13:39:39 +0100
+In-Reply-To: <200802010240.37799.yinghai.lu@sun.com> (Yinghai Lu's message of "Fri\, 01 Feb 2008 02\:40\:37 -0800")
+Message-ID: <p73bq704zqs.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Eyal Lebedinsky <eyal@eyal.emu.id.au>
-CC: list linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.14 snd_hda_intel problem
-References: <47A25998.1000501@eyal.emu.id.au> <47A2DEAC.7000004@ladisch.de> <47A2EEBD.3050705@eyal.emu.id.au>
-In-Reply-To: <47A2EEBD.3050705@eyal.emu.id.au>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eyal Lebedinsky wrote:
-> My /etc/modprobe.conf now contains:
-> 	alias snd-card-0 snd-hda-intel
-> 	options snd-card-0 index=0
-> 	options snd-hda-intel index=0
-> and and I should add
-> 	options snd-usb-audio index=1
-> right?
+Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
 
-Yes.
+> diff --git a/init/main.c b/init/main.c
+> index cb81ed1..a774a93 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -232,22 +232,18 @@ EXPORT_SYMBOL(loops_per_jiffy);
+>  
+>  static int __init debug_kernel(char *str)
+>  {
+> -	if (*str)
+> -		return 0;
+>  	console_loglevel = 10;
+>  	return 1;
 
-> Any idea why has this changed between the two minor kernel revisions though?
+The return semantics changes with early_param so you need to change that in all cases to return 0
+(and negative value for errors) 
 
-Probably nothing.  The exact loading order of USB and PCI driver is
-somewhat random.
-
-
-Regards,
-Clemens
+-Andi
