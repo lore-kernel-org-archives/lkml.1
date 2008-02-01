@@ -1,121 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbYBAHZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbYBAH2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762336AbYBAHZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYBAHZ3
+	id S1761903AbYBAH2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbYBAH2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:25:29 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:13440 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbYBAHZ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:25:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=iPLJOhCcQBwy1q9qRw03BNOzlgn78NcAVVjb03FfkRVqh4OschGQTD3TFYXYl974JhWbIgf5SvVhYVozqsFOkigzSoupcw4H2xzgB06KnZ/GHw2hEFc3wuQPqUEbsBzC0yWu5WN3WWyFmLuaV0ODpCVlTXMuKC2h9bISWpQV/R4=
-Subject: [PATCH] x86: sparse warnings in pageattr.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Thu, 31 Jan 2008 23:25:24 -0800
-Message-Id: <1201850724.23523.95.camel@brick>
+	Fri, 1 Feb 2008 02:28:14 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40412 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751547AbYBAH2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:28:13 -0500
+Date: Fri, 1 Feb 2008 08:28:15 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Frank Seidel <fseidel@suse.de>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>, jirislaby@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nozomi: constify driver
+Message-ID: <20080201072815.GA5345@uranus.ravnborg.org>
+References: <200801312210.30722.fseidel@suse.de> <Pine.LNX.4.64.0801312238170.4864@fbirervta.pbzchgretzou.qr> <200802010725.05421.fseidel@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802010725.05421.fseidel@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adjust the definition of lookup_address to take an unsigned long
-level argument.  Adjust callers in xen/mmu.c that pass in a
-dummy variable.
+On Fri, Feb 01, 2008 at 07:25:05AM +0100, Frank Seidel wrote:
+> On Thursday 31 January 2008 22:39, Jan Engelhardt wrote:
+> > On Jan 31 2008 22:10, Frank Seidel wrote:
+> > >(Re: [PATCH 012/196 ver2] nozomi driver) and is a rework
+> > >of the nozomi constify patch from Jan Engelhardt.
+> > 
+> > It's hard to find what you actually reworked...
+> 
+> No, just use interdiff and its easy :-) .. and btw
+> I didn't say i did a full rewrite ;-)
+> 
+> > >-static struct pci_device_id nozomi_pci_tbl[] = {
+> > >+static const struct pci_device_id nozomi_pci_tbl[] __devinitdata = {
+> > 
+> > This is bogus.
+> 
+> In what way? First i tested this patch well (compiling and
+> usage doesn't break a single thing) and second this (static
+> const struct pci_device_id .. __devinitdata) can be found in many
+> drivers.
+> So, please explain why you think so.
 
-arch/x86/mm/pageattr.c:99:38: warning: incorrect type in argument 2 (different signedness)
-arch/x86/mm/pageattr.c:99:38:    expected int *level
-arch/x86/mm/pageattr.c:99:38:    got unsigned int *<noident>
-arch/x86/mm/pageattr.c:215:33: warning: incorrect type in argument 2 (different signedness)
-arch/x86/mm/pageattr.c:215:33:    expected int *level
-arch/x86/mm/pageattr.c:215:33:    got unsigned int *<noident>
+__devinitdata is for non-const data.
+__devinitconst is for const data.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/mm/pageattr.c    |    5 +++--
- arch/x86/xen/mmu.c        |    6 +++---
- include/asm-x86/pgtable.h |    2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
+You cannot mix const and non-const data in the same section,
+if you do so gcc will complain.
+It may build for you if all uses of __devinitdata in the
+same source file is either const or non-const but when you
+mix it then it breaks.
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index e297bd6..d29cb9a 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -142,7 +142,7 @@ static inline pgprot_t static_protections(pgprot_t prot, unsigned long address)
- 	return prot;
- }
- 
--pte_t *lookup_address(unsigned long address, int *level)
-+pte_t *lookup_address(unsigned long address, unsigned int *level)
- {
- 	pgd_t *pgd = pgd_offset_k(address);
- 	pud_t *pud;
-@@ -254,7 +254,8 @@ __change_page_attr(unsigned long address, unsigned long pfn,
- 		   pgprot_t mask_set, pgprot_t mask_clr)
- {
- 	struct page *kpte_page;
--	int level, err = 0;
-+	unsigned int level;
-+	int err = 0;
- 	pte_t *kpte;
- 
- #ifdef CONFIG_X86_32
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 45aa771..0144395 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -58,7 +58,7 @@
- 
- xmaddr_t arbitrary_virt_to_machine(unsigned long address)
- {
--	int level;
-+	unsigned int level;
- 	pte_t *pte = lookup_address(address, &level);
- 	unsigned offset = address & PAGE_MASK;
- 
-@@ -71,7 +71,7 @@ void make_lowmem_page_readonly(void *vaddr)
- {
- 	pte_t *pte, ptev;
- 	unsigned long address = (unsigned long)vaddr;
--	int level;
-+	unsigned int level;
- 
- 	pte = lookup_address(address, &level);
- 	BUG_ON(pte == NULL);
-@@ -86,7 +86,7 @@ void make_lowmem_page_readwrite(void *vaddr)
- {
- 	pte_t *pte, ptev;
- 	unsigned long address = (unsigned long)vaddr;
--	int level;
-+	unsigned int level;
- 
- 	pte = lookup_address(address, &level);
- 	BUG_ON(pte == NULL);
-diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
-index cd2524f..de27abf 100644
---- a/include/asm-x86/pgtable.h
-+++ b/include/asm-x86/pgtable.h
-@@ -251,7 +251,7 @@ enum {
-  * NOTE: the return type is pte_t but if the pmd is PSE then we return it
-  * as a pte too.
-  */
--extern pte_t *lookup_address(unsigned long address, int *level);
-+extern pte_t *lookup_address(unsigned long address, unsigned int *level);
- 
- /* local pte updates need not use xchg for locking */
- static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
--- 
-1.5.4.rc4.1142.gf5a97
+So please use the correct annotation.
 
 
+> P.S.: btw this is the interdiff. Yes, its not big, but even
+> then why not combine it with yours ;-)
 
+We do small incremental steps whenever we can. The challenge is
+often to split up patches and not to combine them.
+
+Where we combine two patches this is when the second patch fix
+a bug in the first patch.
+
+	Sam
