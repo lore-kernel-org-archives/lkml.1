@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYBASI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYBASJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYBASI6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYBASIv
+	id S1757224AbYBASJe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbYBASJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:08:51 -0500
-Received: from mga02.intel.com ([134.134.136.20]:46923 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbYBASIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:08:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,291,1199692800"; 
-   d="scan'208";a="256192788"
-Date: Fri, 1 Feb 2008 10:08:23 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jike Song <albcamus@gmail.com>, Rijndael Cosque <rijcos@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: What's the status of x2APIC support in Linux kernel?
-Message-ID: <20080201180822.GA376@linux-os.sc.intel.com>
-References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73fxwc50s5.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.1i
+	Fri, 1 Feb 2008 13:09:27 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59653 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755790AbYBASJ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 13:09:26 -0500
+Message-ID: <47A35F73.7090201@zytor.com>
+Date: Fri, 01 Feb 2008 10:05:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PATCH/RFC: bzImage payload as compressed ELF file.
+References: <1201560133.17053.36.camel@cthulhu.hellion.org.uk> <20080201131030.GB1477@elte.hu>
+In-Reply-To: <20080201131030.GB1477@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01, 2008 at 01:17:14PM +0100, Andi Kleen wrote:
-> "Jike Song" <albcamus@gmail.com> writes:
+Ingo Molnar wrote:
+> * Ian Campbell <ijc@hellion.org.uk> wrote:
 > 
-> > On 2/1/08, Rijndael Cosque <rijcos@gmail.com> wrote:
-> >> Hi all,
-> >>
-> >> I found the x2APIC spec via http://www.intel.com/products/processor/manuals/.
-> >>
-> >> Looks at present there is no x2APIC support in Linux kernel 2.6.24?
-> >>
-> >> Is there any experimental patch available for Linux kernel? -- I
-> >> googled "x2APIC Linux";  looks no patch for now?
+>> Hi Peter,
+>>
+>> This patch switches the payload of a bzImage file to be in compressed 
+>> ELF format. There are several rough edges which need to be addressed 
+>> before it could go any further but I'd be interested to hear your 
+>> opinion of the general approach before I spend time cleaning it up.
+>>
+>> I'm mainly interested in something along these lines to allow the Xen 
+>> bootloader to load a bzImage so that distros don't have to maintain 
+>> two kernel packages with the same basic bits in different file 
+>> formats, I think it would probably be of use to the kexec and/or 
+>> lguest folks too.
 > 
-> There are right no CPUs shipping which implement x2apic.
+> this looks quite interesting to me. Peter, what do you think?
+> 
 
-That's correct. None of the released CPU's support it.
+Definitely the right thing, let's just get the rough edges taken care 
+of, in particular the CRC32 bit.
 
-I am working on a patch enabling these future x2apic extensions and the plan 
-is to post this kernel patch shortly.
-
-thanks,
-suresh
+	-hpa
