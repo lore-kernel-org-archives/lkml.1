@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbYBAVbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbYBAVeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761239AbYBAVbg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758478AbYBAVba
+	id S1760990AbYBAVeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 16:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbYBAVe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 16:31:30 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:18771 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756399AbYBAVb3 (ORCPT
+	Fri, 1 Feb 2008 16:34:29 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48385 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758737AbYBAVe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 16:31:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=dlOdoU2/wLSFpiqywnx4HvW/+3sUKpWolRl6nLCabPxwLquawQa3gPhTAGY4NogngHdK7MGHs7qGKzfnUDmazqqNQGoA/c7f2u0lpkDTbLtdQ7M3D8mJ3PhZrV67VOjuVOf3SJ8HOvnSWoZbSs/0IAAWHHUFlkRODGrlqJNGlsg=
-Message-ID: <e9c3a7c20802011331j2064afe5vc6228fe8363e15de@mail.gmail.com>
-Date: Fri, 1 Feb 2008 14:31:28 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-Subject: Re: crypto/async_tx/* doesn't build on s390
-Cc: heiko.carstens@de.ibm.com, herbert@gondor.apana.org.au, neilb@suse.de,
-       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080201123738.24988af7@gondolin.boeblingen.de.ibm.com>
+	Fri, 1 Feb 2008 16:34:28 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 1 Feb 2008 22:31:10 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee1394: sbp2: fix bogus s/g access change
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.29809d64b9426d9a@s5r6.in-berlin.de>
+Message-ID: <tkrat.4c8ccf852a2999af@s5r6.in-berlin.de>
+References: <64bb37e0711021503x4844b905yba1e9a681c4e788a@mail.gmail.com>
+ <472BA567.8040301@s5r6.in-berlin.de>
+ <64bb37e0711030614q4be3a2b6j5d3c55b26cb07030@mail.gmail.com>
+ <472C88E9.60103@s5r6.in-berlin.de> <20071103160404.GH28340@kernel.dk>
+ <20071104084456.GJ28340@kernel.dk>
+ <64bb37e0711040251w4d08ac83n1e090a8fab19d3d8@mail.gmail.com>
+ <20071104130315.GL28340@kernel.dk> <472DC6DE.6050402@s5r6.in-berlin.de>
+ <20071104132621.GM28340@kernel.dk>
+ <tkrat.4947ae1f5baa964f@s5r6.in-berlin.de>
+ <tkrat.2a470664250af864@s5r6.in-berlin.de>
+ <tkrat.29809d64b9426d9a@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <0C7297FA1D2D244A9C7F6959C0BF1E521D1C6C@azsmsx413.amr.corp.intel.com>
-	 <20080201123738.24988af7@gondolin.boeblingen.de.ibm.com>
-X-Google-Sender-Auth: f667cd398cc58fb8
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 1, 2008 4:37 AM, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> On Thu, 31 Jan 2008 12:49:00 -0700,
-> "Williams, Dan J" <dan.j.williams@intel.com> wrote:
->
-> > I am mistaken, the 'depends on ARCH...' precludes HAS_DMA.  Perhaps the compiler is emitting a call to async_tx_find_channel when it needs to be inline?  On x86 do_async_xor is successfully compiled away when CONFIG_DMA_ENGINE=n.
->
-> Just checked why it compiled for me on one box but not on the other and
-> found that deactivating CONFIG_SECTION_MISMATCH makes it go away. Hmm...
->
+sg_dma_len(sg) is invalid before the s/g list is DMA-mapped.
 
-Here is what I have come up with as a fix.
+This fixes a post 2.6.24 regression which prevents access to SBP-2
+devices on several architectures, introduced by "ieee1394: sbp2: s/g
+list access cosmetics", commit 825f1df545ab0289185373b0eaf06fb0b3487422.
 
---
-Dan
-
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
-async_tx: prevent do_async_xor from compiling on !HAS_DMA archs
+ drivers/ieee1394/sbp2.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-With the addition of -fno-inline in CONFIG_DEBUG_SECTION_MISMATCH
-do_async_xor is no longer compiled away on !HAS_DMA archs like s390.
-Other async_tx calls to the dma-api are already open coded inline.
+Index: linux-2.6.24/drivers/ieee1394/sbp2.c
+===================================================================
+--- linux-2.6.24.orig/drivers/ieee1394/sbp2.c
++++ linux-2.6.24/drivers/ieee1394/sbp2.c
+@@ -1465,10 +1465,9 @@ static void sbp2_prep_command_orb_sg(str
+ 	orb->misc |= ORB_SET_DIRECTION(orb_direction);
+ 
+ 	/* special case if only one element (and less than 64KB in size) */
+-	if ((scsi_use_sg == 1) &&
+-	    (sg_dma_len(sg) <= SBP2_MAX_SG_ELEMENT_LENGTH)) {
++	if (scsi_use_sg == 1 && sg->length <= SBP2_MAX_SG_ELEMENT_LENGTH) {
+ 
+-		cmd->dma_size = sg_dma_len(sg);
++		cmd->dma_size = sg->length;
+ 		cmd->dma_type = CMD_DMA_PAGE;
+ 		cmd->cmd_dma = dma_map_page(hi->host->device.parent,
+ 					    sg_page(sg), sg->offset,
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+-- 
+Stefan Richter
+-=====-==--- --=- ----=
+http://arcgraph.de/sr/
 
- crypto/async_tx/async_xor.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 2575f67..393f07d 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -41,6 +41,14 @@ do_async_xor(struct dma_async_tx_descriptor *tx,
-struct dma_device *device,
-        enum dma_data_direction dir;
-        int i;
-
-+       /* if this function is not inlined we need to prevent
-+        * the rest of the routine from compiling on !HAS_DMA
-+        * archs
-+        */
-+       #ifndef CONFIG_DMA_ENGINE
-+       return;
-+       #endif
-+
-        pr_debug("%s: len: %zu\n", __FUNCTION__, len);
-
-        dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
