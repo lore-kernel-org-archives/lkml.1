@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbYBAKhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYBAKi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbYBAKhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbYBAKhk
+	id S1758661AbYBAKi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbYBAKiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:37:40 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:33097 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754192AbYBAKhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:37:39 -0500
-Date: Fri, 1 Feb 2008 04:37:38 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/3] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080201103737.GI26420@sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com> <20080201042408.GG26420@sgi.com> <Pine.LNX.4.64.0801312042500.20675@schroedinger.engr.sgi.com> <20080201103221.GH26420@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080201103221.GH26420@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 1 Feb 2008 05:38:50 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:59537 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754872AbYBAKit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 05:38:49 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: George Spelvin <linux@horizon.com>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       mingo@redhat.com
+In-Reply-To: <20080201045320.11859.qmail@science.horizon.com>
+References: <20080201045320.11859.qmail@science.horizon.com>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 10:37:32 +0000
+Message-Id: <1201862252.25409.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 217.46.209.99
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: There are smaller ways to encode a CRC32 table...
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01, 2008 at 04:32:21AM -0600, Robin Holt wrote:
-> On Thu, Jan 31, 2008 at 08:43:58PM -0800, Christoph Lameter wrote:
-> > On Thu, 31 Jan 2008, Robin Holt wrote:
-> > 
-> > > > Index: linux-2.6/mm/memory.c
-> > > ...
-> > > > @@ -1668,6 +1678,7 @@ gotten:
-> > > >  		page_cache_release(old_page);
-> > > >  unlock:
-> > > >  	pte_unmap_unlock(page_table, ptl);
-> > > > +	mmu_notifier(invalidate_range_end, mm, 0);
-> > > 
-> > > I think we can get an _end call without the _begin call before it.
-> > 
-> > If that would be true then also the pte would have been left locked.
-> > 
-> > We always hit unlock. Maybe I just do not see it?
-> 
-> Maybe I haven't looked closely enough, but let's start with some common
-> assumptions.  Looking at do_wp_page from 2.6.24 (I believe that is what
-> my work area is based upon).  On line 1559, the function begins being
-> declared.
-> 
-> On lines 1614 and 1630, we do "goto unlock" where the _end callout is
-> soon made.  The _begin callout does not come until after those branches
-> have been taken (occurs on line 1648).
-> 
-> Thanks,
-> Robin
 
-Ignore this thread, I am going to throw a patch against the new version.
+On Thu, 2008-01-31 at 23:53 -0500, George Spelvin wrote:
+> The code to fill it in is smaller than the table itself.
+> Is it worth complicating things with some INIT code to reduce
+> the stored image size?  (The table is not compressible.)
+[snip]
 
-Thanks,
-Robin
+Thanks but since the code is only used when building the image I'm not
+too worried which way is used and I've tested the table based one ;-).
+
+> And BTW, storing the inverse of the CRC only catches trailing (after the CRC)
+> all-zero padding.  If this is not a problem, it's not necessary, although you
+> still might want to do it just for consistency.  This inversion changes the
+> CRC of the entire image (body + CRC) from all-zero to a fixed non-zero value.
+> (To be precise, to the (non-inverted) CRC of 0xffffffff.)
+
+I didn't know the precise details of why you might invert it, thanks for
+the info.
+
+Ian
+-- 
+Ian Campbell
+Current Noise: Reverend Bizarre - Sodoma Sunrise
+
+I am a man: nothing human is alien to me.
+		-- Publius Terentius Afer (Terence)
+
