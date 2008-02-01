@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbYBALwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760407AbYBAL5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760801AbYBALwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbYBALw1
+	id S1760407AbYBAL5a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbYBAL5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:52:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58511 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbYBALwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:52:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
-Date: Fri, 1 Feb 2008 12:50:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200802010237.59320.rjw@sisk.pl> <1201851896.32654.34.camel@lappy> <1201859458.32654.41.camel@lappy>
-In-Reply-To: <1201859458.32654.41.camel@lappy>
+	Fri, 1 Feb 2008 06:57:23 -0500
+Received: from fmmailgate04.web.de ([217.72.192.242]:33594 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbYBAL5W convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 06:57:22 -0500
+Date: Fri, 01 Feb 2008 12:57:20 +0100
+Message-Id: <139824397@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802011250.18699.rjw@sisk.pl>
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Subject: Linux VM completely lost it`s timesource !?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/Mx+aGgNhfcPzBqPPPz0zo8SJVJerMAwpPBP7uVW+ULvIRz
+ 2rSIpjKauo33EgDChPBQH126dRT2EprJ80JDv+a+m5xRKYsAgU=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 1 of February 2008, Peter Zijlstra wrote:
-> 
-> On Fri, 2008-02-01 at 08:44 +0100, Peter Zijlstra wrote:
-> > On Fri, 2008-02-01 at 03:04 +0100, Rafael J. Wysocki wrote:
-> > > On Friday, 1 of February 2008, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > > 
-> > > > This is related to the problem I reported earlier this week:
-> > > > http://lkml.org/lkml/2008/1/30/554
-> > > > 
-> > > > Apparently artswrapper, run by KDE in openSUSE 10.3 with a real time priority,
-> > > > is mishandled by the scheduler.  The problem is that after the user logs out,
-> > > > artswrapper stays in TASK_RUNNING forever and prevents other tasks from being
-> > > > scheduled on the CPU occupied by it.  In this state it also breaks suspend and
-> > > > hibernation (it cannot be frozen).
-> > > > 
-> > > > Since the problem is 100% reproducible on my test boxes, I carried out a
-> > > > bisection which turned out the following commit:
-> > > > 
-> > > > commit 6f505b16425a51270058e4a93441fe64de3dd435
-> > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > Date:   Fri Jan 25 21:08:30 2008 +0100
-> > > > 
-> > > >     sched: rt group scheduling
-> > > > 
-> > > > I'm now checking if the problem disappears after reverting this patch (along a
-> > > > couple of dependent ones).
-> > > 
-> > > Yes, it does.
-> > > 
-> > > Please let me know what I can do to debug it further.
-> > 
-> > It arts run as root, or does it use RLIMIT_RTPRIO to allow users to
-> > execute realtime tasks?
+Hi !
 
-artswrapper is setuid root and RLIMIT_RTPRIO is apparently not used.
-Still, artswrapper is running as a regular user, so it most probably drops
-privileges early.
+I`m running 2.6.24 kernel in a recent version of vmware workstation and i`m unsure if i hit a linux issue or a vmware issue here.
 
-BTW, it fails while running the artsmessage utility used for displaying arts
-error messages, so I guess there's an error in arts that this thing tries to
-display and deadlocks (or something like that).
+after suspend/resume (hibernate) of my physical system (win xp), the linux guest seems to have lost it´s timesource.
 
-Should I test the patch nevertheless?
+don`t know much about timers in linux, so let me explain first:
 
-> If the latter, does this help:
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index ba4c880..bb76cbc 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4563,6 +4563,15 @@ recheck:
->  			return -EPERM;
->  	}
->  
-> +#ifdef CONFIG_FAIR_GROUP_SCHED
-> +	/*
-> +	 * Do not allow realtime tasks into groups that have no runtime
-> +	 * assigned.
-> +	 */
-> +	if (rt_policy(policy) && task_group(p)->rt_ratio == 0)
-> +		return -EPERM;
-> +#endif
-> +
->  	retval = security_task_setscheduler(p, policy, param);
->  	if (retval)
->  		return retval;
-> 
+the guest was running when i suspended the xp host.
+the xp host is running fine after resume.
+the guest has issues.
+
+triggering a console beep inside the linux VM now doesn`t give a short beep but terrorizing me with a never-ending continuous beep.
+
+seems to be a timer issue inside the guest, since tools like top, vmstat, watch etc don`t work anymore.
+the system clock gone crazy, too - it`s counting from 22:40:47 to 22:40:51 and then constantly jumps back to 22:40:47
+
+can someone give an advice what to check to make sure that this is NOT a linux issue ?
+i will contact vmware then afterwards.
+
+regards
+roland
+
+ps:
+i did a snapshot of the VM and could preserve the state of the system this way.
+________________________________________________________
+Bis 50 MB Dateianhänge? Kein Problem!
+http://www.digitaledienste.web.de/freemail/club/lp/?lp=7
+
