@@ -1,100 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbYBAEh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760566AbYBAEmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761603AbYBAEh7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 23:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbYBAEhu
+	id S1760566AbYBAEmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 23:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYBAEly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 23:37:50 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:37409 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbYBAEht (ORCPT
+	Thu, 31 Jan 2008 23:41:54 -0500
+Received: from mga05.intel.com ([192.55.52.89]:61240 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752073AbYBAElw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 23:37:49 -0500
-X-IronPort-AV: E=Sophos;i="4.25,288,1199682000"; 
-   d="scan'208";a="61353425"
-Subject: Re: [PATCH] [BLACKFIN] Remove duplicate line discipline definitions
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Bryan Wu <bryan.wu@analog.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080131220646.4A561110050@xenon.ts.pxnet.com>
-References: <20080131220646.4A561110050@xenon.ts.pxnet.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Fri, 01 Feb 2008 12:37:49 +0800
-Message-Id: <1201840669.7044.3.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 01 Feb 2008 04:37:47.0351 (UTC) FILETIME=[31C8EE70:01C8648C]
+	Thu, 31 Jan 2008 23:41:52 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,288,1199692800"; 
+   d="scan'208";a="511516542"
+From: Len Brown <lenb@kernel.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+Subject: [PATCH 01/37] Hibernation: Introduce SNAPSHOT_GET_IMAGE_SIZE ioctl
+Date: Thu, 31 Jan 2008 23:36:32 -0500
+Message-Id: <edae89f5d1eb1fbe1cab74333db5a8e29776900e.1201840183.git.len.brown@intel.com>
+X-Mailer: git-send-email 1.5.4.rc5.16.gc0279
+In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
+References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
+Organization: Intel Open Source Technology Center
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Thu, 2008-01-31 at 09:51 +0800, Tilman Schmidt wrote:
-> The definitions of the line discipline numbers N_* have been moved
-> from asm-*/termios.h to linux/tty.h, but the Blackfin architecture
-> has somehow evaded that move. Bring it in line with the others.
-> 
-Thanks a lot.
+Add a new ioctl, SNAPSHOT_GET_IMAGE_SIZE, returning the size of the (just
+created) hibernation image, to the hibernation userland interface.
 
-Acked-by: Bryan Wu <bryan.wu@analog.com>
+This ioctl is necessary so that the userland utilities using the interface need
+not access the hibernation image header, owned by the kernel, in order to obtain
+the size of the image.
 
-> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-> ---
-> 
-> Note: this is untested, as I have no way to build for the Blackfin
-> arch.
-> It *should* be ok, as it is just what I did for the other archs a year
-> ago, but nevertheless it'd better be checked by someone who's able to
-> actually build and run a Blackfin kernel before merging.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ Documentation/power/userland-swsusp.txt |   12 +++++-------
+ kernel/power/power.h                    |    4 +++-
+ kernel/power/snapshot.c                 |    7 ++++++-
+ kernel/power/user.c                     |   18 ++++++++++++++----
+ 4 files changed, 28 insertions(+), 13 deletions(-)
 
-I've tested it on BF537-STAMP, it's OK. 
+diff --git a/Documentation/power/userland-swsusp.txt b/Documentation/power/userland-swsusp.txt
+index e00c6cf..32f1874 100644
+--- a/Documentation/power/userland-swsusp.txt
++++ b/Documentation/power/userland-swsusp.txt
+@@ -54,6 +54,8 @@ SNAPSHOT_SET_IMAGE_SIZE - set the preferred maximum size of the image
+ 	this number, but if it turns out to be impossible, the kernel will
+ 	create the smallest image possible)
+ 
++SNAPSHOT_GET_IMAGE_SIZE - return the actual size of the hibernation image
++
+ SNAPSHOT_AVAIL_SWAP - return the amount of available swap in bytes (the last
+ 	argument should be a pointer to an unsigned int variable that will
+ 	contain the result if the call is successful).
+@@ -136,13 +138,9 @@ required, as they can use, for example, a special (blank) suspend partition or
+ a file on a partition that is unmounted before SNAPSHOT_ATOMIC_SNAPSHOT and
+ mounted afterwards.
+ 
+-These utilities SHOULD NOT make any assumptions regarding the ordering of
+-data within the snapshot image, except for the image header that MAY be
+-assumed to start with an swsusp_info structure, as specified in
+-kernel/power/power.h.  This structure MAY be used by the userland utilities
+-to obtain some information about the snapshot image, such as the size
+-of the snapshot image, including the metadata and the header itself,
+-contained in the .size member of swsusp_info.
++These utilities MUST NOT make any assumptions regarding the ordering of
++data within the snapshot image.  The contents of the image are entirely owned
++by the kernel and its structure may be changed in future kernel releases.
+ 
+ The snapshot image MUST be written to the kernel unaltered (ie. all of the image
+ data, metadata and header MUST be written in _exactly_ the same amount, form
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 2093c3a..23c1703 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -128,6 +128,7 @@ struct snapshot_handle {
+ #define data_of(handle)	((handle).buffer + (handle).buf_offset)
+ 
+ extern unsigned int snapshot_additional_pages(struct zone *zone);
++extern unsigned long snapshot_get_image_size(void);
+ extern int snapshot_read_next(struct snapshot_handle *handle, size_t count);
+ extern int snapshot_write_next(struct snapshot_handle *handle, size_t count);
+ extern void snapshot_write_finalize(struct snapshot_handle *handle);
+@@ -158,7 +159,8 @@ struct resume_swap_area {
+ #define SNAPSHOT_PMOPS			_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
+ #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
+ 							struct resume_swap_area)
+-#define SNAPSHOT_IOC_MAXNR	13
++#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
++#define SNAPSHOT_IOC_MAXNR	14
+ 
+ #define PMOPS_PREPARE	1
+ #define PMOPS_ENTER	2
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 78039b4..c5ce0f3 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1264,12 +1264,17 @@ static char *check_image_kernel(struct swsusp_info *info)
+ }
+ #endif /* CONFIG_ARCH_HIBERNATION_HEADER */
+ 
++unsigned long snapshot_get_image_size(void)
++{
++	return nr_copy_pages + nr_meta_pages + 1;
++}
++
+ static int init_header(struct swsusp_info *info)
+ {
+ 	memset(info, 0, sizeof(struct swsusp_info));
+ 	info->num_physpages = num_physpages;
+ 	info->image_pages = nr_copy_pages;
+-	info->pages = nr_copy_pages + nr_meta_pages + 1;
++	info->pages = snapshot_get_image_size();
+ 	info->size = info->pages;
+ 	info->size <<= PAGE_SHIFT;
+ 	return init_header_complete(info);
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 5bd321b..88aac26 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -133,7 +133,7 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ {
+ 	int error = 0;
+ 	struct snapshot_data *data;
+-	loff_t avail;
++	loff_t size;
+ 	sector_t offset;
+ 
+ 	if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC)
+@@ -210,10 +210,20 @@ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+ 		image_size = arg;
+ 		break;
+ 
++	case SNAPSHOT_GET_IMAGE_SIZE:
++		if (!data->ready) {
++			error = -ENODATA;
++			break;
++		}
++		size = snapshot_get_image_size();
++		size <<= PAGE_SHIFT;
++		error = put_user(size, (loff_t __user *)arg);
++		break;
++
+ 	case SNAPSHOT_AVAIL_SWAP:
+-		avail = count_swap_pages(data->swap, 1);
+-		avail <<= PAGE_SHIFT;
+-		error = put_user(avail, (loff_t __user *)arg);
++		size = count_swap_pages(data->swap, 1);
++		size <<= PAGE_SHIFT;
++		error = put_user(size, (loff_t __user *)arg);
+ 		break;
+ 
+ 	case SNAPSHOT_GET_SWAP_PAGE:
+-- 
+1.5.4.rc5.16.gc0279
 
-Regards,
--Bryan
-> 
->  include/asm-blackfin/termios.h |   18 ------------------
->  1 files changed, 0 insertions(+), 18 deletions(-)
-> 
-> diff --git a/include/asm-blackfin/termios.h
-> b/include/asm-blackfin/termios.h
-> index e31fe85..d50d063 100644
-> --- a/include/asm-blackfin/termios.h
-> +++ b/include/asm-blackfin/termios.h
-> @@ -39,24 +39,6 @@ struct termio {
-> 
->  /* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
-> 
-> -/* line disciplines */
-> -#define N_TTY          0
-> -#define N_SLIP         1
-> -#define N_MOUSE                2
-> -#define N_PPP          3
-> -#define N_STRIP                4
-> -#define N_AX25         5
-> -#define N_X25          6       /* X.25 async */
-> -#define N_6PACK                7
-> -#define N_MASC         8       /* Reserved for Mobitex module
-> <kaz@cafe.net> */
-> -#define N_R3964                9       /* Reserved for Simatic R3964
-> module */
-> -#define N_PROFIBUS_FDL 10      /* Reserved for Profibus
-> <Dave@mvhi.com> */
-> -#define N_IRDA         11      /* Linux IR -
-> http://irda.sourceforge.net/ */
-> -#define N_SMSBLOCK     12      /* SMS block mode - for talking to GSM
-> data cards about SMS messages */
-> -#define N_HDLC         13      /* synchronous HDLC */
-> -#define N_SYNC_PPP     14      /* synchronous PPP */
-> -#define N_HCI          15      /* Bluetooth HCI UART */
-> -
->  #ifdef __KERNEL__
-> 
->  /*     intr=^C         quit=^\         erase=del       kill=^U
-> --
-> 1.5.4.rc2-dirty
-> 
-> 
