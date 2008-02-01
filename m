@@ -1,73 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbYBARqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYBARyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbYBARqn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 12:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYBARqf
+	id S1755239AbYBARyQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYBARx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 12:46:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:7778 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbYBARqd (ORCPT
+	Fri, 1 Feb 2008 12:53:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:9895 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbYBARx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 12:46:33 -0500
+	Fri, 1 Feb 2008 12:53:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MSwviCL4F8aduy8Yx2MreoUyKpvMWf/bABno0BWzK25pKv2ShXyLlEKzSyLXGwI9YEUFA05FagbLv/bkGKB0oQ8p/0d02bN56SN4WspFDfcQm5t/BTC5fmcykuh5UcS//3668EYyLTPWGthnemad6eVR71sru86FkbNF5N7XG08=
-Message-ID: <58cb370e0802010946v3544a4echc08a17f678222555@mail.gmail.com>
-Date: Fri, 1 Feb 2008 18:46:32 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH #upstream] libata: implement libata.force module parameter
-Cc: "Tejun Heo" <htejun@gmail.com>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Mark Lord" <liml@rtr.ca>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Sam Ravnborg" <sam@ravnborg.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47A356C3.3010904@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47A3375F.80101@gmail.com> <47A356C3.3010904@garzik.org>
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=dZCABq9znfp7oBZwBV8ftFbCIM9bKqHDGps/9KcEcjngq3PNwzyyt2+ulO5NPEJoGow3c8noXOvFincn1do7o6bqTy0x6/bHBbMGBfm4gWEtBbzLepfxUIZuavkTdN96Hw+1FOV50Y92y8Aj8lY4RMW5/A/k5RHjy/SByccZm7A=
+From: Denis Cheng <crquan@gmail.com>
+To: David Teigland <teigland@redhat.com>,
+       Patrick Caulfeld <pcaulfie@redhat.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] fs/dlm/: add __init and __exit marks to init and exit functions
+Date: Sat,  2 Feb 2008 01:53:46 +0800
+Message-Id: <1201888426-29675-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 1, 2008 6:28 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> Tejun Heo wrote:
-> > This patch implements libata.force module parameter which can
-> > selectively override ATA port, link and device configurations
-> > including cable type, SATA PHY SPD limit, transfer mode and NCQ.
-> >
-> > For example, you can say "use 1.5Gbps for all fan-out ports attached
-> > to the second port but allow 3.0Gbps for the PMP device itself, oh,
-> > the device attached to the third fan-out port chokes on NCQ and
-> > shouldn't go over UDMA4" by the following.
-> >
-> >  libata.force=2:1.5g,2.15:3.0g,2.03:noncq,udma4
-> >
-> > Signed-off-by: Tejun Heo <htejun@gmail.com>
-> > ---
-> > I guess it's about time we add something like this.  More than
-> > anything else this should help debugging and can serve as a last
-> > resort to work around problems.
-> >
-> > Thanks.
-> >
-> >  Documentation/kernel-parameters.txt |   35 +++
-> >  drivers/ata/libata-core.c           |  375 +++++++++++++++++++++++++++++++++++-
-> >  drivers/ata/libata-eh.c             |    8
-> >  drivers/ata/libata.h                |    1
-> >  4 files changed, 415 insertions(+), 4 deletions(-)
->
-> ACK, but it breaks the build due to section type conflicts:
->
-> drivers/ata/libata-core.c:108: error: ata_force_param_buf causes a
-> section type conflict
->
-> Given that the data is marked __initdata and the code is marked __init,
-> I cannot see the problem.
+it moves 365 bytes from .text to .init.text, and 30 bytes from .text to
+.exit.text, saves memory.
 
-the data is marked as "const"
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ fs/dlm/config.c    |    2 +-
+ fs/dlm/debug_fs.c  |    2 +-
+ fs/dlm/lockspace.c |    2 +-
+ fs/dlm/memory.c    |    2 +-
+ fs/dlm/netlink.c   |    4 ++--
+ fs/dlm/user.c      |    2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index 2f8e3c8..c3ad1df 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -604,7 +604,7 @@ static struct clusters clusters_root = {
+ 	},
+ };
+ 
+-int dlm_config_init(void)
++int __init dlm_config_init(void)
+ {
+ 	config_group_init(&clusters_root.subsys.su_group);
+ 	mutex_init(&clusters_root.subsys.su_mutex);
+diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
+index 12c3bfd..d2f98d8 100644
+--- a/fs/dlm/debug_fs.c
++++ b/fs/dlm/debug_fs.c
+@@ -543,7 +543,7 @@ void dlm_delete_debug_file(struct dlm_ls *ls)
+ 		debugfs_remove(ls->ls_debug_locks_dentry);
+ }
+ 
+-int dlm_register_debugfs(void)
++int __init dlm_register_debugfs(void)
+ {
+ 	mutex_init(&debug_buf_lock);
+ 	dlm_root = debugfs_create_dir("dlm", NULL);
+diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+index b180fdc..b64e55e 100644
+--- a/fs/dlm/lockspace.c
++++ b/fs/dlm/lockspace.c
+@@ -191,7 +191,7 @@ static int do_uevent(struct dlm_ls *ls, int in)
+ }
+ 
+ 
+-int dlm_lockspace_init(void)
++int __init dlm_lockspace_init(void)
+ {
+ 	ls_count = 0;
+ 	mutex_init(&ls_lock);
+diff --git a/fs/dlm/memory.c b/fs/dlm/memory.c
+index f778386..6273109 100644
+--- a/fs/dlm/memory.c
++++ b/fs/dlm/memory.c
+@@ -18,7 +18,7 @@
+ static struct kmem_cache *lkb_cache;
+ 
+ 
+-int dlm_memory_init(void)
++int __init dlm_memory_init(void)
+ {
+ 	int ret = 0;
+ 
+diff --git a/fs/dlm/netlink.c b/fs/dlm/netlink.c
+index 863b87d..745218c 100644
+--- a/fs/dlm/netlink.c
++++ b/fs/dlm/netlink.c
+@@ -78,7 +78,7 @@ static struct genl_ops dlm_nl_ops = {
+ 	.doit		= user_cmd,
+ };
+ 
+-int dlm_netlink_init(void)
++int __init dlm_netlink_init(void)
+ {
+ 	int rv;
+ 
+@@ -95,7 +95,7 @@ int dlm_netlink_init(void)
+ 	return rv;
+ }
+ 
+-void dlm_netlink_exit(void)
++void __exit dlm_netlink_exit(void)
+ {
+ 	genl_unregister_ops(&family, &dlm_nl_ops);
+ 	genl_unregister_family(&family);
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index 7cbc682..0bf8dfe 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -907,7 +907,7 @@ static struct miscdevice ctl_device = {
+ 	.minor = MISC_DYNAMIC_MINOR,
+ };
+ 
+-int dlm_user_init(void)
++int __init dlm_user_init(void)
+ {
+ 	int error;
+ 
+-- 
+1.5.3.8
+
