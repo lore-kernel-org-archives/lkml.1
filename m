@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765584AbYBANa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbYBANcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765584AbYBANa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbYBANav
+	id S1764117AbYBANcu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbYBANcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:30:51 -0500
-Received: from nelson.telenet-ops.be ([195.130.133.66]:51107 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759072AbYBANau (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:30:50 -0500
-Date: Fri, 1 Feb 2008 14:30:44 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: Are Section mismatches out of control?
-In-Reply-To: <1201864894.23523.117.camel@brick>
-Message-ID: <Pine.LNX.4.64.0802011325080.18111@anakin>
-References: <20080201104718.GA11717@uranus.ravnborg.org>
- <20080201030329.9b760777.akpm@linux-foundation.org> <1201864894.23523.117.camel@brick>
+	Fri, 1 Feb 2008 08:32:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52575 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754185AbYBANcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 08:32:42 -0500
+Date: Fri, 1 Feb 2008 14:32:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Holger Wolf <wolf@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] latencytop: Change Kconfig dependency.
+Message-ID: <20080201133228.GC11070@elte.hu>
+References: <20080201130636.GA29660@osiris.boeblingen.de.ibm.com> <20080201132854.GB13251@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080201132854.GB13251@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Harvey Harrison wrote:
-> On Fri, 2008-02-01 at 03:03 -0800, Andrew Morton wrote:
-> > On Fri, 1 Feb 2008 11:47:18 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > James said in a related posting that the Section mismatch
-> > > warnings were getting out of control.
-> > 
-> > eh.  They're easy - the build system tells you about them!
-> > 
-> > > The list is here:
-> > 
-> > Question is: why do people keep adding new ones when they are so easy to
-> > detect and fix?
-> > 
-> > Asnwer: because neither they nor their patch integrators are doing adequate
-> > compilation testing.
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> >  config STACKTRACE_SUPPORT
+> >  	def_bool y
+> >  
+> > +config HAVE_LATENCYTOP_SUPPORT
+> > +	def_bool y
+> > +
+> No.
+> Please do:
+>  config X86
+> +	select HAVE_LATENCYTOP_SUPPORT
 > 
-> Because if there already exists more than a handful peoples' eyes glaze
-> over and ignore "just one more warning"
+> Yes - this is a valid use of select.
 
-Yes.
+i see - and there's lots of other examples of this and other similar 
+things in other architectures as well. Could we do that as a separate 
+cleanup patch instead, to keep the Kconfig file consistently structured.
 
-> Unless they break the build, or if there currently are 0 and they make
-> it non-zero, people seem not to care....sad.  Probably the same for
-> sparse/checkpatch, "there's plenty already, I can't be bothered to look"
-
-And before, the actual warnings depended a lot on the kernel
-configuration, so making the build break was less of an option.
-If Sam's improved section mismatch detection turns out to work fine, we
-can fix the issues and start to enable breaking of the build in case of
-warnings.
-
-BTW, on m68k I get ca. 160 of them. Most seem to originate in
-drivers/isdn/. Doesn't look unsurmountable compared to the number of
-other compile warnings fixed during the last few years ;-)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
