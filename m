@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbYBAW2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYBAWbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758007AbYBAW2h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 17:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbYBAW23
+	id S1758675AbYBAWbJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 17:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbYBAWav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 17:28:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46836 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754697AbYBAW22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 17:28:28 -0500
-Date: Fri, 1 Feb 2008 14:27:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org, oleg@tv-sign.ru,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 12/12] Deprecate the find_task_by_pid
-Message-Id: <20080201142750.8f92d8c8.akpm@linux-foundation.org>
-In-Reply-To: <479F33B3.1030301@openvz.org>
-References: <479F2C5C.1050303@openvz.org>
-	<479F33B3.1030301@openvz.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 1 Feb 2008 17:30:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40947 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755721AbYBAWau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 17:30:50 -0500
+Message-ID: <47A39D8F.9010003@redhat.com>
+Date: Fri, 01 Feb 2008 17:30:39 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
+References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008 17:09:55 +0300
-Pavel Emelyanov <xemul@openvz.org> wrote:
+Miklos Szeredi wrote:
+>>> This doesn't apply to -mm, because the ro-mounts stuff touches a lot
+>>> of the same places as this patch.  You probably need to rebase this on
+>>> top of those changes.
+>>>
+>>>   
+>>>       
+>>>> This patch adds handling for the error, ESTALE, to the system
+>>>> calls which take pathnames as arguments.  The algorithm used
+>>>> is to detect that an ESTALE error has occurred during an
+>>>> operation subsequent to the lookup process and then to unwind
+>>>> appropriately and then to perform the lookup process again.
+>>>> Eventually, either the lookup process will return an error
+>>>> or a valid dentry/inode combination and then operation can
+>>>> succeed or fail based on its own merits.
+>>>>     
+>>>>         
+>>> If a broken NFS server or FUSE filesysem keeps returning ESTALE, this
+>>> goes into an infinite loop.  How are we planning to deal with that?
+>>>
+>>>   
+>>>       
+>> Would you describe the situation that would cause the kernel to
+>> go into an infinite loop, please?
+>>     
+>
+> The patch basically does:
+>
+> 	do {
+> 		...
+> 		error = inode->i_op->foo()
+> 		...
+> 	} while (error == ESTALE);
+>
+> What is the guarantee, that ->foo() will not always return ESTALE?
 
-> diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-> index 87b0463..6de0fd0 100644
-> --- a/kernel/kgdb.c
-> +++ b/kernel/kgdb.c
-> @@ -621,7 +621,7 @@ static struct task_struct *getthread(struct pt_regs *regs, int tid)
->  	if (!tid)
->  		return NULL;
->  
-> -	return find_task_by_pid(tid);
-> +	return find_task_by_pid_ns(tid, &init_pid_ns);
->  }
->  
->  #ifdef CONFIG_SMP
+You skimmed over some stuff, like the pathname lookup component
+contained in the first set of dots...
 
-The code I currently have here has changed.  Is has grown a nice comment:
+I can't guarantee that ->foo() won't always return ESTALE.
 
-	/*
-	 * find_task_by_pid() does not take the tasklist lock anymore
-	 * but is nicely RCU locked - hence is a pretty resilient
-	 * thing to use:
-	 */
-	return find_task_by_pid(tid);
+That said, the loop is not unbreakable.  At least for NFS, a signal
+to the process will interrupt the loop because the error returned
+will change from ESTALE to EINTR.
 
-I updated the comment appropriately
-(s/find_task_by_pid/find_task_by_pid_ns/).  Please check that this was
-true.
+These changes include the base assumption that the components of
+the underlying file system are basically reliable, that there is
+a way to deal with bugs and/or malicious entities in the short
+term, and that these things will be dealt with appropriately
+in the longer term.
+
+The short term resolution is a signal.  The longer term fix is
+to hunt down the bug or the malicious entity and either make it
+go away or fence it off via some security measure or another to
+prevent it from causing another problem.
+
+If the underlying file system is the type that could potentially
+return ESTALE, then it needs to be aware of the system architecture
+and handle things appropriately.
+
+    Thanx...
+
+       ps
