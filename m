@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934851AbYBAAyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934904AbYBAA7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934851AbYBAAyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 19:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYBAAyR
+	id S934904AbYBAA7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 19:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbYBAA7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 19:54:17 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54484 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751324AbYBAAyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 19:54:16 -0500
-Date: Fri, 1 Feb 2008 01:54:29 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: kill misleading comments in trampoline_*.S
-Message-ID: <20080201005429.GA5085@elf.ucw.cz>
+	Thu, 31 Jan 2008 19:59:07 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:50126 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755615AbYBAA7F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 19:59:05 -0500
+Date: Fri, 1 Feb 2008 01:59:03 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       jikos@suse.cz
+Subject: Re: how to tell i386 from x86-64 kernel
+In-Reply-To: <2c0942db0801311646s40368a89r537a7d576ba57981@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802010157370.4864@fbirervta.pbzchgretzou.qr>
+References: <20080201004212.GA2818@elf.ucw.cz>
+ <2c0942db0801311646s40368a89r537a7d576ba57981@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Jan 31 2008 16:46, Ray Lee wrote:
+>On Jan 31, 2008 4:42 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> Quiz: on a booted system, how do you tell 32bit from 64bit kernel?
+>
+>Uhm, is this a trick question? What's wrong with uname(2)?
 
-Both trampolines actually *do* set up stack. (Is the "we jump into
-compressed/head.S" comment still true?)
+# uname -m
+I won't tell you.
+# linux32 uname -m
+i686
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
- 
-diff --git a/arch/x86/kernel/trampoline_32.S b/arch/x86/kernel/trampoline_32.S
-index 9bcc1c6..5398547 100644
---- a/arch/x86/kernel/trampoline_32.S
-+++ b/arch/x86/kernel/trampoline_32.S
-@@ -11,9 +11,6 @@
-  *	trampoline page to make our stack and everything else
-  *	is a mystery.
-  *
-- *	In fact we don't actually need a stack so we don't
-- *	set one up.
-- *
-  *	We jump into the boot/compressed/head.S code. So you'd
-  *	better be running a compressed kernel image or you
-  *	won't get very far.
-diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
-index e30b67c..4aedd0b 100644
---- a/arch/x86/kernel/trampoline_64.S
-+++ b/arch/x86/kernel/trampoline_64.S
-@@ -10,9 +10,6 @@
-  *	trampoline page to make our stack and everything else
-  *	is a mystery.
-  *
-- *	In fact we don't actually need a stack so we don't
-- *	set one up.
-- *
-  *	On entry to trampoline_data, the processor is in real mode
-  *	with 16-bit addressing and 16-bit data.  CS has some value
-  *	and IP is zero.  Thus, data addresses need to be absolute
+Now what? :-)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Well, the answer is simple, a 64-bit kernel will allow you
+(minus selinux voodoo) to load 64-bit binaries.
