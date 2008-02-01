@@ -1,102 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763625AbYBAMZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765263AbYBAMZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763625AbYBAMZr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbYBAMZh
+	id S1765263AbYBAMZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:25:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763800AbYBAMZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:25:37 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:51580 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752120AbYBAMZg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:25:36 -0500
-Message-ID: <47A30FBE.7060502@vlnb.net>
-Date: Fri, 01 Feb 2008 15:25:34 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Fri, 1 Feb 2008 07:25:49 -0500
+Received: from www.tglx.de ([62.245.132.106]:44486 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763594AbYBAMZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:25:48 -0500
+Date: Fri, 1 Feb 2008 13:25:30 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [0/12] GBPAGES patchkit for 2.6.25 v3
+In-Reply-To: <200802011053.107168490@suse.de>
+Message-ID: <alpine.LFD.1.00.0802011324260.9204@apollo.tec.linutronix.de>
+References: <200802011053.107168490@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: landman@scalableinformatics.com, fujita.tomonori@lab.ntt.co.jp,
-       linux-scsi@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James.Bottomley@hansenpartnership.com, scst-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-References: <adazluoe2t3.fsf@cisco.com>	<20080130083239E.fujita.tomonori@lab.ntt.co.jp>	<e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>	<20080130195635T.tomof@acm.org>	<1201785938.7280.105.camel@haakon2.linux-iscsi.org>	<e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com>	<47A1EE54.6000005@vlnb.net> <47A1F67C.4020300@scalableinformatics.com> <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com> <47A30790.8080402@vlnb.net>
-In-Reply-To: <47A30790.8080402@vlnb.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> Bart Van Assche wrote:
-> 
->> On Jan 31, 2008 5:25 PM, Joe Landman <landman@scalableinformatics.com> 
->> wrote:
->>
->>> Vladislav Bolkhovitin wrote:
->>>
->>>> Actually, I don't know what kind of conclusions it is possible to make
->>>> from disktest's results (maybe only how throughput gets bigger or 
->>>> slower
->>>> with increasing number of threads?), it's a good stress test tool, but
->>>> not more.
->>>
->>>
->>> Unfortunately, I agree.  Bonnie++, dd tests, and a few others seem to
->>> bear far closer to "real world" tests than disktest and iozone, the
->>> latter of which does more to test the speed of RAM cache and system call
->>> performance than actual IO.
->>
->>
->>
->> I have ran some tests with Bonnie++, but found out that on a fast
->> network like IB the filesystem used for the test has a really big
->> impact on the test results.
->>
->> If anyone has a suggestion for a better test than dd to compare the
->> performance of SCSI storage protocols, please let it know.
-> 
-> 
-> I would suggest you to try something from real life, like:
-> 
->  - Copying large file tree over a single or multiple IB links
-> 
->  - Measure of some DB engine's TPC
-> 
->  - etc.
+On Fri, 1 Feb 2008, Andi Kleen wrote:
 
-Forgot to mention. During those tests make sure that imported devices 
-from both SCST and STGT report in the kernel log the same write cache 
-and FUA capabilities, since they significantly affect initiator's 
-behavior. Like:
-
-sd 4:0:0:5: [sdf] Write cache: enabled, read cache: enabled, supports 
-DPO and FUA
-
-For SCST the fastest mode is NV_CACHE, refer to its README file for details.
-
->> Bart Van Assche.
->>
->> -------------------------------------------------------------------------
->> This SF.net email is sponsored by: Microsoft
->> Defy all challenges. Microsoft(R) Visual Studio 2008.
->> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
->> _______________________________________________
->> Scst-devel mailing list
->> Scst-devel@lists.sourceforge.net
->> https://lists.sourceforge.net/lists/listinfo/scst-devel
->>
 > 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> This patchkit implements support for the 1GB pages of AMD Fam10h CPUs 
+> in the kernel direct mapping. 
 > 
+> Change to previous versions:
+> - Incorporated feedback from Thomas Gleixner
+> - Switch direct mapping setup over to set_pte() / pte_pfn()
+> - Split up patches some more
+> 
+> Includes one not strictly required cleanup patch now (the last one) 
 
+I picked them up. Will go through and integrate with other
+changes in this area.
+
+Thanks,
+	tglx
