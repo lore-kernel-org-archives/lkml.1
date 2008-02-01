@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYBADsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761032AbYBADxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbYBADsL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 22:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYBADr4
+	id S1761032AbYBADxB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 22:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYBADww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 22:47:56 -0500
-Received: from hu-out-0506.google.com ([72.14.214.238]:46025 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbYBADrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 22:47:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=mRJekO3w1x3D8YVkbVWsVleO5pUwCXD6Rz5yI+E11iFfu8AEDiC/EYvLvHtQB7/xrKzzRt91qzA10iWhJ8IcCK9NV/uE72S4FS8QGH4Pwq6vz0yoe14f53WKeP6uzZap2A30U9NUF+3553NMHyz1/EG3lmMmVjRoCT6oRuhNfDQ=
-Date: Fri, 1 Feb 2008 11:45:15 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
+	Thu, 31 Jan 2008 22:52:52 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:51371 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753176AbYBADwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 22:52:51 -0500
+Date: Thu, 31 Jan 2008 21:52:49 -0600
+From: Robin Holt <holt@sgi.com>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Patch] include/asm-generic/tlb.h: fix a missing header
-Message-ID: <20080201034514.GA2478@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080131145900.GB2471@hacking> <Pine.LNX.4.64.0801311407530.1253@schroedinger.engr.sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 1/3] mmu_notifier: Core code
+Message-ID: <20080201035249.GE26420@sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131045812.553249048@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801311407530.1253@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20080131045812.553249048@sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 02:08:31PM -0800, Christoph Lameter wrote:
->On Thu, 31 Jan 2008, WANG Cong wrote:
->
->> index 6ce9f3a..4ebbe15 100644
->> --- a/include/asm-generic/tlb.h
->> +++ b/include/asm-generic/tlb.h
->> @@ -16,6 +16,7 @@
->>  #include <linux/swap.h>
->>  #include <linux/quicklist.h>
->>  #include <asm/tlbflush.h>
->> +#include <asm/pgalloc.h>
->
->Please also remove the #include <linux/quicklist.h>. It should have been 
->part of 
->a patch 
->reversal.
+> Index: linux-2.6/include/linux/mmu_notifier.h
+...
+> +struct mmu_notifier_ops {
+...
+> +	/*
+> +	 * invalidate_range_begin() and invalidate_range_end() must paired.
+> +	 * Multiple invalidate_range_begin/ends may be nested or called
+> +	 * concurrently. That is legit. However, no new external references
+> +	 * may be established as long as any invalidate_xxx is running or
+> +	 * any invalidate_range_begin() and has not been completed through a
+> +	 * corresponding call to invalidate_range_end().
+> +	 *
+> +	 * Locking within the notifier needs to serialize events correspondingly.
+> +	 *
+> +	 * If all invalidate_xx notifier calls take a driver lock then it is possible
+> +	 * to run follow_page() under the same lock. The lock can then guarantee
+> +	 * that no page is removed. That way we can avoid increasing the refcount
+> +	 * of the pages.
+> +	 *
+> +	 * invalidate_range_begin() must clear all references in the range
+> +	 * and stop the establishment of new references.
+> +	 *
+> +	 * invalidate_range_end() reenables the establishment of references.
+> +	 *
+> +	 * atomic indicates that the function is called in an atomic context.
+> +	 * We can sleep if atomic == 0.
+> +	 */
+> +	void (*invalidate_range_begin)(struct mmu_notifier *mn,
+> +				 struct mm_struct *mm,
+> +				 unsigned long start, unsigned long end,
+> +				 int atomic);
+> +
+> +	void (*invalidate_range_end)(struct mmu_notifier *mn,
+> +				 struct mm_struct *mm, int atomic);
 
-Please ignore this patch, since Ingo already had the same one.
+I think we need to pass in the same start-end here as well.  Without it,
+the first invalidate_range would have to block faulting for all addresses
+and would need to remain blocked until the last invalidate_range has
+completed.  While this would work, (and will probably be how we implement
+it for the short term), it is far from ideal.
 
-Thanks!
-
+Thanks,
+Robin
