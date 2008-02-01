@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbYBANvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYBANwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101AbYBANvu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYBANvl
+	id S1756057AbYBANwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYBANwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:51:41 -0500
-Received: from www.tglx.de ([62.245.132.106]:53316 "EHLO www.tglx.de"
+	Fri, 1 Feb 2008 08:52:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50807 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbYBANvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:51:41 -0500
-Date: Fri, 1 Feb 2008 14:50:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] hrtimer_nanosleep: use -EINTR, not -ERESTARTNOHAND
-In-Reply-To: <20080201133755.GA25620@tv-sign.ru>
-Message-ID: <alpine.LFD.1.00.0802011438020.9204@apollo.tec.linutronix.de>
-References: <20080201133755.GA25620@tv-sign.ru>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1755113AbYBANwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 08:52:13 -0500
+Date: Fri, 1 Feb 2008 14:51:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ijc@hellion.org.uk>,
+       Mika Penttil? <mika.penttila@kolumbus.fi>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+	format.
+Message-ID: <20080201135125.GA16249@elte.hu>
+References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <20080128150022.GE27928@elte.hu> <20080128161239.GA28906@elte.hu> <200801281802.01748.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801281802.01748.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Oleg Nesterov wrote:
 
-> hrtimer_nanosleep:
-> 
-> 	/* Absolute timers do not update the rmtp value and restart: */
-> 	return -ERESTARTNOHAND;
-> 
-> This is not right, -ERESTARTNOHAND means we will do restart if there is no
-> in fact pending signal, and worse, this restart will use the same unchanged
-> "__user *rmtp" parameter.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
--ERESTARTNOHAND is safe here. We want to restart the timer.
+> >  arch/x86/kernel/built-in.o: In function `wakeup_start':
+> >  : undefined reference to `swsusp_pg_dir'
+> > 
+> > config attached.
+> 
+> I see.  CONFIG_HIBERNATION && CONFIG_ACPI -> CONFIG_ACPI_SLEEP and the 
+> Makefile in arch/x86/kernel/acpi/ wants to build wakeup.S, which is 
+> not necessary.  Hmm.
+> 
+> We can do a couple of things:
+> (1) make wakeup_$(BITS).o depend on CONFIG_SUSPEND (alone)
+>     This will build it if CONFIG_SUSPEND is set, but CONFIG_ACPI is not
+>     (still, that's consistent with the change in question).
+> (2) make wakeup_$(BITS).o depend on CONFIG_SUSPEND and CONFIG_ACPI
+> (3) define CONFIG_ACPI_SUSPEND depending on ACPI and SUSPEND and
+>     make wakeup_$(BITS).o as well as swsusp_pg_dir depend on that (most
+>     elegant)
+> 
+> Which one do you prefer?
 
-The rmtp problem is separate, but that's addressed by your follow up changes.
- 
-Thanks,
-	tglx
+no strong preference here - pick the one you like best and send a patch 
+please :-)
 
-> Use -EINTR instead.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> --- MM/kernel/hrtimer.c~HRT_RMTP~	2008-01-27 17:07:39.000000000 +0300
-> +++ MM/kernel/hrtimer.c~HRT_RMTP	2008-02-01 13:43:52.000000000 +0300
-> @@ -1359,7 +1359,7 @@ long hrtimer_nanosleep(struct timespec *
->  
->  	/* Absolute timers do not update the rmtp value and restart: */
->  	if (mode == HRTIMER_MODE_ABS)
-> -		return -ERESTARTNOHAND;
-> +		return -EINTR;
->  
->  	if (rmtp) {
->  		rem = ktime_sub(t.timer.expires, t.timer.base->get_time());
-> 
+	Ingo
