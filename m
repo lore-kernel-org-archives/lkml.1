@@ -1,268 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbYBANVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbYBANZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759983AbYBANVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 08:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbYBANVq
+	id S1761140AbYBANZu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 08:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbYBANZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 08:21:46 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:51740 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754609AbYBANVp (ORCPT
+	Fri, 1 Feb 2008 08:25:39 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:31240 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755853AbYBANZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 08:21:45 -0500
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-To: Paul.Clements@steeleye.com
-Cc: nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH] Allow NBD to be used locally
-Date: Fri, 1 Feb 2008 14:25:32 +0100
-Message-Id: <1201872332265-git-send-email-Laurent.Vivier@bull.net>
-X-Mailer: git-send-email 1.5.2.4
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 01/02/2008 14:30:26,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 01/02/2008 14:30:27,
-	Serialize complete at 01/02/2008 14:30:27
+	Fri, 1 Feb 2008 08:25:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=vEiTaUp919FMLu+rYvGBWeMBlxvCQY0GlukkBwk8zNFfEOp0tvBuU6X2vQsFAyfmH8PJG00HDoITF80u7jJZFz4AL85JoESss/XBA7QJNxf1On6Ub4H/GGmspzxNAGhsC6/IuFNwFTqWjoyvT4NsBhBhD3s0fEZ5W5DdDG2gkz4=
+Message-ID: <e2e108260802010525r2e371286qb954db1fad88ff24@mail.gmail.com>
+Date: Fri, 1 Feb 2008 14:25:34 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       "FUJITA Tomonori" <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Cc: "Roland Dreier" <rdreier@cisco.com>, James.Bottomley@hansenpartnership.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, "Mike Mazarick" <mazarick@bellsouth.net>
+In-Reply-To: <1201867517.11265.294.camel@haakon2.linux-iscsi.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <adazluoe2t3.fsf@cisco.com>
+	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+	 <20080130195635T.tomof@acm.org>
+	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
+	 <1201862364.11265.267.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010304p304614e9p78b0aca43b24246@mail.gmail.com>
+	 <1201867517.11265.294.camel@haakon2.linux-iscsi.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows Network Block Device to be mounted locally.
+On Feb 1, 2008 1:05 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+>
+> All of the kernel and C userspace code is open source and available from
+> linux-iscsi.org and licensed under the GPL.
 
-It creates a kthread to avoid the deadlock described in NBD tools documentation.
-So, if nbd-client hangs waiting pages, the kblockd thread can continue its
-work and free pages.
+I found a statement on a web page that the ERL2 implementation is not
+included in the GPL version (http://zaal.org/iscsi/index.html). The
+above implies that this statement is incorrect. Tomo, are you the
+maintainer of this web page ?
 
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
----
- drivers/block/nbd.c |  146 ++++++++++++++++++++++++++++++++++-----------------
- include/linux/nbd.h |    4 +-
- 2 files changed, 100 insertions(+), 50 deletions(-)
+I'll try to measure the performance of the LIO Target Stack on the
+same setup on which I ran the other performance tests.
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index b4c0888..de6685e 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -29,6 +29,7 @@
- #include <linux/kernel.h>
- #include <net/sock.h>
- #include <linux/net.h>
-+#include <linux/kthread.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -434,6 +435,87 @@ static void nbd_clear_que(struct nbd_device *lo)
- }
- 
- 
-+static void nbd_handle_req(struct nbd_device *lo, struct request *req)
-+{
-+	if (!blk_fs_request(req))
-+		goto error_out;
-+
-+	nbd_cmd(req) = NBD_CMD_READ;
-+	if (rq_data_dir(req) == WRITE) {
-+		nbd_cmd(req) = NBD_CMD_WRITE;
-+		if (lo->flags & NBD_READ_ONLY) {
-+			printk(KERN_ERR "%s: Write on read-only\n",
-+					lo->disk->disk_name);
-+			goto error_out;
-+		}
-+	}
-+
-+	req->errors = 0;
-+
-+	mutex_lock(&lo->tx_lock);
-+	if (unlikely(!lo->sock)) {
-+		mutex_unlock(&lo->tx_lock);
-+		printk(KERN_ERR "%s: Attempted send on closed socket\n",
-+		       lo->disk->disk_name);
-+		req->errors++;
-+		nbd_end_request(req);
-+		return;
-+	}
-+
-+	lo->active_req = req;
-+
-+	if (nbd_send_req(lo, req) != 0) {
-+		printk(KERN_ERR "%s: Request send failed\n",
-+				lo->disk->disk_name);
-+		req->errors++;
-+		nbd_end_request(req);
-+	} else {
-+		spin_lock(&lo->queue_lock);
-+		list_add(&req->queuelist, &lo->queue_head);
-+		spin_unlock(&lo->queue_lock);
-+	}
-+
-+	lo->active_req = NULL;
-+	mutex_unlock(&lo->tx_lock);
-+	wake_up_all(&lo->active_wq);
-+
-+	return;
-+
-+error_out:
-+	req->errors++;
-+	nbd_end_request(req);
-+}
-+
-+static int nbd_thread(void *data)
-+{
-+	struct nbd_device *lo = data;
-+	struct request *req;
-+
-+	set_user_nice(current, -20);
-+	while (!kthread_should_stop() || !list_empty(&lo->waiting_queue)) {
-+		/* wait something to do */
-+		wait_event_interruptible(lo->waiting_wq,
-+					 kthread_should_stop() ||
-+					 !list_empty(&lo->waiting_queue));
-+
-+		/* extract request */
-+
-+		if (list_empty(&lo->waiting_queue))
-+			continue;
-+
-+		spin_lock_irq(&lo->queue_lock);
-+		req = list_entry(lo->waiting_queue.next, struct request,
-+				 queuelist);
-+		list_del_init(&req->queuelist);
-+		spin_unlock_irq(&lo->queue_lock);
-+
-+		/* handle request */
-+
-+		nbd_handle_req(lo, req);
-+	}
-+	return 0;
-+}
-+
- /*
-  * We always wait for result of write, for now. It would be nice to make it optional
-  * in future
-@@ -449,65 +531,23 @@ static void do_nbd_request(struct request_queue * q)
- 		struct nbd_device *lo;
- 
- 		blkdev_dequeue_request(req);
-+
-+		spin_unlock_irq(q->queue_lock);
-+
- 		dprintk(DBG_BLKDEV, "%s: request %p: dequeued (flags=%x)\n",
- 				req->rq_disk->disk_name, req, req->cmd_type);
- 
--		if (!blk_fs_request(req))
--			goto error_out;
--
- 		lo = req->rq_disk->private_data;
- 
- 		BUG_ON(lo->magic != LO_MAGIC);
- 
--		nbd_cmd(req) = NBD_CMD_READ;
--		if (rq_data_dir(req) == WRITE) {
--			nbd_cmd(req) = NBD_CMD_WRITE;
--			if (lo->flags & NBD_READ_ONLY) {
--				printk(KERN_ERR "%s: Write on read-only\n",
--						lo->disk->disk_name);
--				goto error_out;
--			}
--		}
-+		spin_lock_irq(&lo->queue_lock);
-+		list_add_tail(&req->queuelist, &lo->waiting_queue);
-+		spin_unlock_irq(&lo->queue_lock);
- 
--		req->errors = 0;
--		spin_unlock_irq(q->queue_lock);
--
--		mutex_lock(&lo->tx_lock);
--		if (unlikely(!lo->sock)) {
--			mutex_unlock(&lo->tx_lock);
--			printk(KERN_ERR "%s: Attempted send on closed socket\n",
--			       lo->disk->disk_name);
--			req->errors++;
--			nbd_end_request(req);
--			spin_lock_irq(q->queue_lock);
--			continue;
--		}
--
--		lo->active_req = req;
--
--		if (nbd_send_req(lo, req) != 0) {
--			printk(KERN_ERR "%s: Request send failed\n",
--					lo->disk->disk_name);
--			req->errors++;
--			nbd_end_request(req);
--		} else {
--			spin_lock(&lo->queue_lock);
--			list_add(&req->queuelist, &lo->queue_head);
--			spin_unlock(&lo->queue_lock);
--		}
--
--		lo->active_req = NULL;
--		mutex_unlock(&lo->tx_lock);
--		wake_up_all(&lo->active_wq);
-+		wake_up(&lo->waiting_wq);
- 
- 		spin_lock_irq(q->queue_lock);
--		continue;
--
--error_out:
--		req->errors++;
--		spin_unlock(q->queue_lock);
--		nbd_end_request(req);
--		spin_lock(q->queue_lock);
- 	}
- }
- 
-@@ -517,6 +557,7 @@ static int nbd_ioctl(struct inode *inode, struct file *file,
- 	struct nbd_device *lo = inode->i_bdev->bd_disk->private_data;
- 	int error;
- 	struct request sreq ;
-+	struct task_struct *thread;
- 
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
-@@ -599,7 +640,12 @@ static int nbd_ioctl(struct inode *inode, struct file *file,
- 	case NBD_DO_IT:
- 		if (!lo->file)
- 			return -EINVAL;
-+		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
-+		if (IS_ERR(thread))
-+			return PTR_ERR(thread);
-+		wake_up_process(thread);
- 		error = nbd_do_it(lo);
-+		kthread_stop(thread);
- 		if (error)
- 			return error;
- 		sock_shutdown(lo, 1);
-@@ -684,10 +730,12 @@ static int __init nbd_init(void)
- 		nbd_dev[i].file = NULL;
- 		nbd_dev[i].magic = LO_MAGIC;
- 		nbd_dev[i].flags = 0;
-+		INIT_LIST_HEAD(&nbd_dev[i].waiting_queue);
- 		spin_lock_init(&nbd_dev[i].queue_lock);
- 		INIT_LIST_HEAD(&nbd_dev[i].queue_head);
- 		mutex_init(&nbd_dev[i].tx_lock);
- 		init_waitqueue_head(&nbd_dev[i].active_wq);
-+		init_waitqueue_head(&nbd_dev[i].waiting_wq);
- 		nbd_dev[i].blksize = 1024;
- 		nbd_dev[i].bytesize = 0;
- 		disk->major = NBD_MAJOR;
-diff --git a/include/linux/nbd.h b/include/linux/nbd.h
-index cc2b472..94f40c9 100644
---- a/include/linux/nbd.h
-+++ b/include/linux/nbd.h
-@@ -57,9 +57,11 @@ struct nbd_device {
- 	int magic;
- 
- 	spinlock_t queue_lock;
--	struct list_head queue_head;/* Requests are added here...	*/
-+	struct list_head queue_head;	/* Requests waiting result */
- 	struct request *active_req;
- 	wait_queue_head_t active_wq;
-+	struct list_head waiting_queue;	/* Requests to be sent */
-+	wait_queue_head_t waiting_wq;
- 
- 	struct mutex tx_lock;
- 	struct gendisk *disk;
--- 
-1.5.2.4
-
+Bart Van Assche.
