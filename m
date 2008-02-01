@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760407AbYBAL5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762353AbYBAL6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760407AbYBAL5a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbYBAL5X
+	id S1762353AbYBAL6Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYBAL6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:57:23 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:33594 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbYBAL5W convert rfc822-to-8bit (ORCPT
+	Fri, 1 Feb 2008 06:58:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:57798 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753038AbYBAL6P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:57:22 -0500
-Date: Fri, 01 Feb 2008 12:57:20 +0100
-Message-Id: <139824397@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Subject: Linux VM completely lost it`s timesource !?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1/Mx+aGgNhfcPzBqPPPz0zo8SJVJerMAwpPBP7uVW+ULvIRz
- 2rSIpjKauo33EgDChPBQH126dRT2EprJ80JDv+a+m5xRKYsAgU=
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 1 Feb 2008 06:58:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=oQblu9YAJEWtTiafsXZf4grKOprlx/WbqLa4Fb5WMh9sU/GnOVlL6NbQ372iYJX9Hekqq4rr8sSoih4+pDcNjUlH6jaWlxhAN1X4fa27IEJRTQF6oAxbk3M2q43l8pzG52SZhnbLhcQPLDN+YlU+XeJSVoBVUtti+G8tLSMUv8s=
+Date: Fri, 1 Feb 2008 12:53:50 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz
+Subject: Re: how to tell i386 from x86-64 kernel
+Message-ID: <20080201125350.04211519@Varda>
+In-Reply-To: <Pine.LNX.4.64.0802010157370.4864@fbirervta.pbzchgretzou.qr>
+References: <20080201004212.GA2818@elf.ucw.cz>
+	<2c0942db0801311646s40368a89r537a7d576ba57981@mail.gmail.com>
+	<Pine.LNX.4.64.0802010157370.4864@fbirervta.pbzchgretzou.qr>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi !
+El Fri, 1 Feb 2008 01:59:03 +0100 (CET)
+Jan Engelhardt <jengelh@computergmbh.de> escribiÃ³:
 
-I`m running 2.6.24 kernel in a recent version of vmware workstation and i`m unsure if i hit a linux issue or a vmware issue here.
 
-after suspend/resume (hibernate) of my physical system (win xp), the linux guest seems to have lost it´s timesource.
+> 
+> # uname -m
+> I won't tell you.
+> # linux32 uname -m
+> i686
 
-don`t know much about timers in linux, so let me explain first:
+ Ubuntu 7.10 64 bit userland 2.6.24
 
-the guest was running when i suspended the xp host.
-the xp host is running fine after resume.
-the guest has issues.
+$ uname -m
+x86_64
+$ linux32 uname -m
+i686
 
-triggering a console beep inside the linux VM now doesn`t give a short beep but terrorizing me with a never-ending continuous beep.
 
-seems to be a timer issue inside the guest, since tools like top, vmstat, watch etc don`t work anymore.
-the system clock gone crazy, too - it`s counting from 22:40:47 to 22:40:51 and then constantly jumps back to 22:40:47
 
-can someone give an advice what to check to make sure that this is NOT a linux issue ?
-i will contact vmware then afterwards.
-
-regards
-roland
-
-ps:
-i did a snapshot of the VM and could preserve the state of the system this way.
-________________________________________________________
-Bis 50 MB Dateianhänge? Kein Problem!
-http://www.digitaledienste.web.de/freemail/club/lp/?lp=7
-
+> 
+> Now what? :-)
+> 
+> Well, the answer is simple, a 64-bit kernel will allow you
+> (minus selinux voodoo) to load 64-bit binaries.
