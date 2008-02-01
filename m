@@ -1,95 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764128AbYBAMGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbYBAMJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764128AbYBAMGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbYBAMGb
+	id S1762676AbYBAMJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbYBAMJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:06:31 -0500
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:34578 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757527AbYBAMGa (ORCPT
+	Fri, 1 Feb 2008 07:09:49 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50646 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758372AbYBAMJr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:06:30 -0500
-X-YMail-OSG: zk0JZRUVM1kGFNneWEw5NucZPQsnFxP4.tPtFPRjBI2D6gNfWy1YOXQaXdf3XtN4wxoK34qp7ONIZLDVNzxs6p8rP.DzhSS8x1tC9LDKT0hUYR.y9A--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: FUJITA Tomonori <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp,
-       rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Mike Mazarick <mazarick@bellsouth.net>
-In-Reply-To: <e2e108260802010304p304614e9p78b0aca43b24246@mail.gmail.com>
-References: <adazluoe2t3.fsf@cisco.com>
-	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
-	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
-	 <20080130195635T.tomof@acm.org>
-	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
-	 <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
-	 <1201862364.11265.267.camel@haakon2.linux-iscsi.org>
-	 <e2e108260802010304p304614e9p78b0aca43b24246@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 04:05:17 -0800
-Message-Id: <1201867517.11265.294.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Fri, 1 Feb 2008 07:09:47 -0500
+Message-ID: <47A30C0C.8050905@bull.net>
+Date: Fri, 01 Feb 2008 13:09:48 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 2.6.24-rc8-mm1 14/15] (RFC) IPC/semaphores: prepare	semundo
+ code to work on another task than current
+References: <20080129160229.612172683@bull.net> <20080129162232.843976550@bull.net> <20080130214430.GB8945@sergelap.austin.rr.com> <47A19988.5030108@bull.net> <20080131180125.GA5617@sergelap.ibm.com>
+In-Reply-To: <20080131180125.GA5617@sergelap.ibm.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 01/02/2008 13:18:28,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 01/02/2008 13:18:29,
+	Serialize complete at 01/02/2008 13:18:29
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-01 at 12:04 +0100, Bart Van Assche wrote:
-> On Feb 1, 2008 11:39 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> >
-> > On Fri, 2008-02-01 at 09:11 +0100, Bart Van Assche wrote:
-> > > On Jan 31, 2008 2:25 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> > > >
-> > > > The PyX storage engine supports a scatterlist linked list algorithm that
-> > > > ...
-> > >
-> > > Which parts of the PyX source code are licensed under the GPL and
-> > > which parts are closed source ? A Google query for PyX + iSCSI showed
-> > > information about licensing deals. Licensing deals can only be closed
-> > > for software that is not entirely licensed under the GPL.
-> > >
-> >
-> > I was using the name PyX to give an historical context to the
-> > discussion. ...
+
+
+Serge E. Hallyn wrote:
+> Quoting Pierre Peiffer (pierre.peiffer@bull.net):
+>>
+>> Serge E. Hallyn wrote:
+>>> Quoting pierre.peiffer@bull.net (pierre.peiffer@bull.net):
+>>>> From: Pierre Peiffer <pierre.peiffer@bull.net>
+>>>>
+>>>> In order to modify the semundo-list of a task from procfs, we must be able to
+>>>> work on any target task.
+>>>> But all the existing code playing with the semundo-list, currently works
+>>>> only on the 'current' task, and does not allow to specify any target task.
+>>>>
+>>>> This patch changes all these routines to allow them to work on a specified
+>>>> task, passed in parameter, instead of current.
+>>>>
+>>>> This is mainly a preparation for the semundo_write() operation, on the
+>>>> /proc/<pid>/semundo file, as provided in the next patch.
+>>>>
+>>>> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+>>>> ---
+>>>>
+>>>>  ipc/sem.c |   90 ++++++++++++++++++++++++++++++++++++++++++++++----------------
+>>>>  1 file changed, 68 insertions(+), 22 deletions(-)
+>>>>
+>>>> Index: b/ipc/sem.c
+>>>> ===================================================================
+>>>> --- a/ipc/sem.c
+>>>> +++ b/ipc/sem.c
+>>>> @@ -1017,8 +1017,9 @@ asmlinkage long sys_semctl (int semid, i
+>>>>  }
+>>>>
+>>>>  /* If the task doesn't already have a undo_list, then allocate one
+>>>> - * here.  We guarantee there is only one thread using this undo list,
+>>>> - * and current is THE ONE
+>>>> + * here.
+>>>> + * The target task (tsk) is current in the general case, except when
+>>>> + * accessed from the procfs (ie when writting to /proc/<pid>/semundo)
+>>>>   *
+>>>>   * If this allocation and assignment succeeds, but later
+>>>>   * portions of this code fail, there is no need to free the sem_undo_list.
+>>>> @@ -1026,22 +1027,60 @@ asmlinkage long sys_semctl (int semid, i
+>>>>   * at exit time.
+>>>>   *
+>>>>   * This can block, so callers must hold no locks.
+>>>> + *
+>>>> + * Note: task_lock is used to synchronize 1. several possible concurrent
+>>>> + * creations and 2. the free of the undo_list (done when the task using it
+>>>> + * exits). In the second case, we check the PF_EXITING flag to not create
+>>>> + * an undo_list for a task which has exited.
+>>>> + * If there already is an undo_list for this task, there is no need
+>>>> + * to held the task-lock to retrieve it, as the pointer can not change
+>>>> + * afterwards.
+>>>>   */
+>>>> -static inline int get_undo_list(struct sem_undo_list **undo_listp)
+>>>> +static inline int get_undo_list(struct task_struct *tsk,
+>>>> +				struct sem_undo_list **ulp)
+>>>>  {
+>>>> -	struct sem_undo_list *undo_list;
+>>>> +	if (tsk->sysvsem.undo_list == NULL) {
+>>>> +		struct sem_undo_list *undo_list;
+>>> Hmm, this is weird.  If there was no undo_list and
+>>> tsk!=current, you set the refcnt to 2.  But if there was an
+>>> undo list and tsk!=current, where do you inc the refcnt?
+>>>
+>> I inc it  outside this function, as I don't call get_undo_list() if there is an
+>> undo_list.
+>> This appears most clearly in the next patch, in semundo_open() for example.
 > 
-> Regarding the PyX Target Code: I have found a link via which I can
-> download a free 30-day demo. This means that a company is earning
-> money via this target code and that the source code is not licensed
-> under the GPL. This is fine, but it also means that today the PyX
-> target code is not a candidate for inclusion in the Linux kernel, and
-> that it is unlikely that all of the PyX target code (kernelspace +
-> userspace) will be made available under GPL soon.
+> Ok, so however unlikely, there is a flow that could cause you a problem:
+> T2 calls semundo_open() for T1.  T1 does not yet have a semundolist.
+> T2.semundo_open() calls get_undo_list, just then T1 creats its own
+> semundo_list.  T2 comes to top of get_undo_list() and see
+> tsk->sysvsem.undo_list != NULL, simply returns a pointer to the
+> undo_list.  Now you never increment the count.
+> 
+Right.
+
+And yesterday, with more testing in the corners, I've found another issue: if I
+use /proc/self/semundo, I don't have tsk != current and the refcnt is wrong too.
+
+Thanks for finding this !
+
+P.
+
+>>>> -	undo_list = current->sysvsem.undo_list;
+>>>> -	if (!undo_list) {
+>>>> -		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL);
+>>>> +		/* we must alloc a new one */
+>>>> +		undo_list = kmalloc(sizeof(*undo_list), GFP_KERNEL);
+>>>>  		if (undo_list == NULL)
+>>>>  			return -ENOMEM;
+>>>> +
+>>>> +		task_lock(tsk);
+>>>> +
+>>>> +		/* check again if there is an undo_list for this task */
+>>>> +		if (tsk->sysvsem.undo_list) {
+>>>> +			if (tsk != current)
+>>>> +				atomic_inc(&tsk->sysvsem.undo_list->refcnt);
+>>>> +			task_unlock(tsk);
+>>>> +			kfree(undo_list);
+>>>> +			goto out;
+>>>> +		}
+>>>> +
+>>>>  		spin_lock_init(&undo_list->lock);
+>>>> -		atomic_set(&undo_list->refcnt, 1);
+>>>> -		undo_list->ns = get_ipc_ns(current->nsproxy->ipc_ns);
+>>>> -		current->sysvsem.undo_list = undo_list;
+>>>> +		/*
+>>>> +		 * If tsk is not current (meaning that current is creating
+>>>> +		 * a semundo_list for a target task through procfs), and if
+>>>> +		 * it's not being exited then refcnt must be 2: the target
+>>>> +		 * task tsk + current.
+>>>> +		 */
+>>>> +		if (tsk == current)
+>>>> +			atomic_set(&undo_list->refcnt, 1);
+>>>> +		else if (!(tsk->flags & PF_EXITING))
+>>>> +			atomic_set(&undo_list->refcnt, 2);
+>>>> +		else {
+>>>> +			task_unlock(tsk);
+>>>> +			kfree(undo_list);
+>>>> +			return -EINVAL;
+>>>> +		}
+>>>> +		undo_list->ns = get_ipc_ns(tsk->nsproxy->ipc_ns);
+>>>> +		undo_list->proc_list = NULL;
+>>>> +		tsk->sysvsem.undo_list = undo_list;
+>>>> +		task_unlock(tsk);
+>>>>  	}
+>>>> -	*undo_listp = undo_list;
+>>>> +out:
+>>>> +	*ulp = tsk->sysvsem.undo_list;
+>>>>  	return 0;
+>>>>  }
+>>>>
+>>>> @@ -1065,17 +1104,12 @@ static struct sem_undo *lookup_undo(stru
+>>>>  	return un;
+>>>>  }
+>>>>
+>>>> -static struct sem_undo *find_undo(struct ipc_namespace *ns, int semid)
+>>>> +static struct sem_undo *find_undo(struct sem_undo_list *ulp, int semid)
+>>>>  {
+>>>>  	struct sem_array *sma;
+>>>> -	struct sem_undo_list *ulp;
+>>>>  	struct sem_undo *un, *new;
+>>>> +	struct ipc_namespace *ns;
+>>>>  	int nsems;
+>>>> -	int error;
+>>>> -
+>>>> -	error = get_undo_list(&ulp);
+>>>> -	if (error)
+>>>> -		return ERR_PTR(error);
+>>>>
+>>>>  	spin_lock(&ulp->lock);
+>>>>  	un = lookup_undo(ulp, semid);
+>>>> @@ -1083,6 +1117,8 @@ static struct sem_undo *find_undo(struct
+>>>>  	if (likely(un!=NULL))
+>>>>  		goto out;
+>>>>
+>>>> +	ns = ulp->ns;
+>>>> +
+>>>>  	/* no undo structure around - allocate one. */
+>>>>  	sma = sem_lock_check(ns, semid);
+>>>>  	if (IS_ERR(sma))
+>>>> @@ -1133,6 +1169,7 @@ asmlinkage long sys_semtimedop(int semid
+>>>>  	struct sem_array *sma;
+>>>>  	struct sembuf fast_sops[SEMOPM_FAST];
+>>>>  	struct sembuf* sops = fast_sops, *sop;
+>>>> +	struct sem_undo_list *ulp;
+>>>>  	struct sem_undo *un;
+>>>>  	int undos = 0, alter = 0, max;
+>>>>  	struct sem_queue queue;
+>>>> @@ -1177,9 +1214,13 @@ asmlinkage long sys_semtimedop(int semid
+>>>>  			alter = 1;
+>>>>  	}
+>>>>
+>>>> +	error = get_undo_list(current, &ulp);
+>>>> +	if (error)
+>>>> +		goto out_free;
+>>>> +
+>>>>  retry_undos:
+>>>>  	if (undos) {
+>>>> -		un = find_undo(ns, semid);
+>>>> +		un = find_undo(ulp, semid);
+>>>>  		if (IS_ERR(un)) {
+>>>>  			error = PTR_ERR(un);
+>>>>  			goto out_free;
+>>>> @@ -1305,7 +1346,7 @@ int copy_semundo(unsigned long clone_fla
+>>>>  	int error;
+>>>>
+>>>>  	if (clone_flags & CLONE_SYSVSEM) {
+>>>> -		error = get_undo_list(&undo_list);
+>>>> +		error = get_undo_list(current, &undo_list);
+>>>>  		if (error)
+>>>>  			return error;
+>>>>  		atomic_inc(&undo_list->refcnt);
+>>>> @@ -1405,10 +1446,15 @@ next_entry:
+>>>>  	kfree(undo_list);
+>>>>  }
+>>>>
+>>>> -/* called from do_exit() */
+>>>> +/* exit_sem: called from do_exit()
+>>>> + * task_lock is used to synchronize with get_undo_list()
+>>> Ok I had to think about this again.  I'd like the comment
+>>> here to point out that the task_lock here acts as a barrier
+>>> between the prior setting of PF_EXITING and the undo_list
+>>> being freed here, so that get_undo_list() will either see
+>>> PF_EXITING is NOT in the tsk->flags, in which case it will
+>>> insert the undo_list before the task_lock() is grabbed here,
+>>> and with count=2, so that it gets correctly put here in
+>>> exit_sem, or it will see PF_EXITING set and cancel the
+>>> undo_list it was creating.
+>>>
+>> Yep, I will add this to clarify this point.
+>>
+>> Thanks Serge.
+>>
+>> P.
+>>
+>>>> + */
+>>>>  void exit_sem(struct task_struct *tsk)
+>>>>  {
+>>>> -	struct sem_undo_list *ul = tsk->sysvsem.undo_list;
+>>>> +	struct sem_undo_list *ul;
+>>>> +	task_lock(tsk);
+>>>> +	ul = tsk->sysvsem.undo_list;
+>>>> +	task_unlock(tsk);
+>>>>  	if (ul) {
+>>>>  		rcu_assign_pointer(tsk->sysvsem.undo_list, NULL);
+>>>>  		synchronize_rcu();
+>>>>
+>>>> -- 
+>>>> Pierre Peiffer
+>>>> _______________________________________________
+>>>> Containers mailing list
+>>>> Containers@lists.linux-foundation.org
+>>>> https://lists.linux-foundation.org/mailman/listinfo/containers
+>>>
+>> -- 
+>> Pierre Peiffer
+> 
 > 
 
-All of the kernel and C userspace code is open source and available from
-linux-iscsi.org and licensed under the GPL.  There is the BSD licensed
-code from userspace (iSNS), as well as ISCSI and SCSI MIBs.  As for what
-pieces of code will be going upstream (for kernel and/or userspace), LIO
-Target state machines and SE algoritims are definately some of the best
-examples of GPL code for production IP storage fabric and has gained
-maturity from people and resources applied to it in a number of
-respects.
-
-The LIO stack presents a number of possible options to get the diverse
-amount of hardware and software to work.  Completely dismissing the
-available code is certainly a waste, and there are still significant
-amounts of functionality related to real-time administration, RFC-3720
-MC/S and ERL=2 and generic SE functionality OS storage subsystems that
-only exist in LIO and our assoicated projects.  A one obvious example is
-the LIO-VM project, which brings LIO active-active transport recovery
-and other Linux storage functionality to Vmware and Qemu images that can
-provide target mode IP storage fabric on x86 non-linux based hosts.  A
-first of its kind in the Linux/iSCSI universe.  
-
-Anyways, lets get back to the technical discussion.
-
---nab
-
-> Bart Van Assche.
-> 
-
+-- 
+Pierre Peiffer
