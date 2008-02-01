@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbYBASMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYBASQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbYBASMa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYBASMI
+	id S1756079AbYBASQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbYBASQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:12:08 -0500
-Received: from n16b.bullet.scd.yahoo.com ([209.73.160.83]:48003 "HELO
-	n16b.bullet.scd.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757280AbYBASMG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:12:06 -0500
-X-yahoo-newman-spamcop: yes
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 784382.85476.bm@rrr1.mail.re1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=W9keE1YMTsibpoIEmJ410EQq6f1Pf9oNN96Y1cskf1XC/uxnE5IIhH3JcYDsDzJqK5mrjJBEWdN52y2Ic6QWETg3D19y4W49mlCNqc1E7nXLmQtynYi5sie/fd3tzYwS721sYOoQjAGxtaFgjcVonXUQ89j87lk17RzKTP2uWfY=;
-X-YMail-OSG: Brfl0SUVM1mCwdfegdF5Cq95i0IG04x1Cdb2L4J1XgoRz3wING2X7IP9Qo4XY.vC5yk2dYcBvBw.Ux_PcwfnAV31Wftht9fTZXP1O1WRzfiNKfGSthvWfTscNienaw--
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.162
-Date: Fri, 1 Feb 2008 23:41:39 +0530 (IST)
-From: veerasena reddy <veerasena_b@yahoo.co.in>
-Subject: how to get chance for user space process even when the kernel is utilizing 100% CPU.
-To: "linux-kernel.org" <linux-kernel@vger.kernel.org>
+	Fri, 1 Feb 2008 13:16:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45638 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbYBASQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 13:16:06 -0500
+Message-ID: <47A3616F.20305@redhat.com>
+Date: Fri, 01 Feb 2008 19:14:07 +0100
+From: Jerome Marchand <jmarchan@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <269793.73556.qm@web8403.mail.in.yahoo.com>
+To: linux-kernel@vger.kernel.org
+CC: axboe@kernel.dk, "Ed L. Cashin" <ecashin@coraid.com>
+Subject: [Patch 0/6] Enhanced partition statistics
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-I have a requirement where i need to execute a user process even when the kernel is utilizing 100% of CPU time.
+This patchset is the corrected version of the patchset I posted
+here weeks ago and which brings back the I/O statistics concerning
+partitions which were lost between 2.4 and 2.6 kernels.
 
-Actual scenario is as below:
-i have a device on my board. this device keeps generating regular (for every 2secs) messages for a user process. the user process has to poll on the device for any message is there to read and get the message from the device. once the user process reads the message it will be removed in device and uses for further/subsequent messages.
+This version still breaks the /sys/block/_disk_/_part_/stat and
+/proc/diskstats interfaces. Incidentally iostat is already able to
+deal correctly with the new format and both 'iostat -x' and
+'iostat -p' already display the enhanced partition statistics.
 
-I have a test case where i need to send so much traffic through my board such that the kernel will be utilizing 100% CPU time to process this data. At this time (when CPU is 100% utilized) the user space process is not getting scheduled even after a long duration (say 10 minutes to 45 minutes). Mean time the message buffer in the device is filled up and the device halts (aka controlled crash; the device firmware has been designed like this) as there is no more memory on the device.
+Adding new information at the end of the line as suggested by Randy,
+would also break some user space applications. For example, iostat
+which relies on the number of fields to make the difference between
+devices and partitions would not work anymore. Moreover it would would
+be inconsistent and confusing to display the same statistics in a
+different order depending on whether they are related to a device or
+a partition.
 
-To avoid this scenario of device's message queue getting filled up because of the user space process not reading them, could you please anyone suggest some technique for getting my user space process scheduled even when there is very heavy traffic as described above.
+I do really think that the current interface is confusing and that
+user space programs use it improperly. For example, the output of
+'iostat -p' is not consistent: the reported tps (tranfers/s) value of
+a device and the sum of his partitions are completely dissimillar
+because iostat handle in the same manner pre-merge and after-merge
+statistics.
 
-In simple, i can put my requirement like this:
-    Is there any way i can get a user space process get scheduled in the above condition (kernel occupying 100% of CPU due to heavy traffic)
+'iostat -p' output without Enhanced Partition Statistics:
+[root@xxx tmp]# iostat -p
+Linux 2.6.24-orig (xxx)      02/01/2008
 
-Thanks in Advance.
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.37    0.00    0.25    0.82    0.00   98.56
+
+Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
+cciss/c0d0        3.12       161.00        18.41     299182      34220
+cciss/c0d0p1      1.05         2.10         0.00       3906          4
+cciss/c0d0p2      6.67       158.77        18.41     295044      34216
+cciss/c0d1        0.16         3.16         0.00       5864          0
+cciss/c0d1p1      0.14         0.33         0.00        620          0
+cciss/c0d1p2      2.21         2.23         0.00       4148          0
+dm-0              6.51       158.56        18.41     294650      34216
+dm-1              0.00         0.01         0.00         24          0
+
+
+'iostat -p' output with Enhanced Partition Statistics:
+[root@xxx tmp]# iostat -p
+Linux 2.6.24-eps (xxx)       02/01/2008
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.05    0.00    0.09    0.91    0.00   98.95
+
+Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
+cciss/c0d0        3.15        18.55       136.56     345862    2546140
+cciss/c0d0p1      0.01         0.21         0.00       3914          4
+cciss/c0d0p2      3.14        18.33       136.56     341724    2546136
+cciss/c0d1        0.02         0.31         0.00       5864          0
+cciss/c0d1p1      0.01         0.05         0.00       1012          0
+cciss/c0d1p2      0.01         0.22         0.00       4148          0
+dm-0             17.58        18.31       136.56     341330    2546136
+dm-1              0.00         0.00         0.00         24          0
+
+Any comments ?
 
 Regards,
-Veerasena.
-
-
-      Bollywood, fun, friendship, sports and more. You name it, we have it on http://in.promos.yahoo.com/groups  
+Jerome Marchand
 
