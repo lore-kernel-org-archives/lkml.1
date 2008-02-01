@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbYBAJl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYBAJll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756986AbYBAJl0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:41:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYBAJlR
+	id S1757750AbYBAJll (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756886AbYBAJlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:41:17 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:54736 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753717AbYBAJlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:41:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fpmhqwlA9z1ibtR6SHEL6cFtdK3UD5gvwRND09LMwTdppNGWIJ2yKm73ZTAGcAR7gs6vYRdBwslg0KOrwvWF4j63gHx2V2AlWOZqNvMYf27/vhj1HItNPL5TmI8SbRAJr4Chb3KOBor0Mh7TpinzcT1UzrT/q0gNLKZ0YXIxJ/k=
-Message-ID: <386072610802010141g340cdb14gcd244ab87ffc855e@mail.gmail.com>
-Date: Fri, 1 Feb 2008 17:41:14 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [spi-devel-general] [PATCH 0/6] [Blackfin] SPI driver updates
-Cc: spi-devel-general@lists.sourceforge.net, "Bryan Wu" <bryan.wu@analog.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200801311250.46415.david-b@pacbell.net>
+	Fri, 1 Feb 2008 04:41:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36713 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756580AbYBAJlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 04:41:21 -0500
+Date: Fri, 1 Feb 2008 10:40:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: "Giacomo A. Catenazzi" <cate@cateee.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Valdis.Kletnieks@vt.edu,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: using LKML for subsystem development
+Message-ID: <20080201094057.GA27910@elte.hu>
+References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org> <4799A773.2030702@cateee.net> <22000.1201255093@turing-police.cc.vt.edu> <200801251258.08707.rjw@sisk.pl> <4799D770.2070203@cateee.net> <479A75D4.6070607@s5r6.in-berlin.de> <479A8203.40804@s5r6.in-berlin.de> <20080126112820.GA10563@elte.hu> <479B42C4.7020507@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1201684421-26124-1-git-send-email-bryan.wu@analog.com>
-	 <200801311250.46415.david-b@pacbell.net>
+In-Reply-To: <479B42C4.7020507@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 1, 2008 4:50 AM, David Brownell <david-b@pacbell.net> wrote:
-> I've forwarded these to Andrew, with my signoff and updated comments.
-> You still need to work on having your patch descriptions match up
-> to what the patches actually do...
+
+(a late reply - the merge window made me ignore this thread ;-)
+
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> > (or if that's still too much, follow the time-deferred lkml updates 
+> > of lwn.net)
+> > 
+> > Realize it: it's _far_ easier to filter down a too verbose source of 
+> > information, than to put scattered, inaccessible pieces of 
+> > information back together. It's far easier to get a cup of water 
+> > from the open firehose than it is to gather the drops once they 
+> > spilled on the ground.
+> 
+> Correct.
+
+so you agree with me on this one? Even though you clearly do not realize 
+it, you've in essence conceded my whole point.
+
+The "off-lkml" practice makes us lose information, in a largely 
+irreversible way - and that's the end of the argument. Q.E.D.
+
+just let me show you an example of the conflict of logic in your 
+argument:
+
+> [ people ]
 >
+>   - who are afraid of subscribing to a high-volume mailinglist (even 
+>     if they have the technical means at their disposal to manage that 
+>     volume),
 
-Thanks a lot, I will try to make it more clearer next time.
+on one side you have people who are _willing_ to participate, who'd like 
+to help out, who'd like to follow the development of Linux, but cannot 
+for some areas because it's split into 150 small mailing lists with no 
+coherent way to access and manage them.
 
-> Patches 3-5 in this series seem to have a common thread:  waiting
-> until BIT_STAT_SPIF is set before moving to the next step of the
-> transfer.  Next time something similar happens, I'd rather see just
-> one patch addressing the issue on all code paths ... not three small
-> patches that only fix it for a few of the code paths.
->
+on the other side you talk about people who are 'afraid' of 
+participating in Linux development, even though "they have the technical 
+means at their disposal to manage that volume". I.e., they "could" 
+participate, but they "dont want to" - for time constraints or just 
+excuses like "it's difficult to filter".
 
-OK, I will try to merge these same bug fixing into one patch.
+and your solution: you advocate destroying information by pulling it off 
+lkml for the sake of the _second_ group of people? That's perverse.
 
-> Also, two of those three patches describe their updates as fixing
-> a "regression", or "reverting" the code.  Was this a bug that came
-> in those patches you wanted to merge to 2.6.24?  If so, shouldn't
-> those regression fixes go into the stable series?
->
+all the other arguments you say are just totally immaterial. Yes, we 
+could and should make lkml a better place (you could have volunteered to 
+summarize lkml discussions of your favorite topic on a separate list, 
+you could forward interesting topics to people you know dont read all of 
+it, etc. etc.,) but your proposed solution of _destroying lkml_ by 
+pulling off development into those lists is just about the most stupid 
+solution a person could have come up with.
 
-Yes, I agree with you. Actually, I intend to send out these bug fixing
-patch ASAP, but we want to make sure our tester verify this bug was
-fixing first.
-
-Thanks
--Bryan
+	Ingo
