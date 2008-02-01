@@ -1,100 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYBARa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYBARc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYBARa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 12:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYBARaT
+	id S1754841AbYBARc5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYBARct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 12:30:19 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:34957 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbYBARaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 12:30:17 -0500
-Date: Fri, 1 Feb 2008 12:29:55 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>, Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] arch/um/include/init.h: Fix missing macro definitions
-Message-ID: <20080201172955.GA6897@c2.user-mode-linux.org>
-References: <20080131150634.GC2471@hacking>
+	Fri, 1 Feb 2008 12:32:49 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:47358 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750736AbYBARcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 12:32:48 -0500
+Date: Fri, 1 Feb 2008 20:35:31 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Alexey Dobriyan <adobriyan@sw.ru>,
+       Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Toyo Abe <toyoa@mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] compat_sys_nanosleep: fix *rmtp/restarts handling
+Message-ID: <20080201173531.GA26540@tv-sign.ru>
+References: <20080201133800.GA25626@tv-sign.ru> <20080201134649.GA15872@elte.hu> <20080201141200.GA25656@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131150634.GC2471@hacking>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20080201141200.GA25656@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 11:06:34PM +0800, WANG Cong wrote:
-> This patch fixed the following build error in current -git tree.
-> 
-> arch/um/kernel/config.c:10: error: expected declaration specifiers or '...' before '.' token
-> ...
+On 02/01, Oleg Nesterov wrote:
+>
+> Hopefully this was the last bug, updated patch below.
 
-This is close to uml-arch-um-include-inith-needs-a-definition-of-__used.patch
-that's currently in -mm.
+That was a joke.
 
-Andrew, could you replace
-uml-arch-um-include-inith-needs-a-definition-of-__used.patch with the
-version below and push it to Linus?
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+Contrary to my expectations, the patch didn't suffer (I hope) from the
+buggy "PATCH 1/1". But it can be simplified a bit, no need to check ret
+twice.
 
 
-init.h started breaking now for some reason.  It turns out that there wasn't a
-definition of __used.  Fixed this by copying the relevant stuff from
-compiler.h in the userspace case, and including compiler.h in the kernel case.
+[PATCH 3/5] compat_sys_nanosleep: fix *rmtp/restarts handling
 
->From WANG Cong <xiyou.wangcong@gmail.com> - added definition of __section
+COMPLETELY UNTESTED.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>
----
- arch/um/include/init.h |   25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
+Spotted by Pavel Emelyanov and Alexey Dobriyan.
 
-Index: linux-2.6-git/arch/um/include/init.h
-===================================================================
---- linux-2.6-git.orig/arch/um/include/init.h	2008-02-01 10:41:14.000000000 -0500
-+++ linux-2.6-git/arch/um/include/init.h	2008-02-01 10:52:34.000000000 -0500
-@@ -40,6 +40,20 @@
- typedef int (*initcall_t)(void);
- typedef void (*exitcall_t)(void);
+compat_sys_nanosleep() implicitly uses hrtimer_nanosleep_restart(), this can't
+work. Make a suitable compat_nanosleep_restart() helper.
+
+Also, set ->addr_limit = KERNEL_DS before doing hrtimer_nanosleep(), this func
+was changed by the previous patch and now takes the "__user *" parameter.
+
+Thanks to Ingo Molnar for fixing the bug in this patch.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- MM/kernel/compat.c~x3_COMPAT_NANOSLEEP	2008-02-01 18:54:44.000000000 +0300
++++ MM/kernel/compat.c	2008-02-01 20:24:52.000000000 +0300
+@@ -40,10 +40,35 @@ int put_compat_timespec(const struct tim
+ 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
+ }
  
-+#ifndef __KERNEL__
-+#ifndef __section
-+# define __section(S) __attribute__ ((__section__(#S)))
-+#endif
++static long compat_nanosleep_restart(struct restart_block *restart)
++{
++	struct timespec rmt;
++	mm_segment_t oldfs;
++	long ret;
++	struct compat_timespec *rmtp = (struct compat_timespec *)(restart->arg1);
 +
-+#if __GNUC_MINOR__ >= 3
-+# define __used			__attribute__((__used__))
-+#else
-+# define __used			__attribute__((__unused__))
-+#endif
++	restart->arg1 = (unsigned long)&rmt;
++	oldfs = get_fs();
++	set_fs(KERNEL_DS);
++	ret = hrtimer_nanosleep_restart(restart);
++	set_fs(oldfs);
 +
-+#else
-+#include <linux/compiler.h>
-+#endif
- /* These are for everybody (although not all archs will actually
-    discard it in modules) */
- #define __init		__section(.init.text)
-@@ -127,14 +141,3 @@ extern struct uml_param __uml_setup_star
- #endif
++	if (ret) {
++		restart->fn = compat_nanosleep_restart;
++		restart->arg1 = (unsigned long)rmtp;
++
++		if (rmtp && put_compat_timespec(&rmt, rmtp))
++			return -EFAULT;
++	}
++
++	return ret;
++}
++
+ asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
+ 				     struct compat_timespec __user *rmtp)
+ {
+ 	struct timespec tu, rmt;
++	mm_segment_t oldfs;
+ 	long ret;
  
- #endif /* _LINUX_UML_INIT_H */
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
+ 	if (get_compat_timespec(&tu, rqtp))
+@@ -52,11 +77,20 @@ asmlinkage long compat_sys_nanosleep(str
+ 	if (!timespec_valid(&tu))
+ 		return -EINVAL;
+ 
++	oldfs = get_fs();
++	set_fs(KERNEL_DS);
+ 	ret = hrtimer_nanosleep(&tu, rmtp ? &rmt : NULL, HRTIMER_MODE_REL,
+ 				CLOCK_MONOTONIC);
++	set_fs(oldfs);
+ 
+-	if (ret && rmtp) {
+-		if (put_compat_timespec(&rmt, rmtp))
++	if (ret) {
++		struct restart_block *restart
++			= &current_thread_info()->restart_block;
++
++		restart->fn = compat_nanosleep_restart;
++		restart->arg1 = (unsigned long)rmtp;
++
++		if (rmtp && put_compat_timespec(&rmt, rmtp))
+ 			return -EFAULT;
+ 	}
+ 
+
