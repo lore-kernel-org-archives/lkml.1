@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYBAKi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbYBAKkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbYBAKi6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbYBAKiu
+	id S1757858AbYBAKkE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:40:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbYBAKjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:38:50 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:59537 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754872AbYBAKit (ORCPT
+	Fri, 1 Feb 2008 05:39:53 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23246 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754903AbYBAKjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:38:49 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: George Spelvin <linux@horizon.com>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       mingo@redhat.com
-In-Reply-To: <20080201045320.11859.qmail@science.horizon.com>
-References: <20080201045320.11859.qmail@science.horizon.com>
+	Fri, 1 Feb 2008 05:39:52 -0500
+X-YMail-OSG: LfM39IIVM1m4M4v2OyuiYjV0bNViHg3fVCG20CS56Y7ml2l29eWCsWz1K5VN4L9VzNH1GpjwtyfX12FtauwSduR0lsiNH11DyPMtgyFgea5zV3_ZMQ--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: FUJITA Tomonori <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp,
+       rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Mike Mazarick <mazarick@bellsouth.net>
+In-Reply-To: <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
+References: <adazluoe2t3.fsf@cisco.com>
+	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+	 <20080130195635T.tomof@acm.org>
+	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 01 Feb 2008 10:37:32 +0000
-Message-Id: <1201862252.25409.69.camel@localhost.localdomain>
+Date: Fri, 01 Feb 2008 02:39:24 -0800
+Message-Id: <1201862364.11265.267.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: There are smaller ways to encode a CRC32 table...
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-02-01 at 09:11 +0100, Bart Van Assche wrote:
+> On Jan 31, 2008 2:25 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+> >
+> > The PyX storage engine supports a scatterlist linked list algorithm that
+> > ...
+> 
+> Which parts of the PyX source code are licensed under the GPL and
+> which parts are closed source ? A Google query for PyX + iSCSI showed
+> information about licensing deals. Licensing deals can only be closed
+> for software that is not entirely licensed under the GPL.
+> 
 
-On Thu, 2008-01-31 at 23:53 -0500, George Spelvin wrote:
-> The code to fill it in is smaller than the table itself.
-> Is it worth complicating things with some INIT code to reduce
-> the stored image size?  (The table is not compressible.)
-[snip]
+I was using the name PyX to give an historical context to the
+discussion.  :-)  In more recent times, I have been using the name "LIO
+Target Stack" and "LIO Storage Engine" to refer to Traditional RFC-3720
+Target statemachines, and SCSI Processing engine implementation
+respectively.  The codebase has matured significantly from the original
+codebase, as the Linux SCSI, ATA and Block subsystems envolved from
+v2.2, v2.4, v2.5 and modern v2.6, the LIO stack has grown (and sometimes
+shrunk) along with the following requirement;  To support all possible
+storage devices on all subsystems on any hardware platform that Linux
+could be made to boot.  Interopt with other non Linux SCSI subsystems
+was also an issue early in development.. If you can imagine a Solaris
+SCSI subsystem asking for T10 EVPD WWN information from a Linux/iSCSI
+Target with pre libata SATA drivers, you can probably guess just how
+time was spent looking at packet captures to figure out to make OS
+dependent (ie: outernexus) multipath to play nice.
 
-Thanks but since the code is only used when building the image I'm not
-too worried which way is used and I've tested the table based one ;-).
+Note that PyX Target Code for Linux v2.6 has been available in source
+and binary form for a diverse array of Linux devices and environments
+since September 2007.  Right around this time, the Linux-iSCSI.org
+Storage and Virtualization stack went online for the first time using
+OCFS2, PVM, HVM, LVM, RAID6 and of course, traditional RFC-3720 on 10
+Gb/sec and 1 Gb/sec fabric.  There have also been world's first storage
+research work and prototypes that have been developed with the LIO code.
+Information on these topics is available from the homepage, and a few
+links deep there are older projects and information about features
+inherent to the LIO Target and Storage Engine.  One of my items for the
+v2.9 codebase in 2008 is start picking apart the current code and
+determining which pieces should be sent upstream for review.  I have
+also been spending alot of time recently looking at the other available
+open source storage transport and processing stacks and seeing how
+Linux/iSCSI, and other projects can benefit from our large pool of
+people, knowledge, and code.
 
-> And BTW, storing the inverse of the CRC only catches trailing (after the CRC)
-> all-zero padding.  If this is not a problem, it's not necessary, although you
-> still might want to do it just for consistency.  This inversion changes the
-> CRC of the entire image (body + CRC) from all-zero to a fixed non-zero value.
-> (To be precise, to the (non-inverted) CRC of 0xffffffff.)
+Speaking of the LIO Target and SE code, it today runs the production
+services for Linux-iSCSI.org and it's storage and virtualization
+clusters on x86_64.  It also also provides a base for next generation
+and forward looking projects that exist (or soon to exist :-) within the
+Linux/iSCSI ecosystem.  There have been lots of time and resources put
+into the codebase, and having a real live working RFC-3720 stack that
+supports optional features that give iSCSI (and hence designed into
+iSER) the flexibility and transparentness to operate as the original
+designers intended.
 
-I didn't know the precise details of why you might invert it, thanks for
-the info.
+Many thanks for your most valuable of time,
 
-Ian
--- 
-Ian Campbell
-Current Noise: Reverend Bizarre - Sodoma Sunrise
+--nab
 
-I am a man: nothing human is alien to me.
-		-- Publius Terentius Afer (Terence)
+> Bart Van Assche.
+> 
 
