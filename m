@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbYBAKcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbYBAKc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757776AbYBAKcf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 05:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYBAKcZ
+	id S1758365AbYBAKc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 05:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYBAKcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 05:32:25 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:45635 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756905AbYBAKcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 05:32:23 -0500
-Date: Fri, 1 Feb 2008 04:32:21 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/3] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080201103221.GH26420@sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131045812.785269387@sgi.com> <20080201042408.GG26420@sgi.com> <Pine.LNX.4.64.0801312042500.20675@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801312042500.20675@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 1 Feb 2008 05:32:45 -0500
+Received: from nibbel.kulnet.kuleuven.ac.be ([134.58.240.41]:50341 "EHLO
+	nibbel.kulnet.kuleuven.ac.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754027AbYBAKco (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 05:32:44 -0500
+X-Greylist: delayed 1919 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Feb 2008 05:32:44 EST
+Subject: dvb-t bug
+X-Kuleuven: This mail passed the K.U.Leuven mailcluster
+From: Rik Bobbaers <Rik.Bobbaers@icts.kuleuven.be>
+To: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 10:58:16 +0100
+Message-Id: <1201859896.6193.10.camel@lois>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-KULeuven-Information: Katholieke Universiteit Leuven
+X-KULeuven-Scanned: Found to be clean
+X-KULeuven-Envelope-From: rik.bobbaers@icts.kuleuven.be
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 08:43:58PM -0800, Christoph Lameter wrote:
-> On Thu, 31 Jan 2008, Robin Holt wrote:
-> 
-> > > Index: linux-2.6/mm/memory.c
-> > ...
-> > > @@ -1668,6 +1678,7 @@ gotten:
-> > >  		page_cache_release(old_page);
-> > >  unlock:
-> > >  	pte_unmap_unlock(page_table, ptl);
-> > > +	mmu_notifier(invalidate_range_end, mm, 0);
-> > 
-> > I think we can get an _end call without the _begin call before it.
-> 
-> If that would be true then also the pte would have been left locked.
-> 
-> We always hit unlock. Maybe I just do not see it?
+hey all,
 
-Maybe I haven't looked closely enough, but let's start with some common
-assumptions.  Looking at do_wp_page from 2.6.24 (I believe that is what
-my work area is based upon).  On line 1559, the function begins being
-declared.
+since i'm not completely sure where this bug goes, i'll try lkml and
+linux-dvb list.
 
-On lines 1614 and 1630, we do "goto unlock" where the _end callout is
-soon made.  The _begin callout does not come until after those branches
-have been taken (occurs on line 1648).
+first of all: my "test" computer is a ubuntu gutsy system (standard) on
+a dell latitude D810. the tv card: a Kworld v-stream dvb-t usb2.
 
-Thanks,
-Robin
+the bug: 
+http://harry.enzoverder.be/dvb-crash.txt (some irrelevance stripped,
+like other boot logs)
+http://harry.enzoverder.be/lspci for lspci -vvv output
+the kernel/system.map images etc... are trivial i hope...
+i'm running this kernel:
+Linux version 2.6.22-14-generic (buildd@terranova) (gcc version 4.1.3
+20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #1 SMP Tue Dec 18
+08:02:57 UTC 2007
+
+i don't know what else i need to provide, but i hope this does the trick
+for you guys. if there is anything i can do to help/test/patch/..., let
+me know!
+
+i'm not subscribed, so please, include me in replies
+
+thanks dudes!
+
+ps. i used the dvb-usb-adstech-usb2-02.fw firmware. it's VERY hard to
+find the firmware... (it's not on linuxtv.org btw) where do you find
+firmware?
+
+-- 
+harry
+aka Rik Bobbaers
+
+K.U.Leuven - LUDIT            -=- Tel: +32 485 52 71 50
+Rik.Bobbaers@icts.kuleuven.be -=- http://harry.enzoverder.be
+
+Don't steal - the government hates competition.
+
+
+
+Disclaimer: http://www.kuleuven.be/cwis/email_disclaimer.htm
+
