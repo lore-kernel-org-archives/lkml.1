@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYBASHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYBASI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYBASHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYBASHN
+	id S1756101AbYBASI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYBASIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:07:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59637 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbYBASHL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:07:11 -0500
-Message-ID: <47A35FBB.5030003@zytor.com>
-Date: Fri, 01 Feb 2008 10:06:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: sparse errors from string_32.h
-References: <1201846516.23523.87.camel@brick> <20080201105624.GD27178@elte.hu>
-In-Reply-To: <20080201105624.GD27178@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 13:08:51 -0500
+Received: from mga02.intel.com ([134.134.136.20]:46923 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750736AbYBASIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 13:08:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,291,1199692800"; 
+   d="scan'208";a="256192788"
+Date: Fri, 1 Feb 2008 10:08:23 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jike Song <albcamus@gmail.com>, Rijndael Cosque <rijcos@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: What's the status of x2APIC support in Linux kernel?
+Message-ID: <20080201180822.GA376@linux-os.sc.intel.com>
+References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73fxwc50s5.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Fri, Feb 01, 2008 at 01:17:14PM +0100, Andi Kleen wrote:
+> "Jike Song" <albcamus@gmail.com> writes:
 > 
->>  		case 1:
->> -			*(unsigned char *)s = pattern;
->> +			*(unsigned char *)s = pattern & 0xff;
+> > On 2/1/08, Rijndael Cosque <rijcos@gmail.com> wrote:
+> >> Hi all,
+> >>
+> >> I found the x2APIC spec via http://www.intel.com/products/processor/manuals/.
+> >>
+> >> Looks at present there is no x2APIC support in Linux kernel 2.6.24?
+> >>
+> >> Is there any experimental patch available for Linux kernel? -- I
+> >> googled "x2APIC Linux";  looks no patch for now?
 > 
-> i've applied your fix - but wouldnt it be cleaner to just cast the 
-> pattern variable to unsigned char instead?
-> 
+> There are right no CPUs shipping which implement x2apic.
 
-Even better, since we're talking about fixed bytes, I suggest writing it as:
+That's correct. None of the released CPU's support it.
 
-	*(u8 *)s = (u8)pattern;
+I am working on a patch enabling these future x2apic extensions and the plan 
+is to post this kernel patch shortly.
 
-Much more compact and the intent is a little bit more obvious.
-
-	-hpa
+thanks,
+suresh
