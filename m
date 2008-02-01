@@ -1,80 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934944AbYBABEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbYBABFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934944AbYBABEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 20:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYBABEl
+	id S932602AbYBABFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 20:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934961AbYBABE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 20:04:41 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48142 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbYBABEk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 20:04:40 -0500
-Date: Fri, 1 Feb 2008 02:04:39 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [1/2] POHMELFS - network filesystem with local coherent cache.
-In-Reply-To: <11972872493911@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0802010159460.4864@fbirervta.pbzchgretzou.qr>
-References: <11972872493911@2ka.mipt.ru>
+	Thu, 31 Jan 2008 20:04:58 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46514 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S935009AbYBABE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 20:04:57 -0500
+Date: Fri, 1 Feb 2008 02:05:09 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: kill misleading comments in trampoline_*.S
+Message-ID: <20080201010509.GB5112@elf.ucw.cz>
+References: <20080201005429.GA5085@elf.ucw.cz> <86802c440801311702i1ac94b0m2af0bcdec6c9e866@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440801311702i1ac94b0m2af0bcdec6c9e866@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu 2008-01-31 17:02:29, Yinghai Lu wrote:
+> On Jan 31, 2008 4:54 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> >
+> >
+> > Both trampolines actually *do* set up stack. (Is the "we jump into
+> > compressed/head.S" comment still true?)
+> >
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> >
+> > diff --git a/arch/x86/kernel/trampoline_32.S b/arch/x86/kernel/trampoline_32.S
+> > index 9bcc1c6..5398547 100644
+> > --- a/arch/x86/kernel/trampoline_32.S
+> > +++ b/arch/x86/kernel/trampoline_32.S
+> > @@ -11,9 +11,6 @@
+> >   *     trampoline page to make our stack and everything else
+> >   *     is a mystery.
+> >   *
+> > - *     In fact we don't actually need a stack so we don't
+> > - *     set one up.
+> > - *
+> >   *     We jump into the boot/compressed/head.S code. So you'd
+> >   *     better be running a compressed kernel image or you
+> >   *     won't get very far.
+> 
+> should be arch/x86/kernel/head_32.S
 
-On Jan 31 2008 22:17, Evgeniy Polyakov wrote:
->
->POHMELFS stands for Parallel Optimized Host Message Exchange
->Layered File System. It allows to mount remote servers to local
->directory via network. This filesystem supports local caching
->and writeback flushing.
->POHMELFS is a brick in a future distributed filesystem.
+Thanks, fixed in my local copy. But that's separate problem. ;-).
 
-A brick is usually something that is in the way -
-Or you also say "the user has bricked his machine"
-when it's quite unusable :)
-Hope you did not mean /that/.
+								Pavel
 
->This set includes two patches:
-> * network filesystem with write-through cache (slow, but works with
-> 	remote userspace server)
-> * hack to show how local cache works and how faster it is compared
-> 	to async NFS (see below). hack disables writeback flush and
->	performs local allocation of the objects only.
->
->Now, some vaporware aka food for thoughts and your brains.
->
->A small benchmark of the local cached mode (above hack):
->
->$ time tar -xf /home/zbr/threading.tar
->
->	POHMELFS	NFS v3 (async)
->real    0m0.043s	0m1.679s
->
->Which is damn 40 times!
-
-Needs a bigger data set to compare. But what is much more
-important: does it use a single port for networing, or some
-firewall-unfriendly-by-default multiple dynamic-port-allocation
-like NFS?
-
->Next task is to think about how to generically solve the problem with
->syncing local changes with remote server, when remote server maintains inodes with
->completely different numbers.
->This, among others, will allow offline work with automatic syncing after reconnect.
-
-What will happen when both nodes change an inode in disconnected state?
-Which inode wins out?
-
->This is not intended for inclusion, CRFS by Zach Brown is a bit ahead of POHMELFS,
->but it is not generic enough (because of above problem), works only with BTRFS,
->and was closed by Oracle so far :)
-
-btrfs is all we need :p
+diff --git a/arch/x86/kernel/trampoline_32.S b/arch/x86/kernel/trampoline_32.S
+index 9bcc1c6..6458067 100644
+--- a/arch/x86/kernel/trampoline_32.S
++++ b/arch/x86/kernel/trampoline_32.S
+@@ -11,12 +11,7 @@
+  *	trampoline page to make our stack and everything else
+  *	is a mystery.
+  *
+- *	In fact we don't actually need a stack so we don't
+- *	set one up.
+- *
+- *	We jump into the boot/compressed/head.S code. So you'd
+- *	better be running a compressed kernel image or you
+- *	won't get very far.
++ *	We jump into arch/x86/kernel/head_32.S.
+  *
+  *	On entry to trampoline_data, the processor is in real mode
+  *	with 16-bit addressing and 16-bit data.  CS has some value
+diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
+index e30b67c..4aedd0b 100644
+--- a/arch/x86/kernel/trampoline_64.S
++++ b/arch/x86/kernel/trampoline_64.S
+@@ -10,9 +10,6 @@
+  *	trampoline page to make our stack and everything else
+  *	is a mystery.
+  *
+- *	In fact we don't actually need a stack so we don't
+- *	set one up.
+- *
+  *	On entry to trampoline_data, the processor is in real mode
+  *	with 16-bit addressing and 16-bit data.  CS has some value
+  *	and IP is zero.  Thus, data addresses need to be absolute
 
 
-Where's the parallelism that is advertised by the "POH" in pohmelfs?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
