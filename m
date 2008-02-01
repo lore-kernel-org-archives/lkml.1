@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765150AbYBAMN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763461AbYBAMRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765150AbYBAMN6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763692AbYBAMNs
+	id S1763461AbYBAMRZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:17:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbYBAMRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:13:48 -0500
-Received: from mail-relay-02.mailcluster.net ([77.221.130.214]:44454 "EHLO
-	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758781AbYBAMNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:13:47 -0500
-Message-ID: <47A3078C.10704@vlnb.net>
-Date: Fri, 01 Feb 2008 14:50:36 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Fri, 1 Feb 2008 07:17:17 -0500
+Received: from ns2.suse.de ([195.135.220.15]:49703 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754027AbYBAMRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:17:16 -0500
+To: "Jike Song" <albcamus@gmail.com>
+Cc: "Rijndael Cosque" <rijcos@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: What's the status of x2APIC support in Linux kernel?
+From: Andi Kleen <andi@firstfloor.org>
+References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com>
+	<df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com>
+Date: Fri, 01 Feb 2008 13:17:14 +0100
+In-Reply-To: <df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com> (Jike Song's message of "Fri\, 1 Feb 2008 16\:53\:31 +0800")
+Message-ID: <p73fxwc50s5.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: David Dillow <dillowda@ornl.gov>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       landman@scalableinformatics.com, James.Bottomley@hansenpartnership.com,
-       linux-scsi@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       fujita.tomonori@lab.ntt.co.jp, scst-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, FUJITA Tomonori <tomof@acm.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-References: <adazluoe2t3.fsf@cisco.com> <20080130083239E.fujita.tomonori@lab.ntt.co.jp> <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com> <20080130195635T.tomof@acm.org> <1201785938.7280.105.camel@haakon2.linux-iscsi.org> <e2e108260801310634n21473909o5abac021cc889de3@mail.gmail.com> <47A1EE54.6000005@vlnb.net> <47A1F67C.4020300@scalableinformatics.com> <e2e108260801310908k516f588cv51c18486b4a495d2@mail.gmail.com> <1201803135.21160.8.camel@lap75545.ornl.gov>
-In-Reply-To: <1201803135.21160.8.camel@lap75545.ornl.gov>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Dillow wrote:
-> On Thu, 2008-01-31 at 18:08 +0100, Bart Van Assche wrote:
-> 
->>If anyone has a suggestion for a better test than dd to compare the
->>performance of SCSI storage protocols, please let it know.
-> 
-> 
-> xdd on /dev/sda, sdb, etc. using -dio to do direct IO seems to work
-> decently, though it is hard (ie, impossible) to get a repeatable
-> sequence of IO when using higher queue depths, as it uses threads to
-> generate multiple requests.
+"Jike Song" <albcamus@gmail.com> writes:
 
-This utility seems to be a good one, but it's basically the same as 
-disktest, although much more advanced.
+> On 2/1/08, Rijndael Cosque <rijcos@gmail.com> wrote:
+>> Hi all,
+>>
+>> I found the x2APIC spec via http://www.intel.com/products/processor/manuals/.
+>>
+>> Looks at present there is no x2APIC support in Linux kernel 2.6.24?
+>>
+>> Is there any experimental patch available for Linux kernel? -- I
+>> googled "x2APIC Linux";  looks no patch for now?
 
-> You may also look at sgpdd_survey from Lustre's iokit, but I've not done
-> much with that -- it uses the sg devices to send lowlevel SCSI commands.
+There are right no CPUs shipping which implement x2apic.
 
-Yes, it might be worth to try. Since fundamentally it's the same as 
-O_DIRECT dd, but with a bit less overhead on the initiator side (hence 
-less initiator side latency), most likely it will show ever bigger 
-difference, than it is with dd.
+> Maybe.   I have a question as well, what about the  status of I/O
+> xAPIC support in linux?  If it is not supported yet, is there any
+> effort to add it?  I'm interested in that, hopefully can take part in
+> the development.
 
-> I've been playing around with some benchmark code using libaio, but it's
-> not in generally usable shape.
-> 
-> xdd:
-> http://www.ioperformance.com/products.htm
-> 
-> Lustre IO Kit:
-> http://manual.lustre.org/manual/LustreManual16_HTML/DynamicHTML-20-1.html
+xAPIC has been supported forever.
 
+-Andi
