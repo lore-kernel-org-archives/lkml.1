@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbYBABod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764584AbYBABpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761939AbYBABod (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 20:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYBABo0
+	id S1764584AbYBABpp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 20:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYBABpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 20:44:26 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:34600 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753682AbYBABoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 20:44:25 -0500
-Date: Thu, 31 Jan 2008 17:44:24 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-In-Reply-To: <20080131234101.GS7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random>
- <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com>
- <20080131234101.GS7185@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Jan 2008 20:45:38 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:20353 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752872AbYBABph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Jan 2008 20:45:37 -0500
+X-IronPort-AV: E=Sophos;i="4.25,287,1199692800"; 
+   d="dif'208?scan'208,208";a="148200030"
+Subject: Re: Pull request: TASK_KILLABLE
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Liam Howlett <howlett@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802011146180.3198@www.l.google.com>
+References: <20080129000447.GC31101@parisc-linux.org>
+	 <alpine.LFD.1.00.0801292237480.3505@www.l.google.com>
+	 <20080131234504.GB25967@parisc-linux.org>
+	 <alpine.LFD.1.00.0802011146180.3198@www.l.google.com>
+Content-Type: multipart/mixed; boundary="=-CFP+viqGudrT/581QzgQ"
+Organization: Network Appliance Inc
+Date: Thu, 31 Jan 2008 20:45:04 -0500
+Message-Id: <1201830304.3087.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 01 Feb 2008 01:45:06.0067 (UTC) FILETIME=[11FA7630:01C86474]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Andrea Arcangeli wrote:
 
-> GRU. Thanks to the PT lock this remains a totally obviously safe
-> design and it requires zero additional locking anywhere (nor linux VM,
-> nor in the mmu notifier methods, nor in the KVM/GRU page fault).
+--=-CFP+viqGudrT/581QzgQ
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Na. I would not be so sure about having caught all the issues yet...
 
-> Sure you can do invalidate_range_start/end for more than 2M(/4M on
-> 32bit) max virtual ranges. But my approach that averages the fixed
-> mmu_lock cost already over 512(/1024) ptes will make any larger
-> "range" improvement not strongly measurable anymore given to do that
-> you have to add locking as well and _surely_ decrease the GRU
-> scalability with tons of threads and tons of cpus potentially making
-> GRU a lot slower _especially_ on your numa systems.
+On Fri, 2008-02-01 at 11:48 +1100, Linus Torvalds wrote:
+> 
+> On Thu, 31 Jan 2008, Matthew Wilcox wrote:
+> > 
+> > To allow tasks to be interrupted by fatal signals, we introduce a new
+> > TASK_* bit; TASK_WAKEKILL.  We also add a predicate fatal_signal_pending;
+> > the counterpart of signal_pending().  Then we add killable versions
+> > of lock_page(), mutex_lock(), schedule_timeout(), wait_event(), and
+> > wait_for_completion().  Finally, we can make the NFS 'intr' mount option
+> > a no-op.
+> 
+> Ok, I've pulled this. It conflicted with some NFS changes, but I did what 
+> appeared to be the obvious conflict resolution, and it all at least 
+> compiles and it looked sane to me. But I don't have NFS enabled normally, 
+> and I certainly don't have a good way to test with my laptop while in 
+> Melbourne, so Trond/Matthew, can you please double- and triple-check my 
+> merge?
 
-The trouble is that the invalidates are much more expensive if you have to 
-send theses to remote partitions (XPmem). And its really great if you can 
-simple tear down everything. Certainly this is a significant improvement 
-over the earlier approach but you still have the invalidate_page calls in 
-ptep_clear_flush. So they fire needlessly?
+Hmm... The current code won't compile as a module. We're at least going
+to require something like the attached patch.
 
-Serializing access in the device driver makes sense and comes with 
-additional possiblity of not having to increment page counts all the time. 
-So you trade one cacheline dirtying for many that are necessary if you 
-always increment the page count.
+Cheers
+  Trond
 
-How does KVM insure the consistency of the shadow page tables? Atomic ops?
+--=-CFP+viqGudrT/581QzgQ
+Content-Disposition: inline; filename=linux-2.6.24-000-export_fatal_signal_pending.dif
+Content-Type: message/rfc822; name=linux-2.6.24-000-export_fatal_signal_pending.dif
 
-The GRU has no page table on its own. It populates TLB entries on demand 
-using the linux page table. There is no way it can figure out when to 
-drop page counts again. The invalidate calls are turned directly into tlb 
-flushes.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Thu, 31 Jan 2008 20:40:29 -0500
+Subject: Ensure that we export __fatal_signal_pending()
+Message-Id: <1201830304.3087.3.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
 
+It may be used by the modules nfs.ko and sunrpc.ko
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ kernel/signal.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 8054dd4..1f2d4e1 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -998,6 +998,7 @@ int fastcall __fatal_signal_pending(struct task_struct *tsk)
+ {
+ 	return sigismember(&tsk->pending.signal, SIGKILL);
+ }
++EXPORT_SYMBOL_GPL(__fatal_signal_pending);
  
+ /*
+  * Must be called under rcu_read_lock() or with tasklist_lock read-held.
+
+--=-CFP+viqGudrT/581QzgQ--
