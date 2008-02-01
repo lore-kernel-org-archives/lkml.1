@@ -1,158 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYBAJSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYBAJeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344AbYBAJSF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 04:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYBAJRn
+	id S1755069AbYBAJeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 04:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYBAJd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 04:17:43 -0500
-Received: from hosted07.westnet.com.au ([203.10.1.223]:54971 "EHLO
-	hosted07.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757306AbYBAJRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 04:17:39 -0500
-Message-ID: <47A2E3AA.2020707@snapgear.com>
-Date: Fri, 01 Feb 2008 19:17:30 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [M68KNOMMU 06/06]: modify Makefiles to support common coldfire
- directory
-References: <200802010737.m117bueB022713@goober> <20080201084645.GA10969@uranus.ravnborg.org>
-In-Reply-To: <20080201084645.GA10969@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 1 Feb 2008 04:33:59 -0500
+Received: from mga02.intel.com ([134.134.136.20]:58521 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752937AbYBAJd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 04:33:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,289,1199692800"; 
+   d="scan'208";a="256142917"
+Subject: [PATCH 3/4] x86: update usage of set_memory_xx
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-PMX-Branch: TNG-Outgoing
+Date: Fri, 01 Feb 2008 17:34:59 +0800
+Message-Id: <1201858499.4051.19.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 01 Feb 2008 09:33:53.0807 (UTC) FILETIME=[8F6AF9F0:01C864B5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+This patch updates the usage of set_memory_xx according to changes in
+previous patch.
 
-Sam Ravnborg wrote:
-> On Fri, Feb 01, 2008 at 05:37:56PM +1000, Greg Ungerer wrote:
->> Modify Makefiles to support separate coldfire platform directory.
->>
->> Currently the common ColdFire CPU family code sits in the
->> arch/m68knommu/platform/5307 directory. This is confusing, the files
->> containing this common code are in no way specific to the 5307 ColdFire.
->> Create an arch/m68knommu/platform/coldfire directory to contain this
->> common code. Other m68knommu CPU varients do not need use this code
->> though, so it doesn't make sense to move it to arch/m68knommu/kernel.
->>
->> Signed-off-by: Greg Ungerer <gerg@uclinux.org
->>
->>
->> diff -Naurp linux-2.6.24/arch/m68knommu/Makefile linux-2.6.24.1/arch/m68knommu/Makefile
->> --- linux-2.6.24/arch/m68knommu/Makefile	2008-01-25 08:58:37.000000000 +1000
->> +++ linux-2.6.24.1/arch/m68knommu/Makefile	2008-01-31 17:04:07.000000000 +1000
->> @@ -61,17 +61,17 @@ MODEL := $(model-y)
->>  # for the selected cpu. ONLY need to define this for the non-base member
->>  # of the family.
->>  #
->> -cpuclass-$(CONFIG_M5206)	:= 5307
->> -cpuclass-$(CONFIG_M5206e)	:= 5307
->> -cpuclass-$(CONFIG_M520x)	:= 5307
->> -cpuclass-$(CONFIG_M523x)	:= 5307
->> -cpuclass-$(CONFIG_M5249)	:= 5307
->> -cpuclass-$(CONFIG_M527x)	:= 5307
->> -cpuclass-$(CONFIG_M5272)	:= 5307
->> -cpuclass-$(CONFIG_M528x)	:= 5307
->> -cpuclass-$(CONFIG_M5307)	:= 5307
->> -cpuclass-$(CONFIG_M532x)	:= 5307
->> -cpuclass-$(CONFIG_M5407)	:= 5307
->> +cpuclass-$(CONFIG_M5206)	:= coldfire
->> +cpuclass-$(CONFIG_M5206e)	:= coldfire
->> +cpuclass-$(CONFIG_M520x)	:= coldfire
->> +cpuclass-$(CONFIG_M523x)	:= coldfire
->> +cpuclass-$(CONFIG_M5249)	:= coldfire
->> +cpuclass-$(CONFIG_M527x)	:= coldfire
->> +cpuclass-$(CONFIG_M5272)	:= coldfire
->> +cpuclass-$(CONFIG_M528x)	:= coldfire
->> +cpuclass-$(CONFIG_M5307)	:= coldfire
->> +cpuclass-$(CONFIG_M532x)	:= coldfire
->> +cpuclass-$(CONFIG_M5407)	:= coldfire
-> 
-> I would suggest to alwyas descend into coldfire/ and
-> in the coldfire/Makefile decide what to build.
-> For some models thats nothing but thats OK.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-I was really trying to separate the CPU class types here.
-I didn't want all types pointlessly traversing all
-sub-directories.
+---
+ arch/x86/kernel/pci-gart_64.c |    3 ++-
+ arch/x86/mm/init_32.c         |    4 ++--
+ arch/x86/mm/init_64.c         |    8 ++++----
+ arch/x86/mm/ioremap.c         |    4 ++--
+ 4 files changed, 10 insertions(+), 9 deletions(-)
 
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -91,10 +91,10 @@ static int ioremap_change_attr(unsigned 
+ 	switch (mode) {
+ 	case IOR_MODE_UNCACHED:
+ 	default:
+-		err = set_memory_uc(vaddr, nrpages);
++		err = set_memory_uc(vaddr, paddr, nrpages);
+ 		break;
+ 	case IOR_MODE_CACHED:
+-		err = set_memory_wb(vaddr, nrpages);
++		err = set_memory_wb(vaddr, paddr, nrpages);
+ 		break;
+ 	}
+ 
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -570,7 +570,8 @@ static __init int init_k8_gatt(struct ag
+ 	gatt = (void *)__get_free_pages(GFP_KERNEL, get_order(gatt_size));
+ 	if (!gatt)
+ 		panic("Cannot allocate GATT table");
+-	if (set_memory_uc((unsigned long)gatt, gatt_size >> PAGE_SHIFT))
++	if (set_memory_uc((unsigned long)gatt, __pa(gatt),
++			  gatt_size >> PAGE_SHIFT))
+ 		panic("Could not set GART PTEs to uncacheable pages");
+ 
+ 	memset(gatt, 0, gatt_size);
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -610,7 +610,7 @@ void free_init_pages(char *what, unsigne
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ 	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
+ 		begin, PAGE_ALIGN(end));
+-	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
++	set_memory_np(begin, __pa(begin), (end - begin) >> PAGE_SHIFT);
+ #else
+ 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
+ 
+@@ -656,7 +656,7 @@ void mark_rodata_ro(void)
+ 	if (end <= start)
+ 		return;
+ 
+-	set_memory_ro(start, (end - start) >> PAGE_SHIFT);
++	set_memory_ro(start, __pa(start), (end - start) >> PAGE_SHIFT);
+ 
+ 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ 	       (end - start) >> 10);
+@@ -665,10 +665,10 @@ void mark_rodata_ro(void)
+ 
+ #ifdef CONFIG_CPA_DEBUG
+ 	printk(KERN_INFO "Testing CPA: undo %lx-%lx\n", start, end);
+-	set_memory_rw(start, (end-start) >> PAGE_SHIFT);
++	set_memory_rw(start, __pa(start), (end-start) >> PAGE_SHIFT);
+ 
+ 	printk(KERN_INFO "Testing CPA: again\n");
+-	set_memory_ro(start, (end-start) >> PAGE_SHIFT);
++	set_memory_ro(start, __pa(start), (end-start) >> PAGE_SHIFT);
+ #endif
+ }
+ #endif
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -788,7 +788,7 @@ void free_init_pages(char *what, unsigne
+ 	 */
+ 	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
+ 		begin, PAGE_ALIGN(end));
+-	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
++	set_memory_np(begin, __pa(begin), (end - begin) >> PAGE_SHIFT);
+ #else
+ 	unsigned long addr;
+ 
+@@ -797,7 +797,7 @@ void free_init_pages(char *what, unsigne
+ 	 * we are going to free part of that, we need to make that
+ 	 * writeable first.
+ 	 */
+-	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
++	set_memory_rw(begin, __pa(begin), (end - begin) >> PAGE_SHIFT);
+ 
+ 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
+ 		ClearPageReserved(virt_to_page(addr));
 
->>  cpuclass-$(CONFIG_M68328)	:= 68328
->>  cpuclass-$(CONFIG_M68EZ328)	:= 68328
->>  cpuclass-$(CONFIG_M68VZ328)	:= 68328
->> diff -Naurp linux-2.6.24/arch/m68knommu/platform/5307/Makefile linux-2.6.24.1/arch/m68knommu/platform/5307/Makefile
->> --- linux-2.6.24/arch/m68knommu/platform/5307/Makefile	2008-01-25 08:58:37.000000000 +1000
->> +++ linux-2.6.24.1/arch/m68knommu/platform/5307/Makefile	2008-01-31 16:35:54.000000000 +1000
->> @@ -16,17 +16,5 @@ ifdef CONFIG_FULLDEBUG
->>  EXTRA_AFLAGS += -DDEBUGGER_COMPATIBLE_CACHE=1
->>  endif
-> 
-> Please use:
-> asflags-y := -DDEBUGGER_COMPATIBLE_CACHE=1
-> 
-> I know you did not change that line - but wanted to comment it anyway.
-
-Ok, I'll generate a separate patch for that.
-
-Thanks
-Greg
-
-
-
->> diff -Naurp linux-2.6.24/arch/m68knommu/platform/coldfire/Makefile linux-2.6.24.1/arch/m68knommu/platform/coldfire/Makefile
->> --- linux-2.6.24/arch/m68knommu/platform/coldfire/Makefile	1970-01-01 10:00:00.000000000 +1000
->> +++ linux-2.6.24.1/arch/m68knommu/platform/coldfire/Makefile	2008-01-31 16:35:13.000000000 +1000
->> @@ -0,0 +1,32 @@
->> +#
->> +# Makefile for the m68knommu kernel.
->> +#
->> +
->> +#
->> +# If you want to play with the HW breakpoints then you will
->> +# need to add define this,  which will give you a stack backtrace
->> +# on the console port whenever a DBG interrupt occurs. You have to
->> +# set up you HW breakpoints to trigger a DBG interrupt:
->> +#
->> +# EXTRA_CFLAGS += -DTRAP_DBG_INTERRUPT
->> +# EXTRA_AFLAGS += -DTRAP_DBG_INTERRUPT
->> +#
->> +
->> +ifdef CONFIG_FULLDEBUG
->> +AFLAGS += -DDEBUGGER_COMPATIBLE_CACHE=1
->> +endif
-> 
-> Please use:
-> asflags-$(CONFIG_FULL_DEBUG) := -DDEBUGGER_COMPATIBLE_CACHE=1
-> 
->> +
->> +obj-$(CONFIG_COLDFIRE)	+= dma.o entry.o vectors.o
->> +obj-$(CONFIG_M5206)	+= timers.o
->> +obj-$(CONFIG_M5206e)	+= timers.o
->> +obj-$(CONFIG_M520x)	+= pit.o
->> +obj-$(CONFIG_M523x)	+= pit.o
->> +obj-$(CONFIG_M5249)	+= timers.o
->> +obj-$(CONFIG_M527x)	+= pit.o
->> +obj-$(CONFIG_M5272)	+= timers.o
->> +obj-$(CONFIG_M528x)	+= pit.o
->> +obj-$(CONFIG_M5307)	+= timers.o
->> +obj-$(CONFIG_M532x)	+= timers.o
->> +obj-$(CONFIG_M5407)	+= timers.o
->> +
->> +extra-y := head.o
-> 
-> 	Sam
-> 
-
-
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
