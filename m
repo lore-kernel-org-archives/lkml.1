@@ -1,53 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbYBAXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbYBAXnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762621AbYBAXfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 18:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759603AbYBAXfa
+	id S1762104AbYBAXnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 18:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760170AbYBAXnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 18:35:30 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56156 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759558AbYBAXfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 18:35:30 -0500
-Date: Fri, 1 Feb 2008 17:35:28 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/4] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080201233528.GE12099@sgi.com>
-References: <20080201050439.009441434@sgi.com> <20080201050623.344041545@sgi.com> <20080201220952.GA3875@sgi.com> <Pine.LNX.4.64.0802011517430.20608@schroedinger.engr.sgi.com>
+	Fri, 1 Feb 2008 18:43:03 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56992 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759896AbYBAXnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 18:43:02 -0500
+Date: Sat, 2 Feb 2008 00:43:15 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Sterba <dsterba@suse.cz>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jkosina@suse.cz, benm@symmetric.co.nz, stephen@symmetric.co.nz
+Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
+Message-ID: <20080201234315.GA1761@elf.ucw.cz>
+References: <20080128171929.GA3906@ds.suse.cz> <20080130134046.GB5139@elf.ucw.cz> <200802011621.27239.dsterba@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802011517430.20608@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200802011621.27239.dsterba@suse.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01, 2008 at 03:19:32PM -0800, Christoph Lameter wrote:
-> On Fri, 1 Feb 2008, Robin Holt wrote:
-> 
-> > We are getting this callout when we transition the pte from a read-only
-> > to read-write.  Jack and I can not see a reason we would need that
-> > callout.  It is causing problems for xpmem in that a write fault goes
-> > to get_user_pages which gets back to do_wp_page that does the callout.
-> 
-> Right. You placed it there in the first place. So we can drop the code 
-> from do_wp_page?
+Hi!
 
-No, we need a callout when we are becoming more restrictive, but not
-when becoming more permissive.  I would have to guess that is the case
-for any of these callouts.  It is for both GRU and XPMEM.  I would
-expect the same is true for KVM, but would like a ruling from Andrea on
-that.
+> > > +static irqreturn_t ipwireless_handle_v1_interrupt(int irq,
+> > > +						  struct ipw_hardware *hw)
+> > > +{
+> > > +	unsigned short irqn;
+> > > +	unsigned short ack;
+> > > +
+> > > +	irqn = inw(hw->base_port + IOIR);
+> > > +
+> > > +	/* Check if card is present */
+> > > +	if (irqn == (unsigned short) 0xFFFF) {
+> > > +		if (++hw->bad_interrupt_count >= 100) {
+> > > +			/*
+> > > +			 * It is necessary to disable the interrupt at this
+> > > +			 * point, or the kernel hangs, interrupting repeatedly
+> > > +			 * forever.
+> > > +			 */
+> > > +			hw->irq = irq;
+> > > +			hw->removed = 1;
+> > > +			disable_irq_nosync(irq);
+> > > +			printk(KERN_DEBUG IPWIRELESS_PCCARD_NAME
+> > > +					": Mr. Fluffy is not happy!\n");
+> > > +		}
+> > > +		return IRQ_HANDLED;
+> >
+> > Not sure how this is supposed to work. If you assume unshared
+> > interrupts, it should be possible to return something and make core
+> > care.
+> >
+> > If you are assuming shared interrupts, either you should disable on
+> > first 0xFFFF (are you sure cast is needed, btw?), or not at all,
+> > because it could be the other device sedning you 100 of those...
+> >
+> > ...so which one is it?
+> 
+> Shared. It'll check if device has interrupt pending, else exit.
 
-Thanks,
-Robin
+can you remove bad_interrupt_count? It seems very random in presence
+of shared interrupt.
+
+> > > +static int config_ipwireless(struct ipw_dev *ipw)
+> > > +{
+> > > +	struct pcmcia_device *link = ipw->link;
+> > > +	int ret;
+> > > +	config_info_t conf;
+> > > +	tuple_t tuple;
+> > > +	unsigned short buf[64];
+> > > +	cisparse_t parse;
+> > > +	unsigned short cor_value;
+> > > +	win_req_t reqAM;
+> > > +	win_req_t reqCM;
+> >
+> > Hiding structs BehindTypedefsIsEvil.
+> 
+> Unfortunatelly PCMCIA subsystem is full of these and all drivers use them. 
+> I'll stay consistent for now.
+
+Sorry if they were not yours.
+
+> Updated patch v4 will follow.
+
+Thanks!
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
