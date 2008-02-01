@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762526AbYBAX1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762394AbYBAX3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762526AbYBAX1Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 18:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbYBAX1Q
+	id S1762394AbYBAX3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 18:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761631AbYBAX3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 18:27:16 -0500
-Received: from lixom.net ([66.141.50.11]:34636 "EHLO mail.lixom.net"
+	Fri, 1 Feb 2008 18:29:03 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33292 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761315AbYBAX1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 18:27:14 -0500
-Date: Fri, 1 Feb 2008 17:27:41 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Build error on PowerPC
-Message-ID: <20080201232741.GA7853@lixom.net>
-References: <1201866279.6218.187.camel@violet>
+	id S1761588AbYBAX3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 18:29:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
+Date: Sat, 2 Feb 2008 00:26:53 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Steven Rostedt" <srostedt@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200801272229.48955.rjw@sisk.pl> <20080201224852.GA16700@elte.hu> <b647ffbd0802011522y3d4d779ambaf1a21f368ef74a@mail.gmail.com>
+In-Reply-To: <b647ffbd0802011522y3d4d779ambaf1a21f368ef74a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1201866279.6218.187.camel@violet>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200802020026.55427.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Saturday, 2 of February 2008, Dmitry Adamushko wrote:
+> On 01/02/2008, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+> >
+> > > > I've observed delays from ~3 s. up to ~8 s. (out of ~20 tests) so
+> > > > the 10s. delay of msleep_interruptible() might be related but I'm
+> > > > still looking for the reason why this fix helps (and what goes wrong
+> > > > with the current code).
+> > >
+> > > heh... it's pretty obvious indeed. What's msleep_interruptible() is
+> > > all about? :-)
+> > >
+> > > "sleep waiting for signals"
+> > >
+> > > so the 'watchdog' thread gets woken up
+> > >
+> > > [ as a result of cpu_callback(action = CPU_DEAD) --> kthread_stop() ]
+> > >
+> > > just to be immediately scheduled out again for as long as the
+> > > remaining timeout > 0.
+> > >
+> > > So it should work if we substitute msleep_interruptible() with
+> > > schedule_timeout_interruptible().
+> >
+> > Doh. Could someone with ths problem please test the patch below, does it
+> > do the trick?
+> 
+> yeah, I was already on a half-way to check it out.
+> 
+> It does fix a problem for me.
+> 
+> Don't forget to take along these 2 fixes from Peter's patch:
+> 
+> - fix break usage in do_each_thread() { } while_each_thread().
+> - fix the hotplug switch stmt, a fall-through case was broken.
+> 
+> 
+> Rafael, does your system still hangs? I'd expect, yes -- as
+> effectively this fix is not that different from Peter's one when it
+> comes to suspend-case.
 
-Please define what kernel version and what config you're trying to
-build.
-
-Also, please cc linuxppc-dev@ozlabs.org for powerpc issues.
-
+I haven't tested it yet, but I don't expect it to hang, as the Peter's patch
+started to work for me.  I'm going to test it in a while.
 
 Thanks,
-
-Olof
-
-On Fri, Feb 01, 2008 at 12:44:39PM +0100, Marcel Holtmann wrote:
-> Hi,
-> 
-> I get the following build error on PowerPC:
-> 
->   CC [M]  sound/ppc/awacs.o
-> In file included from sound/ppc/awacs.c:25:
-> include/asm/nvram.h:62: error: field ???partition??? has incomplete type
-> make[2]: *** [sound/ppc/awacs.o] Error 1
-> make[1]: *** [sound/ppc] Error 2
-> make: *** [sound] Error 2
-> 
-> Regards
-> 
-> Marcel
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Rafael
