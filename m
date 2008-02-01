@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763607AbYBAHem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763740AbYBAHe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763607AbYBAHem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYBAHef
+	id S1763740AbYBAHe6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763545AbYBAHem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:34:35 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:47339 "EHLO snapgear.com"
+	Fri, 1 Feb 2008 02:34:42 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:47342 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751547AbYBAHee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:34:34 -0500
-Date: Fri, 1 Feb 2008 17:34:04 +1000
+	id S1762345AbYBAHel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:34:41 -0500
+Date: Fri, 1 Feb 2008 17:34:08 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200802010734.m117Y4KR022573@goober>
+Message-Id: <200802010734.m117Y8sF022576@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: platform setup for 5206 ColdFire parts
+Subject: [M68KNOMMU]: platform setup for 5206e ColdFire parts
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch to platform style configuration for 5206 ColdFire parts.
-Initial support is for the UARTs. DMA support moved to common code
-for all ColdFire parts.
+Switch to platform style configuration for 5206e ColdFire parts.
+Initial support is for the UARTs. DMA support is moved to common code.
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
 
-diff -Naurp linux-2.6.24/arch/m68knommu/platform/5206/config.c linux-2.6.24-uc0/arch/m68knommu/platform/5206/config.c
---- linux-2.6.24/arch/m68knommu/platform/5206/config.c	2008-01-25 08:58:37.000000000 +1000
-+++ linux-2.6.24-uc0/arch/m68knommu/platform/5206/config.c	2008-01-11 13:37:38.000000000 +1000
-@@ -13,12 +13,11 @@
+diff -Naurp linux-2.6.24/arch/m68knommu/platform/5206e/config.c linux-2.6.24-uc0/arch/m68knommu/platform/5206e/config.c
+--- linux-2.6.24/arch/m68knommu/platform/5206e/config.c	2008-01-25 08:58:37.000000000 +1000
++++ linux-2.6.24-uc0/arch/m68knommu/platform/5206e/config.c	2008-01-11 13:37:38.000000000 +1000
+@@ -10,8 +10,9 @@
+ 
+ #include <linux/kernel.h>
  #include <linux/param.h>
- #include <linux/init.h>
++#include <linux/init.h>
  #include <linux/interrupt.h>
 -#include <asm/dma.h>
 +#include <linux/io.h>
  #include <asm/machdep.h>
  #include <asm/coldfire.h>
--#include <asm/mcftimer.h>
  #include <asm/mcfsim.h>
--#include <asm/mcfdma.h>
-+#include <asm/mcfuart.h>
- 
- /***************************************************************************/
- 
-@@ -26,15 +25,51 @@ void coldfire_reset(void);
+@@ -23,15 +24,51 @@ void coldfire_reset(void);
  
  /***************************************************************************/
  
@@ -55,7 +50,7 @@ diff -Naurp linux-2.6.24/arch/m68knommu/platform/5206/config.c linux-2.6.24-uc0/
 -unsigned int   dma_base_addr[MAX_M68K_DMA_CHANNELS] = {
 -        MCF_MBAR + MCFDMA_BASE0,
 -        MCF_MBAR + MCFDMA_BASE1,
-+static struct mcf_platform_uart m5206_uart_platform[] = {
++static struct mcf_platform_uart m5206e_uart_platform[] = {
 +	{
 +		.mapbase	= MCF_MBAR + MCFUART_BASE1,
 +		.irq		= 73,
@@ -68,14 +63,14 @@ diff -Naurp linux-2.6.24/arch/m68knommu/platform/5206/config.c linux-2.6.24-uc0/
  };
  
 -unsigned int dma_device_address[MAX_M68K_DMA_CHANNELS];
-+static struct platform_device m5206_uart = {
++static struct platform_device m5206e_uart = {
 +	.name			= "mcfuart",
 +	.id			= 0,
-+	.dev.platform_data	= m5206_uart_platform,
++	.dev.platform_data	= m5206e_uart_platform,
 +};
 +
-+static struct platform_device *m5206_devices[] __initdata = {
-+	&m5206_uart,
++static struct platform_device *m5206e_devices[] __initdata = {
++	&m5206e_uart,
 +};
 +
 +/***************************************************************************/
@@ -93,18 +88,18 @@ diff -Naurp linux-2.6.24/arch/m68knommu/platform/5206/config.c linux-2.6.24-uc0/
 +	}
 +}
 +
-+static void __init m5206_uarts_init(void)
++static void __init m5206e_uarts_init(void)
 +{
-+	const int nrlines = ARRAY_SIZE(m5206_uart_platform);
++	const int nrlines = ARRAY_SIZE(m5206e_uart_platform);
 +	int line;
 +
 +	for (line = 0; (line < nrlines); line++)
-+		m5206_uart_init_line(line, m5206_uart_platform[line].irq);
++		m5206e_uart_init_line(line, m5206e_uart_platform[line].irq);
 +}
  
  /***************************************************************************/
  
-@@ -88,10 +123,21 @@ int mcf_timerirqpending(int timer)
+@@ -85,7 +122,7 @@ int mcf_timerirqpending(int timer)
  
  /***************************************************************************/
  
@@ -112,15 +107,16 @@ diff -Naurp linux-2.6.24/arch/m68knommu/platform/5206/config.c linux-2.6.24-uc0/
 +void __init config_BSP(char *commandp, int size)
  {
  	mcf_setimr(MCFSIM_IMR_MASKALL);
- 	mach_reset = coldfire_reset;
+ 
+@@ -99,3 +136,14 @@ void config_BSP(char *commandp, int size
  }
  
  /***************************************************************************/
 +
 +static int __init init_BSP(void)
 +{
-+	m5206_uarts_init();
-+	platform_add_devices(m5206_devices, ARRAY_SIZE(m5206_devices));
++	m5206e_uarts_init();
++	platform_add_devices(m5206e_devices, ARRAY_SIZE(m5206e_devices));
 +	return 0;
 +}
 +
