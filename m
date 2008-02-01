@@ -1,73 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYBATPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYBATPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbYBATPN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 14:15:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbYBATOU
+	id S1756771AbYBATPl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 14:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbYBATOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 14:14:20 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:33102 "EHLO relay.sgi.com"
+	Fri, 1 Feb 2008 14:14:21 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:39163 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754723AbYBATOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 14:14:17 -0500
-Date: Fri, 1 Feb 2008 11:14:16 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/4] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080201104959.GJ26420@sgi.com>
-Message-ID: <Pine.LNX.4.64.0802011113390.18163@schroedinger.engr.sgi.com>
-References: <20080201050439.009441434@sgi.com> <20080201050623.344041545@sgi.com>
- <20080201104959.GJ26420@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754731AbYBATOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 14:14:18 -0500
+Message-Id: <20080201191415.143702000@sgi.com>
+References: <20080201191414.961558000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 01 Feb 2008 11:14:15 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] generic: Percpu infrastructure to rebase the per cpu area to zero
+Content-Disposition: inline; filename=zero_based_infrastructure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Argh. Did not see this soon enougn. Maybe this one is better since it 
-avoids the additional unlocks?
+    * Support an option
 
-On Fri, 1 Feb 2008, Robin Holt wrote:
+	CONFIG_HAVE_ZERO_BASED_PER_CPU
 
-> do_wp_page can reach the _end callout without passing the _begin
-> callout.  This prevents making the _end unles the _begin has also
-> been made.
-> 
-> Index: mmu_notifiers-cl-v5/mm/memory.c
-> ===================================================================
-> --- mmu_notifiers-cl-v5.orig/mm/memory.c	2008-02-01 04:44:03.000000000 -0600
-> +++ mmu_notifiers-cl-v5/mm/memory.c	2008-02-01 04:46:18.000000000 -0600
-> @@ -1564,7 +1564,7 @@ static int do_wp_page(struct mm_struct *
->  {
->  	struct page *old_page, *new_page;
->  	pte_t entry;
-> -	int reuse = 0, ret = 0;
-> +	int reuse = 0, ret = 0, invalidate_started = 0;
->  	int page_mkwrite = 0;
->  	struct page *dirty_page = NULL;
->  
-> @@ -1649,6 +1649,8 @@ gotten:
->  
->  	mmu_notifier(invalidate_range_begin, mm, address,
->  				address + PAGE_SIZE, 0);
-> +	invalidate_started = 1;
-> +
->  	/*
->  	 * Re-check the pte - we dropped the lock
->  	 */
-> @@ -1687,7 +1689,8 @@ gotten:
->  		page_cache_release(old_page);
->  unlock:
->  	pte_unmap_unlock(page_table, ptl);
-> -	mmu_notifier(invalidate_range_end, mm,
-> +	if (invalidate_started)
-> +		mmu_notifier(invalidate_range_end, mm,
->  				address, address + PAGE_SIZE, 0);
->  	if (dirty_page) {
->  		if (vma->vm_file)
-> 
+      that makes offsets for per cpu variables to start at zero.
+
+      If a percpu area starts at zero then:
+
+	-  We do not need RELOC_HIDE anymore
+
+	-  Provides for the future capability of architectures providing
+	   a per cpu allocator that returns offsets instead of pointers.
+	   The offsets would be independent of the processor so that
+	   address calculations can be done in a processor independent way.
+	   Per cpu instructions can then add the processor specific offset
+	   at the last minute possibly in an atomic instruction.
+
+      The data the linker provides is different for zero based percpu segments:
+
+	__per_cpu_load	-> The address at which the percpu area was loaded
+	__per_cpu_size	-> The length of the per cpu area
+
+      For non-zero-based percpu segments, the above symbols are adjusted to
+      maintain compatibility with existing architectures.
+
+    * Removes the &__per_cpu_x in lockdep. The __per_cpu_x are already
+      pointers. There is no need to take the address.
+
+Based on linux-2.6.git + x86.git
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ include/asm-generic/percpu.h      |    5 +++++
+ include/asm-generic/sections.h    |   10 ++++++++++
+ include/asm-generic/vmlinux.lds.h |   14 ++++++++++++++
+ kernel/lockdep.c                  |    4 ++--
+ kernel/module.c                   |   10 ++++------
+ 5 files changed, 35 insertions(+), 8 deletions(-)
+
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -43,7 +43,12 @@ extern unsigned long __per_cpu_offset[NR
+  * Only S390 provides its own means of moving the pointer.
+  */
+ #ifndef SHIFT_PERCPU_PTR
++#ifndef CONFIG_HAVE_ZERO_BASED_PER_CPU
+ #define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++#else
++#define SHIFT_PERCPU_PTR(__p, __offset) \
++	((__typeof(__p))(((void *)(__p)) + (__offset)))
++#endif
+ #endif
+ 
+ /*
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -11,7 +11,17 @@ extern char _sinittext[], _einittext[];
+ extern char _sextratext[] __attribute__((weak));
+ extern char _eextratext[] __attribute__((weak));
+ extern char _end[];
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++extern char __per_cpu_load[];
++extern char ____per_cpu_size[];
++#define __per_cpu_size ((unsigned long)&____per_cpu_size)
++#define __per_cpu_start ((char *)0)
++#define __per_cpu_end ((char *)__per_cpu_size)
++#else
+ extern char __per_cpu_start[], __per_cpu_end[];
++#define __per_cpu_load __per_cpu_start
++#define __per_cpu_size (__per_cpu_end - __per_cpu_start)
++#endif
+ extern char __kprobes_text_start[], __kprobes_text_end[];
+ extern char __initdata_begin[], __initdata_end[];
+ extern char __start_rodata[], __end_rodata[];
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -341,6 +341,19 @@
+   	*(.initcall7.init)						\
+   	*(.initcall7s.init)
+ 
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++#define PERCPU(align)							\
++	. = ALIGN(align);						\
++	percpu : { } :percpu						\
++	__per_cpu_load = .;						\
++	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
++		*(.data.percpu)						\
++		*(.data.percpu.shared_aligned)				\
++		____per_cpu_size = .;					\
++	}								\
++	. = __per_cpu_load + ____per_cpu_size;				\
++	data : { } :data
++#else
+ #define PERCPU(align)							\
+ 	. = ALIGN(align);						\
+ 	__per_cpu_start = .;						\
+@@ -349,3 +362,4 @@
+ 		*(.data.percpu.shared_aligned)				\
+ 	}								\
+ 	__per_cpu_end = .;
++#endif
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -609,8 +609,8 @@ static int static_obj(void *obj)
+ 	 * percpu var?
+ 	 */
+ 	for_each_possible_cpu(i) {
+-		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
+-		end   = (unsigned long) &__per_cpu_start + PERCPU_ENOUGH_ROOM
++		start = (unsigned long) __per_cpu_start + per_cpu_offset(i);
++		end   = (unsigned long) __per_cpu_start + PERCPU_ENOUGH_ROOM
+ 					+ per_cpu_offset(i);
+ 
+ 		if ((addr >= start) && (addr < end))
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -45,6 +45,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/semaphore.h>
+ #include <asm/cacheflush.h>
++#include <asm/sections.h>
+ #include <linux/license.h>
+ 
+ #if 0
+@@ -344,9 +345,6 @@ static inline unsigned int block_size(in
+ 	return val;
+ }
+ 
+-/* Created by linker magic */
+-extern char __per_cpu_start[], __per_cpu_end[];
+-
+ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ 			     const char *name)
+ {
+@@ -360,7 +358,7 @@ static void *percpu_modalloc(unsigned lo
+ 		align = PAGE_SIZE;
+ 	}
+ 
+-	ptr = __per_cpu_start;
++	ptr = __per_cpu_load;
+ 	for (i = 0; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+ 		/* Extra for alignment requirement. */
+ 		extra = ALIGN((unsigned long)ptr, align) - (unsigned long)ptr;
+@@ -395,7 +393,7 @@ static void *percpu_modalloc(unsigned lo
+ static void percpu_modfree(void *freeme)
+ {
+ 	unsigned int i;
+-	void *ptr = __per_cpu_start + block_size(pcpu_size[0]);
++	void *ptr = __per_cpu_load + block_size(pcpu_size[0]);
+ 
+ 	/* First entry is core kernel percpu data. */
+ 	for (i = 1; i < pcpu_num_used; ptr += block_size(pcpu_size[i]), i++) {
+@@ -446,7 +444,7 @@ static int percpu_modinit(void)
+ 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
+ 			    GFP_KERNEL);
+ 	/* Static in-kernel percpu data (used). */
+-	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
++	pcpu_size[0] = -__per_cpu_size;
+ 	/* Free room. */
+ 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
+ 	if (pcpu_size[1] < 0) {
+
+-- 
