@@ -1,121 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbYBAIW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbYBAIY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbYBAIW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 03:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYBAIWr
+	id S1755850AbYBAIY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 03:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYBAIYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 03:22:47 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:60671 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbYBAIWp (ORCPT
+	Fri, 1 Feb 2008 03:24:21 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:25921 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750867AbYBAIYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 03:22:45 -0500
+	Fri, 1 Feb 2008 03:24:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
-        b=PA9/TJNBxz9k2PvgGjTbRO4TlnRPOFDJ9zRix56mtFB87lYt3m+AqeIYv4xb7d2CzGofJ3YHwXfD6APPPx6uSn/hUBEQ4N7Kwb3Klle2+u1vZdDqGGySMLWuXGedCych7N+Xmo/dUZQtDWth0GiEvw1Epqmzu5hBm54QDA8CpBM=
-Date: Fri, 1 Feb 2008 09:21:52 +0100
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 0/32] ide-tape redux v1
-Message-ID: <20080201082152.GE4500@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1201423312-2460-1-git-send-email-bbpetkov@yahoo.de> <200801272045.40712.bzolnier@gmail.com> <20080128054343.GB3074@gollum.tnic> <200801300129.56003.bzolnier@gmail.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=e9NVSe4FA9dP56JswL3tWVIFbw7tGQX+0Su1HdRnpdCt32GUISzv/rj3R6FPVewATFCd/D24MiPxAhQ7s3535pvyiwx6XSCEC6oxg7lNNobkUswNM54mxtziS1JDgij9kRUdyoquiyMOjV0wbs0A3r23sRWxEz8y/LUOo9uW0Lg=
+Message-ID: <3fd7d7a70802010024q22b4d179mf56e6d4b60e4f574@mail.gmail.com>
+Date: Fri, 1 Feb 2008 17:24:17 +0900
+From: "Kenichi Okuyama" <kenichi.okuyama@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [patch] NULL pointer check for vma->vm_mm
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080131235544.346b938a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801300129.56003.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Borislav Petkov <petkovbb@googlemail.com>
+References: <3fd7d7a70801312339p2a142096p83ed286c81379728@mail.gmail.com>
+	 <20080131235544.346b938a.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 01:29:55AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Monday 28 January 2008, Borislav Petkov wrote:
-> > Hi Bart,
-> > 
-> > [...]
-> > 
-> > > > the BKL in idetape_write_release() with finer-grained locking etc, probably also
-> > > > some pipeline improvements, removal of OnStream support, etc. but that'll come
-> > > > later.
-> > > 
-> > > On-Stream support has been long gone but it seems that deprecation
-> > > warning etc. managed to survive.
-> > > 
-> > > w.r.t. to the pipeline-mode: it should be pipelined into /dev/null
-> > > 
-> > > rationale:
-> > > - it is _very_ complex
-> > > - causes errors to be deferred till the next user-space access
-> > > - direct I/O using blk_rq_map_user() will offer superior performance
-> > > 
-> > > the only question is whether to remove it...
-> > 
-> > Well, on the one hand, since the driver is only being maintained we should not
-> > remove code that works. Also, i don't know how many users ide-tape really has
-> > but, would it be worth the trouble at all? Because if nobody's using it, we
-> > could just as well pipe the whole thing into /dev/null.. On the other hand, the
-> 
-> This may be the other alternative... [ there is always libata PATA... ]
-> 
-> If you want to give ide-tape removal a try, go ahead (I suggest starting
-> with adding warning printk() and keeping patch in -mm for some time)...
+Dear Andrew, all,
 
-Well, we don't have any numbers on whether someone is using the driver at all,
-so i probably the best thing we should do is give it a grace period of 1/2 year
-before we get rid of it. In the meantime, let's see how many souls cry out :)
+First of all, thank you for looking at the patch.
 
----
-commit 5b4566d1ed9b050d53d776285da84f8c3cc13d2c
-Author: Borislav Petkov <petkovbb@gmail.com>
-Date:   Fri Feb 1 09:12:02 2008 +0100
+I do agree that if mm is NULL, system will call Oops anyway.
+However, since it's oops, it does not stop the system, nor call kdump.
 
-    ide-tape: schedule driver for removal after 6 months in case it doesn't have
-    any users left.
+By calling BUG_ON(), it'll gives us chance of calling kdump at the first chance.
 
-    Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+Since this is very rare to happen, I thought we should capture the incident
+whenever possible. On other hand, because BUG_ON macro is very light,
+I thought this will not harm any performance...
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 20c4c8b..21d71a9 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -333,3 +333,13 @@ Why:	This driver has been marked obsolete for many years.
- Who:	Stephen Hemminger <shemminger@linux-foundation.org>
- 
- ---------------------------
-+
-+What:	ide-tape driver
-+When:	July 2008
-+Files:	drivers/ide/ide-tape.c
-+Why:	This driver might not have any users anymore and maintaining it for no
-+	reason is an effort no one wants to make.
-+Who:	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Borislav Petkov
-+	<petkovbb@googlemail.com>
-+
-+---------------------------
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index f51712c..fd81f4c 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -3829,6 +3829,11 @@ static int ide_tape_probe(ide_drive_t *drive)
- 	g->fops = &idetape_block_ops;
- 	ide_register_region(g);
- 
-+	printk(KERN_WARNING "It is possible that this driver does not have any"
-+		" users anymore and, as a result, it will be REMOVED soon."
-+		" Please notify Bart <bzolnier@gmail.com> or Boris"
-+		" <petkovbb@gmail.com> in case you still need it.\n");
-+
- 	return 0;
- 
- out_free_tape:
+Forgive me in advance if I was wrong.
+I still think checking mm with BUG_ON here is better than counting on Oops.
+
+best regards,
+
+
+
+2008/2/1, Andrew Morton <akpm@linux-foundation.org>:
+> On Fri, 1 Feb 2008 16:39:07 +0900 "Kenichi Okuyama" <kenichi.okuyama@gmail.com> wrote:
+>
+> > Dear all,
+> >
+> > I was looking at the ./mm/rmap.c .. I found that, in function
+> > "page_referenced_one()",
+> >    struct mm_struct *mm = vma->vm_mm;
+> > was being refererred without NULL check.
+> >
+> > Though I do agree that this works for most of the cases, I thought it
+> > is better to add
+> > BUG_ON() for case of mm being NULL.
+> >
+> > attached is the patch for this
+>
+> If we dereference NULL then the kernel will display basically the same
+> information as would a BUG, and it takes the same action.  So adding a
+> BUG_ON here really doesn't gain us anything.
+>
+> Also, I think vma->vm_mm == 0 is not a valid state, so this just shouldn't
+> happen - the code is OK to assume that a particular invariant is being
+> honoured.
+>
+>
+
 
 -- 
-Regards/Gruﬂ,
-    Boris.
+$B1|;3!!7r0l(B(Kenichi Okuyama) [$BGaGX2q(B: No. 0x00000001]
+URL: http://www.dd.iij4u.or.jp/~okuyamak/
+     http://developer.osdl.jp/projects/doubt/
