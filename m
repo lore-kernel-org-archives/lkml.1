@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbYBAVNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbYBAVNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761236AbYBAVNI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYBAVM4
+	id S1761625AbYBAVNX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 16:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759513AbYBAVM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 1 Feb 2008 16:12:56 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:27390 "HELO
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:27401 "HELO
 	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757600AbYBAVMz (ORCPT
+	by vger.kernel.org with SMTP id S1759309AbYBAVMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Feb 2008 16:12:55 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=MoiKWSf19WbNMeqGdecCLwoIMxXbExczZ+TP+XH+xyz4JW9M6Lv2AVMFuGIt3XohFylpWeululv1tCpm2R62qnyN9yBLAQVX7fgjKj6ftDh7//hFqZxDWLGYTJBXQ4Kx5s0Uq2ey+O9gXs4uVA8TH/1zpdkDREtMJHwd5AWU4d4=  ;
-X-YMail-OSG: 6mwWQfgVM1lBsPytgj_Yk13WDY8.csinB9183Ver3E8lMYq.JUp4ZcSSs7d41d97ck_i9Mys_Q--
+  b=PQwjQFaGuIyNcExJULLDawmEvv/iA1AUryEWa76M4tmyIhhsA4VUkhaqzkqaR+qPedrHOIGyTfsPyYSr2HsRvtdVnpPgO5U0/PyKzzxMYVULzXUeYSMilFthO8gP1k1na3UpG5+lWvZEmGa2LEjtL/tot+Mqc3YPB+zXBZpF6T0=  ;
+X-YMail-OSG: VZe36UMVM1nuIMONynwA_rXaxzMjouGMB7TAW76AM0M90kFp
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.24-git] spi: remove more dev->power.power_state usage
-Date: Fri, 1 Feb 2008 13:03:15 -0800
+Subject: [patch 2.6.24-git] rtc: remove more dev->power.power_state usage
+Date: Fri, 1 Feb 2008 13:08:39 -0800
 User-Agent: KMail/1.9.6
-Cc: spi-devel-general@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>
+Cc: rtc-linux@googlegroups.com, lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802011303.15859.david-b@pacbell.net>
+Message-Id: <200802011308.40200.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -40,60 +40,36 @@ the /sys/devices/.../power/state files (now removed) work better.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/spi/pxa2xx_spi.c |   17 -----------------
- drivers/spi/spi_imx.c    |   11 -----------
- 2 files changed, 28 deletions(-)
+ drivers/rtc/rtc-sa1100.c |   16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
---- at91.orig/drivers/spi/pxa2xx_spi.c	2008-02-01 12:27:39.000000000 -0800
-+++ at91/drivers/spi/pxa2xx_spi.c	2008-02-01 12:28:11.000000000 -0800
-@@ -1526,17 +1526,6 @@ static void pxa2xx_spi_shutdown(struct p
+--- at91.orig/drivers/rtc/rtc-sa1100.c	2008-02-01 12:31:16.000000000 -0800
++++ at91/drivers/rtc/rtc-sa1100.c	2008-02-01 12:32:14.000000000 -0800
+@@ -357,23 +357,15 @@ static int sa1100_rtc_remove(struct plat
+ #ifdef CONFIG_PM
+ static int sa1100_rtc_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+-	if (pdev->dev.power.power_state.event != state.event) {
+-		if (state.event == PM_EVENT_SUSPEND &&
+-		    device_may_wakeup(&pdev->dev))
+-			enable_irq_wake(IRQ_RTCAlrm);
+-
+-		pdev->dev.power.power_state = state;
+-	}
++	if (device_may_wakeup(&pdev->dev))
++		enable_irq_wake(IRQ_RTCAlrm);
+ 	return 0;
  }
  
- #ifdef CONFIG_PM
--static int suspend_devices(struct device *dev, void *pm_message)
--{
--	pm_message_t *state = pm_message;
--
--	if (dev->power.power_state.event != state->event) {
--		dev_warn(dev, "pm state does not match request\n");
--		return -1;
--	}
--
--	return 0;
--}
- 
- static int pxa2xx_spi_suspend(struct platform_device *pdev, pm_message_t state)
+ static int sa1100_rtc_resume(struct platform_device *pdev)
  {
-@@ -1544,12 +1533,6 @@ static int pxa2xx_spi_suspend(struct pla
- 	struct ssp_device *ssp = drv_data->ssp;
- 	int status = 0;
- 
--	/* Check all childern for current power state */
--	if (device_for_each_child(&pdev->dev, &state, suspend_devices) != 0) {
--		dev_warn(&pdev->dev, "suspend aborted\n");
--		return -1;
+-	if (pdev->dev.power.power_state.event != PM_EVENT_ON) {
+-		if (device_may_wakeup(&pdev->dev))
+-			disable_irq_wake(IRQ_RTCAlrm);
+-		pdev->dev.power.power_state = PMSG_ON;
 -	}
--
- 	status = stop_queue(drv_data);
- 	if (status != 0)
- 		return status;
---- at91.orig/drivers/spi/spi_imx.c	2008-02-01 12:27:39.000000000 -0800
-+++ at91/drivers/spi/spi_imx.c	2008-02-01 12:28:30.000000000 -0800
-@@ -1686,17 +1686,6 @@ static void spi_imx_shutdown(struct plat
++	if (device_may_wakeup(&pdev->dev))
++		disable_irq_wake(IRQ_RTCAlrm);
+ 	return 0;
  }
- 
- #ifdef CONFIG_PM
--static int suspend_devices(struct device *dev, void *pm_message)
--{
--	pm_message_t *state = pm_message;
--
--	if (dev->power.power_state.event != state->event) {
--		dev_warn(dev, "pm state does not match request\n");
--		return -1;
--	}
--
--	return 0;
--}
- 
- static int spi_imx_suspend(struct platform_device *pdev, pm_message_t state)
- {
+ #else
