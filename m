@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbYBAUYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbYBAUZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759986AbYBAUYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 15:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbYBAUYK
+	id S1760141AbYBAUZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 15:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbYBAUZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 15:24:10 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54236 "EHLO mail.dvmed.net"
+	Fri, 1 Feb 2008 15:25:22 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:46969 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753834AbYBAUYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 15:24:08 -0500
-Message-ID: <47A37FE5.2060200@garzik.org>
-Date: Fri, 01 Feb 2008 15:24:05 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1755139AbYBAUZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 15:25:20 -0500
+Date: Fri, 1 Feb 2008 20:25:18 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+Message-ID: <20080201202518.GJ18688@csn.ul.ie>
+References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Are Section mismatches out of control?
-References: <20080201104718.GA11717@uranus.ravnborg.org> <20080201030329.9b760777.akpm@linux-foundation.org> <47A34C47.9040306@garzik.org> <20080201201713.GA15905@uranus.ravnborg.org>
-In-Reply-To: <20080201201713.GA15905@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080201200518.174050@gmx.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> One can ignore or one can fix...
-> I decided to spend some of my friday on fixing section mismatch
-> warnings as I've got a bit irritated over people spending time
-> complaining but failing to provide patches.
+On (01/02/08 21:05), Gerhard Pircher didst pronounce:
+> 
+> -------- Original-Nachricht --------
+> > Datum: Fri, 1 Feb 2008 19:11:19 +0000
+> > Von: Mel Gorman <mel@csn.ul.ie>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > CC: linux-kernel@vger.kernel.org
+> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+> 
+> > With this patch, early boot would use pages from lower PFNs. Without the
+> > patch, it would use memory from higher PFNs. That is the only real
+> > difference.
+> > 
+> > 1. Is there any chance that all of your memory is not being properly
+> >    initialised?
+> Do you mean uninitialized hardware? That shouldn't be a problem, since
+> older kernels (e.g. 2.6.19 with platform patches for arch/ppc) are running
+> fine.
+> 
 
-> 	Sam - who expected more people to actually fix this stuff :-(
+I meant uninitialised memory but I also wonder could something like this
+happen if you are trying to use memory that doesn't exist. i.e. you are
+trying to access more memory than you really have but you indicate later
+that this is not the case.
 
-Well, with due respect, it's a bit presumptuous to add a bunch of 
-warnings to the kernel build (due to more strict checking), and then get 
-annoyed when people aren't jumping up and fixing this stuff immediately.
+> > 2. Any chance of seeing a dmesg log?
+> That's a little bit of a problem. The kernel log in memory doesn't show
+> any kernel oops, but is also fragmented (small fragments seem to have been
+> overwritten with 0x0).
 
-There were no build complaints in 2.6.24 for my stuff (libata and 
-drivers/net) during my test builds, nor were there any for my 2.6.25-git 
-merge window pushes, nor were there any complaints when I last checked 
-Andrew's -mm tree.
+err, that doesn't sound very healthy.
 
-So from our perspective, you dumped a lot of work in our laps from out 
-of the blue, getting irritated at us along the way.
+> I could extract it by using the U-boot firmware,
+> but that takes some time, as the serial console is not yet working.
+> I tried to boot the kernel with 512MB and 1.5GB RAM. The amount of memory
+> doesn't have any effect and the amount of memory is reported correctly
+> in the kernel log.
+> 
+> > 3. If you boot with the patch reverted and then do something to consume
+> > all memory like build loads of kernel trees simultaneously, do you see
+> > any problems?
+> Well, I can't answer this question. The kernel currently locks up when
+> loading the INIT program. But that is another problem (I still have to
+> bisect it) and doesn't seem to be related to this problem.
 
-Maybe we can resolve this in a more kinder, gentler, coordinated 
-fashion?  :)
+INIT would be the first MOVABLE allocation so it would be using memory
+at the end of the physical adddress range. i.e. the crash happens when
+memory towards the end and the only difference between the patch applied
+and reverted is when it happens.
 
-What could be done to prevent this sort of situation in the future? 
-Maybe add these checks to -mm, and then not push your strict checking 
-upstream until the build noise is reduced?
+Could you try booting with 16MB less memory using mem=?
 
-	Jeff
-
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
