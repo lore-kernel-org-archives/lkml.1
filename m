@@ -1,149 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbYBAMF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764128AbYBAMGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbYBAMF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbYBAMFV
+	id S1764128AbYBAMGj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbYBAMGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:05:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56439 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754801AbYBAMFT (ORCPT
+	Fri, 1 Feb 2008 07:06:31 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:34578 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757527AbYBAMGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:05:19 -0500
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during
-	suspend/hibernation on x86-64 (bisected)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-In-Reply-To: <200801312154.33754.rjw@sisk.pl>
-References: <200801272229.48955.rjw@sisk.pl>
-	 <200801280226.22013.rjw@sisk.pl> <1201795128.32654.22.camel@lappy>
-	 <200801312154.33754.rjw@sisk.pl>
+	Fri, 1 Feb 2008 07:06:30 -0500
+X-YMail-OSG: zk0JZRUVM1kGFNneWEw5NucZPQsnFxP4.tPtFPRjBI2D6gNfWy1YOXQaXdf3XtN4wxoK34qp7ONIZLDVNzxs6p8rP.DzhSS8x1tC9LDKT0hUYR.y9A--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: FUJITA Tomonori <tomof@acm.org>, fujita.tomonori@lab.ntt.co.jp,
+       rdreier@cisco.com, James.Bottomley@hansenpartnership.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Mike Mazarick <mazarick@bellsouth.net>
+In-Reply-To: <e2e108260802010304p304614e9p78b0aca43b24246@mail.gmail.com>
+References: <adazluoe2t3.fsf@cisco.com>
+	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+	 <20080130195635T.tomof@acm.org>
+	 <1201785938.7280.105.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010011n7c539a0bk2aa3c1d0aa6c00a@mail.gmail.com>
+	 <1201862364.11265.267.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802010304p304614e9p78b0aca43b24246@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 01 Feb 2008 13:04:57 +0100
-Message-Id: <1201867497.32654.49.camel@lappy>
+Date: Fri, 01 Feb 2008 04:05:17 -0800
+Message-Id: <1201867517.11265.294.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-01-31 at 21:54 +0100, Rafael J. Wysocki wrote:
-> On Thursday, 31 of January 2008, Peter Zijlstra wrote:
-
-> > I can seem to reproduce this:
-> > 
-> > [root@opteron cpu1]# time echo 0 > online
-> > 
-> > real    0m6.230s
-> > user    0m0.000s
-> > sys     0m0.010s
-> > [root@opteron cpu1]# echo 1 > online
-> > [root@opteron cpu1]# time echo 0 > online
-> > 
-> > real    0m7.966s
-> > user    0m0.000s
-> > sys     0m0.011s
-> > 
-> > 
-> > I'll have a look at it.
+On Fri, 2008-02-01 at 12:04 +0100, Bart Van Assche wrote:
+> On Feb 1, 2008 11:39 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+> >
+> > On Fri, 2008-02-01 at 09:11 +0100, Bart Van Assche wrote:
+> > > On Jan 31, 2008 2:25 PM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+> > > >
+> > > > The PyX storage engine supports a scatterlist linked list algorithm that
+> > > > ...
+> > >
+> > > Which parts of the PyX source code are licensed under the GPL and
+> > > which parts are closed source ? A Google query for PyX + iSCSI showed
+> > > information about licensing deals. Licensing deals can only be closed
+> > > for software that is not entirely licensed under the GPL.
+> > >
+> >
+> > I was using the name PyX to give an historical context to the
+> > discussion. ...
 > 
-> Much appreciated, thanks!
+> Regarding the PyX Target Code: I have found a link via which I can
+> download a free 30-day demo. This means that a company is earning
+> money via this target code and that the source code is not licensed
+> under the GPL. This is fine, but it also means that today the PyX
+> target code is not a candidate for inclusion in the Linux kernel, and
+> that it is unlikely that all of the PyX target code (kernelspace +
+> userspace) will be made available under GPL soon.
+> 
 
-The below fixes it for me..
+All of the kernel and C userspace code is open source and available from
+linux-iscsi.org and licensed under the GPL.  There is the BSD licensed
+code from userspace (iSNS), as well as ISCSI and SCSI MIBs.  As for what
+pieces of code will be going upstream (for kernel and/or userspace), LIO
+Target state machines and SE algoritims are definately some of the best
+examples of GPL code for production IP storage fabric and has gained
+maturity from people and resources applied to it in a number of
+respects.
 
----
- - restore the old wakeup mechanism
- - fix break usage in do_each_thread() { } while_eac_thread().
- - fix the hotplug switch stmt, a fall-through case was broken.
+The LIO stack presents a number of possible options to get the diverse
+amount of hardware and software to work.  Completely dismissing the
+available code is certainly a waste, and there are still significant
+amounts of functionality related to real-time administration, RFC-3720
+MC/S and ERL=2 and generic SE functionality OS storage subsystems that
+only exist in LIO and our assoicated projects.  A one obvious example is
+the LIO-VM project, which brings LIO active-active transport recovery
+and other Linux storage functionality to Vmware and Qemu images that can
+provide target mode IP storage fabric on x86 non-linux based hosts.  A
+first of its kind in the Linux/iSCSI universe.  
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
+Anyways, lets get back to the technical discussion.
 
-diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-index c1d7655..7c2da88 100644
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -101,6 +101,10 @@ void softlockup_tick(void)
- 
- 	now = get_timestamp(this_cpu);
- 
-+	/* Wake up the high-prio watchdog task every second: */
-+	if (now > (touch_timestamp + 1))
-+		wake_up_process(per_cpu(watchdog_task, this_cpu));
-+
- 	/* Warn about unreasonable delays: */
- 	if (now <= (touch_timestamp + softlockup_thresh))
- 		return;
-@@ -191,11 +195,11 @@ static void check_hung_uninterruptible_tasks(int this_cpu)
- 	read_lock(&tasklist_lock);
- 	do_each_thread(g, t) {
- 		if (!--max_count)
--			break;
-+			goto unlock;
- 		if (t->state & TASK_UNINTERRUPTIBLE)
- 			check_hung_task(t, now);
- 	} while_each_thread(g, t);
--
-+ unlock:
- 	read_unlock(&tasklist_lock);
- }
- 
-@@ -218,14 +222,19 @@ static int watchdog(void *__bind_cpu)
- 	 * debug-printout triggers in softlockup_tick().
- 	 */
- 	while (!kthread_should_stop()) {
-+		set_current_state(TASK_INTERRUPTIBLE);
- 		touch_softlockup_watchdog();
--		msleep_interruptible(10000);
-+		schedule();
-+
-+		if (kthread_should_stop())
-+			break;
- 
- 		if (this_cpu != check_cpu)
- 			continue;
- 
- 		if (sysctl_hung_task_timeout_secs)
- 			check_hung_uninterruptible_tasks(this_cpu);
-+
- 	}
- 
- 	return 0;
-@@ -259,13 +268,6 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		wake_up_process(per_cpu(watchdog_task, hotcpu));
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--		if (!per_cpu(watchdog_task, hotcpu))
--			break;
--		/* Unbind so it can run.  Fall thru. */
--		kthread_bind(per_cpu(watchdog_task, hotcpu),
--			     any_online_cpu(cpu_online_map));
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		if (hotcpu == check_cpu) {
-@@ -275,6 +277,14 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 			check_cpu = any_online_cpu(temp_cpu_online_map);
- 		}
- 		break;
-+
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+		if (!per_cpu(watchdog_task, hotcpu))
-+			break;
-+		/* Unbind so it can run.  Fall thru. */
-+		kthread_bind(per_cpu(watchdog_task, hotcpu),
-+			     any_online_cpu(cpu_online_map));
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		p = per_cpu(watchdog_task, hotcpu);
+--nab
 
+> Bart Van Assche.
+> 
 
