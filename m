@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765263AbYBAMZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYBAMdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765263AbYBAMZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 07:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763800AbYBAMZt
+	id S1761328AbYBAMdU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 07:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYBAMdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 07:25:49 -0500
-Received: from www.tglx.de ([62.245.132.106]:44486 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763594AbYBAMZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 07:25:48 -0500
-Date: Fri, 1 Feb 2008 13:25:30 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [0/12] GBPAGES patchkit for 2.6.25 v3
-In-Reply-To: <200802011053.107168490@suse.de>
-Message-ID: <alpine.LFD.1.00.0802011324260.9204@apollo.tec.linutronix.de>
-References: <200802011053.107168490@suse.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 1 Feb 2008 07:33:11 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50312 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753388AbYBAMdK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 07:33:10 -0500
+X-Sasl-enc: +YVjsaQikjnbV/t7X8YOFcxsciDN2X68uym6uIru8Zmq 1201869187
+Message-ID: <47A311F2.2020603@ladisch.de>
+Date: Fri, 01 Feb 2008 13:34:58 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eyal Lebedinsky <eyal@eyal.emu.id.au>
+CC: list linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23.14 snd_hda_intel problem
+References: <47A25998.1000501@eyal.emu.id.au> <47A2DEAC.7000004@ladisch.de> <47A2EEBD.3050705@eyal.emu.id.au>
+In-Reply-To: <47A2EEBD.3050705@eyal.emu.id.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Andi Kleen wrote:
+Eyal Lebedinsky wrote:
+> My /etc/modprobe.conf now contains:
+> 	alias snd-card-0 snd-hda-intel
+> 	options snd-card-0 index=0
+> 	options snd-hda-intel index=0
+> and and I should add
+> 	options snd-usb-audio index=1
+> right?
 
-> 
-> This patchkit implements support for the 1GB pages of AMD Fam10h CPUs 
-> in the kernel direct mapping. 
-> 
-> Change to previous versions:
-> - Incorporated feedback from Thomas Gleixner
-> - Switch direct mapping setup over to set_pte() / pte_pfn()
-> - Split up patches some more
-> 
-> Includes one not strictly required cleanup patch now (the last one) 
+Yes.
 
-I picked them up. Will go through and integrate with other
-changes in this area.
+> Any idea why has this changed between the two minor kernel revisions though?
 
-Thanks,
-	tglx
+Probably nothing.  The exact loading order of USB and PCI driver is
+somewhat random.
+
+
+Regards,
+Clemens
