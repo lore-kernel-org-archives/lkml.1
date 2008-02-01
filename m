@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761727AbYBAV3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbYBAVbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761727AbYBAV3w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 16:29:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759780AbYBAV3l
+	id S1761239AbYBAVbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 16:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758478AbYBAVba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 16:29:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45531 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759283AbYBAV3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 16:29:39 -0500
-Message-ID: <47A38F33.9050505@redhat.com>
-Date: Fri, 01 Feb 2008 16:29:23 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+	Fri, 1 Feb 2008 16:31:30 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:18771 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756399AbYBAVb3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 16:31:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=dlOdoU2/wLSFpiqywnx4HvW/+3sUKpWolRl6nLCabPxwLquawQa3gPhTAGY4NogngHdK7MGHs7qGKzfnUDmazqqNQGoA/c7f2u0lpkDTbLtdQ7M3D8mJ3PhZrV67VOjuVOf3SJ8HOvnSWoZbSs/0IAAWHHUFlkRODGrlqJNGlsg=
+Message-ID: <e9c3a7c20802011331j2064afe5vc6228fe8363e15de@mail.gmail.com>
+Date: Fri, 1 Feb 2008 14:31:28 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
+Subject: Re: crypto/async_tx/* doesn't build on s390
+Cc: heiko.carstens@de.ibm.com, herbert@gondor.apana.org.au, neilb@suse.de,
+       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080201123738.24988af7@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] enhanced NFS ESTALE error handling (v2)
-References: <4790C76F.2050105@redhat.com>  <47A387D9.1070206@redhat.com> <1201900017.11291.43.camel@heimdal.trondhjem.org>
-In-Reply-To: <1201900017.11291.43.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <0C7297FA1D2D244A9C7F6959C0BF1E521D1C6C@azsmsx413.amr.corp.intel.com>
+	 <20080201123738.24988af7@gondolin.boeblingen.de.ibm.com>
+X-Google-Sender-Auth: f667cd398cc58fb8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Fri, 2008-02-01 at 15:58 -0500, Peter Staubach wrote:
->   
->> Hi.
->>
->> The patch enhanced the ESTALE error handling for NFS mounted
->> file systems.  It expands the number of places that the NFS
->> client checks for ESTALE returns from the server.
->>
->> It also enhances the ESTALE handling for directories by
->> occasionally retrying revalidation to check to see whether the
->> directory becomes valid again.  This sounds odd, but can occur
->> when a systems administrator, accidently or unknowingly,
->> unexports a file system which is in use.  All active
->> non-directory files become permanently inaccessible, but
->> directories can be become accessible again after the
->> administrator re-exports the file system.  This is a situation
->> that users have been complaining about for years and this
->> support can help to alleviate their situations.
->>     
+On Feb 1, 2008 4:37 AM, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> On Thu, 31 Jan 2008 12:49:00 -0700,
+> "Williams, Dan J" <dan.j.williams@intel.com> wrote:
 >
-> As far as I can see, this patch can be applied separately from the VFS
-> fixes. If so, would it make sense for me to take charge of this patch in
-> the NFS tree, while Andrew queues up the other two VFS changes in -mm?
+> > I am mistaken, the 'depends on ARCH...' precludes HAS_DMA.  Perhaps the compiler is emitting a call to async_tx_find_channel when it needs to be inline?  On x86 do_async_xor is successfully compiled away when CONFIG_DMA_ENGINE=n.
+>
+> Just checked why it compiled for me on one box but not on the other and
+> found that deactivating CONFIG_SECTION_MISMATCH makes it go away. Hmm...
+>
 
-Yes, I think that this would make good sense.
+Here is what I have come up with as a fix.
 
-    Thanx...
+--
+Dan
 
-       ps
+---
+async_tx: prevent do_async_xor from compiling on !HAS_DMA archs
 
+With the addition of -fno-inline in CONFIG_DEBUG_SECTION_MISMATCH
+do_async_xor is no longer compiled away on !HAS_DMA archs like s390.
+Other async_tx calls to the dma-api are already open coded inline.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+
+ crypto/async_tx/async_xor.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index 2575f67..393f07d 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -41,6 +41,14 @@ do_async_xor(struct dma_async_tx_descriptor *tx,
+struct dma_device *device,
+        enum dma_data_direction dir;
+        int i;
+
++       /* if this function is not inlined we need to prevent
++        * the rest of the routine from compiling on !HAS_DMA
++        * archs
++        */
++       #ifndef CONFIG_DMA_ENGINE
++       return;
++       #endif
++
+        pr_debug("%s: len: %zu\n", __FUNCTION__, len);
+
+        dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
