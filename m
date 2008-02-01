@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765333AbYBALIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765620AbYBALI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765333AbYBALIo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 06:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764435AbYBALIX
+	id S1765620AbYBALI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 06:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764925AbYBALIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 06:08:23 -0500
-Received: from hu-out-0506.google.com ([72.14.214.237]:10079 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764329AbYBALIW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 06:08:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=n4ICB02FtEpLxlhYwPdrvG/de6jiDUbcDfJ4zz2x0ScaLFycP20XcnvCNDIrUrTlPtH92JcX7KeWUyJFursrlyJzEBdW6/FlT0pyLuyKQvgkTIrz45P5CGlNLvVMNfo6Ayc0nZdmSraesbKOK5GVIQ+x8qhgvfVBOKe75v3YSfE=
-Subject: Re: [PATCH] x86: sparse errors from string_32.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080201105624.GD27178@elte.hu>
-References: <1201846516.23523.87.camel@brick>
-	 <20080201105624.GD27178@elte.hu>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 03:07:55 -0800
-Message-Id: <1201864075.23523.106.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 06:08:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41104 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764903AbYBALIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 06:08:34 -0500
+Date: Fri, 1 Feb 2008 12:08:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>
+Subject: Re: [PATCH] fix directory entry in arch-x86-Makefile
+Message-ID: <20080201110816.GH27178@elte.hu>
+References: <Pine.LNX.4.58.0802010011180.10877@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0802010011180.10877@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-01 at 11:56 +0100, Ingo Molnar wrote:
-> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Doing a make randconfig I came across this error in the Makefile.
 > 
-> >  		case 1:
-> > -			*(unsigned char *)s = pattern;
-> > +			*(unsigned char *)s = pattern & 0xff;
-> 
-> i've applied your fix - but wouldnt it be cleaner to just cast the 
-> pattern variable to unsigned char instead?
+> This patch makes a directory out of arch/x86/mach-default for 
+> CONFIG_X86_RDC321X
 
-I'm not sure, I went with this solution because of the explicit length
-being tested in the case statements.  The compiler can see it's all
-constant at this point anyway...if you want a cast-patch instead, just
-ask.
+thanks, applied. (I had the CONFIG_X86_RDC321X sub-arch turned off in my 
+automated testing because it had some GPIO/LEDS related build breakage.)
 
-Harvey
-
+	Ingo
