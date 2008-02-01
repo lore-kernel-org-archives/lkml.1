@@ -1,36 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYBAHdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764902AbYBAHdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbYBAHdP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 02:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYBAHc6
+	id S1764902AbYBAHdc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 02:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbYBAHdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 02:32:58 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:47299 "EHLO snapgear.com"
+	Fri, 1 Feb 2008 02:33:08 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:47300 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754555AbYBAHc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 02:32:57 -0500
-Date: Fri, 1 Feb 2008 17:31:58 +1000
+	id S1758712AbYBAHdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 02:33:07 -0500
+Date: Fri, 1 Feb 2008 17:32:00 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200802010731.m117VwM4022551@goober>
+Message-Id: <200802010732.m117W0Yj022553@goober>
 To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: build support for new ColdFire serial driver
+Subject: [M68KNOMMU]: configure support for new ColdFire serial driver
 Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add build support for new ColdFire serial driver.
+Add configure support for new ColdFire serial driver.
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
---- linux-2.6.24/drivers/serial/Makefile	2008-01-25 08:58:37.000000000 +1000
-+++ linux-2.6.24.1/drivers/serial/Makefile	2008-01-30 21:33:00.000000000 +1000
-@@ -39,6 +39,7 @@
- obj-$(CONFIG_SERIAL_68328) += 68328serial.o
- obj-$(CONFIG_SERIAL_68360) += 68360serial.o
- obj-$(CONFIG_SERIAL_COLDFIRE) += mcfserial.o
-+obj-$(CONFIG_SERIAL_MCF) += mcf.o
- obj-$(CONFIG_V850E_UART) += v850e_uart.o
- obj-$(CONFIG_SERIAL_PMACZILOG) += pmac_zilog.o
- obj-$(CONFIG_SERIAL_LH7A40X) += serial_lh7a40x.o
+--- linux-2.6.24/drivers/serial/Kconfig	2008-01-25 08:58:37.000000000 +1000
++++ linux-2.6.24.1/drivers/serial/Kconfig	2008-01-30 21:34:11.000000000 +1000
+@@ -960,6 +960,30 @@
+ 	  This driver supports the built-in serial ports of the Motorola ColdFire
+ 	  family of CPUs.
+ 
++config SERIAL_MCF
++	bool "Coldfire serial support (new style driver)"
++	depends on COLDFIRE
++	select SERIAL_CORE
++	help
++	  This new serial driver supports the Freescale Coldfire serial ports
++	  using the new serial driver subsystem.
++
++config SERIAL_MCF_BAUDRATE
++	int "Default baudrate for Coldfire serial ports"
++	depends on SERIAL_MCF
++	default 19200
++	help
++	  This setting lets you define what the default baudrate is for the
++	  ColdFire serial ports. The usual default varies from board to board,
++	  and this setting is a way of catering for that.
++
++config SERIAL_MCF_CONSOLE
++	bool "Coldfire serial console support"
++	depends on SERIAL_MCF
++	select SERIAL_CORE_CONSOLE
++	help
++	  Enable a ColdFire internal serial port to be the system console.
++
+ config SERIAL_68360_SMC
+ 	bool "68360 SMC uart support"
+ 	depends on M68360
