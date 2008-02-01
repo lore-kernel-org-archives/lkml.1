@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYBADlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYBADsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759974AbYBADlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 22:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYBADkt
+	id S1760581AbYBADsL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 22:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYBADr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 22:40:49 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37613 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752201AbYBADks (ORCPT
+	Thu, 31 Jan 2008 22:47:56 -0500
+Received: from hu-out-0506.google.com ([72.14.214.238]:46025 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbYBADrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 22:40:48 -0500
-Date: Fri, 1 Feb 2008 09:10:26 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, Ingo Molnar <mingo@elte.hu>,
-       containers@lists.osdl.org, Balbir Singh <balbir@in.ibm.com>, pj@sgi.com
-Subject: Re: [RFC] Default child of a cgroup
-Message-ID: <20080201034026.GA12475@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080131024049.GA9544@linux.vnet.ibm.com> <6599ad830801311839x33cf2ebco9f501571fc129b11@mail.gmail.com>
+	Thu, 31 Jan 2008 22:47:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=mRJekO3w1x3D8YVkbVWsVleO5pUwCXD6Rz5yI+E11iFfu8AEDiC/EYvLvHtQB7/xrKzzRt91qzA10iWhJ8IcCK9NV/uE72S4FS8QGH4Pwq6vz0yoe14f53WKeP6uzZap2A30U9NUF+3553NMHyz1/EG3lmMmVjRoCT6oRuhNfDQ=
+Date: Fri, 1 Feb 2008 11:45:15 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Patch] include/asm-generic/tlb.h: fix a missing header
+Message-ID: <20080201034514.GA2478@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080131145900.GB2471@hacking> <Pine.LNX.4.64.0801311407530.1253@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830801311839x33cf2ebco9f501571fc129b11@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <Pine.LNX.4.64.0801311407530.1253@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 06:39:56PM -0800, Paul Menage wrote:
-> On Jan 30, 2008 6:40 PM, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> >
-> > Here are some questions that arise in this picture:
-> >
-> > 1. What is the relationship of the task-group in A/tasks with the
-> >    task-group in A/a1/tasks? In otherwords do they form siblings
-> >    of the same parent A?
-> 
-> I'd argue the same as Balbir - tasks in A/tasks are are children of A
-> and are siblings of a1, a2, etc.
-> 
-> >
-> > 2. Somewhat related to the above question, how much resource should the
-> >    task-group A/a1/tasks get in relation to A/tasks? Is it 1/2 of parent
-> >    A's share or 1/(1 + N) of parent A's share (where N = number of tasks
-> >    in A/tasks)?
-> 
-> Each process in A should have a scheduler weight that's derived from
-> its static_prio field. Similarly each subgroup of A will have a
-> scheduler weight that's determined by its cpu.shares value. So the cpu
-> share of any child (be it a task or a subgroup) would be equal to its
-> own weight divided by the sum of weights of all children.
-> 
-> So yes, if a task in A forks lots of children, those children could
-> end up getting a disproportionate amount of the CPU compared to tasks
-> in A/a1 - but that's the same as the situation without cgroups. If you
-> want to control cpu usage between different sets of processes in A,
-> they should be in sibling cgroups, not directly in A.
-> 
-> Is there a restriction in CFS that stops a given group from
-> simultaneously holding tasks and sub-groups? If so, couldn't we change
-> CFS to make it possible rather than enforcing awkward restructions on
-> cgroups?
-> 
-> If we really can't change CFS in that way, then an alternative would
-> be similar to Peter's suggestion - make cpu_cgroup_can_attach() fail
-> if the cgroup has children, and make cpu_cgroup_create() fail if the
-> cgroup has any tasks - that way you limit the restriction to just the
-> hierarchy that has CFS attached to it, rather than generically for all
-> cgroups
-> 
-> BTW, I noticed this code in cpu_cgroup_create():
-> 
->         /* we support only 1-level deep hierarchical scheduler atm */
->         if (cgrp->parent->parent)
->                 return ERR_PTR(-EINVAL);
-> 
-> Is anyone working on allowing more levels?
-> 
+On Thu, Jan 31, 2008 at 02:08:31PM -0800, Christoph Lameter wrote:
+>On Thu, 31 Jan 2008, WANG Cong wrote:
+>
+>> index 6ce9f3a..4ebbe15 100644
+>> --- a/include/asm-generic/tlb.h
+>> +++ b/include/asm-generic/tlb.h
+>> @@ -16,6 +16,7 @@
+>>  #include <linux/swap.h>
+>>  #include <linux/quicklist.h>
+>>  #include <asm/tlbflush.h>
+>> +#include <asm/pgalloc.h>
+>
+>Please also remove the #include <linux/quicklist.h>. It should have been 
+>part of 
+>a patch 
+>reversal.
 
-Yes, I am looking at it.
+Please ignore this patch, since Ingo already had the same one.
 
-> Paul
+Thanks!
 
--- 
-regards,
-Dhaval
