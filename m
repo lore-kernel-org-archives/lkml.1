@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYBASTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYBASUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbYBASTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 13:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYBASTO
+	id S1758606AbYBASUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 13:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYBASUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 13:19:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57072 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736AbYBASTN (ORCPT
+	Fri, 1 Feb 2008 13:20:38 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53425 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752628AbYBASUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 13:19:13 -0500
-Message-ID: <47A361C1.20500@zytor.com>
-Date: Fri, 01 Feb 2008 10:15:29 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PATCH/RFC: bzImage payload as compressed ELF file.
-References: <1201560133.17053.36.camel@cthulhu.hellion.org.uk> <20080201131030.GB1477@elte.hu> <47A35F73.7090201@zytor.com>
-In-Reply-To: <47A35F73.7090201@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 1 Feb 2008 13:20:38 -0500
+Date: Fri, 1 Feb 2008 10:19:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Alexey Dobriyan <adobriyan@sw.ru>,
+       Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Pavel Emelyanov <xemul@sw.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Toyo Abe <toyoa@mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] hrtimer_nanosleep: fix *rmtp handling
+Message-Id: <20080201101918.52fa4c50.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802011616000.9204@apollo.tec.linutronix.de>
+References: <20080201133758.GA25623@tv-sign.ru>
+	<20080201142905.GA25833@tv-sign.ru>
+	<alpine.LFD.1.00.0802011616000.9204@apollo.tec.linutronix.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Ingo Molnar wrote:
->> * Ian Campbell <ijc@hellion.org.uk> wrote:
->>
->>> Hi Peter,
->>>
->>> This patch switches the payload of a bzImage file to be in compressed 
->>> ELF format. There are several rough edges which need to be addressed 
->>> before it could go any further but I'd be interested to hear your 
->>> opinion of the general approach before I spend time cleaning it up.
->>>
->>> I'm mainly interested in something along these lines to allow the Xen 
->>> bootloader to load a bzImage so that distros don't have to maintain 
->>> two kernel packages with the same basic bits in different file 
->>> formats, I think it would probably be of use to the kexec and/or 
->>> lguest folks too.
->>
->> this looks quite interesting to me. Peter, what do you think?
->>
-> 
-> Definitely the right thing, let's just get the rough edges taken care 
-> of, in particular the CRC32 bit.
-> 
+On Fri, 1 Feb 2008 16:16:50 +0100 (CET) Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Latest patch looks fine (and is already in the queue), sorry for the noise.
+> On Fri, 1 Feb 2008, Oleg Nesterov wrote:
+> 
+> > (Andrew, the same patch, but re-diffed without the first one in series).
+> 
+> I pick them up and feed them through hrtimer.git, once all bugs are
+> shaken out :)
 
-	-hpa
+Please remember that
+git+ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git#mm
+contains the "hrtimers: use hrtimers so that msleep() sleeps for the
+requested time" patch which kills my USB setup.
+
