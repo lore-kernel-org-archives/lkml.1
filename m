@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbYBARQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759196AbYBARSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759831AbYBARQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 12:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYBARQE
+	id S1759196AbYBARSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 12:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYBARSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 12:16:04 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:48195 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755359AbYBARQB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 12:16:01 -0500
-Subject: Re: [PATCH] drivers/base: export (un)register_memory_notifier
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       Thomas Klein <osstklei@de.ibm.com>,
-       Christoph Raisch <RAISCH@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-In-Reply-To: <200802011716.32511.ossthema@de.ibm.com>
-References: <200802011716.32511.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 09:18:37 -0800
-Message-Id: <1201886317.11808.32.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 12:18:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48729 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754083AbYBARSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 12:18:42 -0500
+Date: Fri, 1 Feb 2008 18:18:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: cleanup - eliminate numbers in LDT allocation code
+Message-ID: <20080201171826.GA13738@elte.hu>
+References: <20080201171422.GA6730@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080201171422.GA6730@cvg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-01 at 17:16 +0100, Jan-Bernd Themann wrote:
-> Drivers like eHEA need memory notifiers in order to 
-> update their internal DMA memory map when memory is added
-> to or removed from the system.
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-> 
-> ---
->  Comment: eHEA patches that exploit these functions will follow
-> 
-> 
->  drivers/base/memory.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index 7ae413f..1e1bd4c 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -52,11 +52,13 @@ int register_memory_notifier(struct notifier_block *nb)
->  {
->          return blocking_notifier_chain_register(&memory_chain, nb);
->  }
-> +EXPORT_SYMBOL(register_memory_notifier);
-> 
->  void unregister_memory_notifier(struct notifier_block *nb)
->  {
->          blocking_notifier_chain_unregister(&memory_chain, nb);
->  }
-> +EXPORT_SYMBOL(unregister_memory_notifier);
-> 
->  /*
->   * register_memory - Setup a sysfs device for a memory block
 
-Is there a reason for not making them EXPORT_SYMBOL_GPL() ?
-Otherwise, looks good to me.
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-I have been planning to send this as part of my next update
-with ppc64 arch-specific remove support and generic __remove_pages()
-support. If this is blocking your work, lets get this in.
+> This patch eliminates numbers in LDT allocation code trying to make it 
+> clear to understand from where these numbers are go
 
-Acked-by: Badari Pulavarty <pbadari@us.ibm.com>
+thanks, applied.
 
-Thanks,
-Badari
+> I hope nobody shoot me ;)
 
+nope, magic constants are bad in general.
+
+	Ingo
