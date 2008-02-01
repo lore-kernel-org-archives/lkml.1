@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbYBAE4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765931AbYBAE5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbYBAE4f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Jan 2008 23:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbYBAEnH
+	id S1765931AbYBAE5O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Jan 2008 23:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbYBAEnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Jan 2008 23:43:07 -0500
-Received: from mga10.intel.com ([192.55.52.92]:38807 "EHLO
+	Thu, 31 Jan 2008 23:43:10 -0500
+Received: from mga10.intel.com ([192.55.52.92]:46275 "EHLO
 	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763337AbYBAEmL (ORCPT
+	with ESMTP id S1763369AbYBAEmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Jan 2008 23:42:11 -0500
+	Thu, 31 Jan 2008 23:42:12 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,288,1199692800"; 
-   d="scan'208";a="511516634"
+   d="scan'208";a="511516637"
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@lists.linux-foundation.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 33/37] Suspend: Add config option to disable the freezer if architecture wants that
-Date: Thu, 31 Jan 2008 23:37:04 -0500
-Message-Id: <16a00d127d8162c859537bbd8cb3934603a7985a.1201840183.git.len.brown@intel.com>
+       Borislav Petkov <bbpetkov@yahoo.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>
+Subject: [PATCH 34/37] Suspend: Clean up suspend_64.c
+Date: Thu, 31 Jan 2008 23:37:05 -0500
+Message-Id: <31210f178861d7584cab1bca12ccd5547194d9eb.1201840183.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.5.4.rc5.16.gc0279
 In-Reply-To: <1201840628-23136-1-git-send-email-lenb@kernel.org>
 References: <1201840628-23136-1-git-send-email-lenb@kernel.org>
@@ -31,127 +31,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Borislav Petkov <bbpetkov@yahoo.de>
 
-This patch makes the freezer optional for suspend to allow the
-system to work (or not work) like the original PMU suspend.
+There's a freakishly long comment in suspend_64.c, shorten it.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/powerpc/Kconfig |    4 ++++
- kernel/power/Kconfig |   11 +++++++++++
- kernel/power/main.c  |    6 +++---
- kernel/power/power.h |   22 ++++++++++++++++++++++
- 4 files changed, 40 insertions(+), 3 deletions(-)
+ arch/x86/kernel/suspend_64.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 824140d..4a22c99 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -405,6 +405,10 @@ config CMDLINE
- 	  most cases you will need to specify the root device here.
+diff --git a/arch/x86/kernel/suspend_64.c b/arch/x86/kernel/suspend_64.c
+index 0919951..7ac7130 100644
+--- a/arch/x86/kernel/suspend_64.c
++++ b/arch/x86/kernel/suspend_64.c
+@@ -140,7 +140,12 @@ static void fix_processor_context(void)
+ 	int cpu = smp_processor_id();
+ 	struct tss_struct *t = &per_cpu(init_tss, cpu);
  
- if !44x || BROKEN
-+config ARCH_WANTS_FREEZER_CONTROL
-+	def_bool y
-+	depends on ADB_PMU
-+
- source kernel/power/Kconfig
- endif
+-	set_tss_desc(cpu,t);	/* This just modifies memory; should not be necessary. But... This is necessary, because 386 hardware has concept of busy TSS or some similar stupidity. */
++	/*
++	 * This just modifies memory; should not be necessary. But... This
++	 * is necessary, because 386 hardware has concept of busy TSS or some
++	 * similar stupidity.
++	 */
++	set_tss_desc(cpu, t);
  
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index f8153fd..ef9b802 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -104,6 +104,17 @@ config SUSPEND
- 	  powered and thus its contents are preserved, such as the
- 	  suspend-to-RAM state (e.g. the ACPI S3 state).
+ 	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
  
-+config SUSPEND_FREEZER
-+	bool "Enable freezer for suspend to RAM/standby" \
-+		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
-+	depends on SUSPEND
-+	default y
-+	help
-+	  This allows you to turn off the freezer for suspend. If this is
-+	  done, no tasks are frozen for suspend to RAM/standby.
-+
-+	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
-+
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
- 	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index d9bba45..e47214c 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -181,7 +181,7 @@ static int suspend_prepare(void)
- 
- 	pm_prepare_console();
- 
--	if (freeze_processes()) {
-+	if (suspend_freeze_processes()) {
- 		error = -EAGAIN;
- 		goto Thaw;
+@@ -160,7 +165,6 @@ static void fix_processor_context(void)
+                 loaddebug(&current->thread, 6);
+                 loaddebug(&current->thread, 7);
  	}
-@@ -199,7 +199,7 @@ static int suspend_prepare(void)
- 		return 0;
- 
-  Thaw:
--	thaw_processes();
-+	suspend_thaw_processes();
- 	pm_restore_console();
-  Finish:
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
-@@ -308,7 +308,7 @@ int suspend_devices_and_enter(suspend_state_t state)
-  */
- static void suspend_finish(void)
- {
--	thaw_processes();
-+	suspend_thaw_processes();
- 	pm_restore_console();
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
+-
  }
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 8ec5499..700f44e 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -1,6 +1,7 @@
- #include <linux/suspend.h>
- #include <linux/suspend_ioctls.h>
- #include <linux/utsname.h>
-+#include <linux/freezer.h>
  
- struct swsusp_info {
- 	struct new_utsname	uts;
-@@ -203,3 +204,24 @@ enum {
- #define TEST_MAX	(__TEST_AFTER_LAST - 1)
- 
- extern int pm_test_level;
-+
-+#ifdef CONFIG_SUSPEND_FREEZER
-+static inline int suspend_freeze_processes(void)
-+{
-+	return freeze_processes();
-+}
-+
-+static inline void suspend_thaw_processes(void)
-+{
-+	thaw_processes();
-+}
-+#else
-+static inline int suspend_freeze_processes(void)
-+{
-+	return 0;
-+}
-+
-+static inline void suspend_thaw_processes(void)
-+{
-+}
-+#endif
+ #ifdef CONFIG_HIBERNATION
 -- 
 1.5.4.rc5.16.gc0279
 
