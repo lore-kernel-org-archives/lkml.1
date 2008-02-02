@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbYBBAYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbYBBAYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763267AbYBBAYf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762801AbYBBAX6
+	id S1763427AbYBBAYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762885AbYBBAYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:23:58 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55568 "EHLO mx2.suse.de"
+	Fri, 1 Feb 2008 19:24:06 -0500
+Received: from ns.suse.de ([195.135.220.2]:54492 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762744AbYBBAX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:23:56 -0500
-Date: Fri, 1 Feb 2008 16:19:56 -0800
+	id S1762867AbYBBAYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 19:24:04 -0500
+Date: Fri, 1 Feb 2008 16:20:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,14 +19,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stable.org,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 02/27] SPARC64: Fix two kernel linear mapping setup bugs.
-Message-ID: <20080202001956.GC8368@suse.de>
+Subject: [patch 03/27] SPARC64: Fix memory controller register access when
+	non-SMP.
+Message-ID: <20080202002000.GD8368@suse.de>
 References: <20080202001232.472591439@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc64-fix-two-kernel-linear-mapping-setup-bugs.patch"
+Content-Disposition: inline; filename="sparc64-fix-memory-controller-register-access-when-non-smp.patch"
 In-Reply-To: <20080202001927.GA8368@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,130 +38,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
+
 From: David Miller <davem@davemloft.net>
 
-[SPARC64]: Fix two kernel linear mapping setup bugs.
+[SPARC64]: Fix memory controller register access when non-SMP.
 
-[ Upstream commit: 8f361453d8e9a67c85b2cf9b93c642c2d8fe0462 ]
+[ Upstream commit: b332b8bc9c67165eabdfc7d10b4a2e4cc9f937d0 ]
 
-This was caught and identified by Greg Onufer.
+get_cpu() always returns zero on non-SMP builds, but we
+really want the physical cpu number in this code in order
+to do the right thing.
 
-Since we setup the 256M/4M bitmap table after taking over the trap
-table, it's possible for some 4M mapping to get loaded in the TLB
-beforhand which later will be 256M mappings.
-
-This can cause illegal TLB multiple-match conditions.  Fix this by
-setting up the bitmap before we take over the trap table.
-
-Next, __flush_tlb_all() was not doing anything on hypervisor
-platforms.  Fix by adding sun4v_mmu_demap_all() and calling it.
+Based upon a non-SMP kernel boot failure report from Bernd Zeimetz.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/entry.S      |   12 ++++++++++++
- arch/sparc64/mm/init.c           |   29 ++++++++++++++++++++---------
- include/asm-sparc64/hypervisor.h |    4 ++++
- 3 files changed, 36 insertions(+), 9 deletions(-)
+ arch/sparc64/kernel/chmc.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
---- a/arch/sparc64/kernel/entry.S
-+++ b/arch/sparc64/kernel/entry.S
-@@ -2593,3 +2593,15 @@ sun4v_mmustat_info:
- 	retl
- 	 nop
- 	.size	sun4v_mmustat_info, .-sun4v_mmustat_info
-+
-+	.globl	sun4v_mmu_demap_all
-+	.type	sun4v_mmu_demap_all,#function
-+sun4v_mmu_demap_all:
-+	clr	%o0
-+	clr	%o1
-+	mov	HV_MMU_ALL, %o2
-+	mov	HV_FAST_MMU_DEMAP_ALL, %o5
-+	ta	HV_FAST_TRAP
-+	retl
-+	 nop
-+	.size	sun4v_mmu_demap_all, .-sun4v_mmu_demap_all
---- a/arch/sparc64/mm/init.c
-+++ b/arch/sparc64/mm/init.c
-@@ -1135,14 +1135,9 @@ static void __init mark_kpte_bitmap(unsi
- 	}
- }
- 
--static void __init kernel_physical_mapping_init(void)
-+static void __init init_kpte_bitmap(void)
- {
- 	unsigned long i;
--#ifdef CONFIG_DEBUG_PAGEALLOC
--	unsigned long mem_alloced = 0UL;
--#endif
--
--	read_obp_memory("reg", &pall[0], &pall_ents);
- 
- 	for (i = 0; i < pall_ents; i++) {
- 		unsigned long phys_start, phys_end;
-@@ -1151,14 +1146,24 @@ static void __init kernel_physical_mappi
- 		phys_end = phys_start + pall[i].reg_size;
- 
- 		mark_kpte_bitmap(phys_start, phys_end);
-+	}
-+}
- 
-+static void __init kernel_physical_mapping_init(void)
-+{
- #ifdef CONFIG_DEBUG_PAGEALLOC
-+	unsigned long i, mem_alloced = 0UL;
-+
-+	for (i = 0; i < pall_ents; i++) {
-+		unsigned long phys_start, phys_end;
-+
-+		phys_start = pall[i].phys_addr;
-+		phys_end = phys_start + pall[i].reg_size;
-+
- 		mem_alloced += kernel_map_range(phys_start, phys_end,
- 						PAGE_KERNEL);
--#endif
- 	}
- 
--#ifdef CONFIG_DEBUG_PAGEALLOC
- 	printk("Allocated %ld bytes for kernel page tables.\n",
- 	       mem_alloced);
- 
-@@ -1400,6 +1405,10 @@ void __init paging_init(void)
- 	
- 	inherit_prom_mappings();
- 	
-+	read_obp_memory("reg", &pall[0], &pall_ents);
-+
-+	init_kpte_bitmap();
-+
- 	/* Ok, we can use our TLB miss and window trap handlers safely.  */
- 	setup_tba();
- 
-@@ -1854,7 +1863,9 @@ void __flush_tlb_all(void)
- 			     "wrpr	%0, %1, %%pstate"
- 			     : "=r" (pstate)
- 			     : "i" (PSTATE_IE));
--	if (tlb_type == spitfire) {
-+	if (tlb_type == hypervisor) {
-+		sun4v_mmu_demap_all();
-+	} else if (tlb_type == spitfire) {
- 		for (i = 0; i < 64; i++) {
- 			/* Spitfire Errata #32 workaround */
- 			/* NOTE: Always runs on spitfire, so no
---- a/include/asm-sparc64/hypervisor.h
-+++ b/include/asm-sparc64/hypervisor.h
-@@ -709,6 +709,10 @@ extern unsigned long sun4v_mmu_tsb_ctx0(
+--- a/arch/sparc64/kernel/chmc.c
++++ b/arch/sparc64/kernel/chmc.c
+@@ -1,7 +1,6 @@
+-/* $Id: chmc.c,v 1.4 2002/01/08 16:00:14 davem Exp $
+- * memctrlr.c: Driver for UltraSPARC-III memory controller.
++/* memctrlr.c: Driver for UltraSPARC-III memory controller.
+  *
+- * Copyright (C) 2001 David S. Miller (davem@redhat.com)
++ * Copyright (C) 2001, 2007 David S. Miller (davem@davemloft.net)
   */
- #define HV_FAST_MMU_DEMAP_ALL		0x24
  
-+#ifndef __ASSEMBLY__
-+extern void sun4v_mmu_demap_all(void);
-+#endif
+ #include <linux/module.h>
+@@ -16,6 +15,7 @@
+ #include <linux/init.h>
+ #include <asm/spitfire.h>
+ #include <asm/chmctrl.h>
++#include <asm/cpudata.h>
+ #include <asm/oplib.h>
+ #include <asm/prom.h>
+ #include <asm/io.h>
+@@ -242,8 +242,11 @@ int chmc_getunumber(int syndrome_code,
+  */
+ static u64 read_mcreg(struct mctrl_info *mp, unsigned long offset)
+ {
+-	unsigned long ret;
+-	int this_cpu = get_cpu();
++	unsigned long ret, this_cpu;
 +
- /* mmu_map_perm_addr()
-  * TRAP:	HV_FAST_TRAP
-  * FUNCTION:	HV_FAST_MMU_MAP_PERM_ADDR
++	preempt_disable();
++
++	this_cpu = real_hard_smp_processor_id();
+ 
+ 	if (mp->portid == this_cpu) {
+ 		__asm__ __volatile__("ldxa	[%1] %2, %0"
+@@ -255,7 +258,8 @@ static u64 read_mcreg(struct mctrl_info 
+ 				     : "r" (mp->regs + offset),
+ 				       "i" (ASI_PHYS_BYPASS_EC_E));
+ 	}
+-	put_cpu();
++
++	preempt_enable();
+ 
+ 	return ret;
+ }
 
 -- 
