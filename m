@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762072AbYBBHyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761789AbYBBIB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762072AbYBBHyo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 02:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756699AbYBBHyh
+	id S1761789AbYBBIB2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 03:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYBBIBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 02:54:37 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:5508 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756646AbYBBHyg (ORCPT
+	Sat, 2 Feb 2008 03:01:17 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:40672 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756304AbYBBIBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 02:54:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xNCkWOo6d9qFjEcUI02vu7l6Ufr2/g9S8nd8HpUA9lH3W1/PvbwhyzYj3b/bRlj0KMHE93iBy8eypS/s2yKh1H1p3ssxRhWC8ix64eq5GVxrD1FzxsOjxcxga00JHSwiQJdPLTqjLZPZY/oS3/OQwguWSOlG68XLnY5vQEf9scY=
-Message-ID: <804dabb00802012354s4d99d511gbbc80d116329433@mail.gmail.com>
-Date: Sat, 2 Feb 2008 15:54:33 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: CONFIG_SECTION_MISMATCH is replaced by CONFIG_DEBUG_SECTION_MISMATCH
-In-Reply-To: <804dabb00802012328y58904d27v90e12e2614550d11@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00802012328y58904d27v90e12e2614550d11@mail.gmail.com>
+	Sat, 2 Feb 2008 03:01:16 -0500
+To: staubach@redhat.com
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <47A39D8F.9010003@redhat.com> (message from Peter Staubach on
+	Fri, 01 Feb 2008 17:30:39 -0500)
+Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
+References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu> <47A39D8F.9010003@redhat.com>
+Message-Id: <E1JLDIq-000747-1y@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 02 Feb 2008 09:00:44 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_SECTION_MISMATCH I supposed has been deprecated by
-CONFIG_DEBUG_SECTION_MISMATCH, as I found
-CONFIG_DEBUG_SECTION_MISMATCH in Makefile, Makefile.build and
-Makefile.modpost, but not the former symbol.   Moreover, setting the
-symbol in .config, and followed by make oldconfig will result in the
-non-debug symbol disappearing, but not the debug version.   Am I
-correct?
+> >>>       
+> >> Would you describe the situation that would cause the kernel to
+> >> go into an infinite loop, please?
+> >>     
+> >
+> > The patch basically does:
+> >
+> > 	do {
+> > 		...
+> > 		error = inode->i_op->foo()
+> > 		...
+> > 	} while (error == ESTALE);
+> >
+> > What is the guarantee, that ->foo() will not always return ESTALE?
+> 
+> You skimmed over some stuff, like the pathname lookup component
+> contained in the first set of dots...
+> 
+> I can't guarantee that ->foo() won't always return ESTALE.
+> 
+> That said, the loop is not unbreakable.  At least for NFS, a signal
+> to the process will interrupt the loop because the error returned
+> will change from ESTALE to EINTR.
 
-Signed-off-by: Peter Teoh <htmldeveloper@gmail.com>
+In FUSE interrupts are sent to userspace, and the filesystem decides
+what to do with them.  So it is entirely possible and valid for a
+filesystem to ignore an interrupt.  If an operation was non-blocking
+(such as one returning an error), then there would in fact be no
+purpose in checking interrupts.
 
---- scripts/mod/modpost.c.orig  2008-02-02 15:18:04.000000000 +0800
-+++ scripts/mod/modpost.c       2008-02-02 15:18:47.000000000 +0800
-@@ -1942,7 +1942,7 @@ int main(int argc, char **argv)
-                        "To see additional details select \"Enable full "
-                        "Section mismatch analysis\"\n"
-                        "in the Kernel Hacking menu "
--                       "(CONFIG_SECTION_MISMATCH).\n", sec_mismatch_count);
-+                       "(CONFIG_DEBUG_SECTION_MISMATCH).\n",
-sec_mismatch_count);
+So while sending a signal might reliably work in NFS to break out of
+the loop, it does not necessarily work for other filesystems, and fuse
+may not be the only one affected.
 
-        return err;
- }
+Also up till now, returning ESTALE in a fuse filesystem was a
+perfectly valid thing to do.  This patch changes the behavior of that
+rather drastically.  There might be installed systems that rely on
+current behavior, and we want to avoid breaking those on a kernel
+upgrade.
+
+A few solutions come to mind, perhaps the best is to introduce a
+kernel internal errno value (ERETRYSTALE), that forces the relevant
+system calls to be retried.
+
+NFS could transform ESTALE errors to ERETRYSTALE and get the desired
+behavior, while other filesystems would not be affected.
+
+Miklos
