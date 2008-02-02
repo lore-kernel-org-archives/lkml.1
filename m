@@ -1,75 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761789AbYBBIB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbYBBIMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761789AbYBBIB2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 03:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYBBIBR
+	id S1761374AbYBBIMe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 03:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYBBIMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 03:01:17 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:40672 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756304AbYBBIBQ (ORCPT
+	Sat, 2 Feb 2008 03:12:25 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38851 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756570AbYBBIMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 03:01:16 -0500
-To: staubach@redhat.com
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <47A39D8F.9010003@redhat.com> (message from Peter Staubach on
-	Fri, 01 Feb 2008 17:30:39 -0500)
-Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
-References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu> <47A39D8F.9010003@redhat.com>
-Message-Id: <E1JLDIq-000747-1y@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 02 Feb 2008 09:00:44 +0100
+	Sat, 2 Feb 2008 03:12:24 -0500
+Date: Sat, 02 Feb 2008 17:12:30 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>
+Subject: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't works on memoryless node.
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>>       
-> >> Would you describe the situation that would cause the kernel to
-> >> go into an infinite loop, please?
-> >>     
-> >
-> > The patch basically does:
-> >
-> > 	do {
-> > 		...
-> > 		error = inode->i_op->foo()
-> > 		...
-> > 	} while (error == ESTALE);
-> >
-> > What is the guarantee, that ->foo() will not always return ESTALE?
-> 
-> You skimmed over some stuff, like the pathname lookup component
-> contained in the first set of dots...
-> 
-> I can't guarantee that ->foo() won't always return ESTALE.
-> 
-> That said, the loop is not unbreakable.  At least for NFS, a signal
-> to the process will interrupt the loop because the error returned
-> will change from ESTALE to EINTR.
+Hi
 
-In FUSE interrupts are sent to userspace, and the filesystem decides
-what to do with them.  So it is entirely possible and valid for a
-filesystem to ignore an interrupt.  If an operation was non-blocking
-(such as one returning an error), then there would in fact be no
-purpose in checking interrupts.
+I tested numactl on 2.6.24-rc8-mm1.
+and I found strange behavior.
 
-So while sending a signal might reliably work in NFS to break out of
-the loop, it does not necessarily work for other filesystems, and fuse
-may not be the only one affected.
+test method and result.
 
-Also up till now, returning ESTALE in a fuse filesystem was a
-perfectly valid thing to do.  This patch changes the behavior of that
-rather drastically.  There might be installed systems that rely on
-current behavior, and we want to avoid breaking those on a kernel
-upgrade.
+	$ numactl --interleave=all ls
+	set_mempolicy: Invalid argument
+	setting interleave mask: Invalid argument
 
-A few solutions come to mind, perhaps the best is to introduce a
-kernel internal errno value (ERETRYSTALE), that forces the relevant
-system calls to be retried.
+numactl command download from
+	ftp://ftp.suse.com/pub/people/ak/numa/
+	(I choice numactl-1.0.2)
 
-NFS could transform ESTALE errors to ERETRYSTALE and get the desired
-behavior, while other filesystems would not be affected.
 
-Miklos
+Of course, older kernel(RHEL5.1) works good.
+
+
+
+more detail:
+
+1. my machine node and memory.
+
+$ numactl --hardware
+available: 16 nodes (0-15)
+node 0 size: 0 MB
+node 0 free: 0 MB
+node 1 size: 0 MB
+node 1 free: 0 MB
+node 2 size: 3872 MB
+node 2 free: 1487 MB
+node 3 size: 4032 MB
+node 3 free: 3671 MB
+node 4 size: 0 MB
+node 4 free: 0 MB
+node 5 size: 0 MB
+node 5 free: 0 MB
+node 6 size: 0 MB
+node 6 free: 0 MB
+node 7 size: 0 MB
+node 7 free: 0 MB
+node 8 size: 0 MB
+node 8 free: 0 MB
+node 9 size: 0 MB
+node 9 free: 0 MB
+node 10 size: 0 MB
+node 10 free: 0 MB
+node 11 size: 0 MB
+node 11 free: 0 MB
+node 12 size: 0 MB
+node 12 free: 0 MB
+node 13 size: 0 MB
+node 13 free: 0 MB
+node 14 size: 0 MB
+node 14 free: 0 MB
+node 15 size: 0 MB
+node 15 free: 0 MB
+
+
+2. numactl behavior of --interleave=all
+   2.1  scan "/sys/devices/system/node" dir
+   2.2  calculate max node number
+   2.3  all bit turn on of existing node.
+        (i.e. 0xFF generated on my environment.)
+   2.4  call set_mempolicy()
+
+3. 2.6.24-rc8-mm1 set_mempolicy(2) behavior
+   3.1 check nodesubset(nodemask argument, node_states[N_HIGH_MEMORY])
+       in mpol_check_policy()
+
+	-> check failed when memmoryless node exist.
+           (i.e. node_states[N_HIGH_MEMORY] of my machine is 0xc)
+
+4. RHEL5.1 set_mempolicy(2) behavior
+   4.1 check nodesubset(nodemask argument, node_online_map)
+       in mpol_check_policy().
+
+	-> check success.
+
+
+I don't know wrong either kernel or libnuma.
+Please any comments!
+
+
+- kosaki
+
+
+
