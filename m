@@ -1,52 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933711AbYBBSHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbYBBSH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933711AbYBBSHg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYBBSHT
+	id S933813AbYBBSH4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYBBSHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:07:19 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2025 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752023AbYBBSHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:07:18 -0500
-Date: Sat, 2 Feb 2008 14:15:55 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Introduce softpanic
-Message-ID: <20080202141554.GB4456@ucw.cz>
-References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz> <p73ejc67xvb.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73ejc67xvb.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.9i
+	Sat, 2 Feb 2008 13:07:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:56791 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759989AbYBBSHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:07:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=L+JUWONM0WCFqZm/Y4/xHILkGaGxGPcomV6w4mKGzteuAZ/PAf7hqVeI7ZQjXgKlLhLUEARDPMxjES6t26AbVKDlBAyL93F7uSVGaFEFTcgBZf7sqZZXb/NsFmmfPQVZIE2FGX5OhiLckuBU6OZ1XzIjBZQqS0mPkRPLoqEWOBY=
+From: Denis Cheng <crquan@gmail.com>
+To: Tim Shimmin <tes@chook.melbourne.sgi.com>,
+       Tim Shimmin <xfs-masters@oss.sgi.com>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] xfs: add __init/__exit mark to specific init/cleanup functions
+Date: Sun,  3 Feb 2008 02:07:23 +0800
+Message-Id: <1201975643-8662-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-01-25 16:01:28, Andi Kleen wrote:
-> Bodo Eggert <7eggert@gmx.de> writes:
-> 
-> > Enabling this option changes a hard panic on boot errors to a
-> > soft panic, which does not stop the system completely.
-> > You can still scroll the screen and read the messages.
-> 
-> I don't think it's a good idea to keep the network running in the
-> soft panic. A lot of people have set ups that use ping was a watchdog
-> and with nfsroot/ip=dhcp ping does work quite well before
-> mounting root and then the watchdog might not pick up the 
-> soft panic.
-> 
-> Using a polled keyboard driver after panic seems to be the better
-> option to me, but if you want softpanic you should probably
-> at least add a suitable panic notifier to the network stack 
-> to shut it all down.
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ fs/xfs/linux-2.6/xfs_super.c |    2 +-
+ fs/xfs/linux-2.6/xfs_vnode.c |    2 +-
+ fs/xfs/support/ktrace.c      |    4 ++--
+ fs/xfs/support/uuid.c        |    2 +-
+ fs/xfs/xfs_vfsops.c          |    4 ++--
+ 5 files changed, 7 insertions(+), 7 deletions(-)
 
-OTOH this will allow netconsole/sysrq over it to still work after
-softpanic, which is good. Lets not over engineer it, I think current
-code is fine.
-
+diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
+index 8cb63c6..abacbdd 100644
+--- a/fs/xfs/linux-2.6/xfs_super.c
++++ b/fs/xfs/linux-2.6/xfs_super.c
+@@ -361,7 +361,7 @@ xfs_fs_inode_init_once(
+ 	inode_init_once(vn_to_inode((bhv_vnode_t *)vnode));
+ }
+ 
+-STATIC int
++STATIC int __init
+ xfs_init_zones(void)
+ {
+ 	xfs_vnode_zone = kmem_zone_init_flags(sizeof(bhv_vnode_t), "xfs_vnode",
+diff --git a/fs/xfs/linux-2.6/xfs_vnode.c b/fs/xfs/linux-2.6/xfs_vnode.c
+index 814169f..56e23cd 100644
+--- a/fs/xfs/linux-2.6/xfs_vnode.c
++++ b/fs/xfs/linux-2.6/xfs_vnode.c
+@@ -40,7 +40,7 @@
+ #define vptosync(v)             (&vsync[((unsigned long)v) % NVSYNC])
+ static wait_queue_head_t vsync[NVSYNC];
+ 
+-void
++void __init
+ vn_init(void)
+ {
+ 	int i;
+diff --git a/fs/xfs/support/ktrace.c b/fs/xfs/support/ktrace.c
+index 5cf2e86..17f2b7c 100644
+--- a/fs/xfs/support/ktrace.c
++++ b/fs/xfs/support/ktrace.c
+@@ -21,7 +21,7 @@ static kmem_zone_t *ktrace_hdr_zone;
+ static kmem_zone_t *ktrace_ent_zone;
+ static int          ktrace_zentries;
+ 
+-void
++void __init
+ ktrace_init(int zentries)
+ {
+ 	ktrace_zentries = zentries;
+@@ -36,7 +36,7 @@ ktrace_init(int zentries)
+ 	ASSERT(ktrace_ent_zone);
+ }
+ 
+-void
++void __exit
+ ktrace_uninit(void)
+ {
+ 	kmem_zone_destroy(ktrace_hdr_zone);
+diff --git a/fs/xfs/support/uuid.c b/fs/xfs/support/uuid.c
+index e157015..493a6ec 100644
+--- a/fs/xfs/support/uuid.c
++++ b/fs/xfs/support/uuid.c
+@@ -133,7 +133,7 @@ uuid_table_remove(uuid_t *uuid)
+ 	mutex_unlock(&uuid_monitor);
+ }
+ 
+-void
++void __init
+ uuid_init(void)
+ {
+ 	mutex_init(&uuid_monitor);
+diff --git a/fs/xfs/xfs_vfsops.c b/fs/xfs/xfs_vfsops.c
+index a154459..cde337e 100644
+--- a/fs/xfs/xfs_vfsops.c
++++ b/fs/xfs/xfs_vfsops.c
+@@ -58,7 +58,7 @@
+ #include "xfs_vfsops.h"
+ 
+ 
+-int
++int __init
+ xfs_init(void)
+ {
+ 	extern kmem_zone_t	*xfs_bmap_free_item_zone;
+@@ -152,7 +152,7 @@ xfs_init(void)
+ 	return 0;
+ }
+ 
+-void
++void __exit
+ xfs_cleanup(void)
+ {
+ 	extern kmem_zone_t	*xfs_bmap_free_item_zone;
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.3.8
+
