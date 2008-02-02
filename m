@@ -1,60 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763200AbYBBPvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764763AbYBBPzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763200AbYBBPvg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 10:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYBBPv1
+	id S1764763AbYBBPzh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 10:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbYBBPza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 10:51:27 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43859 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756303AbYBBPv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 10:51:26 -0500
-Message-ID: <47A49171.2000003@garzik.org>
-Date: Sat, 02 Feb 2008 10:51:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [patch] pci: pci_enable_device_bars() fix
-References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu>
-In-Reply-To: <20080202111322.GA30767@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Sat, 2 Feb 2008 10:55:30 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:35242 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757492AbYBBPz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 10:55:29 -0500
+To: linux-kernel@vger.kernel.org
+cc: linux-ext4@vger.kernel.org
+Subject: [PATCH] ext4: Replace use of iget() with iget_locked()
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1JLKiC-0002et-Tr@closure.thunk.org>
+Date: Sat, 02 Feb 2008 10:55:24 -0500
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> ===================================================================
-> --- linux.orig/drivers/scsi/lpfc/lpfc_init.c
-> +++ linux/drivers/scsi/lpfc/lpfc_init.c
-> @@ -1894,7 +1894,7 @@ lpfc_pci_probe_one(struct pci_dev *pdev,
->  	uint16_t iotag;
->  	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
->  
-> -	if (pci_enable_device_bars(pdev, bars))
-> +	if (pci_enable_device_io(pdev))
->  		goto out;
 
-Look at the line right above it...  AFAICS you want 
-pci_enable_device_mem(), if the mask is selecting IORESOURCE_MEM BARs.
+In the mm tree is a patch queued up to nuke iget().  So replace use of
+iget() with iget_locked().  I will be pushing this to Linus shortly.
 
-Also a CC to linux-scsi and the driver author would be nice, as they are 
-the ones with hardware and can verify.
-
-This set of changes seemed like 50% guesswork to me, without consulting 
-the authors :(  And unlike many changes, you actually have to know the 
-hardware [or get clues from surrounding code] to make the change.
-
-	Jeff
+     	  		    	    	    - Ted
 
 
+commit 46ea772acbda42780ae014e608f51e71083be46b
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Sat Feb 2 10:52:41 2008 -0500
 
+    ext4: Replace use of iget() with iget_locked()
+    
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index 575b521..d45fcaa 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -805,9 +805,17 @@ struct inode *ext4_orphan_get(struct super_block *sb, unsigned long ino)
+ 	 * is a valid orphan (no e2fsck run on fs).  Orphans also include
+ 	 * inodes that were being truncated, so we can't check i_nlink==0.
+ 	 */
+-	if (!ext4_test_bit(bit, bitmap_bh->b_data) ||
+-			!(inode = iget(sb, ino)) || is_bad_inode(inode) ||
+-			NEXT_ORPHAN(inode) > max_ino) {
++	if (!ext4_test_bit(bit, bitmap_bh->b_data))
++		goto bad_orphan_inode;
++	inode = iget_locked(sb, ino);
++	if (!inode)
++		goto bad_orphan_inode;
++	if (inode->i_state & I_NEW) {
++		sb->s_op->read_inode(inode);
++		unlock_new_inode(inode);
++	}
++	if (is_bad_inode(inode) || NEXT_ORPHAN(inode) > max_ino) {
++	bad_orphan_inode:
+ 		ext4_warning(sb, __FUNCTION__,
+ 			     "bad orphan inode %lu!  e2fsck was run?", ino);
+ 		printk(KERN_NOTICE "ext4_test_bit(bit=%d, block=%llu) = %d\n",
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 055a0cd..1ef0359 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -777,9 +777,13 @@ static struct inode *ext4_nfs_get_inode(struct super_block *sb,
+ 	 * Currently we don't know the generation for parent directory, so
+ 	 * a generation of 0 means "accept any"
+ 	 */
+-	inode = iget(sb, ino);
++	inode = iget_locked(sb, ino);
+ 	if (inode == NULL)
+ 		return ERR_PTR(-ENOMEM);
++	if (inode->i_state & I_NEW) {
++		sb->s_op->read_inode(inode);
++		unlock_new_inode(inode);
++	}
+ 	if (is_bad_inode(inode) ||
+ 	    (generation && inode->i_generation != generation)) {
+ 		iput(inode);
+@@ -2243,7 +2247,15 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 	 * so we can safely mount the rest of the filesystem now.
+ 	 */
+ 
+-	root = iget(sb, EXT4_ROOT_INO);
++	root = iget_locked(sb, EXT4_ROOT_INO);
++	if (!root) {
++		printk(KERN_ERR "EXT4-fs: iget_locked for root inode failed\n");
++		goto failed_mount4;
++	}
++	if (root->i_state & I_NEW) {
++		sb->s_op->read_inode(root);
++		unlock_new_inode(root);
++	}
+ 	sb->s_root = d_alloc_root(root);
+ 	if (!sb->s_root) {
+ 		printk(KERN_ERR "EXT4-fs: get root inode failed\n");
+@@ -2372,11 +2384,15 @@ static journal_t *ext4_get_journal(struct super_block *sb,
+ 	 * things happen if we iget() an unused inode, as the subsequent
+ 	 * iput() will try to delete it. */
+ 
+-	journal_inode = iget(sb, journal_inum);
++	journal_inode = iget_locked(sb, journal_inum);
+ 	if (!journal_inode) {
+-		printk(KERN_ERR "EXT4-fs: no journal found.\n");
++		printk(KERN_ERR "EXT4-fs: iget_locked for journal inode failed.\n");
+ 		return NULL;
+ 	}
++	if (journal_inode->i_state & I_NEW) {
++		sb->s_op->read_inode(journal_inode);
++		unlock_new_inode(journal_inode);
++	}
+ 	if (!journal_inode->i_nlink) {
+ 		make_bad_inode(journal_inode);
+ 		iput(journal_inode);
