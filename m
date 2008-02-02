@@ -1,90 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932524AbYBBAmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763323AbYBBAoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932524AbYBBAmd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760837AbYBBAm0
+	id S1763323AbYBBAoi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758905AbYBBAoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:42:26 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42283 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760070AbYBBAmZ (ORCPT
+	Fri, 1 Feb 2008 19:44:30 -0500
+Received: from usermail.globalproof.net ([194.146.153.18]:50857 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755929AbYBBAo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:42:25 -0500
-Date: Fri, 1 Feb 2008 16:42:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net,
-       "Li, Shaohua" <shaohua.li@intel.com>, yanmin.zhang@intel.com
-Subject: Re: [GIT PATCH] PCI patches for 2.6.24
-Message-Id: <20080201164206.d96c6ee0.akpm@linux-foundation.org>
-In-Reply-To: <20080201231147.GA18174@suse.de>
-References: <20080201231147.GA18174@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Feb 2008 19:44:29 -0500
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, wim@iguana.be
+Subject: Re: kernel panic on 2.6.24/iTCO_wdt not rebooting machine
+Date: Sat, 2 Feb 2008 02:44:13 +0200
+Message-Id: <20080202004109.M54438@visp.net.lb>
+In-Reply-To: <200802011539.08393.lenb@kernel.org>
+References: <20080201151243.M2879@visp.net.lb> <200802011211.42089.lenb@kernel.org> <20080201191048.M59862@visp.net.lb> <200802011539.08393.lenb@kernel.org>
+X-Mailer: OpenWebMail 2.52 
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008 15:11:47 -0800
-Greg KH <gregkh@suse.de> wrote:
+I check, watchdog still doesn't work with acpi=off, nor with pnpacpi=off
+I will try to check technical documents about chipset, to find any reference 
+to watchdog registers, maybe i can see there something useful.
 
->       PCI: PCIE ASPM support
+On Fri, 1 Feb 2008 15:39:08 -0500, Len Brown wrote
+> On Friday 01 February 2008 14:15, Denys Fedoryshchenko wrote:
+> > 
+> > On Fri, 1 Feb 2008 12:11:41 -0500, Len Brown wrote
+> > > 
+> > > What do you see if you build with CONFIG_HIGH_RES_TIMERS=n
+> > > 
+> > > Does it work better if you boot with "acpi=off"?
+> > > if yes, how about with just pnpacpi=off?
+> > > 
+> > > thanks,
+> > > -Len
+> > 
+> > It is not very easy to test. About bug - most probably it is related to 
+third 
+> > party ESFQ patch, i will drop it and then test more properly when i will 
+be 
+> > able to make watchdog work fine. But more important i notice - that 
+iTCO_wdt 
+> > is not working at all. I think hrtimers doesn't change anything on that.
+> > About testing, i cannot take even small risk now(and near 3-5 days) by 
+> > changing kernel options, i set now maximum available set of watchdogs, 
+cause 
+> > there is noone to maintain server, area is unreachable because of snow 
+and 
+> > bad weather.
+> > 
+> > Do you think reasonable to try acpi / pnpacpi with iTCO_wdt to make it 
+work? 
+> > Maybe just registers addresses or way how TCO watchdog activated changed 
+on 
+> > this chipset?
+> 
+> yes, i'm wondering if the changes in IO resource reservations
+> in the PNPACPI layer are interfering with the native driver.
+> 
+> unfortunately, if you boot with acpi=off or pnpacpi=off, you may
+> run into other, unrelated, issues (or not).
+> 
+> one way to isolate the problem is if you revert these two lines
+> from their 2.6.24 values to their 2.6.23 values by applying this patch:
+> ---
+> diff --git a/include/linux/pnp.h b/include/linux/pnp.h
+> index 2a6d62c..16b46aa 100644
+> --- a/include/linux/pnp.h
+> +++ b/include/linux/pnp.h
+> @@ -13,8 +13,8 @@
+>  #include <linux/errno.h>
+>  #include <linux/mod_devicetable.h>
+> 
+> -#define PNP_MAX_PORT		40
+> -#define PNP_MAX_MEM		12
+> +#define PNP_MAX_PORT		8
+> +#define PNP_MAX_MEM		4
+>  #define PNP_MAX_IRQ		2
+>  #define PNP_MAX_DMA		2
+>  #define PNP_NAME_LEN		50
 
-drivers/built-in.o: In function `pci_scan_slot':
-drivers/pci/probe.c:1016: undefined reference to `pcie_aspm_init_link_state'
-drivers/built-in.o: In function `pci_stop_dev':
-drivers/pci/remove.c:36: undefined reference to `pcie_aspm_exit_link_state'
-drivers/built-in.o: In function `pci_set_power_state':
-drivers/pci/pci.c:524: undefined reference to `pcie_aspm_pm_state_change'
-make: *** [.tmp_vmlinux1] Error 1
 
-http://userweb.kernel.org/~akpm/config-vmm.txt
-
-
-Needs this, I guess:
-
-
---- a/drivers/pci/pcie/Kconfig~fix-gregkh-pci-pci-pcie-aspm-support
-+++ a/drivers/pci/pcie/Kconfig
-@@ -32,7 +32,7 @@ source "drivers/pci/pcie/aer/Kconfig"
- #
- config PCIEASPM
- 	bool "PCI Express ASPM support(Experimental)"
--	depends on PCI && EXPERIMENTAL
-+	depends on PCI && EXPERIMENTAL && PCIEPORTBUS
- 	default y
- 	help
- 	  This enables PCI Express ASPM (Active State Power Management) and
-_
-
-
-Also, that ASPM patch unnecessarily adds a pile of macros:
-
-+#ifdef CONFIG_PCIEASPM
-+extern void pcie_aspm_init_link_state(struct pci_dev *pdev);
-+extern void pcie_aspm_exit_link_state(struct pci_dev *pdev);
-+extern void pcie_aspm_pm_state_change(struct pci_dev *pdev);
-+extern void pci_disable_link_state(struct pci_dev *pdev, int state);
-+#else
-+#define pcie_aspm_init_link_state(pdev)                do {} while (0)
-+#define pcie_aspm_exit_link_state(pdev)                do {} while (0)
-+#define pcie_aspm_pm_state_change(pdev)                do {} while (0)
-+#define pci_disable_link_state(pdev, state)    do {} while (0)
-+#endif
-
-Please don't do this.  
-
-A static inline function is cleaner and provides typechecking.  It also
-provides an access to the caller's argument and can avoid unused-varaiable
-warnings.
-
-The only reason to use a macro in this situation is if the caller's
-argument is for some reason not defined if !CONFIG_PCIEASPM.
-
-Greg, please check for this in your reviewing - reject macros *by default*.
- They are inferior.
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
