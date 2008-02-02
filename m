@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764586AbYBBIew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbYBBIjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764586AbYBBIew (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 03:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYBBIeo
+	id S1763170AbYBBIjR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 03:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbYBBIjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 03:34:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55623 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYBBIen (ORCPT
+	Sat, 2 Feb 2008 03:39:06 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:1263 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753267AbYBBIjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 03:34:43 -0500
-Date: Sat, 2 Feb 2008 10:09:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <andi@firstfloor.org>,
-       Lee.Schermerhorn@hp.com
-Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't works on memoryless node.
-Message-ID: <20080202090914.GA27723@one.firstfloor.org>
-References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 2 Feb 2008 03:39:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=D9fA1KkAPVogZeG/esNmDHvCajeK9oLdRW4dh31tb9Sg/+RRCQH7GGOv3trhYLivN28a/UxUe4mTIRFmNw3Y9beQFejxO4CxHlQcxd38dzeFt3D5NfUR3UHuzcq2yxew02/t5lMMKO51dIhmnp5S5U+W0nM/pJN1oIsEizfZ+Rs=
+Message-ID: <804dabb00802020039j7ec7b66dlbf05fc9a80e1600a@mail.gmail.com>
+Date: Sat, 2 Feb 2008 16:39:02 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Section mismatch warning patch - microcode.c
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[intentional full quote]
+The following errors during compilation is corrected by the following
+patch (against the latest linus tree):
 
-On Sat, Feb 02, 2008 at 05:12:30PM +0900, KOSAKI Motohiro wrote:
-> I tested numactl on 2.6.24-rc8-mm1.
-> and I found strange behavior.
-> 
-> test method and result.
-> 
-> 	$ numactl --interleave=all ls
-> 	set_mempolicy: Invalid argument
-> 	setting interleave mask: Invalid argument
-> 
-> numactl command download from
-> 	ftp://ftp.suse.com/pub/people/ak/numa/
-> 	(I choice numactl-1.0.2)
-> 
-> 
-> Of course, older kernel(RHEL5.1) works good.
-> 
-> 
-> 
-> more detail:
-> 
-> 1. my machine node and memory.
-> 
-> $ numactl --hardware
-> available: 16 nodes (0-15)
-> node 0 size: 0 MB
-> node 0 free: 0 MB
-> node 1 size: 0 MB
-> node 1 free: 0 MB
-> node 2 size: 3872 MB
-> node 2 free: 1487 MB
-> node 3 size: 4032 MB
-> node 3 free: 3671 MB
-> node 4 size: 0 MB
-> node 4 free: 0 MB
-> node 5 size: 0 MB
-> node 5 free: 0 MB
-> node 6 size: 0 MB
-> node 6 free: 0 MB
-> node 7 size: 0 MB
-> node 7 free: 0 MB
-> node 8 size: 0 MB
-> node 8 free: 0 MB
-> node 9 size: 0 MB
-> node 9 free: 0 MB
-> node 10 size: 0 MB
-> node 10 free: 0 MB
-> node 11 size: 0 MB
-> node 11 free: 0 MB
-> node 12 size: 0 MB
-> node 12 free: 0 MB
-> node 13 size: 0 MB
-> node 13 free: 0 MB
-> node 14 size: 0 MB
-> node 14 free: 0 MB
-> node 15 size: 0 MB
-> node 15 free: 0 MB
-> 
-> 
-> 2. numactl behavior of --interleave=all
->    2.1  scan "/sys/devices/system/node" dir
->    2.2  calculate max node number
->    2.3  all bit turn on of existing node.
->         (i.e. 0xFF generated on my environment.)
->    2.4  call set_mempolicy()
-> 
-> 3. 2.6.24-rc8-mm1 set_mempolicy(2) behavior
->    3.1 check nodesubset(nodemask argument, node_states[N_HIGH_MEMORY])
->        in mpol_check_policy()
-> 
-> 	-> check failed when memmoryless node exist.
->            (i.e. node_states[N_HIGH_MEMORY] of my machine is 0xc)
-> 
-> 4. RHEL5.1 set_mempolicy(2) behavior
->    4.1 check nodesubset(nodemask argument, node_online_map)
->        in mpol_check_policy().
-> 
-> 	-> check success.
-> 
-> 
-> I don't know wrong either kernel or libnuma.
+WARNING: arch/x86/kernel/microcode.o(.exit.text+0x6): Section mismatch
+in reference from the function cleanup_module() to the variable
+.cpuinit.data:mc_cpu_notifier
 
-When the kernel behaviour changes and breaks user space then the kernel
-is usually wrong. Cc'ed Lee S. who maintains the kernel code now.
+Please comment.   Thanks.
 
--Andi
+
+
+diff -Nurp /tmp/microcode.c arch/x86/kernel/microcode.c
+--- /tmp/microcode.c    2008-02-02 16:46:43.000000000 +0800
++++ arch/x86/kernel/microcode.c 2008-02-02 16:41:58.000000000 +0800
+@@ -797,7 +797,7 @@ mc_cpu_callback(struct notifier_block *n
+        return NOTIFY_OK;
+ }
+
+-static struct notifier_block __refdata mc_cpu_notifier = {
++static struct notifier_block mc_cpu_notifier __initdata = {
+        .notifier_call = mc_cpu_callback,
+ };
+
+@@ -831,7 +831,7 @@ static int __init microcode_init (void)
+        return 0;
+ }
+
+-static void __exit microcode_exit (void)
++static void __init microcode_exit (void)
+ {
+        microcode_dev_exit();
