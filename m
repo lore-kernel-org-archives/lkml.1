@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbYBBOks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763212AbYBBOon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762169AbYBBOks (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 09:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbYBBOki
+	id S1763212AbYBBOon (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 09:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbYBBOof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 09:40:38 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:46181 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754611AbYBBOki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 09:40:38 -0500
-Date: Sat, 02 Feb 2008 15:40:36 +0100
-Message-Id: <141208903@web.de>
+	Sat, 2 Feb 2008 09:44:35 -0500
+Received: from smtp-in.kfki.hu ([148.6.0.26]:41452 "EHLO smtp1.kfki.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755529AbYBBOod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 09:44:33 -0500
+Date: Sat, 2 Feb 2008 15:44:28 +0100 (CET)
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Patrick McHardy <kaber@trash.net>, lkml <linux-kernel@vger.kernel.org>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: cups slow on linux-2.6.24
+In-Reply-To: <b6a2187b0801312128j19286ca1x9ba9af5a31ae7a96@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802011530280.25878@blackhole.kfki.hu>
+References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com> 
+ <b6a2187b0801291924k15f883aeg54f704156e4f2e3e@mail.gmail.com> 
+ <47A07FEA.3000702@trash.net>  <b6a2187b0801301823m331957e9n9d9bb9613622c844@mail.gmail.com>
+  <b6a2187b0801301826l5a50ce84p7d5dce3d0a74b3c0@mail.gmail.com> 
+ <47A13573.7090804@trash.net>  <b6a2187b0801301921s4a7842cg6cfec09a393cd63@mail.gmail.com>
+  <47A13FBD.8050803@trash.net>  <b6a2187b0801302101l46d614c9y53f798a025b57dc3@mail.gmail.com>
+  <Pine.LNX.4.64.0801311136540.23769@blackhole.kfki.hu>
+ <b6a2187b0801312128j19286ca1x9ba9af5a31ae7a96@mail.gmail.com>
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: Laurent.Vivier@bull.net, jengelh@computergmbh.de, pavel@ucw.cz
-Subject: Re: [PATCH] Allow NBD to be used locally
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19CqnibOcjoCuYkCaHobfEoE3cOofjNHYjfhR/Q9v+6yErE+
- qYdDDYngrIsmt8BJWbqxlWFrvW/h79p7J45zAmUYZ1MQ+ehxU0=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->In fact, VMware uses local nbd today for its vmware-loop helper
->utility, most likely because of the above-mentioned reasons. (Though
->it quite often hung last time I tried.)
+Hi Jeff,
 
-seems this will go away.
-recent vmware versions (e.g. server 2.0 beta) have a fuse based replacement for that.
+On Fri, 1 Feb 2008, Jeff Chua wrote:
 
-ldd /usr/bin/vmware-mount
-        linux-gate.so.1 =>  (0xffffe000)
-        libz.so.1 => /lib/libz.so.1 (0xb7f95000)
-! ->  libfuse.so.2 => /lib/libfuse.so.2 (0xb7f79000)   
-        libpthread.so.0 => /lib/libpthread.so.0 (0xb7f61000)
-        libdl.so.2 => /lib/libdl.so.2 (0xb7f5d000)
-        libc.so.6 => /lib/libc.so.6 (0xb7e1c000)
-        /lib/ld-linux.so.2 (0xb7fbd000)
-        librt.so.1 => /lib/librt.so.1 (0xb7e13000)
+> I recaptured it again, and attached are the logs.
+[...]
 
-i`m not sure if this is the perfect approach (slower....) , but at least that shouldn`t have those stability issues as the nbd one.
+Thank you! One can see a plain connection-initiating SYN, which triggers 
+the message. No reply from the server, then three seconds later comes a 
+retransmitted SYN and immediately after the SYN/ACK reply. What makes it 
+interesting is that the first SYN was let through by the conntrack: it was 
+*not* blocked at all.
 
-i always felt uncomfortable with the nbd approach...that`s why i started the following discussion-thread: 
-http://communities.vmware.com/message/854746
+In the dump file there is no other previous connection between 
+127.0.0.1:1021 -> 127.0.0.1:515. But there must be a previous connection 
+which was not captured by tcpdump.
 
-anyway, i can see a point to use nbd locally, but i think it shouldn`t be abused for mapping local disk-images of any kind, even if this has better capabilities than loop or other. why should local disk data be sent trough the network layer? isn`t device-mapper the better infrastructure here?
+Could I ask you to make two another tests? (I have been unable to 
+reproduce the bug so far, but it must be my fault.) In both cases enable 
+loggin invalid messages as Patrick wrote in a previous mail:
 
->So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
->does not deal with that.
-maybe dm-loop does? http://sources.redhat.com/lvm2/wiki/DMLoop
+# modprobe ipt_LOG
+# echo 255 >/proc/sys/net/netfilter/nf_conntrack_log_invalid
 
-regards
-roland
+In the first case run the unpatched 2.4.24 kernel and before doing 
+any printing, start dumping all the traffic at the 515 port so that we 
+won't miss any connection and send the dump file:
 
+# tcpdump -i lo -s 0 -w dump.pcap tcp port 515 
 
+In the second case run the patched kernel and just start printing: do you 
+get any 'nf_ct_tcp: invalid SYN' kernel message?
 
->On Feb 2 2008 12:23, Pavel Machek wrote:
->>On Fri 2008-02-01 14:25:32, Laurent Vivier wrote:
->>> This patch allows Network Block Device to be mounted locally.
->>
->>What is local nbd good for? Use loop instead...
->
->Local NBD is good for when the content you want to make available
->through the block device is dynamic (generated on-the-fly),
->non-linear or supersparse.
->
->Take for example VMware virtual disks. Just a guess, but
->they roughly can look like this:
->
->  kilobytes  0.. 1: header
->  kilobytes  1..10: correspond to LBA 0..20
->  kilobytes 11..20: correspond to LBA 40..60
->  kilobytes 21..22: correspond to LBA 22..23
->
->So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
->does not deal with that.
->
->And there is supersparsity -- the VMDK file itself is complete, but
->unallocated regions like LBA 24..40 are sparse/zero when projected
->onto a file/block device, respectively; loop cannot deal with that
->either.
->
->In fact, VMware uses local nbd today for its vmware-loop helper
->utility, most likely because of the above-mentioned reasons. (Though
->it quite often hung last time I tried.)
-_____________________________________________________________________
-Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
-http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
-
+Best regards,
+Jozsef
+-
+E-mail  : kadlec@blackhole.kfki.hu, kadlec@sunserv.kfki.hu
+PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
+Address : KFKI Research Institute for Particle and Nuclear Physics
+          H-1525 Budapest 114, POB. 49, Hungary
