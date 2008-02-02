@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763882AbYBBEIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763877AbYBBEMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763882AbYBBEIv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 23:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYBBEIo
+	id S1763877AbYBBEMW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 23:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYBBEMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 23:08:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41030 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753697AbYBBEIo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 23:08:44 -0500
-Date: Sat, 2 Feb 2008 05:43:18 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jike Song <albcamus@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Rijndael Cosque <rijcos@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: What's the status of x2APIC support in Linux kernel?
-Message-ID: <20080202044318.GC12644@one.firstfloor.org>
-References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de> <df9815e70802011855p29c10787lcee23bc9fab181d4@mail.gmail.com>
-Mime-Version: 1.0
+	Fri, 1 Feb 2008 23:12:14 -0500
+Received: from mx2.suse.de ([195.135.220.15]:42731 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752399AbYBBEMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 23:12:13 -0500
+Date: Sat, 2 Feb 2008 05:12:11 +0100
+From: Andi Kleen <ak@suse.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andi Kleen <ak@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Are Section mismatches out of control?
+Message-ID: <20080202041211.GA27735@bingen.suse.de>
+References: <20080201104718.GA11717@uranus.ravnborg.org> <200802011210.52655.ak@suse.de> <Pine.LNX.4.64.0802012250251.18790@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <df9815e70802011855p29c10787lcee23bc9fab181d4@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0802012250251.18790@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Section 5 and section 9.5 describe 'I/OxAPIC'. I'm not sure if it is
-> already supported by Linux, I guess it is not.
+On Fri, Feb 01, 2008 at 10:51:14PM +0100, Jan Engelhardt wrote:
+> 
+> On Feb 1 2008 12:10, Andi Kleen wrote:
+> >On Friday 01 February 2008 11:47:18 Sam Ravnborg wrote:
+> >> James said in a related posting that the Section mismatch
+> >> warnings were getting out of control.
+> >
+> >My question is: where are crashes? If the sections were
+> >really in such bad shape and since we poison (and sometimes
+> >even unmap) init after boot we should in theory see a lot 
+> >of oops reports from this if there were really accesses to
+> >them after boot.
+> >
+> >Where are they?
+> 
+> Perhaps still in RAM? Explicitly zero the area after unmapping,
+> maybe something happens.
 
-I'm not sure what the point of your questions is.  Do you want to 
-do something concrete or are you just interested in random buzzwords?
-
-Anyways as far as I know Linux supports the IO APICs implemented in all
-x86 chipsets fully. That is it doesn't use every possible feature they have,
-but I'm not aware of any particular limitation caused by Linux
-not supporting some IO APIC feature.
-
-The reason for the local x/APIC was that the original non x APIC did not support
-more than 8 logical CPUs being active in the system. Presumably IO xAPIC 
-refers to the IO APIC without this limitation too.
+This is already doing (but not with zero). With DEBUG_RODATA it is 
+even unmapped. 
 
 -Andi
+
