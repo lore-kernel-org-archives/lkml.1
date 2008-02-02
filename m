@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933569AbYBBTPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbYBBTYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933569AbYBBTPX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 14:15:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYBBTPL
+	id S933869AbYBBTYo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 14:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933561AbYBBTYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 14:15:11 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33366 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754103AbYBBTPJ (ORCPT
+	Sat, 2 Feb 2008 14:24:33 -0500
+Received: from main.carme.maven.pl ([193.239.45.138]:16282 "EHLO
+	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933363AbYBBTYa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 14:15:09 -0500
-Date: Sat, 2 Feb 2008 11:15:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] Split list.h and move rcu-protected lists into
- rculist.h
-Message-Id: <20080202111516.5cbd0880.akpm@linux-foundation.org>
-In-Reply-To: <47A470F9.9060708@gmail.com>
-References: <478FBEA0.9090203@gmail.com>
-	<478FBEEA.6040000@gmail.com>
-	<20080201155826.a2d308c1.akpm@linux-foundation.org>
-	<47A470F9.9060708@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Feb 2008 14:24:30 -0500
+X-Greylist: delayed 1714 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Feb 2008 14:24:30 EST
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/27] 2.6.22-stable review
+Date: Sat, 2 Feb 2008 19:55:53 +0100
+User-Agent: PLD Linux KMail/1.9.6 (enterprise 0.20071204.744707)
+References: <20080202001927.GA8368@suse.de>
+In-Reply-To: <20080202001927.GA8368@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802021955.53923.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 02 Feb 2008 14:32:41 +0100 Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
+On Saturday 02 of February 2008, you wrote:
+> This is the start of the stable review cycle for the 2.6.22.17 release.
+> There are 27 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 
-> Andrew Morton wrote:
-> > On Thu, 17 Jan 2008 21:47:38 +0100
-> > Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
-> > 
-> >> This patch moves rcu-protected lists from list.h into a new header
-> >> file rculist.h.
-> > 
-> > I'm getting way too many compilation errors from this, perhaps because of
-> > new rcu-list usages which weren't present in the old tree (ie: current
-> > Linus mainline) which you tested it against.
-> > 
-> 
-> Not really suprising, sorry for the mess.
-> 
-> > The most practical way to prepare a patch like this is to either make it
-> > back-compatible (for a while at least) or to prepare and carefully test it
-> > against latest -mm.  That way you'll pick up everyone's new code.
-> > 
-> 
-> I'll try to come up with something better: if rculist helpers are used from
-> list.h then issue a warning otherwise every thing is fine since the helpers
-> are imported from rculist.h.
-> 
-> Do you think it's better ?
+btw. does this program hang for anyone on 2.6.22 (process in D state) ?
 
-Could.  I'd suggest that you redo the header-file split patch around the
-2.6.25-rc1 timeframe, test it carefully then let's get it in then.
+#include <stdio.h>
+#include <sched.h>
+ 
+int main( void )
+{
+        cpu_set_t cpu;
+        int cpus = 0;
+        int ret;
+        ret = sched_getaffinity(getpid(), sizeof(cpu), &cpu);
+        printf( "cpus = %d, ret = %d\n", cpu, ret );
+        sched_setaffinity(getpid(), sizeof(cpu), &cpu);
+        printf( "ret = %d\n" );
+        return ret;
+}
 
-> In the meanwhile, could you drop the patches related to rculist from mm
-> tree ?
 
-I have done so.
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
