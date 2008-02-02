@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765950AbYBBQ0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbYBBQ0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765950AbYBBQ0T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbYBBQ0K
+	id S932702AbYBBQ0e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759090AbYBBQ0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:26:10 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33770 "EHLO pasmtpB.tele.dk"
+	Sat, 2 Feb 2008 11:26:14 -0500
+Received: from gw.goop.org ([64.81.55.164]:40942 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYBBQ0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:26:08 -0500
-Date: Sat, 2 Feb 2008 17:26:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
+	id S1756740AbYBBQ0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 11:26:13 -0500
+Message-ID: <47A49974.4040504@goop.org>
+Date: Sat, 02 Feb 2008 08:25:24 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [scsi bug] spurious build failures in aic7xxx
-Message-ID: <20080202162611.GA24765@uranus.ravnborg.org>
-References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu> <20080202141857.GA8635@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080202141857.GA8635@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
+Subject: Re: [PATCH 2 of 7] x86: add common mm/pgtable.c
+References: <patchbomb.1201943112@localhost> <3c9aba41ee700a239859.1201943114@localhost> <20080202103030.GA23897@elte.hu> <47A458B1.4050208@goop.org> <20080202134714.GA925@elte.hu>
+In-Reply-To: <20080202134714.GA925@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 03:18:57PM +0100, Ingo Molnar wrote:
-> 
-> i should also specify the build environment:
-> 
-> it's a distcc setup with 5-10 hosts active at a time, so highly parallel 
-> with large, networking related delays. It's make -j130:
-> 
-> nice -15 /usr/bin/time make -j130 bzImage ARCH=i386 \
-> CROSS_COMPILE='distcc \
-> /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu-'
-> 
-> the build host is a 64-bit quad CPU box, so highly parallel as well.
+Ingo Molnar wrote:
+> oops, i thought i pasted that. It was this:
+>
+> arch/x86/mm/pgtable.c: In function 'pgd_alloc':
+> arch/x86/mm/pgtable.c:213: error: implicit declaration of function 'quicklist_alloc'
+> arch/x86/mm/pgtable.c:213: warning: initialization makes pointer from integer without a cast
+> arch/x86/mm/pgtable.c:218: error: implicit declaration of function 'quicklist_free'
+> arch/x86/mm/pgtable.c: In function 'check_pgt_cache':
+> arch/x86/mm/pgtable.c:233: error: implicit declaration of function 'quicklist_trim'
+>
+> also, config re-attached. (maybe i messed up the previous one)
+>   
 
-Impressive setup - I was until now quite satisfied with my new
-quad box that Intel has sponsored (thanks to Greg) :-)
+Still can't reproduce, but it's a simple case of missing headers.
 
-I could not reproduce the bug myself but I think I spotted it.
-We had a missing dependency to the _reg.h file.
-Try following patch and let me now if it continue to break.
-
-	Sam
-
-diff --git a/drivers/scsi/aic7xxx/Makefile b/drivers/scsi/aic7xxx/Makefile
-index e4f70c5..8065590 100644
---- a/drivers/scsi/aic7xxx/Makefile
-+++ b/drivers/scsi/aic7xxx/Makefile
-@@ -44,13 +44,8 @@ clean-files += aic79xx_seq.h aic79xx_reg.h aic79xx_reg_print.c
- 
- # Dependencies for generated files need to be listed explicitly
- 
--$(obj)/aic7xxx_core.o: $(obj)/aic7xxx_seq.h
--$(obj)/aic7xxx_core.o: $(obj)/aic7xxx_reg.h
--$(obj)/aic79xx_core.o: $(obj)/aic79xx_seq.h
--$(obj)/aic79xx_core.o: $(obj)/aic79xx_reg.h
--
--$(addprefix $(obj)/,$(aic7xxx-y)): $(obj)/aic7xxx_seq.h
--$(addprefix $(obj)/,$(aic79xx-y)): $(obj)/aic79xx_seq.h
-+$(addprefix $(obj)/,$(aic7xxx-y:.o=.c)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
-+$(addprefix $(obj)/,$(aic79xx-y:.o=.c)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
- 
- aic7xxx-gen-$(CONFIG_AIC7XXX_BUILD_FIRMWARE)	:= $(obj)/aic7xxx_reg.h
- aic7xxx-gen-$(CONFIG_AIC7XXX_REG_PRETTY_PRINT)	+= $(obj)/aic7xxx_reg_print.c
+    J
