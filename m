@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934054AbYBBUCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934258AbYBBUEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934054AbYBBUCb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbYBBUCV
+	id S934258AbYBBUEX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759602AbYBBUEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:02:21 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40228 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753870AbYBBUCU (ORCPT
+	Sat, 2 Feb 2008 15:04:16 -0500
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:36306 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755992AbYBBUEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:02:20 -0500
-Date: Sat, 2 Feb 2008 12:02:03 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Petr Vandrovec <petr@vandrovec.name>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Unbreak sky2 on 88E8039 with current git
-Message-ID: <20080202120203.5387d1cb@extreme>
-In-Reply-To: <20080202105243.GA14581@vana.vc.cvut.cz>
-References: <20080202105243.GA14581@vana.vc.cvut.cz>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 2 Feb 2008 15:04:15 -0500
+Message-ID: <47A4CCB7.9010703@tiscali.nl>
+Date: Sat, 02 Feb 2008 21:04:07 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: thomas@winischhofer.net
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [video/sis/sis_main.c] add parentheses
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Feb 2008 11:52:43 +0100
-Petr Vandrovec <petr@vandrovec.name> wrote:
+'!' has a higher priority than '&': bitanding has no effect.
 
-> Hello,
->   since I synced my tree to Linus's one two days ago, sky2's packet receiption
-> dies almost instantly.  Device still transmits packets, but no receive.  
-> Fortunately fix is simple, unfortunately I do not know why fix works...
-> 
-> Commit f03b865491c2f30f2a4d77cdafc69c978ceb38a0 (sky2: align IP header on Rx
-> if possible) stopped aligning receive buffers on devices which do not need
-> HANG_CHECK.  Unfortunately there is at least one device (mine, Yukon FE, rev 3)
-> which is not happy if receive buffer is not aligned.  I have no idea which
-> other chips/revisions are affected as well.
-> 
-> Without patch 'ping -f -b 192.168.101.255' RX count stops incrementing in less
-> than 50 packets.  With patch in place it can run like before, for hours...
-> Box is an AMD rev F processor, with nVidia's MCP61 chipset.
-> 							Petr
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 93ae747..5b28fa2 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -427,7 +427,7 @@ sisfb_interpret_edid(struct sisfb_monitor *monitor, u8 *buffer)
+ 
+ 	monitor->feature = buffer[0x18];
+ 
+-	if(!buffer[0x14] & 0x80) {
++	if(!(buffer[0x14] & 0x80)) {
+ 		if(!(buffer[0x14] & 0x08)) {
+ 			printk(KERN_INFO
+ 				"sisfb: WARNING: Monitor does not support separate syncs\n");
 
-I don't have a Yukon FE, but I believe that the Yukon FE does have a ram
-buffer, so you HANG_CHECK should be enabled for that device. You can check
-by running:
-	ethtool -d eth0 | grep 'Ram Buffer'
-With ram buffer (like XL, EC)
-	
-# ethtool -d eth0 | grep 'Ram Buffer'
-Ram Buffer                   0x18
-
-No ram buffer (like EC-U, FE+, ...)
-# ethtool -d eth0 | grep 'Ram Buffer'
-Ram Buffer                   0x00
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
