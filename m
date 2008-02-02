@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbYBBBdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbYBBBdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762840AbYBBBdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 20:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYBBBdO
+	id S1763637AbYBBBdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 20:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762959AbYBBBd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 20:33:14 -0500
+	Fri, 1 Feb 2008 20:33:26 -0500
 Received: from fg-out-1718.google.com ([72.14.220.157]:28697 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYBBBdM (ORCPT
+	with ESMTP id S1762975AbYBBBdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 20:33:12 -0500
+	Fri, 1 Feb 2008 20:33:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=R36yrzia62SeuDw/JHibhe8AUTALzNWbZSMhnK053EohROpsF9J5ruxoB9m04lBxEXmP5R0T6KzrmSW0Wdq4GF6M6YxWceC1+Zw8mvrrhRvcoi+TG9Bf8fqL2PQnVJ1aL19AvQa1mLHcdWZmGqsUXHQ4PfDFgJH6l6RYssvaqvE=
-Message-ID: <6101e8c40802011733h3e5a4c8bgb6c1d1feb2205043@mail.gmail.com>
-Date: Sat, 2 Feb 2008 02:33:10 +0100
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=RVQ/hjqev+RdKLvpKjk+S5LSlBOIbLYPo7gyE0MFPhUcjhCPJMuXQmqeWtpIjOU0cgB3fDqQW1fzJDbtpxiY30TpnEimiAn+3b+dbdfDpTD5WLRM6R2WuoxVeXumJSB2rOTGzU1oOIy28Mzdi7yACfyT+DrVKUAO1Dg+fs0wXTo=
+Message-ID: <6101e8c40802011733y69521724t9e02690419f55201@mail.gmail.com>
+Date: Sat, 2 Feb 2008 02:33:24 +0100
 From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
 	<oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       stable-commits@vger.kernel.org
-Subject: [2.6.22.y] {00/17} series for stable kernel #2
+       stable-commits@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: [2.6.22.y] {01**/17} - do_anonymous_page-race - series for stable kernel
 Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
-       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>
+       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrea Arcangeli" <andrea@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_26253_25279671.1201916004119"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-01/17** do_anonymous_page-race
-02/17 invalid-semicolon
-03/17 pci-fix-unterminated-pci_device_id-lists
-04/17 cciss-panic-in-blk_rq_map_sg
-05/17 cciss-fix_memory_leak
-06/17 handle-bogus-%cs-selector-in-single-step-instruction-decoding
-07/17 i386-fixup-TRACE_IRQ-breakage
-08/17 intel-agp-965gme-fix
-09/17 sony-laptop-call-sonypi_compat_init-earlier
-10/17 via-velocity-dont-oops-on-mtu-change-1
-11/17 via-velocity-dont-oops-on-mtu-change-2
-12/17 nfsacl-retval.diff
-13/17 nfs-fix-nfs-reval-fsid
-14/17 nfs-name-len-limit
-15/17 nfs-unmount-leak.patch
-16/17 nfsv4-MAXNAME-fix.diff
-17/17** nopage-range-fix.patch
+------=_Part_26253_25279671.1201916004119
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+NOT IN MAINLINE
+
+Linus it's go or drop it?
 
 
-Patch 1 and 17 not included is mainline
+
 -- 
 Thanks,
 Oliver
+
+------=_Part_26253_25279671.1201916004119
+Content-Type: message/rfc822; name=do_anonymous_page-race
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file0
+Content-Disposition: attachment; filename=do_anonymous_page-race
+
+
+ZGl0aW9uIGluIHVzZXJzcGFjZSB0ZXN0Y2FzZQpSZWZlcmVuY2VzOiA0Njk0OCwgTFRDMTE1NzQK
+CgpBZGRpdGlvbmFsIENvbW1lbnQgIzEwMyBGcm9tIEFuZHJlYSBBcmNhbmdlbGkgMjAwNC0xMC0x
+NSAxOTo0MQp0aGUgbGFzdCBwYXRjaCBJIGF0dGFjaGVkIGlzIHRoZSBzYWZlc3QgSSBiZWxpZXZl
+LgoKSSdtIG5vdCBzdXJlIGlmIGEgbG9ja191bmxvY2sgb3IgbG9ja191bmxvY2sgaXMgYWx3YXlz
+IGd1YXJhbnRlZWQgdG8gaGFwcGVuCmFmdGVyIHRoZSBJL08sIGFuZCB0aGlzIG1ha2VzIHN1cmUg
+bm8gcmFjZSBjYW4gaGFwcGVuIGFueW1vcmUuCgotLS0KIGZzL2Jpby5jIHwgICAgOSArKysrKysr
+KysKIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKykKCi0tLSBhL2ZzL2Jpby5jCTIwMDct
+MDctMDggMTk6MzI6MTcuMDAwMDAwMDAwIC0wNDAwCisrKyBiL2ZzL2Jpby5jCTIwMDctMDgtMjcg
+MTQ6MDE6MjEuMDAwMDAwMDAwIC0wNDAwCkBAIC0xMDI4LDYgKzEwMjgsMTUgQEAgdm9pZCBiaW9f
+ZW5kaW8oc3RydWN0IGJpbyAqYmlvLCB1bnNpZ25lZAogCWJpby0+Ymlfc2l6ZSAtPSBieXRlc19k
+b25lOwogCWJpby0+Ymlfc2VjdG9yICs9IChieXRlc19kb25lID4+IDkpOwogCisJaWYgKGJpb19k
+YXRhX2RpcihiaW8pID09IFJFQUQpCisJCS8qCisJCSAqIElmIHRoZSBjdXJyZW50IGNwdSBoYXMg
+d3JpdHRlbiB0byB0aGUgcGFnZSBieSBoYW5kCisJCSAqIHdpdGhvdXQgZG1hLCB3ZSBtdXN0IGVu
+Zm9yY2Ugb3JkZXJpbmcgdG8gYmUgc3VyZQorCQkgKiB0aGlzIHdyaXR0ZW4gZGF0YSB3aWxsIGJl
+IHZpc2libGUgYmVmb3JlIHdlIGV4cG9zZQorCQkgKiB0aGUgcGFnZSBjb250ZW50cyB0byBvdGhl
+ciBjcHVzIChmb3IgZXhhbXBsZSB3aXRoCisJCSAqIGEgc2V0X3B0ZSkuCisJCSAqLworCQlzbXBf
+d21iKCk7CiAJaWYgKGJpby0+YmlfZW5kX2lvKQogCQliaW8tPmJpX2VuZF9pbyhiaW8sIGJ5dGVz
+X2RvbmUsIGVycm9yKTsKIH0K
+------=_Part_26253_25279671.1201916004119--
