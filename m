@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932511AbYBBT7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbYBBUAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932511AbYBBT7r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 14:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbYBBT7k
+	id S934102AbYBBUAb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933450AbYBBUAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 14:59:40 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55443 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754599AbYBBT7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 14:59:39 -0500
-Date: Sat, 2 Feb 2008 20:59:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] sleepy linux self-test
-Message-ID: <20080202195956.GC31621@elf.ucw.cz>
-References: <20080130131748.GA3796@elf.ucw.cz> <200802020931.38689.david-b@pacbell.net> <20080202180002.GB26560@elte.hu> <200802021113.22130.david-b@pacbell.net> <20080202193202.GB31621@elf.ucw.cz> <20080202193843.GB32039@elte.hu>
+	Sat, 2 Feb 2008 15:00:15 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:59771 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932324AbYBBUAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:00:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=sCHGnVnES3GQp1Vz2GnQPJ42ARvKi/uHgin887Dl1uOExG4PSIFO1L9hzr4KgRoMPyuYtU0Bxrg3+GM+2vZvFcAME0fiBxGAZdfHGdmQg65g5vedsLxWNZWXAtaEIdZY5j+IUlAOv3CN6v+HJxaML+Bnq5IOpscU5ruiDdQT5pQ=
+Message-ID: <47A4CB7C.3010507@gmail.com>
+Date: Sat, 02 Feb 2008 20:58:52 +0100
+From: =?UTF-8?B?TWlndWVsIEJvdMOzbg==?= <mboton@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080202193843.GB32039@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>, zambrano@broadcom.com,
+       linville@tuxdriver.com
+Subject: Re: linux-2.6.24 compile error in drivers/net/b44.c
+References: <47A3CC70.8090900@cn.fujitsu.com> <47A3F6DC.1000903@cn.fujitsu.com>
+In-Reply-To: <47A3F6DC.1000903@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-02-02 20:38:43, Ingo Molnar wrote:
+Li Zefan wrote:
+> Add CCs:
 > 
-> * Pavel Machek <pavel@ucw.cz> wrote:
+> CC: mboton@gmail.com
+> CC: zambrano@broadcom.com
+> CC: linville@tuxdriver.com
 > 
-> > > It would have been easier to just use the public interface and 
-> > > hard-wire "rtc0".  But going directly to the hardware was dirtier, 
-> > > and more in the spirit of "hack that obviously shouldn't go upstream 
-> > > until it gets done properly".
-> > 
-> > Yes, it was "quick and dirty". And I do not think it is going upstream 
-> > in this form...?
+> Li Zefan wrote:
+>> drivers/net/b44.c: In function 'b44_remove_one':
+>> drivers/net/b44.c:2231: error: implicit declaration of function 'ssb_pcihost_set_power_state'
+>> make[2]: *** [drivers/net/b44.o] Error 1
+>> make[1]: *** [drivers/net] Error 2
+>>
+>> I think it is caused by:
+>>
+>> CONFIG_SSB_PCIHOST=n
+>> CONFIG_B44=y
+>>
 > 
-> which would be a pity - this thing _almost_ started doing suspend and 
-> resume cycles on my testsystems, all by itself :-)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-...which is good reason for me to create cleaned-up patch, right?
+This patch should fix b44 errors when 'SSB_PCIHOST' is not enabled.
 
-wakeup in .c now works, so I actually have time to do it now.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Miguel Botón <mboton@gmail.com>
+
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index ea2a2b5..d081234 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -2228,7 +2228,9 @@ static void __devexit b44_remove_one(struct ssb_device *sdev)
+ 	unregister_netdev(dev);
+ 	ssb_bus_may_powerdown(sdev->bus);
+ 	free_netdev(dev);
++#ifdef B44_PCI
+ 	ssb_pcihost_set_power_state(sdev, PCI_D3hot);
++#endif
+ 	ssb_set_drvdata(sdev, NULL);
+ }
+ 
+@@ -2257,7 +2259,9 @@ static int b44_suspend(struct ssb_device *sdev, pm_message_t state)
+ 		b44_setup_wol(bp);
+ 	}
+ 
++#ifdef B44_PCI
+ 	ssb_pcihost_set_power_state(sdev, PCI_D3hot);
++#endif
+ 	return 0;
+ }
+ 
+--
+	Miguel Botón
