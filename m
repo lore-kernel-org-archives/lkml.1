@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbYBBQN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbYBBQOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761530AbYBBQN4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYBBQNt
+	id S932162AbYBBQOX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYBBQOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:13:49 -0500
-Received: from mailfe14.tele2.it ([212.247.155.173]:56790 "EHLO swip.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750768AbYBBQNs convert rfc822-to-8bit (ORCPT
+	Sat, 2 Feb 2008 11:14:14 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35778 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYBBQON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:13:48 -0500
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Feb 2008 11:13:48 EST
-X-Cloudmark-Score: 0.000000 []
-Message-ID: <47A488A4.8040107@gmail.com>
-Date: Sat, 02 Feb 2008 16:13:40 +0100
-From: Massimo Maiurana <maiurana@gmail.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
-MIME-Version: 1.0
-To: sam@ravnborg.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] kconfig: fix target update-po-config in Makefile
-X-Enigmail-Version: 0.94.4.0
-OpenPGP: id=7044D601
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 2 Feb 2008 11:14:13 -0500
+To: Laurent.Vivier@bull.net
+CC: pavel@ucw.cz, Paul.Clements@steeleye.com,
+       nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-reply-to: <1201965971.4591.13.camel@frecb07144> (message from Laurent
+	Vivier on Sat, 02 Feb 2008 16:26:11 +0100)
+Subject: Re: [PATCH] Allow NBD to be used locally
+References: <1201872332265-git-send-email-Laurent.Vivier@bull.net>
+	 <20080202112336.GB5362@elf.ucw.cz> <1201965971.4591.13.camel@frecb07144>
+Message-Id: <E1JLKzk-0007jY-H5@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 02 Feb 2008 17:13:32 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to recent changes in arch/cris, "make update-po-config" fails
-because it can't include arch/cris/arch as it is a symlink generated
-at build time.
-Patch below fixes this by creating, and then removing at the end, a
-symlink to arch/cris/arch-v10 (should it point to arch-v32? arch-v10
-contains more help messages).
+> > > It creates a kthread to avoid the deadlock described in NBD
+> > > tools documentation.  So, if nbd-client hangs waiting pages, the
+> > > kblockd thread can continue its work and free pages.
+> > 
+> > Hmm, and if there are no other pages that can be freed? Unlikely,
+> > but can happen AFAICT.
+> 
+> Correct. The patch improves the NBD behavior even if it is not
+> perfect.  And I think if no other page can be freed your system is
+> in very bad move ;-)
 
-Signed-off-by: Massimo Maiurana <maiurana@gmail.com>
+Not necessarily.  Problems start when the system wants to free memory
+by writing out pages through NBD, and the userspace process servicing
+it tries to allocate some memory in order to accomplish this.
 
----
-diff -Nru linux/scripts/kconfig/Makefile linux.new/scripts/kconfig/Makefile
---- linux/scripts/kconfig/Makefile	2008-01-25 13:05:12.000000000 +0100
-+++ linux.new/scripts/kconfig/Makefile	2008-02-02 15:40:48.000000000 +0100
-@@ -35,13 +35,14 @@
- 	    --output $(obj)/config.pot
- 	$(Q)sed -i s/CHARSET/UTF-8/ $(obj)/config.pot
- 	$(Q)ln -fs Kconfig.i386 arch/um/Kconfig.arch
-+	$(Q)ln -fs arch-v10 arch/cris/arch
- 	(for i in `ls arch/`;                            \
- 	do                                               \
- 	    $(obj)/kxgettext arch/$$i/Kconfig;           \
- 	done ) >> $(obj)/config.pot
- 	msguniq --sort-by-file --to-code=UTF-8 $(obj)/config.pot \
- 	    --output $(obj)/linux.pot
--	$(Q)rm -f arch/um/Kconfig.arch
-+	$(Q)rm -f arch/um/Kconfig.arch arch/cris/arch
- 	$(Q)rm -f $(obj)/config.pot
+Recent kernels have gotten much better at coping with this, so it
+might not be easy to make local NBD deadlock under normal
+circumstances.  But if you try hard enough, it's not impossible:
+throttle_vm_writeout() can stall an allocation until pending writes
+have completed, all with plenty of memory available in the system.
 
- PHONY += randconfig allyesconfig allnoconfig allmodconfig defconfig
+BTW, you can basically substitute local NBD with fuse-over-loop, and
+get a similar kind of service, with similar problems.
 
-
--- 
-       Massimo Maiurana         massimo<at>ragusa.linux.it
-       http://massimo.solira.org       GPG keyID #7044D601
-
-Articolo 11 - L'Italia ripudia la guerra come strumento di offesa
-alla libertà degli altri popoli e come mezzo di risoluzione delle
-controversie internazionali....
-
+Miklos
