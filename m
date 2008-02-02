@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762247AbYBBPfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763883AbYBBPin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762247AbYBBPfH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 10:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757801AbYBBPey
+	id S1763883AbYBBPin (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 10:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbYBBPif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 10:34:54 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52689 "EHLO pasmtpA.tele.dk"
+	Sat, 2 Feb 2008 10:38:35 -0500
+Received: from lixom.net ([66.141.50.11]:38363 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756528AbYBBPex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 10:34:53 -0500
-Date: Sat, 2 Feb 2008 16:34:56 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, jgarzik@pobox.com
-Subject: Re: [PATCH] sis190: fix compile error section type conflict
-Message-ID: <20080202153456.GA24031@uranus.ravnborg.org>
-References: <47A3FF3F.1040908@cn.fujitsu.com> <20080202143458.GA27978@electric-eye.fr.zoreil.com>
-Mime-Version: 1.0
+	id S1752601AbYBBPif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 10:38:35 -0500
+Date: Sat, 2 Feb 2008 09:39:08 -0600
+From: Olof Johansson <olof@lixom.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org, git-commits-head@vger.kernel.org,
+       gregkh@suse.de
+Subject: Re: [PATCH] Fix fallout from PCI: PCIE ASPM support
+Message-ID: <20080202153908.GA16753@lixom.net>
+References: <200802020506.m1256gXG027547@hera.kernel.org> <20080202052628.GB14936@lixom.net> <47A406B9.5070609@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080202143458.GA27978@electric-eye.fr.zoreil.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <47A406B9.5070609@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 03:34:58PM +0100, Francois Romieu wrote:
-> Li Zefan <lizf@cn.fujitsu.com> :
-> > Fix the following compile error:
-> 
-> I am not sure that it is the right fix. Please read the archive of
-> this week on l-k.
-> 
-> I'll submit the patch below to Jeff once I have tested it with real
-> hardware (sunday evening entertainment). Sam, is it ok to add your
-> s-o-b to it ?
-No - a s-o-b document the path of the patch. And it will not hit
-Jeff via me. Although I know I said ths was to way to do it.
-But you can add my:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+On Fri, Feb 01, 2008 at 09:59:21PM -0800, H. Peter Anvin wrote:
+> Olof Johansson wrote:
+>> On Sat, Feb 02, 2008 at 05:06:42AM +0000, Linux Kernel Mailing List wrote:
+>>
+>>>     PCI: PCIE ASPM support
+>>
+>> This one broke almost all defconfigs on powerpc, since they enable
+>> CONFIG_EXPERIMENTAL and CONFIG_PCI, and this option defaults to y.
+>>
+>> Make it default to 'n' like most other options, and make it depend on
+>> ACPI. Take out the unneccessary default 'n' from the debug option as well.
+>>
+>
+> Is this actually ACPI-dependent?
 
-If I posted the patch myself I do not remember - but then the s-o-b
-would be correct.
+It shouldn't be, but it seems like it's currently entangled a bit with
+the acpi include files. OSC_ACTIVE_STATE_PWR_SUPPORT comes from
+linux/pci-acpi.h.
 
-	Sam
+I can't include acpi/acpi_bus.h though, since that ends up pulling in
+asm/ files that don't exist on powerpc.
+
+So if the probing is fixed, no, it's not ACPI-dependent. Seems like
+something that's just as well to mask behind it until someone's actually
+used and tested it on a non-ACPI platform though, no?
+
+I would experiment with it but I believe our firmware turns off empty
+links before the kernel is booted, we don't support hotplug at this time.
+
+
+-Olof
+
