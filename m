@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934933AbYBBV3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935217AbYBBVa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934933AbYBBV3J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 16:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759621AbYBBV2y
+	id S935217AbYBBVa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 16:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764388AbYBBVaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 16:28:54 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:56628 "EHLO www.gsystems.sk"
+	Sat, 2 Feb 2008 16:30:13 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50864 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756476AbYBBV2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 16:28:53 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] [RFC] 3c509: convert to isa_driver and pnp_driver v2
-Date: Sat, 2 Feb 2008 22:28:57 +0100
-User-Agent: KMail/1.9.7
-Cc: netdev@vger.kernel.org, "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>
-References: <200801312012.43447.linux@rainbow-software.org> <200802021925.36552.linux@rainbow-software.org> <84144f020802021307ja672fdfl29e54483e9f900d@mail.gmail.com>
-In-Reply-To: <84144f020802021307ja672fdfl29e54483e9f900d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1761658AbYBBVaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 16:30:12 -0500
+Date: Sat, 2 Feb 2008 22:30:15 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Frans Pop <elendil@planet.nl>, Bryan Wu <bryan.wu@analog.com>
+Cc: akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REVIEW for merge] kbuild updates including silence of section mismatch check
+Message-ID: <20080202213015.GA27015@uranus.ravnborg.org>
+References: <20080202203503.GA26415@uranus.ravnborg.org> <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802022228.59527.linux@rainbow-software.org>
+In-Reply-To: <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008 22:07:20 Pekka Enberg wrote:
-> Hi,
->
-> On Feb 2, 2008 8:25 PM, Ondrej Zary <linux@rainbow-software.org> wrote:
-> > +//static __be16 el3_phys_addr[EL3_MAX_CARDS][3];
->
-> [snip]
->
-> > +//#if defined(CONFIG_MCA) || defined(CONFIG_EISA)
->
-> [snip]
->
-> > +//     while (el3_probe(el3_cards) == 0) {
-> > +//             if (irq[el3_cards] > 1)
-> > +//                     el3_root_dev->irq = irq[el3_cards];
-> > +//             if (xcvr[el3_cards] >= 0)
-> > +//                     el3_root_dev->if_port = xcvr[el3_cards];
-> > +//             el3_cards++;
-> > +//     }
->
-> You might want to consider dropping these hunks...
+Bryan this was from you - please comment/fix.
 
-Yes, they're going away. The last one is there just as a reminder that the irq 
-and xcvr parameters should be used in the ISA code.
+	Sam
 
--- 
-Ondrej Zary
+On Sat, Feb 02, 2008 at 10:25:51PM +0100, Frans Pop wrote:
+> Sam Ravnborg wrote:
+> > --- a/scripts/setlocalversion
+> > +++ b/scripts/setlocalversion
+> > @@ -45,3 +45,18 @@ if hgid=`hg id 2>/dev/null`; then
+> > # All done with mercurial
+> > exit
+> > fi
+> > +
+> > +# Check for svn and a svn repo.
+> > +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` ; then
+> > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> > +
+> > +       # Are there uncommitted changes?
+> > +       if [ $changes != 0 ]; then
+> > +               printf -- '-svn%s%s%s' "$rev" -dirty "$changes"
+> > +       else
+> > +               printf -- '-svn%s' "$rev"
+> > +       fi
+> > +
+> > +       # All done with svn
+> > +       exit
+> > +fi
+> 
+> This looks broken. Unless I'm very much mistaken the 'if' statement is
+> always going to be true because the awk statement will always execute
+> without error. Try: echo "" | awk '{print $NF}' || echo Error
+> 
+> So, the code should probably be changed to:
+> +if rev=`svn info 2>/dev/null | grep '^Revision' ; then
+> +	rev=`echo $rev | awk '{print $NF}'`
+> +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> 
+> or alternatively:
+> +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` && \
+> +   [ -n "$rev" ] ; then 
+> +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> 
+> Cheers,
+> FJP
+> 
+> P.S. Looks like the mercurial section is missing some indentation.
