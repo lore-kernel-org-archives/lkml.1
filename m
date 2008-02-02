@@ -1,128 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764689AbYBBRbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764120AbYBBReB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764689AbYBBRbs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 12:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYBBRbl
+	id S1764120AbYBBReB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 12:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYBBRdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 12:31:41 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:43195 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751369AbYBBRbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 12:31:41 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=096iV6mN+mWgEoKB+uDF6WLl6ovguexHkFGmHYjY1I108fbrN3RsJuohX0DR6vMUOEGFlJ3Qr7r4ULWNKrf6ZXxqJPD7Ady4SgQ62nggQ2MqOWojA0gvvzgwsiOuKLStfZdOAj3y2+P9y/Y9y/Y6SpjUHb8uaSj6PdpX5dNmFYo=  ;
-X-YMail-OSG: Mro1qVIVM1kpE29BDUqX6thtzd3AXAYJ5mDarqNGoCXBqeHS3y4pmipowvUBIl9j5OAXa4aOeg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] sleepy linux self-test
-Date: Sat, 2 Feb 2008 09:31:38 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20080130131748.GA3796@elf.ucw.cz> <200801311755.33899.david-b@pacbell.net> <20080202124759.GB25773@elf.ucw.cz>
-In-Reply-To: <20080202124759.GB25773@elf.ucw.cz>
+	Sat, 2 Feb 2008 12:33:52 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33356 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbYBBRdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 12:33:51 -0500
+Message-ID: <47A4A96D.2040709@garzik.org>
+Date: Sat, 02 Feb 2008 12:33:33 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [patch] pci: pci_enable_device_bars() fix
+References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu> <47A49171.2000003@garzik.org> <20080202170828.GA12748@elte.hu>
+In-Reply-To: <20080202170828.GA12748@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802020931.38689.david-b@pacbell.net>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008, Pavel Machek wrote:
-> Hi!
+Ingo Molnar wrote:
+> it would have been totally appropriate for me to just send a mail to 
+> lkml with the proper subject line about the breakage. (I might even have 
+> decided to stay completely silent about the issue and fix it for my own 
+> build, letting you guys figure it out.)
+
+Oh come on...   You are smart enough to know to at least CC the driver 
+maintainer, the key POC who should be aware of breakage of their driver. 
+  That is a standard courtesy.
+
+
+> ( And as this was spent from my family's weekend time and i had no time
+>   and no interest to dig any further than to figure out the "first hop"
+>   of the change that broke the build, and the parties who initiated that
+>   hop. I'm in fact surprised that your and James's answer to my
+>   bugreport is hostility. )
+
+I'm sorry you read "would be nice" as hostility.
+
+
+> So i find your suggestion that i should have added more people to the 
+> Cc: line unfair on several levels.
+
+As I noted, it is an obvious courtesy to CC the driver maintainer, at 
+the very least.
+
+_Especially_ when it is a change that requires some knowledge of the 
+hardware, as was this case.
+
+
+>> This set of changes seemed like 50% guesswork to me, without 
+>> consulting the authors :( And unlike many changes, you actually have 
+>> to know the hardware [or get clues from surrounding code] to make the 
+>> change.
 > 
-> > > --- a/drivers/rtc/rtc-cmos.c
-> > > +++ b/drivers/rtc/rtc-cmos.c
-> > > @@ -78,7 +78,7 @@ static inline int is_intr(u8 rtc_intr)
-> > >  
-> > >  /*----------------------------------------------------------------*/
-> > >  
-> > > -static int cmos_read_time(struct device *dev, struct rtc_time *t)
-> > > +int cmos_read_time(struct device *dev, struct rtc_time *t)
-> > >  {
-> > >
-> > >	... etc ...
-> > 
-> > You should be using the standard RTC library calls, exported
-> > from drivers/rtc/interface.c ... and making sure this mechanism
-> > will work with any wakeup-capable RTC.  Otherwise you'll end
-> > being needlessly x86-specific, or reinventing those calls.
-> > 
-> > Plus, the way you're doing it now is violating the locking
-> > protocol used by that driver.
-> 
-> Yep, you are right, but that is the easy issue to fix.
+> you mean the whole set of changes?
 
-Which is why I was puzzled that you didn't start out doing it
-the "right" way ... even just hard-wiring the dubious assumption
-that "rtc0" is the right RTC to use.  :)
+The whole set of changes, yes, not just yours.
 
 
-> There's hard issue: I need 
-> 
-> struct rtc_device *rtc
-> 
-> for the rtc that can be used for system resume,
+> but ... i guess next time i'll think twice before sending any bugreports 
+> about or related to the SCSI code anywhere, unless they become really 
+> annoying. Who needs this hassle?
 
-Well, "rtc which (a) has an alarm, (b) may be used for system wakeup".
+The fact is, each larger subsystem (net, scsi, ata I know) has several 
+vendor contacts and driver maintainers who for various reasons prefer a 
+more focused -- and often less hostile -- mailing list to LKML.
 
-Assuming there *is* such an RTC ... fortunately, there will usually be
-one on systems that are designed to go to sleep.
+I have a hard enough time as it is, trying to convince hardware vendors 
+to work with us, that we are not all assholes.
+
+How about respecting the preferences of certain segments of a very large 
+community, even when they differ from your own?  We have a 
+community-accepted method of expressing these preferences, the 
+MAINTAINERS file.
+
+IMO, standard practice should be:
+
+* To or CC: driver maintainer mentioned in MAINTAINERS (if any)
+* CC: LKML, any list mentioned in MAINTAINERS
+
+So, how about CC'ing the targets that have nicely requested to be CC'd?
+
+	Jeff
 
 
-> and I'd like to get it 
-> without violating too many layers. How to do that?
-> 
-> Ideally, I need 
-> 
-> set_alarm(int)
-> 
-> ...that will magically pick the right rtc device to talk to, and set
-> alarm on it. I don't see how to implement it with current code.
-
-Easy enough.  Given an RTC device node, you can tell whether it has
-no chance at all to meet those requirements:
-
-	static int has_wakealarm(struct device *dev, void *name_ptr)
-	{
-		struct rtc_device *rtc = to_rtc_device(dev);
-
-		/* (a) has an alarm */
-		if (!rtc->op->set_alarm)
-			return 0;
-
-		/* (b) may be used for system wakeup */
-		if (device_may_wakeup(dev->parent))
-			return 0;
-		
-		*(char **)name_ptr = rtc->name;
-		return 1;
-	}
-
-Then there's a new class interface you may not have known about,
-since it's been merged barely over a week now.  You can use it
-to find the name of the rtc to pass to rtc_open():
-
-	static char *find_wake_rtc(void)
-	{
-		char *pony = NULL;
-
-		dev = class_find_device(rtc_class, &rtc, has_wakealarm);
-		return pony;
-	}
-
-On most PCs that will return the name "rtc0" ... and it'll do
-the same on most of the other systems I have.  On both of the
-two-RTC systems I have that will return "rtc1".   On systems
-with no wakealarm-enabled RTC, that will return NULL.
-
-Voila!
-
-- Dave
