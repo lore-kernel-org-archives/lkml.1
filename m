@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763120AbYBBAZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763608AbYBBAZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763120AbYBBAZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762911AbYBBAYJ
+	id S1763608AbYBBAZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762930AbYBBAYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:24:09 -0500
-Received: from cantor.suse.de ([195.135.220.2]:54511 "EHLO mx1.suse.de"
+	Fri, 1 Feb 2008 19:24:13 -0500
+Received: from ns1.suse.de ([195.135.220.2]:54526 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762898AbYBBAYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:24:08 -0500
-Date: Fri, 1 Feb 2008 16:20:03 -0800
+	id S1762922AbYBBAYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 19:24:11 -0500
+Date: Fri, 1 Feb 2008 16:20:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
        Russ Dill <Russ.Dill@asu.edu>, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 04/27] NET: mcs7830 passes msecs instead of jiffies to
-	usb_control_msg
-Message-ID: <20080202002003.GE8368@suse.de>
+Subject: [patch 05/27] NET: kaweth was forgotten in msec switchover of
+	usb_start_wait_urb
+Message-ID: <20080202002006.GF8368@suse.de>
 References: <20080202001232.472591439@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-mcs7830-passes-msecs-instead-of-jiffies-to-usb_control_msg.patch"
+Content-Disposition: inline; filename="net-kaweth-was-forgotten-in-msec-switchover-of-usb_start_wait_urb.patch"
 In-Reply-To: <20080202001927.GA8368@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,40 +40,31 @@ know.
 ------------------
 From: Russ Dill <Russ.Dill@asu.edu>
 
-[NET]: mcs7830 passes msecs instead of jiffies to usb_control_msg
+[NET]: kaweth was forgotten in msec switchover of usb_start_wait_urb
 
-[ Upstream commit 1d39da3dcaad4231f0fa75024b1d6d710a2ced74 ]
+[ Upstream commit: 2b2b2e35b71e5be8bc06cc0ff38df15dfedda19b ]
 
-usb_control_msg was changed long ago (2.6.12-pre) to take milliseconds
-instead of jiffies. Oddly, mcs7830 wasn't added until 2.6.19-rc3.
+Back in 2.6.12-pre, usb_start_wait_urb was switched over to take
+milliseconds instead of jiffies. kaweth.c was never updated to match.
 
 Signed-off-by: Russ Dill <Russ.Dill@asu.edu>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/usb/mcs7830.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/usb/kaweth.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/usb/mcs7830.c
-+++ b/drivers/net/usb/mcs7830.c
-@@ -94,7 +94,7 @@ static int mcs7830_get_reg(struct usbnet
+--- a/drivers/net/usb/kaweth.c
++++ b/drivers/net/usb/kaweth.c
+@@ -70,7 +70,7 @@
+ #define KAWETH_TX_TIMEOUT		(5 * HZ)
+ #define KAWETH_SCRATCH_SIZE		32
+ #define KAWETH_FIRMWARE_BUF_SIZE	4096
+-#define KAWETH_CONTROL_TIMEOUT		(30 * HZ)
++#define KAWETH_CONTROL_TIMEOUT		(30000)
  
- 	ret = usb_control_msg(xdev, usb_rcvctrlpipe(xdev, 0), MCS7830_RD_BREQ,
- 			      MCS7830_RD_BMREQ, 0x0000, index, data,
--			      size, msecs_to_jiffies(MCS7830_CTRL_TIMEOUT));
-+			      size, MCS7830_CTRL_TIMEOUT);
- 	return ret;
- }
- 
-@@ -105,7 +105,7 @@ static int mcs7830_set_reg(struct usbnet
- 
- 	ret = usb_control_msg(xdev, usb_sndctrlpipe(xdev, 0), MCS7830_WR_BREQ,
- 			      MCS7830_WR_BMREQ, 0x0000, index, data,
--			      size, msecs_to_jiffies(MCS7830_CTRL_TIMEOUT));
-+			      size, MCS7830_CTRL_TIMEOUT);
- 	return ret;
- }
- 
+ #define KAWETH_STATUS_BROKEN		0x0000001
+ #define KAWETH_STATUS_CLOSING		0x0000002
 
 -- 
