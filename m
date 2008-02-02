@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765061AbYBBI0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765479AbYBBI1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765061AbYBBI0n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 03:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbYBBI0h
+	id S1765479AbYBBI1w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 03:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYBBI1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 03:26:37 -0500
-Received: from 1wt.eu ([62.212.114.60]:1667 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757138AbYBBI0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 03:26:36 -0500
-Date: Sat, 2 Feb 2008 08:44:06 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Newall <davidn@davidnewall.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: [PATCH] 2.4: Back-port of pl2303.c from 2.6.23.14
-Message-ID: <20080202074406.GA31516@1wt.eu>
-References: <479A83DE.8020002@davidnewall.com>
+	Sat, 2 Feb 2008 03:27:45 -0500
+Received: from qb-out-0506.google.com ([72.14.204.231]:62999 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756866AbYBBI1o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 03:27:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=PC1YA4t/pPHjUt/TpbaOyXEBYMXeGEGApJiLQEdJMlW7zvSUF+AeMA15zKTT6wX0/r8Kfsu69tVsa9S7dUxRqv7xMvI49EiKNqgsHkgNbda65d8Fu2vmdnsj79ZcWHLY4jyqAFJU4op+F5qQ71pIH/L4I0jpRZZ0CjDZ4wPAtyw=
+Subject: Re: [PATCH 2/3] x86: add function prototype to vm86.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47A42662.6090702@cn.fujitsu.com>
+References: <1201938485.1844.6.camel@brick>
+	 <47A42662.6090702@cn.fujitsu.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 02 Feb 2008 00:27:49 -0800
+Message-Id: <1201940869.1844.14.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479A83DE.8020002@davidnewall.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Sat, 2008-02-02 at 16:14 +0800, Li Zefan wrote:
+> Harvey Harrison 写道:
+> > Global functions should include their prototypes.
+> > 
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > ---
+> >  include/asm-x86/vm86.h |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/asm-x86/vm86.h b/include/asm-x86/vm86.h
+> > index a5edf51..b72b9a6 100644
+> > --- a/include/asm-x86/vm86.h
+> > +++ b/include/asm-x86/vm86.h
+> > @@ -195,6 +195,7 @@ struct kernel_vm86_struct {
+> >  
+> >  void handle_vm86_fault(struct kernel_vm86_regs *, long);
+> >  int handle_vm86_trap(struct kernel_vm86_regs *, long, int);
+> > +struct pt_regs * save_v86_state(struct kernel_vm86_regs *);
+> >  
+> 
+> This fixes a sparse warning, but contribute to a coding style error.
+> checkpatch.pl complains about this patch.
 
-I've CC'd Greg, author of the driver.
+Bugger, thought I caught that.  Hopefully Ingo will delete the extra
+space when applying, otherwise I'll send a replacement.
 
-On Sat, Jan 26, 2008 at 11:20:38AM +1030, David Newall wrote:
-> I experienced major major data loss on a PL-2303 USB-serial converter
-> under 2.4.36, which I remedied by back-porting the pl2303.c from the
-> latest 2.6 kernel tree.
+My apologies,
 
-I'm OK to merge your work in 2.4.36.1 if it fixes bugs for you. I would have
-hoped a little more feedback from other users, but let's face it, people
-using USB are most often on desktops running 2.6.
+Harvey
 
-I've noticed your other mail about the buffer overflow (which does not
-sound like an overflow as we call it in security terms, so it's not
-critical). It would be better to merge your work with the fix in it,
-but I'll wait for the fix to be in 2.6 first (so that people upgrading
-from 2.4 to 2.6 never experience a regression).
-
-If this buffer overflow was not present in 2.4 driver but only in 2.6
-(and in the backport), I'd rather wait in order not to break behaviour
-for current users of the driver. If both have the same bug, and if Greg
-is OK, then let's merge your work as a first evolution before a common
-fix.
-
-Based on the above conditions, I'd like you to tell Greg and I if you
-consider it worth to merge this backport in 2.4 now. From my point of
-view, your work looks OK but I want your feedback as a user (and not
-as the backporter), then Greg's approval.
-
-Thanks,
-Willy
 
