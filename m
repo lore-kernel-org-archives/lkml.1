@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbYBBBIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762532AbYBBB3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762733AbYBBBIQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 20:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbYBBBIC
+	id S1762532AbYBBB3o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 20:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758107AbYBBB3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 20:08:02 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53414 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755026AbYBBBIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 20:08:00 -0500
-Date: Fri, 1 Feb 2008 17:07:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, shaohua.li@intel.com,
-       yanmin.zhang@intel.com
-Subject: Re: [GIT PATCH] PCI patches for 2.6.24
-Message-Id: <20080201170746.31a7caa0.akpm@linux-foundation.org>
-In-Reply-To: <20080202004916.GA10071@suse.de>
-References: <20080201231147.GA18174@suse.de>
-	<20080201164206.d96c6ee0.akpm@linux-foundation.org>
-	<20080202004916.GA10071@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 1 Feb 2008 20:29:35 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60534 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756668AbYBBB3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 20:29:34 -0500
+Date: Sat, 2 Feb 2008 02:29:29 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Jiri Slaby <jirislaby@gmail.com>,
+       Pavel Machek <pavel@suse.cz>, Christoph Hellwig <hch@lst.de>,
+       Dominik Brodowski <linux@brodo.de>, Andi Kleen <ak@suse.de>,
+       Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>
+Subject: Re: Feature Removals for 2.6.25
+Message-ID: <20080202012929.GA30847@wotan.suse.de>
+References: <1201829922.23523.68.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201829922.23523.68.camel@brick>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008 16:49:16 -0800
-Greg KH <gregkh@suse.de> wrote:
+On Thu, Jan 31, 2008 at 05:38:42PM -0800, Harvey Harrison wrote:
+> ---------------------------
+> Ping?
+> What:	vm_ops.nopage
+> When:	Soon, provided in-kernel callers have been converted
+> Why:	This interface is replaced by vm_ops.fault, but it has been around
+> 	forever, is used by a lot of drivers, and doesn't cost much to
+> 	maintain.
+> Who:	Nick Piggin <npiggin@suse.de>
 
-> > --- a/drivers/pci/pcie/Kconfig~fix-gregkh-pci-pci-pcie-aspm-support
-> > +++ a/drivers/pci/pcie/Kconfig
-> > @@ -32,7 +32,7 @@ source "drivers/pci/pcie/aer/Kconfig"
-> >  #
-> >  config PCIEASPM
-> >  	bool "PCI Express ASPM support(Experimental)"
-> > -	depends on PCI && EXPERIMENTAL
-> > +	depends on PCI && EXPERIMENTAL && PCIEPORTBUS
-> >  	default y
-> >  	help
-> >  	  This enables PCI Express ASPM (Active State Power Management) and
-> > _
-> 
-> Oops, sorry, I'll add that to my queue for the next round.
-
-Was "default y" appropriate?
+Well the in-kernel callers have not all been converted yet. I have
+actually done the work, but it needs testing and merging by maintainers.
+Getting it done during this merge window would be nice, I'm going to
+try to make that happen after I get back from LCA. Otherwise probably
+2.6.26.
