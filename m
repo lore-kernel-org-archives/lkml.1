@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935226AbYBBU4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934467AbYBBVAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935226AbYBBU4W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762482AbYBBU4N
+	id S934467AbYBBVAK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 16:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400AbYBBU76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:56:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:40090 "EHLO mail.dvmed.net"
+	Sat, 2 Feb 2008 15:59:58 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48861 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762268AbYBBU4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:56:11 -0500
-Message-ID: <47A4D8E4.8030708@garzik.org>
-Date: Sat, 02 Feb 2008 15:56:04 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [patch] pci: pci_enable_device_bars() fix
-References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu> <20080202184441.GA12301@suse.de> <20080202190558.GB27927@elte.hu>
-In-Reply-To: <20080202190558.GB27927@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1755992AbYBBU74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:59:56 -0500
+Subject: patch driver-core-update-some-prototypes-in-platform.txt.patch added to gregkh-2.6 tree
+To: sfr@canb.auug.org.au, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Sat, 02 Feb 2008 12:57:43 -0800
+In-Reply-To: <20080202221507.fd916a3b.sfr@canb.auug.org.au>
+Message-ID: <1201985862276@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Greg KH <gregkh@suse.de> wrote:
-> 
->>> ( This call has been introduced upstream 3 weeks ago by commit
->>>   8a4df120b07, but the PCI tree has apparently not been fully 
->>>   re-tested with Linus-latest since that point. )
->> Wait, my testing caught this.  I made the change to the patch myself, 
->> adding the needed conversion to my tree, it's here, on my disk!
->>
->> Oh crap, I never checked it in.
->>
->> /me goes off to sulk in shame.
-> 
-> you might want to join the (sizable) club of us deeply ashamed people 
-> who recently introduced upstream build failures :-/
 
-Personal CC differences aside <grin> I do think you guys both do a good 
-job of staying on top of your subsystems.
+This is a note to let you know that I've just added the patch titled
 
-We all wear the brown paper bag on occasion, and with the "merge 
-maelstrom" during each merge window, I'm quite frankly amazed at how 
-_little_ stuff get broken overall.
+     Subject: Driver core: Update some prototypes in platform.txt
 
-	Jeff
+to my gregkh-2.6 tree.  Its filename is
+
+     driver-core-update-some-prototypes-in-platform.txt.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
+>From sfr@canb.auug.org.au  Sat Feb  2 12:50:36 2008
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Sat, 2 Feb 2008 22:15:07 +1100
+Subject: Driver core: Update some prototypes in platform.txt
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-ID: <20080202221507.fd916a3b.sfr@canb.auug.org.au>
 
+
+Just make these match the actual code.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ Documentation/driver-model/platform.txt |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/Documentation/driver-model/platform.txt
++++ b/Documentation/driver-model/platform.txt
+@@ -122,15 +122,15 @@ None the less, there are some APIs to su
+ using these calls except with such hotplug-deficient drivers.
+ 
+ 	struct platform_device *platform_device_alloc(
+-			char *name, unsigned id);
++			const char *name, int id);
+ 
+ You can use platform_device_alloc() to dynamically allocate a device, which
+ you will then initialize with resources and platform_device_register().
+ A better solution is usually:
+ 
+ 	struct platform_device *platform_device_register_simple(
+-			char *name, unsigned id,
+-			struct resource *res, unsigned nres);
++			const char *name, int id,
++			struct resource *res, unsigned int nres);
+ 
+ You can use platform_device_register_simple() as a one-step call to allocate
+ and register a device.
+
+
+Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
+
+bad/battery-class-driver.patch
+driver/ppc-fix-powerpc-vio_find_name-to-not-use-devices_subsys.patch
+driver/driver-core-update-some-prototypes-in-platform.txt.patch
