@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765549AbYBBBgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbYBBBgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765549AbYBBBgb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 20:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762221AbYBBBeP
+	id S932109AbYBBBgr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 20:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764121AbYBBBeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 20:34:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:28697 "EHLO
+	Fri, 1 Feb 2008 20:34:19 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:28811 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762132AbYBBBeN (ORCPT
+	with ESMTP id S1764100AbYBBBeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 20:34:13 -0500
+	Fri, 1 Feb 2008 20:34:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=lsdt3Y25/YEPiaul0cgTMpDfaWGtZEnGMz6sT7Ys15mIvCFsE8rhQe8uyK2hrpsLLNhjXkO8R3G0iSs6vAbTrmR2l8kW3QY7ZUkr4W9FSkyrBQy+2py7bb9uJzsp546HYcXd7w0qcgAiFNYV87Ah01z5atG0nLqyxD62whlycvY=
-Message-ID: <6101e8c40802011734r7b99c3q7d24bf5678b83a0b@mail.gmail.com>
-Date: Sat, 2 Feb 2008 02:34:12 +0100
+        b=Hk/zwvdLAN2zLwBvb1bhstgS3YQqgIkI+3vsVCmB57T/CojwPUSc68GfFcPPeV/o8CjO3Gd8YS9S9AHeU7mLN8NXIibXL7JnC7MIs1uyCFAMBq5YES7j1RazzazDheJchX0Zzpyj5k18n5U/KhjN6TdBxrSTU0M6TprKs0XvlD0=
+Message-ID: <6101e8c40802011734v57f59e99o18c66db3bc7a15e0@mail.gmail.com>
+Date: Sat, 2 Feb 2008 02:34:16 +0100
 From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
 	<oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: [2.6.22.y] {09/17} - sony-laptop-call-sonypi_compat_init-earlier - series for stable kernel #2
+Subject: [2.6.22.y] {10/17} - via-velocity-dont-oops-on-mtu-change-1 - series for stable kernel #2
 Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
        "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>,
-       "Mattia Dongili" <malattia@linux.it>, "Len Brown" <len.brown@intel.com>,
-       "Jeff Mahoney" <jeffm@suse.com>
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Jeff Mahoney" <jeffm@suse.com>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_26269_32439276.1201916052420"
+	boundary="----=_Part_26271_16633580.1201916056486"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_26269_32439276.1201916052420
+------=_Part_26271_16633580.1201916056486
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-mainline: 015a916fbbf105bb15f4bbfd80c3b9b2f2e0d7db
+mainline: bd7b3f34198071d8bec05180530c362f1800ba46
 
 
 -- 
 Thanks,
 Oliver
 
-------=_Part_26269_32439276.1201916052420
-Content-Type: message/rfc822;
- name=sony-laptop-call-sonypi_compat_init-earlier
+------=_Part_26271_16633580.1201916056486
+Content-Type: message/rfc822; name=via-velocity-dont-oops-on-mtu-change-1
 Content-Transfer-Encoding: base64
 X-Attachment-Id: file0
 Content-Disposition: attachment;
- filename=sony-laptop-call-sonypi_compat_init-earlier
+ filename=via-velocity-dont-oops-on-mtu-change-1
 
 
-ZyAyMDA3IDA3OjIwOjI3ICswMDAwICgrMDkwMCkKU3ViamVjdDogc29ueS1sYXB0b3A6IGNhbGwg
-c29ueXBpX2NvbXBhdF9pbml0IGVhcmxpZXIKUGF0Y2gtbWFpbmxpbmU6IDIuNi4yMwpSZWZlcmVu
-Y2VzOiAzNTA5ODQKCnNvbnktbGFwdG9wOiBjYWxsIHNvbnlwaV9jb21wYXRfaW5pdCBlYXJsaWVy
-Cgpzb255cGlfY29tcGF0IHVzZXMgYSBrZmlmbyB0aGF0IG5lZWRzIHRvIGJlIHByZXNlbnQgYmVm
-b3JlIF9TUlMgaXMKY2FsbGVkIHRvIGJlIGFibGUgdG8gY29wZSB3aXRoIHRoZSBJUlFzIHRyaWdn
-ZXJlZCB3aGVuIHNldHRpbmcKcmVzb3VyY2VzLgoKU2lnbmVkLW9mZi1ieTogTWF0dGlhIERvbmdp
-bGkgPG1hbGF0dGlhQGxpbnV4Lml0PgpTaWduZWQtb2ZmLWJ5OiBMZW4gQnJvd24gPGxlbi5icm93
-bkBpbnRlbC5jb20+CkFja2VkLWJ5OiBKZWZmIE1haG9uZXkgPGplZmZtQHN1c2UuY29tPgotLS0K
-IGRyaXZlcnMvbWlzYy9zb255LWxhcHRvcC5jIHwgICAxNSArKysrKysrKystLS0tLS0KIDEgZmls
-ZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0pCgotLS0gYS9kcml2ZXJz
-L21pc2Mvc29ueS1sYXB0b3AuYwkyMDA3LTExLTI4IDEwOjUyOjEzLjAwMDAwMDAwMCAtMDUwMAor
-KysgYi9kcml2ZXJzL21pc2Mvc29ueS1sYXB0b3AuYwkyMDA4LTAxLTAyIDE1OjE3OjQyLjAwMDAw
-MDAwMCAtMDUwMApAQCAtMjA2OCw4ICsyMDY4LDYgQEAgc3RhdGljIGludCBzb255X3BpY19yZW1v
-dmUoc3RydWN0IGFjcGlfZAogCXN0cnVjdCBzb255X3BpY19pb3BvcnQgKmlvLCAqdG1wX2lvOwog
-CXN0cnVjdCBzb255X3BpY19pcnEgKmlycSwgKnRtcF9pcnE7CiAKLQlzb255cGlfY29tcGF0X2V4
-aXQoKTsKLQogCWlmIChzb255X3BpY19kaXNhYmxlKGRldmljZSkpIHsKIAkJcHJpbnRrKEtFUk5f
-RVJSIERSVl9QRlggIkNvdWxkbid0IGRpc2FibGUgZGV2aWNlLlxuIik7CiAJCXJldHVybiAtRU5Y
-SU87CkBAIC0yMDc5LDYgKzIwNzcsOCBAQCBzdGF0aWMgaW50IHNvbnlfcGljX3JlbW92ZShzdHJ1
-Y3QgYWNwaV9kCiAJcmVsZWFzZV9yZWdpb24oc3BpY19kZXYuY3VyX2lvcG9ydC0+aW8ubWluaW11
-bSwKIAkJCXNwaWNfZGV2LmN1cl9pb3BvcnQtPmlvLmFkZHJlc3NfbGVuZ3RoKTsKIAorCXNvbnlw
-aV9jb21wYXRfZXhpdCgpOworCiAJc29ueV9sYXB0b3BfcmVtb3ZlX2lucHV0KCk7CiAKIAkvKiBw
-ZiBhdHRycyAqLwpAQCAtMjE0NCw2ICsyMTQ0LDkgQEAgc3RhdGljIGludCBzb255X3BpY19hZGQo
-c3RydWN0IGFjcGlfZGV2aQogCQlnb3RvIGVycl9mcmVlX3Jlc291cmNlczsKIAl9CiAKKwlpZiAo
-c29ueXBpX2NvbXBhdF9pbml0KCkpCisJCWdvdG8gZXJyX3JlbW92ZV9pbnB1dDsKKwogCS8qIHJl
-cXVlc3QgaW8gcG9ydCAqLwogCWxpc3RfZm9yX2VhY2hfZW50cnkoaW8sICZzcGljX2Rldi5pb3Bv
-cnRzLCBsaXN0KSB7CiAJCWlmIChyZXF1ZXN0X3JlZ2lvbihpby0+aW8ubWluaW11bSwgaW8tPmlv
-LmFkZHJlc3NfbGVuZ3RoLApAQCAtMjE1OCw3ICsyMTYxLDcgQEAgc3RhdGljIGludCBzb255X3Bp
-Y19hZGQoc3RydWN0IGFjcGlfZGV2aQogCWlmICghc3BpY19kZXYuY3VyX2lvcG9ydCkgewogCQlw
-cmludGsoS0VSTl9FUlIgRFJWX1BGWCAiRmFpbGVkIHRvIHJlcXVlc3RfcmVnaW9uLlxuIik7CiAJ
-CXJlc3VsdCA9IC1FTk9ERVY7Ci0JCWdvdG8gZXJyX3JlbW92ZV9pbnB1dDsKKwkJZ290byBlcnJf
-cmVtb3ZlX2NvbXBhdDsKIAl9CiAKIAkvKiByZXF1ZXN0IElSUSAqLwpAQCAtMjE5OCw5ICsyMjAx
-LDYgQEAgc3RhdGljIGludCBzb255X3BpY19hZGQoc3RydWN0IGFjcGlfZGV2aQogCWlmIChyZXN1
-bHQpCiAJCWdvdG8gZXJyX3JlbW92ZV9wZjsKIAotCWlmIChzb255cGlfY29tcGF0X2luaXQoKSkK
-LQkJZ290byBlcnJfcmVtb3ZlX3BmOwotCiAJcmV0dXJuIDA7CiAKIGVycl9yZW1vdmVfcGY6CkBA
-IC0yMjE2LDYgKzIyMTYsOSBAQCBlcnJfcmVsZWFzZV9yZWdpb246CiAJcmVsZWFzZV9yZWdpb24o
-c3BpY19kZXYuY3VyX2lvcG9ydC0+aW8ubWluaW11bSwKIAkJCXNwaWNfZGV2LmN1cl9pb3BvcnQt
-PmlvLmFkZHJlc3NfbGVuZ3RoKTsKIAorZXJyX3JlbW92ZV9jb21wYXQ6CisJc29ueXBpX2NvbXBh
-dF9leGl0KCk7CisKIGVycl9yZW1vdmVfaW5wdXQ6CiAJc29ueV9sYXB0b3BfcmVtb3ZlX2lucHV0
-KCk7CiAK
-------=_Part_26269_32439276.1201916052420--
+CkRhdGU6IFRodSwgMTUgTm92IDIwMDcgMDM6NDc6MjcgKzAwMDAgKC0wODAwKQpTdWJqZWN0OiBb
+VklBX1ZFTE9DSVRZXTogRG9uJ3Qgb29wcyBvbiBNVFUgY2hhbmdlLgpQYXRjaC1tYWlubGluZTog
+djIuNi4yNC1yYzMKUmVmZXJlbmNlczogMzQxNTM3CgpbVklBX1ZFTE9DSVRZXTogRG9uJ3Qgb29w
+cyBvbiBNVFUgY2hhbmdlLgoKU2ltcGxlIG10dSBjaGFuZ2Ugd2hlbiBkZXZpY2UgaXMgZG93bi4K
+Rml4IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD05MzgyLgoKU2ln
+bmVkLW9mZi1ieTogU3RlcGhlbiBIZW1taW5nZXIgPHNoZW1taW5nZXJAbGludXgtZm91bmRhdGlv
+bi5vcmc+ClNpZ25lZC1vZmYtYnk6IERhdmlkIFMuIE1pbGxlciA8ZGF2ZW1AZGF2ZW1sb2Z0Lm5l
+dD4KQWNrZWQtYnk6IEplZmYgTWFob25leSA8amVmZm1Ac3VzZS5jb20+Ci0tLQogZHJpdmVycy9u
+ZXQvdmlhLXZlbG9jaXR5LmMgfCAgICA1ICsrKysrCiAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRp
+b25zKCspCgotLS0gYS9kcml2ZXJzL25ldC92aWEtdmVsb2NpdHkuYwkyMDA4LTAxLTAzIDE1OjE4
+OjM1LjAwMDAwMDAwMCAtMDUwMAorKysgYi9kcml2ZXJzL25ldC92aWEtdmVsb2NpdHkuYwkyMDA4
+LTAxLTAzIDE1OjE4OjUwLjAwMDAwMDAwMCAtMDUwMApAQCAtMTc5OCw2ICsxNzk4LDExIEBAIHN0
+YXRpYyBpbnQgdmVsb2NpdHlfY2hhbmdlX210dShzdHJ1Y3QgbmUKIAkJcmV0dXJuIC1FSU5WQUw7
+CiAJfQogCisJaWYgKCFuZXRpZl9ydW5uaW5nKGRldikpIHsKKwkJZGV2LT5tdHUgPSBuZXdfbXR1
+OworCQlyZXR1cm4gMDsKKwl9CisKIAlpZiAobmV3X210dSAhPSBvbGRtdHUpIHsKIAkJc3Bpbl9s
+b2NrX2lycXNhdmUoJnZwdHItPmxvY2ssIGZsYWdzKTsKIAo=
+------=_Part_26271_16633580.1201916056486--
