@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbYBBGNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764842AbYBBGUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763928AbYBBGNn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 01:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYBBGNe
+	id S1764842AbYBBGUq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 01:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbYBBGUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 01:13:34 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:55803 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750810AbYBBGNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 01:13:33 -0500
-Date: Sat, 2 Feb 2008 00:16:12 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       srostedt@redhat.com, ghaskins@novell.com
-Subject: Re: Integrating cpusets and cpu isolation [was Re: [CPUISOL] CPU
- isolation extensions]
-Message-Id: <20080202001612.98354ff2.pj@sgi.com>
-In-Reply-To: <47A21C53.2010502@qualcomm.com>
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-	<1201511305.6149.30.camel@lappy>
-	<20080128085910.7d38e9f5.pj@sgi.com>
-	<479E20DA.2080403@qualcomm.com>
-	<20080128130637.60db148e.pj@sgi.com>
-	<47A21C53.2010502@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 2 Feb 2008 01:20:07 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:35205 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756570AbYBBGUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 01:20:05 -0500
+Message-ID: <47A40B8C.6080303@garzik.org>
+Date: Sat, 02 Feb 2008 01:19:56 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Cai, Crane" <Crane.Cai@amd.com>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] PCI subsystem: AMD SATA IDE mode quirk
+References: <206C6845C72CAE439DC3D9D413C571A487B327@ssuzexmb3.amd.com>
+In-Reply-To: <206C6845C72CAE439DC3D9D413C571A487B327@ssuzexmb3.amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max wrote:
-> Here is the list of things of issues with sched_load_balance flag from CPU isolation 
-> perspective:
+Cai, Crane wrote:
+> From: Crane Cai <crane.cai@amd.com>
+> 
+> PCI: modify SATA IDE mode quirk
+> When initialize and resume, SB600/700/800 need to set SATA mode
+> correctly.
+> 
+> Signed-off-by: Crane Cai <crane.cai@amd.com>
+> --------------------------------------------
+> --- a/drivers/pci/quirks.c	2007-09-24 14:16:32.000000000 -0400
+> +++ b/drivers/pci/quirks.c	2008-02-02 11:23:47.000000000 -0500
+> @@ -859,12 +859,13 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_IN
+>  DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_INTEL,
+> PCI_DEVICE_ID_INTEL_82454NX,	quirk_disable_pxb );
+>  
+>  
+> -static void __devinit quirk_sb600_sata(struct pci_dev *pdev)
+> +static void __devinit quirk_amd_ide_mode(struct pci_dev *pdev)
+>  {
+> -	/* set sb600 sata to ahci mode */
+> -	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE) {
+> -		u8 tmp;
+> +	/* set sb600/sb700/sb800 sata to ahci mode */
+> +	u8 tmp;
+>  
+> +	pci_read_config_byte(pdev, PCI_CLASS_DEVICE, &tmp);
+> +	if (tmp == 0x01) {
+>  		pci_read_config_byte(pdev, 0x40, &tmp);
+>  		pci_write_config_byte(pdev, 0x40, tmp|1);
+>  		pci_write_config_byte(pdev, 0x9, 1);
+> @@ -872,10 +873,13 @@ static void __devinit quirk_sb600_sata(s
+>  		pci_write_config_byte(pdev, 0x40, tmp);
+>  
+>  		pdev->class = PCI_CLASS_STORAGE_SATA_AHCI;
+> +		printk(KERN_INFO "PCI: set SATA to AHCI mode\n");
+>  	}
+>  }
+> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_sb600_sata);
+> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_sb600_sata);
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_amd_ide_mode);
+> +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_amd_ide_mode);
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_amd_ide_mode);
+> +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_amd_ide_mode);
 
-A separate thread happened to start up on lkml.org, shortly after
-yours, that went into this in considerable detail.
+ACK
 
-For example, the interaction of cpusets, sched_load_balance,
-sched_domains and real time scheduling is examined in some detail on
-this thread.  Everyone participating on that thread learned something
-(we all came into it with less than a full picture of what's there.)
+In the future, please also CC linux-ide@vger.kernel.org, as that's where 
+the ATA folks hang out :)
 
-I would encourage you to read it closely.  For example, the scheduler
-code should not be trying to access per-cpuset attributes such as
-the sched_load_balance flag (you are correct that this would be
-difficult to do because of the locking; however by design, that is
-not to be done.)
+	Jeff
 
-This thread begins at:
 
-    scheduler scalability - cgroups, cpusets and load-balancing
-    http://lkml.org/lkml/2008/1/29/60
-
-Too bad we didn't think to include you in the CC list of that
-thread from the beginning.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
