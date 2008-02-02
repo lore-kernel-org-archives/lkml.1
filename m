@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935509AbYBBX66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935557AbYBBX7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935509AbYBBX66 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 18:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934785AbYBBX57
+	id S935557AbYBBX7b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 18:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934936AbYBBX6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 18:57:59 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40088 "EHLO mx2.suse.de"
+	Sat, 2 Feb 2008 18:58:05 -0500
+Received: from mail.suse.de ([195.135.220.2]:37333 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934681AbYBBX55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 18:57:57 -0500
+	id S934901AbYBBX6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 18:58:02 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Frank Seidel <fseidel@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 04/10] nozomi driver update
-Date: Sat,  2 Feb 2008 15:55:58 -0800
-Message-Id: <1201996564-21951-4-git-send-email-gregkh@suse.de>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Frank Seidel <fseidel@suse.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 05/10] nozomi: constify driver
+Date: Sat,  2 Feb 2008 15:55:59 -0800
+Message-Id: <1201996564-21951-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080202234357.GA21721@suse.de>
 References: <20080202234357.GA21721@suse.de>
@@ -22,244 +23,154 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <fseidel@suse.de>
+From: Jan Engelhardt <jengelh@computergmbh.de>
 
-Minor cleanups and removal of in-file changelog:
+nozomi: constify structures and annotate vars
 
-- Correction of misspellings and wrong encoded Name
-- changed 'unsigned' to 'unsigned int' for better readability
-- use of generic devicefile access macro
-- fixed/added explanatory comment to ntty_put_char
-
+Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
 Signed-off-by: Frank Seidel <fseidel@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/nozomi.c |  122 ++++++++++++++----------------------------------
- 1 files changed, 36 insertions(+), 86 deletions(-)
+ drivers/char/nozomi.c |   38 ++++++++++++++++++--------------------
+ 1 files changed, 18 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
-index 6076e66..86ded7e 100644
+index 86ded7e..7979eb1 100644
 --- a/drivers/char/nozomi.c
 +++ b/drivers/char/nozomi.c
-@@ -2,7 +2,7 @@
-  * nozomi.c  -- HSDPA driver Broadband Wireless Data Card - Globe Trotter
-  *
-  * Written by: Ulf Jakobsson,
-- *             Jan �erfeldt,
-+ *             Jan Åkerfeldt,
-  *             Stefan Thomasson,
-  *
-  * Maintained by: Paul Hardwick (p.hardwick@option.com)
-@@ -38,60 +38,6 @@
-  * --------------------------------------------------------------------------
+@@ -395,7 +395,7 @@ struct buffer {
+ } __attribute__ ((packed));
+ 
+ /*    Global variables */
+-static struct pci_device_id nozomi_pci_tbl[] = {
++static struct pci_device_id nozomi_pci_tbl[] __devinitdata = {
+ 	{PCI_DEVICE(VENDOR1, DEVICE1)},
+ 	{},
+ };
+@@ -471,12 +471,12 @@ out:
+  * -Optimize
+  * -Rewrite cleaner
   */
+-static u32 write_mem32(void __iomem *mem_addr_start, u32 *buf,
++static u32 write_mem32(void __iomem *mem_addr_start, const u32 *buf,
+ 			u32 size_bytes)
+ {
+ 	u32 i = 0;
+ 	u32 *ptr = (__force u32 *) mem_addr_start;
+-	u16 *buf16;
++	const u16 *buf16;
  
--/*
-- * CHANGELOG
-- * Version 2.1d
-- * 11-November-2007 Jiri Slaby, Frank Seidel
-- * - Big rework of multicard support by Jiri
-- * - Major cleanups (semaphore to mutex, endianess, no major reservation)
-- * - Optimizations
-- *
-- * Version 2.1c
-- * 30-October-2007 Frank Seidel
-- * - Completed multicard support
-- * - Minor cleanups
-- *
-- * Version 2.1b
-- * 07-August-2007 Frank Seidel
-- * - Minor cleanups
-- * - theoretical multicard support
-- *
-- * Version 2.1
-- * 03-July-2006 Paul Hardwick
-- *
-- * - Stability Improvements. Incorporated spinlock wraps patch.
-- * - Updated for newer 2.6.14+ kernels (tty_buffer_request_room)
-- * - using __devexit macro for tty
-- *
-- *
-- * Version 2.0
-- * 08-feb-2006 15:34:10:Ulf
-- *
-- * -Fixed issue when not waking up line disipine layer, could probably result
-- *  in better uplink performance for 2.4.
-- *
-- * -Fixed issue with big endian during initalization, now proper toggle flags
-- *  are handled between preloader and maincode.
-- *
-- * -Fixed flow control issue.
-- *
-- * -Added support for setting DTR.
-- *
-- * -For 2.4 kernels, removing temporary buffer that's not needed.
-- *
-- * -Reading CTS only for modem port (only port that supports it).
-- *
-- * -Return 0 in write_room instead of netative value, it's not handled in
-- *  upper layer.
-- *
-- * --------------------------------------------------------------------------
-- * Version 1.0
-- *
-- * First version of driver, only tested with card of type F32_2.
-- * Works fine with 2.4 and 2.6 kernels.
-- * Driver also support big endian architecture.
-- */
--
- /* Enable this to have a lot of debug printouts */
- #define DEBUG
+ 	if (unlikely(!ptr || !buf))
+ 		return 0;
+@@ -484,7 +484,7 @@ static u32 write_mem32(void __iomem *mem_addr_start, u32 *buf,
+ 	/* shortcut for extremely often used cases */
+ 	switch (size_bytes) {
+ 	case 2:	/* 2 bytes */
+-		buf16 = (u16 *) buf;
++		buf16 = (const u16 *)buf;
+ 		writew(__cpu_to_le16(*buf16), (void __iomem *)ptr);
+ 		return 2;
+ 		break;
+@@ -501,7 +501,7 @@ static u32 write_mem32(void __iomem *mem_addr_start, u32 *buf,
+ 	while (i < size_bytes) {
+ 		if (size_bytes - i == 2) {
+ 			/* 2 bytes */
+-			buf16 = (u16 *) buf;
++			buf16 = (const u16 *)buf;
+ 			writew(__cpu_to_le16(*buf16), (void __iomem *)ptr);
+ 			i += 2;
+ 		} else {
+@@ -723,8 +723,7 @@ static int nozomi_read_config_table(struct nozomi *dc)
+ /* Enable uplink interrupts  */
+ static void enable_transmit_ul(enum port_type port, struct nozomi *dc)
+ {
+-	u16 mask[NOZOMI_MAX_PORTS] = \
+-			{MDM_UL, DIAG_UL, APP1_UL, APP2_UL, CTRL_UL};
++	static const u16 mask[] = {MDM_UL, DIAG_UL, APP1_UL, APP2_UL, CTRL_UL};
  
-@@ -143,8 +89,9 @@ do {								\
- /* Do we need this settable at runtime? */
- static int debug = NOZOMI_DEBUG_LEVEL;
+ 	if (port < NOZOMI_MAX_PORTS) {
+ 		dc->last_ier |= mask[port];
+@@ -737,8 +736,8 @@ static void enable_transmit_ul(enum port_type port, struct nozomi *dc)
+ /* Disable uplink interrupts  */
+ static void disable_transmit_ul(enum port_type port, struct nozomi *dc)
+ {
+-	u16 mask[NOZOMI_MAX_PORTS] = \
+-			{~MDM_UL, ~DIAG_UL, ~APP1_UL, ~APP2_UL, ~CTRL_UL};
++	static const u16 mask[] =
++		{~MDM_UL, ~DIAG_UL, ~APP1_UL, ~APP2_UL, ~CTRL_UL};
  
--#define D(lvl, args...)  do {if (lvl & debug) NFO(KERN_DEBUG, ##args); } \
--				while (0)
-+#define D(lvl, args...)  do \
-+			{if (lvl & debug) NFO(KERN_DEBUG, ##args); } \
-+			while (0)
- #define D_(lvl, args...) D(lvl, ##args)
+ 	if (port < NOZOMI_MAX_PORTS) {
+ 		dc->last_ier &= mask[port];
+@@ -751,8 +750,7 @@ static void disable_transmit_ul(enum port_type port, struct nozomi *dc)
+ /* Enable downlink interrupts */
+ static void enable_transmit_dl(enum port_type port, struct nozomi *dc)
+ {
+-	u16 mask[NOZOMI_MAX_PORTS] = \
+-			{MDM_DL, DIAG_DL, APP1_DL, APP2_DL, CTRL_DL};
++	static const u16 mask[] = {MDM_DL, DIAG_DL, APP1_DL, APP2_DL, CTRL_DL};
  
- /* These printouts are always printed */
-@@ -273,13 +220,13 @@ enum port_type {
- /* Big endian */
+ 	if (port < NOZOMI_MAX_PORTS) {
+ 		dc->last_ier |= mask[port];
+@@ -765,8 +763,8 @@ static void enable_transmit_dl(enum port_type port, struct nozomi *dc)
+ /* Disable downlink interrupts */
+ static void disable_transmit_dl(enum port_type port, struct nozomi *dc)
+ {
+-	u16 mask[NOZOMI_MAX_PORTS] = \
+-			{~MDM_DL, ~DIAG_DL, ~APP1_DL, ~APP2_DL, ~CTRL_DL};
++	static const u16 mask[] =
++		{~MDM_DL, ~DIAG_DL, ~APP1_DL, ~APP2_DL, ~CTRL_DL};
  
- struct toggles {
--	unsigned enabled:5;	/*
-+	unsigned int enabled:5;	/*
- 				 * Toggle fields are valid if enabled is 0,
- 				 * else A-channels must always be used.
- 				 */
--	unsigned diag_dl:1;
--	unsigned mdm_dl:1;
--	unsigned mdm_ul:1;
-+	unsigned int diag_dl:1;
-+	unsigned int mdm_dl:1;
-+	unsigned int mdm_ul:1;
- } __attribute__ ((packed));
- 
- /* Configuration table to read at startup of card */
-@@ -320,19 +267,19 @@ struct config_table {
- /* This stores all control downlink flags */
- struct ctrl_dl {
- 	u8 port;
--	unsigned reserved:4;
--	unsigned CTS:1;
--	unsigned RI:1;
--	unsigned DCD:1;
--	unsigned DSR:1;
-+	unsigned int reserved:4;
-+	unsigned int CTS:1;
-+	unsigned int RI:1;
-+	unsigned int DCD:1;
-+	unsigned int DSR:1;
- } __attribute__ ((packed));
- 
- /* This stores all control uplink flags */
- struct ctrl_ul {
- 	u8 port;
--	unsigned reserved:6;
--	unsigned RTS:1;
--	unsigned DTR:1;
-+	unsigned int reserved:6;
-+	unsigned int RTS:1;
-+	unsigned int DTR:1;
- } __attribute__ ((packed));
- 
- #else
-@@ -340,10 +287,10 @@ struct ctrl_ul {
- 
- /* This represents the toggle information */
- struct toggles {
--	unsigned mdm_ul:1;
--	unsigned mdm_dl:1;
--	unsigned diag_dl:1;
--	unsigned enabled:5;	/*
-+	unsigned int mdm_ul:1;
-+	unsigned int mdm_dl:1;
-+	unsigned int diag_dl:1;
-+	unsigned int enabled:5;	/*
- 				 * Toggle fields are valid if enabled is 0,
- 				 * else A-channels must always be used.
- 				 */
-@@ -379,19 +326,19 @@ struct config_table {
- 
- /* This stores all control downlink flags */
- struct ctrl_dl {
--	unsigned DSR:1;
--	unsigned DCD:1;
--	unsigned RI:1;
--	unsigned CTS:1;
--	unsigned reserverd:4;
-+	unsigned int DSR:1;
-+	unsigned int DCD:1;
-+	unsigned int RI:1;
-+	unsigned int CTS:1;
-+	unsigned int reserverd:4;
- 	u8 port;
- } __attribute__ ((packed));
- 
- /* This stores all control uplink flags */
- struct ctrl_ul {
--	unsigned DTR:1;
--	unsigned RTS:1;
--	unsigned reserved:6;
-+	unsigned int DTR:1;
-+	unsigned int RTS:1;
-+	unsigned int reserved:6;
- 	u8 port;
- } __attribute__ ((packed));
- #endif
-@@ -694,7 +641,7 @@ static void dump_table(const struct nozomi *dc)
- 	   dc->config_table.ul_ctrl_len);
- }
- #else
--static __inline__ void dump_table(const struct nozomi *dc) { }
-+static inline void dump_table(const struct nozomi *dc) { }
- #endif
- 
- /*
-@@ -1102,7 +1049,7 @@ static int send_flow_control(struct nozomi *dc)
- }
- 
- /*
-- * Handle donlink data, ports that are handled are modem and diagnostics
-+ * Handle downlink data, ports that are handled are modem and diagnostics
-  * Return 1 - ok
-  * Return 0 - toggle fields are out of sync
-  */
-@@ -1363,7 +1310,7 @@ static ssize_t card_type_show(struct device *dev, struct device_attribute *attr,
+ 	if (port < NOZOMI_MAX_PORTS) {
+ 		dc->last_ier &= mask[port];
+@@ -783,7 +781,7 @@ static void disable_transmit_dl(enum port_type port, struct nozomi *dc)
+ static int send_data(enum port_type index, struct nozomi *dc)
+ {
+ 	u32 size = 0;
+-	struct port *port = &dc->port[index];
++	const struct port *port = &dc->port[index];
+ 	u8 toggle = port->toggle_ul;
+ 	void __iomem *addr = port->ul_addr[toggle];
+ 	u32 ul_size = port->ul_size[toggle];
+@@ -1306,7 +1304,7 @@ static void nozomi_setup_private_data(struct nozomi *dc)
+ static ssize_t card_type_show(struct device *dev, struct device_attribute *attr,
+ 			  char *buf)
+ {
+-	struct nozomi *dc = pci_get_drvdata(to_pci_dev(dev));
++	const struct nozomi *dc = pci_get_drvdata(to_pci_dev(dev));
  
  	return sprintf(buf, "%d\n", dc->card_type);
  }
--static DEVICE_ATTR(card_type, 0444, card_type_show, NULL);
-+static DEVICE_ATTR(card_type, S_IRUGO, card_type_show, NULL);
- 
+@@ -1315,7 +1313,7 @@ static DEVICE_ATTR(card_type, S_IRUGO, card_type_show, NULL);
  static ssize_t open_ttys_show(struct device *dev, struct device_attribute *attr,
  			  char *buf)
-@@ -1372,7 +1319,7 @@ static ssize_t open_ttys_show(struct device *dev, struct device_attribute *attr,
+ {
+-	struct nozomi *dc = pci_get_drvdata(to_pci_dev(dev));
++	const struct nozomi *dc = pci_get_drvdata(to_pci_dev(dev));
  
  	return sprintf(buf, "%u\n", dc->open_ttys);
  }
--static DEVICE_ATTR(open_ttys, 0444, open_ttys_show, NULL);
-+static DEVICE_ATTR(open_ttys, S_IRUGO, open_ttys_show, NULL);
- 
- static void make_sysfs_files(struct nozomi *dc)
+@@ -1682,7 +1680,7 @@ static int ntty_write_room(struct tty_struct *tty)
  {
-@@ -1882,7 +1829,10 @@ static void ntty_throttle(struct tty_struct *tty)
- /* just to discard single character writes */
- static void ntty_put_char(struct tty_struct *tty, unsigned char c)
- {
--	/* FIXME !!! */
-+	/*
-+	 * card does not react correct when we write single chars
-+	 * to the card, so we discard them
-+	 */
- 	DBG2("PUT CHAR Function: %c", c);
- }
+ 	struct port *port = tty->driver_data;
+ 	int room = 0;
+-	struct nozomi *dc = get_dc_by_tty(tty);
++	const struct nozomi *dc = get_dc_by_tty(tty);
  
+ 	if (!dc || !port)
+ 		return 0;
+@@ -1702,9 +1700,9 @@ exit:
+ /* Gets io control parameters */
+ static int ntty_tiocmget(struct tty_struct *tty, struct file *file)
+ {
+-	struct port *port = tty->driver_data;
+-	struct ctrl_dl *ctrl_dl = &port->ctrl_dl;
+-	struct ctrl_ul *ctrl_ul = &port->ctrl_ul;
++	const struct port *port = tty->driver_data;
++	const struct ctrl_dl *ctrl_dl = &port->ctrl_dl;
++	const struct ctrl_ul *ctrl_ul = &port->ctrl_ul;
+ 
+ 	return	(ctrl_ul->RTS ? TIOCM_RTS : 0) |
+ 		(ctrl_ul->DTR ? TIOCM_DTR : 0) |
 -- 
 1.5.3.8
 
