@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbYBBCzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763152AbYBBC5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763501AbYBBCzm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 21:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761088AbYBBCzM
+	id S1763152AbYBBC5B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 21:57:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbYBBC4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 21:55:12 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:11636 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760084AbYBBCzK (ORCPT
+	Fri, 1 Feb 2008 21:56:54 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:41036 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754107AbYBBC4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 21:55:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jXgVliYh3Hgy/XB9l/8uyRIY8qrAY674JTUM4ClI/4RqJ41+HpVqHWWyb/lq20O3pzK0g8bjSWNkwJSNy1Kf/dCo3QEH54pGKwbYQnPLoK976RBvDUxG1MmhpgsWtS8q1rRXnfeEz7gnaF+JgYq10pGcIRAmBTHjuCtm+Eo/m6k=
-Message-ID: <df9815e70802011855p29c10787lcee23bc9fab181d4@mail.gmail.com>
-Date: Sat, 2 Feb 2008 10:55:06 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: What's the status of x2APIC support in Linux kernel?
-Cc: "Rijndael Cosque" <rijcos@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <p73fxwc50s5.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com>
-	 <df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com>
-	 <p73fxwc50s5.fsf@bingen.suse.de>
+	Fri, 1 Feb 2008 21:56:53 -0500
+Subject: Re: Build error on PowerPC
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Olof Johansson <olof@lixom.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080201232741.GA7853@lixom.net>
+References: <1201866279.6218.187.camel@violet>
+	 <20080201232741.GA7853@lixom.net>
+Content-Type: multipart/mixed; boundary="=-wiTT3sC9lAuhsB1SBgl6"
+Date: Sat, 02 Feb 2008 03:57:07 +0100
+Message-Id: <1201921027.15090.28.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/08, Andi Kleen <andi@firstfloor.org> wrote:
 
-> There are right no CPUs shipping which implement x2apic.
-Thanks for your information.
+--=-wiTT3sC9lAuhsB1SBgl6
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> "Jike Song" <albcamus@gmail.com> writes:
-> > Maybe.   I have a question as well, what about the  status of I/O
-> > xAPIC support in linux?  If it is not supported yet, is there any
-> > effort to add it?  I'm interested in that, hopefully can take part in
-> > the development.
->
-> xAPIC has been supported forever.
+Hi Olof,
 
-Thank you for your attention, Andi.
+> Please define what kernel version and what config you're trying to
+> build.
 
-Oh, what do I mean is "I/O xAPIC", but not the "local xAPIC" or xAPIC
-interrupt architecture introduced by Intel Pentium4 CPU.   It seems
-that the "I/O xAPIC" hasn't been well documented yet, but some other
-document do have some description about it.  Some Intel guys gave me
-an URL for the document:
+it is the latest kernel for Linus' git and the config is kinda obviously
+enabling the awacs.c driver. Anyway, the driver didn't make use of the
+NVRAM call and thus removing that include is perfectly fine. Attached
+patch fixes that issue.
 
-http://download.intel.com/technology/computing/vptech/Intel(r)_VT_for_Direct_IO.pdf
+> Also, please cc linuxppc-dev@ozlabs.org for powerpc issues.
 
-Section 5 and section 9.5 describe 'I/OxAPIC'. I'm not sure if it is
-already supported by Linux, I guess it is not.
+To be quite honest, it is highly likely that I forget the next time.
+Good that you read LKML :)
 
---
-Best Regards,
-Jike
+Regards
+
+Marcel
+
+
+--=-wiTT3sC9lAuhsB1SBgl6
+Content-Disposition: attachment; filename=patch
+Content-Type: text/plain; name=patch; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+[PATCH] Fix compilation of sound/ppc/awacs.c
+
+Including of asm/nvram.h in the awacs.c driver is not needed and it
+fixes the following compilation error:
+
+  CC [M]  sound/ppc/awacs.o
+In file included from sound/ppc/awacs.c:25:
+include/asm/nvram.h:62: error: field ‘partition’ has incomplete type
+make[2]: *** [sound/ppc/awacs.o] Error 1
+make[1]: *** [sound/ppc] Error 2
+make: *** [sound] Error 2
+
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+
+---
+commit 5613f9f9aa321cf59915137cc611aea9fd95ed75
+tree 3c55137ccc3d16e49b757a0e6135f32fb2086ae3
+parent aa6299926950c8dfe2fea638276cad6def092bc9
+author Marcel Holtmann <marcel@holtmann.org> Sat, 02 Feb 2008 03:52:23 +0100
+committer Marcel Holtmann <marcel@holtmann.org> Sat, 02 Feb 2008 03:52:23 +0100
+
+ sound/ppc/awacs.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/sound/ppc/awacs.c b/sound/ppc/awacs.c
+index 8441e78..149c4aa 100644
+--- a/sound/ppc/awacs.c
++++ b/sound/ppc/awacs.c
+@@ -21,7 +21,6 @@
+ 
+ 
+ #include <asm/io.h>
+-#include <asm/nvram.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+
+--=-wiTT3sC9lAuhsB1SBgl6--
+
