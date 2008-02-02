@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764445AbYBBPoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764845AbYBBPqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764445AbYBBPoQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 10:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYBBPoE
+	id S1764845AbYBBPqW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 10:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbYBBPqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 10:44:04 -0500
-Received: from marge.padd.com ([66.127.62.138]:38089 "EHLO marge.padd.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756740AbYBBPoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 10:44:03 -0500
-Date: Sat, 2 Feb 2008 10:32:31 -0500
-From: Pete Wyckoff <pw@osc.edu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rdreier@cisco.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, vst@vlnb.net,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Message-ID: <20080202153231.GA5601@osc.edu>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com> <1201639331.3069.58.camel@localhost.localdomain> <adazluoe2t3.fsf@cisco.com> <20080130083239E.fujita.tomonori@lab.ntt.co.jp> <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com> <1201710871.3292.22.camel@localhost.localdomain>
+	Sat, 2 Feb 2008 10:46:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:3504 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754460AbYBBPqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 10:46:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=TtXodQWcx2Osm+TYSS3i6tsAxt06HquPnIzIO/6SzpPoI1bFplr4uGB3jdoO6bMv9GimmsHkW7gdqGgYaVl3jv0e4CgCScKCnsJYMvyOyA6hTr9Of/U6BDePx3Y6JtjeBIvob/eWOO/qLdBCDPMf8Oc8eoT/Mpe9uZu0TQuj2fA=
+Message-ID: <34bc550b0802020746r7f89ca98me2fd4d93dcc7defd@mail.gmail.com>
+Date: Sat, 2 Feb 2008 21:16:11 +0530
+From: "Sam K. Raju" <ujarkmas@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Unable to boot kernel 2.6.24 (lvm unable to find VolGroup00)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1201710871.3292.22.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James.Bottomley@HansenPartnership.com wrote on Wed, 30 Jan 2008 10:34 -0600:
-> On Wed, 2008-01-30 at 09:38 +0100, Bart Van Assche wrote:
-> > On Jan 30, 2008 12:32 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > >
-> > > iSER has parameters to limit the maximum size of RDMA (it needs to
-> > > repeat RDMA with a poor configuration)?
-> > 
-> > Please specify which parameters you are referring to. As you know I
-> > had already repeated my tests with ridiculously high values for the
-> > following iSER parameters: FirstBurstLength, MaxBurstLength and
-> > MaxRecvDataSegmentLength (16 MB, which is more than the 1 MB block
-> > size specified to dd).
-> 
-> the 1Mb block size is a bit of a red herring.  Unless you've
-> specifically increased the max_sector_size and are using an sg_chain
-> converted driver, on x86 the maximum possible transfer accumulation is
-> 0.5MB.
-> 
-> I certainly don't rule out that increasing the transfer size up from
-> 0.5MB might be the way to improve STGT efficiency, since at an 1GB/s
-> theoretical peak, that's roughly 2000 context switches per I/O; however,
-> It doesn't look like you've done anything that will overcome the block
-> layer limitations.
+Hi All,
 
-The MRDSL parameter has no effect on iSER, as the RFC describes.
-How to transfer data to satisfy a command is solely up to the
-target.  So you would need both big requests from the client, then
-look at how the target will send the data.
+As soon as the new kernel released I decided to give it a try. I had
+RedHat Enterprise Linux 4 with two kernel, 2.6.9-55.ELsmp & 2.6.17.3.
+I downloaded the new kernel 2.6.24, configured and installed. But
+while booting, Kernel panic giving the following error:
 
-I've only used 512 kB for the RDMA transfer size from the target, as
-it matches the default client size and was enough to get good
-performance out of my IB gear and minimizes resource consumption on
-the target.  It's currently hard-coded as a #define.  There is no
-provision in the protocol for the client to dictate the value.
+VFS: Cannot open root device "Volgroup00/LogVol00" or unknown-block(0,0)
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
 
-If others want to spend some effort trying to tune stgt for iSER,
-there are a fair number of comments in the code, including a big one
-that explains this RDMA transfer size issue.  And I'll answer
-informed questions as I can.  But I'm not particularly interested in
-arguing about which implementation is best, or trying to interpret
-bandwidth comparison numbers from poorly designed tests.  It takes
-work to understand these issues.
+I searched on the linux forum and found that I hadn't added the
+multiple device support (RAID & LVM) and RAM disk support. So I added
+them as module and again compiled the kernel but while booting it is
+now giving the following error:
 
-		-- Pete
+Activating logical volumes
+Volume group "VolGroup00" not found
+ERROR: /bin/lvm exited abnormally! (pid 421)
+
+I was using a custom compiled kernel 2.6.17.3 earlier. I even tried to
+compile the 2.6.24 kernel with the .config file of 2.6.17.3 kernel
+(may be a foolish idea) but it didn't worked too. I got the same error
+message as above.
+
+I even tried 'make defconfig' for configuring the kernel but it didn't
+worked either.
+
+Can anybody help me, what I am missing this time. :-(
+
+Thanks,
+Sam
