@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765489AbYBBQX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765950AbYBBQ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765489AbYBBQX4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbYBBQXt
+	id S1765950AbYBBQ0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbYBBQ0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:23:49 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:7601 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbYBBQXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:23:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o0k9zEENnqAGCqIQp5I9dOfz0cvTdwzyastTeDRTkQ53C9U/hr9RzqzVGOI2viJ554m72CWmVvh2LJtuYJeZbDzFn5AzpqVJdIdMvmPXkHETatUxuGuIJsj+utf+8MRtrjzPFUNJARZTxghk/9FQ/HpKaMykHwR9kyuPCDOp1Qs=
-Message-ID: <34bc550b0802020823t77976c0ctb2d476c355b92dce@mail.gmail.com>
-Date: Sat, 2 Feb 2008 21:53:46 +0530
-From: "Sam K. Raju" <ujarkmas@gmail.com>
-To: "Frans Pop" <elendil@planet.nl>
-Subject: Re: Unable to boot kernel 2.6.24 (lvm unable to find VolGroup00)
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <E1JLKyL-0002bs-FL@faramir.fjphome.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Feb 2008 11:26:10 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:33770 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbYBBQ0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 11:26:08 -0500
+Date: Sat, 2 Feb 2008 17:26:11 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [scsi bug] spurious build failures in aic7xxx
+Message-ID: <20080202162611.GA24765@uranus.ravnborg.org>
+References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu> <20080202141857.GA8635@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <34bc550b0802020746r7f89ca98me2fd4d93dcc7defd@mail.gmail.com>
-	 <E1JLKyL-0002bs-FL@faramir.fjphome.nl>
+In-Reply-To: <20080202141857.GA8635@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frans,
+On Sat, Feb 02, 2008 at 03:18:57PM +0100, Ingo Molnar wrote:
+> 
+> i should also specify the build environment:
+> 
+> it's a distcc setup with 5-10 hosts active at a time, so highly parallel 
+> with large, networking related delays. It's make -j130:
+> 
+> nice -15 /usr/bin/time make -j130 bzImage ARCH=i386 \
+> CROSS_COMPILE='distcc \
+> /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu-'
+> 
+> the build host is a 64-bit quad CPU box, so highly parallel as well.
 
-On 2/2/08, Frans Pop <elendil@planet.nl> wrote:
-> Hello Sam,
->
-> Sam K. Raju wrote:
-> > As soon as the new kernel released I decided to give it a try. I had
-> > RedHat Enterprise Linux 4 with two kernel, 2.6.9-55.ELsmp & 2.6.17.3.
-> > I downloaded the new kernel 2.6.24, configured and installed. But
-> > while booting, Kernel panic giving the following error:
-> [...]
->
-> The kernel mailing list is not really the correct place for such questions.
-> Suggest you try one of the user mailing lists for your distribution.
->
-> Cheers,
-> FJP
->
-Sorry for asking this question here in kernel mailing list but I
-thought this would be the best place for my problem. I thought the
-problem is related with the kernel and not with my distribution.
-I even asked the same question at two user mailing lists but didn't
-got any solution from them yet.
+Impressive setup - I was until now quite satisfied with my new
+quad box that Intel has sponsored (thanks to Greg) :-)
 
-May be I need to wait for few more days for any solution. :-(
+I could not reproduce the bug myself but I think I spotted it.
+We had a missing dependency to the _reg.h file.
+Try following patch and let me now if it continue to break.
 
-Thanks,
-   Sam
+	Sam
+
+diff --git a/drivers/scsi/aic7xxx/Makefile b/drivers/scsi/aic7xxx/Makefile
+index e4f70c5..8065590 100644
+--- a/drivers/scsi/aic7xxx/Makefile
++++ b/drivers/scsi/aic7xxx/Makefile
+@@ -44,13 +44,8 @@ clean-files += aic79xx_seq.h aic79xx_reg.h aic79xx_reg_print.c
+ 
+ # Dependencies for generated files need to be listed explicitly
+ 
+-$(obj)/aic7xxx_core.o: $(obj)/aic7xxx_seq.h
+-$(obj)/aic7xxx_core.o: $(obj)/aic7xxx_reg.h
+-$(obj)/aic79xx_core.o: $(obj)/aic79xx_seq.h
+-$(obj)/aic79xx_core.o: $(obj)/aic79xx_reg.h
+-
+-$(addprefix $(obj)/,$(aic7xxx-y)): $(obj)/aic7xxx_seq.h
+-$(addprefix $(obj)/,$(aic79xx-y)): $(obj)/aic79xx_seq.h
++$(addprefix $(obj)/,$(aic7xxx-y:.o=.c)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
++$(addprefix $(obj)/,$(aic79xx-y:.o=.c)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
+ 
+ aic7xxx-gen-$(CONFIG_AIC7XXX_BUILD_FIRMWARE)	:= $(obj)/aic7xxx_reg.h
+ aic7xxx-gen-$(CONFIG_AIC7XXX_REG_PRETTY_PRINT)	+= $(obj)/aic7xxx_reg_print.c
