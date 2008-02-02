@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbYBBIwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbYBBI7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbYBBIwj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 03:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbYBBIw3
+	id S1762252AbYBBI7Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 03:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757833AbYBBI7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 03:52:29 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:27359 "EHLO
+	Sat, 2 Feb 2008 03:59:14 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:36902 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757486AbYBBIw3 (ORCPT
+	with ESMTP id S1757772AbYBBI7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 03:52:29 -0500
+	Sat, 2 Feb 2008 03:59:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Dhiwb2lOIawKqkXVC+cZWx6gxa/YrrSTE2Rom+Unq0RlB5ZhAg7qbmWvDZmedilSu9+RNp2nSF2tIj0+n+ZMypIlztzy+lWrAV2zufuG+XnIcdqja1lmm2rj0JeiI0wqRooOZhBek8JW9HFR+FduDpZcKQNJ5iBRxNaffUMGBUY=
-From: Denis Cheng <crquan@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ide-pci-generic: kill the unused ifdef/endif/MODULE code
-Date: Sat,  2 Feb 2008 16:52:36 +0800
-Message-Id: <1201942356-26897-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.3.8
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=sQz3w17Z1U4hEobANYAYhjAz5LAEPKAT4Re9S/R7klUNOKImFZNtHvH4emJ+23SnR/Ihg7mO1n6VorkW7WUBKvW77f4JxciSSsgj6OqGI8szJd2yPFUgrWqRpxCsocR7dULjTJhMwH5lG/PbIqDBj/kYDFT1sqLVRO+pv9d8huo=
+Message-ID: <47A430DA.7000104@gmail.com>
+Date: Sat, 02 Feb 2008 17:59:06 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Evgen L <evgen@b-k.ru>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: intel ahci problem
+References: <479F41BB.5020800@b-k.ru>
+In-Reply-To: <479F41BB.5020800@b-k.ru>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with module_param macro, the __setup code can be killed now:
-	const __setup("all-generic-ide", ide_generic_all_on);
+Evgen L wrote:
+> Hi all
+> 
+> I have a problem with my Intel SR1550 server (S5000PAL motheboard,
+> SATA/SAS controller, 5 SATA HDD Seagate ST9120822AS ).
+> The four drivers are in two md raid1, which striping by lvm and one
+> drive used separately. I have problem like below with two different
+> drives (ata3 or ata4) and ata5. I look problem like this with RedHat 
+> 2.6.18-53 kernel, 2.6.24-rc8, and today 2.6.24-git5. I reading about any
+> problems like this in lkml.org. There can be this message will help to
+> fix this issue.
+> The complete dmesg in attachment.
 
-and the module name "generic.ko" is not descriptive to its functionality,
-can be changed in Makefile, the "ide-pci-generic.ko" is better.
+Please post full dmesg including boot log and errors and the result
+"lspci -nn".
 
-the ide-pci-generic.all-generic-ide parameter also documented
-in Documentation/kernel-parameters.txt
-
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- Documentation/kernel-parameters.txt |    3 +++
- drivers/ide/pci/Makefile            |    3 ++-
- drivers/ide/pci/generic.c           |   13 -------------
- 3 files changed, 5 insertions(+), 14 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index cf38689..e81bcae 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -780,6 +780,9 @@ and is between 256 and 4096 characters. It is defined in the file
- 			loop use the MONITOR/MWAIT idle loop anyways. Performance should be the same
- 			as idle=poll.
- 
-+	ide-pci-generic.all-generic-ide [HW] (E)IDE subsystem
-+			Claim all unknown PCI IDE storage controllers.
-+
- 	ignore_loglevel	[KNL]
- 			Ignore loglevel setting - this will print /all/
- 			kernel messages to the console. Useful for debugging.
-diff --git a/drivers/ide/pci/Makefile b/drivers/ide/pci/Makefile
-index 9480325..02e6ee7 100644
---- a/drivers/ide/pci/Makefile
-+++ b/drivers/ide/pci/Makefile
-@@ -34,7 +34,8 @@ obj-$(CONFIG_BLK_DEV_TRM290)		+= trm290.o
- obj-$(CONFIG_BLK_DEV_VIA82CXXX)		+= via82cxxx.o
- 
- # Must appear at the end of the block
--obj-$(CONFIG_BLK_DEV_GENERIC)          += generic.o
-+obj-$(CONFIG_BLK_DEV_GENERIC)		+= ide-pci-generic.o
-+ide-pci-generic-y			+= generic.o
- 
- ifeq ($(CONFIG_BLK_DEV_CMD640), m)
- 	obj-m += cmd640.o
-diff --git a/drivers/ide/pci/generic.c b/drivers/ide/pci/generic.c
-index 59ebe84..619912e 100644
---- a/drivers/ide/pci/generic.c
-+++ b/drivers/ide/pci/generic.c
-@@ -36,19 +36,6 @@
- 
- static int ide_generic_all;		/* Set to claim all devices */
- 
--/*
-- * the module_param_named() was added for the modular case
-- * the __setup() is left as compatibility for existing setups
-- */
--#ifndef MODULE
--static int __init ide_generic_all_on(char *unused)
--{
--	ide_generic_all = 1;
--	printk(KERN_INFO "IDE generic will claim all unknown PCI IDE storage controllers.\n");
--	return 1;
--}
--const __setup("all-generic-ide", ide_generic_all_on);
--#endif
- module_param_named(all_generic_ide, ide_generic_all, bool, 0444);
- MODULE_PARM_DESC(all_generic_ide, "IDE generic will claim all unknown PCI IDE storage controllers.");
- 
 -- 
-1.5.3.8
-
+tejun
