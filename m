@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933517AbYBBS6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbYBBTB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933517AbYBBS6d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYBBS6Z
+	id S933043AbYBBTB1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 14:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYBBTBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:58:25 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:54612 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752154AbYBBS6X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:58:23 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] ide-core: remove conditional compiling with MODULE in ide-core.c
-To: Denis Cheng <crquan@gmail.com>, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sat, 02 Feb 2008 19:58:15 +0100
-References: <9Slso-6q4-5@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Sat, 2 Feb 2008 14:01:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47310 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752023AbYBBTBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 14:01:18 -0500
+Date: Sat, 2 Feb 2008 20:00:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [patch] pci: pci_enable_device_bars() fix
+Message-ID: <20080202190053.GA27927@elte.hu>
+References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu> <47A49171.2000003@garzik.org> <20080202170828.GA12748@elte.hu> <1201975706.3187.36.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1JLNZ9-0000iB-G8@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/0JgT4eKNBFy+YOp6jZpzM5N30Bp1+SHvPIv+
- xN3H/VGFCWNRQRhB+m15iMrTGOLRpMCdVFucrAqQgP0Jg9XOiZ
- LcUN1wPuAmQz+RIWhwW7g==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201975706.3187.36.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Cheng <crquan@gmail.com> wrote:
 
-> use module_init/module_exit to replace the original cond-compiling, these
-> macros were well designed to deal module/built-in compiling.
-> 
-> the original __setup with null string was invalid and not executed,
-> __setup("", ide_setup);
-> 
-> however, with the current module_param mechanics, module parameters also can
-> be input on the kernel command line, with this style:
-> 
-> ide-core.options="ide=nodma hdd=cdrom idebus=..."
-> 
-> so Documentation/kernel-parameters.txt also updated.
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> --- a/Documentation/kernel-parameters.txt
+> Are you seriously telling us that it required too much investigation 
+> on your part to figure out that something with a compile failure in 
+> drivers/scsi might belong on the scsi list?
 
-> -     ide=            [HW] (E)IDE subsystem
-> -                     Format: ide=nodma or ide=doubler or ide=reverse
-> -                     See Documentation/ide.txt.
-> -
-> -     ide?=           [HW] (E)IDE subsystem
-> -                     Format: ide?=noprobe or chipset specific parameters.
-> -                     See Documentation/ide.txt.
-> -
-> -     idebus=         [HW] (E)IDE subsystem - VLB/PCI bus speed
-> +     ide-core.options= [HW] (E)IDE subsystem
-> +                     Format: ide-core.options="ide=nodma hdd=cdrom idebus=..."
+This is getting silly. Let me repeat it, because IMO it's really 
+straightforward. My (quick) investigation based on the function name 
+that was in the error message:
 
-IMO you should use separate options for things like nodma while you're at it.
+  drivers/scsi/lpfc/lpfc_init.c:1897: error: implicit declaration
+  of function 'pci_enable_device_bars'
 
-¢¢
+a straightforward search on "pci_enable_device_bars" led to a recent PCI 
+API related change pushed by Greg, with the following straightforward 
+subject line:
 
+  [GIT PATCH] PCI patches for 2.6.24
+
+  http://lkml.org/lkml/2008/2/1/483
+
+the email had this description:
+
+ |  Some general cleanups, minor tweaks, and a bit of PCI hotplug 
+ |  updates, and some PCI Express updates for new features, if your 
+ |  hardware happens to support it.
+
+furthermore, the mail already had two PCI mailing lists in its Cc: line. 
+The PCI subsystem regularly does cross-treee changes, by its nature.
+
+i had all reasons to believe that this was a (innocious looking) PCI 
+subsystem change and a harmless (but a tad under-tested) API cleanup 
+that went haywire: it smelled like PCI, it walked like PCI and it 
+quacked like PCI.
+
+So to me it was clearly a PCI merge not an SCSI merge, and i was really 
+only interested in the first hop, i.e. i was primarily interested in the 
+pull request that clearly changed multiple subsystems, and a seemingly 
+API change that broke the build.
+
+Three mailing lists and three maintainers were already on the Cc: line 
+for that pull request. So tell me, exactly what should have let me to 
+believe that i should have added anyone else to the _already_ sizable 
+Cc: line?? I could have done it, had i have more time and had i realized 
+the full scope of the change and the somewhat misleading Cc:s that were 
+on the original pull request, but i clearly was not _required_ to - and 
+your suggestions to the contrary are ridiculous.
+
+Furthermore i reject the sometimes derogatory undertone of your mails 
+that implies that i should somehow have done more or different work than 
+i already did.
+
+I really hope you treat other contributors and bug-reporters better than 
+you treated me :( Shall this be my last voluntary SCSI contribution for 
+a good while.
+
+	Ingo
