@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935052AbYBBUmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935164AbYBBUmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935052AbYBBUmd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934932AbYBBUmH
+	id S935164AbYBBUmv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935039AbYBBUmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:42:07 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:41236 "EHLO smtp.polymtl.ca"
+	Sat, 2 Feb 2008 15:42:31 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37390 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934525AbYBBUmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:42:04 -0500
-Message-Id: <20080202204023.356380064@polymtl.ca>
-References: <20080202203722.628843686@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Sat, 02 Feb 2008 15:37:25 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 3/3] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat,  2 Feb 2008 20:40:25 +0000
+	id S935027AbYBBUm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:42:29 -0500
+Date: Sat, 2 Feb 2008 21:42:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Some fixes for "Section mismatch" errors.
+Message-ID: <20080202204233.GB26415@uranus.ravnborg.org>
+References: <804dabb00802020800m61a6f87apb154cacc22275ef8@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <804dabb00802020800m61a6f87apb154cacc22275ef8@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+On Sun, Feb 03, 2008 at 12:00:29AM +0800, Peter Teoh wrote:
+> Today, I pulled from linus tree, and compile with MANY section
+> mismatches errors, eg, some of which are like the following:
+> 
+> WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x1c9f): Section mismatch
+> in reference from the function hdsp_check_for_firmware() to the
+> function .devinit.text:hdsp_request_fw_loader()
+> WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x35bf): Section mismatch
+> in reference from the function snd_hdsp_proc_read() to the function
+> .devinit.text:hdsp_request_fw_loader()
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: hch@infradead.org
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
----
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Your fix for this particular warning looks OK.
+But always do:
+-> One fix per patch
+-> Include the warning in the patch descript that you fix
+-> Explain why you fixed it the way you did it
 
-Index: linux-2.6-lttng/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
- 
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
- 
+Without this info it is too time consuming to try to review your patch
+and I did nt look at the other changes you included.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Sam
