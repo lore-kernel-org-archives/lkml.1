@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763081AbYBBOTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbYBBOks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763081AbYBBOTR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 09:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYBBOTJ
+	id S1762169AbYBBOks (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 09:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbYBBOki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 09:19:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44702 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888AbYBBOTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 09:19:08 -0500
-Date: Sat, 2 Feb 2008 15:18:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [scsi bug] spurious build failures in aic7xxx
-Message-ID: <20080202141857.GA8635@elte.hu>
-References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu>
+	Sat, 2 Feb 2008 09:40:38 -0500
+Received: from fmmailgate04.web.de ([217.72.192.242]:46181 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754611AbYBBOki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 09:40:38 -0500
+Date: Sat, 02 Feb 2008 15:40:36 +0100
+Message-Id: <141208903@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080202140630.GA7939@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: Laurent.Vivier@bull.net, jengelh@computergmbh.de, pavel@ucw.cz
+Subject: Re: [PATCH] Allow NBD to be used locally
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19CqnibOcjoCuYkCaHobfEoE3cOofjNHYjfhR/Q9v+6yErE+
+ qYdDDYngrIsmt8BJWbqxlWFrvW/h79p7J45zAmUYZ1MQ+ehxU0=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>In fact, VMware uses local nbd today for its vmware-loop helper
+>utility, most likely because of the above-mentioned reasons. (Though
+>it quite often hung last time I tried.)
 
-i should also specify the build environment:
+seems this will go away.
+recent vmware versions (e.g. server 2.0 beta) have a fuse based replacement for that.
 
-it's a distcc setup with 5-10 hosts active at a time, so highly parallel 
-with large, networking related delays. It's make -j130:
+ldd /usr/bin/vmware-mount
+        linux-gate.so.1 =>  (0xffffe000)
+        libz.so.1 => /lib/libz.so.1 (0xb7f95000)
+! ->  libfuse.so.2 => /lib/libfuse.so.2 (0xb7f79000)   
+        libpthread.so.0 => /lib/libpthread.so.0 (0xb7f61000)
+        libdl.so.2 => /lib/libdl.so.2 (0xb7f5d000)
+        libc.so.6 => /lib/libc.so.6 (0xb7e1c000)
+        /lib/ld-linux.so.2 (0xb7fbd000)
+        librt.so.1 => /lib/librt.so.1 (0xb7e13000)
 
-nice -15 /usr/bin/time make -j130 bzImage ARCH=i386 \
-CROSS_COMPILE='distcc \
-/opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu-'
+i`m not sure if this is the perfect approach (slower....) , but at least that shouldn`t have those stability issues as the nbd one.
 
-the build host is a 64-bit quad CPU box, so highly parallel as well.
+i always felt uncomfortable with the nbd approach...that`s why i started the following discussion-thread: 
+http://communities.vmware.com/message/854746
 
-before this i did about a thousand x86.git builds/boots a day without 
-any build (or boot) failure, so i'm 100% sure that the build race was 
-not present before. It started triggering it a few days ago, roughly 
-when the commit you suspected went in.
+anyway, i can see a point to use nbd locally, but i think it shouldn`t be abused for mapping local disk-images of any kind, even if this has better capabilities than loop or other. why should local disk data be sent trough the network layer? isn`t device-mapper the better infrastructure here?
 
-here's all SCSI build failures logged from the past 1-2 days:
+>So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
+>does not deal with that.
+maybe dm-loop does? http://sources.redhat.com/lvm2/wiki/DMLoop
 
-      2 drivers/scsi/aic7xxx/aic79xx_reg.h
-      4 drivers/scsi/aic7xxx/aic7xxx.h
-      4 drivers/scsi/lpfc/lpfc_init.c
-     12 drivers/scsi/aic7xxx/aic7xxx_osm.h
-    108 drivers/scsi/aic7xxx/aic7xxx_inline.h
-    280 drivers/scsi/aic7xxx/aic7xxx_pci.c
+regards
+roland
 
-first column is the number of error lines from logs.
 
-When i turned off all the AICxxxx builds (all 3 drivers for good 
-measure), the build failures went away. [but this excludes one of my 
-testboxes from qa coverage - which has aic7xxx hardware - so it would be 
-nice to fix this.]
 
-the host box is Fedora 8, make-3.81-10.fc8. gcc-4.2.2 crosscompiler, 
-built from sources. (i.e. not distro patched)
+>On Feb 2 2008 12:23, Pavel Machek wrote:
+>>On Fri 2008-02-01 14:25:32, Laurent Vivier wrote:
+>>> This patch allows Network Block Device to be mounted locally.
+>>
+>>What is local nbd good for? Use loop instead...
+>
+>Local NBD is good for when the content you want to make available
+>through the block device is dynamic (generated on-the-fly),
+>non-linear or supersparse.
+>
+>Take for example VMware virtual disks. Just a guess, but
+>they roughly can look like this:
+>
+>  kilobytes  0.. 1: header
+>  kilobytes  1..10: correspond to LBA 0..20
+>  kilobytes 11..20: correspond to LBA 40..60
+>  kilobytes 21..22: correspond to LBA 22..23
+>
+>So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
+>does not deal with that.
+>
+>And there is supersparsity -- the VMDK file itself is complete, but
+>unallocated regions like LBA 24..40 are sparse/zero when projected
+>onto a file/block device, respectively; loop cannot deal with that
+>either.
+>
+>In fact, VMware uses local nbd today for its vmware-loop helper
+>utility, most likely because of the above-mentioned reasons. (Though
+>it quite often hung last time I tried.)
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
 
-	Ingo
