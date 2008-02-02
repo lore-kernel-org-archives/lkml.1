@@ -1,131 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbYBBTsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbYBBTsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932096AbYBBTsN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 14:48:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759602AbYBBTr6
+	id S933938AbYBBTsx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 14:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbYBBTsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 14:47:58 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:42413 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753870AbYBBTr5 (ORCPT
+	Sat, 2 Feb 2008 14:48:39 -0500
+Received: from qb-out-0506.google.com ([72.14.204.227]:51010 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759602AbYBBTsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 14:47:57 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OMbVs6LmnYuv5oyQCzDpSc3QhDtAFPNE9Bm+cUraRPX5Wy77Bljf0LQmem0W/1E6xHws4t30N9o8rq2km23EURUwKyGD3mQgEdXQ2JQ92K4kgoFnCOtLpQyIjjxxj7NhWNOipvLqKBJutGCD4Lvl745r8pEdZVFVaVbNk8yt43U=  ;
-X-YMail-OSG: LUFlKCoVM1n9mtJUL62jWpKWMKWaLPuWCbulw_MHG3lfZksomHc4DRpsNXul7mUEhabtKIOjew--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [linux-pm] sleepy linux self-test
-Date: Sat, 2 Feb 2008 11:47:44 -0800
-User-Agent: KMail/1.9.6
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20080130131748.GA3796@elf.ucw.cz> <200802020949.23397.david-b@pacbell.net> <20080202180604.GC26560@elte.hu>
-In-Reply-To: <20080202180604.GC26560@elte.hu>
+	Sat, 2 Feb 2008 14:48:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=Smhvvyaa2d/w7RC/FaS/bKBGQMwGrfaV4KwzNtibJfscWPUDd83xi20Yl7HTeXIGxGYqWBK0K8egNlNJGPemDjBGMQYEdYwmu8B3NeQkJtPyn7JuxxrMe5nFLAcxv5XHI6C7gTa3tMF69VKwO81WC6dQ8thoyD/gNeOxDI3W1OA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: PCI: Remove users of pci_enable_device_bars()
+Date: Sat, 2 Feb 2008 21:01:10 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+References: <200802020506.m1256FVn024064@hera.kernel.org> <47A40D54.70509@garzik.org>
+In-Reply-To: <47A40D54.70509@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802021147.45376.david-b@pacbell.net>
+Message-Id: <200802022101.11095.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008, Ingo Molnar wrote:
+On Saturday 02 February 2008, Jeff Garzik wrote:
+> Linux Kernel Mailing List wrote:
+> > Commit:     0948391641918b95d8d96c15089eb5ac156850b3
 > 
-> * David Brownell <david-b@pacbell.net> wrote:
+> >     PCI: Remove users of pci_enable_device_bars()
+> >     
+> >     This patch converts users of pci_enable_device_bars() to the new
+> >     pci_enable_device_{io,mem} interface.
+> >     
+> >     The new API fits nicely, except maybe for the QLA case where a bit of
+> >     code re-organization might be a good idea but I prefer sticking to the
+> >     simple patch as I don't have hardware to test on.
+> >     
+> >     I'll also need some feedback on the cs5520 change.
+> >     
+> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> > On Saturday 02 February 2008, Ingo Molnar wrote:
-> > > 
-> > > i'd really love to have a /dev/rtc device compatibility APIs, both 
-> > > inside and outside the kernel.
-> > 
-> > Unfortunately the /dev/rtc code became a legacy API for good reasons.
-> > 
-> > Like not recognizing that all the world's not a PC, with a single RTC 
-> > that clones a long-obsolete chip from Motorola ... and not having been 
-> > specified in a hardware-neutral manner.  Oh, and of course not all 
-> > systems actually used the same RTC driver anyway; it's not like there 
-> > was just *one* such programming interface to worry about.
+> > --- a/drivers/ata/pata_cs5520.c
+> > +++ b/drivers/ata/pata_cs5520.c
+> > @@ -229,7 +229,7 @@ static int __devinit cs5520_init_one(struct pci_dev *pdev, const struct pci_devi
+> >  		return -ENOMEM;
+> >  
+> >  	/* Perform set up for DMA */
+> > -	if (pci_enable_device_bars(pdev, 1<<2)) {
+> > +	if (pci_enable_device_io(pdev)) {
+> >  		printk(KERN_ERR DRV_NAME ": unable to configure BAR2.\n");
+> >  		return -ENODEV;
+> >  	}
+> > diff --git a/drivers/ide/pci/cs5520.c b/drivers/ide/pci/cs5520.c
+> > index 6ec00b8..10adc49 100644
+> > --- a/drivers/ide/pci/cs5520.c
+> > +++ b/drivers/ide/pci/cs5520.c
+> > @@ -156,8 +156,14 @@ static int __devinit cs5520_init_one(struct pci_dev *dev, const struct pci_devic
+> >  	ide_setup_pci_noise(dev, d);
+> >  
+> >  	/* We must not grab the entire device, it has 'ISA' space in its
+> > -	   BARS too and we will freak out other bits of the kernel */
+> > -	if (pci_enable_device_bars(dev, 1<<2)) {
+> > +	 * BARS too and we will freak out other bits of the kernel
+> > +	 *
+> > +	 * pci_enable_device_bars() is going away. I replaced it with
+> > +	 * IO only enable for now but I'll need confirmation this is
+> > +	 * allright for that device. If not, it will need some kind of
+> > +	 * quirk. --BenH.
+> > +	 */
+> > +	if (pci_enable_device_io(dev)) {
+> >  		printk(KERN_WARNING "%s: Unable to enable 55x0.\n", d->name);
+> >  		return -ENODEV;
+> >  	}
 > 
-> i dont get it - please give me specific technological reasons
+> So...  did the feedback mentioned in the commit log ever appear?  :)
 
-In a word:  -ENOPATCH.  ;)
+Since Alan has commented on it:
 
+http://lkml.org/lkml/2007/12/17/422
 
-> why on my  
-> PC /dev/rtc couldnt be mapped to /dev/rtc0 - without requiring any 
-> user-space changes. The APIs seem mostly covered, or at least mappable. 
-> Why should the transition to a new driver require user-level changes? 
-> (beyond the obvious extensions, but those should show up as extensions.) 
+"5520 in fact is always enabled as it is the host bridge.
+pci_enable_device_io will do just fine. The 5520 fun is if you disable it
+the system hangs."
 
-So far as I'm aware, the only issue visible to userspace relate to
-the legacy driver's use of "/dev/rtc" not "/dev/rtc0" ... which has
-previously been "solved" by symlinking "rtc" -> "rtc0", possibly with
-assistance from udev.  (Related:  the major/minor number of /dev/rtc.)
-Is that your understanding too?
+I moved on assuming that either submitter or integrator would follow up...
+but it seems that it didn't happen. :(
 
-The "why" is that nobody has been sufficiently bothered by the need
-to symlink that they produced a kernel patch to compensate.
+PS Could somebody remove the stale comment from cs5520.c?
 
-
-> In fact i detest the old RTC code with a vengence, so dont understand 
-> this as some invitation to flame or something - i simply want YOUR new 
-> code to be utilized more!
-
-Good to know!  :)
-
-But so you're clear ... not "my" code, mostly.  Alessandro Zummo started
-this framework, based in part on Russell King's framework for RTCs that
-were integrated into ARM based SOCs.  I contributed a bunch, including
-rtc-cmos to let the PC side of Linux join the effort.
-
-
-> I just dont see the specific technological  
-> reasons of why there is no .config switch to switch the legacy /dev/rtc 
-> over to the new RTC driver and be done with it.
-
-Initially:  because that idea hadn't been suggested.  And because that
-sort of code migration on PC hardware needs to be done slowly enough
-that the migration issues have a real chance to surface.  Issues like:
-
- - Change to the ACPI suspend/resume interactions broke RTC wakeup
-   for a couple releases in the new RTC framework; now fixed.
-
- - HPET stuff.  I think the recently merged HPET update may imply
-   that rtc-cmos needs an HPET hook, but I've not looked at details.
-
- - Minor bugfixes, which have been resolved over time.
-
- - Your desire to keep using old /dev/rtc nodes (no symlink, so new
-   kernels and old non-udev fileystems can mix).  New issue, no patch.
-
-Nothing else come to mind.
-
-
-> I'd enable it in a  
-> heartbeat and would encourage distros to do so. Are there missing APIs? 
-> Is the ioctl API totally different? It's impossible to wrap it?
-
-See above.  Once the HPET thing is resolved, I think distros can
-convert given some resolution of the /dev/rtc issue.
-
-
-> I'm not really interested in "this isnt a PC" arguments.
-
-Maybe because for you, it *is* a PC.  ;)
-
-
-> The incompatibility is  
-> such an obvious migration barrier to me - do you really not see it?
-
-Let's just say that all my PCs run the new code just fine, and not
-all of them have /dev/rtc symlinked to /dev/rtc0 ... but I can very
-easily imagine it look bit different from a distro perpective.
-
-- Dave
-
+Thanks,
+Bart
