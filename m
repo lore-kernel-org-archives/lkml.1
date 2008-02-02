@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYBBSHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933711AbYBBSHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYBBSHE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761223AbYBBSGx
+	id S933711AbYBBSHg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:07:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYBBSHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:06:53 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:49020 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752196AbYBBSGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:06:52 -0500
-Date: Sat, 2 Feb 2008 19:06:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-kbuild@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild: Spelling/grammar fixes for config DEBUG_SECTION_MISMATCH
-Message-ID: <20080202180655.GB25399@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0801301112550.26678@vixen.sonytel.be> <20080130080811.eefbee51.randy.dunlap@oracle.com>
+	Sat, 2 Feb 2008 13:07:19 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2025 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752023AbYBBSHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:07:18 -0500
+Date: Sat, 2 Feb 2008 14:15:55 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Introduce softpanic
+Message-ID: <20080202141554.GB4456@ucw.cz>
+References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz> <p73ejc67xvb.fsf@bingen.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080130080811.eefbee51.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <p73ejc67xvb.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 08:08:11AM -0800, Randy Dunlap wrote:
-> On Wed, 30 Jan 2008 11:13:23 +0100 (CET) Geert Uytterhoeven wrote:
+On Fri 2008-01-25 16:01:28, Andi Kleen wrote:
+> Bodo Eggert <7eggert@gmx.de> writes:
 > 
-> > kbuild: Spelling/grammar fixes for config DEBUG_SECTION_MISMATCH
-> > 
-> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > Enabling this option changes a hard panic on boot errors to a
+> > soft panic, which does not stop the system completely.
+> > You can still scroll the screen and read the messages.
+> 
+> I don't think it's a good idea to keep the network running in the
+> soft panic. A lot of people have set ups that use ping was a watchdog
+> and with nfsroot/ip=dhcp ping does work quite well before
+> mounting root and then the watchdog might not pick up the 
+> soft panic.
+> 
+> Using a polled keyboard driver after panic seems to be the better
+> option to me, but if you want softpanic you should probably
+> at least add a suitable panic notifier to the network stack 
+> to shut it all down.
 
-Applied a combined patch - thanks for fixing my bad grammar/spelling.
+OTOH this will allow netconsole/sysrq over it to still work after
+softpanic, which is good. Lets not over engineer it, I think current
+code is fine.
 
-	Sam
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
