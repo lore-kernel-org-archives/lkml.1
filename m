@@ -1,158 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764913AbYBBAem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763679AbYBBAhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764913AbYBBAem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763667AbYBBAcw
+	id S1763679AbYBBAhJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:37:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbYBBAgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:32:52 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36432 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764852AbYBBAcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:32:50 -0500
-Date: Fri, 1 Feb 2008 23:07:16 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: x86/.../trampoline_64.S racy?
-Message-ID: <20080201220716.GA8597@elf.ucw.cz>
+	Fri, 1 Feb 2008 19:36:51 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:7670 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757978AbYBBAgt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 19:36:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Y13MMkxyFy5yiOeSRD+DIVQE+akC1JI10ZgIbxOpStV1CaxbZazYk1HRZyBFk/VyUcUHnaAgM+3J8Ue8qJUNkKKzdA5jay1M1RNlPiPEVyPIqoXJVliD+yIpgUq02yhWWmPvjhl6a+yAHJSsSQ1fX7Y4WEwtsGg81dq0QHEdiOc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/5] ide: remove write-only ->sata_misc[] from ide_hwif_t
+Date: Sat, 2 Feb 2008 01:45:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200802020145.40429.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-I'm trying to reuse trampoline_64.S for wakeup from ACPI s3... but I'm
-getting some badness: If I insert delay loops into trampoline_64.S,
-machine fails to boot; but I already increased cpu bootup delay to 200
-seconds...
+* Remove write-only ->sata_misc[] from ide_hwif_t.
 
-Is it possible that bootup is subtly racy somewhere?
+* Remove no longer used SATA_{MISC,PHY,IEN}_OFFSET defines.
 
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index aaf4e12..3961bcb 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -188,7 +188,7 @@ void __cpuinit smp_callin(void)
- 	/*
- 	 * Waiting 2s total for startup (udelay is not yet working)
- 	 */
--	timeout = jiffies + 2*HZ;
-+	timeout = jiffies + 200*HZ;
- 	while (time_before(jiffies, timeout)) {
- 		/*
- 		 * Has the boot CPU finished it's STARTUP sequence?
-diff --git a/arch/x86/kernel/trampoline_64.S b/arch/x86/kernel/trampoline_64.S
-index 4aedd0b..34fe9a7 100644
---- a/arch/x86/kernel/trampoline_64.S
-+++ b/arch/x86/kernel/trampoline_64.S
-@@ -24,12 +24,48 @@
-  *	entries.
-  */
- 
-+
- #include <linux/linkage.h>
- #include <asm/pgtable.h>
- #include <asm/page.h>
- #include <asm/msr.h>
- #include <asm/segment.h>
- 
-+
-+#define BEEP \
-+	inb	$97, %al; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$3, %al; 	\
-+	outb	%al, $97; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-74, %al; 	\
-+	outb	%al, $67; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-119, %al; 	\
-+	outb	%al, $66; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$15, %al; 	\
-+	outb	%al, $66;
-+
-+#define DISPLAY(x) \
-+	pushl	%eax		; \
-+	movb	$x, %al;	\
-+	outb	%al, $0x80; \
-+	popl	%eax
-+
-+#define DISPLAY_UNSAFE(x) \
-+	movb	$x, %al;	\
-+	outb	%al, $0x80; \
-+
-+#define DELAY_OK \
-+	movl	$0x30000000,%ecx	; \
-+9:	loopl	9b		; 
-+
-+#define DELAY \
-+	movl	$1,%ecx	; \
-+9:	loopl	9b		; 
-+	
-+
- /* We can free up trampoline after bootup if cpu hotplug is not supported. */
- #ifndef CONFIG_HOTPLUG_CPU
- .section .init.data, "aw", @progbits
-@@ -55,6 +91,9 @@ r_base = .
- 					# Setup stack
- 	movw	$(trampoline_stack_end - r_base), %sp
- 
-+	DISPLAY(0x70)
-+	DELAY
-+	
- 	call	verify_cpu		# Verify the cpu supports long mode
- 	testl   %eax, %eax		# Check for return code
- 	jnz	no_longmode
-@@ -78,6 +117,9 @@ r_base = .
- 	lidtl	tidt - r_base	# load idt with 0, 0
- 	lgdtl	tgdt - r_base	# load gdt with whatever is appropriate
- 
-+	DISPLAY(0x71)
-+	DELAY
-+
- 	xor	%ax, %ax
- 	inc	%ax		# protected mode (PE) bit
- 	lmsw	%ax		# into protected mode
-@@ -91,6 +133,9 @@ startup_32:
- 	movl	$__KERNEL_DS, %eax	# Initialize the %ds segment register
- 	movl	%eax, %ds
- 
-+	DISPLAY_UNSAFE(0x72)
-+	DELAY
-+
- 	xorl	%eax, %eax
- 	btsl	$5, %eax		# Enable PAE mode
- 	movl	%eax, %cr4
-@@ -109,6 +154,9 @@ startup_32:
- 	btsl	$0, %eax		# Enable protected mode
- 	movl	%eax, %cr0
- 
-+	DISPLAY_UNSAFE(0x73)
-+	DELAY
-+
- 	/*
- 	 * At this point we're in long mode but in 32bit compatibility mode
- 	 * with EFER.LME = 1, CS.L = 0, CS.D = 1 (and in turn
-@@ -120,6 +168,9 @@ startup_32:
- 	.code64
- 	.balign 4
- startup_64:
-+	DISPLAY_UNSAFE(0x74)
-+	DELAY
-+
- 	# Now jump into the kernel using virtual addresses
- 	movq	$secondary_startup_64, %rax
- 	jmp	*%rax
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/siimage.c |    3 ---
+ include/linux/ide.h       |    5 -----
+ 2 files changed, 8 deletions(-)
 
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Index: b/drivers/ide/pci/siimage.c
+===================================================================
+--- a/drivers/ide/pci/siimage.c
++++ b/drivers/ide/pci/siimage.c
+@@ -704,9 +704,6 @@ static void __devinit init_mmio_iops_sii
+ 		hwif->sata_scr[SATA_STATUS_OFFSET]	= base + 0x104;
+ 		hwif->sata_scr[SATA_ERROR_OFFSET]	= base + 0x108;
+ 		hwif->sata_scr[SATA_CONTROL_OFFSET]	= base + 0x100;
+-		hwif->sata_misc[SATA_MISC_OFFSET]	= base + 0x140;
+-		hwif->sata_misc[SATA_PHY_OFFSET]	= base + 0x144;
+-		hwif->sata_misc[SATA_IEN_OFFSET]	= base + 0x148;
+ 	}
+ 
+ 	memcpy(hwif->io_ports, hw.io_ports, sizeof(hwif->io_ports));
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -115,10 +115,6 @@ typedef unsigned char	byte;	/* used ever
+ #define SATA_ERROR_OFFSET	(1)
+ #define SATA_CONTROL_OFFSET	(2)
+ 
+-#define SATA_MISC_OFFSET	(0)
+-#define SATA_PHY_OFFSET		(1)
+-#define SATA_IEN_OFFSET		(2)
+-
+ /*
+  * Our Physical Region Descriptor (PRD) table should be large enough
+  * to handle the biggest I/O request we are likely to see.  Since requests
+@@ -473,7 +469,6 @@ typedef struct hwif_s {
+ 		/* task file registers for pata and sata */
+ 	unsigned long	io_ports[IDE_NR_PORTS];
+ 	unsigned long	sata_scr[SATA_NR_PORTS];
+-	unsigned long	sata_misc[SATA_NR_PORTS];
+ 
+ 	ide_drive_t	drives[MAX_DRIVES];	/* drive info */
+ 
