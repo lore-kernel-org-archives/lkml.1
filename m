@@ -1,91 +1,427 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763884AbYBBEXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762930AbYBBEfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763884AbYBBEXo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 23:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYBBEXg
+	id S1762930AbYBBEfK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 23:35:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbYBBEe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 23:23:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40059 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753415AbYBBEXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 23:23:35 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/10] generic thermal management
-Date: Fri, 1 Feb 2008 23:23:16 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, sujith.thomas@intel.com
-References: <1200556238.2935.115.camel@acpi-sony.sh.intel.com>
-In-Reply-To: <1200556238.2935.115.camel@acpi-sony.sh.intel.com>
+	Fri, 1 Feb 2008 23:34:57 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:53976 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbYBBEez (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 23:34:55 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.4
+cc: linux-kernel@vger.kernel.org
+Date: Fri, 01 Feb 2008 20:34:24 -0800
+Message-ID: <7vmyqk563z.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802012323.16244.lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-series applied to acpi-test.
+The latest feature release GIT 1.5.4 is available at the usual
+places:
 
-thanks,
--Len
+  http://www.kernel.org/pub/software/scm/git/
 
-On Thursday 17 January 2008 02:50, Zhang Rui wrote:
-> Hi, all,
-> 
-> This patch series introduces a new generic thermal sysfs driver
-> which provides a set of interfaces for thermal zone devices (sensors)
-> and thermal cooling devices (fan, processor...) to register with the
-> thermal management solution and to be a part of it.
-> 
-> And it also includes the implementation for ACPI thermal zone.
-> Standard sysfs I/F should be available for all ACPI thermal zones
-> with this patch series applied.
-> 
-> Patch 01 creates the new generic thermal sysfs driver.
-> 	 It defines two kinds of devices, thermal zone device and
-> 	 thermal cooling device.
-> 	 A thermal zone device usually contains a sensor to monitor the
-> 	 temperature, several trip points and a bunch of cooling devices
-> 	 associated with them.
-> 	 A thermal cooling device is a device that can be throttled
-> 	 to cool the system.
-> 	 The generic thermal sysfs driver creates the standard sysfs I/F
-> 	 for any registered thermal zone and thermal cooling device.
-> 	 And binds the cooling devices to thermal zones if possible.
-> 
-> Patch 02 registers ACPI thermal zone as thermal zone device.
-> 
-> Patch 03 is a fix of violations of ACPI spec in ACPI thermal driver.
-> 
-> Patch 04 registers ACPI Fan as thermal cooling device.
-> 
-> Patch 05 registers ACPI Processor as thermal cooling device.
-> 
-> Patch 06 registers ACPI Video LCD as thermal cooling device.
-> 	 Because throttling the backlight of LCD can cool the system as well.
-> 
-> Patch 09 creates a new platform specific driver, intel_menlow.
-> 	 which is the thermal enhancement driver for intel menlow platform.
-> 	 It programs the sensor of each thermal zone and registers the
-> 	 intel memory controller (hardware id INT0002) as thermal cooling device.
-> 
-> Patch 07 08 and 10 are minor fixes, please refer to the changelog of each patch.
-> 
-> I've tested them and they work well on several systems.
-> I'd like to get some feedbacks from the list. Any comments are appreciated. :)
-> 
-> Thanks,
-> Rui
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+  git-1.5.4.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.4.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.4.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.4-1.$arch.rpm	(RPM)
+
+It has been an unusually long cycle.  5 months since the last
+feature release 1.5.3 was really a bit too long.
+
+But I hope it was worth waiting for.  Thanks everybody for
+working hard to improve it.
+
+
+Changes since v1.5.3:
+
+ 1595 non-merge commits
+  165 contributors
+  684 files changed, 70435 insertions, 28984 deletions
+
+----------------------------------------------------------------
+
+GIT v1.5.4 Release Notes
+========================
+
+Removal
+-------
+
+ * "git svnimport" was removed in favor of "git svn".  It is still there
+   in the source tree (contrib/examples) but unsupported.
+
+ * As git-commit and git-status have been rewritten, "git runstatus"
+   helper script lost all its users and has been removed.
+
+
+Temporarily disabled
+--------------------
+
+ * "git http-push" is known not to work well with cURL library older
+   than 7.16, and we had reports of repository corruption.  It is
+   disabled on such platforms for now.  Unfortunately, 1.5.3.8 shares
+   the same issue.  In other words, this does not mean you will be
+   fine if you stick to an older git release.  For now, please do not
+   use http-push from older git with cURL older than 7.16 if you
+   value your data. A proper fix will hopefully materialize in
+   later versions.
+
+
+Deprecation notices
+-------------------
+
+ * From v1.6.0, git will by default install dashed form of commands
+   (e.g. "git-commit") outside of users' normal $PATH, and will install
+   only selected commands ("git" itself, and "gitk") in $PATH.  This
+   implies:
+
+   - Using dashed forms of git commands (e.g. "git-commit") from the
+     command line has been informally deprecated since early 2006, but
+     now it officially is, and will be removed in the future.  Use
+     dash-less forms (e.g. "git commit") instead.
+
+   - Using dashed forms from your scripts, without first prepending the
+     return value from "git --exec-path" to the scripts' PATH, has been
+     informally deprecated since early 2006, but now it officially is.
+
+   - Use of dashed forms with "PATH=$(git --exec-path):$PATH; export
+     PATH" early in your script is not deprecated with this change.
+
+   Users are strongly encouraged to adjust their habits and scripts now
+   to prepare for this change.
+
+ * The post-receive hook was introduced in March 2007 to supersede
+   the post-update hook, primarily to overcome the command line length
+   limitation of the latter.  Use of post-update hook will be deprecated
+   in future versions of git, starting from v1.6.0.
+
+ * "git lost-found" was deprecated in favor of "git fsck"'s --lost-found
+   option, and will be removed in the future.
+
+ * "git peek-remote" is deprecated, as "git ls-remote" was written in C
+   and works for all transports; "git peek-remote" will be removed in
+   the future.
+
+ * "git repo-config" which was an old name for "git config" command
+   has been supported without being advertised for a long time.  The
+   next feature release will remove it.
+
+ * From v1.6.0, the repack.usedeltabaseoffset config option will default
+   to true, which will give denser packfiles (i.e. more efficient storage).
+   The downside is that git older than version 1.4.4 will not be able
+   to directly use a repository packed using this setting.
+
+ * From v1.6.0, the pack.indexversion config option will default to 2,
+   which is slightly more efficient, and makes repacking more immune to
+   data corruptions.  Git older than version 1.5.2 may revert to version 1
+   of the pack index with a manual "git index-pack" to be able to directly
+   access corresponding pack files.
+
+
+Updates since v1.5.3
+--------------------
+
+ * Comes with much improved gitk, with i18n.
+
+ * Comes with git-gui 0.9.2 with i18n.
+
+ * gitk is now merged as a subdirectory of git.git project, in
+   preparation for its i18n.
+
+ * progress displays from many commands are a lot nicer to the eye.
+   Transfer commands show throughput data.
+
+ * many commands that pay attention to per-directory .gitignore now do
+   so lazily, which makes the usual case go much faster.
+
+ * Output processing for '--pretty=format:<user format>' has been
+   optimized.
+
+ * Rename detection of diff family while detecting exact matches has
+   been greatly optimized.
+
+ * Rename detection of diff family tries to make more natural looking
+   pairing.  Earlier, if multiple identical rename sources were
+   found in the preimage, the source used was picked pretty much at random.
+
+ * Value "true" for color.diff and color.status configuration used to
+   mean "always" (even when the output is not going to a terminal).
+   This has been corrected to mean the same thing as "auto".
+
+ * "git diff" Porcelain now respects diff.external configuration, which
+   is another way to specify GIT_EXTERNAL_DIFF.
+
+ * "git diff" can be told to use different prefixes other than
+   "a/" and "b/" e.g. "git diff --src-prefix=l/ --dst-prefix=k/".
+
+ * "git diff" sometimes did not quote paths with funny
+   characters properly.
+
+ * "git log" (and any revision traversal commands) misbehaved
+   when --diff-filter is given but was not asked to actually
+   produce diff.
+
+ * HTTP proxy can be specified per remote repository using
+   remote.*.httpproxy configuration, or global http.proxy configuration
+   variable.
+
+ * Various Perforce importer updates.
+
+ * Example update and post-receive hooks have been improved.
+
+ * Any command that wants to take a commit object name can now use
+   ":/string" syntax to name a commit.
+
+ * "git reset" is now built-in and its output can be squelched with -q.
+
+ * "git reset --hard" does not make any sense in a bare
+   repository, but did not error out; fixed.
+
+ * "git send-email" can optionally talk over ssmtp and use SMTP-AUTH.
+
+ * "git rebase" learned --whitespace option.
+
+ * In "git rebase", when you decide not to replay a particular change
+   after the command stopped with a conflict, you can say "git rebase
+   --skip" without first running "git reset --hard", as the command now
+   runs it for you.
+
+ * "git rebase --interactive" mode can now work on detached HEAD.
+
+ * Other minor to serious bugs in "git rebase -i" have been fixed.
+
+ * "git rebase" now detaches head during its operation, so after a
+   successful "git rebase" operation, the reflog entry branch@{1} for
+   the current branch points at the commit before the rebase was
+   started.
+
+ * "git rebase -i" also triggers rerere to help your repeated merges.
+
+ * "git merge" can call the "post-merge" hook.
+
+ * "git pack-objects" can optionally run deltification with multiple
+   threads.
+
+ * "git archive" can optionally substitute keywords in files marked with
+   export-subst attribute.
+
+ * "git cherry-pick" made a misguided attempt to repeat the original
+   command line in the generated log message, when told to cherry-pick a
+   commit by naming a tag that points at it.  It does not anymore.
+
+ * "git for-each-ref" learned %(xxxdate:<date-format>) syntax to show the
+   various date fields in different formats.
+
+ * "git gc --auto" is a low-impact way to automatically run a variant of
+   "git repack" that does not lose unreferenced objects (read: safer
+   than the usual one) after the user accumulates too many loose
+   objects.
+
+ * "git clean" has been rewritten in C.
+
+ * You need to explicitly set clean.requireForce to "false" to allow
+   "git clean" without -f to do any damage (lack of the configuration
+   variable used to mean "do not require -f option to lose untracked
+   files", but we now use the safer default).
+
+ * The kinds of whitespace errors "git diff" and "git apply" notice (and
+   fix) can be controlled via 'core.whitespace' configuration variable
+   and 'whitespace' attribute in .gitattributes file.
+
+ * "git push" learned --dry-run option to show what would happen if a
+   push is run.
+
+ * "git push" does not update a tracking ref on the local side when the
+   remote refused to update the corresponding ref.
+
+ * "git push" learned --mirror option.  This is to push the local refs
+   one-to-one to the remote, and deletes refs from the remote that do
+   not exist anymore in the repository on the pushing side.
+
+ * "git push" can remove a corrupt ref at the remote site with the usual
+   ":ref" refspec.
+
+ * "git remote" knows --mirror mode.  This is to set up configuration to
+   push into a remote repository to store local branch heads to the same
+   branch on the remote side, and remove branch heads locally removed
+   from local repository at the same time.  Suitable for pushing into a
+   back-up repository.
+
+ * "git remote" learned "rm" subcommand.
+
+ * "git cvsserver" can be run via "git shell".  Also, "cvs" is
+   recognized as a synonym for "git cvsserver", so that CVS users
+   can be switched to git just by changing their login shell.
+
+ * "git cvsserver" acts more like receive-pack by running post-receive
+   and post-update hooks.
+
+ * "git am" and "git rebase" are far less verbose.
+
+ * "git pull" learned to pass --[no-]ff option to underlying "git
+   merge".
+
+ * "git pull --rebase" is a different way to integrate what you fetched
+   into your current branch.
+
+ * "git fast-export" produces data-stream that can be fed to fast-import
+   to reproduce the history recorded in a git repository.
+
+ * "git add -i" takes pathspecs to limit the set of files to work on.
+
+ * "git add -p" is a short-hand to go directly to the selective patch
+   subcommand in the interactive command loop and to exit when done.
+
+ * "git add -i" UI has been colorized.  The interactive prompt
+   and menu can be colored by setting color.interactive
+   configuration.  The diff output (including the hunk picker)
+   are colored with color.diff configuration.
+
+ * "git commit --allow-empty" allows you to create a single-parent
+   commit that records the same tree as its parent, overriding the usual
+   safety valve.
+
+ * "git commit --amend" can amend a merge that does not change the tree
+   from its first parent.
+
+ * "git commit" used to unconditionally strip comment lines that
+   began with '#' and removed excess blank lines.  This behavior has
+   been made configurable.
+
+ * "git commit" has been rewritten in C.
+
+ * "git stash random-text" does not create a new stash anymore.  It was
+   a UI mistake.  Use "git stash save random-text", or "git stash"
+   (without extra args) for that.
+
+ * "git stash clear extra-text" does not clear the whole stash
+   anymore.  It is tempting to expect "git stash clear stash@{2}"
+   to drop only a single named stash entry, and it is rude to
+   discard everything when that is asked (but not provided).
+
+ * "git prune --expire <time>" can exempt young loose objects from
+   getting pruned.
+
+ * "git branch --contains <commit>" can list branches that are
+   descendants of a given commit.
+
+ * "git log" learned --early-output option to help interactive GUI
+   implementations.
+
+ * "git bisect" learned "skip" action to mark untestable commits.
+
+ * "git bisect visualize" learned a shorter synonym "git bisect view".
+
+ * "git bisect visualize" runs "git log" in a non-windowed
+   environments.  It also can be told what command to run (e.g. "git
+   bisect visualize tig").
+
+ * "git format-patch" learned "format.numbered" configuration variable
+   to automatically turn --numbered option on when more than one commits
+   are formatted.
+
+ * "git ls-files" learned "--exclude-standard" to use the canned set of
+   exclude files.
+
+ * "git tag -a -f existing" begins the editor session using the existing
+   annotation message.
+
+ * "git tag -m one -m bar" (multiple -m options) behaves similarly to
+   "git commit"; the parameters to -m options are formatted as separate
+   paragraphs.
+
+ * The format "git show" outputs an annotated tag has been updated to
+   include "Tagger: " and "Date: " lines from the tag itself.  Strictly
+   speaking this is a backward incompatible change, but this is a
+   reasonable usability fix and people's scripts shouldn't have been
+   relying on the exact output from "git show" Porcelain anyway.
+
+ * "git cvsimport" did not notice errors from underlying "cvsps"
+   and produced a corrupt import silently.
+
+ * "git cvsexportcommit" learned -w option to specify and switch to the
+   CVS working directory.
+
+ * "git checkout" from a subdirectory learned to use "../path" to allow
+   checking out a path outside the current directory without cd'ing up.
+
+ * "git checkout" from and to detached HEAD leaves a bit more
+   information in the reflog.
+
+ * "git send-email --dry-run" shows full headers for easier diagnosis.
+
+ * "git merge-ours" is now built-in.
+
+ * "git svn" learned "info" and "show-externals" subcommands.
+
+ * "git svn" run from a subdirectory failed to read settings from the
+   .git/config.
+
+ * "git svn" learned --use-log-author option, which picks up more
+   descriptive name from From: and Signed-off-by: lines in the commit
+   message.
+
+ * "git svn" wasted way too much disk to record revision mappings
+   between svn and git; a new representation that is much more compact
+   for this information has been introduced to correct this.
+
+ * "git svn" left temporary index files it used without cleaning them
+   up; this was corrected.
+
+ * "git status" from a subdirectory now shows relative paths, which
+   makes copy-and-pasting for git-checkout/git-add/git-rm easier.  The
+   traditional behavior to show the full path relative to the top of
+   the work tree can be had by setting status.relativepaths
+   configuration variable to false.
+
+ * "git blame" kept text for each annotated revision in core needlessly;
+   this has been corrected.
+
+ * "git shortlog" learned to default to HEAD when the standard input is
+   a terminal and the user did not give any revision parameter.
+
+ * "git shortlog" learned "-e" option to show e-mail addresses as well as
+   authors' names.
+
+ * "git help" learned "-w" option to show documentation in browsers.
+
+ * In addition there are quite a few internal clean-ups. Notably:
+
+   - many fork/exec have been replaced with run-command API,
+     brought from the msysgit effort.
+
+   - introduction and more use of the option parser API.
+
+   - enhancement and more use of the strbuf API.
+
+ * Makefile tweaks to support HP-UX is in.
+
+Fixes since v1.5.3
+------------------
+
+All of the fixes in v1.5.3 maintenance series are included in
+this release, unless otherwise noted.
+
+These fixes are only in v1.5.4 and not backported to v1.5.3 maintenance
+series.
+
+ * The way "git diff --check" behaves is much more consistent with the way
+   "git apply --whitespace=warn" works.
+
+ * "git svn" talking with the SVN over HTTP will correctly quote branch
+   and project names.
+
+ * "git config" did not work correctly on platforms that define
+   REG_NOMATCH to an even number.
+
+ * Recent versions of AsciiDoc 8 has a change to break our
+   documentation; a workaround has been implemented.
+
+ * "git diff --color-words" colored context lines in a wrong color.
