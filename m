@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbYBBEoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763805AbYBBEws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764183AbYBBEoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 23:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbYBBEoR
+	id S1763805AbYBBEws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 23:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbYBBEwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 23:44:17 -0500
-Received: from lixom.net ([66.141.50.11]:50990 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755463AbYBBEoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 23:44:17 -0500
-Date: Fri, 1 Feb 2008 22:44:46 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Build error on PowerPC
-Message-ID: <20080202044446.GA14936@lixom.net>
-References: <1201866279.6218.187.camel@violet> <20080201232741.GA7853@lixom.net> <1201921027.15090.28.camel@violet>
+	Fri, 1 Feb 2008 23:52:37 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61485 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754460AbYBBEwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 23:52:36 -0500
+Message-ID: <47A3F6DC.1000903@cn.fujitsu.com>
+Date: Sat, 02 Feb 2008 12:51:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201921027.15090.28.camel@violet>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: LKML <linux-kernel@vger.kernel.org>
+CC: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       mboton@gmail.com, zambrano@broadcom.com, linville@tuxdriver.com
+Subject: Re: linux-2.6.24 compile error in drivers/net/b44.c
+References: <47A3CC70.8090900@cn.fujitsu.com>
+In-Reply-To: <47A3CC70.8090900@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 03:57:07AM +0100, Marcel Holtmann wrote:
-> Hi Olof,
+Add CCs:
+
+CC: mboton@gmail.com
+CC: zambrano@broadcom.com
+CC: linville@tuxdriver.com
+
+Li Zefan wrote:
+> drivers/net/b44.c: In function 'b44_remove_one':
+> drivers/net/b44.c:2231: error: implicit declaration of function 'ssb_pcihost_set_power_state'
+> make[2]: *** [drivers/net/b44.o] Error 1
+> make[1]: *** [drivers/net] Error 2
 > 
-> > Please define what kernel version and what config you're trying to
-> > build.
+> I think it is caused by:
 > 
-> it is the latest kernel for Linus' git and the config is kinda obviously
-> enabling the awacs.c driver. Anyway, the driver didn't make use of the
-> NVRAM call and thus removing that include is perfectly fine. Attached
-> patch fixes that issue.
-
-Sure, but it could have been dependent on other options around it (i.e.
-nvram-related ones). It's just good habit to include the info, that's
-all.
-
-> > Also, please cc linuxppc-dev@ozlabs.org for powerpc issues.
+> CONFIG_SSB_PCIHOST=n
+> CONFIG_B44=y
 > 
-> To be quite honest, it is highly likely that I forget the next time.
-> Good that you read LKML :)
 
-Well, sometimes I do, sometimes others do. It just might take longer for
-someone to stuble over it. :-)
-
-
--Olof
 
