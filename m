@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761832AbYBBLuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbYBBLwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761832AbYBBLuO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 06:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758328AbYBBLtv
+	id S1760947AbYBBLwe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 06:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYBBLw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 06:49:51 -0500
-Received: from gw.goop.org ([64.81.55.164]:49997 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758173AbYBBLtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 06:49:50 -0500
-Message-ID: <47A458B1.4050208@goop.org>
-Date: Sat, 02 Feb 2008 03:49:05 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 2 Feb 2008 06:52:27 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:40409 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756768AbYBBLw0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 06:52:26 -0500
+Date: Sat, 2 Feb 2008 12:52:25 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Laurent Vivier <Laurent.Vivier@bull.net>, Paul.Clements@steeleye.com,
+       nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow NBD to be used locally
+In-Reply-To: <20080202112336.GB5362@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0802021243300.18790@fbirervta.pbzchgretzou.qr>
+References: <1201872332265-git-send-email-Laurent.Vivier@bull.net>
+ <20080202112336.GB5362@elf.ucw.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
-Subject: Re: [PATCH 2 of 7] x86: add common mm/pgtable.c
-References: <patchbomb.1201943112@localhost> <3c9aba41ee700a239859.1201943114@localhost> <20080202103030.GA23897@elte.hu>
-In-Reply-To: <20080202103030.GA23897@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Add a common arch/x86/mm/pgtable.c file for common pagetable functions.
->>     
->
-> randconfig testing found a build breakage on 32-bit, and that got 
-> bisected down to this patch of yours.
 
-Couldn't reproduce.  What was the failure?
+On Feb 2 2008 12:23, Pavel Machek wrote:
+>On Fri 2008-02-01 14:25:32, Laurent Vivier wrote:
+>> This patch allows Network Block Device to be mounted locally.
+>
+>What is local nbd good for? Use loop instead...
 
-    J
+Local NBD is good for when the content you want to make available
+through the block device is dynamic (generated on-the-fly),
+non-linear or supersparse.
+
+Take for example VMware virtual disks. Just a guess, but
+they roughly can look like this:
+
+  kilobytes  0.. 1: header
+  kilobytes  1..10: correspond to LBA 0..20
+  kilobytes 11..20: correspond to LBA 40..60
+  kilobytes 21..22: correspond to LBA 22..23
+
+So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
+does not deal with that.
+
+And there is supersparsity -- the VMDK file itself is complete, but
+unallocated regions like LBA 24..40 are sparse/zero when projected
+onto a file/block device, respectively; loop cannot deal with that
+either.
+
+In fact, VMware uses local nbd today for its vmware-loop helper
+utility, most likely because of the above-mentioned reasons. (Though
+it quite often hung last time I tried.)
