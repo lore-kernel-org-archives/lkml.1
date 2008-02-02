@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934948AbYBBVSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935384AbYBBVS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934948AbYBBVSl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 16:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbYBBVSc
+	id S935384AbYBBVS4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 16:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933995AbYBBVSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 16:18:32 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36853 "EHLO e5.ny.us.ibm.com"
+	Sat, 2 Feb 2008 16:18:35 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58325 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753565AbYBBVSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 16:18:31 -0500
+	id S1765651AbYBBVSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 16:18:34 -0500
 Subject: Re: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
 From: Matt Helsley <matthltc@us.ibm.com>
 To: Oleg Nesterov <oleg@tv-sign.ru>
@@ -25,8 +25,8 @@ References: <20080130142014.GA2164@tv-sign.ru>
 	 <20080130172646.GA2355@tv-sign.ru>
 Content-Type: text/plain
 Organization: IBM Linux Technology Center
-Date: Sat, 02 Feb 2008 13:17:45 -0800
-Message-Id: <1201987065.9062.6.camel@localhost.localdomain>
+Date: Sat, 02 Feb 2008 12:52:38 -0800
+Message-Id: <1201985558.22896.12.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
@@ -58,13 +58,10 @@ On Wed, 2008-01-30 at 20:26 +0300, Oleg Nesterov wrote:
 > 
 > Oleg.
 
-	Looking at sys_remap_file_pages() it appears that the shared flag must
-be set in order to remap. Executable mappings are always MAP_PRIVATE and
-hence lack the shared flag so that any modifications to those areas
-don't get written back to the executable. I don't think userspace can
-change this flag -- even using plain mremap. So, unless there's a way to
-change that flag, I don't think there's anything related to
-VM_EXECUTABLE vmas that needs to be done here.
+Only shared VMAs can be remapped by sys_remap_file_pages but all
+executable mappings are MAP_PRIVATE and hence lack the shared flag. I
+don't know of a way for userspace to change that flag so I think there's
+nothing that needs to be done here.
 
 Cc'ing linux-mm.
 
