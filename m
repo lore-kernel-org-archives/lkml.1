@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbYBBNL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761553AbYBBNMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbYBBNL0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 08:11:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYBBNLV
+	id S1761553AbYBBNMt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 08:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYBBNMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 08:11:21 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:33821 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbYBBNLV (ORCPT
+	Sat, 2 Feb 2008 08:12:42 -0500
+Received: from fmmailgate05.web.de ([217.72.192.243]:61960 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753576AbYBBNMm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 08:11:21 -0500
-Message-ID: <47A46BF8.6030306@davidnewall.com>
-Date: Sat, 02 Feb 2008 23:41:20 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 2 Feb 2008 08:12:42 -0500
+Date: Sat, 02 Feb 2008 14:12:40 +0100
+Message-Id: <141150637@web.de>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: [PATCH] 2.4: Back-port of pl2303.c from 2.6.23.14
-References: <479A83DE.8020002@davidnewall.com> <20080202074406.GA31516@1wt.eu>
-In-Reply-To: <20080202074406.GA31516@1wt.eu>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: dhecht@vmware.com, tglx@linutronix.de
+Subject: Re: Linux VM completely lost it`s timesource !?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX191Aux8lDqDWFNF0cd4uTBoWfUAuqwgPZaTYFICkkpFTLvTy
+ Jo9rGsRf+7tnYbHB6shsdktNhB7NkxxY+78gP+Fj6B7QiiXt9c=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Willy,
+cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+acpi_pm
 
-Willy Tarreau wrote:
-> Based on the above conditions, I'd like you to tell Greg and I if you
-> consider it worth to merge this backport in 2.4 now. From my point of
-> view, your work looks OK but I want your feedback as a user (and not
-> as the backporter), then Greg's approval.
+cannot switch to any other clocksource, "echo tsc|jiffies|pit >current_clocksource" doesn`t have any effect. 
+current_clocksource stays at acpi_pm
 
-The data loss I experienced did go away with the back-port, but I think
-that was because of the bigger buffers, rather than any true fix. Other
-than the extra product ids, it won't really change anything. I'm hoping
-the additional work I've done since then will correct the underlying
-fault. (Wish I could get some feedback on it.) I'd be happy for you to
-wait for that.
+maybe somebody has a clue what to check besides this?
+
+thanks
+roland
+
+
+>I`m running 2.6.24 kernel in a recent version of vmware workstation and i`m unsure if \
+>i hit a linux issue or a vmware issue here.
+>
+>after suspend/resume (hibernate) of my physical system (win xp), the linux guest \
+>seems to have lost it´s timesource.
+>
+>don`t know much about timers in linux, so let me explain first:
+>
+>the guest was running when i suspended the xp host.
+>the xp host is running fine after resume.
+>the guest has issues.
+>
+>triggering a console beep inside the linux VM now doesn`t give a short beep but \
+>terrorizing me with a never-ending continuous beep.
+>
+>seems to be a timer issue inside the guest, since tools like top, vmstat, watch etc \
+>don`t work anymore. the system clock gone crazy, too - it`s counting from 22:40:47 to \
+>22:40:51 and then constantly jumps back to 22:40:47
+>
+>can someone give an advice what to check to make sure that this is NOT a linux issue \
+>? i will contact vmware then afterwards.
+>
+>regards
+>roland
+>
+>ps:
+>i did a snapshot of the VM and could preserve the state of the system this way.
+________________________________________________________
+Bis 50 MB Dateianhänge? Kein Problem!
+http://www.digitaledienste.web.de/freemail/club/lp/?lp=7
+
