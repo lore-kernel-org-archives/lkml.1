@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbYBBDFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYBBDmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762928AbYBBDFM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 22:05:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759657AbYBBDE6
+	id S1762045AbYBBDmS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 22:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYBBDmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 22:04:58 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:29381 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757743AbYBBDE5 (ORCPT
+	Fri, 1 Feb 2008 22:42:03 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46076 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754460AbYBBDmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 22:04:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=wNBVZuS9Q+8s3NG3s6smB5mSFsVwNbcs3WHQxybisTXpGNWqr73IjgQzTNWDKREJomC1B8zkfr9KZbnyi4nMVCOpoAcIvmm7HLY6fYj3B7V7nkrJrIujCe93Zq7X8ouwkavIVykbizoy/+PjYOZ4WJQV7iZJwGxaA8toD+Su2D0=
-Message-ID: <47A3DDD2.2010600@gmail.com>
-Date: Sat, 02 Feb 2008 12:04:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Fri, 1 Feb 2008 22:42:01 -0500
+Date: Sat, 2 Feb 2008 14:40:48 +1100 (EST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@www.l.google.com
+To: "Oliver Pinter (Pint?r Oliv?r)" <oliver.pntr@gmail.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       stable-commits@vger.kernel.org,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>, Greg KH <gregkh@suse.de>,
+       Willy Tarreau <w@1wt.eu>, Adrian Bunk <bunk@kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [2.6.22.y] {17**/17} - nopage-range-fix.patch (CVE-2008-0007)
+ - series for stable kernel #2
+In-Reply-To: <6101e8c40802011734k2b4f7c49o980a32fa4a84cd61@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0802021440010.5082@www.l.google.com>
+References: <6101e8c40802011734k2b4f7c49o980a32fa4a84cd61@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Dan Nica <timi@crystal.rdstm.ro>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: SiI 3512 Serial ATA Controller - kernel 2.6.23
-References: <Pine.LNX.4.63.0801222230470.4758@crystal.rdstm.ro> <47965AA7.4080703@garzik.org> <Pine.LNX.4.63.0801231244040.28840@crystal.rdstm.ro>
-In-Reply-To: <Pine.LNX.4.63.0801231244040.28840@crystal.rdstm.ro>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Nica wrote:
-> those errors apears only when I use the harddrives with
-> the sii controller and only when I make operation between
-> the onboard sata and the sii sata controller, operations between 
-> ide and drives that are on sii works perfectly...
 
-Hmm.. Your drive is raising ABRT on writes.  It can point to a number of
-things including media access error and transmission error.  It's
-basically a catch-all bit.  In the log, libata EH slowed down the device
-to udma33 without any effect so I don't think it's transmission error
-caused by cable misdetection or miswiring (mid connector connected to
-the only drive on the cable).  What does 'smartctl -a' say about the drive?
 
--- 
-tejun
+On Sat, 2 Feb 2008, Oliver Pinter (Pint?r Oliv?r) wrote:
+> 
+> Linus it's go or drop it?
+
+I should merge it, I was just a bit bummed that I think the right solution 
+is to switch the bitfield meaning around. But the patch is certainly not 
+wrong.
+
+		Linus
