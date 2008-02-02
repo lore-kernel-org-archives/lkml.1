@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763240AbYBBBa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbYBBBdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763240AbYBBBa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 20:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760720AbYBBBaS
+	id S1762840AbYBBBdV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 20:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYBBBdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 20:30:18 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:38808 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758107AbYBBBaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 20:30:16 -0500
-Date: Fri, 1 Feb 2008 17:30:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Justin M. Forbes" <jmforbes@linuxtx.org>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, dhaval@linux.vnet.ibm.com
-Subject: Re: [patch 22/27] quicklist: Set tlb->need_flush if pages are
- remaining in quicklist 0
-In-Reply-To: <1201915720.3781.18.camel@turion.linuxtx.org>
-Message-ID: <Pine.LNX.4.64.0802011729560.21840@schroedinger.engr.sgi.com>
-References: <20080202001232.472591439@mini.kroah.org>  <20080202002103.GW8368@suse.de>
-  <Pine.LNX.4.64.0802011638330.21566@schroedinger.engr.sgi.com>
- <1201915720.3781.18.camel@turion.linuxtx.org>
+	Fri, 1 Feb 2008 20:33:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:28697 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbYBBBdM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 20:33:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=R36yrzia62SeuDw/JHibhe8AUTALzNWbZSMhnK053EohROpsF9J5ruxoB9m04lBxEXmP5R0T6KzrmSW0Wdq4GF6M6YxWceC1+Zw8mvrrhRvcoi+TG9Bf8fqL2PQnVJ1aL19AvQa1mLHcdWZmGqsUXHQ4PfDFgJH6l6RYssvaqvE=
+Message-ID: <6101e8c40802011733h3e5a4c8bgb6c1d1feb2205043@mail.gmail.com>
+Date: Sat, 2 Feb 2008 02:33:10 +0100
+From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
+	<oliver.pntr@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       stable-commits@vger.kernel.org
+Subject: [2.6.22.y] {00/17} series for stable kernel #2
+Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
+       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Feb 2008, Justin M. Forbes wrote:
+01/17** do_anonymous_page-race
+02/17 invalid-semicolon
+03/17 pci-fix-unterminated-pci_device_id-lists
+04/17 cciss-panic-in-blk_rq_map_sg
+05/17 cciss-fix_memory_leak
+06/17 handle-bogus-%cs-selector-in-single-step-instruction-decoding
+07/17 i386-fixup-TRACE_IRQ-breakage
+08/17 intel-agp-965gme-fix
+09/17 sony-laptop-call-sonypi_compat_init-earlier
+10/17 via-velocity-dont-oops-on-mtu-change-1
+11/17 via-velocity-dont-oops-on-mtu-change-2
+12/17 nfsacl-retval.diff
+13/17 nfs-fix-nfs-reval-fsid
+14/17 nfs-name-len-limit
+15/17 nfs-unmount-leak.patch
+16/17 nfsv4-MAXNAME-fix.diff
+17/17** nopage-range-fix.patch
 
-> 
-> On Fri, 2008-02-01 at 16:39 -0800, Christoph Lameter wrote:
-> > NO! Wrong fix. Was dropped from mainline.
-> 
-> What is the right fix for the OOM issues with 2.6.22? Perhaps
-> http://marc.info/?l=linux-mm&m=119973653803451&w=2 should be added to
-> the queue in its place?  The OOM issue in 2.6.22 is real, and should be
-> addressed.
 
-Indeed that is the right fix.
-
+Patch 1 and 17 not included is mainline
+-- 
+Thanks,
+Oliver
