@@ -1,120 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbYBBSD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbYBBSG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933293AbYBBSD1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYBBSDS
+	id S932434AbYBBSG3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbYBBSGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:03:18 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:42778 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751528AbYBBSDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:03:16 -0500
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: 2.6.24-git12-ext4-1 patchset released
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1JLMhs-0003Rp-A3@closure.thunk.org>
-Date: Sat, 02 Feb 2008 13:03:12 -0500
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 2 Feb 2008 13:06:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58701 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752023AbYBBSGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:06:21 -0500
+Date: Sat, 2 Feb 2008 19:06:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Brownell <david-b@pacbell.net>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] sleepy linux self-test
+Message-ID: <20080202180604.GC26560@elte.hu>
+References: <20080130131748.GA3796@elf.ucw.cz> <20080202124759.GB25773@elf.ucw.cz> <20080202135037.GC925@elte.hu> <200802020949.23397.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802020949.23397.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I've just released 2.6.24-git12-ext4-1.  It removes the ext2/ext3 BKL
-patches from Andi Kleen, since akpm has apparently already merged those
-into -mm and they were causing conflicts with Dave Hansen's read-only
-bind mount patches.  
+* David Brownell <david-b@pacbell.net> wrote:
 
-It also adds a patch to replace the use of iget() with iget_unlocked()
-(since an iget() removal patch has been queued in -mm), and adds a
-number of bug fixes. all, of which I hope to push to Linus shortly.
+> On Saturday 02 February 2008, Ingo Molnar wrote:
+> > 
+> > i'd really love to have a /dev/rtc device compatibility APIs, both 
+> > inside and outside the kernel.
+> 
+> Unfortunately the /dev/rtc code became a legacy API for good reasons.
+> 
+> Like not recognizing that all the world's not a PC, with a single RTC 
+> that clones a long-obsolete chip from Motorola ... and not having been 
+> specified in a hardware-neutral manner.  Oh, and of course not all 
+> systems actually used the same RTC driver anyway; it's not like there 
+> was just *one* such programming interface to worry about.
 
-As a git tree:
+i dont get it - please give me specific technological reasons why on my 
+PC /dev/rtc couldnt be mapped to /dev/rtc0 - without requiring any 
+user-space changes. The APIs seem mostly covered, or at least mappable. 
+Why should the transition to a new driver require user-level changes? 
+(beyond the obvious extensions, but those should show up as extensions.) 
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.24-git12-ext4-1
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.24-git
-12-ext4-1
+In fact i detest the old RTC code with a vengence, so dont understand 
+this as some invitation to flame or something - i simply want YOUR new 
+code to be utilized more! I just dont see the specific technological 
+reasons of why there is no .config switch to switch the legacy /dev/rtc 
+over to the new RTC driver and be done with it. I'd enable it in a 
+heartbeat and would encourage distros to do so. Are there missing APIs? 
+Is the ioctl API totally different? It's impossible to wrap it? I'm not 
+really interested in "this isnt a PC" arguments. The incompatibility is 
+such an obvious migration barrier to me - do you really not see it?
 
-As a patchset:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.24-git12-ext4-1
-
-                                                - Ted
-
-New or modified patches since the last patchset indicated with an
-asterisk(*):
-
-Akira Fujita (4):
-      ext4: online defrad header file changes
-      ext4: online defrag-- Allocate new contiguous blocks with mballoc
-      ext4: online defrag -- Move the file data to the new blocks
-    * Free space fragmentation functions
-
-Alex Tomas (2):
-      vfs: add basic delayed allocation support
-      ext4: Add basic delayed allocation support
-
-Andi Kleen (3):
-      Remove incorrect comment refering to lock_kernel() from jbd/jbd2
-      Convert ext4 to use unlocked_ioctl v2
-      Remove incorrect BKL comments in ext4
-
-Aneesh Kumar K.V (3):
-      ext4: undo the stable boundary patch changes
-      ext4: Enable delalloc and mballoc by default.
-      ext4: Show delalloc options
-
-Eric Sandeen (1):
-      allow in-inode EAs on ext4 root inode
-
-Jan Kara (1):
-    * jbd: Remove useless loop when writing commit record
-
-Josef Bacik (1):
-    * jbd: fix assertion failure in journal_next_log_block
-
-Mingming Cao (2):
-      jbd: blocks reservation fix for large block support
-      jbd2: blocks reservation fix for large block support
-
-Theodore Ts'o (5):
-    * ext4: Replace use of iget() with iget_locked()
-    * jbd2: Add error check to journal_wait_on_commit_record to avoid oops
-      patch test-filesys-flag.patch
-      ext4: Stable/Unstable boundary
-      ext4: New inode allocation for FLEX_BG meta-data groups.
-
- fs/buffer.c                     |    3 +-
- fs/ext4/Makefile                |    2 +-
- fs/ext4/balloc.c                |   28 +-
- fs/ext4/defrag.c                | 2214 +++++++++++++++++++++++++++++++++++++++
- fs/ext4/dir.c                   |    4 +-
- fs/ext4/extents.c               |   65 +-
- fs/ext4/file.c                  |    2 +-
- fs/ext4/ialloc.c                |  110 ++-
- fs/ext4/inode.c                 |  174 +++-
- fs/ext4/ioctl.c                 |   25 +-
- fs/ext4/mballoc.c               |    7 +
- fs/ext4/namei.c                 |   14 +-
- fs/ext4/resize.c                |    6 +-
- fs/ext4/super.c                 |  113 ++-
- fs/jbd/commit.c                 |   21 +-
- fs/jbd/journal.c                |    7 +-
- fs/jbd/recovery.c               |    2 +-
- fs/jbd2/commit.c                |   12 +-
- fs/jbd2/journal.c               |    7 +-
- fs/jbd2/recovery.c              |    2 +-
- fs/mpage.c                      |  406 +++++++
- include/linux/ext4_fs.h         |  107 ++-
- include/linux/ext4_fs_extents.h |   22 +
- include/linux/ext4_fs_sb.h      |    3 +
- include/linux/jbd.h             |    3 +-
- include/linux/jbd2.h            |    3 +-
- include/linux/mpage.h           |    2 +
- 27 files changed, 3271 insertions(+), 93 deletions(-)
-
+	Ingo
