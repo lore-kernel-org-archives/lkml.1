@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763006AbYBBAYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbYBBAYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763006AbYBBAYU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761685AbYBBAXw
+	id S1763267AbYBBAYf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762801AbYBBAX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:23:52 -0500
-Received: from mx1.suse.de ([195.135.220.2]:54472 "EHLO mx1.suse.de"
+	Fri, 1 Feb 2008 19:23:58 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55568 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759740AbYBBAXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:23:50 -0500
-Date: Fri, 1 Feb 2008 16:19:46 -0800
+	id S1762744AbYBBAX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 19:23:56 -0500
+Date: Fri, 1 Feb 2008 16:19:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,94 +20,147 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Julia Lawall <julia@diku.dk>, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 01/27] X25: Add missing x25_neigh_put
-Message-ID: <20080202001946.GB8368@suse.de>
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 02/27] SPARC64: Fix two kernel linear mapping setup bugs.
+Message-ID: <20080202001956.GC8368@suse.de>
 References: <20080202001232.472591439@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x25-add-missing-x25_neigh_put.patch"
+Content-Disposition: inline; filename="sparc64-fix-two-kernel-linear-mapping-setup-bugs.patch"
 In-Reply-To: <20080202001927.GA8368@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-stable review patch.  If anyone has any objections, please let us know.
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
 ------------------
-From: Julia Lawall <julia@diku.dk>
+From: David Miller <davem@davemloft.net>
 
-[X25]: Add missing x25_neigh_put
+[SPARC64]: Fix two kernel linear mapping setup bugs.
 
-[ Upstream commit: 76975f8a3186dae501584d0155ea410464f62815 ]
+[ Upstream commit: 8f361453d8e9a67c85b2cf9b93c642c2d8fe0462 ]
 
-The function x25_get_neigh increments a reference count.  At the point of
-the second goto out, the result of calling x25_get_neigh is only stored in
-a local variable, and thus no one outside the function will be able to
-decrease the reference count.  Thus, x25_neigh_put should be called before
-the return in this case.
+This was caught and identified by Greg Onufer.
 
-The problem was found using the following semantic match.
-(http://www.emn.fr/x-info/coccinelle/)
+Since we setup the 256M/4M bitmap table after taking over the trap
+table, it's possible for some 4M mapping to get loaded in the TLB
+beforhand which later will be 256M mappings.
 
-// <smpl>
+This can cause illegal TLB multiple-match conditions.  Fix this by
+setting up the bitmap before we take over the trap table.
 
-@@
-type T,T1,T2;
-identifier E;
-statement S;
-expression x1,x2,x3;
-int ret;
-@@
+Next, __flush_tlb_all() was not doing anything on hypervisor
+platforms.  Fix by adding sun4v_mmu_demap_all() and calling it.
 
-  T E;
-  ...
-* if ((E = x25_get_neigh(...)) == NULL)
-  S
-  ... when != x25_neigh_put(...,(T1)E,...)
-      when != if (E != NULL) { ... x25_neigh_put(...,(T1)E,...); ...}
-      when != x1 = (T1)E
-      when != E = x3;
-      when any
-  if (...) {
-    ... when != x25_neigh_put(...,(T2)E,...)
-        when != if (E != NULL) { ... x25_neigh_put(...,(T2)E,...); ...}
-        when != x2 = (T2)E
-(
-*   return;
-|
-*   return ret;
-)
-  }
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/x25/x25_forward.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/sparc64/kernel/entry.S      |   12 ++++++++++++
+ arch/sparc64/mm/init.c           |   29 ++++++++++++++++++++---------
+ include/asm-sparc64/hypervisor.h |    4 ++++
+ 3 files changed, 36 insertions(+), 9 deletions(-)
 
---- a/net/x25/x25_forward.c
-+++ b/net/x25/x25_forward.c
-@@ -118,13 +118,14 @@ int x25_forward_data(int lci, struct x25
- 		goto out;
- 
- 	if ( (skbn = pskb_copy(skb, GFP_ATOMIC)) == NULL){
--		goto out;
-+		goto output;
- 
+--- a/arch/sparc64/kernel/entry.S
++++ b/arch/sparc64/kernel/entry.S
+@@ -2593,3 +2593,15 @@ sun4v_mmustat_info:
+ 	retl
+ 	 nop
+ 	.size	sun4v_mmustat_info, .-sun4v_mmustat_info
++
++	.globl	sun4v_mmu_demap_all
++	.type	sun4v_mmu_demap_all,#function
++sun4v_mmu_demap_all:
++	clr	%o0
++	clr	%o1
++	mov	HV_MMU_ALL, %o2
++	mov	HV_FAST_MMU_DEMAP_ALL, %o5
++	ta	HV_FAST_TRAP
++	retl
++	 nop
++	.size	sun4v_mmu_demap_all, .-sun4v_mmu_demap_all
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -1135,14 +1135,9 @@ static void __init mark_kpte_bitmap(unsi
  	}
- 	x25_transmit_link(skbn, nb);
- 
--	x25_neigh_put(nb);
- 	rc = 1;
-+output:
-+	x25_neigh_put(nb);
- out:
- 	return rc;
  }
+ 
+-static void __init kernel_physical_mapping_init(void)
++static void __init init_kpte_bitmap(void)
+ {
+ 	unsigned long i;
+-#ifdef CONFIG_DEBUG_PAGEALLOC
+-	unsigned long mem_alloced = 0UL;
+-#endif
+-
+-	read_obp_memory("reg", &pall[0], &pall_ents);
+ 
+ 	for (i = 0; i < pall_ents; i++) {
+ 		unsigned long phys_start, phys_end;
+@@ -1151,14 +1146,24 @@ static void __init kernel_physical_mappi
+ 		phys_end = phys_start + pall[i].reg_size;
+ 
+ 		mark_kpte_bitmap(phys_start, phys_end);
++	}
++}
+ 
++static void __init kernel_physical_mapping_init(void)
++{
+ #ifdef CONFIG_DEBUG_PAGEALLOC
++	unsigned long i, mem_alloced = 0UL;
++
++	for (i = 0; i < pall_ents; i++) {
++		unsigned long phys_start, phys_end;
++
++		phys_start = pall[i].phys_addr;
++		phys_end = phys_start + pall[i].reg_size;
++
+ 		mem_alloced += kernel_map_range(phys_start, phys_end,
+ 						PAGE_KERNEL);
+-#endif
+ 	}
+ 
+-#ifdef CONFIG_DEBUG_PAGEALLOC
+ 	printk("Allocated %ld bytes for kernel page tables.\n",
+ 	       mem_alloced);
+ 
+@@ -1400,6 +1405,10 @@ void __init paging_init(void)
+ 	
+ 	inherit_prom_mappings();
+ 	
++	read_obp_memory("reg", &pall[0], &pall_ents);
++
++	init_kpte_bitmap();
++
+ 	/* Ok, we can use our TLB miss and window trap handlers safely.  */
+ 	setup_tba();
+ 
+@@ -1854,7 +1863,9 @@ void __flush_tlb_all(void)
+ 			     "wrpr	%0, %1, %%pstate"
+ 			     : "=r" (pstate)
+ 			     : "i" (PSTATE_IE));
+-	if (tlb_type == spitfire) {
++	if (tlb_type == hypervisor) {
++		sun4v_mmu_demap_all();
++	} else if (tlb_type == spitfire) {
+ 		for (i = 0; i < 64; i++) {
+ 			/* Spitfire Errata #32 workaround */
+ 			/* NOTE: Always runs on spitfire, so no
+--- a/include/asm-sparc64/hypervisor.h
++++ b/include/asm-sparc64/hypervisor.h
+@@ -709,6 +709,10 @@ extern unsigned long sun4v_mmu_tsb_ctx0(
+  */
+ #define HV_FAST_MMU_DEMAP_ALL		0x24
+ 
++#ifndef __ASSEMBLY__
++extern void sun4v_mmu_demap_all(void);
++#endif
++
+ /* mmu_map_perm_addr()
+  * TRAP:	HV_FAST_TRAP
+  * FUNCTION:	HV_FAST_MMU_MAP_PERM_ADDR
 
 -- 
