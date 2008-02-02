@@ -1,143 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932912AbYBBBjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbYBBBvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932912AbYBBBjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 20:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763517AbYBBBev
+	id S1762835AbYBBBvl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 20:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYBBBv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 20:34:51 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:28811 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763759AbYBBBes (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 20:34:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=HsuIkj7tdCPcpdEAG/IeHoM/QQAbR5zb7tXfOnHjo447hsAJ+OnKL6lpqTCUEBRwj2yvzfP56RCl3v9p5qYz4pkXupziGTVz81Tsn6cAGEXHOJesVlJBHq4kDvw6RnYnqcLQld2dypHsLx30V5T/LYGlrpXNdm6Voc3QksJtuLY=
-Message-ID: <6101e8c40802011734k2b4f7c49o980a32fa4a84cd61@mail.gmail.com>
-Date: Sat, 2 Feb 2008 02:34:47 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       stable-commits@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [2.6.22.y] {17**/17} - nopage-range-fix.patch (CVE-2008-0007) - series for stable kernel #2
-Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
-       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>,
-       "Nick Piggin" <npiggin@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_26285_16307050.1201916087224"
+	Fri, 1 Feb 2008 20:51:29 -0500
+Received: from www.linuxtx.org ([65.99.219.143]:39317 "EHLO mail.linuxtx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753337AbYBBBv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 20:51:28 -0500
+X-Greylist: delayed 1362 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Feb 2008 20:51:28 EST
+Subject: Re: [patch 22/27] quicklist: Set tlb->need_flush if pages are
+	remaining in quicklist 0
+From: "Justin M. Forbes" <jmforbes@linuxtx.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, dhaval@linux.vnet.ibm.com
+In-Reply-To: <Pine.LNX.4.64.0802011638330.21566@schroedinger.engr.sgi.com>
+References: <20080202001232.472591439@mini.kroah.org>
+	 <20080202002103.GW8368@suse.de>
+	 <Pine.LNX.4.64.0802011638330.21566@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 01 Feb 2008 19:28:40 -0600
+Message-Id: <1201915720.3781.18.camel@turion.linuxtx.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_26285_16307050.1201916087224
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-NOT IN MAINLINE
+On Fri, 2008-02-01 at 16:39 -0800, Christoph Lameter wrote:
+> NO! Wrong fix. Was dropped from mainline.
 
-Linus it's go or drop it?
+What is the right fix for the OOM issues with 2.6.22? Perhaps
+http://marc.info/?l=linux-mm&m=119973653803451&w=2 should be added to
+the queue in its place?  The OOM issue in 2.6.22 is real, and should be
+addressed.
 
+Justin
 
--- 
-Thanks,
-Oliver
-
-------=_Part_26285_16307050.1201916087224
-Content-Type: text/x-diff; name=nopage-range-fix.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: file0
-Content-Disposition: attachment; filename=nopage-range-fix.patch
-
-RnJvbTogTmljayBQaWdnaW4gPG5waWdnaW5Ac3VzZS5kZT4KU3ViamVjdDogaW5zdWZmaWNpZW50
-IHJhbmdlIGNoZWNrcyBvZiBjZXJ0YWluIGZhdWx0IGhhbmRsZXJzIChDVkUtMjAwOC0wMDA3KQpS
-ZWZlcmVuY2VzOiAzNTMyMDcKUGF0Y2gtdXBzdHJlYW06IG5vdCB5ZXQKClRoaXMgcGF0Y2ggaXMg
-YSBzZWN1cml0eSBmaXggZm9yIENWRS0yMDA4LTAwMDcuIFNlZSBidWd6aWxsYSBmb3IgZGV0YWls
-cy4KCi0tLQpJbmRleDogbGludXgtMi42LjIyL2RyaXZlcnMvY2hhci9kcm0vZHJtX3ZtLmMKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gbGludXgtMi42LjIyLm9yaWcvZHJpdmVycy9jaGFyL2RybS9kcm1fdm0uYwor
-KysgbGludXgtMi42LjIyL2RyaXZlcnMvY2hhci9kcm0vZHJtX3ZtLmMKQEAgLTUyMCw2ICs1MjAs
-NyBAQCBzdGF0aWMgaW50IGRybV9tbWFwX2RtYShzdHJ1Y3QgZmlsZSAqZmlsCiAJdm1hLT52bV9v
-cHMgPSAmZHJtX3ZtX2RtYV9vcHM7CiAKIAl2bWEtPnZtX2ZsYWdzIHw9IFZNX1JFU0VSVkVEOwkv
-KiBEb24ndCBzd2FwICovCisJdm1hLT52bV9mbGFncyB8PSBWTV9ET05URVhQQU5EOwogCiAJdm1h
-LT52bV9maWxlID0gZmlscDsJLyogTmVlZGVkIGZvciBkcm1fdm1fb3BlbigpICovCiAJZHJtX3Zt
-X29wZW5fbG9ja2VkKHZtYSk7CkBAIC02NjksNiArNjcwLDcgQEAgc3RhdGljIGludCBkcm1fbW1h
-cF9sb2NrZWQoc3RydWN0IGZpbGUgKgogCQlyZXR1cm4gLUVJTlZBTDsJLyogVGhpcyBzaG91bGQg
-bmV2ZXIgaGFwcGVuLiAqLwogCX0KIAl2bWEtPnZtX2ZsYWdzIHw9IFZNX1JFU0VSVkVEOwkvKiBE
-b24ndCBzd2FwICovCisJdm1hLT52bV9mbGFncyB8PSBWTV9ET05URVhQQU5EOwogCiAJdm1hLT52
-bV9maWxlID0gZmlscDsJLyogTmVlZGVkIGZvciBkcm1fdm1fb3BlbigpICovCiAJZHJtX3ZtX29w
-ZW5fbG9ja2VkKHZtYSk7CkluZGV4OiBsaW51eC0yLjYuMjIva2VybmVsL3JlbGF5LmMKPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQotLS0gbGludXgtMi42LjIyLm9yaWcva2VybmVsL3JlbGF5LmMKKysrIGxpbnV4LTIuNi4y
-Mi9rZXJuZWwvcmVsYXkuYwpAQCAtOTEsNiArOTEsNyBAQCBpbnQgcmVsYXlfbW1hcF9idWYoc3Ry
-dWN0IHJjaGFuX2J1ZiAqYnVmCiAJCXJldHVybiAtRUlOVkFMOwogCiAJdm1hLT52bV9vcHMgPSAm
-cmVsYXlfZmlsZV9tbWFwX29wczsKKwl2bWEtPnZtX2ZsYWdzIHw9IFZNX0RPTlRFWFBBTkQ7CiAJ
-dm1hLT52bV9wcml2YXRlX2RhdGEgPSBidWY7CiAJYnVmLT5jaGFuLT5jYi0+YnVmX21hcHBlZChi
-dWYsIGZpbHApOwogCkluZGV4OiBsaW51eC0yLjYuMjIvbW0vbW1hcC5jCj09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0t
-IGxpbnV4LTIuNi4yMi5vcmlnL21tL21tYXAuYworKysgbGludXgtMi42LjIyL21tL21tYXAuYwpA
-QCAtMjE1Nyw3ICsyMTU3LDcgQEAgaW50IGluc3RhbGxfc3BlY2lhbF9tYXBwaW5nKHN0cnVjdCBt
-bV9zdAogCXZtYS0+dm1fc3RhcnQgPSBhZGRyOwogCXZtYS0+dm1fZW5kID0gYWRkciArIGxlbjsK
-IAotCXZtYS0+dm1fZmxhZ3MgPSB2bV9mbGFncyB8IG1tLT5kZWZfZmxhZ3M7CisJdm1hLT52bV9m
-bGFncyA9IHZtX2ZsYWdzIHwgbW0tPmRlZl9mbGFncyB8IFZNX0RPTlRFWFBBTkQ7CiAJdm1hLT52
-bV9wYWdlX3Byb3QgPSBwcm90ZWN0aW9uX21hcFt2bWEtPnZtX2ZsYWdzICYgN107CiAKIAl2bWEt
-PnZtX29wcyA9ICZzcGVjaWFsX21hcHBpbmdfdm1vcHM7CkluZGV4OiBsaW51eC0yLjYuMjIvc291
-bmQvb3NzL3ZpYTgyY3h4eF9hdWRpby5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi4yMi5vcmln
-L3NvdW5kL29zcy92aWE4MmN4eHhfYXVkaW8uYworKysgbGludXgtMi42LjIyL3NvdW5kL29zcy92
-aWE4MmN4eHhfYXVkaW8uYwpAQCAtMjEwNCw2ICsyMTA0LDcgQEAgc3RhdGljIHN0cnVjdCBwYWdl
-ICogdmlhX21tX25vcGFnZSAoc3RydQogewogCXN0cnVjdCB2aWFfaW5mbyAqY2FyZCA9IHZtYS0+
-dm1fcHJpdmF0ZV9kYXRhOwogCXN0cnVjdCB2aWFfY2hhbm5lbCAqY2hhbiA9ICZjYXJkLT5jaF9v
-dXQ7CisJdW5zaWduZWQgbG9uZyBtYXhfYnVmczsKIAlzdHJ1Y3QgcGFnZSAqZG1hcGFnZTsKIAl1
-bnNpZ25lZCBsb25nIHBnb2ZmOwogCWludCByZCwgd3I7CkBAIC0yMTI3LDE0ICsyMTI4LDExIEBA
-IHN0YXRpYyBzdHJ1Y3QgcGFnZSAqIHZpYV9tbV9ub3BhZ2UgKHN0cnUKIAlyZCA9IGNhcmQtPmNo
-X2luLmlzX21hcHBlZDsKIAl3ciA9IGNhcmQtPmNoX291dC5pc19tYXBwZWQ7CiAKLSNpZm5kZWYg
-VklBX05ERUJVRwotCXsKLQl1bnNpZ25lZCBsb25nIG1heF9idWZzID0gY2hhbi0+ZnJhZ19udW1i
-ZXI7Ci0JaWYgKHJkICYmIHdyKSBtYXhfYnVmcyAqPSAyOwotCS8qIHZpYV9kc3BfbW1hcCgpIHNo
-b3VsZCBlbnN1cmUgdGhpcyAqLwotCWFzc2VydCAocGdvZmYgPCBtYXhfYnVmcyk7Ci0JfQotI2Vu
-ZGlmCisJbWF4X2J1ZnMgPSBjaGFuLT5mcmFnX251bWJlcjsKKwlpZiAocmQgJiYgd3IpCisJCW1h
-eF9idWZzICo9IDI7CisJaWYgKHBnb2ZmID49IG1heF9idWZzKQorCQlyZXR1cm4gTk9QQUdFX1NJ
-R0JVUzsKIAogCS8qIGlmIGZ1bGwtZHVwbGV4IChyZWFkK3dyaXRlKSBhbmQgd2UgaGF2ZSB0d28g
-c2V0cyBvZiBidWZzLAogCSAqIHRoZW4gdGhlIHBsYXliYWNrIGJ1ZmZlcnMgY29tZSBmaXJzdCwg
-c2V6IHNvdW5kY2FyZC5jICovCkluZGV4OiBsaW51eC0yLjYuMjIvc291bmQvdXNiL3VzeDJ5L3Vz
-WDJZaHdkZXAuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjIub3JpZy9zb3VuZC91c2IvdXN4
-MnkvdXNYMllod2RlcC5jCisrKyBsaW51eC0yLjYuMjIvc291bmQvdXNiL3VzeDJ5L3VzWDJZaHdk
-ZXAuYwpAQCAtODgsNyArODgsNyBAQCBzdGF0aWMgaW50IHNuZF91czQyOGN0bHNfbW1hcChzdHJ1
-Y3Qgc25kCiAJCXVzNDI4LT51czQyOGN0bHNfc2hhcmVkbWVtLT5DdGxTbmFwU2hvdExhc3QgPSAt
-MjsKIAl9CiAJYXJlYS0+dm1fb3BzID0gJnVzNDI4Y3Rsc192bV9vcHM7Ci0JYXJlYS0+dm1fZmxh
-Z3MgfD0gVk1fUkVTRVJWRUQ7CisJYXJlYS0+dm1fZmxhZ3MgfD0gVk1fUkVTRVJWRUQgfCBWTV9E
-T05URVhQQU5EOwogCWFyZWEtPnZtX3ByaXZhdGVfZGF0YSA9IGh3LT5wcml2YXRlX2RhdGE7CiAJ
-cmV0dXJuIDA7CiB9CkluZGV4OiBsaW51eC0yLjYuMjIvc291bmQvdXNiL3VzeDJ5L3VzeDJ5aHdk
-ZXBwY20uYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjIub3JpZy9zb3VuZC91c2IvdXN4Mnkv
-dXN4Mnlod2RlcHBjbS5jCisrKyBsaW51eC0yLjYuMjIvc291bmQvdXNiL3VzeDJ5L3VzeDJ5aHdk
-ZXBwY20uYwpAQCAtNzI4LDcgKzcyOCw3IEBAIHN0YXRpYyBpbnQgc25kX3VzWDJZX2h3ZGVwX3Bj
-bV9tbWFwKHN0cnUKIAkJcmV0dXJuIC1FTk9ERVY7CiAJfQogCWFyZWEtPnZtX29wcyA9ICZzbmRf
-dXNYMllfaHdkZXBfcGNtX3ZtX29wczsKLQlhcmVhLT52bV9mbGFncyB8PSBWTV9SRVNFUlZFRDsK
-KwlhcmVhLT52bV9mbGFncyB8PSBWTV9SRVNFUlZFRCB8IFZNX0RPTlRFWFBBTkQ7CiAJYXJlYS0+
-dm1fcHJpdmF0ZV9kYXRhID0gaHctPnByaXZhdGVfZGF0YTsKIAlyZXR1cm4gMDsKIH0KSW5kZXg6
-IGxpbnV4LTIuNi4yMi9kcml2ZXJzL2NoYXIvbXNwZWMuYwo9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0y
-LjYuMjIub3JpZy9kcml2ZXJzL2NoYXIvbXNwZWMuYworKysgbGludXgtMi42LjIyL2RyaXZlcnMv
-Y2hhci9tc3BlYy5jCkBAIC0yNjUsNyArMjY1LDcgQEAgbXNwZWNfbW1hcChzdHJ1Y3QgZmlsZSAq
-ZmlsZSwgc3RydWN0IHZtXwogCXZkYXRhLT5yZWZjbnQgPSBBVE9NSUNfSU5JVCgxKTsKIAl2bWEt
-PnZtX3ByaXZhdGVfZGF0YSA9IHZkYXRhOwogCi0Jdm1hLT52bV9mbGFncyB8PSAoVk1fSU8gfCBW
-TV9MT0NLRUQgfCBWTV9SRVNFUlZFRCB8IFZNX1BGTk1BUCk7CisJdm1hLT52bV9mbGFncyB8PSAo
-Vk1fSU8gfCBWTV9MT0NLRUQgfCBWTV9SRVNFUlZFRCB8IFZNX1BGTk1BUCB8IFZNX0RPTlRFWFBB
-TkQpOwogCWlmICh2ZGF0YS0+dHlwZSA9PSBNU1BFQ19GRVRDSE9QIHx8IHZkYXRhLT50eXBlID09
-IE1TUEVDX1VOQ0FDSEVEKQogCQl2bWEtPnZtX3BhZ2VfcHJvdCA9IHBncHJvdF9ub25jYWNoZWQo
-dm1hLT52bV9wYWdlX3Byb3QpOwogCXZtYS0+dm1fb3BzID0gJm1zcGVjX3ZtX29wczsKSW5kZXg6
-IGxpbnV4LTIuNi4yMi9zb3VuZC9vc3MvZW11MTBrMS9hdWRpby5jCj09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
-bnV4LTIuNi4yMi5vcmlnL3NvdW5kL29zcy9lbXUxMGsxL2F1ZGlvLmMKKysrIGxpbnV4LTIuNi4y
-Mi9zb3VuZC9vc3MvZW11MTBrMS9hdWRpby5jCkBAIC0xMTExLDcgKzExMTEsNyBAQCBzdGF0aWMg
-aW50IGVtdTEwazFfYXVkaW9fbW1hcChzdHJ1Y3QgZmlsCiAJaWYgKHBnb2Zmc2V0ICsgbl9wYWdl
-cyA+IG1heF9wYWdlcykKIAkJcmV0dXJuIC1FSU5WQUw7CiAKLQl2bWEtPnZtX2ZsYWdzIHw9IFZN
-X1JFU0VSVkVEOworCXZtYS0+dm1fZmxhZ3MgfD0gVk1fUkVTRVJWRUQgfCBWTV9ET05URVhQQU5E
-OwogCXZtYS0+dm1fb3BzID0gJmVtdTEwazFfbW1fb3BzOwogCXZtYS0+dm1fcHJpdmF0ZV9kYXRh
-ID0gd2F2ZV9kZXY7CiAJcmV0dXJuIDA7Cg==
-------=_Part_26285_16307050.1201916087224--
