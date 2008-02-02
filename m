@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762749AbYBBADx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762812AbYBBAFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762749AbYBBADx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761785AbYBBADp
+	id S1762812AbYBBAFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761544AbYBBAFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:03:45 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:31079 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761580AbYBBADo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:03:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P13C8oSYVDQ24G94R/TOxM1YT56/hQS0PbzIcA03G3/wCmN/6JR+4k6qzNp9j6SWHeZrBqnMSsX66TYtrOsfNCikmpxzk8wDXtacLENxvRi8bBhYsaVdM9whgBvBk0GO2+R5SaTkgrRgweNP9XOaUSyX611NDYMhQ2XpYnmgStQ=
-Message-ID: <b647ffbd0802011603t28210b90y8d519585c44da352@mail.gmail.com>
-Date: Sat, 2 Feb 2008 01:03:43 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Steven Rostedt" <srostedt@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080201232550.GA682@elte.hu>
+	Fri, 1 Feb 2008 19:05:12 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:52736 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758836AbYBBAFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 19:05:09 -0500
+Date: Fri, 1 Feb 2008 16:05:08 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/4] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080201233528.GE12099@sgi.com>
+Message-ID: <Pine.LNX.4.64.0802011602360.21158@schroedinger.engr.sgi.com>
+References: <20080201050439.009441434@sgi.com> <20080201050623.344041545@sgi.com>
+ <20080201220952.GA3875@sgi.com> <Pine.LNX.4.64.0802011517430.20608@schroedinger.engr.sgi.com>
+ <20080201233528.GE12099@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200801280226.22013.rjw@sisk.pl> <200801312154.33754.rjw@sisk.pl>
-	 <1201867497.32654.49.camel@lappy>
-	 <b647ffbd0802010711q744f5023mdbfccd9540556b70@mail.gmail.com>
-	 <20080201171022.GC2159@elte.hu>
-	 <b647ffbd0802011354ra2b9494ub59475abad4466aa@mail.gmail.com>
-	 <b647ffbd0802011444n366c1537m7fb44acf0b848941@mail.gmail.com>
-	 <20080201224852.GA16700@elte.hu>
-	 <b647ffbd0802011522y3d4d779ambaf1a21f368ef74a@mail.gmail.com>
-	 <20080201232550.GA682@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/02/2008, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
->
-> > yeah, I was already on a half-way to check it out.
-> >
-> > It does fix a problem for me.
-> >
-> > Don't forget to take along these 2 fixes from Peter's patch:
-> >
-> > - fix break usage in do_each_thread() { } while_each_thread().
-> > - fix the hotplug switch stmt, a fall-through case was broken.
->
-> Dmitry, i sent Peter's fix(es) below to Linus. Do you concur that it
-> fixes all the practical and theoretical problems you could see with the
-> code too?
->
+On Fri, 1 Feb 2008, Robin Holt wrote:
 
-One comment: any argument for waking up the 'watchdog' thread from
-softlockup_tick() wrt just having schedule_timeout_interruptible(HZ)
-in watchdog() ?
-(although, it's not that important).
+> On Fri, Feb 01, 2008 at 03:19:32PM -0800, Christoph Lameter wrote:
+> > On Fri, 1 Feb 2008, Robin Holt wrote:
+> > 
+> > > We are getting this callout when we transition the pte from a read-only
+> > > to read-write.  Jack and I can not see a reason we would need that
+> > > callout.  It is causing problems for xpmem in that a write fault goes
+> > > to get_user_pages which gets back to do_wp_page that does the callout.
+> > 
+> > Right. You placed it there in the first place. So we can drop the code 
+> > from do_wp_page?
+> 
+> No, we need a callout when we are becoming more restrictive, but not
+> when becoming more permissive.  I would have to guess that is the case
+> for any of these callouts.  It is for both GRU and XPMEM.  I would
+> expect the same is true for KVM, but would like a ruling from Andrea on
+> that.
 
-IMHO, it looks good.
+do_wp_page is entered when the pte shows that the page is not writeable 
+and it makes the page writable in some situations. Then we do not 
+invalidate the remote reference.
 
-(I'll look again tomorrow when I'm less sleepy :-/)
+However, when we do COW then a *new* page is put in place of the existing 
+readonly page. At that point we need to remove the remote pte that is 
+readonly. Then we install a new pte pointing to a *different* page that is 
+writable.
 
--- 
-Best regards,
-Dmitry Adamushko
+Are you saying that you get the callback when transitioning from a read 
+only to a read write pte on the *same* page?
+
