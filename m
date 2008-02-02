@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbYBBReX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYBBRjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932695AbYBBReX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 12:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762761AbYBBReB
+	id S1760121AbYBBRjK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 12:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYBBRi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 12:34:01 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:57520 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760075AbYBBReA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 12:34:00 -0500
-Date: Sat, 02 Feb 2008 18:31:48 +0100
-Message-Id: <141350930@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Laurent.Vivier@bull.net, linux-kernel@vger.kernel.org, pavel@ucw.cz
-Subject: Re: [PATCH] Allow NBD to be used locally
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+cBafW24iXOLdmvu5pBNHrGF+JJYIiPChOAdjz48Gfx4vwa
- e5bKXHYFzb+y7SY+8g/YfSNWdBfmussAITwh4NRxwl8qBAB+/k=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Sat, 2 Feb 2008 12:38:58 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51512 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751758AbYBBRi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 12:38:58 -0500
+Date: Sat, 2 Feb 2008 18:39:01 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_SECTION_MISMATCH is replaced by CONFIG_DEBUG_SECTION_MISMATCH?
+Message-ID: <20080202173901.GB24765@uranus.ravnborg.org>
+References: <804dabb00802020820k567bf07cg780da10a0b083e6e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <804dabb00802020820k567bf07cg780da10a0b083e6e@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> How will that work? Fuse makes up a filesystem - not helpful
-> if you have a raw disk without a known fs to mount.
+On Sun, Feb 03, 2008 at 12:20:41AM +0800, Peter Teoh wrote:
+> I supposed CONFIG_SECTION_MISMATCH has been deprecated by
+> CONFIG_DEBUG_SECTION_MISMATCH, as I found
+> CONFIG_DEBUG_SECTION_MISMATCH in Makefile, Makefile.build and
+> Makefile.modpost, but not the former symbol.   Moreover, setting the
+> symbol in .config, and followed by make oldconfig will result in the
+> non-debug symbol disappearing, but not the debug version.   Am I
+> correct?
 
-take zfs-fuse or ntfs-3g for example. 
-you have a blockdevice or backing-file containing data structures and fuse makes those show up as a filesystem.
-i think vmware-mount is not different here.
+Simple error on my side.
+Will fix while I touch this code for another reason.
+Thanks for the report and proposed patch!
 
-> This still does not account for compressed disk images, for example.
-unfortunately, not
-
-
-
-
-> 
-> 
-> On Feb 2 2008 15:40, devzero@web.de wrote:
-> >
-> >>In fact, VMware uses local nbd today for its vmware-loop helper
-> >>utility, most likely because of the above-mentioned reasons. (Though
-> >>it quite often hung last time I tried.)
-> >
-> >seems this will go away. recent vmware versions (e.g. server 2.0
-> >beta) have a fuse based replacement for that.
-> 
-> How will that work? Fuse makes up a filesystem - not helpful
-> if you have a raw disk without a known fs to mount.
-> 
-> >>So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
-> >>does not deal with that.
-> >
-> >maybe dm-loop does? http://sources.redhat.com/lvm2/wiki/DMLoop
-> 
-> This still does not account for compressed disk images, for example.
-> 
-> 
-
-
-________________________________________________________
-Bis 50 MB Dateianhänge? Kein Problem!
-http://www.digitaledienste.web.de/freemail/club/lp/?lp=7
-
+	Sam
