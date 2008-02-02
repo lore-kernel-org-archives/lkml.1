@@ -1,146 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935411AbYBBUxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935437AbYBBUyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935411AbYBBUxj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935206AbYBBUxF
+	id S935437AbYBBUyd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932068AbYBBUyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:53:05 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:40361 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935174AbYBBUxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:53:03 -0500
-Message-Id: <20080202205231.268033642@polymtl.ca>
-References: <20080202204930.620561121@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Sat, 02 Feb 2008 15:49:32 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       Roel Kluin <12o3l@tiscali.nl>
-Subject: [patch 2/2] Text Edit Lock - kprobes architecture independent support
-Content-Disposition: inline; filename=text-edit-lock-kprobes-architecture-independent-support.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat,  2 Feb 2008 20:52:33 +0000
+	Sat, 2 Feb 2008 15:54:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58762 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763769AbYBBUyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:54:24 -0500
+Date: Sat, 2 Feb 2008 21:54:43 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Paul.Clements@steeleye.com, nbd-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow NBD to be used locally
+Message-ID: <20080202205443.GD31621@elf.ucw.cz>
+References: <1201872332265-git-send-email-Laurent.Vivier@bull.net> <20080202112336.GB5362@elf.ucw.cz> <1201965971.4591.13.camel@frecb07144>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201965971.4591.13.camel@frecb07144>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in the kprobes code. It
-allows coherent manipulation of the kernel code by other subsystems.
+Hi!
 
-Changelog:
+> > > This patch allows Network Block Device to be mounted locally.
+...
+> Correct. The patch improves the NBD behavior even if it is not perfect.
+> And I think if no other page can be freed your system is in very bad
+> move ;-)
 
-Move the kernel_text_lock/unlock out of the for loops.
+So the description should be 
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
-CC: Roel Kluin <12o3l@tiscali.nl>
----
- kernel/kprobes.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+"This patch lowers probability of deadlock if you mount  Network Block Device locally"
 
-Index: linux-2.6-lttng/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2008-01-30 09:16:42.000000000 -0500
-+++ linux-2.6-lttng/kernel/kprobes.c	2008-01-30 09:19:28.000000000 -0500
-@@ -43,6 +43,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
-+#include <linux/memory.h>
- 
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -568,9 +569,10 @@ static int __kprobes __register_kprobe(s
- 		goto out;
- 	}
- 
-+	kernel_text_lock();
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out;
-+		goto out_unlock_text;
- 
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -578,7 +580,8 @@ static int __kprobes __register_kprobe(s
- 
- 	if (kprobe_enabled)
- 		arch_arm_kprobe(p);
--
-+out_unlock_text:
-+	kernel_text_unlock();
- out:
- 	mutex_unlock(&kprobe_mutex);
- 
-@@ -621,8 +624,11 @@ valid_p:
- 		 * enabled - otherwise, the breakpoint would already have
- 		 * been removed. We save on flushing icache.
- 		 */
--		if (kprobe_enabled)
-+		if (kprobe_enabled) {
-+			kernel_text_lock();
- 			arch_disarm_kprobe(p);
-+			kernel_text_unlock();
-+		}
- 		hlist_del_rcu(&old_p->hlist);
- 		cleanup_p = 1;
- 	} else {
-@@ -644,9 +650,7 @@ valid_p:
- 			list_del_rcu(&p->list);
- 			kfree(old_p);
- 		}
--		mutex_lock(&kprobe_mutex);
- 		arch_remove_kprobe(p);
--		mutex_unlock(&kprobe_mutex);
- 	} else {
- 		mutex_lock(&kprobe_mutex);
- 		if (p->break_handler)
-@@ -717,7 +721,6 @@ static int __kprobes pre_handler_kretpro
- 		ri->rp = rp;
- 		ri->task = current;
- 		arch_prepare_kretprobe(ri, regs);
--
- 		/* XXX(hch): why is there no hlist_move_head? */
- 		hlist_del(&ri->uflist);
- 		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
-@@ -940,11 +943,13 @@ static void __kprobes enable_all_kprobes
- 	if (kprobe_enabled)
- 		goto already_enabled;
- 
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			arch_arm_kprobe(p);
- 	}
-+	kernel_text_unlock();
- 
- 	kprobe_enabled = true;
- 	printk(KERN_INFO "Kprobes globally enabled\n");
-@@ -969,6 +974,7 @@ static void __kprobes disable_all_kprobe
- 
- 	kprobe_enabled = false;
- 	printk(KERN_INFO "Kprobes globally disabled\n");
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
-@@ -976,6 +982,7 @@ static void __kprobes disable_all_kprobe
- 				arch_disarm_kprobe(p);
- 		}
- 	}
-+	kernel_text_unlock();
- 
- 	mutex_unlock(&kprobe_mutex);
- 	/* Allow all currently running kprobes to complete */
-
+Hmm.
+									Pavel
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
