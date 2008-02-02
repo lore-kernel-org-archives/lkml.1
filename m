@@ -1,39 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbYBBSjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764084AbYBBSqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764181AbYBBSjI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYBBSi4
+	id S1764084AbYBBSqe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBBSqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:38:56 -0500
-Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:57789 "EHLO
-	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752421AbYBBSiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:38:55 -0500
-X-Belgacom-Dynamic: yes
-Date: Sat, 2 Feb 2008 19:38:51 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: kernel panic on 2.6.24/iTCO_wdt not rebooting machine
-Message-ID: <20080202183851.GA2644@infomag.infomag.iguana.be>
-References: <20080201151243.M2879@visp.net.lb> <200802011211.42089.lenb@kernel.org> <20080201191048.M59862@visp.net.lb> <200802011539.08393.lenb@kernel.org> <20080202030857.M61478@visp.net.lb>
-Mime-Version: 1.0
+	Sat, 2 Feb 2008 13:46:24 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47114 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751503AbYBBSqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:46:24 -0500
+Date: Sat, 2 Feb 2008 10:44:41 -0800
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [patch] pci: pci_enable_device_bars() fix (was: [GIT PATCH]
+	PCI patches for 2.6.24)
+Message-ID: <20080202184441.GA12301@suse.de>
+References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080202030857.M61478@visp.net.lb>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080202111322.GA30767@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Denys,
+On Sat, Feb 02, 2008 at 12:13:22PM +0100, Ingo Molnar wrote:
+> 
+> * Greg KH <gregkh@suse.de> wrote:
+> 
+> >       PCI: Remove users of pci_enable_device_bars()
+> >       PCI: Remove pci_enable_device_bars()
+> 
+> simple allyesconfig testing found a build failure due to last night's 
+> PCI merge, on 32-bit x86:
+> 
+>  drivers/scsi/lpfc/lpfc_init.c: In function 'lpfc_pci_probe_one':
+>  drivers/scsi/lpfc/lpfc_init.c:1897: error: implicit declaration of function 'pci_enable_device_bars'
+> 
+> fix attached.
+> 
+> ( This call has been introduced upstream 3 weeks ago by commit 
+>   8a4df120b07, but the PCI tree has apparently not been fully re-tested
+>   with Linus-latest since that point. )
 
-> Probably someone can help me with this? Or it is hardware bug of chipset?
-> I will try to look more docs, maybe i will be able to find whats wrong there.
+Wait, my testing caught this.  I made the change to the patch myself,
+adding the needed conversion to my tree, it's here, on my disk!
 
-I'll have a look at it next week.
+Oh crap, I never checked it in.
 
-Greetings,
-Wim.
+/me goes off to sulk in shame.
 
+Very sorry about this, totally my fault, I knew this needed to be fixed,
+fixed it, but it didn't propogate to the tree to send to Linus.
+
+I suck.  I need a vacation and an empty inbox.
+
+I'll be sending fixup patches for this and other merge messes in a few
+hours, once the coffee has kicked in...
+
+greg k-h
