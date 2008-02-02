@@ -1,159 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935126AbYBBXC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935462AbYBBXDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935126AbYBBXC5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 18:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763996AbYBBXCg
+	id S935462AbYBBXDY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 18:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764648AbYBBXCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 18:02:36 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:35442 "EHLO
+	Sat, 2 Feb 2008 18:02:40 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35446 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756259AbYBBXCf (ORCPT
+	with ESMTP id S1764147AbYBBXCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 18:02:35 -0500
-Message-Id: <20080202230228.852294646@szeredi.hu>
+	Sat, 2 Feb 2008 18:02:38 -0500
+Message-Id: <20080202230231.403524972@szeredi.hu>
 References: <20080202230111.346847183@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Sun, 03 Feb 2008 00:01:13 +0100
+Date: Sun, 03 Feb 2008 00:01:14 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch 2/3] mm: bdi: use MAJOR:MINOR in /sys/class/bdi
-Content-Disposition: inline; filename=mm-bdi-use-major-minor-in-sys-class-bdi.patch
+Subject: [patch 3/3] mm: bdi: move statistics to debugfs
+Content-Disposition: inline; filename=mm-bdi-move-statistics-to-debugfs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Uniformly use MAJOR:MINOR in /sys/class/bdi/ for both block devices
-and non-block device backed filesystems: FUSE and NFS.
+Move BDI statistics to debugfs:
 
-Add symlink for block devices:
+   /sys/kernel/debug/bdi/<bdi>/stats
 
-    /sys/block/<name>/bdi -> /sys/class/bdi/<bdi>
+Use postcore_initcall() to initialize the sysfs class and debugfs,
+because debugfs is initialized in core_initcall().
+
+Update descriptions in ABI documentation.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/block/genhd.c
-===================================================================
---- linux.orig/block/genhd.c	2008-02-02 22:41:03.000000000 +0100
-+++ linux/block/genhd.c	2008-02-02 22:50:03.000000000 +0100
-@@ -178,13 +178,17 @@ static int exact_lock(dev_t devt, void *
-  */
- void add_disk(struct gendisk *disk)
- {
-+	struct backing_dev_info *bdi;
-+
- 	disk->flags |= GENHD_FL_UP;
- 	blk_register_region(MKDEV(disk->major, disk->first_minor),
- 			    disk->minors, NULL, exact_match, exact_lock, disk);
- 	register_disk(disk);
- 	blk_register_queue(disk);
--	bdi_register(&disk->queue->backing_dev_info, NULL,
--		"blk-%s", disk->disk_name);
-+
-+	bdi = &disk->queue->backing_dev_info;
-+	bdi_register_dev(bdi, MKDEV(disk->major, disk->first_minor));
-+	sysfs_create_link(&disk->dev.kobj, &bdi->dev->kobj, "bdi");
- }
- 
- EXPORT_SYMBOL(add_disk);
-@@ -192,8 +196,9 @@ EXPORT_SYMBOL(del_gendisk);	/* in partit
- 
- void unlink_gendisk(struct gendisk *disk)
- {
--	blk_unregister_queue(disk);
-+	sysfs_remove_link(&disk->dev.kobj, "bdi");
- 	bdi_unregister(&disk->queue->backing_dev_info);
-+	blk_unregister_queue(disk);
- 	blk_unregister_region(MKDEV(disk->major, disk->first_minor),
- 			      disk->minors);
- }
 Index: linux/include/linux/backing-dev.h
 ===================================================================
---- linux.orig/include/linux/backing-dev.h	2008-02-02 22:41:03.000000000 +0100
-+++ linux/include/linux/backing-dev.h	2008-02-02 22:50:03.000000000 +0100
-@@ -62,6 +62,7 @@ void bdi_destroy(struct backing_dev_info
+--- linux.orig/include/linux/backing-dev.h	2008-02-02 23:08:41.000000000 +0100
++++ linux/include/linux/backing-dev.h	2008-02-02 23:08:41.000000000 +0100
+@@ -16,6 +16,7 @@
+ #include <asm/atomic.h>
  
- int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 		const char *fmt, ...);
-+int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
- void bdi_unregister(struct backing_dev_info *bdi);
+ struct page;
++struct dentry;
  
- static inline void __add_bdi_stat(struct backing_dev_info *bdi,
+ /*
+  * Bits in backing_dev_info.state
+@@ -55,6 +56,11 @@ struct backing_dev_info {
+ 	unsigned int max_ratio, max_prop_frac;
+ 
+ 	struct device *dev;
++
++#ifdef CONFIG_DEBUG_FS
++	struct dentry *debug_dir;
++	struct dentry *debug_stats;
++#endif
+ };
+ 
+ int bdi_init(struct backing_dev_info *bdi);
 Index: linux/mm/backing-dev.c
 ===================================================================
---- linux.orig/mm/backing-dev.c	2008-02-02 22:43:36.000000000 +0100
-+++ linux/mm/backing-dev.c	2008-02-02 22:50:03.000000000 +0100
-@@ -143,6 +143,12 @@ exit:
- }
- EXPORT_SYMBOL(bdi_register);
+--- linux.orig/mm/backing-dev.c	2008-02-02 23:08:41.000000000 +0100
++++ linux/mm/backing-dev.c	2008-02-02 23:12:47.000000000 +0100
+@@ -10,6 +10,80 @@
  
-+int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev)
-+{
-+	return bdi_register(bdi, NULL, "%u:%u", MAJOR(dev), MINOR(dev));
-+}
-+EXPORT_SYMBOL(bdi_register_dev);
+ static struct class *bdi_class;
+ 
++#ifdef CONFIG_DEBUG_FS
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
 +
++static struct dentry *bdi_debug_root;
++
++static void bdi_debug_init(void)
++{
++	bdi_debug_root = debugfs_create_dir("bdi", NULL);
++}
++
++static int bdi_debug_stats_show(struct seq_file *m, void *v)
++{
++	struct backing_dev_info *bdi = m->private;
++	long background_thresh;
++	long dirty_thresh;
++	long bdi_thresh;
++
++	get_dirty_limits(&background_thresh, &dirty_thresh, &bdi_thresh, bdi);
++
++#define K(x) ((x) << (PAGE_SHIFT - 10))
++	seq_printf(m,
++		   "BdiWriteback:     %8lu kB\n"
++		   "BdiReclaimable:   %8lu kB\n"
++		   "BdiDirtyThresh:   %8lu kB\n"
++		   "DirtyThresh:      %8lu kB\n"
++		   "BackgroundThresh: %8lu kB\n",
++		   (unsigned long) K(bdi_stat(bdi, BDI_WRITEBACK)),
++		   (unsigned long) K(bdi_stat(bdi, BDI_RECLAIMABLE)),
++		   K(bdi_thresh),
++		   K(dirty_thresh),
++		   K(background_thresh));
++#undef K
++
++	return 0;
++}
++
++static int bdi_debug_stats_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, bdi_debug_stats_show, inode->i_private);
++}
++
++static const struct file_operations bdi_debug_stats_fops = {
++	.open		= bdi_debug_stats_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static void bdi_debug_register(struct backing_dev_info *bdi, const char *name)
++{
++	bdi->debug_dir = debugfs_create_dir(name, bdi_debug_root);
++	bdi->debug_stats = debugfs_create_file("stats", 0444, bdi->debug_dir,
++					       bdi, &bdi_debug_stats_fops);
++}
++
++static void bdi_debug_unregister(struct backing_dev_info *bdi)
++{
++	debugfs_remove(bdi->debug_stats);
++	debugfs_remove(bdi->debug_dir);
++}
++#else
++static inline void bdi_debug_init(void)
++{
++}
++static inline void bdi_debug_register(struct backing_dev_info *bdi,
++				      const char *name)
++{
++}
++static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
++{
++}
++#endif
++
+ static ssize_t read_ahead_kb_store(struct device *dev,
+ 				  struct device_attribute *attr,
+ 				  const char *buf, size_t count)
+@@ -40,21 +114,6 @@ static ssize_t name##_show(struct device
+ 
+ BDI_SHOW(read_ahead_kb, K(bdi->ra_pages))
+ 
+-BDI_SHOW(reclaimable_kb, K(bdi_stat(bdi, BDI_RECLAIMABLE)))
+-BDI_SHOW(writeback_kb, K(bdi_stat(bdi, BDI_WRITEBACK)))
+-
+-static inline unsigned long get_dirty(struct backing_dev_info *bdi, int i)
+-{
+-	unsigned long thresh[3];
+-
+-	get_dirty_limits(&thresh[0], &thresh[1], &thresh[2], bdi);
+-
+-	return thresh[i];
+-}
+-
+-BDI_SHOW(dirty_kb, K(get_dirty(bdi, 1)))
+-BDI_SHOW(bdi_dirty_kb, K(get_dirty(bdi, 2)))
+-
+ static ssize_t min_ratio_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+@@ -95,10 +154,6 @@ BDI_SHOW(max_ratio, bdi->max_ratio)
+ 
+ static struct device_attribute bdi_dev_attrs[] = {
+ 	__ATTR_RW(read_ahead_kb),
+-	__ATTR_RO(reclaimable_kb),
+-	__ATTR_RO(writeback_kb),
+-	__ATTR_RO(dirty_kb),
+-	__ATTR_RO(bdi_dirty_kb),
+ 	__ATTR_RW(min_ratio),
+ 	__ATTR_RW(max_ratio),
+ 	__ATTR_NULL,
+@@ -108,10 +163,11 @@ static __init int bdi_class_init(void)
+ {
+ 	bdi_class = class_create(THIS_MODULE, "bdi");
+ 	bdi_class->dev_attrs = bdi_dev_attrs;
++	bdi_debug_init();
+ 	return 0;
+ }
+ 
+-core_initcall(bdi_class_init);
++postcore_initcall(bdi_class_init);
+ 
+ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 		const char *fmt, ...)
+@@ -136,6 +192,7 @@ int bdi_register(struct backing_dev_info
+ 
+ 	bdi->dev = dev;
+ 	dev_set_drvdata(bdi->dev, bdi);
++	bdi_debug_register(bdi, name);
+ 
+ exit:
+ 	kfree(name);
+@@ -152,6 +209,7 @@ EXPORT_SYMBOL(bdi_register_dev);
  void bdi_unregister(struct backing_dev_info *bdi)
  {
  	if (bdi->dev) {
-Index: linux/fs/fuse/inode.c
-===================================================================
---- linux.orig/fs/fuse/inode.c	2008-02-02 22:41:03.000000000 +0100
-+++ linux/fs/fuse/inode.c	2008-02-02 22:50:03.000000000 +0100
-@@ -472,8 +472,7 @@ static struct fuse_conn *new_conn(struct
- 		err = bdi_init(&fc->bdi);
- 		if (err)
- 			goto error_kfree;
--		err = bdi_register(&fc->bdi, NULL, "fuse-%u:%u",
--				   MAJOR(fc->dev), MINOR(fc->dev));
-+		err = bdi_register_dev(&fc->bdi, fc->dev);
- 		if (err)
- 			goto error_bdi_destroy;
- 		fc->reqctr = 0;
-Index: linux/fs/nfs/super.c
-===================================================================
---- linux.orig/fs/nfs/super.c	2008-02-02 22:41:03.000000000 +0100
-+++ linux/fs/nfs/super.c	2008-02-02 22:50:03.000000000 +0100
-@@ -1477,8 +1477,7 @@ static int nfs_compare_super(struct supe
- 
- static int nfs_bdi_register(struct nfs_server *server)
- {
--	return bdi_register(&server->backing_dev_info, NULL, "nfs-%u:%u",
--			    MAJOR(server->s_dev), MINOR(server->s_dev));
-+	return bdi_register_dev(&server->backing_dev_info, server->s_dev);
- }
- 
- static int nfs_get_sb(struct file_system_type *fs_type,
++		bdi_debug_unregister(bdi);
+ 		device_unregister(bdi->dev);
+ 		bdi->dev = NULL;
+ 	}
 Index: linux/Documentation/ABI/testing/sysfs-class-bdi
 ===================================================================
---- linux.orig/Documentation/ABI/testing/sysfs-class-bdi	2008-02-02 22:41:03.000000000 +0100
-+++ linux/Documentation/ABI/testing/sysfs-class-bdi	2008-02-02 22:50:03.000000000 +0100
-@@ -6,17 +6,13 @@ Description:
- Provide a place in sysfs for the backing_dev_info object.
- This allows us to see and set the various BDI specific variables.
+--- linux.orig/Documentation/ABI/testing/sysfs-class-bdi	2008-02-02 23:08:41.000000000 +0100
++++ linux/Documentation/ABI/testing/sysfs-class-bdi	2008-02-02 23:17:27.000000000 +0100
+@@ -3,8 +3,8 @@ Date:		January 2008
+ Contact:	Peter Zijlstra <a.p.zijlstra@chello.nl>
+ Description:
  
--The <bdi> identifyer can take the following forms:
-+The <bdi> identifier can be either of the following:
+-Provide a place in sysfs for the backing_dev_info object.
+-This allows us to see and set the various BDI specific variables.
++Provide a place in sysfs for the backing_dev_info object.  This allows
++setting and retrieving various BDI specific variables.
  
--blk-NAME
-+MAJOR:MINOR
+ The <bdi> identifier can be either of the following:
  
--	Block devices, NAME is 'sda', 'loop0', etc...
+@@ -26,34 +26,21 @@ read_ahead_kb (read-write)
+ 
+ 	Size of the read-ahead window in kilobytes
+ 
+-reclaimable_kb (read-only)
 -
--FSTYPE-MAJOR:MINOR
+-	Reclaimable (dirty or unstable) memory destined for writeback
+-	to this device
 -
--	Non-block device backed filesystems which provide their own
--	BDI, such as NFS and FUSE.  MAJOR:MINOR is the value of st_dev
--	for files on this filesystem.
-+	Device number for block devices, or value of st_dev on
-+	non-block filesystems which provide their own BDI, such as NFS
-+	and FUSE.
+-writeback_kb (read-only)
+-
+-	Memory currently under writeback to this device
+-
+-dirty_kb (read-only)
+-
+-	Global threshold for reclaimable + writeback memory
+-
+-bdi_dirty_kb (read-only)
+-
+-	Current threshold on this BDI for reclaimable + writeback
+-	memory
+-
+ min_ratio (read-write)
  
- default
+-	Minimal percentage of global dirty threshold allocated to this
+-	bdi.  If the value written to this file would make the the sum
+-	of all min_ratio values exceed 100, then EINVAL is returned.
+-	If min_ratio would become larger than the current max_ratio,
+-	then also EINVAL is returned.  The default is zero
++	Under normal circumstances each device is given a part of the
++	total write-back cache that relates to its current average
++	writeout speed in relation to the other devices.
++
++	The 'min_ratio' parameter allows assigning a minimum
++	percentage of the write-back cache to a particular device.
++	For example, this is useful for providing a minimum QoS.
  
+ max_ratio (read-write)
+ 
+-	Maximal percentage of global dirty threshold allocated to this
+-	bdi.  If max_ratio would become smaller than the current
+-	min_ratio, then EINVAL is returned.  The default is 100
++	Allows limiting a particular device to use not more than the
++	given percentage of the write-back cache.  This is useful in
++	situations where we want to avoid one device taking all or
++	most of the write-back cache.  For example in case of an NFS
++	mount that is prone to get stuck, or a FUSE mount which cannot
++	be trusted to play fair.
 
 --
