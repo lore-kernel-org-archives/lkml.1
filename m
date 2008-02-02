@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934271AbYBBXAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbYBBXBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934271AbYBBXAm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 18:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765187AbYBBW7q
+	id S933231AbYBBXBE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 18:01:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933876AbYBBXAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 17:59:46 -0500
+	Sat, 2 Feb 2008 18:00:08 -0500
 Received: from fg-out-1718.google.com ([72.14.220.158]:13414 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764704AbYBBW7p (ORCPT
+	with ESMTP id S933773AbYBBXAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 17:59:45 -0500
+	Sat, 2 Feb 2008 18:00:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=bcKKMC+JPvtT41Xly0GFpQILcAGMLFg5cTd1pUTwvUkey//mTpVZP/hrOKx/2fTF3HmwIW9xfCir9Ep6w0EqiWpu3654w+UeUL16slQ6iInMVSQgD2QK0Ch3PEImNIEewkrC/JjO5VWi1ntEqXqA8Mj6/4z9WXQWNzEf2Na2Tco=
-Date: Sun, 3 Feb 2008 01:59:39 +0300
+        b=D+DsOBfqjUVwhvC19WyjrKCip+SMLo/4L9NMl+Kj0VYbKOW03g3h+Mbg5qsK12s1XV8gH7sh1jdlQ/MkYxJb4AozURSkZMrI8DQ9fqnI4zACJskpHa+zckOvx7OjHlE2iFNzKPPqtITcqfuy8R5paBNZ/yN6pwApgIspNL+X/Rg=
+Date: Sun, 3 Feb 2008 02:00:00 +0300
 From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] Clocklib debugfs support
-Message-ID: <20080202225939.GA16770@doriath.ww600.siemens.net>
+Subject: [PATCH 1/5] Add generic framework for managing clocks.
+Message-ID: <20080202230000.GA16818@doriath.ww600.siemens.net>
 References: <20080202225433.GA14685@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,106 +29,442 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide /sys/kernel/debug/clock to ease debugging.
+Provide a generic framework that platform may choose
+to support clocks api. In particular this provides
+platform-independant struct clk definition, a full
+implementation of clocks api and a set of functions
+for registering and unregistering clocks in a safe way.
 
 Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 ---
- include/linux/clklib.h |    5 +++
- kernel/clklib.c        |   68 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+), 0 deletions(-)
+ include/linux/clklib.h |   85 ++++++++++++++
+ init/Kconfig           |    7 +
+ kernel/Makefile        |    1 +
+ kernel/clklib.c        |  295 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 388 insertions(+), 0 deletions(-)
 
 diff --git a/include/linux/clklib.h b/include/linux/clklib.h
-index 4bd9b4a..f916693 100644
---- a/include/linux/clklib.h
+new file mode 100644
+index 0000000..4bd9b4a
+--- /dev/null
 +++ b/include/linux/clklib.h
-@@ -28,6 +28,11 @@ struct clk {
- 	int (*setrate)	(struct clk *, unsigned long);
- 	long (*roundrate) (struct clk *, unsigned long);
- 
-+	/*
-+	 * format any additional info
-+	 */
-+	int (*format)	(struct clk *, struct seq_file *);
+@@ -0,0 +1,85 @@
++/*
++ * Copyright (C) 2008 Dmitry Baryshkov
++ *
++ * This file is released under the GPL v2.
++ */
 +
- 	void		*priv;
- };
- 
-diff --git a/kernel/clklib.c b/kernel/clklib.c
-index 203af3d..b782220 100644
---- a/kernel/clklib.c
-+++ b/kernel/clklib.c
-@@ -293,3 +293,71 @@ out:
- 	return rc;
- }
- EXPORT_SYMBOL(clk_alloc_function);
++#ifndef CLKLIB_H
++#define CLKLIB_H
 +
-+#ifdef CONFIG_DEBUG_FS
++#include <linux/list.h>
 +
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+static void dump_clocks(struct seq_file *s, struct clk *parent, int nest)
++struct clk {
++	struct list_head node;
++	struct clk	*parent;
++
++	const char	*name;
++	struct module	*owner;
++
++	int		users;
++	unsigned long	rate;
++	int		delay;
++
++	int (*can_get)	(struct clk *, struct device *);
++	int (*set_parent) (struct clk *, struct clk *);
++	int (*enable)	(struct clk *);
++	void (*disable)	(struct clk *);
++	unsigned long (*getrate) (struct clk*);
++	int (*setrate)	(struct clk *, unsigned long);
++	long (*roundrate) (struct clk *, unsigned long);
++
++	void		*priv;
++};
++
++int clk_register(struct clk *clk);
++void clk_unregister(struct clk *clk);
++static void __maybe_unused clks_register(struct clk *clks, size_t num)
 +{
-+	struct clk *clk;
 +	int i;
-+
-+	list_for_each_entry(clk, &clocks, node) {
-+		if (clk->parent == parent) {
-+			for (i = 0; i < nest; i++)
-+				seq_putc(s, ' ');
-+			seq_puts(s, clk->name);
-+
-+			i = nest + strlen(clk->name);
-+			if (i >= 16)
-+				i = 15;
-+			for (; i < 16; i++)
-+				seq_putc(s, ' ');
-+			seq_printf(s, "%c use=%d rate=%lu KHz",
-+				clk->set_parent ? '*' : ' ',
-+				clk->users,
-+				__clk_get_rate(clk));
-+			if (clk->format)
-+				clk->format(clk, s);
-+			seq_putc(s, '\n');
-+
-+			dump_clocks(s, clk, nest + 1);
-+		}
++	for (i = 0; i < num; i++) {
++		clk_register(&clks[i]);
 +	}
 +}
 +
-+static int clocklib_show(struct seq_file *s, void *unused)
++
++int clk_alloc_function(const char *parent, struct clk *clk);
++
++struct clk_function {
++	const char *parent;
++	struct clk *clk;
++};
++
++#define CLK_FUNC(_clock, _function, _can_get, _data, _format) \
++	{						\
++		.parent = _clock,			\
++		.clk = &(struct clk) {			\
++			.name= _function,		\
++			.owner = THIS_MODULE,		\
++			.can_get = _can_get,		\
++			.priv = _data,			\
++			.format = _format,		\
++		},					\
++	}
++
++static int __maybe_unused clk_alloc_functions(
++		struct clk_function *funcs,
++		int num)
++{
++	int i;
++	int rc;
++
++	for (i = 0; i < num; i++) {
++		rc = clk_alloc_function(funcs[i].parent, funcs[i].clk);
++
++		if (rc) {
++			printk(KERN_ERR "Error allocating %s.%s function.\n",
++					funcs[i].parent,
++					funcs[i].clk->name);
++			return rc;
++		}
++	}
++
++	return 0;
++}
++
++#endif
+diff --git a/init/Kconfig b/init/Kconfig
+index dcc96a8..18d53c1 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -444,6 +444,13 @@ config CC_OPTIMIZE_FOR_SIZE
+ config SYSCTL
+ 	bool
+ 
++config HAVE_CLOCK_LIB
++	bool
++	help
++	  Platforms select clocklib if they use this infrastructure
++	  for managing their clocks both built into SoC and provided
++	  by external devices.
++
+ menuconfig EMBEDDED
+ 	bool "Configure standard kernel features (for small systems)"
+ 	help
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 8885627..0bc929a 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
+ obj-$(CONFIG_MARKERS) += marker.o
+ obj-$(CONFIG_LATENCYTOP) += latencytop.o
++obj-$(CONFIG_HAVE_CLOCK_LIB) += clklib.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+diff --git a/kernel/clklib.c b/kernel/clklib.c
+new file mode 100644
+index 0000000..203af3d
+--- /dev/null
++++ b/kernel/clklib.c
+@@ -0,0 +1,295 @@
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/clk.h>
++#include <linux/clklib.h>
++#include <linux/spinlock.h>
++#include <linux/err.h>
++#include <linux/delay.h>
++
++static LIST_HEAD(clocks);
++static DEFINE_SPINLOCK(clocks_lock);
++
++static int __clk_register(struct clk *clk)
++{
++	if (clk->parent &&
++	    !try_module_get(clk->parent->owner))
++		return -EINVAL;
++
++	list_add_tail(&clk->node, &clocks);
++
++	return 0;
++}
++
++int clk_register(struct clk *clk)
++{
++	unsigned long flags;
++	int rc;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	rc = __clk_register(clk);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL(clk_register);
++
++void clk_unregister(struct clk *clk)
 +{
 +	unsigned long flags;
 +
 +	spin_lock_irqsave(&clocks_lock, flags);
++	list_del(&clk->node);
++	if (clk->parent)
++		module_put(clk->parent->owner);
++	spin_unlock_irqrestore(&clocks_lock, flags);
++}
++EXPORT_SYMBOL(clk_unregister);
 +
-+	dump_clocks(s, NULL, 0);
++struct clk *clk_get(struct device *dev, const char *id)
++{
++	struct clk *p, *clk = ERR_PTR(-ENOENT);
++	unsigned long flags;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	list_for_each_entry(p, &clocks, node) {
++		if (strcmp(id, p->name) == 0 &&
++		    (!p->can_get || p->can_get(p, dev)) &&
++		    try_module_get(p->owner)) {
++			clk = p;
++			break;
++		}
++	}
 +
 +	spin_unlock_irqrestore(&clocks_lock, flags);
 +
-+	return 0;
++	return clk;
 +}
++EXPORT_SYMBOL(clk_get);
 +
-+static int clocklib_open(struct inode *inode, struct file *file)
++void clk_put(struct clk *clk)
 +{
-+	return single_open(file, clocklib_show, NULL);
++	unsigned long flags;
++
++	if (!clk || IS_ERR(clk))
++		return;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	module_put(clk->owner);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
 +}
++EXPORT_SYMBOL(clk_put);
 +
-+static struct file_operations clocklib_operations = {
-+	.open		= clocklib_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int __init clocklib_debugfs_init(void)
++int clk_set_parent(struct clk *clk, struct clk *parent)
 +{
-+	debugfs_create_file("clock", S_IFREG | S_IRUGO,
-+				NULL, NULL, &clocklib_operations);
-+	return 0;
-+}
-+subsys_initcall(clocklib_debugfs_init);
++	int rc;
++	unsigned long flags;
 +
-+#endif /* DEBUG_FS */
++	if (!clk || IS_ERR(clk))
++		return -EINVAL;
++
++	if (!clk->set_parent)
++		return -EINVAL;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	rc = clk->set_parent(clk, parent);
++	if (!rc)
++		clk->parent = parent;
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL(clk_set_parent);
++
++static int __clk_enable(struct clk *clk)
++{
++	int rc = 0;
++
++	if (clk->parent) {
++		rc = __clk_enable(clk->parent);
++
++		if (rc)
++			return rc;
++	}
++
++	if (clk->users++ == 0)
++		if (clk->enable)
++			rc = clk->enable(clk);
++
++	if (clk->delay)
++		udelay(clk->delay);
++
++	return rc;
++}
++
++int clk_enable(struct clk *clk)
++{
++	unsigned long flags;
++	int rc;
++
++	if (!clk || IS_ERR(clk))
++		return -EINVAL;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	rc = __clk_enable(clk);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL(clk_enable);
++
++static void __clk_disable(struct clk *clk)
++{
++	if (clk->users <= 0) {
++		WARN_ON(1);
++		return;
++	}
++
++	if (--clk->users == 0)
++		if (clk->disable)
++			clk->disable(clk);
++
++	if (clk->parent)
++		__clk_disable(clk->parent);
++}
++
++void clk_disable(struct clk *clk)
++{
++	unsigned long flags;
++
++	if (!clk || IS_ERR(clk))
++		return;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	__clk_disable(clk);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++}
++EXPORT_SYMBOL(clk_disable);
++
++static unsigned long __clk_get_rate(struct clk *clk)
++{
++	unsigned long rate = 0;
++
++	for (;;) {
++		if (rate || !clk)
++			return rate;
++
++		if (clk->getrate)
++			rate = clk->getrate(clk);
++		else if (clk->rate)
++			rate = clk->rate;
++		else
++			clk = clk->parent;
++	}
++}
++
++unsigned long clk_get_rate(struct clk *clk)
++{
++	unsigned long rate = 0;
++	unsigned long flags;
++
++	if (!clk || IS_ERR(clk))
++		return -EINVAL;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	rate = __clk_get_rate(clk);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return rate;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
++long clk_round_rate(struct clk *clk, unsigned long rate)
++{
++	long res;
++	unsigned long flags;
++
++	if (!clk || IS_ERR(clk))
++		return -EINVAL;
++
++	if (!clk->roundrate)
++		return -EINVAL;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	res = clk->roundrate(clk, rate);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return res;
++}
++EXPORT_SYMBOL(clk_round_rate);
++
++int clk_set_rate(struct clk *clk, unsigned long rate)
++{
++	int rc;
++	unsigned long flags;
++
++	if (!clk || IS_ERR(clk))
++		return -EINVAL;
++
++	if (!clk->setrate)
++		return -EINVAL;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	rc = clk->setrate(clk, rate);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL(clk_set_rate);
++
++int clk_alloc_function(const char *parent, struct clk *clk)
++{
++	int rc = 0;
++	unsigned long flags;
++	struct clk *pclk;
++	bool found = false;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	list_for_each_entry(pclk, &clocks, node) {
++		if (strcmp(parent, pclk->name) == 0 &&
++		    try_module_get(pclk->owner)) {
++			found = true;
++			break;
++		}
++	}
++
++	if (!found) {
++		rc = -ENODEV;
++		goto out;
++	}
++
++	clk->parent = pclk;
++
++	__clk_register(clk);
++	/*
++	 * We locked parent owner during search
++	 * and also in __clk_register. Free one reference
++	 */
++	module_put(pclk->owner);
++
++out:
++	if (rc) {
++		kfree(clk);
++	}
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL(clk_alloc_function);
 -- 
 1.5.3.8
 
