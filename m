@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbYBBKiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbYBBKlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933203AbYBBKiU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 05:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761932AbYBBKiJ
+	id S933415AbYBBKlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 05:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYBBKlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 05:38:09 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:40323 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761830AbYBBKiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 05:38:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=07wseUU0pTIc+jB7dkoUl8SlPs90+gEk0irNUPwu6swkIItxVjwLxGTV9Ngy4s+r3+q/vQYZsRCo0gVAzmnLXQOCL/nhUYRysW56q4tVW8NxnFxdqpSVO3ELvciT4vmKoVqloYP+RwNW+DqQB1fUxZVhHKUv0xEctv/a8E644eQ=  ;
-X-YMail-OSG: LSdWgEwVM1lKdlKZ2vy8BgQc0JiQjPCJT8p6E3_wVjdNK.xuqJM4n0hbfdteOUdFADvw9LaEKA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Denis Cheng <crquan@gmail.com>
-Subject: Re: [PATCH 3/3] uio: vm_operations_struct ->nopage to ->fault method conversion
-Date: Sat, 2 Feb 2008 21:37:45 +1100
-User-Agent: KMail/1.9.5
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, cr_quan@163.com
-References: < <1201945897-32297-1-git-send-email-crquan@gmail.com> <1201945897-32297-2-git-send-email-crquan@gmail.com> <1201945897-32297-3-git-send-email-crquan@gmail.com>
-In-Reply-To: <1201945897-32297-3-git-send-email-crquan@gmail.com>
+	Sat, 2 Feb 2008 05:41:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39310 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751421AbYBBKlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 05:41:10 -0500
+Date: Sat, 2 Feb 2008 11:40:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
+Subject: Re: [PATCH 6 of 7] x86: move pud/pgd functions into common
+	asm/pgalloc.h
+Message-ID: <20080202104048.GA24605@elte.hu>
+References: <patchbomb.1201943112@localhost> <fe3ff49757e16a5b9290.1201943118@localhost> <20080202101356.GA19782@elte.hu> <47A443FE.6040900@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802022137.45493.nickpiggin@yahoo.com.au>
+In-Reply-To: <47A443FE.6040900@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008 20:51, Denis Cheng wrote:
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
 
-Thanks, but already patched in -mm.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> ---
->  drivers/uio/uio.c |   19 ++++++++-----------
->  1 files changed, 8 insertions(+), 11 deletions(-)
+>> i bisected it down to this patch of yours. It's a bit large so it's 
+>> not obvious what is happening. Could you please keep patches that do 
+>> functional changes smaller?
 >
-> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-> index cc246fa..47e0c32 100644
-> --- a/drivers/uio/uio.c
-> +++ b/drivers/uio/uio.c
-> @@ -417,30 +417,27 @@ static void uio_vma_close(struct vm_area_struct *vma)
->  	idev->vma_count--;
->  }
->
-> -static struct page *uio_vma_nopage(struct vm_area_struct *vma,
-> -				   unsigned long address, int *type)
-> +static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
->  {
->  	struct uio_device *idev = vma->vm_private_data;
-> -	struct page* page = NOPAGE_SIGBUS;
->
->  	int mi = uio_find_mem_index(vma);
->  	if (mi < 0)
-> -		return page;
-> +		return VM_FAULT_SIGBUS;
->
->  	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
-> -		page = virt_to_page(idev->info->mem[mi].addr);
-> +		vmf->page = virt_to_page(idev->info->mem[mi].addr);
->  	else
-> -		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-> -	get_page(page);
-> -	if (type)
-> -		*type = VM_FAULT_MINOR;
-> -	return page;
-> +		vmf->page = vmalloc_to_page((void *)idev->info->mem[mi].addr);
-> +	get_page(vmf->page);
-> +
-> +	return 0;
->  }
->
->  static struct vm_operations_struct uio_vm_ops = {
->  	.open = uio_vma_open,
->  	.close = uio_vma_close,
-> -	.nopage = uio_vma_nopage,
-> +	.fault = uio_vma_fault,
->  };
->
->  static int uio_mmap_physical(struct vm_area_struct *vma)
+> Will do, though this one is more or less pure code motion.  But I can 
+> make it actual pure code motion with a separate merge patch.
+
+yes but the early hang is very real so either my hardware is stubbornly 
+ignoring that your patch is pure code movement (in which case i'll have 
+to have a word or two with my hardware), or your patch is perhaps wrong 
+somewhere ;-)
+
+generally you can protect yourself against full reverts by separating 
+the NOP changes from the non-NOP changes. If a change is small enough i 
+might spot the bug immediately and fix it - otherwise i have to undo 
+your whole series to keep the x86.git ball rolling. I thought we went 
+through this excercise a few times already :-/ ...
+
+	Ingo
