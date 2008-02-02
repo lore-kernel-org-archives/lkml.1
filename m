@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765950AbYBBRKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYBBR34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765950AbYBBRKv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 12:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYBBRKo
+	id S1754926AbYBBR34 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 12:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYBBR3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 12:10:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57963 "EHLO mx2.mail.elte.hu"
+	Sat, 2 Feb 2008 12:29:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57888 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbYBBRKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 12:10:43 -0500
-Date: Sat, 2 Feb 2008 18:10:21 +0100
+	id S1750979AbYBBR3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 12:29:46 -0500
+Date: Sat, 2 Feb 2008 18:29:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [scsi bug] spurious build failures in aic7xxx
-Message-ID: <20080202171020.GB12748@elte.hu>
-References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu> <20080202141857.GA8635@elte.hu> <20080202162611.GA24765@uranus.ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
+Subject: Re: [PATCH 2 of 7] x86: add common mm/pgtable.c
+Message-ID: <20080202172921.GA24961@elte.hu>
+References: <patchbomb.1201943112@localhost> <3c9aba41ee700a239859.1201943114@localhost> <20080202103030.GA23897@elte.hu> <47A458B1.4050208@goop.org> <20080202134714.GA925@elte.hu> <47A49974.4040504@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080202162611.GA24765@uranus.ravnborg.org>
+In-Reply-To: <47A49974.4040504@goop.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,13 +37,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> I could not reproduce the bug myself but I think I spotted it. We had 
-> a missing dependency to the _reg.h file. Try following patch and let 
-> me now if it continue to break.
+> Ingo Molnar wrote:
+>> oops, i thought i pasted that. It was this:
+>>
+>> arch/x86/mm/pgtable.c: In function 'pgd_alloc':
+>> arch/x86/mm/pgtable.c:213: error: implicit declaration of function 'quicklist_alloc'
+>> arch/x86/mm/pgtable.c:213: warning: initialization makes pointer from integer without a cast
+>> arch/x86/mm/pgtable.c:218: error: implicit declaration of function 'quicklist_free'
+>> arch/x86/mm/pgtable.c: In function 'check_pgt_cache':
+>> arch/x86/mm/pgtable.c:233: error: implicit declaration of function 'quicklist_trim'
+>>
+>> also, config re-attached. (maybe i messed up the previous one)
+>
+> Still can't reproduce, but it's a simple case of missing headers.
 
-thanks! I threw this into the test setup and will know by tomorrow 
-whether there's any breakage.
+ok, i'll figure it out if/when it happens with your resent queue.
 
 	Ingo
