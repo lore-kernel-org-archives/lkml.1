@@ -1,68 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbYBBSsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933319AbYBBSt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932578AbYBBSsa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYBBSsX
+	id S933319AbYBBSt7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYBBStu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:48:23 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56966 "EHLO pasmtpA.tele.dk"
+	Sat, 2 Feb 2008 13:49:50 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33467 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009AbYBBSsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:48:22 -0500
-Date: Sat, 2 Feb 2008 19:48:25 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Peter Teoh <htmldeveloper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Incompatibility of "const" and __xxxinitdata?
-Message-ID: <20080202184825.GE25399@uranus.ravnborg.org>
-References: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1752998AbYBBSts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:49:48 -0500
+Message-ID: <47A4BB3C.6050709@garzik.org>
+Date: Sat, 02 Feb 2008 13:49:32 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [patch] pci: pci_enable_device_bars() fix
+References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu> <47A49171.2000003@garzik.org> <20080202170828.GA12748@elte.hu> <47A4A96D.2040709@garzik.org> <20080202175738.GA26560@elte.hu>
+In-Reply-To: <20080202175738.GA26560@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 11:20:44PM +0800, Peter Teoh wrote:
-> In include/linux/init.h, it is documented that all __xxxinitdata
-> declaration must not have constant, as show below:
+Ingo Molnar wrote:
+> * Jeff Garzik <jeff@garzik.org> wrote:
 > 
->  *
->  * static int init_variable __initdata = 0;
->  * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
->  *
->  * Don't forget to initialize data not at file scope, i.e. within a function,
->  * as gcc otherwise puts the data into the bss section and not into the init
->  * section.
->  *
->  * Also note, that this data cannot be "const".
->  */
+>> Ingo Molnar wrote:
+>>> it would have been totally appropriate for me to just send a mail to lkml 
+>>> with the proper subject line about the breakage. (I might even have 
+>>> decided to stay completely silent about the issue and fix it for my own 
+>>> build, letting you guys figure it out.)
+>> Oh come on...  You are smart enough to know to at least CC the driver 
+>> maintainer, the key POC who should be aware of breakage of their 
+>> driver.  That is a standard courtesy.
 > 
-> In this same init.h is also documented the preferred way of
-> typecasting the variable with __initdata.
+> is there any particular reason why you cut out the most relevant part of 
+> my reply, which happens to answer all your questions AFAICS:
 > 
-> But searching through the source codes, I have found many instances of:
+>>> Instead i did a search of lkml (based on the function name in the 
+>>> build error) and figured out where the pull request was on lkml: 
+>>> Greg. I replied to that mail, he'll obviously know whom else to Cc 
+>>> from that point on (if anyone). I really didnt want to (nor did i 
+>>> need to) figure out whether this was some general driver level API 
+>>> change that happen kernel-wide, or some SCSI specific change. I 
+>>> simply replied to the pull request whose Cc: line seemed 
+>>> well-populated to me already. I also took a look at the commit itself 
+>>> and did a quick hack in a hurry to keep the tests rolling. It really 
+>>> did not occur to me that i should have added anyone else to the Cc: 
+>>> line, as linux-pci@atrey.karlin.mff.cuni.cz was Cc:-ed already so i 
+>>> assumed the interest was from that angle.
 > 
-> 1.   constant occuring in the __xxxinitdata pattern, and
-> 2.   non-conformance of the variable declaration according to the
-> codingstyle recommended.
+> had you read this portion you'd have realized that i did not search for 
+> any "owner" of the file, i simply searched for the person who introduced 
+> the change, and the on-lkml mail where the change was introduced.
 
-Only very recently we had a tag to annotate const data in addition
-to the __initdata tag.
-The reason for two tags are that gcc does not allow to mix const
-and non-const data in the same section.
+And therein lies the problem.  The original submittor omitted relevant 
+maintainers, you followed that [incorrect] example, and the end result 
+was clear:  an obviously wrong change.
 
-So in the cases you list below there are most certainly no other
-__initdata annotations or at least not to non-const data.
+Thus, the problem is precisely what you stated:  you did not bother to 
+search for people who care about that file.
 
-If you go forward and fix up this stuff do so in adequate steps.
-So you for example do not mix net drivers with usb drivers
-in the same patch.
 
-And if fix it up then use the recommended style for the
-annotation.
-Improved documentation in init.h is also welcome!
+> and that's all that should be needed, really. Believe me, i hit tons of 
 
-	Sam
+Hardly.  What part of "this change requires knowledge of the hardware" 
+is difficult to understand?
+
+And if you do not have that knowledge, why is it so trying to CC people 
+who actively maintain a driver, and have that knowledge?
+
+It's simple common sense to -ask- or at least -notify- in such cases.
+
+That the original submittor made the same mistake is no reason to repeat 
+the mistake.
+
+
+> bugs all across the kernel, often several bugs a day, and it's hard even 
+> for me to figure out who "maintains" a file and when. (and in Linux 
+> there's no "ownership" of files anyway) So as a general rule i go after 
+> changes instead, and that's exactly what i did here too. I do 
+> delta/regression QA - i.e. i watch for _changes_ that break the kernel 
+> and hence the general 'owner' of a file is often irrelevant - it's the 
+> maintainer who introduces a change who matters, and we do lots of 
+> cross-maintain merges. Only if i do not manage to identify a change do i 
+> try to figure out who maintains a file at that given moment. (But those 
+> mails often go into black holes, they get bounced, subscriber-required 
+> email lists, etc. etc.) It's also nontrivial to map the files to the 
+> MAINTAINERS file, and it's also quite outdated in some portions. So the 
+> MAINTAINERS file is the last resort i use.
+
+That's a long list of excuses in an attempt to ignore the facts:
+
+Fact 1:  The driver you modified is actively maintained
+
+Fact 2:  The driver maintainer has respectfully indicated, through the 
+standard community mechanism, the useful points of contact.
+
+Fact 3:  The MAINTAINERS entry is correct and up-to-date.
+
+Fact 4:  Even if you wanted to ignore MAINTAINERS, 'git log' on the 
+relevant file could have told you who are useful parties to CC.
+
+It's just common courtesy to CC a driver maintainer, ESPECIALLY when a 
+change requires knowledge of the driver/hardware in question.
+
+
+> so i'm still totally befuddled why you think that there was anything 
+> particularly wrong or unhelpful about me replying to the specific pull 
+> request that introduced a particular breakage into the kernel. Had i 
+> mailed to lkml with a terse "kernel build broke" message with just an 
+> URL to a config and the build breakage, you could rightfully have 
+> complained that i should have done more to properly direct my bugreport. 
+> But this breakage was about a PCI API change, the pull request had a PCI 
+> mailing list Cc:-ed, why should i have thought that this needs the 
+> attention of any other parties?
+
+Because the change required knowledge not only of PCI, but of the 
+hardware in question.  As your patch demonstrated.
+
+And yes -- the original changes should have been CC'd to interested 
+parties as well.  I'm still waiting to hear back from Alan or Bart 
+whether the ATA/IDE changes in that PCI pile actually work...  the 
+original changeset even noted that relevant parties had not yet been 
+queried.
+
+	Jeff
+
+
+
