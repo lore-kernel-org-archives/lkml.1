@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbYBBKWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbYBBK0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162AbYBBKWU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 05:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761187AbYBBKWH
+	id S933167AbYBBK0R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 05:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYBBK0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 05:22:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44899 "EHLO mx2.mail.elte.hu"
+	Sat, 2 Feb 2008 05:26:06 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:58479 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760950AbYBBKWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 05:22:05 -0500
-Date: Sat, 2 Feb 2008 11:21:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
-Subject: Re: [PATCH 6 of 7] x86: move pud/pgd functions into common
-	asm/pgalloc.h
-Message-ID: <20080202102145.GA22233@elte.hu>
-References: <patchbomb.1201943112@localhost> <fe3ff49757e16a5b9290.1201943118@localhost> <20080202101356.GA19782@elte.hu>
-MIME-Version: 1.0
+	id S1754054AbYBBK0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 05:26:05 -0500
+Date: Sat, 2 Feb 2008 11:26:06 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] pci: fix section mismatch warnings referring to pci_do_scan_bus
+Message-ID: <20080202102606.GA22615@uranus.ravnborg.org>
+References: <20080131220430.GA4874@uranus.ravnborg.org> <1201817440-5081-1-git-send-email-sam@ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080202101356.GA19782@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1201817440-5081-1-git-send-email-sam@ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 31, 2008 at 11:10:30PM +0100, Sam Ravnborg wrote:
+> Fix following warnings:
+> WARNING: o-x86_64/drivers/pci/built-in.o(.text+0xb054): Section mismatch in reference from the function cpci_configure_slot() to the function .devinit.text:pci_do_scan_bus()
+> WARNING: o-x86_64/drivers/pci/built-in.o(.text+0x153ab): Section mismatch in reference from the function shpchp_configure_device() to the function .devinit.text:pci_do_scan_bus()
+> WARNING: o-x86_64/drivers/pci/built-in.o(__ksymtab+0xc0): Section mismatch in reference from the variable __ksymtab_pci_do_scan_bus to the function .devinit.text:pci_do_scan_bus()
+> 
+> PCI hotplug were the only user of pci_do_scan_bus()
+> so moving this function to the directory of
+> PCI Hotplug was a logical way to fix so
+> we only include this function in the kernel
+> when the CONFIG_HOTPLUG_PCI is enabled.
+> 
+> Then the abuse of __devinit could be dropped and
+> we no longer trigger the above warnings.
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Greg KH <gregkh@suse.de>
+> Cc: Adrian Bunk <bunk@kernel.org>
+> ---
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+This patch is bogus - I will send an updated version later this weekend.
 
-> random-qa found an early bootup hang on 32-bit (config attached).
-
-s/32-bit/64-bit
-
-	Ingo
+	Sam
