@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbYBBUVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933799AbYBBUXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933908AbYBBUVR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYBBUVE
+	id S933799AbYBBUXb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYBBUXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:21:04 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:53013 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755855AbYBBUVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:21:04 -0500
-Message-ID: <47A4D0AA.4080802@tiscali.nl>
-Date: Sat, 02 Feb 2008 21:20:58 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: v4l-dvb-maintainer@linuxtv.org, linux-dvb@linuxtv.org
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [rivers/media/video/tvaudio.c] add parentheses
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Feb 2008 15:23:24 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33571 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750837AbYBBUXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:23:23 -0500
+Date: Sat, 2 Feb 2008 21:23:27 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/5] Instrumentation Menu Removal
+Message-ID: <20080202202327.GA26341@uranus.ravnborg.org>
+References: <20080202201031.860344390@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080202201031.860344390@polymtl.ca>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'!' has a higher priority than '&': bitanding has no effect.
+On Sat, Feb 02, 2008 at 03:10:31PM -0500, Mathieu Desnoyers wrote:
+> Hi Andrew,
+> 
+> Here are the updated instrumentation menu removal patches. They apply on top of
+> 2.6.24-git12. I took tare of the underlying architecture changes that happened
+> recently (avr32 and arm especially).
+> 
+> Patch order :
+> # instrumentation menu removal
+> fix-arm-to-play-nicely-with-generic-instrumentation-menu.patch
+> create-arch-kconfig.patch
+> add-have-oprofile.patch
+> add-have-kprobes.patch
+> move-kconfiginstrumentation-to-arch-kconfig-and-init-kconfig.patch
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/media/video/tvaudio.c b/drivers/media/video/tvaudio.c
-index a755605..01ebcec 100644
---- a/drivers/media/video/tvaudio.c
-+++ b/drivers/media/video/tvaudio.c
-@@ -1571,14 +1571,14 @@ static int tvaudio_get_ctrl(struct CHIPSTATE *chip,
- 		ctrl->value=chip->muted;
- 		return 0;
- 	case V4L2_CID_AUDIO_VOLUME:
--		if (!desc->flags & CHIP_HAS_VOLUME)
-+		if (!(desc->flags & CHIP_HAS_VOLUME))
- 			break;
- 		ctrl->value = max(chip->left,chip->right);
- 		return 0;
- 	case V4L2_CID_AUDIO_BALANCE:
- 	{
- 		int volume;
--		if (!desc->flags & CHIP_HAS_VOLUME)
-+		if (!(desc->flags & CHIP_HAS_VOLUME))
- 			break;
- 		volume = max(chip->left,chip->right);
- 		if (volume)
-@@ -1621,7 +1621,7 @@ static int tvaudio_set_ctrl(struct CHIPSTATE *chip,
- 	{
- 		int volume,balance;
- 
--		if (!desc->flags & CHIP_HAS_VOLUME)
-+		if (!(desc->flags & CHIP_HAS_VOLUME))
- 			break;
- 
- 		volume = max(chip->left,chip->right);
-@@ -1642,7 +1642,7 @@ static int tvaudio_set_ctrl(struct CHIPSTATE *chip,
- 	case V4L2_CID_AUDIO_BALANCE:
- 	{
- 		int volume, balance;
--		if (!desc->flags & CHIP_HAS_VOLUME)
-+		if (!(desc->flags & CHIP_HAS_VOLUME))
- 			break;
- 
- 		volume = max(chip->left,chip->right);
-@@ -1702,7 +1702,7 @@ static int chip_command(struct i2c_client *client,
- 				break;
- 			case V4L2_CID_AUDIO_VOLUME:
- 			case V4L2_CID_AUDIO_BALANCE:
--				if (!desc->flags & CHIP_HAS_VOLUME)
-+				if (!(desc->flags & CHIP_HAS_VOLUME))
- 					return -EINVAL;
- 				break;
- 			case V4L2_CID_AUDIO_BASS:
+I picked this serie up in kbuild.git.
 
+	Sam
