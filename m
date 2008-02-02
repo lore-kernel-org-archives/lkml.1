@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764821AbYBBGFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbYBBGNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764821AbYBBGFd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 01:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYBBGF0
+	id S1763928AbYBBGNn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 01:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYBBGNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 01:05:26 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37052 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751106AbYBBGFZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 01:05:25 -0500
-Message-ID: <47A406B9.5070609@zytor.com>
-Date: Fri, 01 Feb 2008 21:59:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org, git-commits-head@vger.kernel.org,
-       gregkh@suse.de
-Subject: Re: [PATCH] Fix fallout from PCI: PCIE ASPM support
-References: <200802020506.m1256gXG027547@hera.kernel.org> <20080202052628.GB14936@lixom.net>
-In-Reply-To: <20080202052628.GB14936@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 2 Feb 2008 01:13:34 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:55803 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750810AbYBBGNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 01:13:33 -0500
+Date: Sat, 2 Feb 2008 00:16:12 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       srostedt@redhat.com, ghaskins@novell.com
+Subject: Re: Integrating cpusets and cpu isolation [was Re: [CPUISOL] CPU
+ isolation extensions]
+Message-Id: <20080202001612.98354ff2.pj@sgi.com>
+In-Reply-To: <47A21C53.2010502@qualcomm.com>
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
+	<1201511305.6149.30.camel@lappy>
+	<20080128085910.7d38e9f5.pj@sgi.com>
+	<479E20DA.2080403@qualcomm.com>
+	<20080128130637.60db148e.pj@sgi.com>
+	<47A21C53.2010502@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof Johansson wrote:
-> On Sat, Feb 02, 2008 at 05:06:42AM +0000, Linux Kernel Mailing List wrote:
-> 
->>     PCI: PCIE ASPM support
-> 
-> This one broke almost all defconfigs on powerpc, since they enable
-> CONFIG_EXPERIMENTAL and CONFIG_PCI, and this option defaults to y.
-> 
-> Make it default to 'n' like most other options, and make it depend on
-> ACPI. Take out the unneccessary default 'n' from the debug option as well.
-> 
+Max wrote:
+> Here is the list of things of issues with sched_load_balance flag from CPU isolation 
+> perspective:
 
-Is this actually ACPI-dependent?
+A separate thread happened to start up on lkml.org, shortly after
+yours, that went into this in considerable detail.
 
-	-hpa
+For example, the interaction of cpusets, sched_load_balance,
+sched_domains and real time scheduling is examined in some detail on
+this thread.  Everyone participating on that thread learned something
+(we all came into it with less than a full picture of what's there.)
 
+I would encourage you to read it closely.  For example, the scheduler
+code should not be trying to access per-cpuset attributes such as
+the sched_load_balance flag (you are correct that this would be
+difficult to do because of the locking; however by design, that is
+not to be done.)
+
+This thread begins at:
+
+    scheduler scalability - cgroups, cpusets and load-balancing
+    http://lkml.org/lkml/2008/1/29/60
+
+Too bad we didn't think to include you in the CC list of that
+thread from the beginning.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
