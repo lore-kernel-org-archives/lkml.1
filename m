@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYBBNwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbYBBN7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758006AbYBBNwz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 08:52:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762953AbYBBNw1
+	id S1762235AbYBBN7k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 08:59:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757107AbYBBN7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 08:52:27 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3203 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762799AbYBBNwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 08:52:22 -0500
-Date: Sat, 2 Feb 2008 13:52:07 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3 freeze feature
-Message-ID: <20080202135207.GA4456@ucw.cz>
-References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <479A0F91.2030206@redhat.com> <20080125164229.GD17907@mit.edu>
+	Sat, 2 Feb 2008 08:59:32 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39593 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755187AbYBBN7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 08:59:31 -0500
+Date: Sat, 2 Feb 2008 14:59:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [scsi bug] spurious build failures in aic7xxx
+Message-ID: <20080202135935.GA23838@uranus.ravnborg.org>
+References: <20080201225056.GA18302@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080125164229.GD17907@mit.edu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080201225056.GA18302@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-01-25 11:42:29, Theodore Tso wrote:
-> On Fri, Jan 25, 2008 at 10:34:25AM -0600, Eric Sandeen wrote:
-> > > But it was this concern which is why ext3 never exported freeze
-> > > functionality to userspace, even though other commercial filesystems
-> > > do support this.  It wasn't that it wasn't considered, but the concern
-> > > about whether or not it was sufficiently safe to make available.
-> > 
-> > What's the safety concern; that the admin will forget to unfreeze?
+On Fri, Feb 01, 2008 at 11:50:56PM +0100, Ingo Molnar wrote:
 > 
-> That the admin would manage to deadlock him/herself and wedge up the
-> whole system...
+> i'm getting spurious build failures with latest -git:
 > 
-> > I'm also not sure I see the point of the timeout in the original patch;
-> > either you are done snapshotting and ready to unfreeze, or you're not;
-> > 1, or 2, or 3 seconds doesn't really matter.  When you're done, you're
-> > done, and you can only unfreeze then.  Shouldn't this be done
-> > programmatically, and not with some pre-determined timeout?
+> In file included from drivers/scsi/aic7xxx/aic7xxx_proc.c:44:
+> drivers/scsi/aic7xxx/aic7xxx_inline.h: In function 'ahc_pause_bug_fix':
+> drivers/scsi/aic7xxx/aic7xxx_inline.h:66: error: 'CCSCBCTL' undeclared (first use in this function)
+> drivers/scsi/aic7xxx/aic7xxx_inline.h:66: error: (Each undeclared 
+> identifier is reported only once
+> drivers/scsi/aic7xxx/aic7xxx_inline.h:66: error: for each function it 
+> appears in.)
+> drivers/scsi/aic7xxx/aic7xxx_inline.h: In function 'ahc_update_residual':
 > 
-> This is only a guess, but I suspect it was a fail-safe in case the
-> admin did manage to deadlock him/herself.  
-> 
-> I would think a better approach would be to make the filesystem
-> unfreeze if the file descriptor that was used to freeze the filesystem
-> is closed, and then have explicit deadlock detection that kills the
-> process doing the freeze, at which point the filesystem unlocks and
-> the system can recover.
+> BUT, if i redo the build, it now builds. It's probably some generated 
+> file ordering problem?
 
-Hmm, not sure that works.
+Can you give a bit more details about your build setup.
+I cannot reproduce it here and I tried several combinations of
+-j values and ways to specify what to build.
 
-I have shell I used to freeze the ext3. Then it is pushed out by dirty
-data waiting to be written to that ext3. Deadlock, with file
-descriptor still open, and very hard to detect.
+I would at least like to see all lines preceeding this on in your
+build log so I get an understanding what happened just before you hit this.
 
-Ok, OOM killer will eventually hit the shell, close the fd and
-unfreeze, but that is probably not what you want.
+It looks like make started updating the aic7xxx_reg.h file but failed to
+finsih the job before it started building aic7xxx_proc.c so the build
+of aic7xxx_proc.c picked up a half written .h file.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Sam
