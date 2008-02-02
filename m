@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764084AbYBBSqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbYBBSsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764084AbYBBSqe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBBSqY
+	id S932578AbYBBSsa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:48:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYBBSsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:46:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47114 "EHLO mx2.suse.de"
+	Sat, 2 Feb 2008 13:48:23 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56966 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbYBBSqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:46:24 -0500
-Date: Sat, 2 Feb 2008 10:44:41 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [patch] pci: pci_enable_device_bars() fix (was: [GIT PATCH]
-	PCI patches for 2.6.24)
-Message-ID: <20080202184441.GA12301@suse.de>
-References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu>
-MIME-Version: 1.0
+	id S1753009AbYBBSsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:48:22 -0500
+Date: Sat, 2 Feb 2008 19:48:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Incompatibility of "const" and __xxxinitdata?
+Message-ID: <20080202184825.GE25399@uranus.ravnborg.org>
+References: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080202111322.GA30767@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 12:13:22PM +0100, Ingo Molnar wrote:
+On Sat, Feb 02, 2008 at 11:20:44PM +0800, Peter Teoh wrote:
+> In include/linux/init.h, it is documented that all __xxxinitdata
+> declaration must not have constant, as show below:
 > 
-> * Greg KH <gregkh@suse.de> wrote:
+>  *
+>  * static int init_variable __initdata = 0;
+>  * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
+>  *
+>  * Don't forget to initialize data not at file scope, i.e. within a function,
+>  * as gcc otherwise puts the data into the bss section and not into the init
+>  * section.
+>  *
+>  * Also note, that this data cannot be "const".
+>  */
 > 
-> >       PCI: Remove users of pci_enable_device_bars()
-> >       PCI: Remove pci_enable_device_bars()
+> In this same init.h is also documented the preferred way of
+> typecasting the variable with __initdata.
 > 
-> simple allyesconfig testing found a build failure due to last night's 
-> PCI merge, on 32-bit x86:
+> But searching through the source codes, I have found many instances of:
 > 
->  drivers/scsi/lpfc/lpfc_init.c: In function 'lpfc_pci_probe_one':
->  drivers/scsi/lpfc/lpfc_init.c:1897: error: implicit declaration of function 'pci_enable_device_bars'
-> 
-> fix attached.
-> 
-> ( This call has been introduced upstream 3 weeks ago by commit 
->   8a4df120b07, but the PCI tree has apparently not been fully re-tested
->   with Linus-latest since that point. )
+> 1.   constant occuring in the __xxxinitdata pattern, and
+> 2.   non-conformance of the variable declaration according to the
+> codingstyle recommended.
 
-Wait, my testing caught this.  I made the change to the patch myself,
-adding the needed conversion to my tree, it's here, on my disk!
+Only very recently we had a tag to annotate const data in addition
+to the __initdata tag.
+The reason for two tags are that gcc does not allow to mix const
+and non-const data in the same section.
 
-Oh crap, I never checked it in.
+So in the cases you list below there are most certainly no other
+__initdata annotations or at least not to non-const data.
 
-/me goes off to sulk in shame.
+If you go forward and fix up this stuff do so in adequate steps.
+So you for example do not mix net drivers with usb drivers
+in the same patch.
 
-Very sorry about this, totally my fault, I knew this needed to be fixed,
-fixed it, but it didn't propogate to the tree to send to Linus.
+And if fix it up then use the recommended style for the
+annotation.
+Improved documentation in init.h is also welcome!
 
-I suck.  I need a vacation and an empty inbox.
-
-I'll be sending fixup patches for this and other merge messes in a few
-hours, once the coffee has kicked in...
-
-greg k-h
+	Sam
