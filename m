@@ -1,98 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758943AbYBBHMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761578AbYBBHNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758943AbYBBHMJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 02:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYBBHL6
+	id S1761578AbYBBHNy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 02:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbYBBHNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 02:11:58 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:63623 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754727AbYBBHL5 (ORCPT
+	Sat, 2 Feb 2008 02:13:45 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:28571 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbYBBHNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 02:11:57 -0500
-Date: Sat, 2 Feb 2008 02:11:41 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: John Stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 06/23 -v8] handle accurate time keeping over long delays
-In-Reply-To: <20080201170219.GA19397@Krystal>
-Message-ID: <Pine.LNX.4.58.0802020209230.21975@gandalf.stny.rr.com>
-References: <20080130210357.927754294@goodmis.org> <20080130210525.701268662@goodmis.org>
- <20080131121037.GB8493@Krystal> <1201800297.6789.14.camel@jstultz-laptop>
- <20080201170219.GA19397@Krystal>
+	Sat, 2 Feb 2008 02:13:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=l0piPaiFtRosQ20bMZpc+CqQt+Yo4S5dzfhtbnbGuudeGXnW2lxDB3lyaECA8JRJflo4bznhJDklMTVw2rj/J+UzQUqZVGgTQylUD+9KjPX5IFEBVoCBLhbE9N/U7yDtAftoz1GXrIOA/z0FJst2iyUN46YIgvIHeAMDiL3xPqw=
+Message-ID: <47A41820.2070907@gmail.com>
+Date: Sat, 02 Feb 2008 16:13:36 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kasper Sandberg <lkml@metanurb.dk>
+CC: Gene Heskett <gene.heskett@gmail.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+References: <200801272122.21823.gene.heskett@gmail.com>	 <200801281135.14555.gene.heskett@gmail.com>	 <1201580616.12795.2.camel@localhost>	 <200801282349.11696.gene.heskett@gmail.com> <1201582875.12795.15.camel@localhost>
+In-Reply-To: <1201582875.12795.15.camel@localhost>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kasper Sandberg wrote:
+> to put some timeline perspective into this.
+> i believe it was in 2005 i assembled the system, and when i realized it
+> was faulty, on old ide driver, i stopped using it - that miht have been
+> in beginning of 2006. then for almost a year i werent using it, hoping
+> to somehow fix it, but in january 2007 i think it was, atleast in the
+> very beginning of 2007, i hit upon the idea of trying libata, and ever
+> since the system has been running 24/7 - doing these errors around 2
+> times a day.
+> 
+> i have multiple times reported my problems to lkml, but nothing has
+> happened, i also tried to aproeach jgarzik direcly, but he was not
+> interested.
+> 
+> i really hope this can be solved now, its a huge problem
+> 
+> my fileserver has an asus k8v motherboard, with via chipset (k8t880 i
+> think it is, or something like it). currently using the promise
+> controller again(strangely enough all the timeouts seems to happen here,
+> and when the ITE was on, there, not the onboard one), in conjunction
+> with the onboard via.
 
+Timeouts are nasty to debug.  It can be caused by whole range of
+different problems including transmission errors, bad power, faulty
+drive, mishandled media error, IRQ misrouting, dumb hardware bug.  It's
+basically 'uh... I told the controller to do something but it never
+called me back'.
 
+If you see timeouts on multiple devices connected to different
+controllers, the chance is that you have problem somewhere else.  The
+most likely culprit is bad power.  Please...
 
-On Fri, 1 Feb 2008, Mathieu Desnoyers wrote:
+* Post the result of 'lspci -nn' and kernel log including full boot log
+and error messages.
 
-> > > > accumulated clock cycles.
-> > > >
-> > >
-> > > About this one.. we talked a lot about the importance of timekeeping at
-> > > the first Montreal Tracing Summit this week. Actually, someone
-> > > mentioned a very interesting point : in order to be able to synchronize
-> > > traces taken from the machine with traces taken on external hardware
-> > > (i.e. memory bus tracer on Freescale), taking the "real" counter value
-> > > rather that using the "cumulated cycles" approach (which creates a
-> > > virtual counted instead) would be better.
-> > >
-> > > So I would recommend using an algorithm that would return a clock value
-> > > which is the same as the underlying hardware counter.
-> >
-> > Hmm. It is an interesting issue. Clearly having the raw cycle value
-> > match up so hardware analysis could be mapped to software timestamps
-> > would be useful(although obscure) feature. However with the variety of
-> > clocksources, dealing properly with the clocksource wrap issue (ACPI PM
-> > for instance wraps about every 5 seconds) also has to be addressed.
-> >
-> > I think you were mentioning an idea that required some work on the read
-> > side to handle the wraps, basically managing the high order bits by
-> > hand. This sounds like it would be an additional feature that could be
-> > added on to the infrastructure being provided in the
-> > get_monotonic_cycles() patch. No?
-> >
->
-> Yup, exactly.
->
-> >
-> > However, all of the above is a separate issue then what this (the
-> > timekeeping over long delay) patch addresses, as it is not really
-> > directly related to the get_monotonic_cycles() patch, but instead allows
-> > for correct timekeeping, making update_wall_time() to function properly
-> > if it was deferred for longer then the clocksource's wrap time.
-> >
->
-> I agree, that could apply on top of the monotonic cycles patch. It's
-> just a different way to see it : dealing with wrapping TSC bits,
-> returning the LSBs given by the hardware, rather than simply
-> accumulating time. This is what the patch I sent earlier (which I use in
-> LTTng) does. I currently expects 32 LSBs to be given by the hardware,
-> but it would be trivial to extend it to support any given number of
-> hardware LSBs.
->
+* Try to isolate the problem.  ie. Does removing several number of
+drives fix the problem?  If the problem is localized to certain device,
+what happens if you move it?  Does the problem follow the drive or stay
+with the port?  If the failing drives are SATA, it's a good idea to
+power some of the failing drives with a separate PSU and see whether
+anything is different.
 
-So you are saying that you can trivally make it work with a clock that is,
-say 24 bits? And this same code can work if we boot up with a clock with
-32 bits or more?
+By trying to isolate the hardware problem, more can be learned about the
+error condition and even when the problem actually isn't hardware
+problem, it gives us much deeper insight of the problem and clues
+regarding where to look.
 
--- Steve
+Thanks.
 
+-- 
+tejun
