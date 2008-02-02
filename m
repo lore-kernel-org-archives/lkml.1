@@ -1,182 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbYBBQVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765489AbYBBQX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932306AbYBBQVZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbYBBQVI
+	id S1765489AbYBBQX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbYBBQXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:21:08 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:52642 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764872AbYBBQUy (ORCPT
+	Sat, 2 Feb 2008 11:23:49 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:7601 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbYBBQXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:20:54 -0500
-Date: Sat, 2 Feb 2008 11:20:51 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext4: Replace use of iget() with iget_locked()
-Message-ID: <20080202162051.GB5219@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <E1JLKiC-0002et-Tr@closure.thunk.org>
+	Sat, 2 Feb 2008 11:23:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o0k9zEENnqAGCqIQp5I9dOfz0cvTdwzyastTeDRTkQ53C9U/hr9RzqzVGOI2viJ554m72CWmVvh2LJtuYJeZbDzFn5AzpqVJdIdMvmPXkHETatUxuGuIJsj+utf+8MRtrjzPFUNJARZTxghk/9FQ/HpKaMykHwR9kyuPCDOp1Qs=
+Message-ID: <34bc550b0802020823t77976c0ctb2d476c355b92dce@mail.gmail.com>
+Date: Sat, 2 Feb 2008 21:53:46 +0530
+From: "Sam K. Raju" <ujarkmas@gmail.com>
+To: "Frans Pop" <elendil@planet.nl>
+Subject: Re: Unable to boot kernel 2.6.24 (lvm unable to find VolGroup00)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <E1JLKyL-0002bs-FL@faramir.fjphome.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1JLKiC-0002et-Tr@closure.thunk.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <34bc550b0802020746r7f89ca98me2fd4d93dcc7defd@mail.gmail.com>
+	 <E1JLKyL-0002bs-FL@faramir.fjphome.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 10:55:24AM -0500, Theodore Ts'o wrote:
-> In the mm tree is a patch queued up to nuke iget().  So replace use of
-> iget() with iget_locked().  I will be pushing this to Linus shortly.
+Hi Frans,
 
-Oops, wrong version of the patch; this is the correct one.
+On 2/2/08, Frans Pop <elendil@planet.nl> wrote:
+> Hello Sam,
+>
+> Sam K. Raju wrote:
+> > As soon as the new kernel released I decided to give it a try. I had
+> > RedHat Enterprise Linux 4 with two kernel, 2.6.9-55.ELsmp & 2.6.17.3.
+> > I downloaded the new kernel 2.6.24, configured and installed. But
+> > while booting, Kernel panic giving the following error:
+> [...]
+>
+> The kernel mailing list is not really the correct place for such questions.
+> Suggest you try one of the user mailing lists for your distribution.
+>
+> Cheers,
+> FJP
+>
+Sorry for asking this question here in kernel mailing list but I
+thought this would be the best place for my problem. I thought the
+problem is related with the kernel and not with my distribution.
+I even asked the same question at two user mailing lists but didn't
+got any solution from them yet.
 
-      	    	       	   	       - Ted
+May be I need to wait for few more days for any solution. :-(
 
-ext4: Replace use of iget() with iget_locked()
-    
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-
----
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 575b521..d45fcaa 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -805,9 +805,17 @@ struct inode *ext4_orphan_get(struct super_block *sb, unsigned long ino)
- 	 * is a valid orphan (no e2fsck run on fs).  Orphans also include
- 	 * inodes that were being truncated, so we can't check i_nlink==0.
- 	 */
--	if (!ext4_test_bit(bit, bitmap_bh->b_data) ||
--			!(inode = iget(sb, ino)) || is_bad_inode(inode) ||
--			NEXT_ORPHAN(inode) > max_ino) {
-+	if (!ext4_test_bit(bit, bitmap_bh->b_data))
-+		goto bad_orphan_inode;
-+	inode = iget_locked(sb, ino);
-+	if (!inode)
-+		goto bad_orphan_inode;
-+	if (inode->i_state & I_NEW) {
-+		sb->s_op->read_inode(inode);
-+		unlock_new_inode(inode);
-+	}
-+	if (is_bad_inode(inode) || NEXT_ORPHAN(inode) > max_ino) {
-+	bad_orphan_inode:
- 		ext4_warning(sb, __FUNCTION__,
- 			     "bad orphan inode %lu!  e2fsck was run?", ino);
- 		printk(KERN_NOTICE "ext4_test_bit(bit=%d, block=%llu) = %d\n",
-diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-index 67b6d8a..57dd8fb 100644
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -1041,11 +1041,16 @@ static struct dentry *ext4_lookup(struct inode * dir, struct dentry *dentry, str
- 				   "bad inode number: %lu", ino);
- 			inode = NULL;
- 		} else
--			inode = iget(dir->i_sb, ino);
-+			inode = iget_locked(dir->i_sb, ino);
- 
- 		if (!inode)
- 			return ERR_PTR(-EACCES);
- 
-+		if (inode->i_state & I_NEW) {
-+			inode->i_sb->s_op->read_inode(inode);
-+			unlock_new_inode(inode);
-+		}
-+
- 		if (is_bad_inode(inode)) {
- 			iput(inode);
- 			return ERR_PTR(-ENOENT);
-@@ -1080,11 +1085,16 @@ struct dentry *ext4_get_parent(struct dentry *child)
- 			   "bad inode number: %lu", ino);
- 		inode = NULL;
- 	} else
--		inode = iget(child->d_inode->i_sb, ino);
-+		inode = iget_locked(child->d_inode->i_sb, ino);
- 
- 	if (!inode)
- 		return ERR_PTR(-EACCES);
- 
-+	if (inode->i_state & I_NEW) {
-+		inode->i_sb->s_op->read_inode(inode);
-+		unlock_new_inode(inode);
-+	}
-+
- 	if (is_bad_inode(inode)) {
- 		iput(inode);
- 		return ERR_PTR(-ENOENT);
-diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
-index 4fbba60..ebdca31 100644
---- a/fs/ext4/resize.c
-+++ b/fs/ext4/resize.c
-@@ -779,7 +779,11 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
- 				     "No reserved GDT blocks, can't resize");
- 			return -EPERM;
- 		}
--		inode = iget(sb, EXT4_RESIZE_INO);
-+		inode = iget_locked(sb, EXT4_RESIZE_INO);
-+		if (inode && (inode->i_state & I_NEW)) {
-+			sb->s_op->read_inode(inode);
-+			unlock_new_inode(inode);
-+		}
- 		if (!inode || is_bad_inode(inode)) {
- 			ext4_warning(sb, __FUNCTION__,
- 				     "Error opening resize inode");
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 055a0cd..1ef0359 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -777,9 +777,13 @@ static struct inode *ext4_nfs_get_inode(struct super_block *sb,
- 	 * Currently we don't know the generation for parent directory, so
- 	 * a generation of 0 means "accept any"
- 	 */
--	inode = iget(sb, ino);
-+	inode = iget_locked(sb, ino);
- 	if (inode == NULL)
- 		return ERR_PTR(-ENOMEM);
-+	if (inode->i_state & I_NEW) {
-+		sb->s_op->read_inode(inode);
-+		unlock_new_inode(inode);
-+	}
- 	if (is_bad_inode(inode) ||
- 	    (generation && inode->i_generation != generation)) {
- 		iput(inode);
-@@ -2243,7 +2247,15 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 	 * so we can safely mount the rest of the filesystem now.
- 	 */
- 
--	root = iget(sb, EXT4_ROOT_INO);
-+	root = iget_locked(sb, EXT4_ROOT_INO);
-+	if (!root) {
-+		printk(KERN_ERR "EXT4-fs: iget_locked for root inode failed\n");
-+		goto failed_mount4;
-+	}
-+	if (root->i_state & I_NEW) {
-+		sb->s_op->read_inode(root);
-+		unlock_new_inode(root);
-+	}
- 	sb->s_root = d_alloc_root(root);
- 	if (!sb->s_root) {
- 		printk(KERN_ERR "EXT4-fs: get root inode failed\n");
-@@ -2372,11 +2384,15 @@ static journal_t *ext4_get_journal(struct super_block *sb,
- 	 * things happen if we iget() an unused inode, as the subsequent
- 	 * iput() will try to delete it. */
- 
--	journal_inode = iget(sb, journal_inum);
-+	journal_inode = iget_locked(sb, journal_inum);
- 	if (!journal_inode) {
--		printk(KERN_ERR "EXT4-fs: no journal found.\n");
-+		printk(KERN_ERR "EXT4-fs: iget_locked for journal inode failed.\n");
- 		return NULL;
- 	}
-+	if (journal_inode->i_state & I_NEW) {
-+		sb->s_op->read_inode(journal_inode);
-+		unlock_new_inode(journal_inode);
-+	}
- 	if (!journal_inode->i_nlink) {
- 		make_bad_inode(journal_inode);
- 		iput(journal_inode);
+Thanks,
+   Sam
