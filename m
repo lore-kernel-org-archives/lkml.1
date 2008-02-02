@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbYBBJMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbYBBJMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932733AbYBBJMO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 04:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932578AbYBBJH6
+	id S933403AbYBBJMq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 04:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbYBBJJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 04:07:58 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:49580 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932518AbYBBJHy (ORCPT
+	Sat, 2 Feb 2008 04:09:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40498 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762097AbYBBJJM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 04:07:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=oibAvSQDMyDemIakVvtYjhDMq49k2Kgpa54EhqDFpQxrNny8SSykBAygGzMsQEzNQ3zk67gcazShEQM2V4B81rHK5u3LsTV1pPmsvdOhbsNfqBGGJFOooLpi7no5i2w4QFIM+bPKljevhkAcVQVC6IeVqpS6m+X97QOAbbELuNA=
-Message-ID: <47A432DA.6080307@gmail.com>
-Date: Sat, 02 Feb 2008 14:37:38 +0530
-From: Abhishek Sagar <sagar.abhishek@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sat, 2 Feb 2008 04:09:12 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 4/10] ACPI: register ACPI Fan as generic thermal cooling device
+Date: Sat, 2 Feb 2008 04:08:56 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, sujith.thomas@intel.com
+References: <1200556284.2935.124.camel@acpi-sony.sh.intel.com>
+In-Reply-To: <1200556284.2935.124.camel@acpi-sony.sh.intel.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ktime: Allow ktime_t comparison using ktime_compare
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802020408.56587.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a timespec style comparison function. Allows two ktime types to be compared
-without having to convert to timespec/timeval. Useful for modules doing ktime
-based math, especially the ones using ktime_get heavily.
+On Thursday 17 January 2008 02:51, Zhang Rui wrote:
+> +#ifdef CONFIG_ACPI_PROCFS
+>  
+>  static struct proc_dir_entry *acpi_fan_dir;
+>  
+> @@ -167,7 +213,17 @@ static int acpi_fan_remove_fs(struct acp
+>  
+>         return 0;
+>  }
+> +#else
+> +static int acpi_fan_add_fs(struct acpi_device *device)
+> +{
+> +       return 0;
+> +}
+>  
+> +static int acpi_fan_remove_fs(struct acpi_device *device)
+> +{
+> +       return 0;
+> +}
+> +#endif
 
-Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
----
+commit 3c602840528cf1aa835e6e32d76a0a45936b8e4c
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Feb 2 04:05:54 2008 -0500
 
-diff --git a/include/linux/ktime.h b/include/linux/ktime.h
-index a6ddec1..7f9d321 100644
---- a/include/linux/ktime.h
-+++ b/include/linux/ktime.h
-@@ -95,6 +95,23 @@ static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
- #define ktime_add(lhs, rhs) \
- 		({ (ktime_t){ .tv64 = (lhs).tv64 + (rhs).tv64 }; })
+    ACPI: fan: build fix for CONFIG_ACPI_PROCFS=n
+    
+    drivers/acpi/fan.c:340: error: ‘acpi_fan_dir’ undeclared (first use in this function)
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+index f6e8165..48cb705 100644
+--- a/drivers/acpi/fan.c
++++ b/drivers/acpi/fan.c
+@@ -337,10 +337,12 @@ static int __init acpi_fan_init(void)
+ 	int result = 0;
  
-+/**
-+ * ktime_compare - Compares two ktime_t variables
-+ *
-+ * Return val:
-+ * lhs < rhs:  < 0
-+ * lhs == rhs: 0
-+ * lhs > rhs:  > 0
-+ */
-+static inline int ktime_compare(const ktime_t lhs, const ktime_t rhs)
-+{
-+	if (lhs.tv64 < rhs.tv64)
-+		return -1;
-+	if (lhs.tv64 > rhs.tv64)
-+		return 1;
-+	return 0;
-+}
-+
- /*
-  * Add a ktime_t variable and a scalar nanosecond value.
-  * res = kt + nsval:
-@@ -198,6 +215,23 @@ static inline ktime_t ktime_add(const ktime_t add1, const ktime_t add2)
- }
  
- /**
-+ * ktime_compare - Compares two ktime_t variables
-+ *
-+ * Return val:
-+ * lhs < rhs:  < 0
-+ * lhs == rhs: 0
-+ * lhs > rhs:  > 0
-+ */
-+static inline int ktime_compare(const ktime_t lhs, const ktime_t rhs)
-+{
-+	if (lhs.tv.sec < rhs.tv.sec)
-+		return -1;
-+	if (lhs.tv.sec > rhs.tv.sec)
-+		return 1;
-+	return lhs.tv.nsec - rhs.tv.nsec;
-+}
-+
-+/**
-  * ktime_add_ns - Add a scalar nanoseconds value to a ktime_t variable
-  * @kt:		addend
-  * @nsec:	the scalar nsec value to add
++#ifdef CONFIG_ACPI_PROCFS
+ 	acpi_fan_dir = proc_mkdir(ACPI_FAN_CLASS, acpi_root_dir);
+ 	if (!acpi_fan_dir)
+ 		return -ENODEV;
+ 	acpi_fan_dir->owner = THIS_MODULE;
++#endif
+ 
+ 	result = acpi_bus_register_driver(&acpi_fan_driver);
+ 	if (result < 0) {
