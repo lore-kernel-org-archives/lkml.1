@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbYBBThm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933765AbYBBTjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbYBBThm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 14:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYBBThe
+	id S933765AbYBBTjM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 14:39:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbYBBTi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 14:37:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43891 "EHLO mx2.mail.elte.hu"
+	Sat, 2 Feb 2008 14:38:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54200 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755992AbYBBThd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 14:37:33 -0500
-Date: Sat, 2 Feb 2008 20:37:14 +0100
+	id S1758516AbYBBTi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 14:38:58 -0500
+Date: Sat, 2 Feb 2008 20:38:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <greg@kroah.com>
-Cc: gregkh@suse.de, shaohua.li@intel.com, auke-jan.h.kok@intel.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       matthew@wil.cx, venkatesh.pallipadi@intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bootup crash, -git] Re: patch pci-pcie-aspm-support.patch
-	added to gregkh-2.6 tree
-Message-ID: <20080202193714.GA32039@elte.hu>
-References: <1201141317.26118.2.camel@sli10-desk.sh.intel.com> <12013009171835@kroah.org> <20080202105506.GA25160@elte.hu> <20080202185145.GA13005@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.linux-foundation.org,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] sleepy linux self-test
+Message-ID: <20080202193843.GB32039@elte.hu>
+References: <20080130131748.GA3796@elf.ucw.cz> <200802020931.38689.david-b@pacbell.net> <20080202180002.GB26560@elte.hu> <200802021113.22130.david-b@pacbell.net> <20080202193202.GB31621@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080202185145.GA13005@kroah.com>
+In-Reply-To: <20080202193202.GB31621@elf.ucw.cz>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,16 +35,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Greg KH <greg@kroah.com> wrote:
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-> Ugh, this is causing just too many problems, I'm just going to revert 
-> it.
+> > It would have been easier to just use the public interface and 
+> > hard-wire "rtc0".  But going directly to the hardware was dirtier, 
+> > and more in the spirit of "hack that obviously shouldn't go upstream 
+> > until it gets done properly".
 > 
-> Shaohua, care to look into this crash, fix up the config issues, and 
-> resubmit it when it's working a bit better?
+> Yes, it was "quick and dirty". And I do not think it is going upstream 
+> in this form...?
 
-i can test any patches, the crash was fully reproducible. It's probably 
-something rather trivial - i dont have the hardware so it should just 
-have bailed out.
+which would be a pity - this thing _almost_ started doing suspend and 
+resume cycles on my testsystems, all by itself :-)
 
 	Ingo
