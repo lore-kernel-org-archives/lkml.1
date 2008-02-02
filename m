@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935217AbYBBVa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934940AbYBBVfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935217AbYBBVa1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 16:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764388AbYBBVaN
+	id S934940AbYBBVfy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 16:35:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759621AbYBBVfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 16:30:13 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50864 "EHLO pasmtpA.tele.dk"
+	Sat, 2 Feb 2008 16:35:46 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:58660 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761658AbYBBVaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 16:30:12 -0500
-Date: Sat, 2 Feb 2008 22:30:15 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Frans Pop <elendil@planet.nl>, Bryan Wu <bryan.wu@analog.com>
-Cc: akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REVIEW for merge] kbuild updates including silence of section mismatch check
-Message-ID: <20080202213015.GA27015@uranus.ravnborg.org>
-References: <20080202203503.GA26415@uranus.ravnborg.org> <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752801AbYBBVfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 16:35:45 -0500
+Date: Sat, 2 Feb 2008 23:36:28 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
+Message-ID: <20080202213628.GJ9375@cs181133002.pp.htv.fi>
+References: <20080131201430.GA9375@cs181133002.pp.htv.fi> <20080131130529.b0e17815.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080131130529.b0e17815.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan this was from you - please comment/fix.
+On Thu, Jan 31, 2008 at 01:05:29PM -0800, Andrew Morton wrote:
+> On Thu, 31 Jan 2008 22:14:30 +0200
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > A commit that does nothing except for adding two unused EXPORT_SYMBOL's.
+> > 
+> > Without any rationale why they should be exported.
+> 
+> Don't look at me.  This has been sitting in my tree for nearly two years as
+> part of the reiser4 patchset.  It may not even be needed any more.  I guess
+> Ingo went on a fishing expedition and liked the change.
+>...
 
-	Sam
+Sorry Andrew.
 
-On Sat, Feb 02, 2008 at 10:25:51PM +0100, Frans Pop wrote:
-> Sam Ravnborg wrote:
-> > --- a/scripts/setlocalversion
-> > +++ b/scripts/setlocalversion
-> > @@ -45,3 +45,18 @@ if hgid=`hg id 2>/dev/null`; then
-> > # All done with mercurial
-> > exit
-> > fi
-> > +
-> > +# Check for svn and a svn repo.
-> > +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` ; then
-> > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
-> > +
-> > +       # Are there uncommitted changes?
-> > +       if [ $changes != 0 ]; then
-> > +               printf -- '-svn%s%s%s' "$rev" -dirty "$changes"
-> > +       else
-> > +               printf -- '-svn%s' "$rev"
-> > +       fi
-> > +
-> > +       # All done with svn
-> > +       exit
-> > +fi
-> 
-> This looks broken. Unless I'm very much mistaken the 'if' statement is
-> always going to be true because the awk statement will always execute
-> without error. Try: echo "" | awk '{print $NF}' || echo Error
-> 
-> So, the code should probably be changed to:
-> +if rev=`svn info 2>/dev/null | grep '^Revision' ; then
-> +	rev=`echo $rev | awk '{print $NF}'`
-> +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
-> 
-> or alternatively:
-> +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` && \
-> +   [ -n "$rev" ] ; then 
-> +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
-> 
-> Cheers,
-> FJP
-> 
-> P.S. Looks like the mercurial section is missing some indentation.
+I misunderstood the patch flow.
+
+And much more important, the tone of my email was not appropriate.
+
+Due to unrelated reasons I was Thursday evening in a mood in which I 
+should not have left emails out of my postponed folder without sleeping 
+a night over them.
+
+I hope you accept my apology.
+
+Yours
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
