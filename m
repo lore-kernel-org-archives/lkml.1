@@ -1,51 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYBBQUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbYBBQVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763492AbYBBQUx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYBBQUn
+	id S932306AbYBBQVZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbYBBQVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:20:43 -0500
-Received: from hs-out-0708.google.com ([64.233.178.240]:61614 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750841AbYBBQUm (ORCPT
+	Sat, 2 Feb 2008 11:21:08 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:52642 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764872AbYBBQUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:20:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ZM29lVid0CY9qrhYPmQJmdCKz+1iNbsOUGoa4JEa3xLrJp26B31KvTQUads8MedfQo69VZIZ9hIDYSvCL/hwxMHD5LptlXjEC+n4JMTas70jgqvKzZc0a4G/6SgJK3mfDMP3aL+TRNVEZwO6kpdU5evCkgvl2+QFq7YDb6DZ0RE=
-Message-ID: <804dabb00802020820k567bf07cg780da10a0b083e6e@mail.gmail.com>
-Date: Sun, 3 Feb 2008 00:20:41 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: CONFIG_SECTION_MISMATCH is replaced by CONFIG_DEBUG_SECTION_MISMATCH?
+	Sat, 2 Feb 2008 11:20:54 -0500
+Date: Sat, 2 Feb 2008 11:20:51 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] ext4: Replace use of iget() with iget_locked()
+Message-ID: <20080202162051.GB5219@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <E1JLKiC-0002et-Tr@closure.thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <E1JLKiC-0002et-Tr@closure.thunk.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I supposed CONFIG_SECTION_MISMATCH has been deprecated by
-CONFIG_DEBUG_SECTION_MISMATCH, as I found
-CONFIG_DEBUG_SECTION_MISMATCH in Makefile, Makefile.build and
-Makefile.modpost, but not the former symbol.   Moreover, setting the
-symbol in .config, and followed by make oldconfig will result in the
-non-debug symbol disappearing, but not the debug version.   Am I
-correct?
+On Sat, Feb 02, 2008 at 10:55:24AM -0500, Theodore Ts'o wrote:
+> In the mm tree is a patch queued up to nuke iget().  So replace use of
+> iget() with iget_locked().  I will be pushing this to Linus shortly.
 
-Signed-off-by: Peter Teoh <htmldeveloper@gmail.com>
+Oops, wrong version of the patch; this is the correct one.
 
---- scripts/mod/modpost.c.orig  2008-02-02 15:18:04.000000000 +0800
-+++ scripts/mod/modpost.c       2008-02-02 15:18:47.000000000 +0800
-@@ -1942,7 +1942,7 @@ int main(int argc, char **argv)
-                        "To see additional details select \"Enable full "
-                        "Section mismatch analysis\"\n"
-                        "in the Kernel Hacking menu "
--                       "(CONFIG_SECTION_MISMATCH).\n", sec_mismatch_count);
-+                       "(CONFIG_DEBUG_SECTION_MISMATCH).\n",
-sec_mismatch_count);
+      	    	       	   	       - Ted
 
-        return err;
- }
+ext4: Replace use of iget() with iget_locked()
+    
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+
+---
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index 575b521..d45fcaa 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -805,9 +805,17 @@ struct inode *ext4_orphan_get(struct super_block *sb, unsigned long ino)
+ 	 * is a valid orphan (no e2fsck run on fs).  Orphans also include
+ 	 * inodes that were being truncated, so we can't check i_nlink==0.
+ 	 */
+-	if (!ext4_test_bit(bit, bitmap_bh->b_data) ||
+-			!(inode = iget(sb, ino)) || is_bad_inode(inode) ||
+-			NEXT_ORPHAN(inode) > max_ino) {
++	if (!ext4_test_bit(bit, bitmap_bh->b_data))
++		goto bad_orphan_inode;
++	inode = iget_locked(sb, ino);
++	if (!inode)
++		goto bad_orphan_inode;
++	if (inode->i_state & I_NEW) {
++		sb->s_op->read_inode(inode);
++		unlock_new_inode(inode);
++	}
++	if (is_bad_inode(inode) || NEXT_ORPHAN(inode) > max_ino) {
++	bad_orphan_inode:
+ 		ext4_warning(sb, __FUNCTION__,
+ 			     "bad orphan inode %lu!  e2fsck was run?", ino);
+ 		printk(KERN_NOTICE "ext4_test_bit(bit=%d, block=%llu) = %d\n",
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index 67b6d8a..57dd8fb 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1041,11 +1041,16 @@ static struct dentry *ext4_lookup(struct inode * dir, struct dentry *dentry, str
+ 				   "bad inode number: %lu", ino);
+ 			inode = NULL;
+ 		} else
+-			inode = iget(dir->i_sb, ino);
++			inode = iget_locked(dir->i_sb, ino);
+ 
+ 		if (!inode)
+ 			return ERR_PTR(-EACCES);
+ 
++		if (inode->i_state & I_NEW) {
++			inode->i_sb->s_op->read_inode(inode);
++			unlock_new_inode(inode);
++		}
++
+ 		if (is_bad_inode(inode)) {
+ 			iput(inode);
+ 			return ERR_PTR(-ENOENT);
+@@ -1080,11 +1085,16 @@ struct dentry *ext4_get_parent(struct dentry *child)
+ 			   "bad inode number: %lu", ino);
+ 		inode = NULL;
+ 	} else
+-		inode = iget(child->d_inode->i_sb, ino);
++		inode = iget_locked(child->d_inode->i_sb, ino);
+ 
+ 	if (!inode)
+ 		return ERR_PTR(-EACCES);
+ 
++	if (inode->i_state & I_NEW) {
++		inode->i_sb->s_op->read_inode(inode);
++		unlock_new_inode(inode);
++	}
++
+ 	if (is_bad_inode(inode)) {
+ 		iput(inode);
+ 		return ERR_PTR(-ENOENT);
+diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
+index 4fbba60..ebdca31 100644
+--- a/fs/ext4/resize.c
++++ b/fs/ext4/resize.c
+@@ -779,7 +779,11 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+ 				     "No reserved GDT blocks, can't resize");
+ 			return -EPERM;
+ 		}
+-		inode = iget(sb, EXT4_RESIZE_INO);
++		inode = iget_locked(sb, EXT4_RESIZE_INO);
++		if (inode && (inode->i_state & I_NEW)) {
++			sb->s_op->read_inode(inode);
++			unlock_new_inode(inode);
++		}
+ 		if (!inode || is_bad_inode(inode)) {
+ 			ext4_warning(sb, __FUNCTION__,
+ 				     "Error opening resize inode");
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 055a0cd..1ef0359 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -777,9 +777,13 @@ static struct inode *ext4_nfs_get_inode(struct super_block *sb,
+ 	 * Currently we don't know the generation for parent directory, so
+ 	 * a generation of 0 means "accept any"
+ 	 */
+-	inode = iget(sb, ino);
++	inode = iget_locked(sb, ino);
+ 	if (inode == NULL)
+ 		return ERR_PTR(-ENOMEM);
++	if (inode->i_state & I_NEW) {
++		sb->s_op->read_inode(inode);
++		unlock_new_inode(inode);
++	}
+ 	if (is_bad_inode(inode) ||
+ 	    (generation && inode->i_generation != generation)) {
+ 		iput(inode);
+@@ -2243,7 +2247,15 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 	 * so we can safely mount the rest of the filesystem now.
+ 	 */
+ 
+-	root = iget(sb, EXT4_ROOT_INO);
++	root = iget_locked(sb, EXT4_ROOT_INO);
++	if (!root) {
++		printk(KERN_ERR "EXT4-fs: iget_locked for root inode failed\n");
++		goto failed_mount4;
++	}
++	if (root->i_state & I_NEW) {
++		sb->s_op->read_inode(root);
++		unlock_new_inode(root);
++	}
+ 	sb->s_root = d_alloc_root(root);
+ 	if (!sb->s_root) {
+ 		printk(KERN_ERR "EXT4-fs: get root inode failed\n");
+@@ -2372,11 +2384,15 @@ static journal_t *ext4_get_journal(struct super_block *sb,
+ 	 * things happen if we iget() an unused inode, as the subsequent
+ 	 * iput() will try to delete it. */
+ 
+-	journal_inode = iget(sb, journal_inum);
++	journal_inode = iget_locked(sb, journal_inum);
+ 	if (!journal_inode) {
+-		printk(KERN_ERR "EXT4-fs: no journal found.\n");
++		printk(KERN_ERR "EXT4-fs: iget_locked for journal inode failed.\n");
+ 		return NULL;
+ 	}
++	if (journal_inode->i_state & I_NEW) {
++		sb->s_op->read_inode(journal_inode);
++		unlock_new_inode(journal_inode);
++	}
+ 	if (!journal_inode->i_nlink) {
+ 		make_bad_inode(journal_inode);
+ 		iput(journal_inode);
