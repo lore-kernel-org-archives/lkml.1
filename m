@@ -1,66 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbYBBJcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbYBBJhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbYBBJcV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 04:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbYBBJcL
+	id S932803AbYBBJhf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 04:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbYBBJhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 04:32:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53975 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbYBBJcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 04:32:06 -0500
-Date: Sat, 2 Feb 2008 10:31:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>,
-       Zach Amsden <zach@vmware.com>
-Subject: Re: [PATCH 3 of 5] x86/pgtable.h: demacro ptep_set_access_flags
-Message-ID: <20080202093149.GD12044@elte.hu>
-References: <patchbomb.1201908323@localhost> <cfac9c32b71b989fe256.1201908326@localhost>
+	Sat, 2 Feb 2008 04:37:20 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33245 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758259AbYBBJhR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 04:37:17 -0500
+Date: Sat, 02 Feb 2008 18:37:08 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't works on memoryless node.
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com
+In-Reply-To: <20080202090914.GA27723@one.firstfloor.org>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080202090914.GA27723@one.firstfloor.org>
+Message-Id: <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfac9c32b71b989fe256.1201908326@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andi,
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > 3. 2.6.24-rc8-mm1 set_mempolicy(2) behavior
+> >    3.1 check nodesubset(nodemask argument, node_states[N_HIGH_MEMORY])
+> >        in mpol_check_policy()
+> > 
+> > 	-> check failed when memmoryless node exist.
+> >            (i.e. node_states[N_HIGH_MEMORY] of my machine is 0xc)
+> > 
+> > 4. RHEL5.1 set_mempolicy(2) behavior
+> >    4.1 check nodesubset(nodemask argument, node_online_map)
+> >        in mpol_check_policy().
+> > 
+> > 	-> check success.
+> > 
+> > I don't know wrong either kernel or libnuma.
+> 
+> When the kernel behaviour changes and breaks user space then the kernel
+> is usually wrong. Cc'ed Lee S. who maintains the kernel code now.
 
-> +static inline int ptep_set_access_flags(struct vm_area_struct *vma,
-> +					unsigned long address, pte_t *ptep,
-> +					pte_t entry, int dirty)
-> +{
-> +	int changed = !pte_same(*ptep, entry);
-> +	if (changed && dirty) {
-> +		*ptep = entry;
-> +		pte_update_defer(vma->vm_mm, address, ptep);
-> +		flush_tlb_page(vma, address);
-> +	}
-> +	return changed;
-> +}
+may be yes, may be no.
 
-another thing: these inlines are a bit fat and they are used in more 
-than one place. Please move them into pgtable.c. The rule of thumb is: 
-if an inline is more than 2 lines big, it is a likely candidate for 
-uninlining. (and even many 2-liners, and even some 1-liners are 
-candidates) Especially under paravirt the MMU inlines grow these update 
-notifiers so they become even fatter.
+I have 1 simple question. 
+Why do libnuma generate bitpattern of all bit on instead
+check /sys/devices/system/node/has_high_memory nor 
+check /sys/devices/system/node/online?
 
-having functions instead of inlines also simplifies the type 
-dependencies by quite a degree.
+Do you know it?
 
-	Ingo
+and I made simple patch that has_high_memory exposed however CONFIG_HIGHMEM disabled.
+if CONFIG_HIGHMEM disabled, the has_high_memory file show 
+the same as the has_normal_memory.
+
+may be, userland process should check has_high_memory file.
+
+but, I am not confident.
+Thanks.
+
+
+- kosaki
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ drivers/base/node.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: b/drivers/base/node.c
+===================================================================
+--- a/drivers/base/node.c       2008-02-02 17:52:32.000000000 +0900
++++ b/drivers/base/node.c       2008-02-02 18:32:38.000000000 +0900
+@@ -276,7 +276,6 @@ static SYSDEV_CLASS_ATTR(has_normal_memo
+                                                                        NULL);
+ static SYSDEV_CLASS_ATTR(has_cpu, 0444, print_nodes_has_cpu, NULL);
+
+-#ifdef CONFIG_HIGHMEM
+ static ssize_t print_nodes_has_high_memory(struct sysdev_class *class,
+                                                 char *buf)
+ {
+@@ -285,15 +284,11 @@ static ssize_t print_nodes_has_high_memo
+
+ static SYSDEV_CLASS_ATTR(has_high_memory, 0444, print_nodes_has_high_memory,
+                                                                         NULL);
+-#endif
+-
+ struct sysdev_class_attribute *node_state_attr[] = {
+        &attr_possible,
+        &attr_online,
+        &attr_has_normal_memory,
+-#ifdef CONFIG_HIGHMEM
+        &attr_has_high_memory,
+-#endif
+        &attr_has_cpu,
+ };
+
+@@ -302,7 +297,7 @@ static int node_states_init(void)
+        int i;
+        int err = 0;
+
+-       for (i = 0;  i < NR_NODE_STATES; i++) {
++       for (i = 0;  i < ARRAY_SIZE(node_state_attr); i++) {
+                int ret;
+                ret = sysdev_class_create_file(&node_class, node_state_attr[i]);
+                if (!err)
+
