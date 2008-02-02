@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764842AbYBBGUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYBBG1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764842AbYBBGUq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 01:20:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbYBBGUH
+	id S1760168AbYBBG1r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 01:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbYBBG1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 01:20:07 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:35205 "EHLO mail.dvmed.net"
+	Sat, 2 Feb 2008 01:27:39 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46047 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756570AbYBBGUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 01:20:05 -0500
-Message-ID: <47A40B8C.6080303@garzik.org>
-Date: Sat, 02 Feb 2008 01:19:56 -0500
+	id S1755725AbYBBG1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 01:27:38 -0500
+Message-ID: <47A40D54.70509@garzik.org>
+Date: Sat, 02 Feb 2008 01:27:32 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "Cai, Crane" <Crane.Cai@amd.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
        Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] PCI subsystem: AMD SATA IDE mode quirk
-References: <206C6845C72CAE439DC3D9D413C571A487B327@ssuzexmb3.amd.com>
-In-Reply-To: <206C6845C72CAE439DC3D9D413C571A487B327@ssuzexmb3.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: PCI: Remove users of pci_enable_device_bars()
+References: <200802020506.m1256FVn024064@hera.kernel.org>
+In-Reply-To: <200802020506.m1256FVn024064@hera.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
@@ -30,61 +31,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cai, Crane wrote:
-> From: Crane Cai <crane.cai@amd.com>
-> 
-> PCI: modify SATA IDE mode quirk
-> When initialize and resume, SB600/700/800 need to set SATA mode
-> correctly.
-> 
-> Signed-off-by: Crane Cai <crane.cai@amd.com>
-> --------------------------------------------
-> --- a/drivers/pci/quirks.c	2007-09-24 14:16:32.000000000 -0400
-> +++ b/drivers/pci/quirks.c	2008-02-02 11:23:47.000000000 -0500
-> @@ -859,12 +859,13 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_IN
->  DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_INTEL,
-> PCI_DEVICE_ID_INTEL_82454NX,	quirk_disable_pxb );
+Linux Kernel Mailing List wrote:
+> Commit:     0948391641918b95d8d96c15089eb5ac156850b3
+
+>     PCI: Remove users of pci_enable_device_bars()
+>     
+>     This patch converts users of pci_enable_device_bars() to the new
+>     pci_enable_device_{io,mem} interface.
+>     
+>     The new API fits nicely, except maybe for the QLA case where a bit of
+>     code re-organization might be a good idea but I prefer sticking to the
+>     simple patch as I don't have hardware to test on.
+>     
+>     I'll also need some feedback on the cs5520 change.
+>     
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+> --- a/drivers/ata/pata_cs5520.c
+> +++ b/drivers/ata/pata_cs5520.c
+> @@ -229,7 +229,7 @@ static int __devinit cs5520_init_one(struct pci_dev *pdev, const struct pci_devi
+>  		return -ENOMEM;
 >  
->  
-> -static void __devinit quirk_sb600_sata(struct pci_dev *pdev)
-> +static void __devinit quirk_amd_ide_mode(struct pci_dev *pdev)
->  {
-> -	/* set sb600 sata to ahci mode */
-> -	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE) {
-> -		u8 tmp;
-> +	/* set sb600/sb700/sb800 sata to ahci mode */
-> +	u8 tmp;
->  
-> +	pci_read_config_byte(pdev, PCI_CLASS_DEVICE, &tmp);
-> +	if (tmp == 0x01) {
->  		pci_read_config_byte(pdev, 0x40, &tmp);
->  		pci_write_config_byte(pdev, 0x40, tmp|1);
->  		pci_write_config_byte(pdev, 0x9, 1);
-> @@ -872,10 +873,13 @@ static void __devinit quirk_sb600_sata(s
->  		pci_write_config_byte(pdev, 0x40, tmp);
->  
->  		pdev->class = PCI_CLASS_STORAGE_SATA_AHCI;
-> +		printk(KERN_INFO "PCI: set SATA to AHCI mode\n");
+>  	/* Perform set up for DMA */
+> -	if (pci_enable_device_bars(pdev, 1<<2)) {
+> +	if (pci_enable_device_io(pdev)) {
+>  		printk(KERN_ERR DRV_NAME ": unable to configure BAR2.\n");
+>  		return -ENODEV;
 >  	}
->  }
-> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
-> PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_sb600_sata);
-> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
-> PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_sb600_sata);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
-> PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_amd_ide_mode);
-> +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_ATI,
-> PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_amd_ide_mode);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI,
-> PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_amd_ide_mode);
-> +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_ATI,
-> PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_amd_ide_mode);
+> diff --git a/drivers/ide/pci/cs5520.c b/drivers/ide/pci/cs5520.c
+> index 6ec00b8..10adc49 100644
+> --- a/drivers/ide/pci/cs5520.c
+> +++ b/drivers/ide/pci/cs5520.c
+> @@ -156,8 +156,14 @@ static int __devinit cs5520_init_one(struct pci_dev *dev, const struct pci_devic
+>  	ide_setup_pci_noise(dev, d);
+>  
+>  	/* We must not grab the entire device, it has 'ISA' space in its
+> -	   BARS too and we will freak out other bits of the kernel */
+> -	if (pci_enable_device_bars(dev, 1<<2)) {
+> +	 * BARS too and we will freak out other bits of the kernel
+> +	 *
+> +	 * pci_enable_device_bars() is going away. I replaced it with
+> +	 * IO only enable for now but I'll need confirmation this is
+> +	 * allright for that device. If not, it will need some kind of
+> +	 * quirk. --BenH.
+> +	 */
+> +	if (pci_enable_device_io(dev)) {
+>  		printk(KERN_WARNING "%s: Unable to enable 55x0.\n", d->name);
+>  		return -ENODEV;
+>  	}
 
-ACK
-
-In the future, please also CC linux-ide@vger.kernel.org, as that's where 
-the ATA folks hang out :)
+So...  did the feedback mentioned in the commit log ever appear?  :)
 
 	Jeff
+
 
 
