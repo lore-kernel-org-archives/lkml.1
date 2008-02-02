@@ -1,96 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933912AbYBBXAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934271AbYBBXAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933912AbYBBXAK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 18:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763705AbYBBW7k
+	id S934271AbYBBXAm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 18:00:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765187AbYBBW7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 17:59:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:13166 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758984AbYBBW7j (ORCPT
+	Sat, 2 Feb 2008 17:59:46 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:13414 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764704AbYBBW7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 17:59:39 -0500
+	Sat, 2 Feb 2008 17:59:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=N3qpG94NRxSnH9pWzMPqYpu5GRzFIsWESeT7ieyfUNWTPTnWDJh7wuhTnnT6JYI1R/EDkUqmSww/oOQFCAMI2hiUsDMJa0HoaR0oOQDJcO5/ZRa27smAXMwSPfDTSeroHeTSontLq5FaYUxTicnG1419i1aKj3ZQyHtsdcKgqng=
-Subject: latencytop: optimize LT_BACKTRACEDEPTH loops a bit
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dmitry.adamushko@gmail.com
-Content-Type: text/plain
-Date: Sat, 02 Feb 2008 23:59:31 +0100
-Message-Id: <1201993171.12880.8.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bcKKMC+JPvtT41Xly0GFpQILcAGMLFg5cTd1pUTwvUkey//mTpVZP/hrOKx/2fTF3HmwIW9xfCir9Ep6w0EqiWpu3654w+UeUL16slQ6iInMVSQgD2QK0Ch3PEImNIEewkrC/JjO5VWi1ntEqXqA8Mj6/4z9WXQWNzEf2Na2Tco=
+Date: Sun, 3 Feb 2008 01:59:39 +0300
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/5] Clocklib debugfs support
+Message-ID: <20080202225939.GA16770@doriath.ww600.siemens.net>
+References: <20080202225433.GA14685@doriath.ww600.siemens.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080202225433.GA14685@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: latencytop: optimize LT_BACKTRACEDEPTH loops a bit.
+Provide /sys/kernel/debug/clock to ease debugging.
 
-It looks like there is no need to loop any longer when 'same == 0'.
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+---
+ include/linux/clklib.h |    5 +++
+ kernel/clklib.c        |   68 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 0 deletions(-)
 
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
-
-diff --git a/kernel/latencytop.c b/kernel/latencytop.c
-index b4e3c85..61f7da0 100644
---- a/kernel/latencytop.c
-+++ b/kernel/latencytop.c
-@@ -64,8 +64,8 @@ account_global_scheduler_latency(struct task_struct *tsk, struct latency_record
- 		return;
+diff --git a/include/linux/clklib.h b/include/linux/clklib.h
+index 4bd9b4a..f916693 100644
+--- a/include/linux/clklib.h
++++ b/include/linux/clklib.h
+@@ -28,6 +28,11 @@ struct clk {
+ 	int (*setrate)	(struct clk *, unsigned long);
+ 	long (*roundrate) (struct clk *, unsigned long);
  
- 	for (i = 0; i < MAXLR; i++) {
--		int q;
--		int same = 1;
-+		int q, same = 1;
++	/*
++	 * format any additional info
++	 */
++	int (*format)	(struct clk *, struct seq_file *);
 +
- 		/* Nothing stored: */
- 		if (!latency_record[i].backtrace[0]) {
- 			if (firstnonnull > i)
-@@ -73,12 +73,12 @@ account_global_scheduler_latency(struct task_struct *tsk, struct latency_record
- 			continue;
- 		}
- 		for (q = 0 ; q < LT_BACKTRACEDEPTH ; q++) {
--			if (latency_record[i].backtrace[q] !=
--				lat->backtrace[q])
-+			unsigned long record = lat->backtrace[q];
+ 	void		*priv;
+ };
+ 
+diff --git a/kernel/clklib.c b/kernel/clklib.c
+index 203af3d..b782220 100644
+--- a/kernel/clklib.c
++++ b/kernel/clklib.c
+@@ -293,3 +293,71 @@ out:
+ 	return rc;
+ }
+ EXPORT_SYMBOL(clk_alloc_function);
 +
-+			if (latency_record[i].backtrace[q] != record)
- 				same = 0;
--			if (same && lat->backtrace[q] == 0)
--				break;
--			if (same && lat->backtrace[q] == ULONG_MAX)
++#ifdef CONFIG_DEBUG_FS
 +
-+			if (!same || record == 0 || record == ULONG_MAX)
- 				break;
- 		}
- 		if (same) {
-@@ -143,14 +143,15 @@ account_scheduler_latency(struct task_struct *tsk, int usecs, int inter)
- 	for (i = 0; i < LT_SAVECOUNT ; i++) {
- 		struct latency_record *mylat;
- 		int same = 1;
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++static void dump_clocks(struct seq_file *s, struct clk *parent, int nest)
++{
++	struct clk *clk;
++	int i;
 +
- 		mylat = &tsk->latency_record[i];
- 		for (q = 0 ; q < LT_BACKTRACEDEPTH ; q++) {
--			if (mylat->backtrace[q] !=
--				lat.backtrace[q])
-+			unsigned long record = lat.backtrace[q];
++	list_for_each_entry(clk, &clocks, node) {
++		if (clk->parent == parent) {
++			for (i = 0; i < nest; i++)
++				seq_putc(s, ' ');
++			seq_puts(s, clk->name);
 +
-+			if (mylat->backtrace[q] != record)
- 				same = 0;
--			if (same && lat.backtrace[q] == 0)
--				break;
--			if (same && lat.backtrace[q] == ULONG_MAX)
++			i = nest + strlen(clk->name);
++			if (i >= 16)
++				i = 15;
++			for (; i < 16; i++)
++				seq_putc(s, ' ');
++			seq_printf(s, "%c use=%d rate=%lu KHz",
++				clk->set_parent ? '*' : ' ',
++				clk->users,
++				__clk_get_rate(clk));
++			if (clk->format)
++				clk->format(clk, s);
++			seq_putc(s, '\n');
 +
-+			if (!same || record == 0 || record == ULONG_MAX)
- 				break;
- 		}
- 		if (same) {
++			dump_clocks(s, clk, nest + 1);
++		}
++	}
++}
++
++static int clocklib_show(struct seq_file *s, void *unused)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&clocks_lock, flags);
++
++	dump_clocks(s, NULL, 0);
++
++	spin_unlock_irqrestore(&clocks_lock, flags);
++
++	return 0;
++}
++
++static int clocklib_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, clocklib_show, NULL);
++}
++
++static struct file_operations clocklib_operations = {
++	.open		= clocklib_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int __init clocklib_debugfs_init(void)
++{
++	debugfs_create_file("clock", S_IFREG | S_IRUGO,
++				NULL, NULL, &clocklib_operations);
++	return 0;
++}
++subsys_initcall(clocklib_debugfs_init);
++
++#endif /* DEBUG_FS */
+-- 
+1.5.3.8
 
+
+-- 
+With best wishes
+Dmitry
 
