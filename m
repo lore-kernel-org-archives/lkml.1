@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYBBNYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761441AbYBBNdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbYBBNYj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 08:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYBBNYa
+	id S1761441AbYBBNdD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 08:33:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbYBBNcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 08:24:30 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:41800 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752692AbYBBNY3 (ORCPT
+	Sat, 2 Feb 2008 08:32:53 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:22028 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752692AbYBBNcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 08:24:29 -0500
-Subject: ACPI problem on PowerPC
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 02 Feb 2008 14:24:44 +0100
-Message-Id: <1201958684.15090.42.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 2 Feb 2008 08:32:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=LkcKyO22LdMfaxlvsBucPKd9bMoWadPMVSWDkhxhTKW8Zg9dah6h7XKGqHSfAa4lSOhszZ36/KfZ+4ivto/LRxhcu6U9l0v5jBj794wwDYydTU1JlaNDK3r1ss1gwKYcbaMoetydmxFaa/oI91Ahs5cIg5rims1swd7WzKC7ll4=
+Message-ID: <47A470F9.9060708@gmail.com>
+Date: Sat, 02 Feb 2008 14:32:41 +0100
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] Split list.h and move rcu-protected lists into rculist.h
+References: <478FBEA0.9090203@gmail.com>	<478FBEEA.6040000@gmail.com> <20080201155826.a2d308c1.akpm@linux-foundation.org>
+In-Reply-To: <20080201155826.a2d308c1.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Andrew Morton wrote:
+> On Thu, 17 Jan 2008 21:47:38 +0100
+> Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
+> 
+>> This patch moves rcu-protected lists from list.h into a new header
+>> file rculist.h.
+> 
+> I'm getting way too many compilation errors from this, perhaps because of
+> new rcu-list usages which weren't present in the old tree (ie: current
+> Linus mainline) which you tested it against.
+> 
 
-the following happens with the latest ACPI and PCI merges on my Quad G5:
+Not really suprising, sorry for the mess.
 
-  CC      drivers/pci/pcie/aspm.o
-In file included from include/acpi/platform/acenv.h:140,
-                 from include/acpi/acpi.h:54,
-                 from include/acpi/acpi_bus.h:31,
-                 from drivers/pci/pcie/aspm.c:20:
-include/acpi/platform/aclinux.h:59:22: error: asm/acpi.h: No such file or directory
-In file included from include/acpi/platform/aclinux.h:120,
-                 from include/acpi/platform/acenv.h:140,
-                 from include/acpi/acpi.h:54,
-                 from include/acpi/acpi_bus.h:31,
-                 from drivers/pci/pcie/aspm.c:20:
-include/acpi/actypes.h:130: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘UINT64’
-include/acpi/actypes.h:131: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘INT64’
-include/acpi/actypes.h:753: error: expected ‘)’ before ‘*’ token
-include/acpi/actypes.h:756: error: expected ‘)’ before ‘*’ token
-In file included from include/acpi/acpi.h:61,
-                 from include/acpi/acpi_bus.h:31,
-                 from drivers/pci/pcie/aspm.c:20:
-include/acpi/acpiosxf.h:178: error: expected declaration specifiers or ‘...’ before ‘acpi_osd_handler’
-include/acpi/acpiosxf.h:182: error: expected declaration specifiers or ‘...’ before ‘acpi_osd_handler’
-include/acpi/acpiosxf.h:191: error: expected declaration specifiers or ‘...’ before ‘acpi_osd_exec_callback’
-make[3]: *** [drivers/pci/pcie/aspm.o] Error 1
-make[2]: *** [drivers/pci/pcie] Error 2
-make[1]: *** [drivers/pci] Error 2
-make: *** [drivers] Error 2
+> The most practical way to prepare a patch like this is to either make it
+> back-compatible (for a while at least) or to prepare and carefully test it
+> against latest -mm.  That way you'll pick up everyone's new code.
+> 
 
-The Quad G5 has PCI Express, but I am not sure about the ASPM support.
-Obviously I enabled CONFIG_PCIEASPM.
+I'll try to come up with something better: if rculist helpers are used from
+list.h then issue a warning otherwise every thing is fine since the helpers
+are imported from rculist.h.
 
-Regards
+Do you think it's better ?
 
-Marcel
+In the meanwhile, could you drop the patches related to rculist from mm
+tree ?
 
-
+Thanks
+		Franck
