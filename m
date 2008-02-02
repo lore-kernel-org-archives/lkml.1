@@ -1,222 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935051AbYBBUpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935257AbYBBUpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935051AbYBBUpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934086AbYBBUov
+	id S935257AbYBBUpt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:45:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935205AbYBBUp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:44:51 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:54831 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761808AbYBBUot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:44:49 -0500
-Message-Id: <20080202204348.305980932@polymtl.ca>
-References: <20080202204218.188248631@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Sat, 02 Feb 2008 15:42:19 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 1/2] x86 - Enhance DEBUG_RODATA support - alternatives
-Content-Disposition: inline; filename=x86-enhance-debug-rodata-support-alternatives.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat,  2 Feb 2008 20:43:49 +0000
+	Sat, 2 Feb 2008 15:45:29 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40504 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935192AbYBBUp0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:45:26 -0500
+Date: Sat, 2 Feb 2008 20:45:13 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mhalcrow@us.ibm.com
+Subject: Re: [UNIONFS] 00/29 Unionfs and related patches pre-merge review (v2)
+Message-ID: <20080202204513.GO27894@ZenIV.linux.org.uk>
+References: <20080126084532.GG27894@ZenIV.linux.org.uk> <200802021845.m12IjF8o014001@agora.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802021845.m12IjF8o014001@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a memcpy that should be a text_poke (in apply_alternatives).
+On Sat, Feb 02, 2008 at 01:45:15PM -0500, Erez Zadok wrote:
+> > You are thinking about non-interesting case.  _Files_ are not much
+> > of a problem.  Directory tree is.  The real problems with all unionfs and
+> > stacking implementations I've seen so far, all way back to Heidemann et.al.
+> > start when topology of the underlying layer changes.
+> 
+> OK, so if I understand you, your concerns center around the fact that lower
+> directories can be moved around (i.e., topology changes), what happens then
+> for operations that go through the stackable f/s, and what should users
+> expect to see.
 
-Use kernel_wp_save/kernel_wp_restore in text_poke to support DEBUG_RODATA
-correctly and so the CPU HOTPLUG special case can be removed.
+Correct.
+ 
+> > If you have clear
+> > semantics for unionfs behaviour in presence of such things, by all means,
+> > publish it - as far as I know *nobody* had done that; not even on the
+> > "what should we see when..." level, nevermind the implementation.
+> 
+> Since stacking and NFS have some similarities, I first checked w/ the NFS
+> people to see what are their semantics in a similar scenario: an NFS client
+> could be validating a directory, then issue, say, a ->create; but in
+> between, the server could have moved the directory that was validated.  In
+> NFS, the ->create operation succeeds, and creates the file in the new
+> location of the directory which was validated.
+>
+> Unionfs's behavior is similar: the newly created file will be successfully
+> created in the moved directory.  The only exception is that if a lower
+> branch is marked readonly by unionfs, a copyup will take place.
 
-Add text_poke_early, for alternatives and paravirt boot-time and module load
-time patching.
+Er...  For unionfs it's a much more monumental problem.  Look - you have
+a mapping between the directory trees of layers; everything else is
+defined in terms of that mapping ("this files shadows that file", etc.).
 
-Notes:
-- A macro is used instead of an inline function to deal with circular header
-  include otherwise necessary for read_cr0 and preempt_disable/enable.
+If you allow a mix of old and new mappings, you can easily run into the
+situations when at some moment X1 covers Y1, X2 covers Y2, X2 is a descendent
+of X1 and Y1 is a descendent of Y2.  You *really* don't want to go there -
+if nothing else, defining behaviour of copyup in face of that insanity
+will be very painful.
 
-Changelog:
+What's more, and what makes NFS a bad model, NFS client doesn't lock
+directories of NFS server.  unionfs *does* locking of directories in
+underlying layers, which means that you have an entirely new set of
+constraints - you can deadlock easily.  As the matter of fact, your
+current code suffers from that problem - it violates the locking rules
+in operations on covered layers.
+ 
+> This had not been a problem for unionfs users to date.  The main reason is
+> that when unionfs users modify lower files, they often do so while there's
+> little to no activity going through the union itself.  And while it doesn't
+> prevent directories from being moved around, this common usage mode does
+> reduce the frequency in which topology changes can be an issue for unionfs
+> users.
 
-- Fix text_set and text_poke alignment check (mixed up bitwise and and or)
-- Remove text_set
-- Export add_nops, so it can be used by others.
-- Remove x86 test for "wp_works_ok", it will just be ignored by the architecture
-  if not supported.
-- Document text_poke_early.
-- Remove clflush, since it breaks some VIA architectures and is not strictly
-  necessary.
-- Add kerneldoc to text_poke and text_poke_early.
-- Remove arg cr0 from kernel_wp_save/restore. Change the macro name for
-  kernel_wp_disable/enable.
+Ugh...  "Currently unionfs users tend to use it ways that do not trigger
+fs corruption" is nice, but doesn't really address the "current unionfs
+implementation contains races leadint to fs corruption"...
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/alternative.c |   53 ++++++++++++++++++++++++++++++++++--------
- include/asm-x86/alternative.h |   36 +++++++++++++++++++++++++++-
- 2 files changed, 79 insertions(+), 10 deletions(-)
+> > around, changing parents, etc.  Cross-directory rename() certainly rates
+> > very high on the list of "WTF had they been smoking in UCB?" misfeatures,
+> > but it's there and it has to be dealt with.
+> 
+> Well, it was UCB, UCLA, and Sun.  I don't think back in the early 90s they
+> were too concerned about topology changes; f/s stacking was a new idea and
+> they wanted to explore what can be done with it conceptually, not produce
+> commercial-grade software (still, remind me to tell you the first-hand story
+> I've learned about of how full-blown stacking _almost_ made it into Solaris
+> 2.0 :-)
+ 
+> The only known reference to try and address this coherency problem was
+> Heidemann's SOSP'95 paper titled "Performance of cache coherence in
+> stackable filing."  The paper advocated changing the whole VFS and the
+> caches (page cache + dnlc) to create a "unified cache manager" that was
+> aware of complex layering topologies (including fan-out and fan-in).  It was
+> even able to handle compression layers, where file data offsets change b/t
+> the layers (a nasty problem).  Code for this unified cache manager was never
+> released AFAIK.  I think Heidemann's approach was elegant, but I don't think
+> it was practical as it required radical VFS/VM surgery.  Ironically, MS
+> Windows has a single I/O cache manager that all storage and filesystem
+> modules talk to directly (they're not allowed to pass IRPs directly b/t
+> layers): so Windows can handle such coherency better than most Unix systems
+> can today.
+ 
+Different problem.  IIRC, that paper implicitly assumed that mapping between
+vnodes in different layers would _not_ be subject to massive surgeries from
+operations involved.
 
-Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-02-02 14:06:43.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-02-02 14:07:29.000000000 -0500
-@@ -173,7 +173,7 @@ static const unsigned char*const * find_
- #endif /* CONFIG_X86_64 */
- 
- /* Use this to add nops to a buffer, then text_poke the whole buffer. */
--static void add_nops(void *insns, unsigned int len)
-+void add_nops(void *insns, unsigned int len)
- {
- 	const unsigned char *const *noptable = find_nop_table();
- 
-@@ -186,6 +186,7 @@ static void add_nops(void *insns, unsign
- 		len -= noplen;
- 	}
- }
-+EXPORT_SYMBOL_GPL(add_nops);
- 
- extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
- extern u8 *__smp_locks[], *__smp_locks_end[];
-@@ -219,7 +220,7 @@ void apply_alternatives(struct alt_instr
- 		memcpy(insnbuf, a->replacement, a->replacementlen);
- 		add_nops(insnbuf + a->replacementlen,
- 			 a->instrlen - a->replacementlen);
--		text_poke(instr, insnbuf, a->instrlen);
-+		text_poke_early(instr, insnbuf, a->instrlen);
- 	}
- }
- 
-@@ -407,7 +408,7 @@ void apply_paravirt(struct paravirt_patc
- 
- 		/* Pad the rest with nops */
- 		add_nops(insnbuf + used, p->len - used);
--		text_poke(p->instr, insnbuf, p->len);
-+		text_poke_early(p->instr, insnbuf, p->len);
- 	}
- }
- extern struct paravirt_patch_site __start_parainstructions[],
-@@ -471,18 +472,52 @@ void __init alternative_instructions(voi
- #endif
- }
- 
--/*
-- * Warning:
-+/**
-+ * text_poke_early - Update instructions on a live kernel at boot time
-+ * @addr: address to modify
-+ * @opcode: source of the copy
-+ * @len: length to copy
-+ *
-  * When you use this code to patch more than one byte of an instruction
-  * you need to make sure that other CPUs cannot execute this code in parallel.
-- * Also no thread must be currently preempted in the middle of these instructions.
-- * And on the local CPU you need to be protected again NMI or MCE handlers
-- * seeing an inconsistent instruction while you patch.
-+ * Also no thread must be currently preempted in the middle of these
-+ * instructions.  And on the local CPU you need to be protected again NMI or MCE
-+ * handlers seeing an inconsistent instruction while you patch.
-+ * Warning: read_cr0 is modified by paravirt, this is why we have _early
-+ * versions. They are not in the __init section because they can be used at
-+ * module load time.
-  */
--void __kprobes text_poke(void *addr, unsigned char *opcode, int len)
-+void *text_poke_early(void *addr, const void *opcode, size_t len)
- {
- 	memcpy(addr, opcode, len);
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-+	return addr;
- }
-+
-+/**
-+ * text_poke - Update instructions on a live kernel
-+ * @addr: address to modify
-+ * @opcode: source of the copy
-+ * @len: length to copy
-+ *
-+ * Only atomic text poke/set should be allowed when not doing early patching.
-+ * It means the size must be writable atomically and the address must be aligned
-+ * in a way that permits an atomic write.
-+ */
-+void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
-+{
-+	BUG_ON(len > sizeof(long));
-+	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
-+		- ((long)addr & ~(sizeof(long) - 1)));
-+	kernel_wp_disable();
-+	memcpy(addr, opcode, len);
-+	kernel_wp_enable();
-+	sync_core();
-+	/* Could also do a CLFLUSH here to speed up CPU recovery; but
-+	   that causes hangs on some VIA CPUs. */
-+	return addr;
-+}
-+
-+
-Index: linux-2.6-lttng/include/asm-x86/alternative.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/alternative.h	2008-02-02 14:06:43.000000000 -0500
-+++ linux-2.6-lttng/include/asm-x86/alternative.h	2008-02-02 14:07:29.000000000 -0500
-@@ -4,6 +4,7 @@
- #include <linux/types.h>
- #include <linux/stddef.h>
- #include <asm/asm.h>
-+#include <asm/processor-flags.h>
- 
- /*
-  * Alternative inline assembly for SMP.
-@@ -156,6 +157,39 @@ apply_paravirt(struct paravirt_patch_sit
- #define __parainstructions_end	NULL
- #endif
- 
--extern void text_poke(void *addr, unsigned char *opcode, int len);
-+extern void add_nops(void *insns, unsigned int len);
-+
-+/*
-+ * Clear and restore the kernel write-protection flag on the local CPU.
-+ * Allows the kernel to edit read-only pages.
-+ * Side-effect: any interrupt handler running between save and restore will have
-+ * the ability to write to read-only pages.
-+ *
-+ * Warning:
-+ * Code patching in the UP case is safe if NMIs and MCE handlers are stopped and
-+ * no thread can be preempted in the instructions being modified (no iret to an
-+ * invalid instruction possible) or if the instructions are changed from a
-+ * consistent state to another consistent state atomically.
-+ * More care must be taken when modifying code in the SMP case because of
-+ * Intel's errata.
-+ * On the local CPU you need to be protected again NMI or MCE handlers seeing an
-+ * inconsistent instruction while you patch.
-+ * The _early version does not use read_cr0(), which can be paravirtualized.
-+ */
-+
-+extern void *text_poke(void *addr, const void *opcode, size_t len);
-+extern void *text_poke_early(void *addr, const void *opcode, size_t len);
-+
-+#define kernel_wp_disable()			\
-+do {						\
-+	preempt_disable();			\
-+	write_cr0(read_cr0() & ~X86_CR0_WP);	\
-+} while (0)
-+
-+#define kernel_wp_enable()			\
-+do {						\
-+	write_cr0(read_cr0() | X86_CR0_WP);	\
-+	preempt_enable();			\
-+} while (0)
- 
- #endif /* _ASM_X86_ALTERNATIVE_H */
+> However, for this "view" idea to work, I'll need a way to lock-out or hide
+> the lower directories from the namespace, so no one can access them in r-w
+> mode any longer (if at all).  Moreover, even if such a method was available,
+> one would have to decide what to do with any open files on the lower branch
+> (killing such processes or closing the descriptors seems somewhat harsh --
+> maybe there'd be a way to "promote" them up the stack?)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Keep in mind that the same directory can be seen elsewhere in the same
+namespace (let alone the different ones).  The same fs can be seen in
+any number of places...
+ 
+> > BTW, and that's a completely unrelated story, I'd rather see whiteouts
+> > done directly by filesystems involved - it would simplify the life big
+> > way.  How about adding a dir->i_op->whiteout(dir, dentry) and seeing if
+> > your variant could be turned into such a method to be used by really
+> > piss-poor filesystems?  All UFS-related ones (including ext*) can trivially
+> > support whiteouts without any PITA; adding them to tmpfs is also not a big
+> > deal and anything that caches inode type in directory entries should be
+> > easy to extend in the same way as ext*/ufs...
+> 
+> I agree that WH is really needed and would certainly help.  I've always felt
+> that WH support wasn't technically very challenging, but logistically it was
+> going to be a nightmare -- having to coordinate with many
+> subsystem/filesystem maintainers over a lengthy period of time, no?  Yo
+> talk in more detail about it in person, I wouldn't mind taking a stab at
+> this.
+
+For ext* and tmpfs it's a matter of trivial kernel patches (I can do the
+entire bunch easily) + coordination with Ted to get feature flag for
+ext*/teach e2fsck not to throw up on directory entries with type "whiteout".
+
+> BTW, before such WH support can be useful enough for unionfs, it'll have to
+> be supported in ext*, tmpfs, _and_ nfs* (those are the most popular ones in
+> use).
+
+NFS is more interesting ;-/  There the fallback to your scheme might be the
+best available variant, if it can be converted into nfs_whiteout(dir, dentry)
++ modifications to existing methods...
