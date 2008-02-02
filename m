@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbYBBBer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764449AbYBBBfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764366AbYBBBer (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 20:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763676AbYBBBdm
+	id S1764449AbYBBBfI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 20:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763831AbYBBBdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 20:33:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:28811 "EHLO
+	Fri, 1 Feb 2008 20:33:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:28697 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763646AbYBBBdk (ORCPT
+	with ESMTP id S1763769AbYBBBdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 20:33:40 -0500
+	Fri, 1 Feb 2008 20:33:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=PQO7j8DMCHrYqtAjD/KzqYzuKK86YcKwLAvtOLSy8xlpoghrsnwI1UHTIkD/3R5zLOY1JCttpbUQ5/A3RfCtDHYSSkpdPdY1T31jAcLLDGGT8crpsI1ChkfnNI5l85UoBHKxRBLR+khmqFaH+LgRhAYr7H9ziNnpxjsU6hQU6Aw=
-Message-ID: <6101e8c40802011733vee8d363l8913cbb68781fd30@mail.gmail.com>
-Date: Sat, 2 Feb 2008 02:33:39 +0100
+        b=qPXwhGxMNSsRqFmEUVyzsl82hYZtWb4xgs0BD6FcCEZCdQtKT6odTFoW65IBPpZbQl59tfsC6om6wqDP00W3WvsaEc/S1/hI7HAVdcsEqo4O8yTl9bwiwo/yYtqVg/XNzlJYfni0WCLYMXnBGiNmTfQo3usbTjq+J8SigQDmaR0=
+Message-ID: <6101e8c40802011733g504c1cd7ubaceee5df9a51a66@mail.gmail.com>
+Date: Sat, 2 Feb 2008 02:33:44 +0100
 From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
 	<oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: [2.6.22.y] {04/17} - cciss-panic-in-blk_rq_map_sg - series for stable kernel #2
+Subject: [2.6.22.y] {05/17} - cciss-fix_memory_leak - series for stable kernel #2
 Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
        "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Mike Miller" <mike.miller@hp.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_26259_27826511.1201916019069"
+	boundary="----=_Part_26261_31574446.1201916024654"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_26259_27826511.1201916019069
+------=_Part_26261_31574446.1201916024654
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-mainline: a683d652d334a546be9175b894f42dbd8e399536
+mainline: f2912a1223c0917a7b4e054f18086209137891ea
 
 -- 
 Thanks,
 Oliver
 
-------=_Part_26259_27826511.1201916019069
-Content-Type: application/mbox; name=cciss-panic-in-blk_rq_map_sg
+------=_Part_26261_31574446.1201916024654
+Content-Type: application/mbox; name=cciss-fix_memory_leak
 Content-Transfer-Encoding: base64
 X-Attachment-Id: file0
-Content-Disposition: attachment; filename=cciss-panic-in-blk_rq_map_sg
+Content-Disposition: attachment; filename=cciss-fix_memory_leak
 
-RnJvbSBhNjgzZDY1MmQzMzRhNTQ2YmU5MTc1Yjg5NGY0MmRiZDhlMzk5NTM2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBMZWUgU2NoZXJtZXJob3JuIDxMZWUuU2NoZXJtZXJob3JuQGhw
-LmNvbT4KRGF0ZTogRnJpLCAyMSBTZXAgMjAwNyAwODozMzo1NSArMDIwMApTdWJqZWN0OiBbUEFU
-Q0hdIFBhbmljIGluIGJsa19ycV9tYXBfc2coKSBmcm9tIENDSVNTIGRyaXZlcgoKTmV3IHNjYXR0
-ZXIvZ2F0aGVyIGxpc3QgY2hhaW5pbmcgW3NnX25leHQoKV0gdHJlYXRzICdwYWdlJyBtZW1iZXIg
-b2YKc3RydWN0IHNjYXR0ZXJsaXN0IHdpdGggbG93IGJpdCBzZXQgWzB4MDFdIGFzIGEgY2hhaW4g
-cG9pbnRlciB0bwphbm90aGVyIHN0cnVjdCBzY2F0dGVybGlzdCBbYXJyYXldLiAgVGhlIENDSVNT
-IGRyaXZlciByZXF1ZXN0IGZ1bmN0aW9uCnBhc3NlcyBhbiB1bmluaXRpYWxpemVkLCB0ZW1wb3Jh
-cnksIG9uLXN0YWNrIHNjYXR0ZXJsaXN0IGFycmF5IHRvCmJsa19ycV9tYXBfc3EoKS4gIHNnX25l
-eHQoKSBpbnRlcnByZXRzIHJhbmRvbSBkYXRhIG9uIHRoZSBzdGFjayBhcyBhCmNoYWluIHBvaW50
-ZXIgYW5kIGV2ZW50dWFsbHkgdHJpZXMgdG8gZGUtcmVmZXJlbmNlIGFuIGludmFsaWQgcG9pbnRl
-ciwKcmVzdWx0aW5nIGluOgoKWzxmZmZmZmZmZjgwMzFkZDcwPl0gYmxrX3JxX21hcF9zZysweDcw
-LzB4MTcwClBHRCA2MDkwYzMwNjcgUFVEIDAKT29wczogMDAwMCBbMV0gU01QCmxhc3Qgc3lzZnMg
-ZmlsZTogL2Jsb2NrL2NjaXNzIWMwZDAvY2Npc3MhYzBkMHAxL2RldgpDUFUgNgpNb2R1bGVzIGxp
-bmtlZCBpbjogZWhjaV9oY2Qgb2hjaV9oY2QgdWhjaV9oY2QKUGlkOiAxLCBjb21tOiBpbml0IE5v
-dCB0YWludGVkIDIuNi4yMy1yYzYtbW0xICMzClJJUDogMDAxMDpbPGZmZmZmZmZmODAzMWRkNzA+
-XSBbPGZmZmZmZmZmODAzMWRkNzA+XSBibGtfcnFfbWFwX3NnKzB4NzAvMHgxNzAKUlNQOiAwMDE4
-OmZmZmY4MTA2MDkwMWY3NjggRUZMQUdTOiAwMDAxMDIwNgpSQVg6IDAwMDAwMDA0MGIxNjEwMDAg
-UkJYOiBmZmZmODEwNjA5MDFmN2Q4IFJDWDogMDAwMDAwMDQwYjE2MmMwMApSRFg6IDAwMDAwMDAw
-MDAwMDAwMDAgUlNJOiBmZmZmODEwNjBiMTNhMjYwIFJESTogZmZmZjgxMDYwYjEzOTYwMApSQlA6
-IDAwMDAwMDAwMDAwMDE0MDAgUjA4OiAwMDAwMDAwMGZmZmZmZmZlIFIwOTogMDAwMDAwMDAwMDAw
-MDQwMApSMTA6IDAwMDAwMDAwMDAwMDAwMDAgUjExOiAwMDAwMDAwNDBiMTYzMDAwIFIxMjogZmZm
-ZjgxMDEwMmZlMDAwMApSMTM6IDAwMDAwMDAwMDAwMDAwMDEgUjE0OiAwMDAwMDAwMDAwMDAwMDAx
-IFIxNTogMDAwMDFlMDAwMDAwMDAwMApGUzogMDAwMDAwMDAwMjYxMDhmMCgwMDYzKSBHUzpmZmZm
-ODEwNDA5MDAwYjgwKDAwMDApIGtubEdTOjAwMDAwMDAwMDAwMDAwMDAKQ1M6IDAwMTAgRFM6IDAw
-MDAgRVM6IDAwMDAgQ1IwOiAwMDAwMDAwMDgwMDUwMDNiCkNSMjogMDAwMDAwMDEwMDAwMDAxZSBD
-UjM6IDAwMDAwMDA2MDkwYzYwMDAgQ1I0OiAwMDAwMDAwMDAwMDAwNmUwCkRSMDogMDAwMDAwMDAw
-MDAwMDAwMCBEUjE6IDAwMDAwMDAwMDAwMDAwMDAgRFIyOiAwMDAwMDAwMDAwMDAwMDAwCkRSMzog
-MDAwMDAwMDAwMDAwMDAwMCBEUjY6IDAwMDAwMDAwZmZmZjBmZjAgRFI3OiAwMDAwMDAwMDAwMDAw
-NDAwClByb2Nlc3MgaW5pdCAocGlkOiAxLCB0aHJlYWRpbmZvIGZmZmY4MTA2MDkwMWUwMDAsIHRh
-c2sgZmZmZjgxMDQwOTAyMDgwMCkKbGFzdCBicmFuY2ggYmVmb3JlIGxhc3QgZXhjZXB0aW9uL2lu
-dGVycnVwdApmcm9tIFs8ZmZmZmZmZmY4MDMxZGUwYT5dIGJsa19ycV9tYXBfc2crMHgxMGEvMHgx
-NzAKdG8gWzxmZmZmZmZmZjgwMzFkZDcwPl0gYmxrX3JxX21hcF9zZysweDcwLzB4MTcwClN0YWNr
-OiAwMDAwMDAwMTgwNjhlYTAwIGZmZmY4MTAxMDJmZTAwMDAgMDAwMDAwMDAwMDAwMDAwMCBmZmZm
-ODEwMDExNDAwMDAwCjAwMDAwMDAwMDAwMDAwMDIgMDAwMDAwMDAwMDAwMDAwMCBmZmZmODEwNDBi
-MTcyMDAwIGZmZmZmZmZmODAzYWNkM2QKMDAwMDAwMDAwMDAwM2VjMSBmZmZmODEwNjA5MGQ1MDAw
-IGZmZmY4MTA2MDkwZDUwMDAgZmZmZjgxMDEwMmZlMDAwMApDYWxsIFRyYWNlOgpbPGZmZmZmZmZm
-ODAzYWNkM2Q+XSBkb19jY2lzc19yZXF1ZXN0KzB4MTVkLzB4NGMwCls8ZmZmZmZmZmY4MDI5ODk2
-OD5dIG5ld19zbGFiKzB4MWM4LzB4MjcwCls8ZmZmZmZmZmY4MDI5OGZmZD5dIF9fc2xhYl9hbGxv
-YysweDIyZC8weDQ3MApbPGZmZmZmZmZmODAyNzMyN2I+XSBtZW1wb29sX2FsbG9jKzB4NGIvMHgx
-MzAKWzxmZmZmZmZmZjgwMzJiMjFlPl0gY2ZxX3NldF9yZXF1ZXN0KzB4ZWUvMHgzODAKWzxmZmZm
-ZmZmZjgwMjczMjdiPl0gbWVtcG9vbF9hbGxvYysweDRiLzB4MTMwCls8ZmZmZmZmZmY4MDMxZmY5
-OD5dIGdldF9yZXF1ZXN0KzB4MTY4LzB4MzYwCls8ZmZmZmZmZmY4MDMzMWIwZD5dIHJiX2luc2Vy
-dF9jb2xvcisweDhkLzB4MTEwCls8ZmZmZmZmZmY4MDMxY2ZkOD5dIGVsdl9yYl9hZGQrMHg1OC8w
-eDYwCls8ZmZmZmZmZmY4MDMyYTMyOT5dIGNmcV9hZGRfcnFfcmIrMHg2OS8weGEwCls8ZmZmZmZm
-ZmY4MDMxYzFhYj5dIGVsdl9tZXJnZWRfcmVxdWVzdCsweDViLzB4NjAKWzxmZmZmZmZmZjgwMzIy
-NGZkPl0gX19tYWtlX3JlcXVlc3QrMHgyM2QvMHg2NTAKWzxmZmZmZmZmZjgwMjk4ZmZkPl0gX19z
-bGFiX2FsbG9jKzB4MjJkLzB4NDcwCls8ZmZmZmZmZmY4MDI3MDAwMD5dIGdlbmVyaWNfd3JpdGVf
-Y2hlY2tzKzB4MTQwLzB4MTkwCls8ZmZmZmZmZmY4MDMxZjAxMj5dIGdlbmVyaWNfbWFrZV9yZXF1
-ZXN0KzB4MWMyLzB4M2EwCjxldGM+Cktlcm5lbCBwYW5pYyAtIG5vdCBzeW5jaW5nOiBBdHRlbXB0
-ZWQgdG8ga2lsbCBpbml0IQoKVGhpcyBwYXRjaCBpbml0aWFsaXplcyB0aGUgdG1wX3NnIGFycmF5
-IHRvIHplcm9lcy4gIFBlcmhhcHMgbm90IHRoZSB1bHRpbWF0ZQpmaXgsIGJ1dCBhbiBlZmZlY3Rp
-dmUgd29yay1hcm91bmQuICBJIGNhbiBub3cgYm9vdCAyMy1yYzYtbW0xIG9uIGFuIEhQClByb2xp
-YW50IHg4Nl82NCB3aXRoIENDSVNTIGJvb3QgZGlzay4KClNpZ25lZC1vZmYtYnk6ICBMZWUgU2No
-ZXJtZXJob3JuIDxsZWUuc2NoZXJtZXJob3JuQGhwLmNvbT4KCiBkcml2ZXJzL2Jsb2NrL2NjaXNz
-LmMgfCAgICAxICsKIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKQpTaWduZWQtb2ZmLWJ5
-OiBKZW5zIEF4Ym9lIDxqZW5zLmF4Ym9lQG9yYWNsZS5jb20+CgpkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy9ibG9jay9jY2lzcy5jIGIvZHJpdmVycy9ibG9jay9jY2lzcy5jCmluZGV4IDU1YzMyMzcuLjIw
-MjNkNjEgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvYmxvY2svY2Npc3MuYworKysgYi9kcml2ZXJzL2Js
-b2NrL2NjaXNzLmMKQEAgLTI1NzAsNiArMjU3MCw3IEBAIHN0YXRpYyB2b2lkIGRvX2NjaXNzX3Jl
-cXVlc3Qoc3RydWN0IHJlcXVlc3RfcXVldWUgKnEpCiAJICAgICAgIChpbnQpY3JlcS0+bnJfc2Vj
-dG9ycyk7CiAjZW5kaWYJCQkJLyogQ0NJU1NfREVCVUcgKi8KIAorCW1lbXNldCh0bXBfc2csIDAs
-IHNpemVvZih0bXBfc2cpKTsKIAlzZWcgPSBibGtfcnFfbWFwX3NnKHEsIGNyZXEsIHRtcF9zZyk7
-CiAKIAkvKiBnZXQgdGhlIERNQSByZWNvcmRzIGZvciB0aGUgc2V0dXAgKi8K
-------=_Part_26259_27826511.1201916019069--
+RnJvbSBmMjkxMmExMjIzYzA5MTdhN2I0ZTA1NGYxODA4NjIwOTEzNzg5MWVhIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBKZXNwZXIgSnVobCA8amVzcGVyLmp1aGxAZ21haWwuY29tPgpE
+YXRlOiBUdWUsIDMxIEp1bCAyMDA3IDAwOjM5OjM5IC0wNzAwClN1YmplY3Q6IFtQQVRDSF0gY2Np
+c3M6IGZpeCBtZW1vcnkgbGVhawoKVGhlcmUncyBhIG1lbW9yeSBsZWFrIGluIHRoZSBjY2lzcyBk
+cml2ZXIuCgppbiBhbGxvY19jY2lzc19oYmEoKSB3ZSBtYXkgbGVhayBzaXplb2YoY3Rscl9pbmZv
+X3QpIGJ5dGVzIGlmIGEKY2FsbCB0byBhbGxvY19kaXNrKDEgPDwgTldEX1NISUZUKSBmYWlscy4K
+VGhpcyBwYXRjaCBzaG91bGQgZml4IHRoZSBpc3N1ZS4KClNwb3R0ZWQgYnkgdGhlIENvdmVyaXR5
+IGNoZWNrZXIuCgpTaWduZWQtb2ZmLWJ5OiBKZXNwZXIgSnVobCA8amVzcGVyLmp1aGxAZ21haWwu
+Y29tPgpBY2tlZC1ieTogTWlrZSBNaWxsZXIgPG1pa2UubWlsbGVyQGhwLmNvbT4KU2lnbmVkLW9m
+Zi1ieTogQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4KU2lnbmVkLW9m
+Zi1ieTogTGludXMgVG9ydmFsZHMgPHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3JnPgoKZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvYmxvY2svY2Npc3MuYyBiL2RyaXZlcnMvYmxvY2svY2Npc3MuYwpp
+bmRleCAxYmU4MmQ1Li5hMTFiMmJkIDEwMDY0NAotLS0gYS9kcml2ZXJzL2Jsb2NrL2NjaXNzLmMK
+KysrIGIvZHJpdmVycy9ibG9jay9jY2lzcy5jCkBAIC0zMjI3LDEyICszMjI3LDE1IEBAIHN0YXRp
+YyBpbnQgYWxsb2NfY2Npc3NfaGJhKHZvaWQpCiAJZm9yIChpID0gMDsgaSA8IE1BWF9DVExSOyBp
+KyspIHsKIAkJaWYgKCFoYmFbaV0pIHsKIAkJCWN0bHJfaW5mb190ICpwOworCiAJCQlwID0ga3ph
+bGxvYyhzaXplb2YoY3Rscl9pbmZvX3QpLCBHRlBfS0VSTkVMKTsKIAkJCWlmICghcCkKIAkJCQln
+b3RvIEVub21lbTsKIAkJCXAtPmdlbmRpc2tbMF0gPSBhbGxvY19kaXNrKDEgPDwgTldEX1NISUZU
+KTsKLQkJCWlmICghcC0+Z2VuZGlza1swXSkKKwkJCWlmICghcC0+Z2VuZGlza1swXSkgeworCQkJ
+CWtmcmVlKHApOwogCQkJCWdvdG8gRW5vbWVtOworCQkJfQogCQkJaGJhW2ldID0gcDsKIAkJCXJl
+dHVybiBpOwogCQl9Cg==
+------=_Part_26261_31574446.1201916024654--
