@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbYBBAbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbYBBAbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932126AbYBBAbc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 19:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763502AbYBBAZQ
+	id S932224AbYBBAbr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 19:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763136AbYBBAZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 19:25:16 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55777 "EHLO mx2.suse.de"
+	Fri, 1 Feb 2008 19:25:18 -0500
+Received: from ns.suse.de ([195.135.220.2]:54706 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762814AbYBBAZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 19:25:12 -0500
-Date: Fri, 1 Feb 2008 16:20:56 -0800
+	id S1763499AbYBBAZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Feb 2008 19:25:16 -0500
+Date: Fri, 1 Feb 2008 16:20:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-acpi@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       Bob Moore <robert.moore@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 20/27] ACPICA: fix acpi-cpufreq boot crash due to _PSD
-	return-by-reference
-Message-ID: <20080202002056.GU8368@suse.de>
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@redhat.com>,
+       Christoph Hellwig <hch@lst.de>, Al Viro <viro@ftp.linux.org.uk>,
+       maximilian attems <max@stro.at>
+Subject: [patch 21/27] vfs: coredumping fix (CVE-2007-6206)
+Message-ID: <20080202002059.GV8368@suse.de>
 References: <20080202001232.472591439@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpica-fix-acpi-cpufreq-boot-crash-due-to-_psd-return-by-reference.patch"
+Content-Disposition: inline; filename="vfs-coredumping-fix.patch"
 In-Reply-To: <20080202001927.GA8368@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,146 +40,43 @@ know.
 
 ------------------
 
-From: Bob Moore <robert.moore@intel.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-patch 152c300d007c70c4a1847dad39ecdaba22e7d457 in mainline.
+vfs: coredumping fix
 
-Changed resolution of named references in packages
+patch c46f739dd39db3b07ab5deb4e3ec81e1c04a91af in mainline
 
-Fixed a problem with the Package operator where all named
-references were created as object references and left otherwise
-unresolved. According to the ACPI specification, a Package can
-only contain Data Objects or references to control methods. The
-implication is that named references to Data Objects (Integer,
-Buffer, String, Package, BufferField, Field) should be resolved
-immediately upon package creation. This is the approach taken
-with this change. References to all other named objects (Methods,
-Devices, Scopes, etc.) are all now properly created as reference objects.
+fix: http://bugzilla.kernel.org/show_bug.cgi?id=3043
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5328
-http://bugzilla.kernel.org/show_bug.cgi?id=9429
+only allow coredumping to the same uid that the coredumping
+task runs under.
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Alan Cox <alan@redhat.com>
+Acked-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Al Viro <viro@ftp.linux.org.uk>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: maximilian attems <max@stro.at>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/dispatcher/dsobject.c |   91 ++++++++++++++++++++++++++++++++++---
- 1 file changed, 85 insertions(+), 6 deletions(-)
+ fs/exec.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/acpi/dispatcher/dsobject.c
-+++ b/drivers/acpi/dispatcher/dsobject.c
-@@ -137,6 +137,71 @@ acpi_ds_build_internal_object(struct acp
- 				return_ACPI_STATUS(status);
- 			}
- 		}
-+
-+		/* Special object resolution for elements of a package */
-+
-+		if ((op->common.parent->common.aml_opcode == AML_PACKAGE_OP) ||
-+		    (op->common.parent->common.aml_opcode ==
-+		     AML_VAR_PACKAGE_OP)) {
-+			/*
-+			 * Attempt to resolve the node to a value before we insert it into
-+			 * the package. If this is a reference to a common data type,
-+			 * resolve it immediately. According to the ACPI spec, package
-+			 * elements can only be "data objects" or method references.
-+			 * Attempt to resolve to an Integer, Buffer, String or Package.
-+			 * If cannot, return the named reference (for things like Devices,
-+			 * Methods, etc.) Buffer Fields and Fields will resolve to simple
-+			 * objects (int/buf/str/pkg).
-+			 *
-+			 * NOTE: References to things like Devices, Methods, Mutexes, etc.
-+			 * will remain as named references. This behavior is not described
-+			 * in the ACPI spec, but it appears to be an oversight.
-+			 */
-+			obj_desc = (union acpi_operand_object *)op->common.node;
-+
-+			status =
-+			    acpi_ex_resolve_node_to_value(ACPI_CAST_INDIRECT_PTR
-+							  (struct
-+							   acpi_namespace_node,
-+							   &obj_desc),
-+							  walk_state);
-+			if (ACPI_FAILURE(status)) {
-+				return_ACPI_STATUS(status);
-+			}
-+
-+			switch (op->common.node->type) {
-+				/*
-+				 * For these types, we need the actual node, not the subobject.
-+				 * However, the subobject got an extra reference count above.
-+				 */
-+			case ACPI_TYPE_MUTEX:
-+			case ACPI_TYPE_METHOD:
-+			case ACPI_TYPE_POWER:
-+			case ACPI_TYPE_PROCESSOR:
-+			case ACPI_TYPE_EVENT:
-+			case ACPI_TYPE_REGION:
-+			case ACPI_TYPE_DEVICE:
-+			case ACPI_TYPE_THERMAL:
-+
-+				obj_desc =
-+				    (union acpi_operand_object *)op->common.
-+				    node;
-+				break;
-+
-+			default:
-+				break;
-+			}
-+
-+			/*
-+			 * If above resolved to an operand object, we are done. Otherwise,
-+			 * we have a NS node, we must create the package entry as a named
-+			 * reference.
-+			 */
-+			if (ACPI_GET_DESCRIPTOR_TYPE(obj_desc) !=
-+			    ACPI_DESC_TYPE_NAMED) {
-+				goto exit;
-+			}
-+		}
- 	}
- 
- 	/* Create and init a new internal ACPI object */
-@@ -156,6 +221,7 @@ acpi_ds_build_internal_object(struct acp
- 		return_ACPI_STATUS(status);
- 	}
- 
-+      exit:
- 	*obj_desc_ptr = obj_desc;
- 	return_ACPI_STATUS(AE_OK);
- }
-@@ -356,12 +422,25 @@ acpi_ds_build_internal_package_obj(struc
- 	arg = arg->common.next;
- 	for (i = 0; arg && (i < element_count); i++) {
- 		if (arg->common.aml_opcode == AML_INT_RETURN_VALUE_OP) {
--
--			/* This package element is already built, just get it */
--
--			obj_desc->package.elements[i] =
--			    ACPI_CAST_PTR(union acpi_operand_object,
--					  arg->common.node);
-+			if (arg->common.node->type == ACPI_TYPE_METHOD) {
-+				/*
-+				 * A method reference "looks" to the parser to be a method
-+				 * invocation, so we special case it here
-+				 */
-+				arg->common.aml_opcode = AML_INT_NAMEPATH_OP;
-+				status =
-+				    acpi_ds_build_internal_object(walk_state,
-+								  arg,
-+								  &obj_desc->
-+								  package.
-+								  elements[i]);
-+			} else {
-+				/* This package element is already built, just get it */
-+
-+				obj_desc->package.elements[i] =
-+				    ACPI_CAST_PTR(union acpi_operand_object,
-+						  arg->common.node);
-+			}
- 		} else {
- 			status = acpi_ds_build_internal_object(walk_state, arg,
- 							       &obj_desc->
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1561,6 +1561,12 @@ int do_coredump(long signr, int exit_cod
+ 	   but keep the previous behaviour for now. */
+ 	if (!ispipe && !S_ISREG(inode->i_mode))
+ 		goto close_fail;
++	/*
++	 * Dont allow local users get cute and trick others to coredump
++	 * into their pre-created files:
++	 */
++	if (inode->i_uid != current->fsuid)
++		goto close_fail;
+ 	if (!file->f_op)
+ 		goto close_fail;
+ 	if (!file->f_op->write)
 
 -- 
