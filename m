@@ -1,142 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934014AbYBBSIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932455AbYBBSWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934014AbYBBSIw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 13:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933845AbYBBSIg
+	id S932455AbYBBSWY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 13:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYBBSWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 13:08:36 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54234 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933660AbYBBSId (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 13:08:33 -0500
-Subject: Re: [patch] pci: pci_enable_device_bars() fix
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+	Sat, 2 Feb 2008 13:22:15 -0500
+Received: from gw.goop.org ([64.81.55.164]:46923 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751856AbYBBSWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 13:22:14 -0500
+Message-ID: <47A4B4A4.3050509@goop.org>
+Date: Sat, 02 Feb 2008 10:21:24 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080202170828.GA12748@elte.hu>
-References: <20080201231147.GA18174@suse.de>
-	 <20080202111322.GA30767@elte.hu> <47A49171.2000003@garzik.org>
-	 <20080202170828.GA12748@elte.hu>
-Content-Type: text/plain
-Date: Sat, 02 Feb 2008 12:08:26 -0600
-Message-Id: <1201975706.3187.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
+Subject: Re: [PATCH 2 of 7] x86: add common mm/pgtable.c
+References: <patchbomb.1201943112@localhost> <3c9aba41ee700a239859.1201943114@localhost> <20080202103030.GA23897@elte.hu> <47A458B1.4050208@goop.org> <20080202134714.GA925@elte.hu> <47A49974.4040504@goop.org> <20080202172921.GA24961@elte.hu>
+In-Reply-To: <20080202172921.GA24961@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-02-02 at 18:08 +0100, Ingo Molnar wrote:
-> * Jeff Garzik <jeff@garzik.org> wrote:
-> 
-> > Ingo Molnar wrote:
-> >> ===================================================================
-> >> --- linux.orig/drivers/scsi/lpfc/lpfc_init.c
-> >> +++ linux/drivers/scsi/lpfc/lpfc_init.c
-> >> @@ -1894,7 +1894,7 @@ lpfc_pci_probe_one(struct pci_dev *pdev,
-> >>  	uint16_t iotag;
-> >>  	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
-> >>  -	if (pci_enable_device_bars(pdev, bars))
-> >> +	if (pci_enable_device_io(pdev))
-> >>  		goto out;
-> >
-> > Look at the line right above it...  AFAICS you want 
-> > pci_enable_device_mem(), if the mask is selecting IORESOURCE_MEM BARs.
-> >
-> > Also a CC to linux-scsi and the driver author would be nice, as they 
-> > are the ones with hardware and can verify.
-> 
-> it would have been totally appropriate for me to just send a mail to 
-> lkml with the proper subject line about the breakage. (I might even have 
-> decided to stay completely silent about the issue and fix it for my own 
-> build, letting you guys figure it out.)
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> oops, i thought i pasted that. It was this:
+>>>
+>>> arch/x86/mm/pgtable.c: In function 'pgd_alloc':
+>>> arch/x86/mm/pgtable.c:213: error: implicit declaration of function 'quicklist_alloc'
+>>> arch/x86/mm/pgtable.c:213: warning: initialization makes pointer from integer without a cast
+>>> arch/x86/mm/pgtable.c:218: error: implicit declaration of function 'quicklist_free'
+>>> arch/x86/mm/pgtable.c: In function 'check_pgt_cache':
+>>> arch/x86/mm/pgtable.c:233: error: implicit declaration of function 'quicklist_trim'
+>>>
+>>> also, config re-attached. (maybe i messed up the previous one)
+>>>       
+>> Still can't reproduce, but it's a simple case of missing headers.
+>>     
+>
+> ok, i'll figure it out if/when it happens with your resent queue.
+>   
+I added an explict <linux/quicklist.h> to pgtable.c, so there's no 
+excuse to still complain.  Will resend the combined series shortly.
 
-We agreed to differ a while ago on your head in the sand, post it to
-LKML because everybody follows that list attitude.  Some nice soul will
-always (eventually) forward to the correct list, so this practice more
-or less works (just not in as timely fashion as actually posting to the
-relevant list).
-
-> Instead i did a search of lkml (based on the function name in the build 
-> error) and figured out where the pull request was on lkml: Greg. I 
-> replied to that mail, he'll obviously know whom else to Cc from that 
-> point on (if anyone). I really didnt want to (nor did i need to) figure 
-> out whether this was some general driver level API change that happen 
-> kernel-wide, or some SCSI specific change. I simply replied to the pull 
-> request whose Cc: line seemed well-populated to me already. I also took 
-> a look at the commit itself and did a quick hack in a hurry to keep the 
-> tests rolling. It really did not occur to me that i should have added 
-> anyone else to the Cc: line, as linux-pci@atrey.karlin.mff.cuni.cz was 
-> Cc:-ed already so i assumed the interest was from that angle.
-> 
-> ( And as this was spent from my family's weekend time and i had no time
->   and no interest to dig any further than to figure out the "first hop"
->   of the change that broke the build, and the parties who initiated that
->   hop. I'm in fact surprised that your and James's answer to my
->   bugreport is hostility. )
-
-What's hostile about telling you your patch is wrong and pointing you at
-the correct one?
-
-> So i find your suggestion that i should have added more people to the 
-> Cc: line unfair on several levels.
-> 
-> > This set of changes seemed like 50% guesswork to me, without 
-> > consulting the authors :( And unlike many changes, you actually have 
-> > to know the hardware [or get clues from surrounding code] to make the 
-> > change.
-> 
-> you mean the whole set of changes? Or just mine? Mine was a 30 seconds 
-> guesswork of course, i dont have the hardware, i didnt do the change, 
-> nor did i do anything near that code - i just saw the build failure stop 
-> my testing and sent in this notification and a hack. That's why i sent 
-> it to Greg, as a reply to the mail where he pushed these changes 
-> upstream and who'll know what to do with it from that point on. My patch 
-> can be totally thrown away (and should be, apparently).
-> 
-> but ... i guess next time i'll think twice before sending any bugreports 
-> about or related to the SCSI code anywhere, unless they become really 
-> annoying. Who needs this hassle?
-
-Oh good grief, don't come the raw prawn with us!
-
-You're a kernel maintainer, you are expected to know the rules and
-follow them.  The very fact that a well known maintainer posts a patch
-with a signed-off-by to Andrew and Linus means that it likely gets
-applied.  Because of this, maintainers and other people with similarly
-trusted positions are expected to go via the lists and subsystems in
-part as general courtesy, but also to verify that their patch is
-actually valid before it gets applied.
-
-Are you seriously telling us that it required too much investigation on
-your part to figure out that something with a compile failure in
-drivers/scsi might belong on the scsi list?
-
-Let me tell you exactly what would have happened if that patch had been
-applied:  Because the wrong bars were enabled, the device would have
-attached but been non-functional.  Likely Emulex would have picked this
-up in their -rc1 testing and spent several days trying to trace the
-cause in their labs.  Chances are, that, because this type of breakage
-is extremely subtle, they wouldn't have noticed the fact that the enable
-should have been _mem not _io.  Then they would have raised the issue to
-linux-scsi.  It would probably take at least a person week of effort
-before anyone finally noticed what the issue was.
-
-If you can't see that your behaviour needs modifying, I suggest you
-seriously consider your position.  For all our talk of a nice utopian
-democracy of meritocracy in Open Source, we're critically dependent on
-the tree gatekeepers to maintain this.  None of us is immune from the
-subtle lure of the arrogance of power but it's a corrosive poison and
-must be avoided at every turn.  You and I follow more rules and are held
-to a higher standard that the average patch submitter because of our
-position in the community (not in spite of it).
-
-James
-
-
+    J
