@@ -1,69 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765769AbYBBQBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbYBBQHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765769AbYBBQBb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbYBBQBW
+	id S1763671AbYBBQHx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYBBQHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:01:22 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53018 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754460AbYBBQBV (ORCPT
+	Sat, 2 Feb 2008 11:07:46 -0500
+Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:59503 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750708AbYBBQHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:01:21 -0500
-Subject: Re: [patch] pci: pci_enable_device_bars() fix
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <47A49171.2000003@garzik.org>
-References: <20080201231147.GA18174@suse.de>
-	 <20080202111322.GA30767@elte.hu>  <47A49171.2000003@garzik.org>
-Content-Type: text/plain
-Date: Sat, 02 Feb 2008 10:01:09 -0600
-Message-Id: <1201968069.3187.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Feb 2008 11:07:45 -0500
+To: Peter Teoh <htmldeveloper@gmail.com>
+Subject: Re: Incompatibility of "const" and __xxxinitdata?
+Cc: linux-kernel@vger.kernel.org
+In-reply-To: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
+References: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
+Message-Id: <E1JLKu5-0002b0-Gb@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Sat, 02 Feb 2008 17:07:41 +0100
+X-OriginalArrivalTime: 02 Feb 2008 16:07:44.0025 (UTC) FILETIME=[BE89D890:01C865B5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Teoh wrote:
+> In include/linux/init.h, it is documented that all __xxxinitdata
+> declaration must not have constant, as show below:
 
-On Sat, 2008-02-02 at 10:51 -0500, Jeff Garzik wrote:
-> Ingo Molnar wrote:
-> > ===================================================================
-> > --- linux.orig/drivers/scsi/lpfc/lpfc_init.c
-> > +++ linux/drivers/scsi/lpfc/lpfc_init.c
-> > @@ -1894,7 +1894,7 @@ lpfc_pci_probe_one(struct pci_dev *pdev,
-> >  	uint16_t iotag;
-> >  	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
-> >  
-> > -	if (pci_enable_device_bars(pdev, bars))
-> > +	if (pci_enable_device_io(pdev))
-> >  		goto out;
-> 
-> Look at the line right above it...  AFAICS you want 
-> pci_enable_device_mem(), if the mask is selecting IORESOURCE_MEM BARs.
-> 
-> Also a CC to linux-scsi and the driver author would be nice, as they are 
-> the ones with hardware and can verify.
-> 
-> This set of changes seemed like 50% guesswork to me, without consulting 
-> the authors :(  And unlike many changes, you actually have to know the 
-> hardware [or get clues from surrounding code] to make the change.
+See: http://lkml.org/lkml/2008/1/26/182
 
-Jeff is right, this fix is wrong.
+There's a fairly major cleanup happening at the moment as you could see from
+the mailing list archives for the past week or so.
 
-The correct fix is here:
-
-http://marc.info/?l=linux-scsi&m=120196768605031
-
-Ingo, could you please cc linux-scsi on your mails ... it would have
-been a complete disaster to have this incorrect patch go in.
-
-James
-
-
+Cheers,
+FJP
