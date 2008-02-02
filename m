@@ -1,123 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935558AbYBBVOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935637AbYBBVOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935558AbYBBVOc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 16:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935243AbYBBVOJ
+	id S935637AbYBBVOy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 16:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935528AbYBBVOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 16:14:09 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:54043 "EHLO smtp.polymtl.ca"
+	Sat, 2 Feb 2008 16:14:23 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:54071 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935312AbYBBVOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 16:14:07 -0500
-Message-Id: <20080202211206.840926301@polymtl.ca>
+	id S935522AbYBBVOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 16:14:19 -0500
+Message-Id: <20080202211204.852888086@polymtl.ca>
 References: <20080202210828.840735763@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sat, 02 Feb 2008 16:08:33 -0500
+Date: Sat, 02 Feb 2008 16:08:30 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [patch 5/7] Immediate Values - Powerpc Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat,  2 Feb 2008 21:12:08 +0000
+       Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
+       Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [patch 2/7] Immediate Values - Kconfig menu in EMBEDDED
+Content-Disposition: inline; filename=immediate-values-kconfig-menu-in-embedded.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat,  2 Feb 2008 21:12:06 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
+Immediate values provide a way to use dynamic code patching to update variables
+sitting within the instruction stream. It saves caches lines normally used by
+static read mostly variables. Enable it by default, but let users disable it
+through the EMBEDDED menu with the "Disable immediate values" submenu entry.
+
+Note: Since I think that I really should let embedded systems developers using
+RO memory the option to disable the immediate values, I choose to leave this
+menu option there, in the EMBEDDED menu. Also, the "CONFIG_IMMEDIATE" makes
+sense because we want to compile out all the immediate code when we decide not
+to use optimized immediate values at all (it removes otherwise unused code).
 
 Changelog:
-- Put imv_set and _imv_set in the architecture independent header.
-- Pack the __imv section. Use smallest types required for size (char).
-- Remove architecture specific update code : now handled by architecture
-  agnostic code.
-- Use imv_* instead of immediate_*.
+- Change ARCH_SUPPORTS_IMMEDIATE for ARCH_HAS_IMMEDIATE
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>
 CC: Christoph Hellwig <hch@infradead.org>
-CC: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/Kconfig            |    1 
- include/asm-powerpc/immediate.h |   55 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
+ init/Kconfig |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+Index: linux-2.6-lttng/init/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2008-01-30 09:33:42.000000000 -0500
-@@ -0,0 +1,55 @@
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
-+
-+/*
-+ * Immediate values. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm/asm-compat.h>
-+
-+/**
-+ * imv_read - read immediate variable
-+ * @name: immediate value name
-+ *
-+ * Reads the value of @name.
-+ * Optimized version of the immediate.
-+ * Do not use in __init and __exit functions. Use _imv_read() instead.
-+ */
-+#define imv_read(name)							\
-+	({								\
-+		__typeof__(name##__imv) value;				\
-+		BUILD_BUG_ON(sizeof(value) > 8);			\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-1)\n\t"	\
-+					".byte 1\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 2:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-2)\n\t"	\
-+					".byte 2\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 4:							\
-+		case 8:	value = name##__imv;				\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
-+
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-lttng/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2008-01-30 09:14:21.000000000 -0500
-+++ linux-2.6-lttng/arch/powerpc/Kconfig	2008-01-30 09:33:42.000000000 -0500
-@@ -89,6 +89,7 @@ config PPC
- 	default y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_IMMEDIATE
- 
- config EARLY_PRINTK
+--- linux-2.6-lttng.orig/init/Kconfig	2008-01-29 15:26:54.000000000 -0500
++++ linux-2.6-lttng/init/Kconfig	2008-01-29 15:27:17.000000000 -0500
+@@ -444,6 +444,20 @@ config CC_OPTIMIZE_FOR_SIZE
+ config SYSCTL
  	bool
+ 
++config IMMEDIATE
++	default y if !DISABLE_IMMEDIATE
++	depends on HAVE_IMMEDIATE
++	bool
++	help
++	  Immediate values are used as read-mostly variables that are rarely
++	  updated. They use code patching to modify the values inscribed in the
++	  instruction stream. It provides a way to save precious cache lines
++	  that would otherwise have to be used by these variables. They can be
++	  disabled through the EMBEDDED menu.
++
++config HAVE_IMMEDIATE
++	def_bool n
++
+ menuconfig EMBEDDED
+ 	bool "Configure standard kernel features (for small systems)"
+ 	help
+@@ -679,6 +693,16 @@ config MARKERS
+ 
+ source "arch/Kconfig"
+ 
++config DISABLE_IMMEDIATE
++	default y if EMBEDDED
++	bool "Disable immediate values" if EMBEDDED
++	depends on HAVE_IMMEDIATE
++	help
++	  Disable code patching based immediate values for embedded systems. It
++	  consumes slightly more memory and requires to modify the instruction
++	  stream each time a variable is updated. Should really be disabled for
++	  embedded systems with read-only text.
++
+ endmenu		# General setup
+ 
+ config SLABINFO
 
 -- 
 Mathieu Desnoyers
