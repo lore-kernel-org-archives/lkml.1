@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935384AbYBBVS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934659AbYBBV0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935384AbYBBVS4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 16:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933995AbYBBVSf
+	id S934659AbYBBV0K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 16:26:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYBBVZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 16:18:35 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58325 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765651AbYBBVSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 16:18:34 -0500
-Subject: Re: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Miklos Szeredi <mszeredi@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20080130172646.GA2355@tv-sign.ru>
-References: <20080130142014.GA2164@tv-sign.ru>
-	 <1201712101.31222.22.camel@tucsk.pomaz.szeredi.hu>
-	 <20080130172646.GA2355@tv-sign.ru>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Sat, 02 Feb 2008 12:52:38 -0800
-Message-Id: <1201985558.22896.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Feb 2008 16:25:56 -0500
+Received: from hpsmtp-eml11.KPNXCHANGE.COM ([213.75.38.111]:42351 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756476AbYBBVZ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 16:25:56 -0500
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [REVIEW for merge] kbuild updates including silence of section mismatch check
+Cc: akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-To: <20080202203503.GA26415@uranus.ravnborg.org>
+References: <20080202203503.GA26415@uranus.ravnborg.org>
+Message-Id: <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Sat, 02 Feb 2008 22:25:51 +0100
+X-OriginalArrivalTime: 02 Feb 2008 21:25:54.0249 (UTC) FILETIME=[3132DB90:01C865E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sam Ravnborg wrote:
+> --- a/scripts/setlocalversion
+> +++ b/scripts/setlocalversion
+> @@ -45,3 +45,18 @@ if hgid=`hg id 2>/dev/null`; then
+> # All done with mercurial
+> exit
+> fi
+> +
+> +# Check for svn and a svn repo.
+> +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` ; then
+> +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> +
+> +       # Are there uncommitted changes?
+> +       if [ $changes != 0 ]; then
+> +               printf -- '-svn%s%s%s' "$rev" -dirty "$changes"
+> +       else
+> +               printf -- '-svn%s' "$rev"
+> +       fi
+> +
+> +       # All done with svn
+> +       exit
+> +fi
 
-On Wed, 2008-01-30 at 20:26 +0300, Oleg Nesterov wrote:
-> On 01/30, Miklos Szeredi wrote:
-> > 
-> > On Wed, 2008-01-30 at 17:20 +0300, Oleg Nesterov wrote:
-> > > Fix ->vm_file accounting, mmap_region() may do do_munmap().
-> > 
-> > There's a small problem with the patch: the vma itself is freed at
-> > unmap, so the fput(vma->vm_file) may crash.  Here's an updated patch.
-> 
-> Ah, indeed, thanks!
-> 
-> 
-> Offtopic. I noticed this problem while looking at this patch:
-> 
-> 	http://marc.info/?l=linux-mm-commits&m=120141116911711
-> 
-> So this (the old vma could be removed before we create the new mapping)
-> means that the patch above has another problem: if we are remapping the
-> whole VM_EXECUTABLE vma, removed_exe_file_vma() can clear ->exe_file
-> while it shouldn't (Matt Helsley cc'ed).
-> 
-> Oleg.
+This looks broken. Unless I'm very much mistaken the 'if' statement is
+always going to be true because the awk statement will always execute
+without error. Try: echo "" | awk '{print $NF}' || echo Error
 
-Only shared VMAs can be remapped by sys_remap_file_pages but all
-executable mappings are MAP_PRIVATE and hence lack the shared flag. I
-don't know of a way for userspace to change that flag so I think there's
-nothing that needs to be done here.
+So, the code should probably be changed to:
++if rev=`svn info 2>/dev/null | grep '^Revision' ; then
++	rev=`echo $rev | awk '{print $NF}'`
++       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
 
-Cc'ing linux-mm.
+or alternatively:
++if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` && \
++   [ -n "$rev" ] ; then 
++       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
 
 Cheers,
-	-Matt Helsley
+FJP
 
+P.S. Looks like the mercurial section is missing some indentation.
