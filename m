@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764082AbYBBEFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763882AbYBBEIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764082AbYBBEFk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Feb 2008 23:05:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760808AbYBBEFD
+	id S1763882AbYBBEIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Feb 2008 23:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYBBEIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Feb 2008 23:05:03 -0500
-Received: from qb-out-0506.google.com ([72.14.204.226]:57479 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759670AbYBBEFA (ORCPT
+	Fri, 1 Feb 2008 23:08:44 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:41030 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbYBBEIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Feb 2008 23:05:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rfUg00O5acUtVYwnYvNiM9b9mgzG3MORitO7gu2z6oYraXgA5GfmPWzycpEmxSy1qGxTAgqR7CCFxgtJqVUKW/HjsefpRSme3mnPSLTXvlG/YtJeJORyiIBMFU3JbyK4qx7MlmF6KMSpT7JQvIibX+sDsVTp0D4RZtYj/RUQK/M=
-Subject: [PATCH 2/2] x86: add cpu mtrr init function definitions to mtrr.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 01 Feb 2008 20:05:03 -0800
-Message-Id: <1201925103.23523.148.camel@brick>
+	Fri, 1 Feb 2008 23:08:44 -0500
+Date: Sat, 2 Feb 2008 05:43:18 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jike Song <albcamus@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Rijndael Cosque <rijcos@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: What's the status of x2APIC support in Linux kernel?
+Message-ID: <20080202044318.GC12644@one.firstfloor.org>
+References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <df9815e70802010053n4565397dofd847373df522e5c@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de> <df9815e70802011855p29c10787lcee23bc9fab181d4@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <df9815e70802011855p29c10787lcee23bc9fab181d4@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mtrr.h was included everywhere needed.  Fixes the following sparse
-warnings.  Also, the return types in the extern definitions were
-incorrect.
+> Section 5 and section 9.5 describe 'I/OxAPIC'. I'm not sure if it is
+> already supported by Linux, I guess it is not.
 
-arch/x86/kernel/cpu/mtrr/amd.c:113:12: warning: symbol 'amd_init_mtrr' was not declared. Should it be static?
-arch/x86/kernel/cpu/mtrr/cyrix.c:268:12: warning: symbol 'cyrix_init_mtrr' was not declared. Should it be static?
-arch/x86/kernel/cpu/mtrr/centaur.c:218:12: warning: symbol 'centaur_init_mtrr' was not declared. Should it be static?
+I'm not sure what the point of your questions is.  Do you want to 
+do something concrete or are you just interested in random buzzwords?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/cpu/mtrr/main.c |    4 ----
- arch/x86/kernel/cpu/mtrr/mtrr.h |    4 ++++
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Anyways as far as I know Linux supports the IO APICs implemented in all
+x86 chipsets fully. That is it doesn't use every possible feature they have,
+but I'm not aware of any particular limitation caused by Linux
+not supporting some IO APIC feature.
 
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 822d8f9..1e27b69 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -554,10 +554,6 @@ EXPORT_SYMBOL(mtrr_del);
-  * These should be called implicitly, but we can't yet until all the initcall
-  * stuff is done...
-  */
--extern void amd_init_mtrr(void);
--extern void cyrix_init_mtrr(void);
--extern void centaur_init_mtrr(void);
--
- static void __init init_ifs(void)
- {
- #ifndef CONFIG_X86_64
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-index fb74a2c..2cc77eb 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
-@@ -97,3 +97,7 @@ void mtrr_state_warn(void);
- const char *mtrr_attrib_to_str(int x);
- void mtrr_wrmsr(unsigned, unsigned, unsigned);
- 
-+/* CPU specific mtrr init functions */
-+int amd_init_mtrr(void);
-+int cyrix_init_mtrr(void);
-+int centaur_init_mtrr(void);
--- 
-1.5.4.rc4.1142.gf5a97
+The reason for the local x/APIC was that the original non x APIC did not support
+more than 8 logical CPUs being active in the system. Presumably IO xAPIC 
+refers to the IO APIC without this limitation too.
 
+-Andi
