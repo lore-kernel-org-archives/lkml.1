@@ -1,184 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbYBBXCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935126AbYBBXC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932806AbYBBXCU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 18:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934723AbYBBXBD
+	id S935126AbYBBXC5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 18:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763996AbYBBXCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 18:01:03 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:62514 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933231AbYBBXA7 (ORCPT
+	Sat, 2 Feb 2008 18:02:36 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35442 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756259AbYBBXCf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 18:00:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=eWqcEvVHberkic8uL/CTh2kR4GKdI6MWpB+FHC+9X52mCouuAleInK3z2Unxfici6Sq8A9CjzT6eCQKOglwfosMS81/3cfdQTtuYA7Z+RGpc04rEf2JWQKitlSjaZKnifhsAk+hHrrXu4jZIlJOf88t6rQyosV2XSHCAtbMCnA0=
-Date: Sun, 3 Feb 2008 02:00:53 +0300
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] Use clocklib for sa1100 sub-arch.
-Message-ID: <20080202230053.GA16906@doriath.ww600.siemens.net>
-References: <20080202225433.GA14685@doriath.ww600.siemens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080202225433.GA14685@doriath.ww600.siemens.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 2 Feb 2008 18:02:35 -0500
+Message-Id: <20080202230228.852294646@szeredi.hu>
+References: <20080202230111.346847183@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Sun, 03 Feb 2008 00:01:13 +0100
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: [patch 2/3] mm: bdi: use MAJOR:MINOR in /sys/class/bdi
+Content-Disposition: inline; filename=mm-bdi-use-major-minor-in-sys-class-bdi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
----
- arch/arm/Kconfig             |    1 +
- arch/arm/mach-sa1100/clock.c |   95 ++---------------------------------------
- 2 files changed, 6 insertions(+), 90 deletions(-)
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 45c1790..cd8f792 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -385,6 +385,7 @@ config ARCH_SA1100
- 	select ARCH_MTD_XIP
- 	select GENERIC_GPIO
- 	select GENERIC_TIME
-+	select HAVE_CLOCK_LIB
- 	help
- 	  Support for StrongARM 11x0 based boards.
- 
-diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
-index fc97fe5..6b3cc51 100644
---- a/arch/arm/mach-sa1100/clock.c
-+++ b/arch/arm/mach-sa1100/clock.c
-@@ -8,83 +8,13 @@
- #include <linux/err.h>
- #include <linux/string.h>
- #include <linux/clk.h>
-+#include <linux/clklib.h>
- #include <linux/spinlock.h>
- #include <linux/mutex.h>
- 
- #include <asm/hardware.h>
- 
--/*
-- * Very simple clock implementation - we only have one clock to
-- * deal with at the moment, so we only match using the "name".
-- */
--struct clk {
--	struct list_head	node;
--	unsigned long		rate;
--	const char		*name;
--	unsigned int		enabled;
--	void			(*enable)(void);
--	void			(*disable)(void);
--};
--
--static LIST_HEAD(clocks);
--static DEFINE_MUTEX(clocks_mutex);
--static DEFINE_SPINLOCK(clocks_lock);
--
--struct clk *clk_get(struct device *dev, const char *id)
--{
--	struct clk *p, *clk = ERR_PTR(-ENOENT);
--
--	mutex_lock(&clocks_mutex);
--	list_for_each_entry(p, &clocks, node) {
--		if (strcmp(id, p->name) == 0) {
--			clk = p;
--			break;
--		}
--	}
--	mutex_unlock(&clocks_mutex);
--
--	return clk;
--}
--EXPORT_SYMBOL(clk_get);
--
--void clk_put(struct clk *clk)
--{
--}
--EXPORT_SYMBOL(clk_put);
--
--int clk_enable(struct clk *clk)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&clocks_lock, flags);
--	if (clk->enabled++ == 0)
--		clk->enable();
--	spin_unlock_irqrestore(&clocks_lock, flags);
--	return 0;
--}
--EXPORT_SYMBOL(clk_enable);
--
--void clk_disable(struct clk *clk)
--{
--	unsigned long flags;
--
--	WARN_ON(clk->enabled == 0);
--
--	spin_lock_irqsave(&clocks_lock, flags);
--	if (--clk->enabled == 0)
--		clk->disable();
--	spin_unlock_irqrestore(&clocks_lock, flags);
--}
--EXPORT_SYMBOL(clk_disable);
--
--unsigned long clk_get_rate(struct clk *clk)
--{
--	return clk->rate;
--}
--EXPORT_SYMBOL(clk_get_rate);
--
--
--static void clk_gpio27_enable(void)
-+static int clk_gpio27_enable(struct clk *clk)
+Uniformly use MAJOR:MINOR in /sys/class/bdi/ for both block devices
+and non-block device backed filesystems: FUSE and NFS.
+
+Add symlink for block devices:
+
+    /sys/block/<name>/bdi -> /sys/class/bdi/<bdi>
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/block/genhd.c
+===================================================================
+--- linux.orig/block/genhd.c	2008-02-02 22:41:03.000000000 +0100
++++ linux/block/genhd.c	2008-02-02 22:50:03.000000000 +0100
+@@ -178,13 +178,17 @@ static int exact_lock(dev_t devt, void *
+  */
+ void add_disk(struct gendisk *disk)
  {
- 	/*
- 	 * First, set up the 3.6864MHz clock on GPIO 27 for the SA-1111:
-@@ -93,9 +23,11 @@ static void clk_gpio27_enable(void)
- 	GAFR |= GPIO_32_768kHz;
- 	GPDR |= GPIO_32_768kHz;
- 	TUCR = TUCR_3_6864MHz;
++	struct backing_dev_info *bdi;
 +
-+	return 0;
+ 	disk->flags |= GENHD_FL_UP;
+ 	blk_register_region(MKDEV(disk->major, disk->first_minor),
+ 			    disk->minors, NULL, exact_match, exact_lock, disk);
+ 	register_disk(disk);
+ 	blk_register_queue(disk);
+-	bdi_register(&disk->queue->backing_dev_info, NULL,
+-		"blk-%s", disk->disk_name);
++
++	bdi = &disk->queue->backing_dev_info;
++	bdi_register_dev(bdi, MKDEV(disk->major, disk->first_minor));
++	sysfs_create_link(&disk->dev.kobj, &bdi->dev->kobj, "bdi");
  }
  
--static void clk_gpio27_disable(void)
-+static void clk_gpio27_disable(struct clk *clk)
- {
- 	TUCR = 0;
- 	GPDR &= ~GPIO_32_768kHz;
-@@ -109,23 +41,6 @@ static struct clk clk_gpio27 = {
- 	.disable	= clk_gpio27_disable,
- };
+ EXPORT_SYMBOL(add_disk);
+@@ -192,8 +196,9 @@ EXPORT_SYMBOL(del_gendisk);	/* in partit
  
--int clk_register(struct clk *clk)
--{
--	mutex_lock(&clocks_mutex);
--	list_add(&clk->node, &clocks);
--	mutex_unlock(&clocks_mutex);
--	return 0;
--}
--EXPORT_SYMBOL(clk_register);
--
--void clk_unregister(struct clk *clk)
--{
--	mutex_lock(&clocks_mutex);
--	list_del(&clk->node);
--	mutex_unlock(&clocks_mutex);
--}
--EXPORT_SYMBOL(clk_unregister);
--
- static int __init clk_init(void)
+ void unlink_gendisk(struct gendisk *disk)
  {
- 	clk_register(&clk_gpio27);
--- 
-1.5.3.8
+-	blk_unregister_queue(disk);
++	sysfs_remove_link(&disk->dev.kobj, "bdi");
+ 	bdi_unregister(&disk->queue->backing_dev_info);
++	blk_unregister_queue(disk);
+ 	blk_unregister_region(MKDEV(disk->major, disk->first_minor),
+ 			      disk->minors);
+ }
+Index: linux/include/linux/backing-dev.h
+===================================================================
+--- linux.orig/include/linux/backing-dev.h	2008-02-02 22:41:03.000000000 +0100
++++ linux/include/linux/backing-dev.h	2008-02-02 22:50:03.000000000 +0100
+@@ -62,6 +62,7 @@ void bdi_destroy(struct backing_dev_info
+ 
+ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 		const char *fmt, ...);
++int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
+ void bdi_unregister(struct backing_dev_info *bdi);
+ 
+ static inline void __add_bdi_stat(struct backing_dev_info *bdi,
+Index: linux/mm/backing-dev.c
+===================================================================
+--- linux.orig/mm/backing-dev.c	2008-02-02 22:43:36.000000000 +0100
++++ linux/mm/backing-dev.c	2008-02-02 22:50:03.000000000 +0100
+@@ -143,6 +143,12 @@ exit:
+ }
+ EXPORT_SYMBOL(bdi_register);
+ 
++int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev)
++{
++	return bdi_register(bdi, NULL, "%u:%u", MAJOR(dev), MINOR(dev));
++}
++EXPORT_SYMBOL(bdi_register_dev);
++
+ void bdi_unregister(struct backing_dev_info *bdi)
+ {
+ 	if (bdi->dev) {
+Index: linux/fs/fuse/inode.c
+===================================================================
+--- linux.orig/fs/fuse/inode.c	2008-02-02 22:41:03.000000000 +0100
++++ linux/fs/fuse/inode.c	2008-02-02 22:50:03.000000000 +0100
+@@ -472,8 +472,7 @@ static struct fuse_conn *new_conn(struct
+ 		err = bdi_init(&fc->bdi);
+ 		if (err)
+ 			goto error_kfree;
+-		err = bdi_register(&fc->bdi, NULL, "fuse-%u:%u",
+-				   MAJOR(fc->dev), MINOR(fc->dev));
++		err = bdi_register_dev(&fc->bdi, fc->dev);
+ 		if (err)
+ 			goto error_bdi_destroy;
+ 		fc->reqctr = 0;
+Index: linux/fs/nfs/super.c
+===================================================================
+--- linux.orig/fs/nfs/super.c	2008-02-02 22:41:03.000000000 +0100
++++ linux/fs/nfs/super.c	2008-02-02 22:50:03.000000000 +0100
+@@ -1477,8 +1477,7 @@ static int nfs_compare_super(struct supe
+ 
+ static int nfs_bdi_register(struct nfs_server *server)
+ {
+-	return bdi_register(&server->backing_dev_info, NULL, "nfs-%u:%u",
+-			    MAJOR(server->s_dev), MINOR(server->s_dev));
++	return bdi_register_dev(&server->backing_dev_info, server->s_dev);
+ }
+ 
+ static int nfs_get_sb(struct file_system_type *fs_type,
+Index: linux/Documentation/ABI/testing/sysfs-class-bdi
+===================================================================
+--- linux.orig/Documentation/ABI/testing/sysfs-class-bdi	2008-02-02 22:41:03.000000000 +0100
++++ linux/Documentation/ABI/testing/sysfs-class-bdi	2008-02-02 22:50:03.000000000 +0100
+@@ -6,17 +6,13 @@ Description:
+ Provide a place in sysfs for the backing_dev_info object.
+ This allows us to see and set the various BDI specific variables.
+ 
+-The <bdi> identifyer can take the following forms:
++The <bdi> identifier can be either of the following:
+ 
+-blk-NAME
++MAJOR:MINOR
+ 
+-	Block devices, NAME is 'sda', 'loop0', etc...
+-
+-FSTYPE-MAJOR:MINOR
+-
+-	Non-block device backed filesystems which provide their own
+-	BDI, such as NFS and FUSE.  MAJOR:MINOR is the value of st_dev
+-	for files on this filesystem.
++	Device number for block devices, or value of st_dev on
++	non-block filesystems which provide their own BDI, such as NFS
++	and FUSE.
+ 
+ default
+ 
 
-
--- 
-With best wishes
-Dmitry
-
+--
