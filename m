@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934741AbYBBUsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934878AbYBBUul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934741AbYBBUsy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 15:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763286AbYBBUso
+	id S934878AbYBBUul (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 15:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761814AbYBBUu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 15:48:44 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:60276 "EHLO mail.dvmed.net"
+	Sat, 2 Feb 2008 15:50:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:60295 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760530AbYBBUsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 15:48:43 -0500
-Message-ID: <47A4D71F.3060009@garzik.org>
-Date: Sat, 02 Feb 2008 15:48:31 -0500
+	id S1761212AbYBBUu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 15:50:28 -0500
+Message-ID: <47A4D791.3050700@garzik.org>
+Date: Sat, 02 Feb 2008 15:50:25 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [patch] pci: pci_enable_device_bars() fix
-References: <20080201231147.GA18174@suse.de> <20080202111322.GA30767@elte.hu> <47A49171.2000003@garzik.org> <20080202170828.GA12748@elte.hu> <47A4A96D.2040709@garzik.org> <20080202175738.GA26560@elte.hu> <47A4BB3C.6050709@garzik.org> <20080202193524.GC27927@elte.hu>
-In-Reply-To: <20080202193524.GC27927@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: netdev@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [RFC] 3c509: convert to isa_driver and pnp_driver v2
+References: <200801312012.43447.linux@rainbow-software.org> <200802021925.36552.linux@rainbow-software.org>
+In-Reply-To: <200802021925.36552.linux@rainbow-software.org>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
@@ -33,28 +29,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> so please tell me Jeff. If Greg, who is the super-maintainer of your 
-> code area, and who deals with your code every day and changes it every 
-> minute and hour, simply did not Cc: the SCSI list - how am i, a largely 
-> outside party in this matter, supposed to notice that 3 maintainers and 
-> 3 mailing lists in the Cc: were somehow not enough and that i was 
-> supposed to grow the already sizable Cc: list even more?
+Ondrej Zary wrote:
+> Hello,
+> this is second version of the patch. Autoloading using udev works fine with 
+> PnP card. Hibernation now works both in PnP and ISA modes. The I/O address 
+> used for non-pnp ISA card detection is now not released as it's needed to 
+> wake up the card.
+> 
+> Manual irq and transceiver settings aren't implemented yet. Operation with 
+> multiple cards is not tested - I'll try 3 cards in both PnP and ISA modes. 
+> There is some code that is the same in each of the 4 probe functions (isa, 
+> pnp, eisa and mca), which should be probably separated into a function.
+> 
+> I have no EISA or MCA machine so I hope that I didn't break them.
 
-Because, regardless of the situation, it's both common courtesy and wise 
-practice to CC relevant driver maintainers, when you touch a driver.
+Looks pretty good at first glance...
 
-And it's just common sense:  Greg simply does not know the intimate 
-details of every PCI driver.  Nor do I.  Nor you.
-
-In the case of lpfc here, we have an active driver maintainer, and an 
-up-to-date MAINTAINERS entry.  Even if you are too slack to read 
-MAINTAINERS, 'git log' would have given you the same info.
-
-Don't pretend there is some benefit here to ignoring the people that 
-best know the driver.  I don't buy that; it simply makes no engineering 
-sense whatsoever.
+I'll throw it in my queue.  Want to add a signed-off-by:  ?
 
 	Jeff
+
 
 
