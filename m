@@ -1,196 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbYBBNwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbYBBNwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763508AbYBBNwk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 08:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762856AbYBBNwV
+	id S1758006AbYBBNwz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 08:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762953AbYBBNw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 08:52:21 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39021 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762754AbYBBNwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 08:52:19 -0500
-Date: Sat, 2 Feb 2008 14:52:22 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC] Add EXPORT_INIT_SYMBOL()?
-Message-ID: <20080202135222.GA23700@uranus.ravnborg.org>
+	Sat, 2 Feb 2008 08:52:27 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3203 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762799AbYBBNwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 08:52:22 -0500
+Date: Sat, 2 Feb 2008 13:52:07 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature
+Message-ID: <20080202135207.GA4456@ucw.cz>
+References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <479A0F91.2030206@redhat.com> <20080125164229.GD17907@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080125164229.GD17907@mit.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While analysing some of the section mismatches reported
-by modpost I came to the conclusion that there
-was no good way to say that a certain function could
-both be annotated say __cpuinit and exported.
+On Fri 2008-01-25 11:42:29, Theodore Tso wrote:
+> On Fri, Jan 25, 2008 at 10:34:25AM -0600, Eric Sandeen wrote:
+> > > But it was this concern which is why ext3 never exported freeze
+> > > functionality to userspace, even though other commercial filesystems
+> > > do support this.  It wasn't that it wasn't considered, but the concern
+> > > about whether or not it was sufficiently safe to make available.
+> > 
+> > What's the safety concern; that the admin will forget to unfreeze?
+> 
+> That the admin would manage to deadlock him/herself and wedge up the
+> whole system...
+> 
+> > I'm also not sure I see the point of the timeout in the original patch;
+> > either you are done snapshotting and ready to unfreeze, or you're not;
+> > 1, or 2, or 3 seconds doesn't really matter.  When you're done, you're
+> > done, and you can only unfreeze then.  Shouldn't this be done
+> > programmatically, and not with some pre-determined timeout?
+> 
+> This is only a guess, but I suspect it was a fail-safe in case the
+> admin did manage to deadlock him/herself.  
+> 
+> I would think a better approach would be to make the filesystem
+> unfreeze if the file descriptor that was used to freeze the filesystem
+> is closed, and then have explicit deadlock detection that kills the
+> process doing the freeze, at which point the filesystem unlocks and
+> the system can recover.
 
-One example is register_cpu_notifier() in kernel/cpu.c
-The function is annotated __cpuinit which is correct
-as this function is used only in the startup phase
-of a non HOTPLUG_CPU kernel and always available if
-CONFIG_HOTPLUG_CPU is equal 'y'.
+Hmm, not sure that works.
 
-There are more examples in the tree - I have used
-register_cpu_notifier as an example.
+I have shell I used to freeze the ext3. Then it is pushed out by dirty
+data waiting to be written to that ext3. Deadlock, with file
+descriptor still open, and very hard to detect.
 
-So that left me with the following choices:
-a) Drop the annotation of register_cpu_notifier()
-   thus wasting memory and loosing the checks
-   performed by modpost.
-b) Add a small helper function annotated __ref
-   that would call the __cpuinit annotated
-   __register_cpu_notifier()
-c) Drop all section mismatch checks for exported
-   symbols expect those annotated with __init
-d) Add a new EXPORT_SYMBOL variant that tell modpost
-   that this symbol are safe to use any of the
-   __devinit, __cpuinit, __meminit annotated
-   functions.
+Ok, OOM killer will eventually hit the shell, close the fd and
+unfreeze, but that is probably not what you want.
 
-I was quite tempted to just go for c) but decided to
-get some opinions on approach d).
-Implemented with following patch - and uses
-the new EXPOST_INIT_SYMBOL() for register_cpu_notifier.
-
-Btw. I went for EXPORT_INIT_SYMBOL in favour of
-EXPORT_SYMBOL_INIT as the latter syntax is used for
-symbol classification.
-
-Comments?
-
-Note: This is an RFC - I will split it up in two
-patches if we go for this. One that introduce
-EXPORT_INIT_SYMBOL and another that use the
-new EXPORT for register_cpu_notifier().
-
-	Sam
-
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f784d2f..c64a675 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -97,6 +97,7 @@
- 	__ksymtab         : AT(ADDR(__ksymtab) - LOAD_OFFSET) {		\
- 		VMLINUX_SYMBOL(__start___ksymtab) = .;			\
- 		*(__ksymtab)						\
-+		*(__ksymtab_init)					\
- 		VMLINUX_SYMBOL(__stop___ksymtab) = .;			\
- 	}								\
- 									\
-@@ -132,6 +133,7 @@
- 	__kcrctab         : AT(ADDR(__kcrctab) - LOAD_OFFSET) {		\
- 		VMLINUX_SYMBOL(__start___kcrctab) = .;			\
- 		*(__kcrctab)						\
-+		*(__kcrctab_init)					\
- 		VMLINUX_SYMBOL(__stop___kcrctab) = .;			\
- 	}								\
- 									\
-diff --git a/include/linux/module.h b/include/linux/module.h
-index ac481e2..f853b06 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -206,6 +206,14 @@ void *__symbol_get_gpl(const char *symbol);
- #define EXPORT_SYMBOL_GPL_FUTURE(sym)				\
- 	__EXPORT_SYMBOL(sym, "_gpl_future")
- 
-+/*
-+ * Use EXPORT_INIT_SYMBOL for code that are annotated __*init
-+ * to document that this symbol is used only during the
-+ * early init phase.
-+ */
-+#define EXPORT_INIT_SYMBOL(sym)					\
-+	__EXPORT_SYMBOL(sym, "_init")
-+
- 
- #ifdef CONFIG_UNUSED_SYMBOLS
- #define EXPORT_UNUSED_SYMBOL(sym) __EXPORT_SYMBOL(sym, "_unused")
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index e0d3a4f..91833af 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -147,7 +147,7 @@ int __cpuinit register_cpu_notifier(struct notifier_block *nb)
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 
--EXPORT_SYMBOL(register_cpu_notifier);
-+EXPORT_INIT_SYMBOL(register_cpu_notifier);
- 
- void unregister_cpu_notifier(struct notifier_block *nb)
- {
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index f8efc93..f4d660e 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -33,7 +33,8 @@ static int sec_mismatch_verbose = 1;
- 
- enum export {
- 	export_plain,      export_unused,     export_gpl,
--	export_unused_gpl, export_gpl_future, export_unknown
-+	export_unused_gpl, export_gpl_future, export_init,
-+	export_unknown
- };
- 
- #define PRINTF __attribute__ ((format (printf, 1, 2)))
-@@ -220,6 +221,7 @@ static struct {
- 	{ .str = "EXPORT_SYMBOL_GPL",        .export = export_gpl },
- 	{ .str = "EXPORT_UNUSED_SYMBOL_GPL", .export = export_unused_gpl },
- 	{ .str = "EXPORT_SYMBOL_GPL_FUTURE", .export = export_gpl_future },
-+	{ .str = "EXPORT_INIT_SYMBOL",       .export = export_init },
- 	{ .str = "(unknown)",                .export = export_unknown },
- };
- 
-@@ -254,6 +256,8 @@ static enum export export_from_sec(struct elf_info *elf, Elf_Section sec)
- 		return export_unused_gpl;
- 	else if (sec == elf->export_gpl_future_sec)
- 		return export_gpl_future;
-+	else if (sec == elf->export_init_sec)
-+		return export_init;
- 	else
- 		return export_unknown;
- }
-@@ -435,6 +439,8 @@ static int parse_elf(struct elf_info *info, const char *filename)
- 			info->export_unused_gpl_sec = i;
- 		else if (strcmp(secname, "__ksymtab_gpl_future") == 0)
- 			info->export_gpl_future_sec = i;
-+		else if (strcmp(secname, "__ksymtab_init") == 0)
-+			info->export_init_sec = i;
- 
- 		if (sechdrs[i].sh_type != SHT_SYMTAB)
- 			continue;
-@@ -867,6 +873,13 @@ const struct sectioncheck sectioncheck[] = {
- 	.tosec   = { ALL_INIT_SECTIONS, NULL },
- 	.mismatch = EXIT_TO_INIT,
- },
-+/* export from __ksymtab_init to *init / *exit functions or data is OK */
-+{
-+	.fromsec = { "__ksymtab_init*", NULL },
-+	.tosec   = { DEV_INIT_SECTIONS, CPU_INIT_SECTIONS, MEM_INIT_SECTIONS,
-+	             DEV_EXIT_SECTIONS, CPU_EXIT_SECTIONS, MEM_EXIT_SECTIONS, NULL },
-+	.mismatch = NO_MISMATCH
-+},
- /* Do not export init/exit functions or data */
- {
- 	.fromsec = { "__ksymtab*", NULL },
-@@ -1573,6 +1586,7 @@ static void check_for_gpl_usage(enum export exp, const char *m, const char *s)
- 	case export_plain:
- 	case export_unused:
- 	case export_unknown:
-+	case export_init:
- 		/* ignore */
- 		break;
- 	}
-diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index 999f15e..3d3ea05 100644
---- a/scripts/mod/modpost.h
-+++ b/scripts/mod/modpost.h
-@@ -126,6 +126,7 @@ struct elf_info {
- 	Elf_Section  export_gpl_sec;
- 	Elf_Section  export_unused_gpl_sec;
- 	Elf_Section  export_gpl_future_sec;
-+	Elf_Section  export_init_sec;
- 	const char   *strtab;
- 	char	     *modinfo;
- 	unsigned int modinfo_len;
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
