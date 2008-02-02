@@ -1,36 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbYBBQHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbYBBQN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbYBBQHx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 11:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYBBQHq
+	id S1761530AbYBBQN4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 11:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYBBQNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 11:07:46 -0500
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:59503 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbYBBQHp (ORCPT
+	Sat, 2 Feb 2008 11:13:49 -0500
+Received: from mailfe14.tele2.it ([212.247.155.173]:56790 "EHLO swip.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750768AbYBBQNs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 11:07:45 -0500
-To: Peter Teoh <htmldeveloper@gmail.com>
-Subject: Re: Incompatibility of "const" and __xxxinitdata?
-Cc: linux-kernel@vger.kernel.org
-In-reply-To: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
-References: <804dabb00802020720p2684dd1eyc29d1e1410407e08@mail.gmail.com>
-Message-Id: <E1JLKu5-0002b0-Gb@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Sat, 02 Feb 2008 17:07:41 +0100
-X-OriginalArrivalTime: 02 Feb 2008 16:07:44.0025 (UTC) FILETIME=[BE89D890:01C865B5]
+	Sat, 2 Feb 2008 11:13:48 -0500
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Sat, 02 Feb 2008 11:13:48 EST
+X-Cloudmark-Score: 0.000000 []
+Message-ID: <47A488A4.8040107@gmail.com>
+Date: Sat, 02 Feb 2008 16:13:40 +0100
+From: Massimo Maiurana <maiurana@gmail.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+MIME-Version: 1.0
+To: sam@ravnborg.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] kconfig: fix target update-po-config in Makefile
+X-Enigmail-Version: 0.94.4.0
+OpenPGP: id=7044D601
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Teoh wrote:
-> In include/linux/init.h, it is documented that all __xxxinitdata
-> declaration must not have constant, as show below:
+Due to recent changes in arch/cris, "make update-po-config" fails
+because it can't include arch/cris/arch as it is a symlink generated
+at build time.
+Patch below fixes this by creating, and then removing at the end, a
+symlink to arch/cris/arch-v10 (should it point to arch-v32? arch-v10
+contains more help messages).
 
-See: http://lkml.org/lkml/2008/1/26/182
+Signed-off-by: Massimo Maiurana <maiurana@gmail.com>
 
-There's a fairly major cleanup happening at the moment as you could see from
-the mailing list archives for the past week or so.
+---
+diff -Nru linux/scripts/kconfig/Makefile linux.new/scripts/kconfig/Makefile
+--- linux/scripts/kconfig/Makefile	2008-01-25 13:05:12.000000000 +0100
++++ linux.new/scripts/kconfig/Makefile	2008-02-02 15:40:48.000000000 +0100
+@@ -35,13 +35,14 @@
+ 	    --output $(obj)/config.pot
+ 	$(Q)sed -i s/CHARSET/UTF-8/ $(obj)/config.pot
+ 	$(Q)ln -fs Kconfig.i386 arch/um/Kconfig.arch
++	$(Q)ln -fs arch-v10 arch/cris/arch
+ 	(for i in `ls arch/`;                            \
+ 	do                                               \
+ 	    $(obj)/kxgettext arch/$$i/Kconfig;           \
+ 	done ) >> $(obj)/config.pot
+ 	msguniq --sort-by-file --to-code=UTF-8 $(obj)/config.pot \
+ 	    --output $(obj)/linux.pot
+-	$(Q)rm -f arch/um/Kconfig.arch
++	$(Q)rm -f arch/um/Kconfig.arch arch/cris/arch
+ 	$(Q)rm -f $(obj)/config.pot
 
-Cheers,
-FJP
+ PHONY += randconfig allyesconfig allnoconfig allmodconfig defconfig
+
+
+-- 
+       Massimo Maiurana         massimo<at>ragusa.linux.it
+       http://massimo.solira.org       GPG keyID #7044D601
+
+Articolo 11 - L'Italia ripudia la guerra come strumento di offesa
+alla libertà degli altri popoli e come mezzo di risoluzione delle
+controversie internazionali....
+
