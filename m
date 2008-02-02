@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbYBBLwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbYBBMD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760947AbYBBLwe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 06:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYBBLw1
+	id S1758942AbYBBMD5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 07:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYBBMDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 06:52:27 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:40409 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbYBBLw0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 06:52:26 -0500
-Date: Sat, 2 Feb 2008 12:52:25 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Laurent Vivier <Laurent.Vivier@bull.net>, Paul.Clements@steeleye.com,
-       nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow NBD to be used locally
-In-Reply-To: <20080202112336.GB5362@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0802021243300.18790@fbirervta.pbzchgretzou.qr>
-References: <1201872332265-git-send-email-Laurent.Vivier@bull.net>
- <20080202112336.GB5362@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 2 Feb 2008 07:03:48 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51273 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753393AbYBBMDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 07:03:47 -0500
+Date: Sat, 2 Feb 2008 23:03:47 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [SH] remove unneeded cast
+Message-Id: <20080202230347.a126a143.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+now that platform_device_register_simple() takes a "const chat *".
 
-On Feb 2 2008 12:23, Pavel Machek wrote:
->On Fri 2008-02-01 14:25:32, Laurent Vivier wrote:
->> This patch allows Network Block Device to be mounted locally.
->
->What is local nbd good for? Use loop instead...
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/sh/drivers/dma/dma-api.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Local NBD is good for when the content you want to make available
-through the block device is dynamic (generated on-the-fly),
-non-linear or supersparse.
+This hasn't even been built, but is straight forward.
 
-Take for example VMware virtual disks. Just a guess, but
-they roughly can look like this:
+diff --git a/arch/sh/drivers/dma/dma-api.c b/arch/sh/drivers/dma/dma-api.c
+index 76ed816..727126e 100644
+--- a/arch/sh/drivers/dma/dma-api.c
++++ b/arch/sh/drivers/dma/dma-api.c
+@@ -350,7 +350,7 @@ int register_dmac(struct dma_info *info)
+ 
+ 	BUG_ON((info->flags & DMAC_CHANNELS_CONFIGURED) && !info->channels);
+ 
+-	info->pdev = platform_device_register_simple((char *)info->name, -1,
++	info->pdev = platform_device_register_simple(info->name, -1,
+ 						     NULL, 0);
+ 	if (IS_ERR(info->pdev))
+ 		return PTR_ERR(info->pdev);
+-- 
+1.5.3.8
 
-  kilobytes  0.. 1: header
-  kilobytes  1..10: correspond to LBA 0..20
-  kilobytes 11..20: correspond to LBA 40..60
-  kilobytes 21..22: correspond to LBA 22..23
 
-So what we have is non-linearity -- LBA 22 comes after LBA 40 -- loop
-does not deal with that.
 
-And there is supersparsity -- the VMDK file itself is complete, but
-unallocated regions like LBA 24..40 are sparse/zero when projected
-onto a file/block device, respectively; loop cannot deal with that
-either.
-
-In fact, VMware uses local nbd today for its vmware-loop helper
-utility, most likely because of the above-mentioned reasons. (Though
-it quite often hung last time I tried.)
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
