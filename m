@@ -1,46 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763705AbYBCLOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762781AbYBCLUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763705AbYBCLOc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 06:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYBCLOZ
+	id S1762781AbYBCLUz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 06:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYBCLUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 06:14:25 -0500
-Received: from smtp7-g19.free.fr ([212.27.42.64]:52078 "EHLO smtp7-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbYBCLOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 06:14:24 -0500
-X-Greylist: delayed 160150 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Feb 2008 06:14:23 EST
-Message-ID: <2d7501c86656$4fe75380$f9b5a8c0@pii350>
-From: "Gilles Espinasse" <g.esp@free.fr>
-To: <greg@kroah.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only 
-Date: Sun, 3 Feb 2008 12:17:06 +0100
+	Sun, 3 Feb 2008 06:20:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:7853 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753519AbYBCLUo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 06:20:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LXQNghVkb7F/n2/YNijGp3yBG81i5tXIIDR0Nz2JS57b4wJRJnjFZO9v9ceyyadmX2Q59atPeo9IvaOSeqv0xVsODaose5aD91oTEB5l0nrCRMYgEIZjuY4VZJeLB77V2pveeOAilRuLRyzKIW8AToZ7tiaDzhlZInGmJ1RE1S4=
+Message-ID: <804dabb00802030320s5d60a871kbae9f48d67380384@mail.gmail.com>
+Date: Sun, 3 Feb 2008 19:20:44 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: "Wenji Huang" <wenji.huang@oracle.com>
+Subject: Re: LPFC compilation error in 2.6.24-git12/git13
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47A58B05.6010702@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1914
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
+Content-Disposition: inline
+References: <47A58B05.6010702@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Again, I have asked for examples, and only received 2.  One (sound
-> driver) is totally not needed at all, as the kernel provides that
-> capability, and the other hasn't run in a modern distro for years.
+On 2/3/08, Wenji Huang <wenji.huang@oracle.com> wrote:
+> Hi,
+>
+>  Found compilation error in 2.6.24-git12/git13:
+>
+>   CC [M]  drivers/scsi/lpfc/lpfc_mem.o
+>   CC [M]  drivers/scsi/lpfc/lpfc_sli.o
+>   CC [M]  drivers/scsi/lpfc/lpfc_ct.o
+>   CC [M]  drivers/scsi/lpfc/lpfc_els.o
+>   CC [M]  drivers/scsi/lpfc/lpfc_hbadisc.o
+>   CC [M]  drivers/scsi/lpfc/lpfc_init.o
+> drivers/scsi/lpfc/lpfc_init.c: In function 'lpfc_pci_probe_one':
+> drivers/scsi/lpfc/lpfc_init.c:1897: error: implicit declaration of
+> function 'pci_enable_device_bars'
+> make[3]: *** [drivers/scsi/lpfc/lpfc_init.o] Error 1
+> make[2]: *** [drivers/scsi/lpfc] Error 2
+> make[1]: *** [drivers/scsi] Error 2
+> make: *** [drivers] Error 2
+>
+> pci_enable_device_bars is removed in commit
+> 215e871aaa3d94540121a3809d80d0c5e5686e4f.
+>
+> Regards,
+> Wenji
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
 
-I would consider you are a bit fast to state that :
+Removed by:
 
-a7n8x-e:~# gcc -dumpversion
-3.3.6
-a7n8x-e:~# cat /etc/issue
-Debian GNU/Linux 4.0 \n \l
+http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg241836.html
 
-So unicorn driver could still be compiled on the current stable Debian that
-has been released in April 2007.
+Following suggestions from:
 
-Gilles
+http://lkml.org/lkml/2007/12/17/422
+and
+http://www.gossamer-threads.com/lists/linux/kernel/873333
 
+This is my suggested patch:
+
+
+--- drivers/scsi/lpfc/lpfc_init.c       2008-02-03 19:26:42.000000000 +0800
++++ lpfc_init.c.old     2008-02-03 19:26:20.000000000 +0800
+@@ -1894,7 +1894,7 @@ lpfc_pci_probe_one(struct pci_dev *pdev,
+        uint16_t iotag;
+        int bars = pci_select_bars(pdev, IORESOURCE_MEM);
+
+-       if (pci_enable_device_io(pdev))
++       if (pci_enable_device_bars(pdev, bars))
+                goto out;
+        if (pci_request_selected_regions(pdev, bars, LPFC_DRIVER_NAME))
+                goto out_disable_device;
+
+Is that correct?
