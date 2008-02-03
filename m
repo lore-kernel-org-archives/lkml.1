@@ -1,101 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935706AbYBCDoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763129AbYBCEV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935706AbYBCDoA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 22:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbYBCDnt
+	id S1763129AbYBCEV4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 23:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYBCEVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 22:43:49 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:51251 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYBCDns (ORCPT
+	Sat, 2 Feb 2008 23:21:46 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:42815 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752254AbYBCEVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 22:43:48 -0500
-Date: Sat, 02 Feb 2008 22:43:13 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [BUG] 2.6.24 refuses to boot - ATA problem?
-In-reply-to: <47A51AD7.3070102@garzik.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Chris Rankin <rankincj@yahoo.com>, linux-ide@vger.kernel.org,
+	Sat, 2 Feb 2008 23:21:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=F/fhlpAxHK911gp3HVVdZhOK1uuAMX7MMKLtsdcfjnxZRw1p3VoFUt2XDZKTeJAC26x0rZ7FRLd2mQj0DXAGta2y7cDCw2HqYatB81IDKCD0XZktz0ucyhojvt1BYflsNMyRyh1Pp91ulZwzxgUG6Kic54mEvM5Qf0cmam2OPcI=
+Subject: [PATCH] jbd/jbd2: sparse warnings in revoke.c, journal.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "Stephen C. Tweedie" <sct@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Message-id: <200802022243.13710.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <745427.71265.qm@web52907.mail.re2.yahoo.com>
- <47A51AD7.3070102@garzik.org>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Content-Type: text/plain
+Date: Sat, 02 Feb 2008 20:21:53 -0800
+Message-Id: <1202012513.1844.47.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008, Jeff Garzik wrote:
->Chris Rankin wrote:
->> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
->> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
->> res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
->> ata1.00: status: { DRDY }
->> ata1: soft resetting link
->> ata1.00: configured for UDMA/66
->> ata1: EH complete
->> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
->> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
->> res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
->> ata1.00: status: { DRDY }
->> ata1: soft resetting link
->
->Had at least one other report like this...  Sleepiness prevents me from
->recalling more at the moment, but I think the other report was fixed
->with a special ACPI switch...
->
-I think that one came from me, but it also gets over 14,000 hits on google.
+fs/jbd/revoke.c:176:29: warning: Using plain integer as NULL pointer
+fs/jbd/revoke.c:182:28: warning: Using plain integer as NULL pointer
+fs/jbd/journal.c:1622:2: warning: Using plain integer as NULL pointer
+fs/jbd/journal.c:1629:28: warning: Using plain integer as NULL pointer
 
-Now Jeff, here is the strange part.  That error was killing me, many times 
-an hour and eventually crashing completely, repeatedly.
+fs/jbd2/revoke.c:177:34: warning: Using plain integer as NULL pointer
+fs/jbd2/revoke.c:183:33: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:222:2: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:222:2: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:234:3: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:234:3: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:1972:2: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:1979:33: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:2005:13: warning: Using plain integer as NULL pointer
+fs/jbd2/journal.c:2012:17: warning: Using plain integer as NULL pointer
 
-I applied that kernel argument acpi_use_timer_override once and have not 
-had the error since, and that includes one test of a full let it cool for 
-a minute powerdown reboot to see if it would come back, which it did not.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ fs/jbd/journal.c  |    4 ++--
+ fs/jbd/revoke.c   |    4 ++--
+ fs/jbd2/journal.c |   12 ++++++------
+ fs/jbd2/revoke.c  |    4 ++--
+ 4 files changed, 12 insertions(+), 12 deletions(-)
 
-That argument causes the kernel to log this as its responding to that command:
-
-[   27.097095] ENABLING IO-APIC IRQs
-[   27.097287] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-[   27.107291] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-[   27.107343] ...trying to set up timer (IRQ0) through the 8259A ...  failed.
-[   27.107346] ...trying to set up timer as Virtual Wire IRQ... failed.
-[   27.117353] ...trying to set up timer as ExtINT IRQ... works.
-
-The last 4 lines above are not logged without that argument.  So my theory ATM
-is that this forced the kernel to initialize something in the boards
-registers that it does not initialize without that command, and that its
-going fubar as shown in the msg quoted above is a totally random thing, perhaps 
-dependent on the phase of one of jupiters moons as to what state it powers 
-up in.  And I got lucky, so far in that my single powerdown reset didn't 
-trigger it again...  And you _know_ what that knocking sound is by now. :)
+diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
+index 5d14243..0459657 100644
+--- a/fs/jbd/journal.c
++++ b/fs/jbd/journal.c
+@@ -1619,14 +1619,14 @@ static int journal_init_journal_head_cache(void)
+ {
+ 	int retval;
  
-That's my admittedly hardware oriented view of the goings on.  But I also
-think it should be a good clue as to what piece of the acpi code
-needs walked around in and its tires kicked again, with an eye toward 
-making that item a wee bit more intelligently done.  If you can cobble
-up something that will extract the data and prove what fails, I'll be 
-glad to play guinea pig.  With ccache, a kernel build is < 15 minutes to
-actually running it.
-
-My $0.02 in 1934 dollars.  Adjust for inflation since.
-
->/me puts in pile for Monday...
->
->	Jeff
-
-Thanks Jeff.  I'm glad to see that this isn't scheduled to 'fall through
-the cracks' as does happen when folks get busy.
-
+-	J_ASSERT(journal_head_cache == 0);
++	J_ASSERT(!journal_head_cache);
+ 	journal_head_cache = kmem_cache_create("journal_head",
+ 				sizeof(struct journal_head),
+ 				0,		/* offset */
+ 				SLAB_TEMPORARY,	/* flags */
+ 				NULL);		/* ctor */
+ 	retval = 0;
+-	if (journal_head_cache == 0) {
++	if (!journal_head_cache) {
+ 		retval = -ENOMEM;
+ 		printk(KERN_EMERG "JBD: no memory for journal_head cache\n");
+ 	}
+diff --git a/fs/jbd/revoke.c b/fs/jbd/revoke.c
+index ad2eacf..d5f8eee 100644
+--- a/fs/jbd/revoke.c
++++ b/fs/jbd/revoke.c
+@@ -173,13 +173,13 @@ int __init journal_init_revoke_caches(void)
+ 					   0,
+ 					   SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY,
+ 					   NULL);
+-	if (revoke_record_cache == 0)
++	if (!revoke_record_cache)
+ 		return -ENOMEM;
+ 
+ 	revoke_table_cache = kmem_cache_create("revoke_table",
+ 					   sizeof(struct jbd_revoke_table_s),
+ 					   0, SLAB_TEMPORARY, NULL);
+-	if (revoke_table_cache == 0) {
++	if (!revoke_table_cache) {
+ 		kmem_cache_destroy(revoke_record_cache);
+ 		revoke_record_cache = NULL;
+ 		return -ENOMEM;
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index 96ba846..748b87c 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -219,7 +219,7 @@ static int jbd2_journal_start_thread(journal_t *journal)
+ 	if (IS_ERR(t))
+ 		return PTR_ERR(t);
+ 
+-	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
++	wait_event(journal->j_wait_done_commit, journal->j_task != NULL);
+ 	return 0;
+ }
+ 
+@@ -231,7 +231,7 @@ static void journal_kill_thread(journal_t *journal)
+ 	while (journal->j_task) {
+ 		wake_up(&journal->j_wait_commit);
+ 		spin_unlock(&journal->j_state_lock);
+-		wait_event(journal->j_wait_done_commit, journal->j_task == 0);
++		wait_event(journal->j_wait_done_commit, journal->j_task == NULL);
+ 		spin_lock(&journal->j_state_lock);
+ 	}
+ 	spin_unlock(&journal->j_state_lock);
+@@ -1969,14 +1969,14 @@ static int journal_init_jbd2_journal_head_cache(void)
+ {
+ 	int retval;
+ 
+-	J_ASSERT(jbd2_journal_head_cache == 0);
++	J_ASSERT(!jbd2_journal_head_cache);
+ 	jbd2_journal_head_cache = kmem_cache_create("jbd2_journal_head",
+ 				sizeof(struct journal_head),
+ 				0,		/* offset */
+ 				SLAB_TEMPORARY,	/* flags */
+ 				NULL);		/* ctor */
+ 	retval = 0;
+-	if (jbd2_journal_head_cache == 0) {
++	if (!jbd2_journal_head_cache) {
+ 		retval = -ENOMEM;
+ 		printk(KERN_EMERG "JBD: no memory for journal_head cache\n");
+ 	}
+@@ -2002,14 +2002,14 @@ static struct journal_head *journal_alloc_journal_head(void)
+ 	atomic_inc(&nr_journal_heads);
+ #endif
+ 	ret = kmem_cache_alloc(jbd2_journal_head_cache, GFP_NOFS);
+-	if (ret == 0) {
++	if (!ret) {
+ 		jbd_debug(1, "out of memory for journal_head\n");
+ 		if (time_after(jiffies, last_warning + 5*HZ)) {
+ 			printk(KERN_NOTICE "ENOMEM in %s, retrying.\n",
+ 			       __FUNCTION__);
+ 			last_warning = jiffies;
+ 		}
+-		while (ret == 0) {
++		while (!ret) {
+ 			yield();
+ 			ret = kmem_cache_alloc(jbd2_journal_head_cache, GFP_NOFS);
+ 		}
+diff --git a/fs/jbd2/revoke.c b/fs/jbd2/revoke.c
+index df36f42..2e1453a 100644
+--- a/fs/jbd2/revoke.c
++++ b/fs/jbd2/revoke.c
+@@ -174,13 +174,13 @@ int __init jbd2_journal_init_revoke_caches(void)
+ 					   0,
+ 					   SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY,
+ 					   NULL);
+-	if (jbd2_revoke_record_cache == 0)
++	if (!jbd2_revoke_record_cache)
+ 		return -ENOMEM;
+ 
+ 	jbd2_revoke_table_cache = kmem_cache_create("jbd2_revoke_table",
+ 					   sizeof(struct jbd2_revoke_table_s),
+ 					   0, SLAB_TEMPORARY, NULL);
+-	if (jbd2_revoke_table_cache == 0) {
++	if (!jbd2_revoke_table_cache) {
+ 		kmem_cache_destroy(jbd2_revoke_record_cache);
+ 		jbd2_revoke_record_cache = NULL;
+ 		return -ENOMEM;
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-What!?  Me worry?
-		-- Alfred E. Newman
+1.5.4.rc5.1138.g2602
+
+
+
