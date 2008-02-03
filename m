@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936382AbYBCJkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936439AbYBCJpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936382AbYBCJkG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 04:40:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759322AbYBCJjz
+	id S936439AbYBCJpE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 04:45:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760940AbYBCJoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 04:39:55 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:44055 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758917AbYBCJjy (ORCPT
+	Sun, 3 Feb 2008 04:44:55 -0500
+Received: from defg501.nifty.com ([202.248.238.128]:32667 "EHLO
+	defg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759322AbYBCJoy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 04:39:54 -0500
-Message-ID: <47A58B05.6010702@oracle.com>
-Date: Sun, 03 Feb 2008 17:36:05 +0800
-From: Wenji Huang <wenji.huang@oracle.com>
-User-Agent: Mozilla Thunderbird 1.0.8-1.4.1 (X11/20060420)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: LPFC compilation error in 2.6.24-git12/git13
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sun, 3 Feb 2008 04:44:54 -0500
+X-Greylist: delayed 664 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Feb 2008 04:44:53 EST
+DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=lrDdy241dayIxvVlAvDmm6gjbMY/XbUMLaq4M+o0Su31nFK5GqAsANb73gHJJ9i28
+	OuaRVYzkk9OXW3ZEvaG3g==
+X-Nifty-SrcIP: [222.159.205.62]
+Date: Sun, 3 Feb 2008 18:30:19 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [BUG?  2.6.24] PATA_PCMCIA:  START_STOP FAILED  after pccardctl
+ eject
+Message-Id: <20080203183019.4637b043.komurojun-mbn@nifty.com>
+In-Reply-To: <20071101213055.5d54a8b2.komurojun-mbn@nifty.com>
+References: <20071101213055.5d54a8b2.komurojun-mbn@nifty.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
- Found compilation error in 2.6.24-git12/git13:
+Dear Alan
+ 
+The message "START_STOP FAILED" appears
+after I eject pcmcia-ATA card by "pccardctl eject".
+ 
+Is this correct?
+ 
+>pccard: card ejected from slot 0
+>ata3.00: disabled
+>sd 2:0:0:0: [sdb] Stopping disk
+>sd 2:0:0:0: [sdb] START_STOP FAILED
+>sd 2:0:0:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
 
-  CC [M]  drivers/scsi/lpfc/lpfc_mem.o
-  CC [M]  drivers/scsi/lpfc/lpfc_sli.o
-  CC [M]  drivers/scsi/lpfc/lpfc_ct.o
-  CC [M]  drivers/scsi/lpfc/lpfc_els.o
-  CC [M]  drivers/scsi/lpfc/lpfc_hbadisc.o
-  CC [M]  drivers/scsi/lpfc/lpfc_init.o
-drivers/scsi/lpfc/lpfc_init.c: In function ‘lpfc_pci_probe_one':
-drivers/scsi/lpfc/lpfc_init.c:1897: error: implicit declaration of 
-function ‘pci_enable_device_bars'
-make[3]: *** [drivers/scsi/lpfc/lpfc_init.o] Error 1
-make[2]: *** [drivers/scsi/lpfc] Error 2
-make[1]: *** [drivers/scsi] Error 2
-make: *** [drivers] Error 2
 
-pci_enable_device_bars is removed in commit 
-215e871aaa3d94540121a3809d80d0c5e5686e4f.
+Best Regards
+Komuro
 
-Regards,
-Wenji
