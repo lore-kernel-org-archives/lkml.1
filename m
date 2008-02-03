@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936369AbYBCGVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936168AbYBCGZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936369AbYBCGVZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 01:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbYBCGVR
+	id S936168AbYBCGZc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 01:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761319AbYBCGZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 01:21:17 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49746 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbYBCGVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 01:21:17 -0500
-Message-ID: <47A55D2A.2070902@cn.fujitsu.com>
-Date: Sun, 03 Feb 2008 14:20:26 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 3 Feb 2008 01:25:23 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:60263 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759562AbYBCGZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 01:25:22 -0500
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: Pardus / KDE
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] per-process securebits
+Date: Sun, 3 Feb 2008 08:25:48 +0200
+User-Agent: KMail/1.9.8
+Cc: "Andrew G. Morgan" <morgan@kernel.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+References: <47A2D439.9050704@kernel.org> <47A558CF.60702@kernel.org> <20080202221812.2f9d70a8.akpm@linux-foundation.org>
+In-Reply-To: <20080202221812.2f9d70a8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mxser: fix compile warning building without CONFIG_PCI
-References: <47A52E20.7000608@cn.fujitsu.com> <47A55C5E.70305@gmail.com>
-In-Reply-To: <47A55C5E.70305@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802030825.49221.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 02/03/2008 03:59 AM, Li Zefan wrote:
->> When build without CONFIG_PIC, got the following warnings:
->>
->> drivers/char/mxser.c: In function 'mxser_init':
->> drivers/char/mxser.c:698: warning: unused variable 'devnum'
->> drivers/char/mxser.c:698: warning: unused variable 'busnum'
->> drivers/char/mxser.c:697: warning: unused variable 'index'
->> drivers/char/mxser.c:696: warning: unused variable 'pdev'
->> drivers/char/mxser.c:695: warning: unused variable 'n'
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  drivers/char/mxser.c |   14 ++++++--------
->>  1 files changed, 6 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
->> index fd0abef..b2cc93d 100644
->> --- a/drivers/char/mxser.c
->> +++ b/drivers/char/mxser.c
->> @@ -692,10 +692,7 @@ static int mxser_get_PCI_conf(int busnum, int
->> devnum, int board_type, struct mxs
->>  
->>  static int mxser_init(void)
->>  {
->> -    int i, m, retval, b, n;
->> -    struct pci_dev *pdev = NULL;
->> -    int index;
->> -    unsigned char busnum, devnum;
->> +    int i, m, retval, b;
->>      struct mxser_hwconf hwconf;
->>  
->>      mxvar_sdriver = alloc_tty_driver(MXSER_PORTS + 1);
->> @@ -834,10 +831,11 @@ static int mxser_init(void)
->>  
->>      /* start finding PCI board here */
->>  #ifdef CONFIG_PCI
->> -    n = ARRAY_SIZE(mxser_pcibrds) - 1;
->> -    index = 0;
->>      b = 0;
->> -    while (b < n) {
->> +    while (b < ARRAY_SIZE(mxser_pcibrds)-1) {
->> +        unsigned char busnum, devnum;
->> +        struct pci_dev *pdev;
->> +
->>          pdev = pci_get_device(mxser_pcibrds[b].vendor,
->>                  mxser_pcibrds[b].device, pdev);
->>          if (pdev == NULL) {
-> 
-> This version of driver is no longer in -mm.
-> 
+At Sunday 03 February 2008 around 08:18:12 Andrew Morton wrote:
+> So how do we ever get to the stage where we can recommend that distributors
+> turn these things on, and have them agree with us?
 
-I didn't know this, so just silently ignore this patch. :)
+FWIW with my distributor hat on I think File system capabilities are very nice 
+and enables one to ship a distribution with a small set of setuid binaries.
+
+On the other hand for per-process securebits, it would be nice to see a 
+complete example how it could be applied to a setuid program. That would be a 
+nice step in moving forward.
+
+Regards,
+ismail
+
+-- 
+Never learn by your mistakes, if you do you may never dare to try again.
