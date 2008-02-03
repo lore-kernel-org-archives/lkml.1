@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936147AbYBCJAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936336AbYBCJGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936147AbYBCJAe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 04:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbYBCJAZ
+	id S936336AbYBCJGT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 04:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759949AbYBCJF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 04:00:25 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41669 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757043AbYBCJAY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 04:00:24 -0500
-Date: Sun, 3 Feb 2008 01:00:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] Split list.h and move rcu-protected lists into
- rculist.h
-Message-Id: <20080203010013.04bc601e.akpm@linux-foundation.org>
-In-Reply-To: <47A57F25.5070902@gmail.com>
-References: <478FBEA0.9090203@gmail.com>
-	<478FBEEA.6040000@gmail.com>
-	<20080201155826.a2d308c1.akpm@linux-foundation.org>
-	<47A470F9.9060708@gmail.com>
-	<20080202111516.5cbd0880.akpm@linux-foundation.org>
-	<47A57F25.5070902@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 3 Feb 2008 04:05:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64775 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758803AbYBCJFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 04:05:54 -0500
+Message-ID: <47A583B9.3020001@cn.fujitsu.com>
+Date: Sun, 03 Feb 2008 17:04:57 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Rami Rosen <ramirose@gmail.com>
+CC: David Miller <davem@davemloft.net>, kaber@trash.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [NET_SCHED] Add #ifdef CONFIG_NET_EMATCH in net/sched/cls_flow.c
+ (latest git broken build)
+References: <eb3ff54b0802030051x604c991fwe11184e25d0a7550@mail.gmail.com>
+In-Reply-To: <eb3ff54b0802030051x604c991fwe11184e25d0a7550@mail.gmail.com>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 03 Feb 2008 09:45:25 +0100 Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
-
-> Andrew Morton wrote:
-> > On Sat, 02 Feb 2008 14:32:41 +0100 Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
-> >> Do you think it's better ?
-> > 
-> > Could.  I'd suggest that you redo the header-file split patch around the
-> > 2.6.25-rc1 timeframe, test it carefully then let's get it in then.
-> > 
+Rami Rosen wrote:
+> Hi,
+> The 2.6 latest git build was broken when using the following
+> configuration options:
+> CONFIG_NET_EMATCH=n
+> CONFIG_NET_CLS_FLOW=y
 > 
-> Does the mm tree also have a calm down period during release candidates ?
-
-Yes, I try to not merge too much material late in the -rcs and in the merge
-window.  Often it's not practical to merge things anyway, because people
-prepare patches against mainline, which is ancient history...
-
-> I have modified the patchset so now if rcu helpers are used from
-> rculist.h then fine otherwise gcc warns you that you're using the
-> helpers from list.h like this:
+> with the following error:
+> net/sched/cls_flow.c: In function 'flow_dump':
+> net/sched/cls_flow.c:598: error: 'struct tcf_ematch_tree' has no
+> member named 'hdr'
+> make[2]: *** [net/sched/cls_flow.o] Error 1
+> make[1]: *** [net/sched] Error 2
+> make: *** [net] Error 2
 > 
-> init/foo.c:13: warning: ‘__deprecated_list_add_rcu’ is deprecated (declared at include/linux/rculist.h:76)
 > 
-> But the build process doesn't fail anymore.
+> see the recent post by Li Zefan:
+>   http://www.spinics.net/lists/netdev/msg54434.html
 > 
-> For that I added some ugly hacks in list.h and rculist.h but they
-> definitively should be removed for mainline inclusion. I'm sending them
-> in response to this email.
+> The reason for this crash is that struct tcf_ematch_tree (net/pkt_cls.h) is
+> empty when CONFIG_NET_EMATCH is not defined.
+> 
+> When CONFIG_NET_EMATCH is defined, the tcf_ematch_tree structure indeed holds
+> a struct tcf_ematch_tree_hdr (hdr) as flow_dump() expects.
+> 
+> This patch adds #ifdef CONFIG_NET_EMATCH in flow_dump to avoid this.
+> 
+> The patch was build against latest 2.6 git net tree.
+> 
 
-I wouldn't bother, really.  Let's just get it as good as we can and slam it
-in.
-
-> If we include this now, then people can have a chance to notice that
-> rculist.h exists and fix their stuffs until 2.6.25 release
-> candidates but I'll redo the patchset and give it some test around the
-> 2.6.25-rc1 timeframe anyway.
-
-I'm just about finished compilation-testing for 2.6.24-mm1 which is a
-shame.  Please do a best-effort against 2.6.24-mm1 (hopefully I'll get that
-out tomorrow) and I'll slip it into -rc1 if it gets through cross-build
-testing without unfixable-with-my-patience-level problems.
-
-
+The patch works. :)
 
