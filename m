@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936102AbYBCB6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935854AbYBCCGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936102AbYBCB6X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 20:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934660AbYBCB6I
+	id S935854AbYBCCGU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 21:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217AbYBCCGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 20:58:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54869 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933771AbYBCB6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 20:58:06 -0500
-Message-ID: <47A51F77.60509@cn.fujitsu.com>
-Date: Sun, 03 Feb 2008 09:57:11 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 2 Feb 2008 21:06:07 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:41173 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1763096AbYBCCGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 21:06:06 -0500
+Message-ID: <402004370.28303@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 3 Feb 2008 10:05:59 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Rubin <mrubin@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] writeback: __sync_single_inode() trivial cleanup
 MIME-Version: 1.0
-To: =?UTF-8?B?TWlndWVsIEJvdMOzbg==?= <mboton@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>, zambrano@broadcom.com,
-       linville@tuxdriver.com
-Subject: Re: linux-2.6.24 compile error in drivers/net/b44.c
-References: <47A3CC70.8090900@cn.fujitsu.com> <47A3F6DC.1000903@cn.fujitsu.com> <47A4CB7C.3010507@gmail.com> <47A51E86.8080305@cn.fujitsu.com>
-In-Reply-To: <47A51E86.8080305@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JLUF5-0001rN-JM@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Miguel Botón 写道:
->> Li Zefan wrote:
->>> Add CCs:
->>>
->>> CC: mboton@gmail.com
->>> CC: zambrano@broadcom.com
->>> CC: linville@tuxdriver.com
->>>
->>> Li Zefan wrote:
->>>> drivers/net/b44.c: In function 'b44_remove_one':
->>>> drivers/net/b44.c:2231: error: implicit declaration of function 'ssb_pcihost_set_power_state'
->>>> make[2]: *** [drivers/net/b44.o] Error 1
->>>> make[1]: *** [drivers/net] Error 2
->>>>
->>>> I think it is caused by:
->>>>
->>>> CONFIG_SSB_PCIHOST=n
->>>> CONFIG_B44=y
->>>>
->> This patch should fix b44 errors when 'SSB_PCIHOST' is not enabled.
->>
-> 
-> I tried the patch, but it does't work, same compile error. :(
-> 
-> If .config is needed, tell me and I will attach it.
-> 
+Make the if-else straight in __sync_single_inode().
+No behavior change.
 
-Sorry, I just made a mistake, actually the patch works.
+Cc: Michael Rubin <mrubin@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ fs/fs-writeback.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
 
-Thanks!
+--- linux-mm.orig/fs/fs-writeback.c
++++ linux-mm/fs/fs-writeback.c
+@@ -261,8 +261,13 @@ __sync_single_inode(struct inode *inode,
+ 	spin_lock(&inode_lock);
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & I_FREEING)) {
+-		if (!(inode->i_state & I_DIRTY) &&
+-		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
++		if (inode->i_state & I_DIRTY) {
++			/*
++			 * Someone redirtied the inode while were writing back
++			 * the pages.
++			 */
++			redirty_tail(inode);
++		} else if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+ 			/*
+ 			 * We didn't write back all the pages.  nfs_writepages()
+ 			 * sometimes bales out without doing anything. Redirty
+@@ -306,12 +311,6 @@ __sync_single_inode(struct inode *inode,
+ 				inode->i_state |= I_DIRTY_PAGES;
+ 				redirty_tail(inode);
+ 			}
+-		} else if (inode->i_state & I_DIRTY) {
+-			/*
+-			 * Someone redirtied the inode while were writing back
+-			 * the pages.
+-			 */
+-			redirty_tail(inode);
+ 		} else if (atomic_read(&inode->i_count)) {
+ 			/*
+ 			 * The inode is clean, inuse
 
->> Signed-off-by: Miguel Botón <mboton@gmail.com>
->>
->> diff --git a/drivers/net/b44.c b/drivers/net/b44.c
->> index ea2a2b5..d081234 100644
->> --- a/drivers/net/b44.c
->> +++ b/drivers/net/b44.c
->> @@ -2228,7 +2228,9 @@ static void __devexit b44_remove_one(struct ssb_device *sdev)
->>  	unregister_netdev(dev);
->>  	ssb_bus_may_powerdown(sdev->bus);
->>  	free_netdev(dev);
->> +#ifdef B44_PCI
->>  	ssb_pcihost_set_power_state(sdev, PCI_D3hot);
->> +#endif
->>  	ssb_set_drvdata(sdev, NULL);
->>  }
->>  
->> @@ -2257,7 +2259,9 @@ static int b44_suspend(struct ssb_device *sdev, pm_message_t state)
->>  		b44_setup_wol(bp);
->>  	}
->>  
->> +#ifdef B44_PCI
->>  	ssb_pcihost_set_power_state(sdev, PCI_D3hot);
->> +#endif
->>  	return 0;
->>  }
->>  
->> --
->> 	Miguel Botón
->>
->>
-> 
-> 
