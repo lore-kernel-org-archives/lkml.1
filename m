@@ -1,106 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934482AbYBCAc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934276AbYBCAib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934482AbYBCAc2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 19:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763298AbYBCAcV
+	id S934276AbYBCAib (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 19:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYBCAiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 19:32:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57298 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656AbYBCAcU (ORCPT
+	Sat, 2 Feb 2008 19:38:22 -0500
+Received: from keil-draco.com ([216.193.185.50]:50149 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396AbYBCAiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 19:32:20 -0500
-Date: Sat, 2 Feb 2008 16:22:49 -0800
-From: Greg KH <greg@kroah.com>
-To: Heikki Orsila <shdl@zakalwe.fi>
-Cc: linux-kernel@vger.kernel.org, mpm@selenic.com, ak@suse.de,
-       m-ikeda@ds.jp.nec.com, zhongyu@18mail.cn, minchan.kim@gmail.com
-Subject: Re: [PATCH] Improve Documentation/stable_api_nonsense.txt v2
-Message-ID: <20080203002249.GB3453@kroah.com>
-References: <20080202144457.653482BC98@zakalwe.fi>
+	Sat, 2 Feb 2008 19:38:21 -0500
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: [BUG] 2.6.24 refuses to boot - ATA problem?
+Date: Sat, 2 Feb 2008 19:38:11 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <643979.82914.qm@web52904.mail.re2.yahoo.com>
+In-Reply-To: <643979.82914.qm@web52904.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080202144457.653482BC98@zakalwe.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802021938.12096.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 04:44:57PM +0200, Heikki Orsila wrote:
-> This is version 2 of the patch. Address Gregs, Matts and Andis comments.
-> Retain the word "exact" due to request of Greg. Use "the exact
-> same" as per "Matt Mackall".
-> 
-> * Change wording
-> * Make a remark about necessary changes in interfaces
-> 
-> Signed-off-by: Heikki Orsila <heikki.orsila@iki.fi>
-> ---
->  Documentation/stable_api_nonsense.txt |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/stable_api_nonsense.txt b/Documentation/stable_api_nonsense.txt
-> index 847b342..a7c29ad 100644
-> --- a/Documentation/stable_api_nonsense.txt
-> +++ b/Documentation/stable_api_nonsense.txt
-> @@ -19,7 +19,7 @@ Executive Summary
->  You think you want a stable kernel interface, but you really do not, and
->  you don't even know it.  What you want is a stable running driver, and
->  you get that only if your driver is in the main kernel tree.  You also
-> -get lots of other good benefits if your driver is in the main kernel
-> +get lots of other benefits if your driver is in the main kernel
->  tree, all of which has made Linux into such a strong, stable, and mature
->  operating system which is the reason you are using it in the first
->  place.
+On Saturday 02 February 2008 18:40:55 Chris Rankin wrote:
+> Hi,
+>
+> I have tried to boot a 2.6.24 kernel on my 1 GHz Coppermine / 512 MB RAM
+> PC. (This is without the nmi_watchdog=1 option.) However, the ATA layer is
+> failing to initialise:
+>
+<snip>
+> Driver 'sd' needs updating - please use bus_type methods
+> scsi0 : ata_piix
+> scsi1 : ata_piix
+> ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xa800 irq 14
+> ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xa808 irq 15
+> ata1.00: ATA-4: ST320420A, 3.12, max UDMA/66
+> ata1.00: 39851760 sectors, multi 16: LBA
+> ata1.00: configured for UDMA/66
+> ata2.00: ATAPI: Pioneer DVD-ROM ATAPIModel DVD-116  0122, E1.22, max
+> UDMA/66 ata2.01: ATAPI: SONY    CD-RW  CRX145E, 1.0b, max UDMA/33
+> ata2.00: configured for UDMA/66
+> ata2.01: configured for UDMA/33
+> scsi 0:0:0:0: Direct-Access     ATA      ST320420A        3.12 PQ: 0 ANSI:
+> 5 sd 0:0:0:0: [sda] 39851760 512-byte hardware sectors (20404 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+> support DPO or FUA sd 0:0:0:0: [sda] 39851760 512-byte hardware sectors
+> (20404 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+> support DPO or FUA sda:<4>ehci_hcd 0000:03:0d.2: Unlink after no-IRQ? 
+> Controller is probably using the wrong IRQ. ata1.00: exception Emask 0x0
+> SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: soft resetting link
+> ata1.00: configured for UDMA/66
+> ata1: EH complete
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: soft resetting link
+> ata1.00: configured for UDMA/66
+> ata1: EH complete
+> SysRq : Emergency Sync
+> Emergency Sync complete
+> SysRq : Emergency Remount R/O
+> Emergency Remount complete
+> SysRq : Resetting
 
-That's fine.
+This error is what I mentioned in a post yesterday that mentioned several 
+errors I've seen with a recent kernel built from linus' git.
 
-> @@ -69,7 +69,7 @@ consider the following facts about the Linux kernel:
->      on another architecture properly.
->  
->  Now a number of these issues can be addressed by simply compiling your
-> -module for the exact specific kernel configuration, using the same exact
-> +module for the exact same kernel configuration, using the exact same
->  C compiler that the kernel was built with.  This is sufficient if you
->  want to provide a module for a specific release version of a specific
->  Linux distribution.  But multiply that single build by the number of
+The only difference is that here the kernel starts at UDMA/133 and devolves 
+all the way down to PIO0 before spinning forever at that. A fully "cold" boot 
+(ie: removing all power from the system for a period of several minutes and 
+then powering it back on) seems to fix this problem.
 
-fine.
+I've got a kernel here built from git b036555adc but I haven't tested it yet. 
+If the problem still occurs with it, I'll try to get a copy of the output 
+posted here. 
 
-> @@ -116,7 +116,7 @@ issues:
->  
->  This is in stark contrast to a number of closed source operating systems
->  which have had to maintain their older USB interfaces over time.  This
-> -provides the ability for new developers to accidentally use the old
-> +has the risk for new developers to accidentally use the old
->  interfaces and do things in improper ways, causing the stability of the
->  operating system to suffer.
->  
+DRH
 
-fine.
-
-> @@ -145,6 +145,10 @@ as small as possible, and that all potential interfaces are tested as
->  well as they can be (unused interfaces are pretty much impossible to
->  test for validity.)
->  
-> +However, changing an interface can be delicate work and it can take
-> +significant amount of developer effort. Therefore, an interface is
-> +not changed unless the change is regarded as very important by the
-> +developers.
->  
->  What to do
->  ----------
-
-I still don't understand why you want to add these sentances.  Why are
-they needed?  Are people thinking that the kernel developers just
-randomly change things just because they are bored and have nothing else
-to do at the moment?  Do people think that our changes are gratuitous?
-
-Even so, I don't think this needs to be added, we have already stated
-many good reasons why changing apis are necessary and good.  Do need to
-add another one?
-
-thanks,
-
-greg k-h
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
