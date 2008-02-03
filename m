@@ -1,111 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYBCVec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbYBCVk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbYBCVec (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 16:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYBCVeI
+	id S1754222AbYBCVk2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 16:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYBCVkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 16:34:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33916 "EHLO mx3.mail.elte.hu"
+	Sun, 3 Feb 2008 16:40:17 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:45216 "EHLO smtp1.cc.lut.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752946AbYBCVeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 16:34:05 -0500
-Date: Sun, 3 Feb 2008 22:33:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Latest -git ioremap error
-Message-ID: <20080203213353.GB27737@elte.hu>
-References: <47A606B5.7090001@gmail.com> <47A608F8.5080206@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A608F8.5080206@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752893AbYBCVkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 16:40:14 -0500
+Date: Sun, 3 Feb 2008 23:40:11 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Roskin <proski@gnu.org>
+Subject: Re: [PATCH v2] x86: Add a list for custom page fault handlers.
+Message-ID: <20080203234011.5f18ad21@daedalus.pq.iki.fi>
+In-Reply-To: <20080203070321.GA8293@elte.hu>
+References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
+	<1201660102.8837.9.camel@brick>
+	<1201660453.8837.13.camel@brick>
+	<20080130200827.322c4f7d@daedalus.pq.iki.fi>
+	<20080131150746.GB11996@elte.hu>
+	<20080131180253.6c007852@daedalus.pq.iki.fi>
+	<20080131081507.5edcde10@laptopd505.fenrus.org>
+	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
+	<20080203070321.GA8293@elte.hu>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 3 Feb 2008 08:03:21 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Kevin Winchester <kjwinchester@gmail.com> wrote:
+> i dont think this second problem is a practical one: i've test-merged 
+> mmiotrace two days ago into x86.git and it's holding up very well in my 
+> testing (it has not caused a single hickup so far). It's nice optional 
+> debug functionality and i dont see any reason why not to merge it.
 
-> >     x86: fix ioremap RAM check
-> > 
-> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> >     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Good to hear!
+
+I've made some fixes since my last mmiotrace patch (v2). Rewritten things
+to use lookup_address(), added EXPORT_SYMBOL(lookup_address) into
+pageattr.c to make it work (this hopefully fixed the undefined symbol
+'init_mm' on x86-32), and fixed relay-buffer-full flags on SMP.
+
+> a few cleanup requests:
 > 
-> Lucky first try - reverting this commit fixes the problem for me.  Any 
-> ideas?
+> - please make the pagefault callbacks explicit as Arjan has asked
 
-Could you check the patch below - does that too fix the problem for you?
+What does this mean in practice? It should be able to call into a module,
+so the only thing I can come up with is a single settable function
+pointer. Just like I proposed in patch v2, but a function pointer instead
+of a list. Is this what you and Arjan suggest?
+We are talking about the hook in do_page_fault(), right?
 
-	Ingo
+> - any reason why it lives in arch/x86/kernel/mmiotrace/? It should be a
+>   prime-time member of arch/x86/mm/ i think.
 
------------------>
-Subject: x86: relax RAM check in ioremap()
-From: Ingo Molnar <mingo@elte.hu>
+I was waiting for someone to comment on that, I didn't know what was the
+proper place. I'll move it into there.
 
-Kevin Winchester reported the loss of direct rendering, due to:
+> - please make it build-in-able, not modules-only.
 
-[    0.588184] agpgart: Detected AGP bridge 0
-[    0.588184] agpgart: unable to get memory for graphics translation table.
-[    0.588184] agpgart: agp_backend_initialize() failed.
-[    0.588207] agpgart-amd64: probe of 0000:00:00.0 failed with error -12
+Then I need a way to clear the relay buffers at some point. Currently
+they get cleared only on module unload. Maybe preferably also allocate
+and deallocate them dynamically. I've no idea how to do this yet, any
+pointers to examples?
 
-and bisected it down to:
+Hmm, I guess relay buffers could be allocated on the first intercepted
+call to ioremap, but then the userspace could not be started before
+hand, and at that point it is too late.
 
-> commit 266b9f8727976769e2ed2dad77ac9295f37e321e
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Wed Jan 30 13:34:06 2008 +0100
->
->     x86: fix ioremap RAM check
+Making it build-in-able will take so much time that I'd prefer to aim
+it for 2.6.26.
 
-this check was too strict and caused an ioremap() failure.
+> - [ longer-term: think about integrating pf_in.c with the x86
+>     emulator/disassembler of KVM. ]
 
-the problem is due to the somewhat unclean way of how the GART code
-reserves a memory range for its aperture, and how it utilizes it
-later on.
+Yikes. Like I replied to Arjan, it looks daunting.
 
-Allow RAM pages to be ioremap()-ed too, as long as they are reserved.
 
-Bisected-by: Kevin Winchester <kjwinchester@gmail.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/ioremap.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Thanks, I'll do what I can. When do you need the final (as for 2.6.25)
+mmiotrace patch, or is it going in as v2 and then we fix it in RCs?
 
-Index: linux-x86.q/arch/x86/mm/ioremap.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/ioremap.c
-+++ linux-x86.q/arch/x86/mm/ioremap.c
-@@ -116,7 +116,7 @@ static void __iomem *__ioremap(unsigned 
- {
- 	void __iomem *addr;
- 	struct vm_struct *area;
--	unsigned long offset, last_addr;
-+	unsigned long pfn, offset, last_addr;
- 	pgprot_t prot;
- 
- 	/* Don't allow wraparound or zero size */
-@@ -133,9 +133,9 @@ static void __iomem *__ioremap(unsigned 
- 	/*
- 	 * Don't allow anybody to remap normal RAM that we're using..
- 	 */
--	for (offset = phys_addr >> PAGE_SHIFT; offset < max_pfn_mapped &&
--	     (offset << PAGE_SHIFT) < last_addr; offset++) {
--		if (page_is_ram(offset))
-+	for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&
-+	     (pfn << PAGE_SHIFT) < last_addr; pfn++) {
-+		if (pfn_valid(pfn) && !PageReserved(pfn_to_page(pfn)))
- 			return NULL;
- 	}
- 
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
