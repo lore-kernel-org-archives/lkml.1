@@ -1,118 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935906AbYBCDPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935651AbYBCDbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935906AbYBCDPR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 22:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYBCDPE
+	id S935651AbYBCDbH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 22:31:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932640AbYBCDay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 22:15:04 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55003 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753950AbYBCDPD (ORCPT
+	Sat, 2 Feb 2008 22:30:54 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:60777 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbYBCDaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 22:15:03 -0500
-Date: Sat, 2 Feb 2008 21:14:57 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-Message-ID: <20080203031457.GA16127@sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random>
+	Sat, 2 Feb 2008 22:30:52 -0500
+X-IronPort-AV: E=Sophos;i="4.25,297,1199682000"; 
+   d="scan'208";a="47843125"
+Subject: Re: [REVIEW for merge] kbuild updates including silence of section
+	mismatch check
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Frans Pop <elendil@planet.nl>, Bryan Wu <bryan.wu@analog.com>,
+       akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080202213015.GA27015@uranus.ravnborg.org>
+References: <20080202203503.GA26415@uranus.ravnborg.org>
+	 <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
+	 <20080202213015.GA27015@uranus.ravnborg.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Sun, 03 Feb 2008 11:30:29 +0800
+Message-Id: <1202009429.6671.2.camel@roc-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080203021704.GC7185@v2.random>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 03 Feb 2008 03:30:51.0269 (UTC) FILETIME=[2CD6F350:01C86615]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 03, 2008 at 03:17:04AM +0100, Andrea Arcangeli wrote:
-> On Fri, Feb 01, 2008 at 11:23:57AM -0800, Christoph Lameter wrote:
-> > Yes so your invalidate_range is still some sort of dysfunctional 
-> > optimization? Gazillions of invalidate_page's will have to be executed 
-> > when tearing down large memory areas.
-> 
-> I don't know if gru can flush the external TLB references with a
-> single instruction like the cpu can do by overwriting %cr3. As far as
 
-The mechanism obviously is a little different, but the GRU can flush an
-external TLB in a single read/write/flush of a cacheline (should take a few
-100 nsec). Typically, an application uses a single GRU. Threaded
-applications, however, could use one GRU per thread, so it is possible that
-multiple TLBs must be flushed. In some cases, the external flush can be
-avoided if the GRU is not currently in use by the thread.
-
-Also, most (but not all) applications that use the GRU do not usually do
-anything that requires frequent flushing (fortunately). The GRU is intended
-for HPC-like applications. These don't usually do frequent map/unmap
-operations or anything else that requires a lot of flushes.
-
-I expect that KVM is a lot different.
-
-I have most of the GRU code working with the latest mmuops patch. I still
-have a list of loose ends that I'll get to next week. The most important is
-the exact handling of the range invalidates. The code that I currently have
-works (mostly) but has a few endcases that will cause problems. Once I
-finish, I'll be glad to send you snippets of the code (or all of it) if you
-would like to take a look.
-
-
-> vmx/svm are concerned, you got to do some fixed amount of work on the
-> rmap structures and each spte, for each 4k invalidated regardless of
-> page/pages/range/ranges. You can only share the cost of the lock and
-> of the memslot lookup, so you lookup and take the lock once and you
-> drop 512 sptes instead of just 1. Similar to what we do in the main
-> linux VM by taking the PT lock for every 512 sptes.
+On Sat, 2008-02-02 at 22:30 +0100, Sam Ravnborg wrote:
+> Bryan this was from you - please comment/fix.
 > 
-> So you worry about gazillions of invalidate_page without taking into
-> account that even if you call invalidate_range_end(0, -1ULL) KVM will
-> have to mangle over 4503599627370496 rmap entries anyway. Yes calling
-> 1 invalidate_range_end instead of 4503599627370496 invalidate_page,
-> will be faster, but not much faster. For KVM it remains an O(N)
-> operation, where N is the number of pages. I'm not so sure we need to
-> worry about my invalidate_pages being limited to 512 entries.
+> 	Sam
 > 
-> Perhaps GRU is different, I'm just describing the KVM situation here.
-> 
-> As far as KVM is concerned it's more sensible to be able to scale when
-> there are 1024 kvm threads on 1024 cpus and each kvm-vcpu is accessing
-> a different guest physical page (especially when new chunks of memory
-> are allocated for the first time) that won't collide the whole time on
-> naturally aligned 2M chunks of virtual addresses.
-> 
-> > And that would not be enough to hold of new references? With small tweaks 
-> > this should work with a common scheme. We could also redefine the role 
-> > of _start and _end slightly to just require that the refs are removed when 
-> > _end completes. That would allow the KVM page count ref to work as is now 
-> > and would avoid the individual invalidate_page() callouts.
-> 
-> I can already only use _end and ignore _start, only remaining problem
-> is this won't be 100% coherent (my patch is 100% coherent thanks to PT
-> lock implicitly serializing follow_page/get_user_pages of the KVM/GRU
-> secondary MMU faults). My approach give a better peace of mind with
-> full scalability and no lock recursion when it's the KVM page fault
-> that invokes get_user_pages that invokes the linux page fault routines
-> that will try to execute _start taking the lock to block the page
-> fault that is already running...
-> 
-> > > > The GRU has no page table on its own. It populates TLB entries on demand 
-> > > > using the linux page table. There is no way it can figure out when to 
-> > > > drop page counts again. The invalidate calls are turned directly into tlb 
-> > > > flushes.
-> > > 
-> > > Yes, this is why it can't serialize follow_page with only the PT lock
-> > > with your patch. KVM may do it once you add start,end to range_end
-> > > only thanks to the additional pin on the page.
+> On Sat, Feb 02, 2008 at 10:25:51PM +0100, Frans Pop wrote:
+> > Sam Ravnborg wrote:
+> > > --- a/scripts/setlocalversion
+> > > +++ b/scripts/setlocalversion
+> > > @@ -45,3 +45,18 @@ if hgid=`hg id 2>/dev/null`; then
+> > > # All done with mercurial
+> > > exit
+> > > fi
+> > > +
+> > > +# Check for svn and a svn repo.
+> > > +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` ; then
+> > > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> > > +
+> > > +       # Are there uncommitted changes?
+> > > +       if [ $changes != 0 ]; then
+> > > +               printf -- '-svn%s%s%s' "$rev" -dirty "$changes"
+> > > +       else
+> > > +               printf -- '-svn%s' "$rev"
+> > > +       fi
+> > > +
+> > > +       # All done with svn
+> > > +       exit
+> > > +fi
 > > 
-> > Right but that pin requires taking a refcount which we cannot do.
-> 
-> GRU can use my patch without the pin. XPMEM obviously can't use my
-> patch as my invalidate_page[s] are under the PT lock (a feature to fit
-> GRU/KVM in the simplest way), this is why an incremental patch adding
-> invalidate_range_start/end would be required to support XPMEM too.
+> > This looks broken. Unless I'm very much mistaken the 'if' statement is
+> > always going to be true because the awk statement will always execute
+> > without error. Try: echo "" | awk '{print $NF}' || echo Error
+> > 
 
---- jack
+You are right, it will always plus a '-svn' string at the end of kernel
+version string even if it is not a svn repo.
+
+> > So, the code should probably be changed to:
+> > +if rev=`svn info 2>/dev/null | grep '^Revision' ; then
+> > +	rev=`echo $rev | awk '{print $NF}'`
+> > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> > 
+
+I prefer to this one. A updated version will be sent out soon.
+
+> > or alternatively:
+> > +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` && \
+> > +   [ -n "$rev" ] ; then 
+> > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
+> > 
+> > Cheers,
+> > FJP
+> > 
+> > P.S. Looks like the mercurial section is missing some indentation.
+I will fix this, too.
+
+Regards,
+-Bryan Wu
