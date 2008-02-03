@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbYBCNiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYBCNmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbYBCNiU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 08:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYBCNiJ
+	id S933661AbYBCNmR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 08:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbYBCNmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 08:38:09 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:48686 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbYBCNiH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 08:38:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CBBNPLdbz8ywsNV3SiEYPs4rauTHgQPtH1JxDvaVGjon1zCTodzaZS/RW4huHlzRm4TD1/WM8DG4xs6YhEtBaQjUGEaxh5d3dzN1x9UJA76QfGpJg+ZiT/QtanURptkJW+WtZ7DRbuZSz3oqwdJJErgfxYZGkwbjAl53u+EUZGc=
-Message-ID: <2f11576a0802030538j4ad57469g22a04a7cb54bdcd1@mail.gmail.com>
-Date: Sun, 3 Feb 2008 22:38:04 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Jon Masters" <jonathan@jonmasters.org>
-Subject: Re: Kernel Event Notifications (was: [RFC] Parallelize IO for e2fsck)
-Cc: "Al Boldi" <a1426z@gawab.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <1201562634.5412.70.camel@jcmlaptop>
+	Sun, 3 Feb 2008 08:42:04 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:43729 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750708AbYBCNmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 08:42:03 -0500
+Date: Sun, 3 Feb 2008 07:41:58 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 0/4] [RFC] EMMU Notifiers V5
+Message-ID: <20080203134158.GB3875@sgi.com>
+References: <20080201050439.009441434@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9Mo9w-7Ws-25@gated-at.bofh.it> <20080124234037.GJ15858@mit.edu>
-	 <2f11576a0801260432y4405d817p6ef4005d06189654@mail.gmail.com>
-	 <200801261655.31313.a1426z@gawab.com>
-	 <1201562634.5412.70.camel@jcmlaptop>
-X-Google-Sender-Auth: d9ff1d67e478beb1
+In-Reply-To: <20080201050439.009441434@sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jon
+Great news!  I have taken over Dean's xpmem patch set while he is on
+sabbatical.  Before he left, he had his patch mostly working on top of
+this patch set.  We had one deadlock.  I have coded for that specific
+deadlock and xpmem now passes a simple grant/attach/fault/fork/unmap/map
+test.
 
-> I looked at this a year or two back, then ran out of time. But the thing
-> I wanted to do was have libc's memory allocation routines extended to
-> handle these through reservations - the kernel should send a userspace
-> notification and then there should be some kind of concept of returning
-> memory that's been used for "opportunistic" userspace caching, e.g. in
-> firefox to cache the last 10 web pages. Let us know how you get on :)
+After analyzing it, I believe we still have a nearly related deadlock
+which will require some refactoring of code.  I am certain that the
+same mechanism I used for this deadlock break will work in that case,
+but it will require too many changes for me to finish this weekend.
 
-sorry for late response.
-(I didn't notice your mail ;-)
+For our customer base, this case, in the past, has resulted in termination
+of the application and our MPI library specifically states that this
+mode of operation is not permitted, so I think we will be able to pass
+their regression tests.  I will need to coordinate that early next week.
 
-You are right...
-stupid user space caching is very important problem.
+The good news, at this point, Christoph's version 5 of the mmu_notifiers
+appears to work for xpmem.  The mmu_notifier call-outs where the
+in_atomic flag is set still result in a BUG_ON.  That is not an issue
+for our normal customer as our MPI already states this is not a valid
+mode of operation and provides means to avoid those types of mappings.
 
-but I think this is no libc problem.
-glibc malloc hardly caches the memory.
-(its default behavior only caching 128K.)
-
-but some application use large memory for too opportunistic caching.
-I understood we need propagandize that using mem_notify to application guys
-after it merge mainline.
-
-I have no idea of solve it easily.
+Thanks,
+Robin
