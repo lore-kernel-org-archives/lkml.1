@@ -1,96 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934276AbYBCAib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932519AbYBCAkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934276AbYBCAib (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 19:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYBCAiW
+	id S932519AbYBCAkO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 19:40:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbYBCAkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 19:38:22 -0500
-Received: from keil-draco.com ([216.193.185.50]:50149 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752396AbYBCAiV (ORCPT
+	Sat, 2 Feb 2008 19:40:01 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34349 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753437AbYBCAkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 19:38:21 -0500
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [BUG] 2.6.24 refuses to boot - ATA problem?
-Date: Sat, 2 Feb 2008 19:38:11 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <643979.82914.qm@web52904.mail.re2.yahoo.com>
-In-Reply-To: <643979.82914.qm@web52904.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 2 Feb 2008 19:40:00 -0500
+Date: Sat, 2 Feb 2008 16:39:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Russell Leidich <rml@google.com>, Andi Kleen <andi@firstfloor.org>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, valdis.kletnieks@vt.edu,
+       Tim Hockin <thockin@google.com>
+Subject: Re: [PATCH] AMD Thermal Interrupt Support
+Message-Id: <20080202163947.c66f6d19.akpm@linux-foundation.org>
+In-Reply-To: <1201998460.1844.32.camel@brick>
+References: <3f1a065b0801021350x7fd065fbj9680ce1a4f3c6538@mail.gmail.com>
+	<20080104222637.GA19248@one.firstfloor.org>
+	<3f1a065b0801041653y77c27a8cvce703cb7d13e10a0@mail.gmail.com>
+	<20080105132402.GA705@one.firstfloor.org>
+	<3f1a065b0801051208y7e832e8ctda61f28e6328dec3@mail.gmail.com>
+	<3f1a065b0801081542p6cca6249g35e83f7e1f450fbd@mail.gmail.com>
+	<20080108235212.GE2117@one.firstfloor.org>
+	<3f1a065b0801081828y4b084a52g1db9bcb8821cb3da@mail.gmail.com>
+	<20080109023714.GK2117@one.firstfloor.org>
+	<3f1a065b0801101821k71ea7523l5024f12abb50357f@mail.gmail.com>
+	<3f1a065b0801171706o57ae5d6w8a986db508ddcee4@mail.gmail.com>
+	<20080202161057.b240f443.akpm@linux-foundation.org>
+	<1201998460.1844.32.camel@brick>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802021938.12096.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008 18:40:55 Chris Rankin wrote:
-> Hi,
->
-> I have tried to boot a 2.6.24 kernel on my 1 GHz Coppermine / 512 MB RAM
-> PC. (This is without the nmi_watchdog=1 option.) However, the ATA layer is
-> failing to initialise:
->
-<snip>
-> Driver 'sd' needs updating - please use bus_type methods
-> scsi0 : ata_piix
-> scsi1 : ata_piix
-> ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xa800 irq 14
-> ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xa808 irq 15
-> ata1.00: ATA-4: ST320420A, 3.12, max UDMA/66
-> ata1.00: 39851760 sectors, multi 16: LBA
-> ata1.00: configured for UDMA/66
-> ata2.00: ATAPI: Pioneer DVD-ROM ATAPIModel DVD-116  0122, E1.22, max
-> UDMA/66 ata2.01: ATAPI: SONY    CD-RW  CRX145E, 1.0b, max UDMA/33
-> ata2.00: configured for UDMA/66
-> ata2.01: configured for UDMA/33
-> scsi 0:0:0:0: Direct-Access     ATA      ST320420A        3.12 PQ: 0 ANSI:
-> 5 sd 0:0:0:0: [sda] 39851760 512-byte hardware sectors (20404 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-> support DPO or FUA sd 0:0:0:0: [sda] 39851760 512-byte hardware sectors
-> (20404 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-> support DPO or FUA sda:<4>ehci_hcd 0000:03:0d.2: Unlink after no-IRQ? 
-> Controller is probably using the wrong IRQ. ata1.00: exception Emask 0x0
-> SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata1.00: status: { DRDY }
-> ata1: soft resetting link
-> ata1.00: configured for UDMA/66
-> ata1: EH complete
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata1.00: status: { DRDY }
-> ata1: soft resetting link
-> ata1.00: configured for UDMA/66
-> ata1: EH complete
-> SysRq : Emergency Sync
-> Emergency Sync complete
-> SysRq : Emergency Remount R/O
-> Emergency Remount complete
-> SysRq : Resetting
+On Sat, 02 Feb 2008 16:27:40 -0800 Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-This error is what I mentioned in a post yesterday that mentioned several 
-errors I've seen with a recent kernel built from linus' git.
+> On Sat, 2008-02-02 at 16:10 -0800, Andrew Morton wrote:
+> > On Thu, 17 Jan 2008 17:06:33 -0800 "Russell Leidich" <rml@google.com> wrote:
+> > 
+> > > > Here's the hopefully-final version of the patch, which I have just
+> > > > tested on Intel and AMD.
+> > 
+> > Curious.  This just broke.
+> > 
+> > i386 allmodconfig:
+> > 
+> > arch/x86/kernel/cpu/mcheck/p4.o: In function `smp_thermal_interrupt':
+> > arch/x86/kernel/cpu/mcheck/p4.c:61: multiple definition of `smp_thermal_interrupt'
+> > arch/x86/kernel/cpu/mcheck/mce_thermal.o:arch/x86/kernel/cpu/mcheck/mce_thermal.c:17: first defined here
+> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-ld: Warning: size of symbol `smp_thermal_interrupt' changed from 4 in arch/x86/kernel/cpu/mcheck/mce_thermal.o to 43 in arch/x86/kernel/cpu/mcheck/p4.o
+> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-ld: Warning: type of symbol `smp_thermal_interrupt' changed from 1 to 2 in arch/x86/kernel/cpu/mcheck/p4.o
+> > 
+> > In mainline we just did this:
+> > 
+> > --- linux-2.6.24/arch/x86/kernel/cpu/mcheck/p4.c        2008-02-01 14:29:18.000000000 -0800
+> > +++ devel/arch/x86/kernel/cpu/mcheck/p4.c       2008-02-02 15:38:06.000000000 -0800
+> > @@ -57,7 +57,7 @@ static void intel_thermal_interrupt(stru
+> >  /* Thermal interrupt handler for this CPU setup */
+> >  static void (*vendor_thermal_interrupt)(struct pt_regs *regs) = unexpected_thermal_interrupt;
+> >  
+> > -fastcall void smp_thermal_interrupt(struct pt_regs *regs)
+> > +void smp_thermal_interrupt(struct pt_regs *regs)
+> > 
+> > which I think was always wrong and has just now tripped up the linker.  I
+> > _assume_ that function should be __attribute__((weak)).  Then again, maybe
+> > I'm full of it.  But hey, it compiles now.
+> > 
+> 
+> What tree fails to compile?
 
-The only difference is that here the kernel starts at UDMA/133 and devolves 
-all the way down to PIO0 before spinning forever at that. A fully "cold" boot 
-(ie: removing all power from the system for a period of several minutes and 
-then powering it back on) seems to fix this problem.
+Current mainline plus current -mm mess.  I don't think there's anything
+else apart from this patch involved though.
 
-I've got a kernel here built from git b036555adc but I haven't tested it yet. 
-If the problem still occurs with it, I'll try to get a copy of the output 
-posted here. 
+> grepping mainline:
+> 
+> ./arch/x86/kernel/cpu/mcheck/mce_intel_64.c:asmlinkage void smp_thermal_interrupt(void)
+> ./arch/x86/kernel/cpu/mcheck/p4.c:void smp_thermal_interrupt(struct pt_regs *regs)
+> ./arch/x86/kernel/entry_64.S:   apicinterrupt THERMAL_APIC_VECTOR,smp_thermal_interrupt
+> ./arch/x86/kernel/traps_64.c:asmlinkage void __attribute__((weak)) smp_thermal_interrupt(void)
+> 
+> Notice the one in p4.c doesn't take void args.
 
-DRH
+Yeah.  I didn't really look into what all this is supposed to do. 
+Something seems a bit broken.
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+> I'll look into it.
+
+
+Thanks.  My current queue is (as usual) at http://userweb.kernel.org/~akpm/mmotm/
