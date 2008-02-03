@@ -1,43 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936464AbYBCKES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYBCKMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936464AbYBCKES (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 05:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760006AbYBCKEA
+	id S1758675AbYBCKMy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 05:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYBCKMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 05:04:00 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48682 "EHLO pasmtpB.tele.dk"
+	Sun, 3 Feb 2008 05:12:44 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53590 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757694AbYBCKD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 05:03:59 -0500
-Date: Sun, 3 Feb 2008 11:04:03 +0100
+	id S1750757AbYBCKMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 05:12:42 -0500
+Date: Sun, 3 Feb 2008 11:12:45 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: Frans Pop <elendil@planet.nl>, akpm@linux-foundation.org,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH try#2 ] kbuild: add svn revision information to setlocalversion
-Message-ID: <20080203100403.GA20810@uranus.ravnborg.org>
-References: <20080202203503.GA26415@uranus.ravnborg.org> <E1JLPrz-00059X-Sc@faramir.fjphome.nl> <20080202213015.GA27015@uranus.ravnborg.org> <1202019206.6671.18.camel@roc-laptop>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-git7: section mismatches woes
+Message-ID: <20080203101245.GB20810@uranus.ravnborg.org>
+References: <200801301950.44403.rjw@sisk.pl> <200801302232.53306.rjw@sisk.pl> <20080202180828.GC25399@uranus.ravnborg.org> <200802022347.29916.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202019206.6671.18.camel@roc-laptop>
+In-Reply-To: <200802022347.29916.rjw@sisk.pl>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 03, 2008 at 02:13:26PM +0800, Bryan Wu wrote:
-> >From 0a7a2c6f19d32a85ca1a7887382325170ef19a66 Mon Sep 17 00:00:00 2001
-> From: Bryan Wu <bryan.wu@analog.com>
-> Date: Sun, 3 Feb 2008 14:05:00 +0800
-> Subject: [PATCH] [Scripts] add svn revision information to setlocalversion
+On Sat, Feb 02, 2008 at 11:47:29PM +0100, Rafael J. Wysocki wrote:
+> On Saturday, 2 of February 2008, Sam Ravnborg wrote:
+> > On Wed, Jan 30, 2008 at 10:32:52PM +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday, 30 of January 2008, Sam Ravnborg wrote:
+> > > > On Wed, Jan 30, 2008 at 07:50:43PM +0100, Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > I get these messages, the majority of which seem to be false-positives:
+> > > > ...
+> > > > > modpost: Found 35 section mismatch(es).
+> > > > > To see additional details select "Enable full Section mismatch analysis"
+> > > > > in the Kernel Hacking menu (CONFIG_SECTION_MISMATCH).
+> > > > Looking in to these atm.
+> > > > 
+> > > > > 
+> > > > > and if I compile the kernel with CONFIG_SECTION_MISMATCH, it breaks resuming
+> > > > > from RAM.
+> > > > 
+> > > > The only functional difference when you enable CONFIG_SECTION_MISMATCH is the
+> > > > addition of the -fno-inline-functions-called-once to CFLAGS.
+> > > > So we have some code somewhere that breaks if it is not inlined by gcc.
+> > > > 
+> > > > It would be nice to sort out where.
+> > > > If you have a rough idea where to look
+> > > 
+> > > No, I don't.
+> > > 
+> > > It looks like there's somewhere in arch/x86, since I ruled out kernel/power and
+> > > drivers/acpi already.
+> > 
+> > Hi Rafael.
 > 
-> follow git and mercurial style, include uncommitted changes detect
+> Hi,
 > 
-> Cc: Frans Pop <elendil@planet.nl>
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > Do you plan to look closer into this or do you have an easy receipe so
+> > I can test myself (on a x86 64 bit box)?
+> 
+> Well, I really don't know how to approach this.  Do you have an x86-64 box with
+> suspend to RAM working?
+I dunno - never used it I'm afraid. And do not know how to do it either.
+Feel free to call me ignorant :-(
 
-Applied and pushed out.
-Thanks for the review Frans and thanks for the quick fix Bryan.
+I have in latest kbuild.git made DEBUG_SECTION_MISMATCH so it cannot be selected,
+partly due to this regression but mostly due to the noise it creates.
+
+The way to approach it is straightforward but boring.
+
+You can add:
+ccflags-y += -fno-inline-functions-called-once
+to the Makefiles where you think this can have caused troubles until
+you find the problematic directory.
+kbuild will pick up that gcc options changed and rebuild
+all relevant files.
+
+When the problematic directory is located then
+remove the ccflags-y assignment and do it file-by-file
+using the CFLAGS_xxx.o syntax:
+
+CFLAGS_file.o := -fno-inline-functions-called-once
+
+This is probarly not the highest priority thing to look into
+but I am afraid that it could show up under other circumstances too.
+
 
 	Sam
