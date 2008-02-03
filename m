@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYBCUDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYBCUGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYBCUDZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 15:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYBCUDQ
+	id S1753320AbYBCUGI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 15:06:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYBCUFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 15:03:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59086 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbYBCUDP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 15:03:15 -0500
-Message-ID: <47A61DD6.7040502@zytor.com>
-Date: Sun, 03 Feb 2008 12:02:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: wakeup code translated to .c
-References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz> <20080203184931.GA2648@uranus.ravnborg.org>
-In-Reply-To: <20080203184931.GA2648@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Feb 2008 15:05:55 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57116 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751498AbYBCUFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 15:05:54 -0500
+Date: Sun, 3 Feb 2008 21:05:58 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Hannes Reinecke <hare@suse.de>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch] scsi: fix spurious build failures in aic7xxx
+Message-ID: <20080203200558.GC2648@uranus.ravnborg.org>
+References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu> <20080202141857.GA8635@elte.hu> <20080202162611.GA24765@uranus.ravnborg.org> <20080202171020.GB12748@elte.hu> <20080203045441.GA12128@elte.hu> <20080203074143.GA19981@uranus.ravnborg.org> <1202066623.3318.95.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202066623.3318.95.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Sun, Feb 03, 2008 at 07:16:48PM +0100, Pavel Machek wrote:
->> Hi!
->>
->>>> This version works on 32-bit, and builds on 64-bit (but I'm pretty
->>>> sure it does not work. 32-bit code probably needs to go into rm/....)
->>>>
->>> Do you have an updated version or is this the latest one?
->> I'm glad you ask ;-). Here's reasonably-recent version (I have
->> slightly cleaner one, but it got obscured by 2.6.24-git merge), I
->> eventually got it to work on 64-bit, by reusing trampoline.S code.
->>
->> 								Pavel
->> Signed-off-by: Pavel Machek <pavel@suse.cz>
+On Sun, Feb 03, 2008 at 01:23:42PM -0600, James Bottomley wrote:
+> On Sun, 2008-02-03 at 02:41 -0500, Sam Ravnborg wrote:
+> >         Thanks for testing Ingo.
+> >         
+> >         James - I plan to submit this via kbuild.git in about 10
+> >         hours.
+> >         Let me know if you would like it to go in via scsi and I
+> >         will drop you an updated patch (need to elaboarte a bit more
+> >         in
+> >         the commit message).
 > 
-> Hi PAvel.
-> 
-> Before you submit this for real we need me to take a deper
-> look into your Makefiles.
-> We do not want this duplication between boot and acpi.
-> And the way you deal with code sharing from boot/ is not
-> OK either.
-> 
-> But I do have a few other things pending before I have time
-> so please ping me in a week or two.
-> 
+> Sure, the changes look fine .. and will not conflict with anything
+> pending I currently have.  You can add my acked-by if you want.
+Thanks - will do so.
 
-Don't blame Pavel for that.  That has a quick hack I threw together to 
-give him something at all to work with.
+> 
+> Please also note the @steeleye.com email address doesn't come to me any
+> more, so this email had to be forwarded.
+OK.
+Can I ask you to fix these:
+Documentation/DocBook/scsi.tmpl:            <email>James.Bottomley@steeleye.com</email>
+Documentation/scsi/scsi_mid_low_api.txt:        James Bottomley <James dot Bottomley at steeleye dot com>
+drivers/base/attribute_container.c: * Copyright (c) 2005 - James Bottomley <James.Bottomley@steeleye.com>
+drivers/base/transport_class.c: * Copyright (c) 2005 - James Bottomley <James.Bottomley@steeleye.com>
+drivers/scsi/raid_class.c: * Copyright (c) 2005 - James Bottomley <James.Bottomley@steeleye.com>
+include/linux/attribute_container.h: * Copyright (c) 2005 - James Bottomley <James.Bottomley@steeleye.com>
+include/linux/raid_class.h: * Copyright (c) 2005 - James Bottomley <James.Bottomley@steeleye.com>
+include/linux/transport_class.h: * Copyright (c) 2005 - James Bottomley <James.Bottomley@steeleye.com>
 
-	-hpa
+	Sam
