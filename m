@@ -1,55 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936113AbYBCGCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935327AbYBCGLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936113AbYBCGCc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 01:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYBCGCU
+	id S935327AbYBCGLb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 01:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYBCGLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 01:02:20 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:41496 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751366AbYBCGCT (ORCPT
+	Sun, 3 Feb 2008 01:11:21 -0500
+Received: from twinlark.arctic.org ([208.69.40.136]:33890 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbYBCGLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 01:02:19 -0500
-Message-ID: <f73f7ab80802022202s2c695a8fjea20e5092e9c5dcc@mail.gmail.com>
-Date: Sun, 3 Feb 2008 01:02:18 -0500
-From: "Kyle Moffett" <kyle@moffetthome.net>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [PATCH] Allow NBD to be used locally
-Cc: devzero@web.de, Laurent.Vivier@bull.net, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz
-In-Reply-To: <Pine.LNX.4.64.0802021834380.18790@fbirervta.pbzchgretzou.qr>
+	Sun, 3 Feb 2008 01:11:20 -0500
+Message-ID: <47A55B06.3060707@kernel.org>
+Date: Sat, 02 Feb 2008 22:11:18 -0800
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: serge@hallyn.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] per-process securebits
+References: <47A2D439.9050704@kernel.org> <20080201201526.GA4684@vino.hallyn.com>
+In-Reply-To: <20080201201526.GA4684@vino.hallyn.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <141350930@web.de>
-	 <Pine.LNX.4.64.0802021834380.18790@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Whoops, only hit "Reply" on the first email, sorry Jan.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Feb 2, 2008 7:54 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> On Feb 2 2008 18:31, devzero@web.de wrote:
-> >
-> >> How will that work? Fuse makes up a filesystem - not helpful
-> >> if you have a raw disk without a known fs to mount.
-> >
-> >take zfs-fuse or ntfs-3g for example.
-> >you have a blockdevice or backing-file containing data structures and fuse makes those show up as a filesystem.
-> >i think vmware-mount is not different here.
->
-> vmware-mount IS different, it provides the _block_ device,
-> which is then mounted through the usual mount(2) mechanism
-> (if there is a filesystem driver for it).
 
-As far as I can tell, vmware-mount should be re-implemented as a
-little perl script around "dmsetup" and/or "losetup", possibly with
-"dm-userspace" patched into the kernel to allow you to handle
-non-mapped blocks in your userspace daemon when somebody tries to
-access them.  If you don't need that ability then straight dm-loop and
-dm-linear will work.
 
-Cheers,
-Kyle Moffett
+serge@hallyn.com wrote:
+| Quoting Andrew G. Morgan (morgan@kernel.org):
+|> -----BEGIN PGP SIGNED MESSAGE-----
+|> Hash: SHA1
+|>
+|> Here is the patch to add per-process securebits.
+|>
+|> Its all code that lives inside the capability LSM and the new securebits
+|> implementation is only active if CONFIG_SECURITY_FILE_CAPABILITIES is
+|> enabled (it doesn't make much sense to support this feature without
+|> filesystem capabilities).
+|>
+|> The patch assumes the CAP_SETPCAP fix of last week, but is otherwise on
+|> top of 2.6.24-rc8-mm1.
+|
+| Hey Andrew,  I'm about to set up some ltp tests, but noticed the
+| following patch is needed on top of yours.
+
+Sorry about that. I'm guessing you have a more pedantic compiler than
+mine (x86_64)!
+
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+
+Cheers
+
+Andrew
+
+|
+| -serge
+|
+|>From feac61b47be8375e25b0f6ee876cf096c8b1b9cc Mon Sep 17 00:00:00 2001
+| From: Serge E. Hallyn <serue@us.ibm.com>
+| Date: Fri, 1 Feb 2008 14:13:29 +0000
+| Subject: [PATCH 1/1] per-process securebits: security_task_prctl takes
+a long
+|
+| Fix a mismatch between prototypes and callers for the updated
+| security_task_prctl().  The newly introduced argument, error,
+| is a long, not an int.
+|
+| Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+| ---
+|  include/linux/security.h |    8 ++++----
+|  security/commoncap.c     |    4 ++--
+|  security/dummy.c         |    2 +-
+|  security/security.c      |    2 +-
+|  security/selinux/hooks.c |    2 +-
+|  5 files changed, 9 insertions(+), 9 deletions(-)
+|
+| diff --git a/include/linux/security.h b/include/linux/security.h
+| index c550079..c789a0d 100644
+| --- a/include/linux/security.h
+| +++ b/include/linux/security.h
+| @@ -63,7 +63,7 @@ extern int cap_task_post_setuid (uid_t old_ruid,
+uid_t old_euid, uid_t old_suid,
+|  extern void cap_task_reparent_to_init (struct task_struct *p);
+|  extern int cap_task_kill(struct task_struct *p, struct siginfo *info,
+int sig, u32 secid);
+|  extern int cap_task_prctl(int option, unsigned long arg2, unsigned
+long arg3,
+| -			  unsigned long arg4, unsigned long arg5, int *rc_p);
+| +			  unsigned long arg4, unsigned long arg5, long *rc_p);
+|  extern int cap_task_setscheduler (struct task_struct *p, int policy,
+struct sched_param *lp);
+|  extern int cap_task_setioprio (struct task_struct *p, int ioprio);
+|  extern int cap_task_setnice (struct task_struct *p, int nice);
+| @@ -1348,7 +1348,7 @@ struct security_operations {
+|  	int (*task_wait) (struct task_struct * p);
+|  	int (*task_prctl) (int option, unsigned long arg2,
+|  			   unsigned long arg3, unsigned long arg4,
+| -			   unsigned long arg5, int *rc_p);
+| +			   unsigned long arg5, long *rc_p);
+|  	void (*task_reparent_to_init) (struct task_struct * p);
+|  	void (*task_to_inode)(struct task_struct *p, struct inode *inode);
+|
+| @@ -1602,7 +1602,7 @@ int security_task_kill(struct task_struct *p,
+struct siginfo *info,
+|  			int sig, u32 secid);
+|  int security_task_wait(struct task_struct *p);
+|  int security_task_prctl(int option, unsigned long arg2, unsigned long
+arg3,
+| -			 unsigned long arg4, unsigned long arg5, int *rc_p);
+| +			 unsigned long arg4, unsigned long arg5, long *rc_p);
+|  void security_task_reparent_to_init(struct task_struct *p);
+|  void security_task_to_inode(struct task_struct *p, struct inode *inode);
+|  int security_ipc_permission(struct kern_ipc_perm *ipcp, short flag);
+| @@ -2151,7 +2151,7 @@ static inline int security_task_wait (struct
+task_struct *p)
+|  static inline int security_task_prctl (int option, unsigned long arg2,
+|  				       unsigned long arg3,
+|  				       unsigned long arg4,
+| -				       unsigned long arg5, int *rc_p)
+| +				       unsigned long arg5, long *rc_p)
+|  {
+|  	return 0;
+|  }
+| diff --git a/security/commoncap.c b/security/commoncap.c
+| index 9b87182..858387a 100644
+| --- a/security/commoncap.c
+| +++ b/security/commoncap.c
+| @@ -611,9 +611,9 @@ int cap_task_kill(struct task_struct *p, struct
+siginfo *info,
+|  #endif
+|
+|  int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
+| -		   unsigned long arg4, unsigned long arg5, int *rc_p)
+| +		   unsigned long arg4, unsigned long arg5, long *rc_p)
+|  {
+| -	int error = 0;
+| +	long error = 0;
+|
+|  	switch (option) {
+|  	case PR_CAPBSET_READ:
+| diff --git a/security/dummy.c b/security/dummy.c
+| index c9e6d9f..e79f988 100644
+| --- a/security/dummy.c
+| +++ b/security/dummy.c
+| @@ -595,7 +595,7 @@ static int dummy_task_kill (struct task_struct *p,
+struct siginfo *info,
+|  }
+|
+|  static int dummy_task_prctl (int option, unsigned long arg2, unsigned
+long arg3,
+| -			     unsigned long arg4, unsigned long arg5, int *rc_p)
+| +			     unsigned long arg4, unsigned long arg5, long *rc_p)
+|  {
+|  	return 0;
+|  }
+| diff --git a/security/security.c b/security/security.c
+| index c3cc14e..6f53155 100644
+| --- a/security/security.c
+| +++ b/security/security.c
+| @@ -683,7 +683,7 @@ int security_task_wait(struct task_struct *p)
+|  }
+|
+|  int security_task_prctl(int option, unsigned long arg2, unsigned long
+arg3,
+| -			 unsigned long arg4, unsigned long arg5, int *rc_p)
+| +			 unsigned long arg4, unsigned long arg5, long *rc_p)
+|  {
+|  	return security_ops->task_prctl(option, arg2, arg3, arg4, arg5, rc_p);
+|  }
+| diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+| index 3c88858..a553984 100644
+| --- a/security/selinux/hooks.c
+| +++ b/security/selinux/hooks.c
+| @@ -3210,7 +3210,7 @@ static int selinux_task_prctl(int option,
+|  			      unsigned long arg3,
+|  			      unsigned long arg4,
+|  			      unsigned long arg5,
+| -			      int *rc_p)
+| +			      long *rc_p)
+|  {
+|  	/* The current prctl operations do not appear to require
+|  	   any SELinux controls since they merely observe or modify
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFHpVsF+bHCR3gb8jsRAul1AKDLULHkgP0Lp3T7BKIYOoAmLlZ4gACfYFs7
+oXVa3G1znfhjpr1ZNmJuOxQ=
+=ZoRb
+-----END PGP SIGNATURE-----
