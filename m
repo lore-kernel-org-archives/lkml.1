@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYBCMhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935854AbYBCMjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbYBCMhr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 07:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762826AbYBCMhc
+	id S935854AbYBCMjY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 07:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761800AbYBCMjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 07:37:32 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58288 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765028AbYBCMhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 07:37:31 -0500
-Date: Sun, 3 Feb 2008 13:37:34 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-git7: section mismatches woes
-Message-ID: <20080203123734.GH20810@uranus.ravnborg.org>
-References: <200801301950.44403.rjw@sisk.pl> <200802022347.29916.rjw@sisk.pl> <20080203101245.GB20810@uranus.ravnborg.org> <200802031332.01827.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802031332.01827.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 3 Feb 2008 07:39:15 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:60473 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760925AbYBCMjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 07:39:14 -0500
+Date: Sun, 3 Feb 2008 13:39:02 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       aneesh.kumar@linux.vnet.ibm.com
+cc: Bastian Blank <bastian@waldi.eu.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-s390@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] Fix ext4 bitops
+In-Reply-To: <20080203121238.GD18211@osiris.ibm.com>
+Message-ID: <Pine.LNX.4.64.0802031336240.28712@anakin>
+References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
+ <20080201122257.9524c2bb.akpm@linux-foundation.org>
+ <20080201210404.GA31271@wavehammer.waldi.eu.org> <20080203121238.GD18211@osiris.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > suspend to RAM working?
-> > I dunno - never used it I'm afraid. And do not know how to do it either.
-> 
-> # echo mem > /sys/power/state
-> 
-> (better do it after a fresh boot for the first time in case it fails).
-
-Will try later - thanks.
-
-> > The way to approach it is straightforward but boring.
+On Sun, 3 Feb 2008, Heiko Carstens wrote:
+> On Fri, Feb 01, 2008 at 10:04:04PM +0100, Bastian Blank wrote:
+> > On Fri, Feb 01, 2008 at 12:22:57PM -0800, Andrew Morton wrote:
+> > > On Fri, 1 Feb 2008 21:02:08 +0100
+> > > Bastian Blank <bastian@waldi.eu.org> wrote:
+> > > 
+> > > > Fix ext4 bitops.
+> > > 
+> > > This is incomplete.  Please tell us what was "fixed".
+> > > 
+> > > If it was a build error then please quote the compile error output in the
+> > > changelog, as well as the usual description of what the problem is, and how
+> > > it was fixed.
 > > 
-> > You can add:
-> > ccflags-y += -fno-inline-functions-called-once
-> > to the Makefiles where you think this can have caused troubles until
-> > you find the problematic directory.
-> > kbuild will pick up that gcc options changed and rebuild
-> > all relevant files.
+> > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
+> > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
 > > 
-> > When the problematic directory is located then
-> > remove the ccflags-y assignment and do it file-by-file
-> > using the CFLAGS_xxx.o syntax:
-> > 
-> > CFLAGS_file.o := -fno-inline-functions-called-once
+> > The s390 specific bitops uses parts of the generic implementation.
+> > Include the correct header.
 > 
-> Do I have to pass any special options to "make"?
+> That doesn't work:
+> 
+> fs/built-in.o: In function `ext4_mb_release_inode_pa':
+> mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
+> fs/built-in.o: In function `ext4_mb_init_cache':
+> mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
+> 
+> This still needs generic_find_next_le_bit which comes
+> from lib/find_next_bit.c. That one doesn't get built on s390 since we
+> don't set GENERIC_FIND_NEXT_BIT.
+> Currently we have the lengthly patch below queued.
 
-When you do it this way by tweaking the Makefiles - no.
-And you do not have to delete .o files manually to get them
-rebuild.
+Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
+impression the ext4 people don't (compile) test on big endian machines?
 
-	Sam
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
