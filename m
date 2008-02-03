@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935854AbYBCMjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935277AbYBCMlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935854AbYBCMjY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 07:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761800AbYBCMjP
+	id S935277AbYBCMlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 07:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYBCMlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 07:39:15 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:60473 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760925AbYBCMjO (ORCPT
+	Sun, 3 Feb 2008 07:41:07 -0500
+Received: from hu-out-0506.google.com ([72.14.214.227]:51946 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbYBCMlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 07:39:14 -0500
-Date: Sun, 3 Feb 2008 13:39:02 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       aneesh.kumar@linux.vnet.ibm.com
-cc: Bastian Blank <bastian@waldi.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-s390@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] Fix ext4 bitops
-In-Reply-To: <20080203121238.GD18211@osiris.ibm.com>
-Message-ID: <Pine.LNX.4.64.0802031336240.28712@anakin>
-References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
- <20080201122257.9524c2bb.akpm@linux-foundation.org>
- <20080201210404.GA31271@wavehammer.waldi.eu.org> <20080203121238.GD18211@osiris.ibm.com>
+	Sun, 3 Feb 2008 07:41:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=U+Y3MLRp3JOZITY3qAmfBCyHHKLFR2D1M+lNS20iwikKaMcpN7+/KD5scPYPEeRi1pAOaND9JnY6apaff/6p4rL/6s1k4EZZ+eF8gLEd2OZ7L0cfgSWEvLhh3MAhs3QK3rj70xyiDUkxBos9bzphfu7ob0GBxmAhFEgiBwSDmKQ=
+Date: Sun, 3 Feb 2008 15:40:41 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, bryan.wu@analog.com,
+       hskinnemoen@atmel.co, dhowells@redhat.com
+Subject: Re: [patch 0/4] cleanup - use _AC macro to define PAGE_SIZE
+Message-ID: <20080203124041.GA6724@cvg>
+References: <47a5a65d.03eb300a.07b8.130e@mx.google.com> <20080203122239.GF20810@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080203122239.GF20810@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Feb 2008, Heiko Carstens wrote:
-> On Fri, Feb 01, 2008 at 10:04:04PM +0100, Bastian Blank wrote:
-> > On Fri, Feb 01, 2008 at 12:22:57PM -0800, Andrew Morton wrote:
-> > > On Fri, 1 Feb 2008 21:02:08 +0100
-> > > Bastian Blank <bastian@waldi.eu.org> wrote:
-> > > 
-> > > > Fix ext4 bitops.
-> > > 
-> > > This is incomplete.  Please tell us what was "fixed".
-> > > 
-> > > If it was a build error then please quote the compile error output in the
-> > > changelog, as well as the usual description of what the problem is, and how
-> > > it was fixed.
-> > 
-> > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
-> > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
-> > 
-> > The s390 specific bitops uses parts of the generic implementation.
-> > Include the correct header.
-> 
-> That doesn't work:
-> 
-> fs/built-in.o: In function `ext4_mb_release_inode_pa':
-> mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
-> fs/built-in.o: In function `ext4_mb_init_cache':
-> mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
-> 
-> This still needs generic_find_next_le_bit which comes
-> from lib/find_next_bit.c. That one doesn't get built on s390 since we
-> don't set GENERIC_FIND_NEXT_BIT.
-> Currently we have the lengthly patch below queued.
+[Sam Ravnborg - Sun, Feb 03, 2008 at 01:22:39PM +0100]
+| On Sun, Feb 03, 2008 at 02:22:17PM +0300, Cyrill Gorcunov wrote:
+| > This patch series removes code duplication for PAGE_SIZE
+| > definition on various architectures.
+| > 
+| > Please review. Any comments are welcome. *UNTESTED*
+| 
+| Looks good.
+| Could you do a followup patch for each architecture introducing
+| use of PAGE_SIZE in their respective kernel/vmlinux.lds.S too?
+| I think more than your 4 listed architectures could need this fix.
+| 
+| 	Sam
+| 
 
-Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
-impression the ext4 people don't (compile) test on big endian machines?
+Hi, Sam,
 
-Gr{oetje,eeting}s,
+i'll try but a bit lately, ok?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+		- Cyrill -
