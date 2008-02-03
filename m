@@ -1,37 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbYBCXc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYBCXdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbYBCXc1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 18:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYBCXcT
+	id S1755176AbYBCXdR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 18:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYBCXdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 18:32:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42038 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753343AbYBCXcS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 18:32:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Re: wakeup code translated to .c
-Date: Mon, 4 Feb 2008 00:30:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org,
+	Sun, 3 Feb 2008 18:33:06 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58714 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753656AbYBCXdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 18:33:03 -0500
+Date: Mon, 4 Feb 2008 00:33:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
        Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
        "H. Peter Anvin" <hpa@zytor.com>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802032333.02821.rjw@sisk.pl> <200802040020.14836.rjw@sisk.pl>
-In-Reply-To: <200802040020.14836.rjw@sisk.pl>
+Subject: Re: wakeup code translated to .c
+Message-ID: <20080203233313.GF2799@elf.ucw.cz>
+References: <20080130120111.GB22820@elf.ucw.cz> <20080203181648.GA1629@elf.ucw.cz> <200802032333.02821.rjw@sisk.pl> <200802040020.14836.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802040030.28700.rjw@sisk.pl>
+In-Reply-To: <200802040020.14836.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 4 of February 2008, Rafael J. Wysocki wrote:
+On Mon 2008-02-04 00:20:14, Rafael J. Wysocki wrote:
 > On Sunday, 3 of February 2008, Rafael J. Wysocki wrote:
 > > On Sunday, 3 of February 2008, Pavel Machek wrote:
 > > > Hi!
@@ -54,10 +51,10 @@ On Monday, 4 of February 2008, Rafael J. Wysocki wrote:
 > > 
 > > - These warnings:
 > > 
-> > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c: In function ‘acpi_save_state_mem’:
+> > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c: In function ???acpi_save_state_mem???:
 > > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:41: warning: initialization makes pointer from integer without a cast
-> > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:50: warning: format ‘%d’ expects type ‘int’, but argument 2 has type ‘long unsigned int’
-> > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:50: warning: format ‘%d’ expects type ‘int’, but argument 3 has type ‘long unsigned int’
+> > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:50: warning: format ???%d??? expects type ???int???, but argument 2 has type ???long unsigned int???
+> > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:50: warning: format ???%d??? expects type ???int???, but argument 3 has type ???long unsigned int???
 > > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:70: warning: ISO C90 forbids mixed declarations and code
 > > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:82: warning: assignment makes integer from pointer without a cast
 > > /home/rafael/src/linux-2.6/arch/x86/kernel/acpi/sleep.c:83: warning: assignment makes integer from pointer without a cast
@@ -69,18 +66,21 @@ On Monday, 4 of February 2008, Rafael J. Wysocki wrote:
 > > look pretty scary.
 > 
 > Below is the arch/x86/kernel/acpi/sleep.c part without the warnings (untested).
-
-Now also tested on x86-64 (works just fine :-)).
-
-
+> 
 > It still contains some hardcoded magic numbers and extern declarations, so
 > I guess the #include list is not complete or another header is necessary.
 > 
 > BTW:
 > 1) why exactly is acpi_wakeup_address not (void *)?
-> 2) header->level3_ident_pgt and header->level3_ident_pgt could be (char *) IMO
-> 
-> 
+
+Well, it is physical address, not really a pointer.
+
+> 2) header->level3_ident_pgt and header->level3_ident_pgt could be
+(char *) IMO
+
+Those are unused, they can be deleted ;-).
+								Pavel
+
 > --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
 > +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
 > @@ -11,29 +11,92 @@
@@ -208,5 +208,6 @@ Now also tested on x86-64 (works just fine :-)).
 >  
 >  
 
-Greetings,
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
