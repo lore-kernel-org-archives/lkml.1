@@ -1,149 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbYBCVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYBCVec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbYBCVeR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 16:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYBCVeF
+	id S1754620AbYBCVec (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 16:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYBCVeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 3 Feb 2008 16:34:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33916 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752946AbYBCVeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 3 Feb 2008 16:34:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:65043 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752908AbYBCVeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 16:34:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hWhJxti8hWZSIGuugdxg3TM61yDbOT9Sj8tn19yhA67RjyyBzIHZjc1OIQUMu51X0Ymf7SMtwImHgdbPDRqee0Qwb4Mxvze0p1HmgTQOjzNCdjI9DXOizk0AyPKHafermiUOUqr4N7iL4yZKwSuYzMlEfNkhwtqd0CLJMHEmg1k=
-Subject: Re: latencytop: optimize LT_BACKTRACEDEPTH loops a bit
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dmitry.adamushko@gmail.com
-Content-Type: text/plain
-Date: Sun, 03 Feb 2008 22:33:58 +0100
-Message-Id: <1202074439.4765.7.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Date: Sun, 3 Feb 2008 22:33:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Latest -git ioremap error
+Message-ID: <20080203213353.GB27737@elte.hu>
+References: <47A606B5.7090001@gmail.com> <47A608F8.5080206@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47A608F8.5080206@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On 03/02/2008, Arjan van de Ven <arjan@linux.intel.com> wrote:
-> Dmitry Adamushko wrote:
-> > Subject: latencytop: optimize LT_BACKTRACEDEPTH loops a bit.
-> >
-> > It looks like there is no need to loop any longer when 'same == 0'.
-> 
-> thanks for the contribution!
-> while I like your patch, I wonder if we should go even a little further in
-> cleaning this up
-> 
-> > @@ -73,12 +73,12 @@ account_global_scheduler_latency(struct task_struct *tsk, struct latency_record
-> >                       continue;
-> >               }
-> >               for (q = 0 ; q < LT_BACKTRACEDEPTH ; q++) {
-> > -                     if (latency_record[i].backtrace[q] !=
-> > -                             lat->backtrace[q])
-> > +                     unsigned long record = lat->backtrace[q];
+* Kevin Winchester <kjwinchester@gmail.com> wrote:
+
+> >     x86: fix ioremap RAM check
 > > 
-> > +                     if (latency_record[i].backtrace[q] != record)
-> >                               same = 0;
-> > -                     if (same && lat->backtrace[q] == 0)
-> > -                             break;
-> > -                     if (same && lat->backtrace[q] == ULONG_MAX)
-> > +
-> > +                     if (!same || record == 0 || record == ULONG_MAX)
-> >                               break;
-> >               }
+> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> >     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 > 
-> I mean, we could make it look like this:
+> Lucky first try - reverting this commit fixes the problem for me.  Any 
+> ideas?
 
-Yeah, I had some doubts regarding the '!same' case. We'd probably be better off taking a decision (i.e. break)
-from inside the first branch so to avoid the second one (I guess, it can be a bit more efficient,
-wrt the CPU's branch-prediction logic).
+Could you check the patch below - does that too fix the problem for you?
 
-what about this one instead?
+	Ingo
 
-(I'd prefer to have a single 'if' for 'record == 0 || record == ULONG_MAX',
-it's just a matter of taste though)
+----------------->
+Subject: x86: relax RAM check in ioremap()
+From: Ingo Molnar <mingo@elte.hu>
 
+Kevin Winchester reported the loss of direct rendering, due to:
+
+[    0.588184] agpgart: Detected AGP bridge 0
+[    0.588184] agpgart: unable to get memory for graphics translation table.
+[    0.588184] agpgart: agp_backend_initialize() failed.
+[    0.588207] agpgart-amd64: probe of 0000:00:00.0 failed with error -12
+
+and bisected it down to:
+
+> commit 266b9f8727976769e2ed2dad77ac9295f37e321e
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Wed Jan 30 13:34:06 2008 +0100
+>
+>     x86: fix ioremap RAM check
+
+this check was too strict and caused an ioremap() failure.
+
+the problem is due to the somewhat unclean way of how the GART code
+reserves a memory range for its aperture, and how it utilizes it
+later on.
+
+Allow RAM pages to be ioremap()-ed too, as long as they are reserved.
+
+Bisected-by: Kevin Winchester <kjwinchester@gmail.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/mm/ioremap.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Subject: latencytop: optimize LT_BACKTRACEDEPTH loops a bit.
-
-It looks like there is no need to loop any longer when 'same == 0'.
-
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
----
-
-diff --git a/kernel/latencytop.c b/kernel/latencytop.c
-index b4e3c85..5e4743d 100644
---- a/kernel/latencytop.c
-+++ b/kernel/latencytop.c
-@@ -64,8 +64,8 @@ account_global_scheduler_latency(struct task_struct *tsk, struct latency_record
- 		return;
+Index: linux-x86.q/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/ioremap.c
++++ linux-x86.q/arch/x86/mm/ioremap.c
+@@ -116,7 +116,7 @@ static void __iomem *__ioremap(unsigned 
+ {
+ 	void __iomem *addr;
+ 	struct vm_struct *area;
+-	unsigned long offset, last_addr;
++	unsigned long pfn, offset, last_addr;
+ 	pgprot_t prot;
  
- 	for (i = 0; i < MAXLR; i++) {
--		int q;
--		int same = 1;
-+		int q, same = 1;
-+
- 		/* Nothing stored: */
- 		if (!latency_record[i].backtrace[0]) {
- 			if (firstnonnull > i)
-@@ -73,12 +73,15 @@ account_global_scheduler_latency(struct task_struct *tsk, struct latency_record
- 			continue;
- 		}
- 		for (q = 0 ; q < LT_BACKTRACEDEPTH ; q++) {
--			if (latency_record[i].backtrace[q] !=
--				lat->backtrace[q])
-+			unsigned long record = lat->backtrace[q];
-+
-+			if (latency_record[i].backtrace[q] != record) {
- 				same = 0;
--			if (same && lat->backtrace[q] == 0)
- 				break;
--			if (same && lat->backtrace[q] == ULONG_MAX)
-+			}
-+
-+			/* 0 and ULONG_MAX entries denote the end of backtrace: */
-+			if (record == 0 || record == ULONG_MAX)
- 				break;
- 		}
- 		if (same) {
-@@ -143,14 +146,18 @@ account_scheduler_latency(struct task_struct *tsk, int usecs, int inter)
- 	for (i = 0; i < LT_SAVECOUNT ; i++) {
- 		struct latency_record *mylat;
- 		int same = 1;
-+
- 		mylat = &tsk->latency_record[i];
- 		for (q = 0 ; q < LT_BACKTRACEDEPTH ; q++) {
--			if (mylat->backtrace[q] !=
--				lat.backtrace[q])
-+			unsigned long record = lat.backtrace[q];
-+
-+			if (mylat->backtrace[q] != record) {
- 				same = 0;
--			if (same && lat.backtrace[q] == 0)
- 				break;
--			if (same && lat.backtrace[q] == ULONG_MAX)
-+			}
-+
-+			/* 0 and ULONG_MAX entries denote the end of backtrace: */
-+			if (record == 0 || record == ULONG_MAX)
- 				break;
- 		}
- 		if (same) {
-
-
-
--- 
-Best regards,
-Dmitry Adamushko
-
-
+ 	/* Don't allow wraparound or zero size */
+@@ -133,9 +133,9 @@ static void __iomem *__ioremap(unsigned 
+ 	/*
+ 	 * Don't allow anybody to remap normal RAM that we're using..
+ 	 */
+-	for (offset = phys_addr >> PAGE_SHIFT; offset < max_pfn_mapped &&
+-	     (offset << PAGE_SHIFT) < last_addr; offset++) {
+-		if (page_is_ram(offset))
++	for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&
++	     (pfn << PAGE_SHIFT) < last_addr; pfn++) {
++		if (pfn_valid(pfn) && !PageReserved(pfn_to_page(pfn)))
+ 			return NULL;
+ 	}
+ 
