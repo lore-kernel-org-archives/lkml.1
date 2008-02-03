@@ -1,333 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYBCWEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYBCWFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbYBCWEA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 17:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYBCWDq
+	id S1754519AbYBCWFA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 17:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYBCWEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 17:03:46 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58279 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751460AbYBCWDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 17:03:44 -0500
-Date: Sun, 3 Feb 2008 23:03:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-Message-ID: <20080203220348.GH2648@uranus.ravnborg.org>
-References: <1202074856.3318.111.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202074856.3318.111.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 3 Feb 2008 17:04:53 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47698 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbYBCWEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 17:04:52 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 3 Feb 2008 23:04:38 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2/9] firewire: fw-sbp2: add INQUIRY delay workaround
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de>
+Message-ID: <tkrat.b8a4817b51d0c9c9@s5r6.in-berlin.de>
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James.
+Several different SBP-2 bridges accept a login early while the IDE
+device is still powering up.  They are therefore unable to respond to
+SCSI INQUIRY immediately, and the SCSI core has to retry the INQUIRY.
+One of these retries is typically successful, and all is well.
 
-Nitpicking only.
+But in case of Momobay FX-3A, the INQUIRY retries tend to fail entirely.
+This can usually be avoided by waiting a little while after login before
+letting the SCSI core send the INQUIRY.  The old sbp2 driver handles
+this more gracefully for as yet unknown reasons (perhaps because it
+waits for fetch agent resets to complete, unlike fw-sbp2 which quickly
+proceeds after requesting the agent reset).  Therefore the workaround is
+not as much necessary for sbp2.
 
-	Sam
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-> The enclosure misc device is really just a library providing sysfs
-> support for physical enclosure devices and their components.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
-> 
-> See the additional ses patch for SCSI enclosure services users of this.
-> 
-> ---
->  drivers/misc/Kconfig      |   10 +
->  drivers/misc/Makefile     |    1 +
->  drivers/misc/enclosure.c  |  449 +++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/enclosure.h |  120 ++++++++++++
->  4 files changed, 580 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/misc/enclosure.c
->  create mode 100644 include/linux/enclosure.h
-> 
-> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> index b5e67c0..c6e5c09 100644
-> --- a/drivers/misc/Kconfig
-> +++ b/drivers/misc/Kconfig
-> @@ -11,6 +11,7 @@ menuconfig MISC_DEVICES
->  
->  	  If you say N, all options in this submenu will be skipped and disabled.
->  
-> +
->  if MISC_DEVICES
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -32,6 +32,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/mod_devicetable.h>
++#include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/scatterlist.h>
+ #include <linux/dma-mapping.h>
+@@ -82,6 +83,9 @@ MODULE_PARM_DESC(exclusive_login, "Exclu
+  *   Avoids access beyond actual disk limits on devices with an off-by-one bug.
+  *   Don't use this with devices which don't have this bug.
+  *
++ * - delay inquiry
++ *   Wait extra SBP2_INQUIRY_DELAY seconds after login before SCSI inquiry.
++ *
+  * - override internal blacklist
+  *   Instead of adding to the built-in blacklist, use only the workarounds
+  *   specified in the module load parameter.
+@@ -91,6 +95,8 @@ MODULE_PARM_DESC(exclusive_login, "Exclu
+ #define SBP2_WORKAROUND_INQUIRY_36	0x2
+ #define SBP2_WORKAROUND_MODE_SENSE_8	0x4
+ #define SBP2_WORKAROUND_FIX_CAPACITY	0x8
++#define SBP2_WORKAROUND_DELAY_INQUIRY	0x10
++#define SBP2_INQUIRY_DELAY		12
+ #define SBP2_WORKAROUND_OVERRIDE	0x100
+ 
+ static int sbp2_param_workarounds;
+@@ -100,6 +106,7 @@ MODULE_PARM_DESC(workarounds, "Work arou
+ 	", 36 byte inquiry = "    __stringify(SBP2_WORKAROUND_INQUIRY_36)
+ 	", skip mode page 8 = "   __stringify(SBP2_WORKAROUND_MODE_SENSE_8)
+ 	", fix capacity = "       __stringify(SBP2_WORKAROUND_FIX_CAPACITY)
++	", delay inquiry = "      __stringify(SBP2_WORKAROUND_DELAY_INQUIRY)
+ 	", override internal blacklist = " __stringify(SBP2_WORKAROUND_OVERRIDE)
+ 	", or a combination)");
+ 
+@@ -303,6 +310,11 @@ static const struct {
+ 		.workarounds		= SBP2_WORKAROUND_INQUIRY_36 |
+ 					  SBP2_WORKAROUND_MODE_SENSE_8,
+ 	},
++	/* DViCO Momobay FX-3A with TSB42AA9A bridge */ {
++		.firmware_revision	= 0x002800,
++		.model			= 0x000000,
++		.workarounds		= SBP2_WORKAROUND_DELAY_INQUIRY,
++	},
+ 	/* Initio bridges, actually only needed for some older ones */ {
+ 		.firmware_revision	= 0x000200,
+ 		.model			= ~0,
+@@ -712,6 +724,9 @@ static void sbp2_login(struct work_struc
+ 	PREPARE_DELAYED_WORK(&lu->work, sbp2_reconnect);
+ 	sbp2_agent_reset(lu);
+ 
++	if (lu->tgt->workarounds & SBP2_WORKAROUND_DELAY_INQUIRY)
++		ssleep(SBP2_INQUIRY_DELAY);
++
+ 	memset(&eight_bytes_lun, 0, sizeof(eight_bytes_lun));
+ 	eight_bytes_lun.scsi_lun[0] = (lu->lun >> 8) & 0xff;
+ 	eight_bytes_lun.scsi_lun[1] = lu->lun & 0xff;
 
-Unrelated change.
-
->  
->  config IBM_ASM
-> @@ -232,4 +233,13 @@ config ATMEL_SSC
->  
->  	  If unsure, say N.
->  
-> +config ENCLOSURE_SERVICES
-> +	tristate "Enclosure Services"
-> +	default n
-Not needed. n is default.
-
-> +	help
-> +	  Provides support for intelligent enclosures (bays which
-> +	  contain storage devices).  You also need either a host
-> +	  driver (SCSI/ATA) which supports enclosures
-> +	  or a SCSI enclosure device (SES) to use these services.
-> +
->  endif # MISC_DEVICES
-> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-> index 87f2685..de9f1f5 100644
-> --- a/drivers/misc/Makefile
-> +++ b/drivers/misc/Makefile
-> @@ -17,3 +17,4 @@ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
->  obj-$(CONFIG_THINKPAD_ACPI)	+= thinkpad_acpi.o
->  obj-$(CONFIG_FUJITSU_LAPTOP)	+= fujitsu-laptop.o
->  obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
-> +obj-$(CONFIG_ENCLOSURE_SERVICES) += enclosure.o
-> \ No newline at end of file
-Can we get one..
-
-> diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
-> new file mode 100644
-> index 0000000..e4683cd
-> --- /dev/null
-> +++ b/drivers/misc/enclosure.c
-> @@ -0,0 +1,449 @@
-> +/*
-> + * Enclosure Services
-> + *
-> + * Copyright (C) 2008 James Bottomley <James.Bottomley@HansenPartnership.com>
-> + *
-> +**-----------------------------------------------------------------------------
-> +**
-> +**  This program is free software; you can redistribute it and/or
-> +**  modify it under the terms of the GNU General Public License
-> +**  version 2 as published by the Free Software Foundation.
-> +**
-> +**  This program is distributed in the hope that it will be useful,
-> +**  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> +**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> +**  GNU General Public License for more details.
-> +**
-> +**  You should have received a copy of the GNU General Public License
-> +**  along with this program; if not, write to the Free Software
-> +**  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> +**
-> +**-----------------------------------------------------------------------------
-> +*/
-> +#include <linux/device.h>
-> +#include <linux/enclosure.h>
-> +#include <linux/err.h>
-> +#include <linux/list.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +
-> +static LIST_HEAD(container_list);
-> +static DEFINE_MUTEX(container_list_lock);
-> +static struct class enclosure_class;
-> +static struct class enclosure_component_class;
-> +
-> +/**
-> + * enclosure_find - find an enclosure given a device
-> + * @dev:	the device to find for
-> + *
-> + * Looks through the list of registered enclosures to see
-> + * if it can find a match for a device.  Returns NULL if no
-> + * enclosure is found.
-> + */
-> +struct enclosure_device *enclosure_find(struct device *dev)
-> +{
-> +	struct enclosure_device *edev = NULL;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_for_each_entry(edev, &container_list, node) {
-> +		if (edev->cdev.dev == dev) {
-> +			mutex_unlock(&container_list_lock);
-> +			return edev;
-> +		}
-> +	}
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL(enclosure_find);
-
-No GPL - but the other of your EXPORT's are GPL.
-
-> +
-> +/**
-> + * enclosure_for_each_device - calls a function for each enclosure
-> + * @fn:		the function to call
-> + * @data:	the data to pass to each call
-> + *
-> + * Loops over all the enclosures calling the function.
-> + *
-> + * Note, this function uses a mutex which will be held across calls to
-> + * @fn, so it must have user context, and @fn should not sleep or
-> + * otherwise cause the mutex to be held for indefinite periods
-> + */
-> +int enclosure_for_each_device(int (*fn)(struct enclosure_device *, void *),
-> +			      void *data)
-> +{
-> +	int error = 0;
-> +	struct enclosure_device *edev;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_for_each_entry(edev, &container_list, node) {
-> +		error = fn(edev, data);
-> +		if (error)
-> +			break;
-> +	}
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	return error;
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_for_each_device);
-> +
-> +/**
-> + * enclosure_register - register device as an enclosure
-> + *
-> + * @dev:	device containing the enclosure
-> + * @components:	number of components in the enclosure
-> + *
-> + * This sets up the device for being an enclosure.  Note that @dev does
-> + * not have to be a dedicated enclosure device.  It may be some other type
-> + * of device that additionally responds to enclosure services
-> + */
-> +struct enclosure_device *
-> +enclosure_register(struct device *dev, const char *name, int components,
-> +		   struct enclosure_component_callbacks *cb)
-style purists would request you to put return type and function
-name on the same line...
-
-
-> +{
-> +	struct enclosure_device *edev =
-> +		kzalloc(sizeof(struct enclosure_device) +
-> +			sizeof(struct enclosure_component)*components,
-> +			GFP_KERNEL);
-> +	int err, i;
-> +
-> +	if (!edev)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	if (!cb)
-> +		return ERR_PTR(-EINVAL);
-We leak memory here - we never free edev.
-
-> +
-> +	edev->components = components;
-> +
-> +	edev->cdev.class = &enclosure_class;
-> +	edev->cdev.dev = get_device(dev);
-> +	edev->cb = cb;
-> +	snprintf(edev->cdev.class_id, BUS_ID_SIZE, "%s", name);
-> +	err = class_device_register(&edev->cdev);
-> +	if (err)
-> +		goto err;
-> +
-> +	for (i = 0; i < components; i++)
-> +		edev->component[i].number = -1;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_add_tail(&edev->node, &container_list);
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	return edev;
-> +
-> + err:
-> +	put_device(edev->cdev.dev);
-> +	kfree(edev);
-> +	return ERR_PTR(err);
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_register);
-> +
-> +static struct enclosure_component_callbacks enclosure_null_callbacks;
-> +
-> +/**
-> + * enclosure_unregister - remove an enclosure
-> + *
-> + * @edev:	the registered enclosure to remove;
-> + */
-> +void enclosure_unregister(struct enclosure_device *edev)
-> +{
-> +	int i;
-> +
-> +	if (!edev)
-> +		return;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_del(&edev->node);
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	for (i = 0; i < edev->components; i++)
-> +		if (edev->component[i].number != -1)
-> +			class_device_unregister(&edev->component[i].cdev);
-> +
-> +	/* prevent any callbacks into service user */
-> +	edev->cb = &enclosure_null_callbacks;
-> +	class_device_unregister(&edev->cdev);
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_unregister);
-> +
-> +static void enclosure_release(struct class_device *cdev)
-> +{
-> +	struct enclosure_device *edev = to_enclosure_device(cdev);
-> +
-> +	put_device(cdev->dev);
-> +	kfree(edev);
-> +}
-> +
-> +static void enclosure_component_release(struct class_device *cdev)
-> +{
-> +	if (cdev->dev)
-> +		put_device(cdev->dev);
-> +	class_device_put(cdev->parent);
-> +}
-> +
-> +struct enclosure_component *
-> +enclosure_component_register(struct enclosure_device *edev,
-> +			     unsigned int number,
-> +			     enum enclosure_component_type type,
-> +			     const char *name)
-> +{
-Missing kernel-doc for this and the following exports.
-
-> +	struct enclosure_component *ecomp;
-> +	struct class_device *cdev;
-> +	int err;
-> +
-> +	if (!edev || number >= edev->components)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	ecomp = &edev->component[number];
-> +
-> +	if (ecomp->number != -1)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	ecomp->type = type;
-> +	ecomp->number = number;
-> +	cdev = &ecomp->cdev;
-> +	cdev->parent = class_device_get(&edev->cdev);
-> +	cdev->class = &enclosure_component_class;
-> +	if (name)
-> +		snprintf(cdev->class_id, BUS_ID_SIZE, "%s", name);
-> +	else
-> +		snprintf(cdev->class_id, BUS_ID_SIZE, "%d", number);
-> +
-> +	err = class_device_register(cdev);
-> +	if (err)
-> +		ERR_PTR(err);
-> +
-> +	return ecomp;
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_component_register);
+-- 
+Stefan Richter
+-=====-==--- --=- ---==
+http://arcgraph.de/sr/
 
