@@ -1,55 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbYBCTX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbYBCT0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbYBCTX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 14:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYBCTXs
+	id S1752982AbYBCT0u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 14:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYBCT0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 14:23:48 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:33627 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751329AbYBCTXr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 14:23:47 -0500
-Subject: Re: [patch] scsi: fix spurious build failures in aic7xxx
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Hannes Reinecke <hare@suse.de>,
-       Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20080203074143.GA19981@uranus.ravnborg.org>
-References: <20080201225056.GA18302@elte.hu>
-	 <20080202135935.GA23838@uranus.ravnborg.org>
-	 <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu>
-	 <20080202141857.GA8635@elte.hu>
-	 <20080202162611.GA24765@uranus.ravnborg.org>
-	 <20080202171020.GB12748@elte.hu> <20080203045441.GA12128@elte.hu>
-	 <20080203074143.GA19981@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sun, 03 Feb 2008 13:23:42 -0600
-Message-Id: <1202066623.3318.95.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Sun, 3 Feb 2008 14:26:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58605 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbYBCT0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 14:26:41 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Juho <angelusx@gmail.com>
+Subject: Re: Kernel 2.6.22.9 wanted dmidecode of my Acer Aspire 5102WLMi laptop, so here it is...
+Date: Sun, 3 Feb 2008 14:26:24 -0500
+User-Agent: KMail/1.9.5
+References: <470E0BD3.3050803@gmail.com> <200801182326.31913.lenb@kernel.org> <479B0E8D.8030404@gmail.com>
+In-Reply-To: <479B0E8D.8030404@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802031426.25083.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-02-03 at 02:41 -0500, Sam Ravnborg wrote:
->         Thanks for testing Ingo.
->         
->         James - I plan to submit this via kbuild.git in about 10
->         hours.
->         Let me know if you would like it to go in via scsi and I
->         will drop you an updated patch (need to elaboarte a bit more
->         in
->         the commit message).
+On Saturday 26 January 2008 05:42, you wrote:
+> I booted to kernel 2.6.24 (patched with TuxOnIce 3.0 RC5) with parameter 
+> acpi_osi=Linux.
+> 
+> System was pretty stable and nothing special errors happened while 
+> surfing, reading mail & watching movies.
+> But when I suspended: Kernel crashed when waking from suspend
+> 
+> When booted normally with acpi_osi=!Linux no problems at all, suspend 
+> works etc.
+> 
+> Is this information enough? I would like to send more info when needed.
+> 
+> - Juho
+> 
+> Len Brown wrote:
+> > On Thursday 11 October 2007 07:41, Juho wrote:
+> >> System Information
+> >>         Manufacturer: Acer
+> >>         Product Name: Aspire 5100
+> >>         Version: V3.05A
+> >>         Serial Number: LXABH05039632066BD1601
+> >>         UUID: 36323361-3930-3335-6237-0016D41742AF
+> >>         Wake-up Type: Power Switch
+> >>         SKU Number: Not Specified
+> >>         Family: Not Specified
+> >>
+> >> Handle 0x0002, DMI type 2, 8 bytes
+> >> Base Board Information
+> >>         Manufacturer: Acer
+> >>         Product Name: Navarro
+> > 
+> > Thanks for the dmidecode output.
+> > 
+> > Do you notice any functional difference when booting with
+> > 
+> > "acpi_osi=Linux"        (default for 2.6.22 and earlier)
+> > vs.
+> > "acpi_osi=!Linux"       (default for 2.6.23 and later)
+> > 
 
-Sure, the changes look fine .. and will not conflict with anything
-pending I currently have.  You can add my acked-by if you want.
+Thanks for the acpidump and the testing.
 
-Please also note the @steeleye.com email address doesn't come to me any
-more, so this email had to be forwarded.
+                    If (\_OSI ("Windows 2006"))
+                    {
+                        Store (0x40, ^OSTB)
+                        Store (0x40, ^TPOS)
+                    }
 
-James
+                    If (\_OSI ("Linux"))
+                    {
+                        Store (0x01, LINX)
+                        Store (0x80, ^OSTB)
+                        Store (0x80, ^TPOS)
+                    }
+
+// LINX is a NOP
+// OSTB is compard only to >= 4, so setting it to x80 has no effect
+// OSTP() return value is never checked
+
+However, TPOS is compared to 0x40 in several places, so
+OSI(Linux) will cause changes there.
+In particular OSI(Linux) will turn off some AML code
+associated with ATA -- _STM and _PS0 code.
+That may be the reason you see resume issues with acpi_osi=Linux.
+(or frankly, it may be some other random problem)
+
+But in any case, we've blacklisted all of Acer going forward.
+
+thanks,
+-Len
 
 
