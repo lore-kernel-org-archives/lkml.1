@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935690AbYBCBjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935692AbYBCBpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935690AbYBCBjr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 20:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbYBCBjk
+	id S935692AbYBCBpi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 20:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbYBCBp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 20:39:40 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38328
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764421AbYBCBjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 20:39:39 -0500
-Date: Sun, 3 Feb 2008 02:39:36 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 0/4] [RFC] EMMU Notifiers V5
-Message-ID: <20080203013936.GB7185@v2.random>
-References: <20080201050439.009441434@sgi.com>
+	Sat, 2 Feb 2008 20:45:27 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:59242 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932217AbYBCBp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 20:45:26 -0500
+Message-ID: <47A51C79.7080804@cn.fujitsu.com>
+Date: Sun, 03 Feb 2008 09:44:25 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080201050439.009441434@sgi.com>
+To: Patrick McHardy <kaber@trash.net>
+CC: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: latest git compile error in net/sched/cls_flow.c
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 09:04:39PM -0800, Christoph Lameter wrote:
-> - Has page tables to track pages whose refcount was elevated(?) but
->   no reverse maps.
 
-Just a correction, rmaps exists or swap couldn't be sane, it's just
-that it's not built on the page_t because the guest memory is really
-virtual and not physical at all (hence it swaps really well, thanks to
-the regular linux VM algorithms without requiring any KVM knowledge at
-all, it all looks (shared) anonymous memory as far as linux is
-concerned ;).
+I made a randconfig, and got the following error:
+
+net/sched/cls_flow.c: In function 'flow_dump':
+net/sched/cls_flow.c:598: error: 'struct tcf_ematch_tree' has no member named 'hdr'
+make[2]: *** [net/sched/cls_flow.o] Error 1
+make[1]: *** [net/sched] Error 2
+make: *** [net] Error 2
+
+seems it's caused by the following config options:
+CONFIG_NET_EMATCH=n
+CONFIG_NET_CLS_FLOW=y
+
