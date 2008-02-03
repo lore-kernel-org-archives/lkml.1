@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbYBCSh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYBCSi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbYBCSh7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 13:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYBCSho
+	id S1753842AbYBCSi1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 13:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYBCSiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 13:37:44 -0500
+	Sun, 3 Feb 2008 13:38:08 -0500
 Received: from fg-out-1718.google.com ([72.14.220.154]:30475 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYBCShn (ORCPT
+	with ESMTP id S1751316AbYBCSiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 13:37:43 -0500
+	Sun, 3 Feb 2008 13:38:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=RnC7CFkoWjV5R+rPBvbqk9UFHARXxXKiNHXgZDzWUpz7UoVUnBH0WEaUd/YV3tGD5rNUfLy5FgG3YtzEPwO9ErQShVZ8ZoXM5tSQtdAL+HXT1up/8o8AmeeQ+2lI6F83HqtgN3f/fZJgmu7aO8QK59drwnub8hBRzJzul+Slb7Y=
+        b=oY4vLcre6AM82WlXeEkeM2qsQBcOndqqr33MaR/qHKNtk9dHalHxzXI588GIHuLCTR/Da0FjEQPQUnkJDwiJ33/CeTOYDyYi67FgawjlOGG5DGQoAjru1t4EHTQMk/SgOmyRspIgAvJSZ+KgdY4t7tqD75nwcKqFvqwJJxXXsJs=
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Jan Kara <jack@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH 3/6] udf: convert udf_stamp_to_time to return struct timespec
-Date: Sun,  3 Feb 2008 19:36:08 +0100
-Message-Id: <1202063771-18172-4-git-send-email-marcin.slusarz@gmail.com>
+Subject: [PATCH 4/6] udf: convert udf_stamp_to_time and udf_time_to_stamp to use timestamps
+Date: Sun,  3 Feb 2008 19:36:09 +0100
+Message-Id: <1202063771-18172-5-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com>
@@ -27,177 +27,259 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+kernel_timestamp type was almost unused - only callers of udf_stamp_to_time
+and udf_time_to_stamp used it, so let these functions handle endianness
+internally and don't clutter code with conversions
+
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 Cc: Jan Kara <jack@suse.cz>
 ---
- fs/udf/inode.c   |   49 ++++++++++++++++++++++++++-----------------------
- fs/udf/super.c   |    9 ++-------
+ fs/udf/inode.c   |   43 ++++++++++++++-----------------------------
+ fs/udf/super.c   |   16 ++++++----------
  fs/udf/udfdecl.h |    4 ++--
- fs/udf/udftime.c |   17 +++++++----------
- 4 files changed, 37 insertions(+), 42 deletions(-)
+ fs/udf/udftime.c |   22 ++++++++++++----------
+ 4 files changed, 34 insertions(+), 51 deletions(-)
 
 diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-index 2578677..252efe0 100644
+index 252efe0..654b504 100644
 --- a/fs/udf/inode.c
 +++ b/fs/udf/inode.c
-@@ -1151,20 +1151,6 @@ static void __udf_read_inode(struct inode *inode)
- 	brelse(bh);
- }
- 
--static void udf_fill_inode_time(struct timespec *tspec,
--				const timestamp *tstamp,
--				struct udf_sb_info *sbi)
--{
--	time_t convtime;
--	long convtime_usec;
--	if (udf_stamp_to_time(&convtime, &convtime_usec,
--				lets_to_cpu(*tstamp))) {
--		tspec->tv_sec = convtime;
--		tspec->tv_nsec = convtime_usec * 1000;
--	} else
--		*tspec = sbi->s_record_time;
--}
--
- static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
- {
- 	struct fileEntry *fe;
-@@ -1256,10 +1242,17 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+@@ -1242,16 +1242,13 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
  		inode->i_blocks = le64_to_cpu(fe->logicalBlocksRecorded) <<
  			(inode->i_sb->s_blocksize_bits - 9);
  
--		udf_fill_inode_time(&inode->i_atime, &fe->accessTime, sbi);
--		udf_fill_inode_time(&inode->i_mtime, &fe->modificationTime,
--				    sbi);
--		udf_fill_inode_time(&inode->i_ctime, &fe->attrTime, sbi);
-+		if (!udf_stamp_to_time(&inode->i_atime,
-+					lets_to_cpu(fe->accessTime)))
-+			inode->i_atime = sbi->s_record_time;
-+
-+		if (!udf_stamp_to_time(&inode->i_mtime,
-+					lets_to_cpu(fe->modificationTime)))
-+			inode->i_mtime = sbi->s_record_time;
-+
-+		if (!udf_stamp_to_time(&inode->i_ctime,
-+					lets_to_cpu(fe->attrTime)))
-+			inode->i_ctime = sbi->s_record_time;
+-		if (!udf_stamp_to_time(&inode->i_atime,
+-					lets_to_cpu(fe->accessTime)))
++		if (!udf_stamp_to_time(&inode->i_atime, fe->accessTime))
+ 			inode->i_atime = sbi->s_record_time;
+ 
+-		if (!udf_stamp_to_time(&inode->i_mtime,
+-					lets_to_cpu(fe->modificationTime)))
++		if (!udf_stamp_to_time(&inode->i_mtime, fe->modificationTime))
+ 			inode->i_mtime = sbi->s_record_time;
+ 
+-		if (!udf_stamp_to_time(&inode->i_ctime,
+-					lets_to_cpu(fe->attrTime)))
++		if (!udf_stamp_to_time(&inode->i_ctime, fe->attrTime))
+ 			inode->i_ctime = sbi->s_record_time;
  
  		iinfo->i_unique = le64_to_cpu(fe->uniqueID);
- 		iinfo->i_lenEAttr = le32_to_cpu(fe->lengthExtendedAttr);
-@@ -1269,11 +1262,21 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+@@ -1262,20 +1259,16 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
  		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
  		    (inode->i_sb->s_blocksize_bits - 9);
  
--		udf_fill_inode_time(&inode->i_atime, &efe->accessTime, sbi);
--		udf_fill_inode_time(&inode->i_mtime, &efe->modificationTime,
--				    sbi);
--		udf_fill_inode_time(&iinfo->i_crtime, &efe->createTime, sbi);
--		udf_fill_inode_time(&inode->i_ctime, &efe->attrTime, sbi);
-+		if (!udf_stamp_to_time(&inode->i_atime,
-+					lets_to_cpu(efe->accessTime)))
-+			inode->i_atime = sbi->s_record_time;
-+
-+		if (!udf_stamp_to_time(&inode->i_mtime,
-+					lets_to_cpu(efe->modificationTime)))
-+			inode->i_mtime = sbi->s_record_time;
-+
-+		if (!udf_stamp_to_time(&iinfo->i_crtime,
-+					lets_to_cpu(efe->createTime)))
-+			iinfo->i_crtime = sbi->s_record_time;
-+
-+		if (!udf_stamp_to_time(&inode->i_ctime,
-+					lets_to_cpu(efe->attrTime)))
-+			inode->i_ctime = sbi->s_record_time;
+-		if (!udf_stamp_to_time(&inode->i_atime,
+-					lets_to_cpu(efe->accessTime)))
++		if (!udf_stamp_to_time(&inode->i_atime, efe->accessTime))
+ 			inode->i_atime = sbi->s_record_time;
+ 
+-		if (!udf_stamp_to_time(&inode->i_mtime,
+-					lets_to_cpu(efe->modificationTime)))
++		if (!udf_stamp_to_time(&inode->i_mtime, efe->modificationTime))
+ 			inode->i_mtime = sbi->s_record_time;
+ 
+-		if (!udf_stamp_to_time(&iinfo->i_crtime,
+-					lets_to_cpu(efe->createTime)))
++		if (!udf_stamp_to_time(&iinfo->i_crtime, efe->createTime))
+ 			iinfo->i_crtime = sbi->s_record_time;
+ 
+-		if (!udf_stamp_to_time(&inode->i_ctime,
+-					lets_to_cpu(efe->attrTime)))
++		if (!udf_stamp_to_time(&inode->i_ctime, efe->attrTime))
+ 			inode->i_ctime = sbi->s_record_time;
  
  		iinfo->i_unique = le64_to_cpu(efe->uniqueID);
- 		iinfo->i_lenEAttr = le32_to_cpu(efe->lengthExtendedAttr);
+@@ -1412,7 +1405,6 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+ 	uint32_t udfperms;
+ 	uint16_t icbflags;
+ 	uint16_t crclen;
+-	kernel_timestamp cpu_time;
+ 	int err = 0;
+ 	struct udf_sb_info *sbi = UDF_SB(inode->i_sb);
+ 	unsigned char blocksize_bits = inode->i_sb->s_blocksize_bits;
+@@ -1515,12 +1507,9 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+ 			(inode->i_blocks + (1 << (blocksize_bits - 9)) - 1) >>
+ 			(blocksize_bits - 9));
+ 
+-		if (udf_time_to_stamp(&cpu_time, inode->i_atime))
+-			fe->accessTime = cpu_to_lets(cpu_time);
+-		if (udf_time_to_stamp(&cpu_time, inode->i_mtime))
+-			fe->modificationTime = cpu_to_lets(cpu_time);
+-		if (udf_time_to_stamp(&cpu_time, inode->i_ctime))
+-			fe->attrTime = cpu_to_lets(cpu_time);
++		udf_time_to_stamp(&fe->accessTime, inode->i_atime);
++		udf_time_to_stamp(&fe->modificationTime, inode->i_mtime);
++		udf_time_to_stamp(&fe->attrTime, inode->i_ctime);
+ 		memset(&(fe->impIdent), 0, sizeof(regid));
+ 		strcpy(fe->impIdent.ident, UDF_ID_DEVELOPER);
+ 		fe->impIdent.identSuffix[0] = UDF_OS_CLASS_UNIX;
+@@ -1555,14 +1544,10 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+ 		     iinfo->i_crtime.tv_nsec > inode->i_ctime.tv_nsec))
+ 			iinfo->i_crtime = inode->i_ctime;
+ 
+-		if (udf_time_to_stamp(&cpu_time, inode->i_atime))
+-			efe->accessTime = cpu_to_lets(cpu_time);
+-		if (udf_time_to_stamp(&cpu_time, inode->i_mtime))
+-			efe->modificationTime = cpu_to_lets(cpu_time);
+-		if (udf_time_to_stamp(&cpu_time, iinfo->i_crtime))
+-			efe->createTime = cpu_to_lets(cpu_time);
+-		if (udf_time_to_stamp(&cpu_time, inode->i_ctime))
+-			efe->attrTime = cpu_to_lets(cpu_time);
++		udf_time_to_stamp(&efe->accessTime, inode->i_atime);
++		udf_time_to_stamp(&efe->modificationTime, inode->i_mtime);
++		udf_time_to_stamp(&efe->createTime, iinfo->i_crtime);
++		udf_time_to_stamp(&efe->attrTime, inode->i_ctime);
+ 
+ 		memset(&(efe->impIdent), 0, sizeof(regid));
+ 		strcpy(efe->impIdent.ident, UDF_ID_DEVELOPER);
 diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 0dcee12..9f565a9 100644
+index 9f565a9..8a98a2e 100644
 --- a/fs/udf/super.c
 +++ b/fs/udf/super.c
-@@ -909,24 +909,19 @@ static int udf_find_fileset(struct super_block *sb,
- static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
- {
- 	struct primaryVolDesc *pvoldesc;
--	time_t recording;
--	long recording_usec;
- 	struct ustr instr;
- 	struct ustr outstr;
- 
+@@ -915,7 +915,7 @@ static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
  	pvoldesc = (struct primaryVolDesc *)bh->b_data;
  
--	if (udf_stamp_to_time(&recording, &recording_usec,
-+	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
- 			      lets_to_cpu(pvoldesc->recordingDateAndTime))) {
+ 	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
+-			      lets_to_cpu(pvoldesc->recordingDateAndTime))) {
++			      pvoldesc->recordingDateAndTime)) {
  		kernel_timestamp ts;
  		ts = lets_to_cpu(pvoldesc->recordingDateAndTime);
--		udf_debug("recording time %ld/%ld, %04u/%02u/%02u"
-+		udf_debug("recording time %04u/%02u/%02u"
- 			  " %02u:%02u (%x)\n",
--			  recording, recording_usec,
- 			  ts.year, ts.month, ts.day, ts.hour,
- 			  ts.minute, ts.typeAndTimezone);
--		UDF_SB(sb)->s_record_time.tv_sec = recording;
--		UDF_SB(sb)->s_record_time.tv_nsec = recording_usec * 1000;
+ 		udf_debug("recording time %04u/%02u/%02u"
+@@ -1561,7 +1561,6 @@ static void udf_open_lvid(struct super_block *sb)
+ 	struct udf_sb_info *sbi = UDF_SB(sb);
+ 	struct buffer_head *bh = sbi->s_lvid_bh;
+ 	if (bh) {
+-		kernel_timestamp cpu_time;
+ 		struct logicalVolIntegrityDesc *lvid =
+ 				(struct logicalVolIntegrityDesc *)bh->b_data;
+ 		struct logicalVolIntegrityDescImpUse *lvidiu =
+@@ -1569,8 +1568,7 @@ static void udf_open_lvid(struct super_block *sb)
+ 
+ 		lvidiu->impIdent.identSuffix[0] = UDF_OS_CLASS_UNIX;
+ 		lvidiu->impIdent.identSuffix[1] = UDF_OS_ID_LINUX;
+-		if (udf_time_to_stamp(&cpu_time, CURRENT_TIME))
+-			lvid->recordingDateAndTime = cpu_to_lets(cpu_time);
++		udf_time_to_stamp(&lvid->recordingDateAndTime, CURRENT_TIME);
+ 		lvid->integrityType = LVID_INTEGRITY_TYPE_OPEN;
+ 
+ 		lvid->descTag.descCRC = cpu_to_le16(
+@@ -1585,7 +1583,6 @@ static void udf_open_lvid(struct super_block *sb)
+ 
+ static void udf_close_lvid(struct super_block *sb)
+ {
+-	kernel_timestamp cpu_time;
+ 	struct udf_sb_info *sbi = UDF_SB(sb);
+ 	struct buffer_head *bh = sbi->s_lvid_bh;
+ 	struct logicalVolIntegrityDesc *lvid;
+@@ -1600,8 +1597,7 @@ static void udf_close_lvid(struct super_block *sb)
+ 							udf_sb_lvidiu(sbi);
+ 		lvidiu->impIdent.identSuffix[0] = UDF_OS_CLASS_UNIX;
+ 		lvidiu->impIdent.identSuffix[1] = UDF_OS_ID_LINUX;
+-		if (udf_time_to_stamp(&cpu_time, CURRENT_TIME))
+-			lvid->recordingDateAndTime = cpu_to_lets(cpu_time);
++		udf_time_to_stamp(&lvid->recordingDateAndTime, CURRENT_TIME);
+ 		if (UDF_MAX_WRITE_VERSION > le16_to_cpu(lvidiu->maxUDFWriteRev))
+ 			lvidiu->maxUDFWriteRev =
+ 					cpu_to_le16(UDF_MAX_WRITE_VERSION);
+@@ -1786,12 +1782,12 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
  	}
  
- 	if (!udf_build_ustr(&instr, pvoldesc->volIdent, 32))
+ 	if (!silent) {
+-		kernel_timestamp ts;
++		timestamp ts;
+ 		udf_time_to_stamp(&ts, sbi->s_record_time);
+ 		udf_info("UDF: Mounting volume '%s', "
+ 			 "timestamp %04u/%02u/%02u %02u:%02u (%x)\n",
+-			 sbi->s_volume_ident, ts.year, ts.month, ts.day,
+-			 ts.hour, ts.minute, ts.typeAndTimezone);
++			 sbi->s_volume_ident, le16_to_cpu(ts.year), ts.month, ts.day,
++			 ts.hour, ts.minute, le16_to_cpu(ts.typeAndTimezone));
+ 	}
+ 	if (!(sb->s_flags & MS_RDONLY))
+ 		udf_open_lvid(sb);
 diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
-index 375be1b..508be85 100644
+index 508be85..2dd04bb 100644
 --- a/fs/udf/udfdecl.h
 +++ b/fs/udf/udfdecl.h
 @@ -204,7 +204,7 @@ extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
  extern uint16_t udf_crc(const uint8_t *, uint32_t, uint16_t);
  
  /* udftime.c */
--extern time_t *udf_stamp_to_time(time_t *, long *, kernel_timestamp);
--extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *, struct timespec);
-+extern struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src);
-+extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec src);
+-extern struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src);
+-extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec src);
++extern struct timespec *udf_stamp_to_time(struct timespec *dest, timestamp src);
++extern timestamp *udf_time_to_stamp(timestamp *dest, struct timespec src);
  
  #endif				/* __UDF_DECL_H */
 diff --git a/fs/udf/udftime.c b/fs/udf/udftime.c
-index ce59573..12fae6c 100644
+index 12fae6c..d125bd9 100644
 --- a/fs/udf/udftime.c
 +++ b/fs/udf/udftime.c
-@@ -85,7 +85,7 @@ extern struct timezone sys_tz;
+@@ -85,14 +85,16 @@ extern struct timezone sys_tz;
  #define SECS_PER_HOUR	(60 * 60)
  #define SECS_PER_DAY	(SECS_PER_HOUR * 24)
  
--time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
-+struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
+-struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
++struct timespec *udf_stamp_to_time(struct timespec *dest, timestamp src)
  {
  	int yday;
- 	uint8_t type = src.typeAndTimezone >> 12;
-@@ -97,23 +97,20 @@ time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
+-	uint8_t type = src.typeAndTimezone >> 12;
++	u16 typeAndTimezone = le16_to_cpu(src.typeAndTimezone);
++	u16 year = le16_to_cpu(src.year);
++	uint8_t type = typeAndTimezone >> 12;
+ 	int16_t offset;
+ 
+ 	if (type == 1) {
+-		offset = src.typeAndTimezone << 4;
++		offset = typeAndTimezone << 4;
+ 		/* sign extent offset */
  		offset = (offset >> 4);
  		if (offset == -2047) /* unspecified offset */
- 			offset = 0;
--	} else {
-+	} else
+@@ -100,21 +102,21 @@ struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
+ 	} else
  		offset = 0;
--	}
  
- 	if ((src.year < EPOCH_YEAR) ||
- 	    (src.year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
--		*dest = -1;
--		*dest_usec = -1;
+-	if ((src.year < EPOCH_YEAR) ||
+-	    (src.year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
++	if ((year < EPOCH_YEAR) ||
++	    (year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
  		return NULL;
  	}
--	*dest = year_seconds[src.year - EPOCH_YEAR];
--	*dest -= offset * 60;
-+	dest->tv_sec = year_seconds[src.year - EPOCH_YEAR];
-+	dest->tv_sec -= offset * 60;
+-	dest->tv_sec = year_seconds[src.year - EPOCH_YEAR];
++	dest->tv_sec = year_seconds[year - EPOCH_YEAR];
+ 	dest->tv_sec -= offset * 60;
  
- 	yday = ((__mon_yday[__isleap(src.year)][src.month - 1]) + src.day - 1);
--	*dest += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
--	*dest_usec = src.centiseconds * 10000 +
--			src.hundredsOfMicroseconds * 100 + src.microseconds;
-+	dest->tv_sec += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
-+	dest->tv_nsec = 1000 * (src.centiseconds * 10000 +
-+			src.hundredsOfMicroseconds * 100 + src.microseconds);
+-	yday = ((__mon_yday[__isleap(src.year)][src.month - 1]) + src.day - 1);
++	yday = ((__mon_yday[__isleap(year)][src.month - 1]) + src.day - 1);
+ 	dest->tv_sec += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
+ 	dest->tv_nsec = 1000 * (src.centiseconds * 10000 +
+ 			src.hundredsOfMicroseconds * 100 + src.microseconds);
  	return dest;
  }
  
+-kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec ts)
++timestamp *udf_time_to_stamp(timestamp *dest, struct timespec ts)
+ {
+ 	long int days, rem, y;
+ 	const unsigned short int *ip;
+@@ -125,7 +127,7 @@ kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec ts)
+ 	if (!dest)
+ 		return NULL;
+ 
+-	dest->typeAndTimezone = 0x1000 | (offset & 0x0FFF);
++	dest->typeAndTimezone = cpu_to_le16(0x1000 | (offset & 0x0FFF));
+ 
+ 	ts.tv_sec += offset * 60;
+ 	days = ts.tv_sec / SECS_PER_DAY;
+@@ -148,7 +150,7 @@ kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec ts)
+ 			 - LEAPS_THRU_END_OF(y - 1));
+ 		y = yg;
+ 	}
+-	dest->year = y;
++	dest->year = cpu_to_le16(y);
+ 	ip = __mon_yday[__isleap(y)];
+ 	for (y = 11; days < (long int)ip[y]; --y)
+ 		continue;
 -- 
 1.5.3.7
 
