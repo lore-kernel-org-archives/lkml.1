@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936446AbYBCHly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936511AbYBCHmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936446AbYBCHly (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 02:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936257AbYBCHlm
+	id S936511AbYBCHmZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 02:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759252AbYBCHmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 02:41:42 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37645 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935774AbYBCHll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 02:41:41 -0500
-Date: Sun, 3 Feb 2008 08:41:43 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@steeleye.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [patch] scsi: fix spurious build failures in aic7xxx
-Message-ID: <20080203074143.GA19981@uranus.ravnborg.org>
-References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu> <20080202141857.GA8635@elte.hu> <20080202162611.GA24765@uranus.ravnborg.org> <20080202171020.GB12748@elte.hu> <20080203045441.GA12128@elte.hu>
+	Sun, 3 Feb 2008 02:42:16 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:34203 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759006AbYBCHmP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 02:42:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=TBofnjHmfFEbSUiFU8bRtpqN6bZhvDR3xfxlU9Q57vv/igvj8BFzjTUyjmS9DlBak9FWgA/29Qe8dbwEK92nygg3NDfw6+o7HBjSKsPRSSgdWxtwIP/2eEXwUSrhcRHUYQSbxNLGRpnkUH4NYCGo4PHp3HWrE7kiOBD878wzWu0=
+Subject: Re: [PATCH] cpuset: sparse warnings in cpuset.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080203012815.05a50b13.pj@sgi.com>
+References: <1202019619.1844.52.camel@brick>
+	 <20080203012815.05a50b13.pj@sgi.com>
+Content-Type: text/plain
+Date: Sat, 02 Feb 2008 23:42:23 -0800
+Message-Id: <1202024543.1844.57.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080203045441.GA12128@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 03, 2008 at 05:54:41AM +0100, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > I could not reproduce the bug myself but I think I spotted it. We 
-> > > had a missing dependency to the _reg.h file. Try following patch and 
-> > > let me now if it continue to break.
-> > 
-> > thanks! I threw this into the test setup and will know by tomorrow 
-> > whether there's any breakage.
-> 
-> good news: hundreds of successful kernel builds and no failures 
-> overnight. I've Cc:-ed the aic7xxx people.
+Don't redeclare p, use a new variable q.
 
-Thanks for testing Ingo.
+kernel/cpuset.c:824:23: warning: symbol 'p' shadows an earlier one
+kernel/cpuset.c:746:21: originally declared here
+kernel/cpuset.c:1272:52: warning: Using plain integer as NULL pointer
 
-James - I plan to submit this via kbuild.git in about 10 hours.
-Let me know if you would like it to go in via scsi and I
-will drop you an updated patch (need to elaboarte a bit more in
-the commit message).
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Paul, used a variable q instead as per your request.
 
-	Sam
+ kernel/cpuset.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index cfaf641..ce0cfff 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -821,13 +821,13 @@ static int update_cpumask(struct cpuset *cs, char *buf)
+ 	cgroup_iter_end(cgrp, &it);
+ 	if (heap.size) {
+ 		for (i = 0; i < heap.size; i++) {
+-			struct task_struct *p = heap.ptrs[i];
++			struct task_struct *q = heap.ptrs[i];
+ 			if (i == 0) {
+-				latest_time = p->start_time;
+-				latest_task = p;
++				latest_time = q->start_time;
++				latest_task = q;
+ 			}
+-			set_cpus_allowed(p, cs->cpus_allowed);
+-			put_task_struct(p);
++			set_cpus_allowed(q, cs->cpus_allowed);
++			put_task_struct(q);
+ 		}
+ 		/*
+ 		 * If we had to process any tasks at all, scan again
+@@ -1269,7 +1269,8 @@ static ssize_t cpuset_common_file_write(struct cgroup *cont,
+ 		return -E2BIG;
+ 
+ 	/* +1 for nul-terminator */
+-	if ((buffer = kmalloc(nbytes + 1, GFP_KERNEL)) == 0)
++	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
++	if (!buffer)
+ 		return -ENOMEM;
+ 
+ 	if (copy_from_user(buffer, userbuf, nbytes)) {
+-- 
+1.5.4.rc5.1138.g2602
+
+
+
