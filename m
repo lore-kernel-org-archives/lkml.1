@@ -1,40 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762301AbYBCLNr (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 3 Feb 2008 06:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYBCLNg
+	id S1758770AbYBCPcW (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 3 Feb 2008 10:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYBCPcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 06:13:36 -0500
-Received: from n4.bullet.ukl.yahoo.com ([217.146.182.181]:47741 "HELO
-	n4.bullet.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753444AbYBCLNf (ORCPT
+	Sun, 3 Feb 2008 10:32:10 -0500
+Received: from tomts27.bellnexxia.net ([209.226.175.101]:33792 "EHLO
+	tomts27-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751851AbYBCPcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 06:13:35 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 818542.49196.bm@omp404.mail.sp1.yahoo.com
-X-YMail-OSG: .ClN14IVM1lbkTbRRHrsaLRE5zQasrMpGAHoDE_52KCuT3G3_8o.jrcTLKbO6gaG9Apse6MFIoon.dgNnuOSJzRHbQ--
-Date: Sun, 3 Feb 2008 03:13:33 -0800 (PST)
-From: am kara <kara_am@yahoo.com>
-To: linux-kernel@vger.kernel.org
+	Sun, 3 Feb 2008 10:32:09 -0500
+Message-Id: <6k1gas$4r5te@toip40-bus.srvr.bell.ca>
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkchAMdspUfR4q/5/2dsb2JhbACBWIYSh3segXQ
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+From: Cheveron Texaco <stgabriel@bellnet.ca>
+Reply-To: chevrontexac@live.com
+Organization: Oil  And  Gas Company
+To: <ecowasgrantwinners@foudaziondivittorio.com>
+Subject: Cash Grant***Esteem Winner..
+Date: Sun, 3 Feb 2008 10:32:07 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <642794.12747.qm@web45910.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1762301AbYBCLNr@vger.kernel.org>
-
-hello,
-
-If kernel does kmap_atomic(temporary kernel mapping)
-on behalf of a process by a cpu, does the process will
-continue to run and no other process can be scheduled
-to switch it off?(till kunmap_atomic is done)
-
- 
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758770AbYBCPcW@vger.kernel.org>
 
 
-      ____________________________________________________________________________________
-Looking for last minute shopping deals?  
-Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
+You have won $800,000.00USD with Foundazion Di Vittorio proudly powered by ECOWAS. 
 
+Contact Marvis Grant with your name and contact.
+marvisgrant@live.com
