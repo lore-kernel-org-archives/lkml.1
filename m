@@ -1,241 +1,402 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935702AbYBCChe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935601AbYBCDAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935702AbYBCChe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 21:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbYBCChZ
+	id S935601AbYBCDAc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 22:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbYBCDAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 21:37:25 -0500
-Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:43069 "HELO
-	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753941AbYBCChX (ORCPT
+	Sat, 2 Feb 2008 22:00:18 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:4963 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYBCDAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 21:37:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gDqi36kueJ1txfMIW/uNlo2uErgzjl54tNF3mqNo+2ymg0NN33RcDwwsMHL3G7wGv/rxocL1UzDCW4CebADpcT94gjrwuuJywn++iTA4M5sIonamHJ5/a8kQBhJWVEUxgpBfIEFhMR5hdQdz2y2sjCS0VHX5gbmy61HQZwRHyBs=  ;
-X-YMail-OSG: xILA0VcVM1nNAi78V6ZDRlQ_k0dTHSS3Bm2juaj5tSgvMRqDvTPvvSUkDF0UM7ro7kYMCc9_rA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [linux-pm] sleepy linux self-test
-Date: Sat, 2 Feb 2008 18:37:17 -0800
-User-Agent: KMail/1.9.6
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20080130131748.GA3796@elf.ucw.cz> <20080202193202.GB31621@elf.ucw.cz> <20080202193843.GB32039@elte.hu>
-In-Reply-To: <20080202193843.GB32039@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 2 Feb 2008 22:00:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ov/yWQqY88QkUio/EM9j2cluDpYpoBqWzTVzJpEoNBkP/SKk+V2Pd1v/A0ckyMw7C7D8CtX4g5IFA/4SjreE9w/YhsLQsHmQID62kZtoHFwk9p6iooHdzm8z+JQUzRUOpt7EX0A2nzrXeniQ/tGUJ3fW0Fi7YaSbTuJy2iFUyzo=
+Subject: [PATCH 1/2] kprobes: Introduce kprobe_handle_fault()
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 02 Feb 2008 19:00:23 -0800
+Message-Id: <1202007623.1844.44.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802021837.17777.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 February 2008, Ingo Molnar wrote:
-> 
-> * Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > > It would have been easier to just use the public interface and 
-> > > hard-wire "rtc0".  But going directly to the hardware was dirtier, 
-> > > and more in the spirit of "hack that obviously shouldn't go upstream 
-> > > until it gets done properly".
-> > 
-> > Yes, it was "quick and dirty". And I do not think it is going upstream 
-> > in this form...?
-> 
-> which would be a pity - this thing _almost_ started doing suspend and 
-> resume cycles on my testsystems, all by itself :-)
+Use a central kprobe_handle_fault() inline in kprobes.h to remove
+all of the arch-dependant, practically identical implementations in
+avr32, ia64, powerpc, s390, sparc64, and x86.
 
-OK, here's a version that's cleaner and suspends.  Resuming ...
-another story, it's currently broken on this ARM board (no
-relationship to this testing code).
+avr32 was the only arch without the preempt_disable/enable pair
+in its notify_page_fault implementation.
 
-Note to Pavel:  yes, the version with the pony *is* better.
+This uncovered a possible bug in the s390 version as that purely
+copied the x86 version unconditionally passing 14 as the trapnr
+rather than the error_code parameter.  s390 is changed to pass
+error_code in this patch.
 
-- Dave
-
-
-============ CUT HERE
-Updated verion of Pavel's "sleepy" test.  This version doesn't depend on
-x86-specific RTC support, or suspend-to-RAM capability, and describes
-itself a bit better.
-
-Partially tested on an ARM board ... for some reason system sleep states
-are currently broken on that system (new behavior since 2.6.24), so this
-won't yet complete.
-
-Note a generic glitch:  the message strings aren't in the same section
-as the function using them, so this has a bigger runtime footprint than
-it should.
-
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- kernel/power/Kconfig  |   14 +++++
- kernel/power/Makefile |    2 
- kernel/power/sleepy.c |  113 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 126 insertions(+), 3 deletions(-)
+Andrew, 1/2 is low risk, 2/2 has been tested on x86-32 and 64,
+but the !preemptible invariant seems correct.
 
---- sam9.orig/kernel/power/Kconfig	2008-02-02 03:16:30.000000000 -0800
-+++ sam9/kernel/power/Kconfig	2008-02-02 12:47:20.000000000 -0800
-@@ -1,3 +1,6 @@
-+#
-+# Note that power management involves more than just system sleep states...
-+#
- config PM
- 	bool "Power Management support"
- 	depends on !IA64_HP_SIM
-@@ -74,8 +77,8 @@ config PM_TRACE_RTC
- 	RTC across reboots, so that you can debug a machine that just hangs
- 	during suspend (or more commonly, during resume).
+ arch/arm/mm/fault.c     |   25 +------------------------
+ arch/avr32/mm/fault.c   |   21 +--------------------
+ arch/ia64/mm/fault.c    |   24 +-----------------------
+ arch/powerpc/mm/fault.c |   25 +------------------------
+ arch/s390/mm/fault.c    |   25 +------------------------
+ arch/sparc64/mm/fault.c |   23 +----------------------
+ arch/x86/mm/fault.c     |   26 ++------------------------
+ include/linux/kprobes.h |   20 ++++++++++++++++++++
+ 8 files changed, 28 insertions(+), 161 deletions(-)
+
+diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
+index 28ad7ab..5def64f 100644
+--- a/arch/arm/mm/fault.c
++++ b/arch/arm/mm/fault.c
+@@ -21,29 +21,6 @@
  
--	To use this debugging feature you should attempt to suspend the machine,
--	then reboot it, then run
-+	To use this debugging feature you should attempt to suspend the
-+	machine, then reboot it, then run
+ #include "fault.h"
  
- 		dmesg -s 1000000 | grep 'hash matches'
+-
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, unsigned int fsr)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		/* kprobe_running() needs smp_processor_id() */
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, fsr))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, unsigned int fsr)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * This is useful to dump out the page tables associated with
+  * 'addr' in mm 'mm'.
+@@ -246,7 +223,7 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
+ 	struct mm_struct *mm;
+ 	int fault, sig, code;
  
-@@ -104,6 +107,13 @@ config SUSPEND
- 	  powered and thus its contents are preserved, such as the
- 	  suspend-to-RAM state (e.g. the ACPI S3 state).
+-	if (notify_page_fault(regs, fsr))
++	if (handle_kprobe_fault(regs, fsr))
+ 		return 0;
  
-+config PM_WAKEALARM_TEST
-+	bool "Test suspend/resume and wakealarm during bootup"
-+	depends on SUSPEND && PM_DEBUG && RTC_LIB
-+	---help---
-+	This option will suspend your machine during bootup, and make
-+	it wake up a few seconds later using the RTC's wakeup alarm.
-+
- config SUSPEND_FREEZER
- 	bool "Enable freezer for suspend to RAM/standby" \
- 		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
---- sam9.orig/kernel/power/Makefile	2007-12-20 13:35:13.000000000 -0800
-+++ sam9/kernel/power/Makefile	2008-02-02 12:47:20.000000000 -0800
-@@ -5,7 +5,7 @@ endif
+ 	tsk = current;
+diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
+index 6560cb1..e41953e 100644
+--- a/arch/avr32/mm/fault.c
++++ b/arch/avr32/mm/fault.c
+@@ -20,25 +20,6 @@
+ #include <asm/tlb.h>
+ #include <asm/uaccess.h>
  
- obj-y				:= main.o
- obj-$(CONFIG_PM_LEGACY)		+= pm.o
--obj-$(CONFIG_PM_SLEEP)		+= process.o console.o
-+obj-$(CONFIG_PM_SLEEP)		+= process.o console.o sleepy.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		if (kprobe_running() && kprobe_fault_handler(regs, trap))
+-			ret = 1;
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	return 0;
+-}
+-#endif
+-
+ int exception_trace = 1;
  
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ sam9/kernel/power/sleepy.c	2008-02-02 18:26:40.000000000 -0800
-@@ -0,0 +1,113 @@
-+/*
-+ * Copyright (c) 2007 Pavel Machek <pavel@suse.cz>
-+ * Copyright (c) 2008 David Brownell
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/suspend.h>
-+#include <linux/kobject.h>
-+#include <linux/string.h>
-+#include <linux/delay.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/console.h>
-+#include <linux/cpu.h>
-+#include <linux/resume-trace.h>
-+#include <linux/freezer.h>
-+#include <linux/vmstat.h>
-+#include <linux/syscalls.h>
-+#include <linux/rtc.h>
-+
-+#include <asm/percpu.h>
-+
-+#include "power.h"
-+
-+
-+static struct rtc_device *rtc;
-+static suspend_state_t sleepy_state;
-+
-+static int __init has_wakealarm(struct device *dev, void *name_ptr)
+ /*
+@@ -66,7 +47,7 @@ asmlinkage void do_page_fault(unsigned long ecr, struct pt_regs *regs)
+ 	int code;
+ 	int fault;
+ 
+-	if (notify_page_fault(regs, ecr))
++	if (kprobe_handle_fault(regs, ecr))
+ 		return;
+ 
+ 	address = sysreg_read(TLBEAR);
+diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
+index 7571076..bfc83e8 100644
+--- a/arch/ia64/mm/fault.c
++++ b/arch/ia64/mm/fault.c
+@@ -18,28 +18,6 @@
+ 
+ extern void die (char *, struct pt_regs *, long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	int ret = 0;
+-
+-	if (!user_mode(regs)) {
+-		/* kprobe_running() needs smp_processor_id() */
+-		preempt_disable();
+-		if (kprobe_running() && kprobes_fault_handler(regs, trap))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, int trap)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Return TRUE if ADDRESS points at a page in the kernel's mapped segment
+  * (inside region 5, on ia64) and that page is present.
+@@ -106,7 +84,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
+ 	/*
+ 	 * This is to handle the kprobes on user space access instructions
+ 	 */
+-	if (notify_page_fault(regs, TRAP_BRKPT))
++	if (kprobe_handle_fault(regs, TRAP_BRKPT))
+ 		return;
+ 
+ 	down_read(&mm->mmap_sem);
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 7b25107..3246953 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -39,29 +39,6 @@
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+ 
+-
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 11))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * Check whether the instruction at regs->nip is a store using
+  * an update addressing form which will update r1.
+@@ -164,7 +141,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	is_write = error_code & ESR_DST;
+ #endif /* CONFIG_4xx || CONFIG_BOOKE */
+ 
+-	if (notify_page_fault(regs))
++	if (kprobe_handle_fault(regs, 11))
+ 		return 0;
+ 
+ 	if (unlikely(debugger_fault_handler(regs)))
+diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
+index 2456b52..5a47295 100644
+--- a/arch/s390/mm/fault.c
++++ b/arch/s390/mm/fault.c
+@@ -51,29 +51,6 @@ extern int sysctl_userprocess_debug;
+ 
+ extern void die(const char *,struct pt_regs *,long);
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs, long err)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs, long err)
+-{
+-	return 0;
+-}
+-#endif
+-
+-
+ /*
+  * Unlock any spinlocks which will prevent us from getting the
+  * message out.
+@@ -309,7 +286,7 @@ do_exception(struct pt_regs *regs, unsigned long error_code, int write)
+ 	int si_code;
+ 	int fault;
+ 
+-	if (notify_page_fault(regs, error_code))
++	if (kprobe_handle_fault(regs, error_code))
+ 		return;
+ 
+ 	tsk = current;
+diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+index e2027f2..8467dd6 100644
+--- a/arch/sparc64/mm/fault.c
++++ b/arch/sparc64/mm/fault.c
+@@ -31,27 +31,6 @@
+ #include <asm/sections.h>
+ #include <asm/mmu_context.h>
+ 
+-#ifdef CONFIG_KPROBES
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-	if (!user_mode(regs)) {
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 0))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-	return ret;
+-}
+-#else
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /*
+  * To debug kernel to catch accesses to certain virtual/physical addresses.
+  * Mode = 0 selects physical watchpoints, mode = 1 selects virtual watchpoints.
+@@ -280,7 +259,7 @@ asmlinkage void __kprobes do_sparc64_fault(struct pt_regs *regs)
+ 
+ 	fault_code = get_thread_fault_code();
+ 
+-	if (notify_page_fault(regs))
++	if (kprobe_handle_fault(regs, 0))
+ 		return;
+ 
+ 	si_code = SEGV_MAPERR;
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index 3fff490..f0adbb0 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -49,29 +49,6 @@
+ #define PF_RSVD		(1<<3)
+ #define PF_INSTR	(1<<4)
+ 
+-static inline int notify_page_fault(struct pt_regs *regs)
+-{
+-#ifdef CONFIG_KPROBES
+-	int ret = 0;
+-
+-	/* kprobe_running() needs smp_processor_id() */
+-#ifdef CONFIG_X86_32
+-	if (!user_mode_vm(regs)) {
+-#else
+-	if (!user_mode(regs)) {
+-#endif
+-		preempt_disable();
+-		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+-			ret = 1;
+-		preempt_enable();
+-	}
+-
+-	return ret;
+-#else
+-	return 0;
+-#endif
+-}
+-
+ /*
+  * X86_32
+  * Sometimes AMD Athlon/Opteron CPUs report invalid exceptions on prefetch.
+@@ -589,7 +566,8 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 
+ 	si_code = SEGV_MAPERR;
+ 
+-	if (notify_page_fault(regs))
++	/* Must not try to handle kprobes in v8086 mode */
++	if (!v8086_mode(regs) && kprobe_handle_fault(regs, 14))
+ 		return;
+ 
+ 	/*
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 6168c0a..e5ecb1e 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -36,6 +36,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+ #include <linux/mutex.h>
++#include <linux/hardirq.h>
+ 
+ #ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+@@ -212,6 +213,21 @@ static inline struct kprobe *kprobe_running(void)
+ 	return (__get_cpu_var(current_kprobe));
+ }
+ 
++static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
 +{
-+	struct rtc_device *candidate = to_rtc_device(dev);
++	int ret = 0;
 +
-+	if (!candidate->ops->set_alarm)
-+		return 0;
-+	if (!device_may_wakeup(candidate->dev.parent))
-+		return 0;
++	/* kprobe_running() needs smp_processor_id() */
++	if (!user_mode(regs)) {
++		preempt_disable();
++		if (kprobe_running() && kprobe_fault_handler(regs, trapnr))
++			ret = 1;
++		preempt_enable();
++	}
 +
-+	*(char **)name_ptr = dev->bus_id;
-+	return 1;
++	return ret;
 +}
 +
-+#ifdef CONFIG_PM_WAKEALARM_TEST
-+
-+/* This needs to be long enough for the system to suspend all its devices
-+ * and enter a suspend-to-RAM (or, potentially, standby) state no matter
-+ * what else is going on.  But suspending can take arbitrarily long...
-+ */
-+#define ALARM_SECONDS	5
-+
-+static void __init test_wakealarm(void)
+ static inline void reset_current_kprobe(void)
+ {
+ 	__get_cpu_var(current_kprobe) = NULL;
+@@ -247,6 +263,10 @@ static inline struct kprobe *kprobe_running(void)
+ {
+ 	return NULL;
+ }
++static inline int kprobe_handle_fault(struct pt_regs *regs, int trapnr)
 +{
-+	unsigned long		now;
-+	struct rtc_wkalrm	alm;
-+	int			status;
-+
-+	/* this may fail if the RTC hasn't been initialized */
-+	status = rtc_read_time(rtc, &alm.time);
-+	if (status < 0) {
-+		pr_err("PM: can't read %s time, err %d\n",
-+				rtc->dev.bus_id, status);
-+		return;
-+	}
-+	rtc_tm_to_time(&alm.time, &now);
-+
-+	memset(&alm, 0, sizeof alm);
-+	rtc_time_to_tm(now + ALARM_SECONDS, &alm.time);
-+	alm.enabled = true;
-+
-+	status = rtc_set_alarm(rtc, &alm);
-+	if (status < 0) {
-+		pr_err("PM: can't set %s wakealarm, err %d\n",
-+				rtc->dev.bus_id, status);
-+		return;
-+	}
-+
-+	pr_info("PM: wakealarm test with Suspend-to-RAM\n");
-+	sleepy_state = PM_SUSPEND_MEM;
-+	status = pm_suspend(sleepy_state);
-+	if (status == -ENODEV) {
-+		pr_warning("PM: no Suspend-To-RAM, trying standby...\n");
-+		sleepy_state = PM_SUSPEND_STANDBY;
-+		status = pm_suspend(sleepy_state);
-+	}
-+	if (status)
-+		pr_err("PM: wakealarm test failed, error %d\n", status);
-+}
-+
-+#else
-+
-+static void __init test_wakealarm(void)
-+{
-+	/* FIXME sleepy_state is PM_SUSPEND_ON; not useful ... */
-+}
-+
-+#endif
-+
-+static int __init be_sleepy(void)
-+{
-+	char *pony = NULL;
-+
-+	class_find_device(rtc_class, &pony, has_wakealarm);
-+	if (pony)
-+		rtc = rtc_class_open(pony);
-+	else
-+		pr_warning("PM: no wakelarm-capable RTC\n");
-+
-+	if (rtc)
-+		test_wakealarm();
 +	return 0;
 +}
-+late_initcall(be_sleepy);
+ static inline int register_kprobe(struct kprobe *p)
+ {
+ 	return -ENOSYS;
+-- 
+1.5.4.rc4.1142.gf5a97
+
+
