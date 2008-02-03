@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933681AbYBCLwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765572AbYBCL6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933681AbYBCLwx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 06:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762813AbYBCLwk
+	id S1765572AbYBCL6S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 06:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759382AbYBCL6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 06:52:40 -0500
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:53812 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763278AbYBCLwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 06:52:39 -0500
-Date: Sun, 3 Feb 2008 12:52:34 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] kprobes: Introduce kprobe_handle_fault()
-Message-ID: <20080203115234.GC18211@osiris.ibm.com>
-References: <1202007623.1844.44.camel@brick>
-MIME-Version: 1.0
+	Sun, 3 Feb 2008 06:58:06 -0500
+Received: from ns1.suse.de ([195.135.220.2]:53571 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750902AbYBCL6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 06:58:05 -0500
+Date: Sun, 3 Feb 2008 12:58:01 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu,
+       ak@suse.de, jens.axboe@oracle.com, James.Bottomley@steeleye.com,
+       andrea@suse.de, clameter@sgi.com, akpm@linux-foundation.org,
+       andrew.vasquez@qlogic.com, willy@linux.intel.com,
+       Zach Brown <zach.brown@oracle.com>
+Subject: Re: [rfc] direct IO submission and completion scalability issues
+Message-ID: <20080203115801.GA22650@wotan.suse.de>
+References: <20070728012128.GB10033@linux-os.sc.intel.com> <20080203095252.GA11043@wotan.suse.de> <84144f020802030253y596ca557w3a44a8601a13596d@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202007623.1844.44.camel@brick>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <84144f020802030253y596ca557w3a44a8601a13596d@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 07:00:23PM -0800, Harvey Harrison wrote:
-> Use a central kprobe_handle_fault() inline in kprobes.h to remove
-> all of the arch-dependant, practically identical implementations in
-> avr32, ia64, powerpc, s390, sparc64, and x86.
+On Sun, Feb 03, 2008 at 12:53:02PM +0200, Pekka Enberg wrote:
+> Hi Nick,
 > 
-> avr32 was the only arch without the preempt_disable/enable pair
-> in its notify_page_fault implementation.
+> On Feb 3, 2008 11:52 AM, Nick Piggin <npiggin@suse.de> wrote:
+> > +asmlinkage void smp_call_function_fast_interrupt(void)
+> > +{
 > 
-> This uncovered a possible bug in the s390 version as that purely
-> copied the x86 version unconditionally passing 14 as the trapnr
-> rather than the error_code parameter.  s390 is changed to pass
-> error_code in this patch.
+> [snip]
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > +       while (!list_empty(&list)) {
+> > +               struct call_single_data *data;
+> > +
+> > +               data = list_entry(list.next, struct call_single_data, list);
+> > +               list_del(&data->list);
+> > +
+> > +               data->func(data->info);
+> > +               if (data->wait) {
+> > +                       smp_mb();
+> > +                       data->wait = 0;
+> 
+> Why do we need smp_mb() here (maybe add a comment to keep
+> Andrew/checkpatch happy)?
 
-for the s390 bits:
+Yeah, definitely... it's just a really basic RFC, but I should get
+into the habit of just doing it anyway.
 
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Thanks,
+Nick
