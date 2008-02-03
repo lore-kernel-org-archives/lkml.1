@@ -1,135 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936167AbYBCHlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936446AbYBCHly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936167AbYBCHlb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 02:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758989AbYBCHlW
+	id S936446AbYBCHly (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 02:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936257AbYBCHlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 02:41:22 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52695 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758880AbYBCHlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 02:41:21 -0500
-Message-ID: <47A56FEE.9000900@cn.fujitsu.com>
-Date: Sun, 03 Feb 2008 15:40:30 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: fix compile warning building without CONFIG_SYSCTL
-References: <47A55CA4.9090804@cn.fujitsu.com> <20080203071251.GB19020@elte.hu> <47A56DDA.9000907@cn.fujitsu.com>
-In-Reply-To: <47A56DDA.9000907@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Feb 2008 02:41:42 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37645 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935774AbYBCHll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 02:41:41 -0500
+Date: Sun, 3 Feb 2008 08:41:43 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>,
+       James Bottomley <James.Bottomley@steeleye.com>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch] scsi: fix spurious build failures in aic7xxx
+Message-ID: <20080203074143.GA19981@uranus.ravnborg.org>
+References: <20080201225056.GA18302@elte.hu> <20080202135935.GA23838@uranus.ravnborg.org> <20080202140326.GA6544@elte.hu> <20080202140630.GA7939@elte.hu> <20080202141857.GA8635@elte.hu> <20080202162611.GA24765@uranus.ravnborg.org> <20080202171020.GB12748@elte.hu> <20080203045441.GA12128@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080203045441.GA12128@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-building without CONFIG_SYSCTL:
+On Sun, Feb 03, 2008 at 05:54:41AM +0100, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > I could not reproduce the bug myself but I think I spotted it. We 
+> > > had a missing dependency to the _reg.h file. Try following patch and 
+> > > let me now if it continue to break.
+> > 
+> > thanks! I threw this into the test setup and will know by tomorrow 
+> > whether there's any breakage.
+> 
+> good news: hundreds of successful kernel builds and no failures 
+> overnight. I've Cc:-ed the aic7xxx people.
 
-arch/x86/kernel/nmi_64.c:50: warning: 'unknown_nmi_panic_callback' declared 'static' but never defined
+Thanks for testing Ingo.
 
-This patch also fixes nmi_32.c
+James - I plan to submit this via kbuild.git in about 10 hours.
+Let me know if you would like it to go in via scsi and I
+will drop you an updated patch (need to elaboarte a bit more in
+the commit message).
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
----
- arch/x86/kernel/nmi_32.c |   21 +++++++++------------
- arch/x86/kernel/nmi_64.c |   21 +++++++++------------
- 2 files changed, 18 insertions(+), 24 deletions(-)
-
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index edd4136..6a0aa70 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -46,9 +46,6 @@ static unsigned int nmi_hz = HZ;
- 
- static DEFINE_PER_CPU(short, wd_enabled);
- 
--/* local prototypes */
--static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
--
- static int endflag __initdata = 0;
- 
- #ifdef CONFIG_SMP
-@@ -391,15 +388,6 @@ __kprobes int nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
- 	return rc;
- }
- 
--int do_nmi_callback(struct pt_regs * regs, int cpu)
--{
--#ifdef CONFIG_SYSCTL
--	if (unknown_nmi_panic)
--		return unknown_nmi_panic_callback(regs, cpu);
--#endif
--	return 0;
--}
--
- #ifdef CONFIG_SYSCTL
- 
- static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
-@@ -453,6 +441,15 @@ int proc_nmi_enabled(struct ctl_table *table, int write, struct file *file,
- 
- #endif
- 
-+int do_nmi_callback(struct pt_regs *regs, int cpu)
-+{
-+#ifdef CONFIG_SYSCTL
-+	if (unknown_nmi_panic)
-+		return unknown_nmi_panic_callback(regs, cpu);
-+#endif
-+	return 0;
-+}
-+
- void __trigger_all_cpu_backtrace(void)
- {
- 	int i;
-diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
-index fb99484..9a4fde7 100644
---- a/arch/x86/kernel/nmi_64.c
-+++ b/arch/x86/kernel/nmi_64.c
-@@ -46,9 +46,6 @@ static unsigned int nmi_hz = HZ;
- 
- static DEFINE_PER_CPU(short, wd_enabled);
- 
--/* local prototypes */
--static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
--
- /* Run after command line and cpu_init init, but before all other checks */
- void nmi_watchdog_default(void)
- {
-@@ -394,15 +391,6 @@ asmlinkage __kprobes void do_nmi(struct pt_regs * regs, long error_code)
- 	nmi_exit();
- }
- 
--int do_nmi_callback(struct pt_regs * regs, int cpu)
--{
--#ifdef CONFIG_SYSCTL
--	if (unknown_nmi_panic)
--		return unknown_nmi_panic_callback(regs, cpu);
--#endif
--	return 0;
--}
--
- void stop_nmi(void)
- {
- 	acpi_nmi_disable();
-@@ -464,6 +452,15 @@ int proc_nmi_enabled(struct ctl_table *table, int write, struct file *file,
- 
- #endif
- 
-+int do_nmi_callback(struct pt_regs *regs, int cpu)
-+{
-+#ifdef CONFIG_SYSCTL
-+	if (unknown_nmi_panic)
-+		return unknown_nmi_panic_callback(regs, cpu);
-+#endif
-+	return 0;
-+}
-+
- void __trigger_all_cpu_backtrace(void)
- {
- 	int i;
--- 
-1.5.4.rc3
+	Sam
