@@ -1,36 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbYBCSGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbYBCSJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbYBCSGM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 13:06:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbYBCSF5
+	id S1759431AbYBCSJs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 13:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYBCSJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 13:05:57 -0500
-Received: from h155.mvista.com ([63.81.120.155]:55201 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756529AbYBCSF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 13:05:56 -0500
-Message-ID: <47A602BA.9050908@ru.mvista.com>
-Date: Sun, 03 Feb 2008 21:06:50 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] ide: add ide_read_error() inline helper
-References: <200802020149.49969.bzolnier@gmail.com>
-In-Reply-To: <200802020149.49969.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Sun, 3 Feb 2008 13:09:32 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33764 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751106AbYBCSJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 13:09:30 -0500
+Date: Sun, 3 Feb 2008 10:08:47 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Petr Vandrovec <petr@vandrovec.name>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Unbreak sky2 on 88E8039 with current git
+Message-ID: <20080203100847.3022883e@extreme>
+In-Reply-To: <47A51168.5040301@vandrovec.name>
+References: <20080202105243.GA14581@vana.vc.cvut.cz>
+	<20080202120203.5387d1cb@extreme>
+	<47A51168.5040301@vandrovec.name>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Sat, 02 Feb 2008 16:57:12 -0800
+Petr Vandrovec <petr@vandrovec.name> wrote:
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Stephen Hemminger wrote:
+> > On Sat, 2 Feb 2008 11:52:43 +0100
+> > Petr Vandrovec <petr@vandrovec.name> wrote:
+> > 
+> >> Hello,
+> >>   since I synced my tree to Linus's one two days ago, sky2's packet receiption
+> >> dies almost instantly.  Device still transmits packets, but no receive.  
+> >> Fortunately fix is simple, unfortunately I do not know why fix works...
+> >>
+> >> Commit f03b865491c2f30f2a4d77cdafc69c978ceb38a0 (sky2: align IP header on Rx
+> >> if possible) stopped aligning receive buffers on devices which do not need
+> >> HANG_CHECK.  Unfortunately there is at least one device (mine, Yukon FE, rev 3)
+> >> which is not happy if receive buffer is not aligned.  I have no idea which
+> >> other chips/revisions are affected as well.
+> >>
+> >> Without patch 'ping -f -b 192.168.101.255' RX count stops incrementing in less
+> >> than 50 packets.  With patch in place it can run like before, for hours...
+> >> Box is an AMD rev F processor, with nVidia's MCP61 chipset.
+> >> 							Petr
+> > 
+> > I don't have a Yukon FE, but I believe that the Yukon FE does have a ram
+> > buffer, so you HANG_CHECK should be enabled for that device. You can check
+> > by running:
+> > 	ethtool -d eth0 | grep 'Ram Buffer'
+> > With ram buffer (like XL, EC)
+> > 	
+> > # ethtool -d eth0 | grep 'Ram Buffer'
+> > Ram Buffer                   0x18
+> > 
+> > No ram buffer (like EC-U, FE+, ...)
+> > # ethtool -d eth0 | grep 'Ram Buffer'
+> > Ram Buffer                   0x00
+> 
+> Some small one (if it is size):
+> 
+> gwy:~# ethtool -d eth0 | grep 'Ram'
+> Ram Buffer                   0x01
+> 
+> I've never observed hang on that device, and I have it for over year. I 
+> stress it sufficiently to kill EC rev 2 I have in the notebook when I 
+> copy some data between these two boxes, but this FE never hung.
+> 							Petr
+> 
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Since the ram buffer is only 4K on this chip, 2K is used for rx.
+You probably could make it hang by making CPU busy and hitting it
+with 2 packets whose total length is was 1K each.
 
-MBR, Sergei
+-- 
+Stephen Hemminger <stephen.hemminger@vyatta.com>
