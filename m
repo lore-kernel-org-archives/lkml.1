@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYBCNmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbYBCNv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933661AbYBCNmR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 08:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbYBCNmE
+	id S933234AbYBCNv0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 08:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYBCNvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 08:42:04 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:43729 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750708AbYBCNmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 08:42:03 -0500
-Date: Sun, 3 Feb 2008 07:41:58 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 0/4] [RFC] EMMU Notifiers V5
-Message-ID: <20080203134158.GB3875@sgi.com>
-References: <20080201050439.009441434@sgi.com>
+	Sun, 3 Feb 2008 08:51:15 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:1377 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbYBCNvO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 08:51:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jq8339lQwB3OeQ+AnG6ClfR+hvgIedmc08Ogr67SpTAPGjFZ28QZPSg27Hzc+1uw1U5G5xxXHlkTZW2qn3zvaJCOqM9zMGuIOBpeFBYSpFKaeixVFr2Jp1zvPiCuuqhKsDD81MgGt/QJafMOG3wrJsZnaWUT5RbMtEmofatWxuY=
+Message-ID: <2f11576a0802030551s53eeb7b3k450254f3d2cf9ab7@mail.gmail.com>
+Date: Sun, 3 Feb 2008 22:51:10 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+Cc: "Theodore Tso" <tytso@mit.edu>, Valdis.Kletnieks@vt.edu,
+       "David Chinner" <dgc@sgi.com>, "Valerie Henson" <val@vahconsulting.com>,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Andreas Dilger" <adilger@clusterfs.com>,
+       "Ric Wheeler" <ric@emc.com>, kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080128200105.GA4719@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080201050439.009441434@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com>
+	 <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
+	 <20080121230041.GL3180@webber.adilger.int>
+	 <20080122033830.GR155259@sgi.com>
+	 <3673.1200975438@turing-police.cc.vt.edu>
+	 <20080122070050.GM3180@webber.adilger.int>
+	 <20080122144052.GC17804@mit.edu> <20080128193005.GC4032@ucw.cz>
+	 <20080128195633.GB20528@mit.edu> <20080128200105.GA4719@ucw.cz>
+X-Google-Sender-Auth: ad4115dc28aaaaa5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Great news!  I have taken over Dean's xpmem patch set while he is on
-sabbatical.  Before he left, he had his patch mostly working on top of
-this patch set.  We had one deadlock.  I have coded for that specific
-deadlock and xpmem now passes a simple grant/attach/fault/fork/unmap/map
-test.
+Hi Pavel
 
-After analyzing it, I believe we still have a nearly related deadlock
-which will require some refactoring of code.  I am certain that the
-same mechanism I used for this deadlock break will work in that case,
-but it will require too many changes for me to finish this weekend.
+> > > As user pages are always in highmem, this should be easy to decide:
+> > > only send SIGDANGER when highmem is full. (Yes, there are
+> > > inodes/dentries/file descriptors in lowmem, but I doubt apps will
+> > > respond to SIGDANGER by closing files).
+> >
+> > Good point; for a system with at least (say) 2GB of memory, that
+> > definitely makes sense.  For a system with less than 768 megs of
+> > memory (how quaint, but it wasn't that long ago this was a lot of
+> > memory :-), there wouldn't *be* any memory in highmem at all....
+>
+> Ok, so it is 'send SIGDANGER when all zones are low', because user
+> allocations can go from all zones (unless you have something really
+> exotic, I'm not sure if that is true on huge NUMA  machines & similar).
 
-For our customer base, this case, in the past, has resulted in termination
-of the application and our MPI library specifically states that this
-mode of operation is not permitted, so I think we will be able to pass
-their regression tests.  I will need to coordinate that early next week.
+thank you good point out.
 
-The good news, at this point, Christoph's version 5 of the mmu_notifiers
-appears to work for xpmem.  The mmu_notifier call-outs where the
-in_atomic flag is set still result in a BUG_ON.  That is not an issue
-for our normal customer as our MPI already states this is not a valid
-mode of operation and provides means to avoid those types of mappings.
+to be honest, the zone awareness of current mem_notify is premature.
+I think we need enhancement rss statistics to per zone rss.
+but not implemented yet ;-)
 
-Thanks,
-Robin
+and, unfortunately I have no highmem machine.
+the mem_notify is not so tested on highmem machine.
+
+if you help to test, I am very happy!
+Thanks.
