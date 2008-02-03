@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbYBCKs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbYBCKxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbYBCKs3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 05:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYBCKsW
+	id S1761520AbYBCKxR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 05:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYBCKxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 05:48:22 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:60243 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYBCKsV (ORCPT
+	Sun, 3 Feb 2008 05:53:05 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:21883 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754342AbYBCKxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 05:48:21 -0500
-Message-ID: <47A59AF4.9050204@panasas.com>
-Date: Sun, 03 Feb 2008 12:44:04 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 3 Feb 2008 05:53:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=UQtfS6p956ZE5Xs94xdh2E67gndSUPYyl4u86LHfxn/E3zDGRdTdkqmkJ84tTIisOMpyTdcJz7+hQB0JqWDHeWX0AEgPPYMS+F8rNaZBDpYCZ7IpxIAF6CTC/fnM4zoVch+PQ9LMwEwTOayCmdegQ83SDVHIFiTJuU7qVAGxz0E=
+Message-ID: <84144f020802030253y596ca557w3a44a8601a13596d@mail.gmail.com>
+Date: Sun, 3 Feb 2008 12:53:02 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: [rfc] direct IO submission and completion scalability issues
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu,
+       ak@suse.de, jens.axboe@oracle.com, James.Bottomley@steeleye.com,
+       andrea@suse.de, clameter@sgi.com, akpm@linux-foundation.org,
+       andrew.vasquez@qlogic.com, willy@linux.intel.com,
+       "Zach Brown" <zach.brown@oracle.com>
+In-Reply-To: <20080203095252.GA11043@wotan.suse.de>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Jiri Slaby <jirislaby@gmail.com>,
-       Pavel Machek <pavel@suse.cz>, Christoph Hellwig <hch@lst.de>,
-       Dominik Brodowski <linux@brodo.de>, Andi Kleen <ak@suse.de>,
-       Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>
-Subject: Re: Feature Removals for 2.6.25 - old NCR53C9x driver
-References: <1201829922.23523.68.camel@brick>
-In-Reply-To: <1201829922.23523.68.camel@brick>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070728012128.GB10033@linux-os.sc.intel.com>
+	 <20080203095252.GA11043@wotan.suse.de>
+X-Google-Sender-Auth: 6267fc591cd81dc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 01 2008 at 3:38 +0200, Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> The following are entries in feature-removal-schedule.txt that have
-> come due.  Please change the subject when replying to specific items.
-> 
-> Where I've gotten responses from the named person in the file, I've
-> included their comment.
-> 
-> ---------------------------
-> 
-> What:	old NCR53C9x driver
-> When:	October 2007
-> Why:	Replaced by the much better esp_scsi driver.  Actual low-level
-> 	driver can be ported over almost trivially.
-> Who:	David Miller <davem@davemloft.net>
-> 	Christoph Hellwig <hch@lst.de>
-> 
-> DaveM: Likely one more release with this, perhaps delete 2.6.26
-> ---------------------------
-This has been done and is currently in scsi-misc awaiting for a pull.
+Hi Nick,
+
+On Feb 3, 2008 11:52 AM, Nick Piggin <npiggin@suse.de> wrote:
+> +asmlinkage void smp_call_function_fast_interrupt(void)
+> +{
+
+[snip]
+
+> +       while (!list_empty(&list)) {
+> +               struct call_single_data *data;
+> +
+> +               data = list_entry(list.next, struct call_single_data, list);
+> +               list_del(&data->list);
+> +
+> +               data->func(data->info);
+> +               if (data->wait) {
+> +                       smp_mb();
+> +                       data->wait = 0;
+
+Why do we need smp_mb() here (maybe add a comment to keep
+Andrew/checkpatch happy)?
+
+                        Pekka
