@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934186AbYBCIvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936147AbYBCJAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934186AbYBCIvy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 03:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbYBCIvq
+	id S936147AbYBCJAe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 04:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbYBCJAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 03:51:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:54203 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755484AbYBCIvp (ORCPT
+	Sun, 3 Feb 2008 04:00:25 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41669 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757043AbYBCJAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 03:51:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=PFvVZnal/n2mjLbrS07bgzcfVlpOeMXm849iv1kZYyeKkx1qaeN6yM9/uiC7L++YtjynTlAmg/3JahnwdvHhTJPVEcLWjSrEWJHHwPb2IcVYqoFJpievxjOa74Jgy6esxxKWoebltXbPwEVlC9aCJNUWzBy6+sp9jUuLQVlO5oM=
-Message-ID: <eb3ff54b0802030051x604c991fwe11184e25d0a7550@mail.gmail.com>
-Date: Sun, 3 Feb 2008 10:51:42 +0200
-From: "Rami Rosen" <ramirose@gmail.com>
-To: "David Miller" <davem@davemloft.net>, kaber@trash.net, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [NET_SCHED] Add #ifdef CONFIG_NET_EMATCH in net/sched/cls_flow.c (latest git broken build)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_604_21545021.1202028702374"
+	Sun, 3 Feb 2008 04:00:24 -0500
+Date: Sun, 3 Feb 2008 01:00:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] Split list.h and move rcu-protected lists into
+ rculist.h
+Message-Id: <20080203010013.04bc601e.akpm@linux-foundation.org>
+In-Reply-To: <47A57F25.5070902@gmail.com>
+References: <478FBEA0.9090203@gmail.com>
+	<478FBEEA.6040000@gmail.com>
+	<20080201155826.a2d308c1.akpm@linux-foundation.org>
+	<47A470F9.9060708@gmail.com>
+	<20080202111516.5cbd0880.akpm@linux-foundation.org>
+	<47A57F25.5070902@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_604_21545021.1202028702374
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 03 Feb 2008 09:45:25 +0100 Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
 
-Hi,
-The 2.6 latest git build was broken when using the following
-configuration options:
-CONFIG_NET_EMATCH=n
-CONFIG_NET_CLS_FLOW=y
+> Andrew Morton wrote:
+> > On Sat, 02 Feb 2008 14:32:41 +0100 Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
+> >> Do you think it's better ?
+> > 
+> > Could.  I'd suggest that you redo the header-file split patch around the
+> > 2.6.25-rc1 timeframe, test it carefully then let's get it in then.
+> > 
+> 
+> Does the mm tree also have a calm down period during release candidates ?
 
-with the following error:
-net/sched/cls_flow.c: In function 'flow_dump':
-net/sched/cls_flow.c:598: error: 'struct tcf_ematch_tree' has no
-member named 'hdr'
-make[2]: *** [net/sched/cls_flow.o] Error 1
-make[1]: *** [net/sched] Error 2
-make: *** [net] Error 2
+Yes, I try to not merge too much material late in the -rcs and in the merge
+window.  Often it's not practical to merge things anyway, because people
+prepare patches against mainline, which is ancient history...
+
+> I have modified the patchset so now if rcu helpers are used from
+> rculist.h then fine otherwise gcc warns you that you're using the
+> helpers from list.h like this:
+> 
+> init/foo.c:13: warning: ‘__deprecated_list_add_rcu’ is deprecated (declared at include/linux/rculist.h:76)
+> 
+> But the build process doesn't fail anymore.
+> 
+> For that I added some ugly hacks in list.h and rculist.h but they
+> definitively should be removed for mainline inclusion. I'm sending them
+> in response to this email.
+
+I wouldn't bother, really.  Let's just get it as good as we can and slam it
+in.
+
+> If we include this now, then people can have a chance to notice that
+> rculist.h exists and fix their stuffs until 2.6.25 release
+> candidates but I'll redo the patchset and give it some test around the
+> 2.6.25-rc1 timeframe anyway.
+
+I'm just about finished compilation-testing for 2.6.24-mm1 which is a
+shame.  Please do a best-effort against 2.6.24-mm1 (hopefully I'll get that
+out tomorrow) and I'll slip it into -rc1 if it gets through cross-build
+testing without unfixable-with-my-patience-level problems.
 
 
-see the recent post by Li Zefan:
-  http://www.spinics.net/lists/netdev/msg54434.html
 
-The reason for this crash is that struct tcf_ematch_tree (net/pkt_cls.h) is
-empty when CONFIG_NET_EMATCH is not defined.
-
-When CONFIG_NET_EMATCH is defined, the tcf_ematch_tree structure indeed holds
-a struct tcf_ematch_tree_hdr (hdr) as flow_dump() expects.
-
-This patch adds #ifdef CONFIG_NET_EMATCH in flow_dump to avoid this.
-
-The patch was build against latest 2.6 git net tree.
-
-
-Regards,
-Rami Rosen
-
-
-Signed-off-by: Rami Rosen <ramirose@gmail.com>
-
-------=_Part_604_21545021.1202028702374
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fc7cqbw70
-Content-Disposition: attachment; filename=patch.txt
-
-ZGlmZiAtLWdpdCBhL25ldC9zY2hlZC9jbHNfZmxvdy5jIGIvbmV0L3NjaGVkL2Nsc19mbG93LmMK
-aW5kZXggNWE3ZjZhMy4uOGQ3Njk4NiAxMDA2NDQKLS0tIGEvbmV0L3NjaGVkL2Nsc19mbG93LmMK
-KysrIGIvbmV0L3NjaGVkL2Nsc19mbG93LmMKQEAgLTU5NCwxMSArNTk0LDExIEBAIHN0YXRpYyBp
-bnQgZmxvd19kdW1wKHN0cnVjdCB0Y2ZfcHJvdG8gKnRwLCB1bnNpZ25lZCBsb25nIGZoLAogCiAJ
-aWYgKHRjZl9leHRzX2R1bXAoc2tiLCAmZi0+ZXh0cywgJmZsb3dfZXh0X21hcCkgPCAwKQogCQln
-b3RvIG5sYV9wdXRfZmFpbHVyZTsKLQorI2lmZGVmIENPTkZJR19ORVRfRU1BVENICiAJaWYgKGYt
-PmVtYXRjaGVzLmhkci5ubWF0Y2hlcyAmJgogCSAgICB0Y2ZfZW1fdHJlZV9kdW1wKHNrYiwgJmYt
-PmVtYXRjaGVzLCBUQ0FfRkxPV19FTUFUQ0hFUykgPCAwKQogCQlnb3RvIG5sYV9wdXRfZmFpbHVy
-ZTsKLQorI2VuZGlmCiAJbmxhX25lc3RfZW5kKHNrYiwgbmVzdCk7CiAKIAlpZiAodGNmX2V4dHNf
-ZHVtcF9zdGF0cyhza2IsICZmLT5leHRzLCAmZmxvd19leHRfbWFwKSA8IDApCg==
-------=_Part_604_21545021.1202028702374--
