@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935651AbYBCDbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964800AbYBCDdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935651AbYBCDbH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 22:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932640AbYBCDay
+	id S964800AbYBCDdk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 22:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933240AbYBCDdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 22:30:54 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:60777 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbYBCDaw (ORCPT
+	Sat, 2 Feb 2008 22:33:32 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44820
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933231AbYBCDdb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 22:30:52 -0500
-X-IronPort-AV: E=Sophos;i="4.25,297,1199682000"; 
-   d="scan'208";a="47843125"
-Subject: Re: [REVIEW for merge] kbuild updates including silence of section
-	mismatch check
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Frans Pop <elendil@planet.nl>, Bryan Wu <bryan.wu@analog.com>,
-       akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080202213015.GA27015@uranus.ravnborg.org>
-References: <20080202203503.GA26415@uranus.ravnborg.org>
-	 <E1JLPrz-00059X-Sc@faramir.fjphome.nl>
-	 <20080202213015.GA27015@uranus.ravnborg.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Sun, 03 Feb 2008 11:30:29 +0800
-Message-Id: <1202009429.6671.2.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 03 Feb 2008 03:30:51.0269 (UTC) FILETIME=[2CD6F350:01C86615]
+	Sat, 2 Feb 2008 22:33:31 -0500
+Date: Sun, 3 Feb 2008 04:33:18 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080203033318.GE7185@v2.random>
+References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random> <20080203031457.GA16127@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080203031457.GA16127@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-02-02 at 22:30 +0100, Sam Ravnborg wrote:
-> Bryan this was from you - please comment/fix.
+On Sat, Feb 02, 2008 at 09:14:57PM -0600, Jack Steiner wrote:
+> Also, most (but not all) applications that use the GRU do not usually do
+> anything that requires frequent flushing (fortunately). The GRU is intended
+> for HPC-like applications. These don't usually do frequent map/unmap
+> operations or anything else that requires a lot of flushes.
 > 
-> 	Sam
-> 
-> On Sat, Feb 02, 2008 at 10:25:51PM +0100, Frans Pop wrote:
-> > Sam Ravnborg wrote:
-> > > --- a/scripts/setlocalversion
-> > > +++ b/scripts/setlocalversion
-> > > @@ -45,3 +45,18 @@ if hgid=`hg id 2>/dev/null`; then
-> > > # All done with mercurial
-> > > exit
-> > > fi
-> > > +
-> > > +# Check for svn and a svn repo.
-> > > +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` ; then
-> > > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
-> > > +
-> > > +       # Are there uncommitted changes?
-> > > +       if [ $changes != 0 ]; then
-> > > +               printf -- '-svn%s%s%s' "$rev" -dirty "$changes"
-> > > +       else
-> > > +               printf -- '-svn%s' "$rev"
-> > > +       fi
-> > > +
-> > > +       # All done with svn
-> > > +       exit
-> > > +fi
-> > 
-> > This looks broken. Unless I'm very much mistaken the 'if' statement is
-> > always going to be true because the awk statement will always execute
-> > without error. Try: echo "" | awk '{print $NF}' || echo Error
-> > 
+> I expect that KVM is a lot different.
 
-You are right, it will always plus a '-svn' string at the end of kernel
-version string even if it is not a svn repo.
+I don't think so. invalidate_page/pages/range_start,end is a slow and
+unfrequent path for KVM (or alternatively the ranges are very small in
+which case _range_start/end won't payoff compared to _pages). Whenever
+invalidate_page[s] become a fast path, we're generally I/O
+bound. get_user_pages is always the fast path instead. I thought it
+was much more important that get_user_pages scale as well as it does
+now and that the KVM page fault isn't serialized with a mutex, than
+whatever invalidate side optimization. get_user_pages may run
+frequently from all vcpus even if there are no invalidates and no
+memory pressure and I don't mean only during startup.
 
-> > So, the code should probably be changed to:
-> > +if rev=`svn info 2>/dev/null | grep '^Revision' ; then
-> > +	rev=`echo $rev | awk '{print $NF}'`
-> > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
-> > 
+> I have most of the GRU code working with the latest mmuops patch. I still
+> have a list of loose ends that I'll get to next week. The most important is
+> the exact handling of the range invalidates. The code that I currently have
+> works (mostly) but has a few endcases that will cause problems. Once I
+> finish, I'll be glad to send you snippets of the code (or all of it) if you
+> would like to take a look.
 
-I prefer to this one. A updated version will be sent out soon.
-
-> > or alternatively:
-> > +if rev=`svn info 2>/dev/null | grep '^Revision' | awk '{print $NF}'` && \
-> > +   [ -n "$rev" ] ; then 
-> > +       changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l` 
-> > 
-> > Cheers,
-> > FJP
-> > 
-> > P.S. Looks like the mercurial section is missing some indentation.
-I will fix this, too.
-
-Regards,
--Bryan Wu
+Sure.
