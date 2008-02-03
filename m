@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936596AbYBCJy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936464AbYBCKES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936596AbYBCJy5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 04:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761024AbYBCJyt
+	id S936464AbYBCKES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 05:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760006AbYBCKEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 04:54:49 -0500
-Received: from uhweb15152.united-hoster.com ([85.88.15.152]:39404 "EHLO
-	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753657AbYBCJyt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 04:54:49 -0500
-From: Frank Seidel <frank@f-seidel.de>
-To: Rabin Vincent <rabin@rab.in>
-Subject: Re: [PATCH] Remove unneeded code in sys_getpriority
-Date: Sun, 3 Feb 2008 10:54:45 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20080203030429.GB7459@ubuntu>
-In-Reply-To: <20080203030429.GB7459@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Feb 2008 05:04:00 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48682 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757694AbYBCKD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 05:03:59 -0500
+Date: Sun, 3 Feb 2008 11:04:03 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Bryan Wu <bryan.wu@analog.com>
+Cc: Frans Pop <elendil@planet.nl>, akpm@linux-foundation.org,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH try#2 ] kbuild: add svn revision information to setlocalversion
+Message-ID: <20080203100403.GA20810@uranus.ravnborg.org>
+References: <20080202203503.GA26415@uranus.ravnborg.org> <E1JLPrz-00059X-Sc@faramir.fjphome.nl> <20080202213015.GA27015@uranus.ravnborg.org> <1202019206.6671.18.camel@roc-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802031054.45604.frank@f-seidel.de>
+In-Reply-To: <1202019206.6671.18.camel@roc-laptop>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 03 February 2008 04:04, Rabin Vincent wrote:
-> This check is not required because the condition is always true.
-> ...
-> -				if (niceval > retval)
-> -					retval = niceval;
-> +				retval = 20 - task_nice(p);
+On Sun, Feb 03, 2008 at 02:13:26PM +0800, Bryan Wu wrote:
+> >From 0a7a2c6f19d32a85ca1a7887382325170ef19a66 Mon Sep 17 00:00:00 2001
+> From: Bryan Wu <bryan.wu@analog.com>
+> Date: Sun, 3 Feb 2008 14:05:00 +0800
+> Subject: [PATCH] [Scripts] add svn revision information to setlocalversion
+> 
+> follow git and mercurial style, include uncommitted changes detect
+> 
+> Cc: Frans Pop <elendil@planet.nl>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 
-Thats surely correct, but on the other hand currently those
-case blocks are quite independet of their possition/could easily
-be rearranged now .. or think of another case is put ahead.
-Then this could mess up things.
+Applied and pushed out.
+Thanks for the review Frans and thanks for the quick fix Bryan.
 
-Thanks,
-Frank
+	Sam
