@@ -1,104 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935596AbYBCDMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935906AbYBCDPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935596AbYBCDMh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 22:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYBCDM1
+	id S935906AbYBCDPR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 22:15:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYBCDPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 22:12:27 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:20477 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbYBCDM0 (ORCPT
+	Sat, 2 Feb 2008 22:15:04 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55003 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753950AbYBCDPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 22:12:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=sFX4UlN4eaEbwE7Pb+YOwzvAadm0W0EdyjM/pX/cRinb7pQVKy7mCNce2efJUF9SdqfUCyjM3n5o7ktvwemIU2+3xbNOnnA/+KkH7KcLK9J5uKwWz8yIQAT0yOU5Bm1tEzAfo1sXKyT4phnZBPs3SVaDOLQ3kx2HUUzcs/Qr80Q=
-From: Denis Cheng <crquan@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers/block/: add __devinitdata to all pci_device_id table of block drivers
-Date: Sun,  3 Feb 2008 11:12:27 +0800
-Message-Id: <1202008347-5407-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.3.8
+	Sat, 2 Feb 2008 22:15:03 -0500
+Date: Sat, 2 Feb 2008 21:14:57 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080203031457.GA16127@sgi.com>
+References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080203021704.GC7185@v2.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- drivers/block/DAC960.c   |    2 +-
- drivers/block/cciss.c    |    2 +-
- drivers/block/cpqarray.c |    2 +-
- drivers/block/sx8.c      |    2 +-
- drivers/block/umem.c     |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+On Sun, Feb 03, 2008 at 03:17:04AM +0100, Andrea Arcangeli wrote:
+> On Fri, Feb 01, 2008 at 11:23:57AM -0800, Christoph Lameter wrote:
+> > Yes so your invalidate_range is still some sort of dysfunctional 
+> > optimization? Gazillions of invalidate_page's will have to be executed 
+> > when tearing down large memory areas.
+> 
+> I don't know if gru can flush the external TLB references with a
+> single instruction like the cpu can do by overwriting %cr3. As far as
 
-diff --git a/drivers/block/DAC960.c b/drivers/block/DAC960.c
-index cd03473..3bdaabc 100644
---- a/drivers/block/DAC960.c
-+++ b/drivers/block/DAC960.c
-@@ -7102,7 +7102,7 @@ static struct DAC960_privdata DAC960_P_privdata = {
- 	.MemoryWindowSize =	DAC960_PD_RegisterWindowSize,
- };
- 
--static struct pci_device_id DAC960_id_table[] = {
-+static struct pci_device_id DAC960_id_table[] __devinitdata = {
- 	{
- 		.vendor 	= PCI_VENDOR_ID_MYLEX,
- 		.device		= PCI_DEVICE_ID_MYLEX_DAC960_GEM,
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 855ce8e..2e19ef4 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -67,7 +67,7 @@ MODULE_LICENSE("GPL");
- #include <linux/cciss_ioctl.h>
- 
- /* define the PCI info for the cards we can control */
--static const struct pci_device_id cciss_pci_device_id[] = {
-+static const struct pci_device_id cciss_pci_device_id[] __devinitdata = {
- 	{PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_CISS,  0x0E11, 0x4070},
- 	{PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_CISSB, 0x0E11, 0x4080},
- 	{PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_CISSB, 0x0E11, 0x4082},
-diff --git a/drivers/block/cpqarray.c b/drivers/block/cpqarray.c
-index 6919918..15204b9 100644
---- a/drivers/block/cpqarray.c
-+++ b/drivers/block/cpqarray.c
-@@ -96,7 +96,7 @@ static struct board_type products[] = {
- };
- 
- /* define the PCI info for the PCI cards this driver can control */
--static const struct pci_device_id cpqarray_pci_device_id[] =
-+static const struct pci_device_id cpqarray_pci_device_id[] __devinitdata =
- {
- 	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_COMPAQ_42XX,
- 		0x0E11, 0x4058, 0, 0, 0},       /* SA431 */
-diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
-index cd5674b..d3e18d7 100644
---- a/drivers/block/sx8.c
-+++ b/drivers/block/sx8.c
-@@ -409,7 +409,7 @@ static int carm_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
- static void carm_remove_one (struct pci_dev *pdev);
- static int carm_bdev_getgeo(struct block_device *bdev, struct hd_geometry *geo);
- 
--static struct pci_device_id carm_pci_tbl[] = {
-+static struct pci_device_id carm_pci_tbl[] __devinitdata = {
- 	{ PCI_VENDOR_ID_PROMISE, 0x8000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, },
- 	{ PCI_VENDOR_ID_PROMISE, 0x8002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, },
- 	{ }	/* terminate list */
-diff --git a/drivers/block/umem.c b/drivers/block/umem.c
-index c24e1bd..98846f8 100644
---- a/drivers/block/umem.c
-+++ b/drivers/block/umem.c
-@@ -1053,7 +1053,7 @@ static void mm_pci_remove(struct pci_dev *dev)
- 	pci_disable_device(dev);
- }
- 
--static const struct pci_device_id mm_pci_ids[] = {
-+static const struct pci_device_id mm_pci_ids[] __devinitdata = {
-     {PCI_DEVICE(PCI_VENDOR_ID_MICRO_MEMORY, PCI_DEVICE_ID_MICRO_MEMORY_5415CN)},
-     {PCI_DEVICE(PCI_VENDOR_ID_MICRO_MEMORY, PCI_DEVICE_ID_MICRO_MEMORY_5425CN)},
-     {PCI_DEVICE(PCI_VENDOR_ID_MICRO_MEMORY, PCI_DEVICE_ID_MICRO_MEMORY_6155)},
--- 
-1.5.3.8
+The mechanism obviously is a little different, but the GRU can flush an
+external TLB in a single read/write/flush of a cacheline (should take a few
+100 nsec). Typically, an application uses a single GRU. Threaded
+applications, however, could use one GRU per thread, so it is possible that
+multiple TLBs must be flushed. In some cases, the external flush can be
+avoided if the GRU is not currently in use by the thread.
 
+Also, most (but not all) applications that use the GRU do not usually do
+anything that requires frequent flushing (fortunately). The GRU is intended
+for HPC-like applications. These don't usually do frequent map/unmap
+operations or anything else that requires a lot of flushes.
+
+I expect that KVM is a lot different.
+
+I have most of the GRU code working with the latest mmuops patch. I still
+have a list of loose ends that I'll get to next week. The most important is
+the exact handling of the range invalidates. The code that I currently have
+works (mostly) but has a few endcases that will cause problems. Once I
+finish, I'll be glad to send you snippets of the code (or all of it) if you
+would like to take a look.
+
+
+> vmx/svm are concerned, you got to do some fixed amount of work on the
+> rmap structures and each spte, for each 4k invalidated regardless of
+> page/pages/range/ranges. You can only share the cost of the lock and
+> of the memslot lookup, so you lookup and take the lock once and you
+> drop 512 sptes instead of just 1. Similar to what we do in the main
+> linux VM by taking the PT lock for every 512 sptes.
+> 
+> So you worry about gazillions of invalidate_page without taking into
+> account that even if you call invalidate_range_end(0, -1ULL) KVM will
+> have to mangle over 4503599627370496 rmap entries anyway. Yes calling
+> 1 invalidate_range_end instead of 4503599627370496 invalidate_page,
+> will be faster, but not much faster. For KVM it remains an O(N)
+> operation, where N is the number of pages. I'm not so sure we need to
+> worry about my invalidate_pages being limited to 512 entries.
+> 
+> Perhaps GRU is different, I'm just describing the KVM situation here.
+> 
+> As far as KVM is concerned it's more sensible to be able to scale when
+> there are 1024 kvm threads on 1024 cpus and each kvm-vcpu is accessing
+> a different guest physical page (especially when new chunks of memory
+> are allocated for the first time) that won't collide the whole time on
+> naturally aligned 2M chunks of virtual addresses.
+> 
+> > And that would not be enough to hold of new references? With small tweaks 
+> > this should work with a common scheme. We could also redefine the role 
+> > of _start and _end slightly to just require that the refs are removed when 
+> > _end completes. That would allow the KVM page count ref to work as is now 
+> > and would avoid the individual invalidate_page() callouts.
+> 
+> I can already only use _end and ignore _start, only remaining problem
+> is this won't be 100% coherent (my patch is 100% coherent thanks to PT
+> lock implicitly serializing follow_page/get_user_pages of the KVM/GRU
+> secondary MMU faults). My approach give a better peace of mind with
+> full scalability and no lock recursion when it's the KVM page fault
+> that invokes get_user_pages that invokes the linux page fault routines
+> that will try to execute _start taking the lock to block the page
+> fault that is already running...
+> 
+> > > > The GRU has no page table on its own. It populates TLB entries on demand 
+> > > > using the linux page table. There is no way it can figure out when to 
+> > > > drop page counts again. The invalidate calls are turned directly into tlb 
+> > > > flushes.
+> > > 
+> > > Yes, this is why it can't serialize follow_page with only the PT lock
+> > > with your patch. KVM may do it once you add start,end to range_end
+> > > only thanks to the additional pin on the page.
+> > 
+> > Right but that pin requires taking a refcount which we cannot do.
+> 
+> GRU can use my patch without the pin. XPMEM obviously can't use my
+> patch as my invalidate_page[s] are under the PT lock (a feature to fit
+> GRU/KVM in the simplest way), this is why an incremental patch adding
+> invalidate_range_start/end would be required to support XPMEM too.
+
+--- jack
