@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYBCKMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbYBCKcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758675AbYBCKMy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 05:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYBCKMo
+	id S1758669AbYBCKcq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 05:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYBCKck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 05:12:44 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53590 "EHLO pasmtpB.tele.dk"
+	Sun, 3 Feb 2008 05:32:40 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57920 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbYBCKMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 05:12:42 -0500
-Date: Sun, 3 Feb 2008 11:12:45 +0100
+	id S1751423AbYBCKck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 05:32:40 -0500
+Date: Sun, 3 Feb 2008 11:32:13 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-git7: section mismatches woes
-Message-ID: <20080203101245.GB20810@uranus.ravnborg.org>
-References: <200801301950.44403.rjw@sisk.pl> <200801302232.53306.rjw@sisk.pl> <20080202180828.GC25399@uranus.ravnborg.org> <200802022347.29916.rjw@sisk.pl>
+To: "A.E.Lawrence" <lawrence_a_e@ntlworld.com>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: restore correct module name for apm
+Message-ID: <20080203103213.GC20810@uranus.ravnborg.org>
+References: <47A4E70D.1000607@ntlworld.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802022347.29916.rjw@sisk.pl>
+In-Reply-To: <47A4E70D.1000607@ntlworld.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 11:47:29PM +0100, Rafael J. Wysocki wrote:
-> On Saturday, 2 of February 2008, Sam Ravnborg wrote:
-> > On Wed, Jan 30, 2008 at 10:32:52PM +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday, 30 of January 2008, Sam Ravnborg wrote:
-> > > > On Wed, Jan 30, 2008 at 07:50:43PM +0100, Rafael J. Wysocki wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > I get these messages, the majority of which seem to be false-positives:
-> > > > ...
-> > > > > modpost: Found 35 section mismatch(es).
-> > > > > To see additional details select "Enable full Section mismatch analysis"
-> > > > > in the Kernel Hacking menu (CONFIG_SECTION_MISMATCH).
-> > > > Looking in to these atm.
-> > > > 
-> > > > > 
-> > > > > and if I compile the kernel with CONFIG_SECTION_MISMATCH, it breaks resuming
-> > > > > from RAM.
-> > > > 
-> > > > The only functional difference when you enable CONFIG_SECTION_MISMATCH is the
-> > > > addition of the -fno-inline-functions-called-once to CFLAGS.
-> > > > So we have some code somewhere that breaks if it is not inlined by gcc.
-> > > > 
-> > > > It would be nice to sort out where.
-> > > > If you have a rough idea where to look
-> > > 
-> > > No, I don't.
-> > > 
-> > > It looks like there's somewhere in arch/x86, since I ruled out kernel/power and
-> > > drivers/acpi already.
-> > 
-> > Hi Rafael.
-> 
-> Hi,
-> 
-> > Do you plan to look closer into this or do you have an easy receipe so
-> > I can test myself (on a x86 64 bit box)?
-> 
-> Well, I really don't know how to approach this.  Do you have an x86-64 box with
-> suspend to RAM working?
-I dunno - never used it I'm afraid. And do not know how to do it either.
-Feel free to call me ignorant :-(
+The apm module were renamed to apm_32 during the merge of 32 and 64 bit x86 which
+is unfortunate.
+As apm is 32 bit specific we like to keep the _32 in the filename
+but the module should be named apm.
 
-I have in latest kbuild.git made DEBUG_SECTION_MISMATCH so it cannot be selected,
-partly due to this regression but mostly due to the noise it creates.
+Fix this in the Makefile.
+Reported by "A.E.Lawrence" <lawrence_a_e@ntlworld.com>
 
-The way to approach it is straightforward but boring.
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "A.E.Lawrence" <lawrence_a_e@ntlworld.com>
+---
 
-You can add:
-ccflags-y += -fno-inline-functions-called-once
-to the Makefiles where you think this can have caused troubles until
-you find the problematic directory.
-kbuild will pick up that gcc options changed and rebuild
-all relevant files.
-
-When the problematic directory is located then
-remove the ccflags-y assignment and do it file-by-file
-using the CFLAGS_xxx.o syntax:
-
-CFLAGS_file.o := -fno-inline-functions-called-once
-
-This is probarly not the highest priority thing to look into
-but I am afraid that it could show up under other circumstances too.
-
+build tested only but obviously correct.
 
 	Sam
+
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 6f81300..f080635 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -37,7 +37,8 @@ obj-$(CONFIG_X86_MSR)		+= msr.o
+ obj-$(CONFIG_X86_CPUID)		+= cpuid.o
+ obj-$(CONFIG_MICROCODE)		+= microcode.o
+ obj-$(CONFIG_PCI)		+= early-quirks.o
+-obj-$(CONFIG_APM)		+= apm_32.o
++apm-y				:= apm_32.o
++obj-$(CONFIG_APM)		+= apm.o
+ obj-$(CONFIG_X86_SMP)		+= smp_$(BITS).o smpboot_$(BITS).o tsc_sync.o
+ obj-$(CONFIG_X86_32_SMP)	+= smpcommon_32.o
+ obj-$(CONFIG_X86_64_SMP)	+= smp_64.o smpboot_64.o tsc_sync.o
