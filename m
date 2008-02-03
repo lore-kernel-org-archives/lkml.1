@@ -1,209 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936398AbYBCByf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936464AbYBCBzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936398AbYBCByf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 20:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933547AbYBCBu4
+	id S936464AbYBCBzf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 20:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935722AbYBCBwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 20:50:56 -0500
-Received: from fmailhost06.isp.att.net ([204.127.217.106]:56741 "EHLO
-	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933465AbYBCBuZ (ORCPT
+	Sat, 2 Feb 2008 20:52:25 -0500
+Received: from fmailhost02.isp.att.net ([204.127.217.102]:41567 "EHLO
+	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935836AbYBCBwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 20:50:25 -0500
+	Sat, 2 Feb 2008 20:52:23 -0500
 X-Originating-IP: [70.157.3.17]
+Date: Sat, 2 Feb 2008 19:52:20 -0600
 From: Jay Cliburn <jacliburn@bellsouth.net>
 To: jeff@garzik.org
-Cc: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 09/10] atl1: make functions static
-Date: Sat,  2 Feb 2008 19:50:11 -0600
-Message-Id: <1202003412-4028-9-git-send-email-jacliburn@bellsouth.net>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1202003412-4028-1-git-send-email-jacliburn@bellsouth.net>
-References: <1202003412-4028-1-git-send-email-jacliburn@bellsouth.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chris Snook <csnook@redhat.com>
+Subject: [PATCH 00/10] atl1: move to atlx and update for 2.6.25
+Message-ID: <20080202195220.1d699020@osprey.hogchain.net>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make needlessly global functions static.  In a couple of cases this
-requires removing forward declarations and reordering functions.
+In preparation for a future atl2 driver for the Atheros L2 10/100 chip,
+we propose to move the existing atl1 driver to a new directory
+(drivers/net/atlx), then split out functions and definitions that both
+atl1 and atl2 can share.  The final structure will look like this:
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-Acked-by: Chris Snook <csnook@redhat.com>
+drivers/net/atl1                deleted
+drivers/net/atlx                new
+drivers/net/atlx/atl1.c         atl1-specific functions
+drivers/net/atlx/atl1.h         atl1-specific definitions
+drivers/net/atlx/atlx.c         atl1-atl2 shared functions
+drivers/net/atlx/atlx.h         atl1-atl2 shared definitions
+
+The first two patches submitted in this patchset accomplish the
+relocation by moving the atl1 driver over to drivers/net/atlx, then
+splitting out shareable functions and definitions.  Some transitory
+hackery will be present until the atl2 merge.  Please overlook it for
+now.
+
+The remaining 8 patches provide some cleanup and minor functionality
+changes, the most important of which is a fix to our long-broken TSO
+capability.
+
+The "conform to vendor driver" patches submitted on 31 December 2007
+have been dropped.
+
+Table of contents:
 ---
- drivers/net/atlx/atl1.c |  101 ++++++++++++++++++++++++-----------------------
- drivers/net/atlx/atl1.h |    3 -
- 2 files changed, 51 insertions(+), 53 deletions(-)
+0001-atl1-relocate-atl1-driver-to-drivers-net-atlx.patch
+0002-atl1-move-common-functions-to-atlx-files.patch
+0003-atl1-fix-broken-TSO.patch
+0004-atl1-add-ethtool-register-dump.patch
+0005-atl1-simplify-tx-packet-descriptor.patch
+0006-atl1-use-csum_start.patch
+0007-atl1-use-netif_msg.patch
+0008-atl1-print-debug-info-if-rrd-error.patch
+0009-atl1-make-functions-static.patch
+0010-atl1-reduce-forward-declarations.patch
 
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 4e4cb23..6f4a1d5 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -211,7 +211,7 @@ static int atl1_mii_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
-  *
-  * Return 0 on success, negative on failure
-  */
--s32 atl1_setup_ring_resources(struct atl1_adapter *adapter)
-+static s32 atl1_setup_ring_resources(struct atl1_adapter *adapter)
- {
- 	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
- 	struct atl1_rfd_ring *rfd_ring = &adapter->rfd_ring;
-@@ -402,7 +402,7 @@ static void atl1_clean_tx_ring(struct atl1_adapter *adapter)
-  *
-  * Free all transmit software resources
-  */
--void atl1_free_ring_resources(struct atl1_adapter *adapter)
-+static void atl1_free_ring_resources(struct atl1_adapter *adapter)
- {
- 	struct pci_dev *pdev = adapter->pdev;
- 	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
-@@ -580,40 +580,6 @@ static u32 atl1_check_link(struct atl1_adapter *adapter)
- 	return 0;
- }
- 
--/*
-- * atl1_change_mtu - Change the Maximum Transfer Unit
-- * @netdev: network interface device structure
-- * @new_mtu: new value for maximum frame size
-- *
-- * Returns 0 on success, negative on failure
-- */
--static int atl1_change_mtu(struct net_device *netdev, int new_mtu)
--{
--	struct atl1_adapter *adapter = netdev_priv(netdev);
--	int old_mtu = netdev->mtu;
--	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
--
--	if ((max_frame < ETH_ZLEN + ETH_FCS_LEN) ||
--	    (max_frame > MAX_JUMBO_FRAME_SIZE)) {
--		if (netif_msg_link(adapter))
--			dev_warn(&adapter->pdev->dev, "invalid MTU setting\n");
--		return -EINVAL;
--	}
--
--	adapter->hw.max_frame_size = max_frame;
--	adapter->hw.tx_jumbo_task_th = (max_frame + 7) >> 3;
--	adapter->rx_buffer_len = (max_frame + 7) & ~7;
--	adapter->hw.rx_jumbo_th = adapter->rx_buffer_len / 8;
--
--	netdev->mtu = new_mtu;
--	if ((old_mtu != new_mtu) && netif_running(netdev)) {
--		atl1_down(adapter);
--		atl1_up(adapter);
--	}
--
--	return 0;
--}
--
- static void set_flow_ctrl_old(struct atl1_adapter *adapter)
- {
- 	u32 hi, lo, value;
-@@ -1794,19 +1760,8 @@ static void atl1_phy_config(unsigned long data)
-  * assert again and again.
-  * </vendor comment>
-  */
--static void atl1_tx_timeout_task(struct work_struct *work)
--{
--	struct atl1_adapter *adapter =
--		container_of(work, struct atl1_adapter, tx_timeout_task);
--	struct net_device *netdev = adapter->netdev;
- 
--	netif_device_detach(netdev);
--	atl1_down(adapter);
--	atl1_up(adapter);
--	netif_device_attach(netdev);
--}
--
--int atl1_reset(struct atl1_adapter *adapter)
-+static int atl1_reset(struct atl1_adapter *adapter)
- {
- 	int ret;
- 	ret = atl1_reset_hw(&adapter->hw);
-@@ -1815,7 +1770,7 @@ int atl1_reset(struct atl1_adapter *adapter)
- 	return atl1_init_hw(&adapter->hw);
- }
- 
--s32 atl1_up(struct atl1_adapter *adapter)
-+static s32 atl1_up(struct atl1_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
- 	int err;
-@@ -1860,7 +1815,7 @@ err_up:
- 	return err;
- }
- 
--void atl1_down(struct atl1_adapter *adapter)
-+static void atl1_down(struct atl1_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
- 
-@@ -1883,6 +1838,52 @@ void atl1_down(struct atl1_adapter *adapter)
- 	atl1_clean_rx_ring(adapter);
- }
- 
-+static void atl1_tx_timeout_task(struct work_struct *work)
-+{
-+	struct atl1_adapter *adapter =
-+		container_of(work, struct atl1_adapter, tx_timeout_task);
-+	struct net_device *netdev = adapter->netdev;
-+
-+	netif_device_detach(netdev);
-+	atl1_down(adapter);
-+	atl1_up(adapter);
-+	netif_device_attach(netdev);
-+}
-+
-+/*
-+ * atl1_change_mtu - Change the Maximum Transfer Unit
-+ * @netdev: network interface device structure
-+ * @new_mtu: new value for maximum frame size
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+static int atl1_change_mtu(struct net_device *netdev, int new_mtu)
-+{
-+	struct atl1_adapter *adapter = netdev_priv(netdev);
-+	int old_mtu = netdev->mtu;
-+	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
-+
-+	if ((max_frame < ETH_ZLEN + ETH_FCS_LEN) ||
-+	    (max_frame > MAX_JUMBO_FRAME_SIZE)) {
-+		if (netif_msg_link(adapter))
-+			dev_warn(&adapter->pdev->dev, "invalid MTU setting\n");
-+		return -EINVAL;
-+	}
-+
-+	adapter->hw.max_frame_size = max_frame;
-+	adapter->hw.tx_jumbo_task_th = (max_frame + 7) >> 3;
-+	adapter->rx_buffer_len = (max_frame + 7) & ~7;
-+	adapter->hw.rx_jumbo_th = adapter->rx_buffer_len / 8;
-+
-+	netdev->mtu = new_mtu;
-+	if ((old_mtu != new_mtu) && netif_running(netdev)) {
-+		atl1_down(adapter);
-+		atl1_up(adapter);
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * atl1_open - Called when a network interface is made active
-  * @netdev: network interface device structure
-diff --git a/drivers/net/atlx/atl1.h b/drivers/net/atlx/atl1.h
-index 12ec916..6220298 100644
---- a/drivers/net/atlx/atl1.h
-+++ b/drivers/net/atlx/atl1.h
-@@ -73,9 +73,6 @@ void atl1_check_options(struct atl1_adapter *adapter);
- static int atl1_mii_ioctl(struct net_device *netdev, struct ifreq *ifr,
- 	int cmd);
- static u32 atl1_check_link(struct atl1_adapter *adapter);
--s32 atl1_up(struct atl1_adapter *adapter);
--void atl1_down(struct atl1_adapter *adapter);
--int atl1_reset(struct atl1_adapter *adapter);
- 
- extern const struct ethtool_ops atl1_ethtool_ops;
- 
--- 
-1.5.3.8
+
+Summary diffstat:
+---
+ drivers/net/Makefile                          |    2 +-
+ drivers/net/atl1/Makefile                     |    2 -
+ drivers/net/atl1/atl1.h                       |  286 ----
+ drivers/net/atl1/atl1_ethtool.c               |  505 ------
+ drivers/net/atl1/atl1_hw.c                    |  720 ---------
+ drivers/net/atl1/atl1_hw.h                    |  946 -----------
+ drivers/net/atl1/atl1_param.c                 |  203 ---
+ drivers/net/atlx/Makefile                     |    1 +
+ drivers/net/{atl1/atl1_main.c => atlx/atl1.c} | 2118
++++++++++++++++++++------ drivers/net/atlx/atl1.h
+|  796 ++++++++++ drivers/net/atlx/atlx.c                       |  433
++++++ drivers/net/atlx/atlx.h                       |  506 ++++++
+ 12 files changed, 3352 insertions(+), 3166 deletions(-)
+ delete mode 100644 drivers/net/atl1/Makefile
+ delete mode 100644 drivers/net/atl1/atl1.h
+ delete mode 100644 drivers/net/atl1/atl1_ethtool.c
+ delete mode 100644 drivers/net/atl1/atl1_hw.c
+ delete mode 100644 drivers/net/atl1/atl1_hw.h
+ delete mode 100644 drivers/net/atl1/atl1_param.c
+ create mode 100644 drivers/net/atlx/Makefile
+ rename drivers/net/{atl1/atl1_main.c => atlx/atl1.c} (57%)
+ create mode 100644 drivers/net/atlx/atl1.h
+ create mode 100644 drivers/net/atlx/atlx.c
+ create mode 100644 drivers/net/atlx/atlx.h
 
