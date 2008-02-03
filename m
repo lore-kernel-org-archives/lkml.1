@@ -1,95 +1,667 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbYBCVk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYBCVlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbYBCVk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 16:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYBCVkR
+	id S1754572AbYBCVlX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 16:41:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYBCVlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 16:40:17 -0500
-Received: from smtp1.cc.lut.fi ([157.24.2.30]:45216 "EHLO smtp1.cc.lut.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbYBCVkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 16:40:14 -0500
-Date: Sun, 3 Feb 2008 23:40:11 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Roskin <proski@gnu.org>
-Subject: Re: [PATCH v2] x86: Add a list for custom page fault handlers.
-Message-ID: <20080203234011.5f18ad21@daedalus.pq.iki.fi>
-In-Reply-To: <20080203070321.GA8293@elte.hu>
-References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
-	<1201660102.8837.9.camel@brick>
-	<1201660453.8837.13.camel@brick>
-	<20080130200827.322c4f7d@daedalus.pq.iki.fi>
-	<20080131150746.GB11996@elte.hu>
-	<20080131180253.6c007852@daedalus.pq.iki.fi>
-	<20080131081507.5edcde10@laptopd505.fenrus.org>
-	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
-	<20080203070321.GA8293@elte.hu>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+	Sun, 3 Feb 2008 16:41:07 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:48618 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752986AbYBCVlC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 16:41:02 -0500
+Subject: [PATCH] enclosure: add support for enclosure services
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-scsi <linux-scsi@vger.kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Content-Type: text/plain
+Date: Sun, 03 Feb 2008 15:40:56 -0600
+Message-Id: <1202074856.3318.111.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Feb 2008 08:03:21 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+The enclosure misc device is really just a library providing sysfs
+support for physical enclosure devices and their components.
 
-> i dont think this second problem is a practical one: i've test-merged 
-> mmiotrace two days ago into x86.git and it's holding up very well in my 
-> testing (it has not caused a single hickup so far). It's nice optional 
-> debug functionality and i dont see any reason why not to merge it.
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
 
-Good to hear!
+See the additional ses patch for SCSI enclosure services users of this.
 
-I've made some fixes since my last mmiotrace patch (v2). Rewritten things
-to use lookup_address(), added EXPORT_SYMBOL(lookup_address) into
-pageattr.c to make it work (this hopefully fixed the undefined symbol
-'init_mm' on x86-32), and fixed relay-buffer-full flags on SMP.
+---
+ drivers/misc/Kconfig      |   10 +
+ drivers/misc/Makefile     |    1 +
+ drivers/misc/enclosure.c  |  449 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/enclosure.h |  120 ++++++++++++
+ 4 files changed, 580 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/enclosure.c
+ create mode 100644 include/linux/enclosure.h
 
-> a few cleanup requests:
-> 
-> - please make the pagefault callbacks explicit as Arjan has asked
-
-What does this mean in practice? It should be able to call into a module,
-so the only thing I can come up with is a single settable function
-pointer. Just like I proposed in patch v2, but a function pointer instead
-of a list. Is this what you and Arjan suggest?
-We are talking about the hook in do_page_fault(), right?
-
-> - any reason why it lives in arch/x86/kernel/mmiotrace/? It should be a
->   prime-time member of arch/x86/mm/ i think.
-
-I was waiting for someone to comment on that, I didn't know what was the
-proper place. I'll move it into there.
-
-> - please make it build-in-able, not modules-only.
-
-Then I need a way to clear the relay buffers at some point. Currently
-they get cleared only on module unload. Maybe preferably also allocate
-and deallocate them dynamically. I've no idea how to do this yet, any
-pointers to examples?
-
-Hmm, I guess relay buffers could be allocated on the first intercepted
-call to ioremap, but then the userspace could not be started before
-hand, and at that point it is too late.
-
-Making it build-in-able will take so much time that I'd prefer to aim
-it for 2.6.26.
-
-> - [ longer-term: think about integrating pf_in.c with the x86
->     emulator/disassembler of KVM. ]
-
-Yikes. Like I replied to Arjan, it looks daunting.
-
-
-Thanks, I'll do what I can. When do you need the final (as for 2.6.25)
-mmiotrace patch, or is it going in as v2 and then we fix it in RCs?
-
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index b5e67c0..c6e5c09 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -11,6 +11,7 @@ menuconfig MISC_DEVICES
+ 
+ 	  If you say N, all options in this submenu will be skipped and disabled.
+ 
++
+ if MISC_DEVICES
+ 
+ config IBM_ASM
+@@ -232,4 +233,13 @@ config ATMEL_SSC
+ 
+ 	  If unsure, say N.
+ 
++config ENCLOSURE_SERVICES
++	tristate "Enclosure Services"
++	default n
++	help
++	  Provides support for intelligent enclosures (bays which
++	  contain storage devices).  You also need either a host
++	  driver (SCSI/ATA) which supports enclosures
++	  or a SCSI enclosure device (SES) to use these services.
++
+ endif # MISC_DEVICES
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 87f2685..de9f1f5 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -17,3 +17,4 @@ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
+ obj-$(CONFIG_THINKPAD_ACPI)	+= thinkpad_acpi.o
+ obj-$(CONFIG_FUJITSU_LAPTOP)	+= fujitsu-laptop.o
+ obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
++obj-$(CONFIG_ENCLOSURE_SERVICES) += enclosure.o
+\ No newline at end of file
+diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
+new file mode 100644
+index 0000000..e4683cd
+--- /dev/null
++++ b/drivers/misc/enclosure.c
+@@ -0,0 +1,449 @@
++/*
++ * Enclosure Services
++ *
++ * Copyright (C) 2008 James Bottomley <James.Bottomley@HansenPartnership.com>
++ *
++**-----------------------------------------------------------------------------
++**
++**  This program is free software; you can redistribute it and/or
++**  modify it under the terms of the GNU General Public License
++**  version 2 as published by the Free Software Foundation.
++**
++**  This program is distributed in the hope that it will be useful,
++**  but WITHOUT ANY WARRANTY; without even the implied warranty of
++**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++**  GNU General Public License for more details.
++**
++**  You should have received a copy of the GNU General Public License
++**  along with this program; if not, write to the Free Software
++**  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++**
++**-----------------------------------------------------------------------------
++*/
++#include <linux/device.h>
++#include <linux/enclosure.h>
++#include <linux/err.h>
++#include <linux/list.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++
++static LIST_HEAD(container_list);
++static DEFINE_MUTEX(container_list_lock);
++static struct class enclosure_class;
++static struct class enclosure_component_class;
++
++/**
++ * enclosure_find - find an enclosure given a device
++ * @dev:	the device to find for
++ *
++ * Looks through the list of registered enclosures to see
++ * if it can find a match for a device.  Returns NULL if no
++ * enclosure is found.
++ */
++struct enclosure_device *enclosure_find(struct device *dev)
++{
++	struct enclosure_device *edev = NULL;
++
++	mutex_lock(&container_list_lock);
++	list_for_each_entry(edev, &container_list, node) {
++		if (edev->cdev.dev == dev) {
++			mutex_unlock(&container_list_lock);
++			return edev;
++		}
++	}
++	mutex_unlock(&container_list_lock);
++
++	return NULL;
++}
++EXPORT_SYMBOL(enclosure_find);
++
++/**
++ * enclosure_for_each_device - calls a function for each enclosure
++ * @fn:		the function to call
++ * @data:	the data to pass to each call
++ *
++ * Loops over all the enclosures calling the function.
++ *
++ * Note, this function uses a mutex which will be held across calls to
++ * @fn, so it must have user context, and @fn should not sleep or
++ * otherwise cause the mutex to be held for indefinite periods
++ */
++int enclosure_for_each_device(int (*fn)(struct enclosure_device *, void *),
++			      void *data)
++{
++	int error = 0;
++	struct enclosure_device *edev;
++
++	mutex_lock(&container_list_lock);
++	list_for_each_entry(edev, &container_list, node) {
++		error = fn(edev, data);
++		if (error)
++			break;
++	}
++	mutex_unlock(&container_list_lock);
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(enclosure_for_each_device);
++
++/**
++ * enclosure_register - register device as an enclosure
++ *
++ * @dev:	device containing the enclosure
++ * @components:	number of components in the enclosure
++ *
++ * This sets up the device for being an enclosure.  Note that @dev does
++ * not have to be a dedicated enclosure device.  It may be some other type
++ * of device that additionally responds to enclosure services
++ */
++struct enclosure_device *
++enclosure_register(struct device *dev, const char *name, int components,
++		   struct enclosure_component_callbacks *cb)
++{
++	struct enclosure_device *edev =
++		kzalloc(sizeof(struct enclosure_device) +
++			sizeof(struct enclosure_component)*components,
++			GFP_KERNEL);
++	int err, i;
++
++	if (!edev)
++		return ERR_PTR(-ENOMEM);
++
++	if (!cb)
++		return ERR_PTR(-EINVAL);
++
++	edev->components = components;
++
++	edev->cdev.class = &enclosure_class;
++	edev->cdev.dev = get_device(dev);
++	edev->cb = cb;
++	snprintf(edev->cdev.class_id, BUS_ID_SIZE, "%s", name);
++	err = class_device_register(&edev->cdev);
++	if (err)
++		goto err;
++
++	for (i = 0; i < components; i++)
++		edev->component[i].number = -1;
++
++	mutex_lock(&container_list_lock);
++	list_add_tail(&edev->node, &container_list);
++	mutex_unlock(&container_list_lock);
++
++	return edev;
++
++ err:
++	put_device(edev->cdev.dev);
++	kfree(edev);
++	return ERR_PTR(err);
++}
++EXPORT_SYMBOL_GPL(enclosure_register);
++
++static struct enclosure_component_callbacks enclosure_null_callbacks;
++
++/**
++ * enclosure_unregister - remove an enclosure
++ *
++ * @edev:	the registered enclosure to remove;
++ */
++void enclosure_unregister(struct enclosure_device *edev)
++{
++	int i;
++
++	if (!edev)
++		return;
++
++	mutex_lock(&container_list_lock);
++	list_del(&edev->node);
++	mutex_unlock(&container_list_lock);
++
++	for (i = 0; i < edev->components; i++)
++		if (edev->component[i].number != -1)
++			class_device_unregister(&edev->component[i].cdev);
++
++	/* prevent any callbacks into service user */
++	edev->cb = &enclosure_null_callbacks;
++	class_device_unregister(&edev->cdev);
++}
++EXPORT_SYMBOL_GPL(enclosure_unregister);
++
++static void enclosure_release(struct class_device *cdev)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev);
++
++	put_device(cdev->dev);
++	kfree(edev);
++}
++
++static void enclosure_component_release(struct class_device *cdev)
++{
++	if (cdev->dev)
++		put_device(cdev->dev);
++	class_device_put(cdev->parent);
++}
++
++struct enclosure_component *
++enclosure_component_register(struct enclosure_device *edev,
++			     unsigned int number,
++			     enum enclosure_component_type type,
++			     const char *name)
++{
++	struct enclosure_component *ecomp;
++	struct class_device *cdev;
++	int err;
++
++	if (!edev || number >= edev->components)
++		return ERR_PTR(-EINVAL);
++
++	ecomp = &edev->component[number];
++
++	if (ecomp->number != -1)
++		return ERR_PTR(-EINVAL);
++
++	ecomp->type = type;
++	ecomp->number = number;
++	cdev = &ecomp->cdev;
++	cdev->parent = class_device_get(&edev->cdev);
++	cdev->class = &enclosure_component_class;
++	if (name)
++		snprintf(cdev->class_id, BUS_ID_SIZE, "%s", name);
++	else
++		snprintf(cdev->class_id, BUS_ID_SIZE, "%d", number);
++
++	err = class_device_register(cdev);
++	if (err)
++		ERR_PTR(err);
++
++	return ecomp;
++}
++EXPORT_SYMBOL_GPL(enclosure_component_register);
++
++int enclosure_add_device(struct enclosure_device *edev, int component,
++			 struct device *dev)
++{
++	struct class_device *cdev;
++
++	if (!edev || component >= edev->components)
++		return -EINVAL;
++
++	cdev = &edev->component[component].cdev;
++
++	class_device_del(cdev);
++	if (cdev->dev)
++		put_device(cdev->dev);
++	cdev->dev = get_device(dev);
++	return class_device_add(cdev);
++}
++EXPORT_SYMBOL_GPL(enclosure_add_device);
++
++int enclosure_remove_device(struct enclosure_device *edev, int component)
++{
++	struct class_device *cdev;
++
++	if (!edev || component >= edev->components)
++		return -EINVAL;
++
++	cdev = &edev->component[component].cdev;
++
++	class_device_del(cdev);
++	if (cdev->dev)
++		put_device(cdev->dev);
++	cdev->dev = NULL;
++	return class_device_add(cdev);
++}
++EXPORT_SYMBOL_GPL(enclosure_remove_device);
++
++/*
++ * sysfs pieces below
++ */
++
++static ssize_t enclosure_show_components(struct class_device *cdev, char *buf)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev);
++
++	return snprintf(buf, 40, "%d\n", edev->components);
++}
++
++static struct class_device_attribute enclosure_attrs[] = {
++	__ATTR(components, S_IRUGO, enclosure_show_components, NULL),
++	__ATTR_NULL
++};
++
++static struct class enclosure_class = {
++	.name			= "enclosure",
++	.owner			= THIS_MODULE,
++	.release		= enclosure_release,
++	.class_dev_attrs	= enclosure_attrs,
++};
++
++static char *enclosure_status [] = {
++	[ENCLOSURE_STATUS_UNSUPPORTED] = "unsupported",
++	[ENCLOSURE_STATUS_OK] = "OK",
++	[ENCLOSURE_STATUS_CRITICAL] = "critical",
++	[ENCLOSURE_STATUS_NON_CRITICAL] = "non-critical",
++	[ENCLOSURE_STATUS_UNRECOVERABLE] = "unrecoverable",
++	[ENCLOSURE_STATUS_NOT_INSTALLED] = "not installed",
++	[ENCLOSURE_STATUS_UNKNOWN] = "unknown",
++	[ENCLOSURE_STATUS_UNAVAILABLE] = "unavailable",
++};
++
++static char *enclosure_type [] = {
++	[ENCLOSURE_COMPONENT_DEVICE] = "device",
++	[ENCLOSURE_COMPONENT_ARRAY_DEVICE] = "array device",
++};
++
++static ssize_t get_component_fault(struct class_device *cdev, char *buf)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++
++	if (edev->cb->get_fault)
++		edev->cb->get_fault(edev, ecomp);
++	return snprintf(buf, 40, "%d\n", ecomp->fault);
++}
++
++static ssize_t set_component_fault(struct class_device *cdev, const char *buf,
++				   size_t count)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++	int val = simple_strtoul(buf, NULL, 0);
++
++	if (edev->cb->set_fault)
++		edev->cb->set_fault(edev, ecomp, val);
++	return count;
++}
++
++static ssize_t get_component_status(struct class_device *cdev, char *buf)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++
++	if (edev->cb->get_status)
++		edev->cb->get_status(edev, ecomp);
++	return snprintf(buf, 40, "%s\n", enclosure_status[ecomp->status]);
++}
++
++static ssize_t set_component_status(struct class_device *cdev, const char *buf,
++				   size_t count)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++	int i;
++
++	for (i = 0; enclosure_status[i]; i++) {
++		if (strncmp(buf, enclosure_status[i],
++			    strlen(enclosure_status[i])) == 0 &&
++		    buf[strlen(enclosure_status[i])] == '\n')
++			break;
++	}
++
++	if (enclosure_status[i] && edev->cb->set_status) {
++		edev->cb->set_status(edev, ecomp, i);
++		return count;
++	} else
++		return -EINVAL;
++}
++
++static ssize_t get_component_active(struct class_device *cdev, char *buf)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++
++	if (edev->cb->get_active)
++		edev->cb->get_active(edev, ecomp);
++	return snprintf(buf, 40, "%d\n", ecomp->active);
++}
++
++static ssize_t set_component_active(struct class_device *cdev, const char *buf,
++				   size_t count)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++	int val = simple_strtoul(buf, NULL, 0);
++
++	if (edev->cb->set_active)
++		edev->cb->set_active(edev, ecomp, val);
++	return count;
++}
++
++static ssize_t get_component_locate(struct class_device *cdev, char *buf)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++
++	if (edev->cb->get_locate)
++		edev->cb->get_locate(edev, ecomp);
++	return snprintf(buf, 40, "%d\n", ecomp->locate);
++}
++
++static ssize_t set_component_locate(struct class_device *cdev, const char *buf,
++				   size_t count)
++{
++	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++	int val = simple_strtoul(buf, NULL, 0);
++
++	if (edev->cb->set_locate)
++		edev->cb->set_locate(edev, ecomp, val);
++	return count;
++}
++
++static ssize_t get_component_type(struct class_device *cdev, char *buf)
++{
++	struct enclosure_component *ecomp = to_enclosure_component(cdev);
++
++	return snprintf(buf, 40, "%s\n", enclosure_type[ecomp->type]);
++}
++
++
++static struct class_device_attribute enclosure_component_attrs[] = {
++	__ATTR(fault, S_IRUGO | S_IWUSR, get_component_fault,
++	       set_component_fault),
++	__ATTR(status, S_IRUGO | S_IWUSR, get_component_status,
++	       set_component_status),
++	__ATTR(active, S_IRUGO | S_IWUSR, get_component_active,
++	       set_component_active),
++	__ATTR(locate, S_IRUGO | S_IWUSR, get_component_locate,
++	       set_component_locate),
++	__ATTR(type, S_IRUGO, get_component_type, NULL),
++	__ATTR_NULL
++};
++
++static struct class enclosure_component_class =  {
++	.name			= "enclosure_component",
++	.owner			= THIS_MODULE,
++	.class_dev_attrs	= enclosure_component_attrs,
++	.release		= enclosure_component_release,
++};
++
++static int __init enclosure_init(void)
++{
++	int err;
++
++	err = class_register(&enclosure_class);
++	if (err)
++		return err;
++	err = class_register(&enclosure_component_class);
++	if (err)
++		goto err_out;
++
++	return 0;
++ err_out:
++	class_unregister(&enclosure_class);
++
++	return err;
++}
++
++static void __exit enclosure_exit(void)
++{
++	class_unregister(&enclosure_component_class);
++	class_unregister(&enclosure_class);
++}
++
++module_init(enclosure_init);
++module_exit(enclosure_exit);
++
++MODULE_AUTHOR("James Bottomley");
++MODULE_DESCRIPTION("Enclosure Services");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/enclosure.h b/include/linux/enclosure.h
+new file mode 100644
+index 0000000..622177a
+--- /dev/null
++++ b/include/linux/enclosure.h
+@@ -0,0 +1,120 @@
++/*
++ * Enclosure Services
++ *
++ * Copyright (C) 2008 James Bottomley <James.Bottomley@HansenPartnership.com>
++ *
++**-----------------------------------------------------------------------------
++**
++**  This program is free software; you can redistribute it and/or
++**  modify it under the terms of the GNU General Public License
++**  version 2 as published by the Free Software Foundation.
++**
++**  This program is distributed in the hope that it will be useful,
++**  but WITHOUT ANY WARRANTY; without even the implied warranty of
++**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++**  GNU General Public License for more details.
++**
++**  You should have received a copy of the GNU General Public License
++**  along with this program; if not, write to the Free Software
++**  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++**
++**-----------------------------------------------------------------------------
++*/
++#ifndef _LINUX_ENCLOSURE_H_
++#define _LINUX_ENCLOSURE_H_
++
++#include <linux/device.h>
++#include <linux/list.h>
++
++/* A few generic types ... taken from ses-2 */
++enum enclosure_component_type {
++	ENCLOSURE_COMPONENT_DEVICE = 0x01,
++	ENCLOSURE_COMPONENT_ARRAY_DEVICE = 0x17,
++};
++
++/* ses-2 common element status */
++enum enclosure_status {
++	ENCLOSURE_STATUS_UNSUPPORTED = 0,
++	ENCLOSURE_STATUS_OK,
++	ENCLOSURE_STATUS_CRITICAL,
++	ENCLOSURE_STATUS_NON_CRITICAL,
++	ENCLOSURE_STATUS_UNRECOVERABLE,
++	ENCLOSURE_STATUS_NOT_INSTALLED,
++	ENCLOSURE_STATUS_UNKNOWN,
++	ENCLOSURE_STATUS_UNAVAILABLE,
++};
++
++/* SFF-8485 activity light settings */
++enum enclosure_component_setting {
++	ENCLOSURE_SETTING_DISABLED = 0,
++	ENCLOSURE_SETTING_ENABLED = 1,
++	ENCLOSURE_SETTING_BLINK_A_ON_OFF = 2,
++	ENCLOSURE_SETTING_BLINK_A_OFF_ON = 3,
++	ENCLOSURE_SETTING_BLINK_B_ON_OFF = 6,
++	ENCLOSURE_SETTING_BLINK_B_OFF_ON = 7,
++};
++
++struct enclosure_device;
++struct enclosure_component;
++struct enclosure_component_callbacks {
++	void (*get_status)(struct enclosure_device *,
++			     struct enclosure_component *);
++	int (*set_status)(struct enclosure_device *,
++			  struct enclosure_component *,
++			  enum enclosure_status);
++	void (*get_fault)(struct enclosure_device *,
++			  struct enclosure_component *);
++	int (*set_fault)(struct enclosure_device *,
++			 struct enclosure_component *,
++			 enum enclosure_component_setting);
++	void (*get_active)(struct enclosure_device *,
++			   struct enclosure_component *);
++	int (*set_active)(struct enclosure_device *,
++			  struct enclosure_component *,
++			  enum enclosure_component_setting);
++	void (*get_locate)(struct enclosure_device *,
++			   struct enclosure_component *);
++	int (*set_locate)(struct enclosure_device *,
++			  struct enclosure_component *,
++			  enum enclosure_component_setting);
++};
++
++
++struct enclosure_component {
++	void *scratch;
++	struct class_device cdev;
++	enum enclosure_component_type type;
++	int number;
++	int fault;
++	int active;
++	int locate;
++	enum enclosure_status status;
++};
++
++struct enclosure_device {
++	void *scratch;
++	struct list_head node;
++	struct class_device cdev;
++	struct enclosure_component_callbacks *cb;
++	int components;
++	struct enclosure_component component[0];
++};
++
++#define to_enclosure_device(x) container_of((x), struct enclosure_device, cdev)
++#define to_enclosure_component(x) container_of((x), struct enclosure_component, cdev)
++
++struct enclosure_device *
++enclosure_register(struct device *, const char *, int,
++		   struct enclosure_component_callbacks *);
++void enclosure_unregister(struct enclosure_device *);
++struct enclosure_component *
++enclosure_component_register(struct enclosure_device *, unsigned int,
++				 enum enclosure_component_type, const char *);
++int enclosure_add_device(struct enclosure_device *enclosure, int component,
++			 struct device *dev);
++int enclosure_remove_device(struct enclosure_device *enclosure, int component);
++struct enclosure_device *enclosure_find(struct device *dev);
++int enclosure_for_each_device(int (*fn)(struct enclosure_device *, void *),
++			      void *data);
++
++#endif /* _LINUX_ENCLOSURE_H_ */
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+1.5.3.8
+
+
+
