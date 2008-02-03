@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933824AbYBCOfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYBCPG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933824AbYBCOfc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 09:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbYBCOfW
+	id S1756273AbYBCPG6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 10:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYBCPGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 09:35:22 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:8925 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755152AbYBCOfV (ORCPT
+	Sun, 3 Feb 2008 10:06:49 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:33927 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbYBCPGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 09:35:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DYV4DI3VFRzzC7KDyzqE9kKIqr55InURAKxsTiJbIZNmIlKBFn7XdWyNShs/vNY/tx3I46+7/8lNcoWijR5KFwyrsatJ3cxbX7XCMvZCSadnZHWiHZ+SuBVuSEafGysdGDBmbR0whNbC0q0XWd8oZfbULYnHgfWk5s0yTAz428I=
-Message-ID: <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>
-Date: Sun, 3 Feb 2008 16:35:18 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christer Weinigel" <christer@weinigel.se>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Cc: "Greg KH" <greg@kroah.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080203124849.0226560f@weinigel.se>
+	Sun, 3 Feb 2008 10:06:48 -0500
+Message-ID: <47A5D895.20300@davidnewall.com>
+Date: Mon, 04 Feb 2008 01:37:01 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
+In-Reply-To: <20080202191930.GA19826@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se>
-	 <20080202191930.GA19826@kroah.com>
-	 <20080203124849.0226560f@weinigel.se>
-X-Google-Sender-Auth: 862f5c5675f077c0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christer,
+Greg KH wrote:
+> It comes down to the simple fact, if you wish to use Linux, abide by the
+> license it comes under.  To do otherwise is both disenginous and
+> illegal[1].
 
-On Feb 3, 2008 1:48 PM, Christer Weinigel <christer@weinigel.se> wrote:
-> Saying "use BSD" instead isn't a good answer for me since I don't know
-> BSD well enough.  And personally, I want to see Linux everywhere; I
-> think it's a lot better to have Linux + a proprietary driver in an
-> embedded system than BSD or Windows CE.
+I think you're being dishonest.  This isn't really about Linux and it
+being licensed under GPL, is it?  Not if you're being 100% honest.  This
+is really about Beejay's* kernel module; and you are attempting to force
+her to release that under GPL.  You should 'fess up, that the change is
+0% technical, 0% unavoidable and 100% political.  This does, of course,
+disadvantage Linux with respect to many classes of devices, for example
+GSM transceivers when used in those parts of the world^ where regulatory
+requirements prohibit modification of power or frequency settings, which
+effectively prohibits open-source driver.
 
-Why are we discussing this again? The Linux kernel is distributed
-under the GPLv2 and even though there are some legal gray areas
-regarding derived work (think nvidia and ati binary blobs here), the
-license is not friendly towards proprietary drivers at all.
-Furthermore, many of the _kernel developers_ do not support
-proprietary drivers, so why do you insist on using Linux for that
-purpose?
+An unbending bias towards GPL is impractical in many markets.  It also
+hands an additional point or two of market share to Microsoft; who no
+doubt will be immensely grateful.
 
-Seriously, you really really want to look at the BSDs or proprietary
-operating systems because they support your needs much better.
-
-                        Pekka
+*The fictitious author of an imaginary driver.
+^Probably all of the world.
