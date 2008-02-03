@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935898AbYBCGCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936113AbYBCGCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935898AbYBCGCF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 01:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYBCGBy
+	id S936113AbYBCGCc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 01:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYBCGCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 01:01:54 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:58402 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbYBCGBx (ORCPT
+	Sun, 3 Feb 2008 01:02:20 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:41496 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbYBCGCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 01:01:53 -0500
-Message-ID: <47A558CF.60702@kernel.org>
-Date: Sat, 02 Feb 2008 22:01:51 -0800
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 3 Feb 2008 01:02:19 -0500
+Message-ID: <f73f7ab80802022202s2c695a8fjea20e5092e9c5dcc@mail.gmail.com>
+Date: Sun, 3 Feb 2008 01:02:18 -0500
+From: "Kyle Moffett" <kyle@moffetthome.net>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] Allow NBD to be used locally
+Cc: devzero@web.de, Laurent.Vivier@bull.net, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz
+In-Reply-To: <Pine.LNX.4.64.0802021834380.18790@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH] per-process securebits
-References: <47A2D439.9050704@kernel.org> <20080201002837.d84fc029.akpm@linux-foundation.org>
-In-Reply-To: <20080201002837.d84fc029.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <141350930@web.de>
+	 <Pine.LNX.4.64.0802021834380.18790@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Whoops, only hit "Reply" on the first email, sorry Jan.
 
-Andrew Morton wrote:
-| On Fri, 01 Feb 2008 00:11:37 -0800 "Andrew G. Morgan"
-<morgan@kernel.org> wrote:
-|
-|> [This patch represents a no-op unless CONFIG_SECURITY_FILE_CAPABILITIES
-|>  is enabled at configure time.]
-|
-| Patches like this scare the pants off me.
+On Feb 2, 2008 7:54 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> On Feb 2 2008 18:31, devzero@web.de wrote:
+> >
+> >> How will that work? Fuse makes up a filesystem - not helpful
+> >> if you have a raw disk without a known fs to mount.
+> >
+> >take zfs-fuse or ntfs-3g for example.
+> >you have a blockdevice or backing-file containing data structures and fuse makes those show up as a filesystem.
+> >i think vmware-mount is not different here.
+>
+> vmware-mount IS different, it provides the _block_ device,
+> which is then mounted through the usual mount(2) mechanism
+> (if there is a filesystem driver for it).
 
-Nice to know I'm not being mediocre! :-D
+As far as I can tell, vmware-mount should be re-implemented as a
+little perl script around "dmsetup" and/or "losetup", possibly with
+"dm-userspace" patched into the kernel to allow you to handle
+non-mapped blocks in your userspace daemon when somebody tries to
+access them.  If you don't need that ability then straight dm-loop and
+dm-linear will work.
 
-| I'd have to recommend that distributors not enable this feature (if we
-| merge it) until they have 100% convinced themselves that it is 100%
-| correct.
-
-FWIW I'm in complete agreement if you are referring to
-CONFIG_SECURITY_FILE_CAPABILITIES and not just this patch...
-
-As to the rest, the short version:
-
-* The sendmail thing was a subtle problem trying to map setuid(non-0)
-into a capability framework. The long and the short of it was that an
-unprivileged user could prevent a privileged application from exercising
-all of the privilege it needed and getting root access as a result.
-
-* I'm saying setuid(0) apps will most definitely continue to be
-supported by a kernel even with CONFIG_SECURITY_FILE_CAPABILITIES=y. All
-the patch does is make it possible for a capable(CAP_SETPCAP) process to
-declare itself as the parent of a process tree in which that is not the
-case.
-
-Here is the very very long version (which took some time to write, and I
-thought was a bit much to spam these lists with):
-
-http://userweb.kernel.org/~morgan/sendmail-capabilities-war-story.html
-
-Cheers
-
-Andrew
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFHpVjP+bHCR3gb8jsRAsMtAJ9XqR0yaeY8O3F8/nCdoALPksKZOQCg06/7
-pJOZRfMORnI8YfIcta5nVLw=
-=Rpj4
------END PGP SIGNATURE-----
+Cheers,
+Kyle Moffett
