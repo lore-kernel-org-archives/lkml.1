@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936232AbYBCGRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936269AbYBCGSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936232AbYBCGRu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 01:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbYBCGRk
+	id S936269AbYBCGSf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 01:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbYBCGS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 01:17:40 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:36042 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbYBCGRj (ORCPT
+	Sun, 3 Feb 2008 01:18:26 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42554 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756393AbYBCGSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 01:17:39 -0500
-Date: Sat, 02 Feb 2008 22:24:47 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] pcie AER: don't check _OSC when acpi is disabled
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, greg@kroah.com
-Message-id: <200802022224.47400.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Sun, 3 Feb 2008 01:18:25 -0500
+Date: Sat, 2 Feb 2008 22:18:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] per-process securebits
+Message-Id: <20080202221812.2f9d70a8.akpm@linux-foundation.org>
+In-Reply-To: <47A558CF.60702@kernel.org>
+References: <47A2D439.9050704@kernel.org>
+	<20080201002837.d84fc029.akpm@linux-foundation.org>
+	<47A558CF.60702@kernel.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] pcie AER: don't check _OSC when acpi is disabled
+On Sat, 02 Feb 2008 22:01:51 -0800 "Andrew G. Morgan" <morgan@kernel.org> wrote:
 
-when acpi=off or pci=noacpi, get warning
+> Here is the very very long version (which took some time to write, and I
+> thought was a bit much to spam these lists with):
+> 
+> http://userweb.kernel.org/~morgan/sendmail-capabilities-war-story.html
 
-AER service couldn't init device 0000:00:0a.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:00:0e.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:00:0f.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:80:0b.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:80:0e.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:80:0f.0:pcie01 - no _OSC support
+Thanks.  Imagine not testing the retrn value from something like setuid().
+Oh well.  The reasoning for disabling it was good.
 
-so don't check _OSC in aer_osc_setup
+So how do we ever get to the stage where we can recommend that distributors
+turn these things on, and have them agree with us?
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
-index 8c199ae..7e53fa5 100644
---- a/drivers/pci/pcie/aer/aerdrv_acpi.c
-+++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
-@@ -33,6 +33,9 @@ int aer_osc_setup(struct pcie_device *pciedev)
- 	struct pci_dev *pdev = pciedev->port;
- 	acpi_handle handle = 0;
- 
-+	if (acpi_pci_disabled)
-+		return -1;
-+
- 	/* Find root host bridge */
- 	while (pdev->bus && pdev->bus->self)
- 		pdev = pdev->bus->self;
+Do we have sufficiently stern things in place to prevent them from turning
+it on by accident?  Some of them are pretty gung-ho.
