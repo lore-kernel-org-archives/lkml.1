@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751561AbYBCFFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYBCFGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751561AbYBCFFm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 00:05:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbYBCFFc
+	id S1753882AbYBCFGV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 00:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYBCFGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 00:05:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48099 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYBCFFb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 00:05:31 -0500
-Date: Sat, 2 Feb 2008 21:03:10 -0800
-From: Greg KH <greg@kroah.com>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Heikki Orsila <shdl@zakalwe.fi>, linux-kernel@vger.kernel.org,
-       mpm@selenic.com, ak@suse.de, m-ikeda@ds.jp.nec.com, zhongyu@18mail.cn,
-       minchan.kim@gmail.com
-Subject: Re: [PATCH] Improve Documentation/stable_api_nonsense.txt v2
-Message-ID: <20080203050310.GA23824@kroah.com>
-References: <20080202144457.653482BC98@zakalwe.fi> <20080203002249.GB3453@kroah.com> <200802021952.37848.dhazelton@enter.net>
+	Sun, 3 Feb 2008 00:06:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33093 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751628AbYBCFGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 00:06:06 -0500
+Date: Sun, 3 Feb 2008 06:05:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Brownell <david-b@pacbell.net>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] sleepy linux self-test
+Message-ID: <20080203050537.GA18942@elte.hu>
+References: <20080130131748.GA3796@elf.ucw.cz> <20080202193202.GB31621@elf.ucw.cz> <20080202193843.GB32039@elte.hu> <200802021837.17777.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802021952.37848.dhazelton@enter.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200802021837.17777.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 07:52:37PM -0500, Daniel Hazelton wrote:
-> On Saturday 02 February 2008 19:22:49 Greg KH wrote:
-> > On Sat, Feb 02, 2008 at 04:44:57PM +0200, Heikki Orsila wrote:
-> <snip>
-> > > @@ -145,6 +145,10 @@ as small as possible, and that all potential
-> > > interfaces are tested as well as they can be (unused interfaces are
-> > > pretty much impossible to test for validity.)
-> > >
-> > > +However, changing an interface can be delicate work and it can take
-> > > +significant amount of developer effort. Therefore, an interface is
-> > > +not changed unless the change is regarded as very important by the
-> > > +developers.
-> > >
-> > >  What to do
-> > >  ----------
-> >
-> > I still don't understand why you want to add these sentances.  Why are
-> > they needed?  Are people thinking that the kernel developers just
-> > randomly change things just because they are bored and have nothing else
-> > to do at the moment?  Do people think that our changes are gratuitous?
-> >
-> > Even so, I don't think this needs to be added, we have already stated
-> > many good reasons why changing apis are necessary and good.  Do need to
-> > add another one?
-> >
+
+* David Brownell <david-b@pacbell.net> wrote:
+
+> On Saturday 02 February 2008, Ingo Molnar wrote:
+> > 
+> > * Pavel Machek <pavel@ucw.cz> wrote:
+> > 
+> > > > It would have been easier to just use the public interface and 
+> > > > hard-wire "rtc0".  But going directly to the hardware was dirtier, 
+> > > > and more in the spirit of "hack that obviously shouldn't go upstream 
+> > > > until it gets done properly".
+> > > 
+> > > Yes, it was "quick and dirty". And I do not think it is going upstream 
+> > > in this form...?
+> > 
+> > which would be a pity - this thing _almost_ started doing suspend and 
+> > resume cycles on my testsystems, all by itself :-)
 > 
-> Actually, Greg, a hell of a lot of people that don't track linux kernel 
-> development do think that way. And there are always going to be people that 
-> think that way.
+> OK, here's a version that's cleaner and suspends.  Resuming ... 
+> another story, it's currently broken on this ARM board (no 
+> relationship to this testing code).
 
-So why would to more sentances trying to say "see, we really do know
-what we are doing, we aren't idiots" make things any better to these
-people?  (hint, it wouldn't...)
+yay! Threw this into my setup. It built fine with the new option 
+disabled and enabled as well. Unfortunately it said this:
 
-> As it stands the recommended paragraph does clarify that, while the interfaces 
-> aren't stable, can and will change as needed, there are some core interfaces 
-> that *WON'T* change without a very good reason.
+[   23.509562] Calling initcall 0xc0c49e00: be_sleepy+0x0/0x170()
+[   23.515837] PM: no wakelarm-capable RTC
+[   23.517562] initcall 0xc0c49e00: be_sleepy+0x0/0x170() returned 0.
 
-Again, do you think we kernel developers just randomly change core apis
-because we are bored and want something to do late at night when we
-can't sleep and are tired of playing Rock Band?
+(oh, btw., a small typo: s/wakelarm/wakealarm/)
 
-> Having such a public statement that anyone can see and people can
-> point to is another weapon to help people fight the FUD that exists
-> around Linux.
+is "wakealarm" something generally available on PC RTCs? I'll try to 
+look into the BIOS setup, maybe it's just disabled ...
 
-The whole article explains why apis are change for very good reasons
-(evolution of hardware, security, we now know better, etc.)  That's the
-whole point of the document...
-
-thanks,
-
-greg k-h
+	Ingo
