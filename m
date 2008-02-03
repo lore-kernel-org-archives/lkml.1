@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935010AbYBCArE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935468AbYBCAsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935010AbYBCArE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 19:47:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYBCAqx
+	id S935468AbYBCAsm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 19:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYBCAsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 19:46:53 -0500
-Received: from simmts8-srv.bellnexxia.net ([206.47.199.166]:38866 "EHLO
-	simmts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751741AbYBCAqw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 19:46:52 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAB6dpEecIplu/2dsb2JhbAAIrE8
-Message-ID: <47A50EF8.6020507@gmail.com>
-Date: Sat, 02 Feb 2008 20:46:48 -0400
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Automated Kernel Testing
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 2 Feb 2008 19:48:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:51082 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752008AbYBCAse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 19:48:34 -0500
+Date: Sun, 3 Feb 2008 01:48:28 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       Benedikt Spranger <b.spranger@linutronix.de>
+Subject: [PATCH] Remove needless PCI_DEVICE_ID definition from uio_cif.c
+Message-ID: <20080203014828.579d6504@dilbert.local>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hans J. Koch <hjk@linutronix.de>
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Benedikt Spranger <b.spranger@linutronix.de>
+Subject: Remove needless PCI_DEVICE_ID definition from uio_cif.c
+Date: Sun, 03 Feb 2008 01:37:58 +0100
 
-Hi Ingo & Andrew,
+Meanwhile, PCI_DEVICE_ID_PLX_9030 is defined in pci_ids.h, no need to
+define it again in the driver.
 
-Since you both seem to be quite interested in the number of kernel
-testers and the reporting of bugs, I figured I would bounce this idea
-off of you...
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-As a part-time kernel tester, I find it interesting to see that Ingo has
-tools that are able to automatically configure/build/boot/test kernels,
-and it has given me the following ideas:
+---
+ drivers/uio/uio_cif.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-- For people like me, it would be great if there were a downloadable
-collection of tools for performing similar testing on my box here
-whenever I'm not using it.
-- The tools could build a kernel, boot it, run some standard tests, and
-report any problems automatically.
-- The kernel oops web site and auto-submit tool seems like it would be a
-very good companion to the testing tools (if you don't already have them
-integrated).
-- In the future, I would expect that a SETI@Home-style testing package
-could be integrated into distribution repositories so that users could
-do automatic testing (build testing for people scared about data loss,
-and boot testing as well for those not worried).
-
-I would be happy to help out with the work in developing this set of
-tools (as far as my limited skills allow), but I have a feeling that you
-already have most of it in some form.  I think the final piece is just
-the integration and marketing so that the barrier to kernel testing gets
-lowered considerably.
-
-Does this seem like a reasonable idea, or is it something that you
-already had in mind (that it just took me longer to see)?
-
--- 
-Kevin Winchester
+Index: linux-2.6.25-rc/drivers/uio/uio_cif.c
+===================================================================
+--- linux-2.6.25-rc.orig/drivers/uio/uio_cif.c	2008-02-03
+01:29:55.000000000 +0100 +++
+linux-2.6.25-rc/drivers/uio/uio_cif.c	2008-02-03
+01:31:00.000000000 +0100 @@ -15,10 +15,6 @@ 
+ #include <asm/io.h>
+ 
+-#ifndef PCI_DEVICE_ID_PLX_9030
+-#define PCI_DEVICE_ID_PLX_9030	0x9030
+-#endif
+-
+ #define PLX9030_INTCSR		0x4C
+ #define INTSCR_INT1_ENABLE	0x01
+ #define INTSCR_INT1_STATUS	0x04
