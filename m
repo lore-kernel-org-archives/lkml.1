@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964800AbYBCDdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935706AbYBCDoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964800AbYBCDdk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 22:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933240AbYBCDdc
+	id S935706AbYBCDoA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 22:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbYBCDnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 22:33:32 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44820
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933231AbYBCDdb (ORCPT
+	Sat, 2 Feb 2008 22:43:49 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:51251 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbYBCDns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 22:33:31 -0500
-Date: Sun, 3 Feb 2008 04:33:18 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-Message-ID: <20080203033318.GE7185@v2.random>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random> <20080203031457.GA16127@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080203031457.GA16127@sgi.com>
+	Sat, 2 Feb 2008 22:43:48 -0500
+Date: Sat, 02 Feb 2008 22:43:13 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [BUG] 2.6.24 refuses to boot - ATA problem?
+In-reply-to: <47A51AD7.3070102@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chris Rankin <rankincj@yahoo.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <200802022243.13710.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <745427.71265.qm@web52907.mail.re2.yahoo.com>
+ <47A51AD7.3070102@garzik.org>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 02, 2008 at 09:14:57PM -0600, Jack Steiner wrote:
-> Also, most (but not all) applications that use the GRU do not usually do
-> anything that requires frequent flushing (fortunately). The GRU is intended
-> for HPC-like applications. These don't usually do frequent map/unmap
-> operations or anything else that requires a lot of flushes.
-> 
-> I expect that KVM is a lot different.
+On Saturday 02 February 2008, Jeff Garzik wrote:
+>Chris Rankin wrote:
+>> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+>> res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata1.00: status: { DRDY }
+>> ata1: soft resetting link
+>> ata1.00: configured for UDMA/66
+>> ata1: EH complete
+>> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+>> res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata1.00: status: { DRDY }
+>> ata1: soft resetting link
+>
+>Had at least one other report like this...  Sleepiness prevents me from
+>recalling more at the moment, but I think the other report was fixed
+>with a special ACPI switch...
+>
+I think that one came from me, but it also gets over 14,000 hits on google.
 
-I don't think so. invalidate_page/pages/range_start,end is a slow and
-unfrequent path for KVM (or alternatively the ranges are very small in
-which case _range_start/end won't payoff compared to _pages). Whenever
-invalidate_page[s] become a fast path, we're generally I/O
-bound. get_user_pages is always the fast path instead. I thought it
-was much more important that get_user_pages scale as well as it does
-now and that the KVM page fault isn't serialized with a mutex, than
-whatever invalidate side optimization. get_user_pages may run
-frequently from all vcpus even if there are no invalidates and no
-memory pressure and I don't mean only during startup.
+Now Jeff, here is the strange part.  That error was killing me, many times 
+an hour and eventually crashing completely, repeatedly.
 
-> I have most of the GRU code working with the latest mmuops patch. I still
-> have a list of loose ends that I'll get to next week. The most important is
-> the exact handling of the range invalidates. The code that I currently have
-> works (mostly) but has a few endcases that will cause problems. Once I
-> finish, I'll be glad to send you snippets of the code (or all of it) if you
-> would like to take a look.
+I applied that kernel argument acpi_use_timer_override once and have not 
+had the error since, and that includes one test of a full let it cool for 
+a minute powerdown reboot to see if it would come back, which it did not.
 
-Sure.
+That argument causes the kernel to log this as its responding to that command:
+
+[   27.097095] ENABLING IO-APIC IRQs
+[   27.097287] ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+[   27.107291] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+[   27.107343] ...trying to set up timer (IRQ0) through the 8259A ...  failed.
+[   27.107346] ...trying to set up timer as Virtual Wire IRQ... failed.
+[   27.117353] ...trying to set up timer as ExtINT IRQ... works.
+
+The last 4 lines above are not logged without that argument.  So my theory ATM
+is that this forced the kernel to initialize something in the boards
+registers that it does not initialize without that command, and that its
+going fubar as shown in the msg quoted above is a totally random thing, perhaps 
+dependent on the phase of one of jupiters moons as to what state it powers 
+up in.  And I got lucky, so far in that my single powerdown reset didn't 
+trigger it again...  And you _know_ what that knocking sound is by now. :)
+ 
+That's my admittedly hardware oriented view of the goings on.  But I also
+think it should be a good clue as to what piece of the acpi code
+needs walked around in and its tires kicked again, with an eye toward 
+making that item a wee bit more intelligently done.  If you can cobble
+up something that will extract the data and prove what fails, I'll be 
+glad to play guinea pig.  With ccache, a kernel build is < 15 minutes to
+actually running it.
+
+My $0.02 in 1934 dollars.  Adjust for inflation since.
+
+>/me puts in pile for Monday...
+>
+>	Jeff
+
+Thanks Jeff.  I'm glad to see that this isn't scheduled to 'fall through
+the cracks' as does happen when folks get busy.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+What!?  Me worry?
+		-- Alfred E. Newman
