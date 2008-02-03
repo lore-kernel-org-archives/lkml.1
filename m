@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936339AbYBCH5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932883AbYBCH6C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936339AbYBCH5Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 02:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759499AbYBCH5S
+	id S932883AbYBCH6C (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 02:58:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936052AbYBCH5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 02:57:18 -0500
-Received: from gate.crashing.org ([63.228.1.57]:46498 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759479AbYBCH5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 02:57:17 -0500
-Subject: Re: [PATCH] Fix ext4 bitops
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bastian Blank <bastian@waldi.eu.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080201200240.GA28566@wavehammer.waldi.eu.org>
-References: <20080201200240.GA28566@wavehammer.waldi.eu.org>
-Content-Type: text/plain
-Date: Sun, 03 Feb 2008 18:36:38 +1100
-Message-Id: <1202024198.7208.9.camel@pasglop>
+	Sun, 3 Feb 2008 02:57:52 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:53984 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759499AbYBCH5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 02:57:51 -0500
+Date: Sun, 3 Feb 2008 01:57:49 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpuset: sparse warnings in cpuset.c
+Message-Id: <20080203015749.1cbf2b83.pj@sgi.com>
+In-Reply-To: <1202024543.1844.57.camel@brick>
+References: <1202019619.1844.52.camel@brick>
+	<20080203012815.05a50b13.pj@sgi.com>
+	<1202024543.1844.57.camel@brick>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Harvey wrote:
+> Don't redeclare p, use a new variable q.
 
-On Fri, 2008-02-01 at 21:02 +0100, Bastian Blank wrote:
-> Fix ext4 bitops.
+You dah man!  Thanks.
 
-Please provide a better description, as it's not obvious at first sight.
+Acked-by: Paul Jackson <pj@sgi.com>
 
-> Signed-off-by: Bastian Blank <waldi@debian.org>
-> 
-> diff --git a/include/asm-powerpc/bitops.h b/include/asm-powerpc/bitops.h
-> index 220d9a7..d0980df 100644
-> --- a/include/asm-powerpc/bitops.h
-> +++ b/include/asm-powerpc/bitops.h
-> @@ -363,6 +363,8 @@ unsigned long generic_find_next_le_bit(const unsigned long *addr,
->  				    unsigned long size, unsigned long offset);
->  /* Bitmap functions for the ext2 filesystem */
->  
-> +#include <asm-generic/bitops/le.h>
-
-A comment would be useful to indicate that this defines the _le versions
-of the bitops as it would be easy to mistake that for something else.
-
->  #define ext2_set_bit(nr,addr) \
->  	__test_and_set_le_bit((nr), (unsigned long*)addr)
->  #define ext2_clear_bit(nr, addr) \
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
