@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935093AbYBCMfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936043AbYBCMfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935093AbYBCMfQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 07:35:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbYBCMfE
+	id S936043AbYBCMfh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 07:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935263AbYBCMfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 07:35:04 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37134 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752470AbYBCMfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 07:35:03 -0500
-Date: Sun, 3 Feb 2008 13:35:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: rename module scx200_32 to scx200
-Message-ID: <20080203123506.GG20810@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sun, 3 Feb 2008 07:35:21 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56607 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763705AbYBCMfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 07:35:19 -0500
+Date: Sun, 3 Feb 2008 13:35:18 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.24
+In-Reply-To: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0802031331360.16441@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The module scx200 were renamed to scx200_32 by the
-merge of the 32 and 64 bit x86 arch trees.
 
-Keep the _32 prefix on the .c file as it is 32 bit
-specific and fix the module name in the Makefile.
+On Jan 24 2008 15:17, Linus Torvalds wrote:
+>
+>The release is out there (both git trees and as tarballs/patches), and for 
+>the next week many kernel developers will be at (or flying into/out of) 
+>LCA in Melbourne, so let's hope it's a good one.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
----
+|type commit
+|tag v2.6.24
+|tagger Linus Torvalds <...> 1201215533 -0800
+|
+|Linux 2.6.24
+|
+|No new name? What's up with that? Have we run out of ridiculous animals
+|or human behaviour? Talk like a pirate day was long long ago.  We need
+|the bug-free Weasel-series naming back!
 
-Found during audit for this issue.
-One other file uses module_init: vmiclock_32.c
-But this file cannot be build as a module with present
-configuration.
-
-Build time tested only but obviously correct.
-
-	Sam
-
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 6f81300..55106aa 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -74,7 +74,8 @@ ifdef CONFIG_INPUT_PCSPKR
- obj-y				+= pcspeaker.o
- endif
- 
--obj-$(CONFIG_SCx200)		+= scx200_32.o
-+obj-$(CONFIG_SCx200)		+= scx200.o
-+scx200-y			+= scx200_32.o
- 
- ###
- # 64 bit specific files
+What happened to the cunning ideas of http://lkml.org/lkml/2006/5/25/120 !
