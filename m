@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762463AbYBCR0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbYBCRfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762463AbYBCR0l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 12:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758589AbYBCR0d
+	id S1759960AbYBCRfd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 12:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYBCRfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 12:26:33 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:57395 "EHLO pasmtpA.tele.dk"
+	Sun, 3 Feb 2008 12:35:24 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:38873 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758061AbYBCR0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 12:26:33 -0500
-Date: Sun, 3 Feb 2008 18:26:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: section breakage on ppc64 (aka __devinitconst is broken by design)
-Message-ID: <20080203172635.GA2275@uranus.ravnborg.org>
-References: <20080203130844.GS27894@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080203130844.GS27894@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	id S1754946AbYBCRfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 12:35:23 -0500
+Message-ID: <47A5FB58.8040404@garzik.org>
+Date: Sun, 03 Feb 2008 12:35:20 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Peter Teoh <htmldeveloper@gmail.com>
+CC: Wenji Huang <wenji.huang@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: LPFC compilation error in 2.6.24-git12/git13
+References: <47A58B05.6010702@oracle.com>	 <804dabb00802030320s5d60a871kbae9f48d67380384@mail.gmail.com> <804dabb00802030325v12cb95cen75179941fa4443cb@mail.gmail.com>
+In-Reply-To: <804dabb00802030325v12cb95cen75179941fa4443cb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 03, 2008 at 01:08:44PM +0000, Al Viro wrote:
-> ; cat >a.c <<'EOF'
-> const char foo[] __attribute__ ((__section__(".blah"))) = "";
-> const char * const bar __attribute__((__section__(".blah"))) = "";
-> EOF
-> ; gcc -m32 -S a.c
-> ; gcc -m64 -S a.c
-> a.c:2: error: bar causes a section type conflict
-> ;
+Peter Teoh wrote:
+> --- lpfc_init.c.old     2008-02-03 19:26:20.000000000 +0800
+> +++ drivers/scsi/lpfc/lpfc_init.c       2008-02-03 19:26:42.000000000 +0800
+> @@ -1894,7 +1894,7 @@ lpfc_pci_probe_one(struct pci_dev *pdev,
+>         uint16_t iotag;
+>         int bars = pci_select_bars(pdev, IORESOURCE_MEM);
 > 
-> That's 4.1.2 on ppc.  What happens is that the second declaration
-> wants to make .blah writable.  We actually trigger that in ppc64
-> builds on drivers/net/natsemi.c.
-> 
-> Note that on ppc64 without explicit sections you have the second one land in
-> .data.rel.ro.local, which is "aw",progbits.
-> 
-> The reason why it didn't visibly bite us before is that usually __devinit...
-> just expanded to nothing (unless you disable HOTPLUG, which requires
-> EMBEDDED, which wasn't apparently common enough for ppc64 builds).
-> 
-> Suggestions?
+> -       if (pci_enable_device_bars(pdev, bars))
+> +       if (pci_enable_device_io(pdev))
+>                 goto out;
 
-Hi Al.
 
-__devinitconst were invented to cover this issue.
-So use __devinitconst for const data and 
-__devinitdata for non-const data.
+As already discussed and pointed out on LKML and linux-scsi, this is the 
+wrong change.  Look at the line above the one you changed -- we want mem 
+not io.
 
-We recently had breakage in mainline with x86 64 bit
-(sis190) for the exact same case.
+	Jeff
 
-Does this work in your ppc example or do we need
-to find another solution?
 
-	Sam
