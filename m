@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbYBCPnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbYBCPt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759927AbYBCPnf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 10:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYBCPnZ
+	id S1760297AbYBCPt3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 10:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbYBCPtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 10:43:25 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:44871 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753380AbYBCPnY convert rfc822-to-8bit (ORCPT
+	Sun, 3 Feb 2008 10:49:21 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:43580 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbYBCPtT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 10:43:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=mIstDQFpcEvxwMkdLLN+UFAMGOC0yqiUUv5ZEz243luza+II1U4PjYuhxUygUJOe8wadPVYhftWNCaX3dr9WBHmZWMSwZRbv1QSdTQkntXGpLXF6XNexOvFuFheYGqh2ByDUsyQ5ctfu4S9Z2IW2/u8MaTZmFe8bGBx/bynHmzk=
-Message-ID: <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-Date: Sun, 3 Feb 2008 17:43:24 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Cc: "Greg KH" <greg@kroah.com>, "Christer Weinigel" <christer@weinigel.se>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47A5D9CD.5070001@davidnewall.com>
+	Sun, 3 Feb 2008 10:49:19 -0500
+Date: Sun, 3 Feb 2008 16:49:09 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ADB: Add missing #include <linux/platform_device.h>
+Message-ID: <Pine.LNX.4.64.0802031647560.27760@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se>
-	 <20080202191930.GA19826@kroah.com> <47A5D9CD.5070001@davidnewall.com>
-X-Google-Sender-Auth: 8b3a4241d3184a0c
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+ADB: Add missing #include <linux/platform_device.h>
 
-On Feb 3, 2008 5:12 PM, David Newall <davidn@davidnewall.com> wrote:
-> By the way, I'm almost certain that the COPYING file is the first, last
-> and only document specifying licence conditions, and nothing in that
-> prevents a proprietary driver from including a patch that, for example,
-> globally replaces ALL GPL-only symbols by the less restrictive ones.
+Commit c9f6d3d5c6d4f4cd3a53549a69c92951180e2a76
 
-So I am going to assume you're not trolling here (although some of
-your snarky remarks make that bit hard).
+    [POWERPC] adb: Replace sleep notifier with platform driver suspend/resume hooks
 
-A vendor is, of course, allowed to distribute a patch (under the GPLv2
-proper) that removes the license checks no doubt‚ but it doesn't
-change the fact whether the actual driver they're distributing (under
-a proprietary license) is derived work or not (one way or another).
-And, _if_ you're distributing a derived work that is not under the
-GPLv2, you're breaking the law. I think we can agree on this?
+introduced compile errors on m68k because <linux/platform_device.h> is not
+explicitly included.  On powerpc, it's pulled in through <asm/prom.h>.
 
-As there is some controversy over the definition of derived work
-(think Linus' comments on porting a driver or a filesystem from
-another operating system here), we use the EXPORT_SYMBOL_GPL
-annotations as a big warning sign that what you're doing is likely to
-be considered as a derived work. If the USB developers want to
-annotate their code with EXPORT_SYMBOL_GPL, why the hell do you want
-to argue about it? They know the code better than you and as copyright
-holders they can actually sue those parties distributing proprietary
-code they think is derived work.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/macintosh/adb.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Bringing up Linux world domination or Microsoft market share in these
-kind of discussion is totally pointless. The license is what it is
-(GPLv2) and it seems unlikely to change at this point. If you want to
-develop for Linux, you're most certainly better off always
-distributing your code under the GPLv2; otherwise you really really
-want to consult an IP lawyer to be sure. But what I don't understand
-is why people insist using the Linux kernel for something it clearly
-can never really properly support (proprietary code)?
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -36,6 +36,7 @@
+ #include <linux/completion.h>
+ #include <linux/device.h>
+ #include <linux/kthread.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/semaphore.h>
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
