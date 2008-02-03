@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936510AbYBCJdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936382AbYBCJkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936510AbYBCJdh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 04:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759058AbYBCJd2
+	id S936382AbYBCJkG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 04:40:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759322AbYBCJjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 04:33:28 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:50046 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758917AbYBCJd1 (ORCPT
+	Sun, 3 Feb 2008 04:39:55 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:44055 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758917AbYBCJjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 04:33:27 -0500
-Message-ID: <15251802.post@talk.nabble.com>
-Date: Sun, 3 Feb 2008 01:33:26 -0800 (PST)
-From: Martin Bauer <bluescreen@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Oops in evdev_disconnect for kernel 2.6.23.12
-In-Reply-To: <15239145.post@talk.nabble.com>
+	Sun, 3 Feb 2008 04:39:54 -0500
+Message-ID: <47A58B05.6010702@oracle.com>
+Date: Sun, 03 Feb 2008 17:36:05 +0800
+From: Wenji Huang <wenji.huang@oracle.com>
+User-Agent: Mozilla Thunderbird 1.0.8-1.4.1 (X11/20060420)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: bluescreen@web.de
-References: <477A93CD.9030707@rrz.uni-koeln.de> <20080105065233.GE27894@ZenIV.linux.org.uk> <47801D70.8020504@uni-koeln.de> <20080106001756.GP27894@ZenIV.linux.org.uk> <47812E5B.6080000@uni-koeln.de> <20080106201559.GU27894@ZenIV.linux.org.uk> <478144E4.501@uni-koeln.de> <20080106234528.GV27894@ZenIV.linux.org.uk> <47829192.7030403@uni-koeln.de> <15239145.post@talk.nabble.com>
+To: linux-kernel@vger.kernel.org
+Subject: LPFC compilation error in 2.6.24-git12/git13
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hello,
+ Found compilation error in 2.6.24-git12/git13:
 
-ok the problem has been solved. It was really to late yesterday... I found
-the two patches and applied those.  Because I had another error with the
-Areca kernel modul I did some mistakes in my test...
+  CC [M]  drivers/scsi/lpfc/lpfc_mem.o
+  CC [M]  drivers/scsi/lpfc/lpfc_sli.o
+  CC [M]  drivers/scsi/lpfc/lpfc_ct.o
+  CC [M]  drivers/scsi/lpfc/lpfc_els.o
+  CC [M]  drivers/scsi/lpfc/lpfc_hbadisc.o
+  CC [M]  drivers/scsi/lpfc/lpfc_init.o
+drivers/scsi/lpfc/lpfc_init.c: In function ‘lpfc_pci_probe_one':
+drivers/scsi/lpfc/lpfc_init.c:1897: error: implicit declaration of 
+function ‘pci_enable_device_bars'
+make[3]: *** [drivers/scsi/lpfc/lpfc_init.o] Error 1
+make[2]: *** [drivers/scsi/lpfc] Error 2
+make[1]: *** [drivers/scsi] Error 2
+make: *** [drivers] Error 2
 
-Sorry...
+pci_enable_device_bars is removed in commit 
+215e871aaa3d94540121a3809d80d0c5e5686e4f.
 
-Regards
-Martin
-
-
-Martin Bauer wrote:
-> 
-> I saw that you have problems with Ooops in evdev_disconnect. My problem is
-> similar I have a USB KVM switch and if I switch beetween computers U got a
-> Oops in evdev_disconnect (the first one is Kernel 2.6.23.12 and the second
-> Kernel 2.6.24, both has this problem). My question is, can you tell me
-> which two patches you have applied to solve the problem? I didn't found
-> the right thing?
-> 
-
--- 
-View this message in context: http://www.nabble.com/Oops-in-evdev_disconnect-for-kernel-2.6.23.12-tp14569588p15251802.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+Regards,
+Wenji
