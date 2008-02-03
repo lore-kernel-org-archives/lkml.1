@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762241AbYBCRHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbYBCRKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762241AbYBCRHO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 12:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbYBCRHA
+	id S1762693AbYBCRKA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 12:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757302AbYBCRJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 12:07:00 -0500
-Received: from h155.mvista.com ([63.81.120.155]:54918 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756664AbYBCRHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 12:07:00 -0500
-Message-ID: <47A5F4E8.2000403@ru.mvista.com>
-Date: Sun, 03 Feb 2008 20:07:52 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sun, 3 Feb 2008 12:09:52 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:43033 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757045AbYBCRJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 12:09:51 -0500
+From: Christian =?iso-8859-15?q?Borntr=E4ger?= 
+	<christian@borntraeger.net>
+To: Jack Byer <ojbyer@usa.net>
+Subject: Re: 2.6.24 module problem
+Date: Sun, 3 Feb 2008 18:09:48 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <fo4p9v$ve7$1@ger.gmane.org>
+In-Reply-To: <fo4p9v$ve7$1@ger.gmane.org>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] ide: remove write-only ->sata_misc[] from ide_hwif_t
-References: <200802020145.40429.bzolnier@gmail.com>
-In-Reply-To: <200802020145.40429.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802031809.48369.christian@borntraeger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Am Sonntag, 3. Februar 2008 schrieb Jack Byer:
+> PAX: modprobe:752, uid/euid: 0/0, invalid execution attempt at 
 
-Bartlomiej Zolnierkiewicz wrote:
+This looks like an issue with PAX - grsecurity@grsecurity.net might be a 
+better list to ask.
 
-> * Remove write-only ->sata_misc[] from ide_hwif_t.
-
-> * Remove no longer used SATA_{MISC,PHY,IEN}_OFFSET defines.
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
+Christian
