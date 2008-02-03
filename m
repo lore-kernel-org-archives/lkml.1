@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933662AbYBCNIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936170AbYBCNI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933662AbYBCNIR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 08:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760925AbYBCNIF
+	id S936170AbYBCNI4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 08:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934319AbYBCNIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 08:08:05 -0500
-Received: from hu-out-0506.google.com ([72.14.214.236]:64170 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759292AbYBCNIE (ORCPT
+	Sun, 3 Feb 2008 08:08:47 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45496 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764556AbYBCNIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 08:08:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=I2yw0XlSDt7/4AlTgVbbHiBtcBvujFJd81u9fBYQlsogpE5imOvBvF4dmF999eMgcmjWReCma9/UDkdS5eXWdLT/L3IcGWM4xRh/7CEzhR5eBXpTysHjNfcwQFfTl37rTnJ+2kSHLnKDTevxf3V/EIaac4rkmQY0t03ZifUdDMY=
-Date: Sun, 3 Feb 2008 16:07:40 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+	Sun, 3 Feb 2008 08:08:46 -0500
+Date: Sun, 3 Feb 2008 13:08:44 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, bryan.wu@analog.com,
-       hskinnemoen@atmel.co, dhowells@redhat.com
-Subject: Re: [patch 0/4] cleanup - use _AC macro to define PAGE_SIZE
-Message-ID: <20080203130740.GA11983@cvg>
-References: <47a5a65d.03eb300a.07b8.130e@mx.google.com> <20080203122239.GF20810@uranus.ravnborg.org>
-MIME-Version: 1.0
+Cc: linux-kernel@vger.kernel.org
+Subject: section breakage on ppc64 (aka __devinitconst is broken by design)
+Message-ID: <20080203130844.GS27894@ZenIV.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080203122239.GF20810@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Sun, Feb 03, 2008 at 01:22:39PM +0100]
-| On Sun, Feb 03, 2008 at 02:22:17PM +0300, Cyrill Gorcunov wrote:
-| > This patch series removes code duplication for PAGE_SIZE
-| > definition on various architectures.
-| > 
-| > Please review. Any comments are welcome. *UNTESTED*
-| 
-| Looks good.
-| Could you do a followup patch for each architecture introducing
-| use of PAGE_SIZE in their respective kernel/vmlinux.lds.S too?
-| I think more than your 4 listed architectures could need this fix.
-| 
-| 	Sam
-| 
+; cat >a.c <<'EOF'
+const char foo[] __attribute__ ((__section__(".blah"))) = "";
+const char * const bar __attribute__((__section__(".blah"))) = "";
+EOF
+; gcc -m32 -S a.c
+; gcc -m64 -S a.c
+a.c:2: error: bar causes a section type conflict
+;
 
-a bit *later* I mean (was a misprint ;)
+That's 4.1.2 on ppc.  What happens is that the second declaration
+wants to make .blah writable.  We actually trigger that in ppc64
+builds on drivers/net/natsemi.c.
 
-		- Cyrill -
+Note that on ppc64 without explicit sections you have the second one land in
+.data.rel.ro.local, which is "aw",progbits.
+
+The reason why it didn't visibly bite us before is that usually __devinit...
+just expanded to nothing (unless you disable HOTPLUG, which requires
+EMBEDDED, which wasn't apparently common enough for ppc64 builds).
+
+Suggestions?
