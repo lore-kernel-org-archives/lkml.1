@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbYBCX7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYBCX7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbYBCX7W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 18:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYBCX7L
+	id S1755441AbYBCX7g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 18:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYBCX7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 18:59:11 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35215 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753773AbYBCX7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 18:59:09 -0500
-Date: Mon, 4 Feb 2008 00:59:27 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 3 Feb 2008 18:59:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42119 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753917AbYBCX7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 18:59:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: wakeup code translated to .c
+Date: Mon, 4 Feb 2008 00:57:23 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: kernel list <linux-kernel@vger.kernel.org>,
        Linux-pm mailing list <linux-pm@lists.osdl.org>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: wakeup code translated to .c
-Message-ID: <20080203235927.GK2799@elf.ucw.cz>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802040020.14836.rjw@sisk.pl> <20080203233313.GF2799@elf.ucw.cz> <200802040054.43863.rjw@sisk.pl>
+References: <20080130120111.GB22820@elf.ucw.cz> <200802032333.02821.rjw@sisk.pl> <20080203235722.GI2799@elf.ucw.cz>
+In-Reply-To: <20080203235722.GI2799@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802040054.43863.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200802040057.24429.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Monday, 4 of February 2008, Pavel Machek wrote:
+> Hi!
+> 
+> > - Could the real mode directory be called just "real-mode" or something like
+> >   this ("rm" is not very meaningful :-))?
+> > 
+> > Apart from the above and the _WAKEUP hacks mentioned elsewhere, it looks okay
+> > (from a very high orbit).
+> 
+> Wakeup hacks? You mean those #ifdef WAKEUP in video code?
 
-> BTW, I don't like the way in which the 'struct wakeup_header' fields are
-> reproduced in rm/wakeup.S very much, because it makes the code fragile.
-> It might be better to define the offsets in asm-offsets*.c and refer to them
-> relative to wakeup_header (if possible).
+Yes.
 
-If you can do that.. yes, that would be nice. I triple-checked it, but
-indeed is fragile.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+[I'm not sure if that could be done differently, though.  Surely hpa knows ;-)]
+
+Rafael
