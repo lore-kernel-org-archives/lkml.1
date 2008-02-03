@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbYBCS0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYBCS1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534AbYBCS0s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 13:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYBCS0k
+	id S1753088AbYBCS1S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 13:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYBCS1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 13:26:40 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40742 "EHLO ogre.sisk.pl"
+	Sun, 3 Feb 2008 13:27:01 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:41356 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYBCS0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 13:26:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: wakeup code translated to .c
-Date: Sun, 3 Feb 2008 19:24:44 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20080130120111.GB22820@elf.ucw.cz> <200802031857.02422.rjw@sisk.pl> <20080203181648.GA1629@elf.ucw.cz>
-In-Reply-To: <20080203181648.GA1629@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1750809AbYBCS1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 13:27:00 -0500
+Date: Sun, 3 Feb 2008 21:29:52 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Miklos Szeredi <mszeredi@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
+Message-ID: <20080203182952.GB5827@tv-sign.ru>
+References: <20080130142014.GA2164@tv-sign.ru> <1201712101.31222.22.camel@tucsk.pomaz.szeredi.hu> <20080130172646.GA2355@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802031924.44592.rjw@sisk.pl>
+In-Reply-To: <20080130172646.GA2355@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 3 of February 2008, Pavel Machek wrote:
-> Hi!
-> 
-> > > This version works on 32-bit, and builds on 64-bit (but I'm pretty
-> > > sure it does not work. 32-bit code probably needs to go into rm/....)
-> > > 
-> > 
-> > Do you have an updated version or is this the latest one?
-> 
-> I'm glad you ask ;-). Here's reasonably-recent version (I have
-> slightly cleaner one, but it got obscured by 2.6.24-git merge), I
-> eventually got it to work on 64-bit, by reusing trampoline.S code.
+Off-topic question to all. sys_remap_file_pages() doesn't work with
+shared readonly mappings, why?
 
-Thanks, I'll have a look and test it a bit.
+IOW, why it checks VM_SHARED but not VM_MAYSHARE?
 
-Rafael
+Thanks in advance,
+
+Oleg.
+
