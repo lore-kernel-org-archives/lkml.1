@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933469AbYBCN0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbYBCNiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933469AbYBCN0F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 08:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYBCNZy
+	id S932235AbYBCNiU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 08:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYBCNiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 08:25:54 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63867 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753042AbYBCNZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 08:25:53 -0500
-Date: Sun, 3 Feb 2008 14:25:06 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, bryan.wu@analog.com,
-       dhowells@redhat.com, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [patch 1/4] AVR32: cleanup - use _AC macro to define PAGE_SIZE
-Message-ID: <20080203142506.2003e5cf@siona>
-In-Reply-To: <47a5a660.19e7300a.0584.329a@mx.google.com>
-References: <20080203112217.126814108@gmail.com>
-	<47a5a660.19e7300a.0584.329a@mx.google.com>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 3 Feb 2008 08:38:09 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:48686 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbYBCNiH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 08:38:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=CBBNPLdbz8ywsNV3SiEYPs4rauTHgQPtH1JxDvaVGjon1zCTodzaZS/RW4huHlzRm4TD1/WM8DG4xs6YhEtBaQjUGEaxh5d3dzN1x9UJA76QfGpJg+ZiT/QtanURptkJW+WtZ7DRbuZSz3oqwdJJErgfxYZGkwbjAl53u+EUZGc=
+Message-ID: <2f11576a0802030538j4ad57469g22a04a7cb54bdcd1@mail.gmail.com>
+Date: Sun, 3 Feb 2008 22:38:04 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Jon Masters" <jonathan@jonmasters.org>
+Subject: Re: Kernel Event Notifications (was: [RFC] Parallelize IO for e2fsck)
+Cc: "Al Boldi" <a1426z@gawab.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <1201562634.5412.70.camel@jcmlaptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9Mo9w-7Ws-25@gated-at.bofh.it> <20080124234037.GJ15858@mit.edu>
+	 <2f11576a0801260432y4405d817p6ef4005d06189654@mail.gmail.com>
+	 <200801261655.31313.a1426z@gawab.com>
+	 <1201562634.5412.70.camel@jcmlaptop>
+X-Google-Sender-Auth: d9ff1d67e478beb1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[removed bogus @atmel.co address from Cc]
+Hi Jon
 
-On Sun, 03 Feb 2008 14:22:18 +0300
-Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> I looked at this a year or two back, then ran out of time. But the thing
+> I wanted to do was have libc's memory allocation routines extended to
+> handle these through reservations - the kernel should send a userspace
+> notification and then there should be some kind of concept of returning
+> memory that's been used for "opportunistic" userspace caching, e.g. in
+> firefox to cache the last 10 web pages. Let us know how you get on :)
 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+sorry for late response.
+(I didn't notice your mail ;-)
 
-Applied, thanks.
+You are right...
+stupid user space caching is very important problem.
 
-I found myself having to grep through include/linux to figure out what
-this _AC macro was really all about, so I added this to the description:
+but I think this is no libc problem.
+glibc malloc hardly caches the memory.
+(its default behavior only caching 128K.)
 
-    PAGE_SIZE is used both from assembly and C code. We want to have type
-    specifiers when using it from C, but this will make the assembler
-    confused, so we need to make it conditional.
-    
-    This is exactly what the _AC macro is for, so using it allows us to
-    get rid of a few lines of cpp noise.
+but some application use large memory for too opportunistic caching.
+I understood we need propagandize that using mem_notify to application guys
+after it merge mainline.
 
-My first thought was "Autoconf", and it sent shivers down my spine ;-)
-
-Haavard
+I have no idea of solve it easily.
