@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934492AbYBCBdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935490AbYBCBhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934492AbYBCBdh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 20:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYBCBd2
+	id S935490AbYBCBhj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 20:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbYBCBhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 20:33:28 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48081
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753947AbYBCBd1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 20:33:27 -0500
-Date: Sun, 3 Feb 2008 02:33:23 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 1/3] mmu_notifier: Core code
-Message-ID: <20080203013323.GA7185@v2.random>
-References: <20080131045750.855008281@sgi.com> <20080131045812.553249048@sgi.com> <20080201035249.GE26420@sgi.com> <Pine.LNX.4.64.0801311957250.17649@schroedinger.engr.sgi.com>
+	Sat, 2 Feb 2008 20:37:31 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:42753 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754243AbYBCBha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 20:37:30 -0500
+Message-ID: <47A51AD7.3070102@garzik.org>
+Date: Sat, 02 Feb 2008 20:37:27 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801311957250.17649@schroedinger.engr.sgi.com>
+To: Chris Rankin <rankincj@yahoo.com>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] 2.6.24 refuses to boot - ATA problem?
+References: <745427.71265.qm@web52907.mail.re2.yahoo.com>
+In-Reply-To: <745427.71265.qm@web52907.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 07:58:40PM -0800, Christoph Lameter wrote:
-> Ok. Andrea wanted the same because then he can void the begin callouts.
+Chris Rankin wrote:
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+> res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: soft resetting link
+> ata1.00: configured for UDMA/66
+> ata1: EH complete
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+> res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata1.00: status: { DRDY }
+> ata1: soft resetting link
 
-Exactly. I hope the page-pin will avoid me having to serialize the KVM
-page fault against the start/end critical section.
 
-BTW, I wonder if the start/end critical section API is intended to
-forbid scheduling inside it. In short I wonder if GRU can is allowed
-to take a spinlock in _range_start as last thing before returning, and
-to release that same spinlock in _range_end as first thing, and not to
-be forced to use a mutex.
+Had at least one other report like this...  Sleepiness prevents me from 
+recalling more at the moment, but I think the other report was fixed 
+with a special ACPI switch...
+
+/me puts in pile for Monday...
+
+	Jeff
+
+
