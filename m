@@ -1,104 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYBCUz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbYBCVCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYBCUz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 15:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYBCUzU
+	id S1753293AbYBCVCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 16:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbYBCVCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 15:55:20 -0500
-Received: from mail1.key-systems.net ([81.3.43.211]:48131 "HELO
-	mail1.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752035AbYBCUzS (ORCPT
+	Sun, 3 Feb 2008 16:02:10 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46578 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbYBCVCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 15:55:18 -0500
-Subject: data corruption with dmcrypt/LUKS
-From: Christoph Anton Mitterer <calestyo@scientia.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 03 Feb 2008 15:50:37 +0100
-Message-Id: <1202050237.3200.33.camel@fermat.scientia.net>
+	Sun, 3 Feb 2008 16:02:09 -0500
+Date: Sun, 3 Feb 2008 21:02:08 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: section breakage on ppc64 (aka __devinitconst is broken by design)
+Message-ID: <20080203210208.GU27894@ZenIV.linux.org.uk>
+References: <20080203130844.GS27894@ZenIV.linux.org.uk> <20080203172635.GA2275@uranus.ravnborg.org> <20080203180234.GT27894@ZenIV.linux.org.uk> <20080203203002.GD2648@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080203203002.GD2648@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sun, Feb 03, 2008 at 09:30:02PM +0100, Sam Ravnborg wrote:
+> And I'm suprised to see that gcc thinks bar is writeable.
+> If I try to assign it gcc error out as expected.
 
-I think I've found a bug somewhere in dm-crypt...
+That's because "not modifiable" and "goes into r/o section" are not the
+same thing.  The former belongs to C and is target-independent, of course.
+The latter is up to implementation, except that modifiable objects
+obviously *can not* go into r/o.  You are not guaranteed the reverse.
 
-First of all the system that I use:
-Debian (sid) with kernel 2.26.24 on AMD64 (intel core2 duo), 2GB RAM
+> We could invent a __initstr annotation but I dunno if that would suffice.
+> Do you see any pattern when gcc do the r/w choice compared to the
+> r/o choise. Maybe it is only const char[] that happens to be considered
+> r/o and the rest is r/w?
 
-For several days now I try to fully encrypt that system (that is, all
-partitions are encrypted an I boot from an USB stick)
-There are two errors that appear always and always again but first of
-all an explanation how I setup everything:
-/dev/sda1 is my unencrypted debian installation
-/dev/sda2 is the partition that will hold the encrypted root
-/dev/sda3 is swap
+On ppc64 relocs => r/w, AFAICS.  On other targets we might have any number
+of other rules.
+ 
+> Should a gcc-bug be filed for this btw?
 
-I boot from an USB stick (with the same debian sid/2.6.24 kernel as
-on /dev/sda1) which is /dev/sdb(1).
-The key itself is on /dev/sdc (also an USB stick)
+Why?  gcc is entirely within its rights - it's not even a matter of ABI,
+it's way below that.  Note that you are meddling with section assignment
+rules and those are target-dependent, so target-independent overrides
+are nowhere near being promised to work.
 
-How I've made the key:
-dd if=/dev/random of=/tmp/KEY count=32 bs=1
+Frankly, "do not ever make __initdata et.al. const" is probably the best
+we can do - adding __initconst, __initconst_but_has_relocs,
+__initconst_but_has_something_that_puts_it_into_writable_on_this_weird_target,
+__initconst_but_has_something_that_puts_it_into_writable_on_that_weird_target,
+etc. is not feasible - we'll keep getting portability bugs all the time since
+nobody will remember all rules (or care about ones that do not apply on
+amd64).
 
-How I've formatted sda2:
-cryptsetup --verbose --cipher aes-cbc-essiv:sha256 --key-size 256
---iter-time 10000 luksFormat /dev/sda2 /tmp/KEY
-cryptsetup --key-file /tmp/KEY luksOpen /dev/sda2 sda2
-mkfs.ext3 /dev/mapper/sda2
-cryptsetup luksClose sda2
-
-<reboot>
-<create mappings and mount everything again>
-
-cp -a /mnt/unencrypted /mnt/encrypted/
-
-<when I diff -q -r /mnt/unencrypted /mnt/encrypted/ here, everything is
-ok but this is just, because those files are still cached in RAM>
-<unmount + close mapping + reboot>
-<create mappings and mount everything again>
-
-Here's the first problem:
-1) When I now diff the two versions again (the unencrypted and the one
-from the encrypted partition) I get differences...
-I'm quite sure that this is not due to damaged RAM or harddisk (checked
-several times with memtest and badblocks) and the corruption is always
-the same, although not fully reproducibly.
-The filesystem tree itself seems to be the same on both discs (but I'm
-not sure if the permissions and owners are copied correctly), but there
-are differences in some (though not all) files.
-The difference is always the same, that for one or more bytes of the
-affected files, the hexcode is reduced by 0x10
-That is:
-If the file contains a byte "T" (0x74) on the unencrypted partition it
-will have a "D" (0x64) on the encrypted.
-
-I've first recognized this bug some weeks ago, when I used a 2.6.18
-kernel on my boot+copy USB-stick (/dev/sdb) but I thought this might be
-a bug in that pretty old version...
-But now it even happens with 2.6.24...
-
-2) The second bug happens only rarely and leads to a panic.
-Unfortunately it's difficult to reproduce, but it always happened when I
-mkfs.ext3 on the /dev/mapper/sda2.
-There's a stack-trace printed which clearly involves some dmcrypt
-lines...
-
-
-Unfortunately this bug makes dm-crypt completely unusable for me (and
-everybody who needs correctness for his data ;-) )
-
-I'd ask you to run your own (massive) copying tests and report here if
-you can reproduce that error.
-
-Best wishes,
-Chris.
-
-btw: are there any other currently known bugs in dmcrypt? Or is it
-considered as "production stable"?
-
-
+Suppose we have an array of ad-hoc structs with a bunch of ints
+in those.  Used only in ->probe(), so __devinitdata.  Constant, so
+__devinitconst (and no special per-target rules trigger on the current
+struct contents).  Fast forward half a year; somebody adds a string field
+to those.  Oops - suddenly it's __devinitconst_but_has_relocs, but author
+of that patch has never heard of ppc64 oddities; on all targets he knows
+__devinitconst still works fine.
