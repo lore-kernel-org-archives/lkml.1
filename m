@@ -1,38 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934836AbYBCALa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935416AbYBCAMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934836AbYBCALa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Feb 2008 19:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbYBCALW
+	id S935416AbYBCAMa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Feb 2008 19:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYBCAMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Feb 2008 19:11:22 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36668 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755937AbYBCALV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Feb 2008 19:11:21 -0500
-Date: Sat, 2 Feb 2008 16:10:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Russell Leidich" <rml@google.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Torsten Kaiser" <just.for.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>, valdis.kletnieks@vt.edu,
-       "Tim Hockin" <thockin@google.com>
-Subject: Re: [PATCH] AMD Thermal Interrupt Support
-Message-Id: <20080202161057.b240f443.akpm@linux-foundation.org>
-In-Reply-To: <3f1a065b0801171706o57ae5d6w8a986db508ddcee4@mail.gmail.com>
-References: <3f1a065b0801021350x7fd065fbj9680ce1a4f3c6538@mail.gmail.com>
-	<20080104222637.GA19248@one.firstfloor.org>
-	<3f1a065b0801041653y77c27a8cvce703cb7d13e10a0@mail.gmail.com>
-	<20080105132402.GA705@one.firstfloor.org>
-	<3f1a065b0801051208y7e832e8ctda61f28e6328dec3@mail.gmail.com>
-	<3f1a065b0801081542p6cca6249g35e83f7e1f450fbd@mail.gmail.com>
-	<20080108235212.GE2117@one.firstfloor.org>
-	<3f1a065b0801081828y4b084a52g1db9bcb8821cb3da@mail.gmail.com>
-	<20080109023714.GK2117@one.firstfloor.org>
-	<3f1a065b0801101821k71ea7523l5024f12abb50357f@mail.gmail.com>
-	<3f1a065b0801171706o57ae5d6w8a986db508ddcee4@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 2 Feb 2008 19:12:22 -0500
+Received: from www.tglx.de ([62.245.132.106]:42919 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751031AbYBCAMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Feb 2008 19:12:21 -0500
+Date: Sun, 3 Feb 2008 01:12:07 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: Denis Cheng <crquan@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       cr_quan@163.com
+Subject: Re: [PATCH 1/3] uio: Kconfig improvements
+Message-ID: <20080203011207.292de4c3@dilbert.local>
+In-Reply-To: <1201945897-32297-1-git-send-email-crquan@gmail.com>
+References: <1201945897-32297-1-git-send-email-crquan@gmail.com>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -40,33 +27,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 17:06:33 -0800 "Russell Leidich" <rml@google.com> wrote:
+Am Sat,  2 Feb 2008 17:51:35 +0800
+schrieb Denis Cheng <crquan@gmail.com>:
 
-> > Here's the hopefully-final version of the patch, which I have just
-> > tested on Intel and AMD.
+Agreed.
 
-Curious.  This just broke.
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
 
-i386 allmodconfig:
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-arch/x86/kernel/cpu/mcheck/p4.o: In function `smp_thermal_interrupt':
-arch/x86/kernel/cpu/mcheck/p4.c:61: multiple definition of `smp_thermal_interrupt'
-arch/x86/kernel/cpu/mcheck/mce_thermal.o:arch/x86/kernel/cpu/mcheck/mce_thermal.c:17: first defined here
-/opt/crosstool/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-ld: Warning: size of symbol `smp_thermal_interrupt' changed from 4 in arch/x86/kernel/cpu/mcheck/mce_thermal.o to 43 in arch/x86/kernel/cpu/mcheck/p4.o
-/opt/crosstool/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-ld: Warning: type of symbol `smp_thermal_interrupt' changed from 1 to 2 in arch/x86/kernel/cpu/mcheck/p4.o
-
-In mainline we just did this:
-
---- linux-2.6.24/arch/x86/kernel/cpu/mcheck/p4.c        2008-02-01 14:29:18.000000000 -0800
-+++ devel/arch/x86/kernel/cpu/mcheck/p4.c       2008-02-02 15:38:06.000000000 -0800
-@@ -57,7 +57,7 @@ static void intel_thermal_interrupt(stru
- /* Thermal interrupt handler for this CPU setup */
- static void (*vendor_thermal_interrupt)(struct pt_regs *regs) = unexpected_thermal_interrupt;
- 
--fastcall void smp_thermal_interrupt(struct pt_regs *regs)
-+void smp_thermal_interrupt(struct pt_regs *regs)
-
-which I think was always wrong and has just now tripped up the linker.  I
-_assume_ that function should be __attribute__((weak)).  Then again, maybe
-I'm full of it.  But hey, it compiles now.
-
+> ---
+>  drivers/uio/Kconfig |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+> index b778ed7..d8ab7e6 100644
+> --- a/drivers/uio/Kconfig
+> +++ b/drivers/uio/Kconfig
+> @@ -1,8 +1,6 @@
+> -menu "Userspace I/O"
+> -	depends on !S390
+> -
+> -config UIO
+> +menuconfig UIO
+>  	tristate "Userspace I/O drivers"
+> +	depends on !S390
+>  	default n
+>  	help
+>  	  Enable this to allow the userspace driver core code to be
+> @@ -13,6 +11,8 @@ config UIO
+>  
+>  	  If you don't know what to do here, say N.
+>  
+> +if UIO
+> +
+>  config UIO_CIF
+>  	tristate "generic Hilscher CIF Card driver"
+>  	depends on UIO && PCI
+> @@ -26,4 +26,4 @@ config UIO_CIF
+>  	  To compile this driver as a module, choose M here: the
+> module will be called uio_cif.
+>  
+> -endmenu
+> +endif
