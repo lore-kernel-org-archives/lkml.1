@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbYBCSdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbYBCSeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbYBCSdj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 13:33:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbYBCSdc
+	id S1752914AbYBCSeX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 13:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYBCSeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 13:33:32 -0500
-Received: from simmts8.bellnexxia.net ([206.47.199.166]:39846 "EHLO
-	simmts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750743AbYBCSdb (ORCPT
+	Sun, 3 Feb 2008 13:34:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:24536 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbYBCSeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 13:33:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAACOYpUecIvlD/2dsb2JhbAAIqzU
-Message-ID: <47A608F8.5080206@gmail.com>
-Date: Sun, 03 Feb 2008 14:33:28 -0400
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Latest -git ioremap error
-References: <47A606B5.7090001@gmail.com>
-In-Reply-To: <47A606B5.7090001@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Feb 2008 13:34:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=jyE3qbmVqplnIYKSqXnwM9Xc8/dewj2dYQBqo++g2zXu6a/htYwXgZ8Z1XdaqwANL4Jsz0QCezHdEFBmBvGpMbx5VkzWGgXcwAtjJkC0JAP1qEwvMM1zL3CxcwMYEXDkJfSeGv/2SKTtn9Tt0BFQtgocA17zlSUYICAj+VeerZw=
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Jan Kara <jack@suse.cz>, Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH 0/6] udf: next round of cleanups
+Date: Sun,  3 Feb 2008 19:33:45 +0100
+Message-Id: <1202063631-18145-1-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: git-send-email 1.5.3.7
+From: marcin.slusarz@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Winchester wrote:
-> Hi Thomas, Ingo,
-> 
-> I noticed that my direct rendering is no longer working, with the
-> following in my dmesg:
-> 
-> [    0.588184] agpgart: Detected AGP bridge 0
-> [    0.588184] agpgart: unable to get memory for graphics translation table.
-> [    0.588184] agpgart: agp_backend_initialize() failed.
-> [    0.588207] agpgart-amd64: probe of 0000:00:00.0 failed with error -12
-> 
-> Tracking down the error somewhat with added printks leads to the
-> following block in __ioremap():
-> 
-> 
-> /*
->  * Don't allow anybody to remap normal RAM that we're using..
->  */
-> for (offset = phys_addr >> PAGE_SHIFT; offset < max_pfn_mapped &&
->      (offset << PAGE_SHIFT) < last_addr; offset++) {
->         if (page_is_ram(offset))
->                 return NULL;
-> }
-> 
-> 
-> And git blame lead me to the following commit:
-> 
-> commit 266b9f8727976769e2ed2dad77ac9295f37e321e
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Wed Jan 30 13:34:06 2008 +0100
-> 
->     x86: fix ioremap RAM check
-> 
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> 
+Hi
 
-Lucky first try - reverting this commit fixes the problem for me.  Any
-ideas?
+This patchset contains next round of various UDF fs cleanups.
 
--- 
-Kevin Winchester
+[PATCH 1/6] udf: udf_get_block, inode_bmap - remove unneeded checks
 
+[PATCH 2/6] udf: create function for conversion from timestamp to timespec
+[PATCH 3/6] udf: convert udf_stamp_to_time to return struct timespec
+[PATCH 4/6] udf: convert udf_stamp_to_time and udf_time_to_stamp to use timestamps
+[PATCH 5/6] udf: remove unneeded kernel_timestamp type
+These 4 patches can be folded into one if requested, but I think it's
+easier to analyze them when they are split.
 
+[PATCH 6/6] udf: super.c reorganization
+Pretty mechanical work. Can be dropped and redone if it will
+conflict with someone else patch.
 
+ fs/udf/ecma_167.h |   13 -
+ fs/udf/inode.c    |  183 ++++++-----------
+ fs/udf/super.c    |  553 ++++++++++++++++++++++++++----------------------------
+ fs/udf/udfdecl.h  |    8 
+ fs/udf/udfend.h   |   22 --
+ fs/udf/udftime.c  |   39 +--
+ 6 files changed, 358 insertions(+), 460 deletions(-)
 
+Applies on top of patches I've sent lately (http://lkml.org/lkml/2008/1/30/482)
 
+Jan: Are you going to create git tree for udf?
 
-
-
+Marcin Slusarz
