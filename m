@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYBDN1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYBDN2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbYBDN1j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYBDN1a
+	id S1755787AbYBDN2r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYBDN2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:27:30 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57780 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753413AbYBDN13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:27:29 -0500
-Date: Mon, 4 Feb 2008 05:27:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: for.poige+linux@gmail.com
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: Both 2.6.24-mm1 and 2.6.24-git11 do NOT "see" any of mine LVM-2
- disks
-Message-Id: <20080204052709.12f4e0d3.akpm@linux-foundation.org>
-In-Reply-To: <47A71040.5000300@gmail.com>
-References: <43d009740802022335y21c3f93ep4e444bef71338045@mail.gmail.com>
-	<20080202235103.20dd9768.akpm@linux-foundation.org>
-	<47A71040.5000300@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 4 Feb 2008 08:28:39 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59569 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753833AbYBDN2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 08:28:39 -0500
+Date: Mon, 4 Feb 2008 14:28:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: jikos@suse.cz, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: brk randomization breaks columns
+Message-ID: <20080204132853.GA4630@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080204130156.GA8730@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Feb 2008 20:16:48 +0700 Igor M Podlesny <for.poige+linux@gmail.com> wrote:
+Hi!
 
->    Hello, everybody! :-)
-> 
-> On 2008-02-03 14:51, Andrew Morton wrote:
-> > On Sun, 3 Feb 2008 14:35:23 +0700 Igor <for.poige+linux@gmail.com> wrote:
-> >> On 02/02/2008, Igor <for.poige+linux@gmail.com> wrote:
-> [...]
-> >>     And I've tried linux-2.6.24-rc8-mm1 — it fails even running MDs saying
-> >> that do_md_run() returning -22.
+> > Hmm, code in binfmt_elf is really strange.
 > > 
-> > I'm pretty sure that got fixed, thanks.
+> >         elf_bss += load_bias;
+> >         elf_brk += load_bias;
+> >         start_code += load_bias;
+> >         end_code += load_bias;
+> >         start_data += load_bias;
+> >         end_data += load_bias;
 > > 
-> > I'm trying to get 2.6.24-mm1 out.  Maybe tomorrow - please test that, make
-> > sure that we fixed it.
+> >         /* Calling set_brk effectively mmaps the pages that we need
+> >          * for the bss and break sections.  We must do this before
+> >          * mapping in the interpreter, to make sure it doesn't wind
+> >          * up getting placed where the bss needs to go.
+> >          */
+> >         retval = set_brk(elf_bss, elf_brk);
+> > 
+> > ... so we allocate non-randoimzed brk, but later we just overwrite bss 
+> > variable with new, shiner and better randomized value... without 
+> > unmapping the old one... The code in binfmt_elf.c is really a mess.
 > 
->    Yeah, you've fixed it now, MD's are running OK.
+> hm, so it seems that it isnt even the randomization that causes the 
+> problem - but somehow the randomization code itself is broken, right? 
 > 
->    Now I can say that both 2.6.24-mm1 and 2.6.24-git11 do NOT "see" any
-> of mine LVM-2 disks. pvscan, for e.g., finds nothing at all.
+> Would you be interested in figuring out how to unbreak this? [if not, 
+> could you send me the binary?]
 
-You may find that you need to update your lvm userspace tools.
+Not sure this helps... If I only randomize _end_ of heap, it still
+works. If I try to randomize beggining of heap, too, it will not even
+start recent binaries :-(.
+								Pavel
 
-Alasdair?  other-dm-people?  Did we break^Wchange the userspace interface?
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 18ed6dd..9afc58f 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -980,6 +983,16 @@ #endif
+ 	}
+ 
+ 	loc->elf_ex.e_entry += load_bias;
++
++
++	printk("%d: %x\n", current->pid, elf_brk);
++
++	extern unsigned long 	randomize_range(unsigned long start, unsigned long end, unsigned long len);
++
++	long random = randomize_range(0, 0x200000, 0);
++	elf_brk += random;
++//	elf_bss += random;
++
+ 	elf_bss += load_bias;
+ 	elf_brk += load_bias;
+ 	start_code += load_bias;
+@@ -1076,12 +1093,6 @@ #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGE
+ 	current->mm->end_data = end_data;
+ 	current->mm->start_stack = bprm->p;
+ 
+-#ifdef arch_randomize_brk
+-	if (current->flags & PF_RANDOMIZE)
+-		current->mm->brk = current->mm->start_brk =
+-			arch_randomize_brk(current->mm);
+-#endif
+-
+ 	if (current->personality & MMAP_PAGE_ZERO) {
+ 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
+ 		   and some applications "depend" upon this behavior.
 
-I don't think DM has merged yet, so maybe it was something else.
-
->    Mine system's configuration is LVM-2 on MD (Software RAID); 2.6.24
-> handles it just fine.
-
-I guess it would be helpful if you could tell us the version of your lvm
-userspace tools, and identify the distro.
-
->    P. S. I'm not subscribed to linux-kernel@vger.kernel.org (yet), so
-> please keep my e-mail address intact :-) when replying.
-
-Is OK, lots of people are in that situation.  We do reply-to-all as a
-matter of course.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
