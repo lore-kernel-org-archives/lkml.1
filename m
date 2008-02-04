@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYBDQZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYBDQjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbYBDQZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 11:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbYBDQZq
+	id S1755192AbYBDQjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 11:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYBDQjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 11:25:46 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:55416 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752858AbYBDQZo (ORCPT
+	Mon, 4 Feb 2008 11:39:00 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:43486 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbYBDQi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 11:25:44 -0500
-Message-ID: <47A73C86.3060604@vlnb.net>
-Date: Mon, 04 Feb 2008 19:25:42 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Mon, 4 Feb 2008 11:38:59 -0500
+Message-ID: <47A73F97.1040804@freescale.com>
+Date: Mon, 04 Feb 2008 10:38:47 -0600
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	 <1201639331.3069.58.camel@localhost.localdomain>	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain>
-In-Reply-To: <1202139015.3096.5.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Andy Whitcroft <apw@shadowen.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: add __asm__ to function-space-paren exception
+ list
+References: <12016486482483-git-send-email-timur@freescale.com> <20080204112203.GA19879@shadowen.org>
+In-Reply-To: <20080204112203.GA19879@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->>Vladislav Bolkhovitin wrote:
->>So, James, what is your opinion on the above? Or the overall SCSI target 
->>project simplicity doesn't matter much for you and you think it's fine 
->>to duplicate Linux page cache in the user space to keep the in-kernel 
->>part of the project as small as possible?
-> 
-> 
-> The answers were pretty much contained here
-> 
-> http://marc.info/?l=linux-scsi&m=120164008302435
-> 
-> and here:
-> 
-> http://marc.info/?l=linux-scsi&m=120171067107293
-> 
-> Weren't they?
+Andy Whitcroft wrote:
 
-No, sorry, it doesn't look so for me. They are about performance, but 
-I'm asking about the overall project's architecture, namely about one 
-part of it: simplicity. Particularly, what do you think about 
-duplicating Linux page cache in the user space to have zero-copy cached 
-I/O? Or can you suggest another architectural solution for that problem 
-in the STGT's approach?
+> It truly is not clear what "type" of thing an __asm__ is these days.
+> Cirtainly it seems we can use it as an attribute of a type:
+> 
+>         register unsigned long __r16 __asm__("$16") = rtc_access->function;
+> 
+> and yet also in its more traditional form:
+> 
+> 	__asm__("	call foo");
+> 
+> The latter form feels like a function? 
 
-Vlad
+But it's not.  Sure, it defines a block of code that has input and output 
+parameters, but one key distinction is that __asm__ is not the name of the 
+"function".
+
+? But cirtainly in the examples it
+> is shown with a space some of the time, and not others. 
+
+Well, since checkpatch.pl insists that the space be removed, that's probably why 
+it's not there a lot of the time.
+
+> Is __asm__ an
+> attribute of the null function (;) in this context or ... well ?
+
+I don't think __asm__ can be compared to other C-language syntax constructs.
+
+> This patch really just removes any checks for spacing on __asm__ do we
+> have a preferred style for these? 
+
+I don't know, but I do know it's wrong for checkpatch.pl to think that "__asm__" 
+is the name of a function.
+
+ > Attributes do seem to have spaces,
+> though in their most attribute like usage the __asm__ "attribute" does
+> not seem to be used with a space, so far anyhow.
+
+The problem is that checkpatch.pl thinks this is okay:
+
+	__asm__ __volatile__ ("call foo");
+
+but it doesn't like this:
+
+	__asm__ ("call foo");
+
+> Oh and why are we preferring the use of __asm__ over asm?  They both
+> seem valid.  Should we be recommending one over the other?
+
+It's a toss-up.  Depending on the architecture, one version has about 60% usage 
+and the other about 40%.  I thought I read somewhere that __asm__ is preferred, 
+but I can't remember where I read that or who wrote it.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
