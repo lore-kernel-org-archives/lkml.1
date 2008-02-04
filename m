@@ -1,86 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYBDIPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYBDIYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbYBDIPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 03:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYBDIP3
+	id S1754672AbYBDIYV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 03:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYBDIYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 03:15:29 -0500
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:47179
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751178AbYBDIP2 (ORCPT
+	Mon, 4 Feb 2008 03:24:12 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:14821 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751340AbYBDIYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 03:15:28 -0500
-Date: Mon, 4 Feb 2008 00:15:08 -0800
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Greg KH <greg@kroah.com>
-Cc: Patrick Ringl <patrick_@freenet.de>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-storage@vger.kernel.org
-Subject: Re: wrong cylinders of kingston usb pendrive [intel 82801DB]
-Message-ID: <20080204081508.GB14573@one-eyed-alien.net>
-Mail-Followup-To: Greg KH <greg@kroah.com>,
-	Patrick Ringl <patrick_@freenet.de>, linux-kernel@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-storage@vger.kernel.org
-References: <47A6615D.9090201@freenet.de> <20080204015937.GA16989@kroah.com>
+	Mon, 4 Feb 2008 03:24:10 -0500
+X-Trace: 658739354/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.80.9
+X-SBRS: None
+X-RemoteIP: 81.1.80.9
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CANBZpkdRAVAJ/2dsb2JhbACBWKkC
+Subject: Re: [PATCH] SH/Dreamcast - fix regressions, whitespace and memory
+	leaks in Maple Bus driver
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh <linux-sh@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+In-Reply-To: <20080204011034.GA22021@linux-sh.org>
+References: <1202068847.6262.7.camel@localhost.localdomain>
+	 <20080204011034.GA22021@linux-sh.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 08:23:44 +0000
+Message-Id: <1202113424.6489.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MfFXiAuoTsnnDAfZ"
-Content-Disposition: inline
-In-Reply-To: <20080204015937.GA16989@kroah.com>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Mon, 04 Feb 2008 00:15:09 -0800 (PST)
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---MfFXiAuoTsnnDAfZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2008-02-04 at 10:10 +0900, Paul Mundt wrote:
+> On Sun, Feb 03, 2008 at 08:00:47PM +0000, Adrian McMenamin wrote:
+> > From: Adrian McMenamin
+> > 
+> This is useless if you are submitting the patch, especially if you're
+> missing a mail address.
+> 
 
-On Sun, Feb 03, 2008 at 05:59:38PM -0800, Greg KH wrote:
-> On Mon, Feb 04, 2008 at 01:50:37AM +0100, Patrick Ringl wrote:
-> > Hello,
-> >
-> > I am suffering from the following (usb-related?) problem:
-> >
-> > I have several different mashines - all x86 architecture - just lets ca=
-ll=20
-> > them mashineA, mashineB and mashineC.
->=20
-> Is the kernel the same on all of these machines?
+>From Documentation/SubmittingPatches
 
-I'm not sure it matters...
+The canonical patch message body contains the following:
+  * 
+  *   - A "from" line specifying the patch author.
+  * 
 
-usb-storage has no knowledge of CHS geometery.  It deals entirely in LBA.
 
-Does anyone know where the kernel gets the CHS geometery equivalent from?
+> > This patch fixes the regression noted here:
+> > http://lkml.org/lkml/2008/1/26/189 as well as whitespace issues in the
+> > previous commit of this driver and the memory leaks noted here:
+> > http://lkml.org/lkml/2008/2/2/143 (as well as one or two other minor
+> > cleanups).
+> > 
+> The subject notes 3 specific things that are being addressed, but you've
+> rolled this all in to one patch which makes it utterly impossible to
+> figure out what you're actually fixing. At the very least, split this in
+> to 3 different patches, each dealing with one of the things noted in the
+> subject. The fact that regressions is plural also suggests you may want
+> to split this down in to smaller patches that deal with specific
+> regressions if they are not directly related.
+> 
 
-Matt
+What would be the point of submitting patches of broken code just to
+remove the whitespace your previous commit added to all the lines?
 
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
 
-E:  You run this ship with Windows?!  YOU IDIOT!
-L:  Give me a break, it came bundled with the computer!
-					-- ESR and Lan Solaris
-User Friendly, 12/8/1998
+> > Signed off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> > 
+> Do not invent new sign-off tags, see Documentation/SubmittingPatches.
+> Scripts do end up having to parse this stuff.
 
---MfFXiAuoTsnnDAfZ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Yes, sorry for that.
 
-iD8DBQFHpsmMHL9iwnUZqnkRAmn3AKCYkH3bto+6d47QtsMKPQzPSNWCzQCgkK24
-sg41xExBEemzEUEDgPdTI4w=
-=nMVL
------END PGP SIGNATURE-----
-
---MfFXiAuoTsnnDAfZ--
