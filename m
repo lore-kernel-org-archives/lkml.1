@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYBDTBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYBDTDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYBDTBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbYBDTBg
+	id S1756967AbYBDTDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:03:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYBDTDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:01:36 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:42604 "EHLO smpt.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754887AbYBDTBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:01:36 -0500
-Message-ID: <47A76106.3000103@gandalf.sssup.it>
-Date: Mon, 04 Feb 2008 20:01:26 +0100
-From: michael <trimarchi@gandalf.sssup.it>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-References: <20080129224316.GA23155@gandalf.sssup.it>	<479FB2D7.4020804@gandalf.sssup.it>	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	<47A051A7.7030004@gandalf.sssup.it>	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>	<47A09723.7020000@gandalf.sssup.it>	<20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>	<47A12A2E.5040309@gandalf.sssup.it> <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Feb 2008 14:03:14 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45771 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755197AbYBDTDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:03:13 -0500
+To: staubach@redhat.com
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <47A75CCF.4090904@redhat.com> (message from Peter Staubach on
+	Mon, 04 Feb 2008 13:43:27 -0500)
+Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
+References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu> <47A39D8F.9010003@redhat.com> <E1JLDIq-000747-1y@pomaz-ex.szeredi.hu> <47A73558.2080700@redhat.com> <E1JM5Gh-0003Pi-Dq@pomaz-ex.szeredi.hu> <47A75CCF.4090904@redhat.com>
+Message-Id: <E1JM6aW-0003aJ-Eh@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 04 Feb 2008 20:02:40 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-> Haavard
->
-> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-> index 477950f..c61fcc3 100644
-> --- a/drivers/serial/atmel_serial.c
-> +++ b/drivers/serial/atmel_serial.c
-> @@ -337,9 +337,12 @@ atmel_buffer_rx_char(struct uart_port *port, unsigned int status,
->  	struct circ_buf *ring = &atmel_port->rx_ring;
->  	struct atmel_uart_char *c;
->  
-> -	if (!CIRC_SPACE(ring->head, ring->tail, ATMEL_SERIAL_RINGSIZE))
-> +	if (!CIRC_SPACE(ring->head, ring->tail, ATMEL_SERIAL_RINGSIZE)) {
-> +		dev_err(port->dev, "RX ring buffer full, dropping data\n");
-> +
->  		/* Buffer overflow, ignore char */
->  		return;
-> +	}
->  
->  	c = &((struct atmel_uart_char *)ring->buf)[ring->head];
->  	c->status	= status;
->
->   
+> > I don't know what NFS does, but returning EINTR without actually
+> > canceling an operation in the server is generally not a good idea.
+> >
+> >   
+> 
+> This is what NFS has been doing, for several decades, and no one
+> has complained yet.
 
-I have already tried that but I have never seen the buffer full. So 
-tomorrow  I can do other
-tests with the serial device. I think the the atmel_interrupt handler 
-must check the
-pass_counter before return IRQ_HANDLED.
+Is it really?  Man nfs says something quite different (emphasis mine):
 
-Regards Michael
+   intr        If an NFS file operation has a *major timeout* and  it  is
+               hard  mounted,  then  allow signals to interupt the file
+               operation and cause it to return EINTR  to  the  calling
+               program.  The *default* is to *not* allow file operations to
+               be *interrupted*.
 
+> >> Have you noticed another one?  I would be happy to chat with the
+> >> developers for that file system to see if this support would
+> >> negatively impact them.
+> >>     
+> >
+> > Oh, I have no idea.  And I wouldn't want to do a full audit of all the
+> > filesystems to find out.  But if you do, please go ahead.
+> >
+> >   
+> 
+> Well, you brought it up.  I thought that perhaps you had something
+> other than FUD.
 
+It's not FUD, it's being careful not to break an implementation when
+changing an API in a backward incompatbile way.
+
+> Please describe this real and existing fuse installation so that I can
+> better understand the situation and the real requirements here.
+
+I have already done so:
+
+  "Also up till now, returning ESTALE in a fuse filesystem was a
+   perfectly valid thing to do.  This patch changes the behavior of
+   that rather drastically.  There might be installed systems that
+   rely on current behavior, and we want to avoid breaking those on a
+   kernel upgrade."
+
+Miklos
