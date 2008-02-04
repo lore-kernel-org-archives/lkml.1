@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYBDEvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751673AbYBDFNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbYBDEvE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 23:51:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYBDEuv
+	id S1751673AbYBDFNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 00:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbYBDFNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 23:50:51 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:39564 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753187AbYBDEun (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 23:50:43 -0500
-Date: Mon, 4 Feb 2008 10:20:25 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Bastian Blank <bastian@waldi.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-s390@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] Fix ext4 bitops
-Message-ID: <20080204045025.GA7494@skywalker>
-References: <20080201200208.GA28274@wavehammer.waldi.eu.org> <20080201122257.9524c2bb.akpm@linux-foundation.org> <20080201210404.GA31271@wavehammer.waldi.eu.org> <20080203121238.GD18211@osiris.ibm.com> <Pine.LNX.4.64.0802031336240.28712@anakin>
-MIME-Version: 1.0
+	Mon, 4 Feb 2008 00:13:14 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:59864 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbYBDFNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 00:13:13 -0500
+Date: Mon, 4 Feb 2008 06:13:18 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Coexistence of EXPORT_SYMBOL() and __cpuinit
+Message-ID: <20080204051318.GA11255@uranus.ravnborg.org>
+References: <804dabb00802031749m7f0765f8q8cd1f6c6a881651c@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802031336240.28712@anakin>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+In-Reply-To: <804dabb00802031749m7f0765f8q8cd1f6c6a881651c@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 03, 2008 at 01:39:02PM +0100, Geert Uytterhoeven wrote:
-> On Sun, 3 Feb 2008, Heiko Carstens wrote:
-> > On Fri, Feb 01, 2008 at 10:04:04PM +0100, Bastian Blank wrote:
-> > > On Fri, Feb 01, 2008 at 12:22:57PM -0800, Andrew Morton wrote:
-> > > > On Fri, 1 Feb 2008 21:02:08 +0100
-> > > > Bastian Blank <bastian@waldi.eu.org> wrote:
-> > > > 
-> > > > > Fix ext4 bitops.
-> > > > 
-> > > > This is incomplete.  Please tell us what was "fixed".
-> > > > 
-> > > > If it was a build error then please quote the compile error output in the
-> > > > changelog, as well as the usual description of what the problem is, and how
-> > > > it was fixed.
-> > > 
-> > > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
-> > > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
-> > > 
-> > > The s390 specific bitops uses parts of the generic implementation.
-> > > Include the correct header.
-> > 
-> > That doesn't work:
-> > 
-> > fs/built-in.o: In function `ext4_mb_release_inode_pa':
-> > mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
-> > fs/built-in.o: In function `ext4_mb_init_cache':
-> > mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
-> > 
-> > This still needs generic_find_next_le_bit which comes
-> > from lib/find_next_bit.c. That one doesn't get built on s390 since we
-> > don't set GENERIC_FIND_NEXT_BIT.
-> > Currently we have the lengthly patch below queued.
+On Mon, Feb 04, 2008 at 09:49:24AM +0800, Peter Teoh wrote:
+> In kernel/cpu.c, there exists API that is declared as __cpuinit, and
+> at the same time exported via EXPORT_SYMBOL().
 > 
-> Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
-> impression the ext4 people don't (compile) test on big endian machines?
-> 
-> Gr{oetje,eeting}s,
-> 
+> Can these two attribute coexists at the same time?   I mean, when it
+> is declared with EXPORT_SYMBOL, according to include/linux/module.h,
+> it is placed in a __ksymtab section, and when compiled with with
+> __cpuinit, according to include/linux/init.h, into a __cpuinit
+> section.
 
-I have sent this patches to linux-arch expecting a review from
-different arch people. It is true that the patches are tested only on
-powerpc, x86-64, x86. That's the primary reason of me sending the
-patches to linux-arch.
+kbuild.git contains a commit so we no longer warn about
+symbols being exported if annotatated with __cpuinit, __devinit, and
+__devinit.
 
-http://marc.info/?l=linux-arch&m=119503501127737&w=2
+I've requested Linus to pull the changes and expet it to happen
+within the next two days.
 
-
--aneesh
+	Sam
