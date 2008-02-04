@@ -1,139 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYBDURq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbYBDUSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYBDURq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbYBDURi
+	id S1758274AbYBDUSd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYBDUS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:17:38 -0500
-Received: from smtp-in.kfki.hu ([148.6.0.28]:32859 "EHLO smtp2.kfki.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754576AbYBDURg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:17:36 -0500
-Date: Mon, 4 Feb 2008 21:17:31 +0100 (CET)
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: Patrick McHardy <kaber@trash.net>, lkml <linux-kernel@vger.kernel.org>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       cups-bugs <cups-bugs@easysw.com>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>
-Subject: Re: cups slow on linux-2.6.24
-In-Reply-To: <Pine.LNX.4.64.0802042226340.28805@boston.corp.fedex.com>
-Message-ID: <Pine.LNX.4.64.0802042109230.31268@blackhole.kfki.hu>
-References: <Pine.LNX.4.64.0802042226340.28805@boston.corp.fedex.com>
+	Mon, 4 Feb 2008 15:18:26 -0500
+Received: from usul.saidi.cx ([204.11.33.34]:41701 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755867AbYBDUSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:18:25 -0500
+To: Frank Seidel <fseidel@suse.de>
+Subject: Re: [PATCH] mmc: Handle suspend/resume in Ricoh MMC disabler (resent
+ refreshed)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 4 Feb 2008 15:17:10 -0500
+From: Philip Langdale <philipl@overt.org>
+Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>
+In-Reply-To: <200802041925.39529.fseidel@suse.de>
+References: <200802041925.39529.fseidel@suse.de>
+Message-ID: <a6708194c3be1ccc3d0da18553ed7288@localhost>
+User-Agent: RoundCube Webmail/0.1b
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Mon, 4 Feb 2008, Jeff Chua wrote:
-
-> > Attached are the dump files mentioned.
+On Mon, 4 Feb 2008 19:25:38 +0100, Frank Seidel <fseidel@suse.de> wrote:
+> From: Philip Langdale <philipl@overt.org>
 > 
-> Not sure whether the attached files got uploaded. So, I'm sending this one
-> more time.
+> As pci config space is reinitialised on suspend/resume cycle, the
+> disabler needs to work its magic at resume time. For symmetry this
+> change also explicitly enables the controller at suspend time but
+> it's not strictly necessary.
+> 
+> Signed-off-by: Philip Langdale <philipl@overt.org>
+> Signed-off-by: Frank Seidel <fseidel@suse.de>
+> ---
+>  drivers/mmc/host/ricoh_mmc.c |   97
+> +++++++++++++++++++++++++++++++------------
+>  1 file changed, 72 insertions(+), 25 deletions(-)
+> 
+> --- a/drivers/mmc/host/ricoh_mmc.c
+> +++ b/drivers/mmc/host/ricoh_mmc.c
+> @@ -41,6 +41,46 @@ static const struct pci_device_id pci_id
+> 
+>  MODULE_DEVICE_TABLE(pci, pci_ids);
+> 
+> +static int ricoh_mmc_disable(struct pci_dev *fw_dev)
+> +{
+> +	u8 write_enable;
+> +	u8 disable;
+> +
+> +	pci_read_config_byte(fw_dev, 0xCB, &disable);
+> +	if (disable & 0x02) {
+> +		printk(KERN_INFO DRIVER_NAME
+> +		       ": Controller already disabled. Nothing to do.\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> +	pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> +	pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
+> +	pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> +
+> +	printk(KERN_INFO DRIVER_NAME
+> +	       ": Controller is now disabled.\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static int ricoh_mmc_enable(struct pci_dev *fw_dev)
+> +{
+> +	u8 write_enable;
+> +	u8 disable;
+> +
+> +	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> +	pci_read_config_byte(fw_dev, 0xCB, &disable);
+> +	pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> +	pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
+> +	pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> +
+> +	printk(KERN_INFO DRIVER_NAME
+> +	       ": Controller is now re-enabled.\n");
+> +
+> +	return 0;
+> +}
+> +
+>  static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+>  				     const struct pci_device_id *ent)
+>  {
+> @@ -61,26 +101,12 @@ static int __devinit ricoh_mmc_probe(str
+>  	while ((fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
+> PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
+>  		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
+>  		    pdev->bus == fw_dev->bus) {
+> -			u8 write_enable;
+> -			u8 disable;
+> -
+> -			pci_read_config_byte(fw_dev, 0xCB, &disable);
+> -			if (disable & 0x02) {
+> -				printk(KERN_INFO DRIVER_NAME
+> -				       ": Controller already disabled. Nothing to do.\n");
+> +			if (ricoh_mmc_disable(fw_dev) != 0) {
+>  				return -ENODEV;
+>  			}
+> 
+> -			pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> -			pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> -			pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
+> -			pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> -
+>  			pci_set_drvdata(pdev, fw_dev);
+> 
+> -			printk(KERN_INFO DRIVER_NAME
+> -			       ": Controller is now disabled.\n");
+> -
+>  			break;
+>  		}
+>  	}
+> @@ -96,30 +122,51 @@ static int __devinit ricoh_mmc_probe(str
+> 
+>  static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
+>  {
+> -	u8 write_enable;
+> -	u8 disable;
+>  	struct pci_dev *fw_dev = NULL;
+> 
+>  	fw_dev = pci_get_drvdata(pdev);
+>  	BUG_ON(fw_dev == NULL);
+> 
+> -	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> -	pci_read_config_byte(fw_dev, 0xCB, &disable);
+> -	pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> -	pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
+> -	pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -	       ": Controller is now re-enabled.\n");
+> +	ricoh_mmc_enable(fw_dev);
+> 
+>  	pci_set_drvdata(pdev, NULL);
+>  }
+> 
+> +static int ricoh_mmc_suspend (struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct pci_dev *fw_dev = NULL;
+> +
+> +	fw_dev = pci_get_drvdata(pdev);
+> +	BUG_ON(fw_dev == NULL);
+> +
+> +	printk(KERN_INFO DRIVER_NAME ": Suspending.\n");
+> +
+> +	ricoh_mmc_enable(fw_dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static int ricoh_mmc_resume (struct pci_dev *pdev)
+> +{
+> +	struct pci_dev *fw_dev = NULL;
+> +
+> +	fw_dev = pci_get_drvdata(pdev);
+> +	BUG_ON(fw_dev == NULL);
+> +
+> +	printk(KERN_INFO DRIVER_NAME ": Resuming.\n");
+> +
+> +	ricoh_mmc_disable(fw_dev);
+> +
+> +	return 0;
+> +}
+> +
+>  static struct pci_driver ricoh_mmc_driver = {
+>  	.name = 	DRIVER_NAME,
+>  	.id_table =	pci_ids,
+>  	.probe = 	ricoh_mmc_probe,
+>  	.remove =	__devexit_p(ricoh_mmc_remove),
+> +	.suspend =	ricoh_mmc_suspend,
+> +	.resume =	ricoh_mmc_resume,
+>  };
+> 
+> 
+>
+/*****************************************************************************\
 
-I could reproduce the slow-down by a loop of socat commands. The dump you 
-sent looks exactly like the traces I got at dumping the traffic generated by 
-socat and that is good.
+ACK.
 
-Actively closed connections are not handled properly, i.e. the initiator 
-of the active close should not be taken into account. So could you give a 
-try to the patch below? Does it just suppress the 'invalid packed ignored' 
-and all other kernel messages or both suppresses them and produces normal 
-printing speed?
+Thanks for fixing it up.
 
-commit 2067ab64ef876efaa0f4dd8fe73f48f50e215369
-Author: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-Date:   Sun Feb 3 17:14:22 2008 +0100
+--phil
 
-    Handle active close for both sides, it is not restricted
-    to one side alone.
-
-diff --git a/net/netfilter/nf_conntrack_proto_tcp.c b/net/netfilter/nf_conntrack_proto_tcp.c
-index 7a3f64c..8c7efe2 100644
---- a/net/netfilter/nf_conntrack_proto_tcp.c
-+++ b/net/netfilter/nf_conntrack_proto_tcp.c
-@@ -135,7 +135,7 @@ enum tcp_bit_set {
-  * CLOSE_WAIT:	ACK seen (after FIN)
-  * LAST_ACK:	FIN seen (after FIN)
-  * TIME_WAIT:	last ACK seen
-- * CLOSE:	closed connection
-+ * CLOSE:	closed connection (RST)
-  *
-  * LISTEN state is not used.
-  *
-@@ -834,8 +834,21 @@ static int tcp_packet(struct nf_conn *conntrack,
- 	case TCP_CONNTRACK_SYN_SENT:
- 		if (old_state < TCP_CONNTRACK_TIME_WAIT)
- 			break;
--		if ((conntrack->proto.tcp.seen[!dir].flags &
--			IP_CT_TCP_FLAG_CLOSE_INIT)
-+		/* RFC 1122: "When a connection is closed actively,
-+		 * it MUST linger in TIME-WAIT state for a time 2xMSL
-+		 * (Maximum Segment Lifetime). However, it MAY accept
-+		 * a new SYN from the remote TCP to reopen the connection
-+		 * directly from TIME-WAIT state, if..."
-+		 * We ignore the conditions because we are in the
-+		 * TIME-WAIT state anyway.
-+		 *
-+		 * Handle aborted connections: we and the server
-+		 * think there is an existing connection but the client
-+		 * aborts it and starts a new one.
-+		 */
-+		if (((conntrack->proto.tcp.seen[dir].flags
-+		      | conntrack->proto.tcp.seen[!dir].flags)
-+		     & IP_CT_TCP_FLAG_CLOSE_INIT)
- 		    || (conntrack->proto.tcp.last_dir == dir
- 		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
- 			/* Attempt to reopen a closed/aborted connection.
-@@ -848,18 +861,25 @@ static int tcp_packet(struct nf_conn *conntrack,
- 		}
- 		/* Fall through */
- 	case TCP_CONNTRACK_IGNORE:
--		/* Ignored packets:
-+		/* Ignored packets: 
-+		 *
-+		 * Our connection entry may be out of sync, so ignore
-+		 * packets which may signal the real connection between
-+		 * the client and the server.
- 		 *
- 		 * a) SYN in ORIGINAL
- 		 * b) SYN/ACK in REPLY
- 		 * c) ACK in reply direction after initial SYN in original.
-+		 *
-+		 * If the ignored packet is invalid, the receiver will send 
-+		 * a RST we'll catch below.
- 		 */
- 		if (index == TCP_SYNACK_SET
- 		    && conntrack->proto.tcp.last_index == TCP_SYN_SET
- 		    && conntrack->proto.tcp.last_dir != dir
- 		    && ntohl(th->ack_seq) ==
- 			     conntrack->proto.tcp.last_end) {
--			/* This SYN/ACK acknowledges a SYN that we earlier
-+			/* b) This SYN/ACK acknowledges a SYN that we earlier
- 			 * ignored as invalid. This means that the client and
- 			 * the server are both in sync, while the firewall is
- 			 * not. We kill this session and block the SYN/ACK so
-@@ -938,8 +958,7 @@ static int tcp_packet(struct nf_conn *conntrack,
- 
- 	conntrack->proto.tcp.state = new_state;
- 	if (old_state != new_state
--	    && (new_state == TCP_CONNTRACK_FIN_WAIT
--		|| new_state == TCP_CONNTRACK_CLOSE))
-+	    && new_state == TCP_CONNTRACK_FIN_WAIT)
- 		conntrack->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
- 	timeout = conntrack->proto.tcp.retrans >= nf_ct_tcp_max_retrans
- 		  && *tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
-
-Best regards,
-Jozsef
--
-E-mail  : kadlec@blackhole.kfki.hu, kadlec@sunserv.kfki.hu
-PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
-Address : KFKI Research Institute for Particle and Nuclear Physics
-          H-1525 Budapest 114, POB. 49, Hungary
