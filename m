@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbYBDDNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYBDDRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbYBDDNI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 22:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYBDDM5
+	id S1755877AbYBDDRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 22:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYBDDRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 22:12:57 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:34069 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYBDDM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 22:12:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=W0WHoVHCFObi3nD9AuzaXzPpe3Amd7lFwkJgOfdcf2ER3ujHZQko7OwX9lUF2XxU6UcHKWoyRQg+kopoUONUKJHMLSRvllCJ/qL4k0tX4ABNoI7Typ0FunV5N/AAP53cmw/Ayj3obfQK5GEpJfjBALMnqxtUz+A/rZMGsy5LpQ8=
-Message-ID: <804dabb00802031912p15a61ff3ldf669592450c1117@mail.gmail.com>
-Date: Mon, 4 Feb 2008 11:12:55 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Section mismatch: kernel/relay.c
+	Sun, 3 Feb 2008 22:17:20 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58821 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754038AbYBDDRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 22:17:19 -0500
+Message-ID: <47A68388.2030104@cn.fujitsu.com>
+Date: Mon, 04 Feb 2008 11:16:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: yoshfuji@linux-ipv6.org
+CC: davem@davemloft.net, linux-net@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IPV4: fix compile error building without CONFIG_FS_PROC
+References: <47A55846.20709@cn.fujitsu.com>	<47A660A1.5080504@cn.fujitsu.com> <20080204.132518.63717287.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20080204.132518.63717287.yoshfuji@linux-ipv6.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following is to fix the following warning (see earlier email):
+YOSHIFUJI Hideaki wrote:
+> In article <47A660A1.5080504@cn.fujitsu.com> (at Mon, 04 Feb 2008 08:47:29 +0800), Li Zefan <lizf@cn.fujitsu.com> says:
+> 
+>> compile error building without CONFIG_FS_PROC.
+> :
+>> The exit method should have no return values...
+> 
+> Have you really tested this with CONFIG_FS_PROC?
+> 
+> --yoshfuji
+> 
+> 
 
-WARNING: kernel/built-in.o(.data+0x7c00): Section mismatch in
-reference from the variable relay_hotcpu_callback_nb.18789 to the
-function .cpuinit.text:relay_hotcpu_callback()
-The variable relay_hotcpu_callback_nb.18789 references
-the function __cpuinit relay_hotcpu_callback()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+Oops, shame on me, what a silly patch... :( I tested it without CONFIG_PROC_PS,
+but didn't test it with CONFIG_PROC_FS.
 
-Signed-off-by: Peter Teoh <htmldeveloper@gmail.com>
+Now I've tested the new patch both with and without CONFIG_PROC_FS.
 
---- relay.c.orig        2008-02-04 10:49:41.000000000 +0800
-+++ relay.c     2008-02-04 10:50:53.000000000 +0800
-@@ -477,7 +477,7 @@ static void setup_callbacks(struct rchan
-  *
-  *     Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
-  */
--static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
-+static int relay_hotcpu_callback(struct notifier_block *nb,
-                                unsigned long action,
-                                void *hcpu)
- {
+---
+
+compile error building without CONFIG_FS_PROC:
+
+net/ipv4/fib_frontend.c: In function 'fib_net_init':
+net/ipv4/fib_frontend.c:1032: error: implicit declaration of function 'fib_proc_
+init'
+net/ipv4/fib_frontend.c: In function 'fib_net_exit':
+net/ipv4/fib_frontend.c:1047: error: implicit declaration of function 'fib_proc_
+exit'
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+
+---
+ include/net/ip_fib.h |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/include/net/ip_fib.h b/include/net/ip_fib.h
+index 90d1175..8b12667 100644
+--- a/include/net/ip_fib.h
++++ b/include/net/ip_fib.h
+@@ -266,6 +266,14 @@ static inline void fib_res_put(struct fib_result *res)
+ #ifdef CONFIG_PROC_FS
+ extern int __net_init  fib_proc_init(struct net *net);
+ extern void __net_exit fib_proc_exit(struct net *net);
++#else
++static inline int fib_proc_init(struct net *net)
++{
++	return 0;
++}
++static inline void fib_proc_exit(struct net *net)
++{
++}
+ #endif
+ 
+ #endif  /* _NET_FIB_H */
+-- 
+1.5.4.rc3
