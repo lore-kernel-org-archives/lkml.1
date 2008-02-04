@@ -1,137 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYBDTU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYBDTXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbYBDTU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYBDTTx
+	id S1757521AbYBDTXK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbYBDTW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:19:53 -0500
-Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:39731 "HELO
-	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754437AbYBDTTv (ORCPT
+	Mon, 4 Feb 2008 14:22:57 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:16146 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752790AbYBDTW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:19:51 -0500
-X-YMail-OSG: LEjvjUcVM1lLqY4EbhPV9dmYrUmGMhDKYMyq5pkRsJiSL8xpsm1DnuylqsAbzMHj8CZs5mK8Nw--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Mike Christie <michaelc@cs.wisc.edu>,
-       CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 11:19:16 -0800
-Message-Id: <1202152756.11265.581.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Mon, 4 Feb 2008 14:22:56 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ccTgNv0iRJW8DVgad8QtTevsXu8p3kBkquYvcGXsNfoG7NQE5vI3euBTx7DCeP5b+
+	d5L4YNTVbRCKDA/tzbThA==
+Message-ID: <3f1a065b0802041122t6cec1803r89cdcd380fb3b5c0@mail.gmail.com>
+Date: Mon, 4 Feb 2008 11:22:50 -0800
+From: "Russell Leidich" <rml@google.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] Remove Barcelona Thermal Throttling
+Cc: "Torsten Kaiser" <just.for.lkml@googlemail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>, valdis.kletnieks@vt.edu
+In-Reply-To: <20080204072013.GB571@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
+	 <20080204072013.GB571@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-04 at 11:06 -0800, Nicholas A. Bellinger wrote:
-> On Mon, 2008-02-04 at 10:29 -0800, Linus Torvalds wrote:
-> > 
-> > On Mon, 4 Feb 2008, James Bottomley wrote:
-> > > 
-> > > The way a user space solution should work is to schedule mmapped I/O
-> > > from the backing store and then send this mmapped region off for target
-> > > I/O.
-> > 
-> > mmap'ing may avoid the copy, but the overhead of a mmap operation is 
-> > quite often much *bigger* than the overhead of a copy operation.
-> > 
-> > Please do not advocate the use of mmap() as a way to avoid memory copies. 
-> > It's not realistic. Even if you can do it with a single "mmap()" system 
-> > call (which is not at all a given, considering that block devices can 
-> > easily be much larger than the available virtual memory space), the fact 
-> > is that page table games along with the fault (and even just TLB miss) 
-> > overhead is easily more than the cost of copying a page in a nice 
-> > streaming manner.
-> > 
-> > Yes, memory is "slow", but dammit, so is mmap().
-> > 
-> > > You also have to pull tricks with the mmap region in the case of writes 
-> > > to prevent useless data being read in from the backing store.  However, 
-> > > none of this involves data copies.
-> > 
-> > "data copies" is irrelevant. The only thing that matters is performance. 
-> > And if avoiding data copies is more costly (or even of a similar cost) 
-> > than the copies themselves would have been, there is absolutely no upside, 
-> > and only downsides due to extra complexity.
-> > 
-> 
-> The iSER spec (RFC-5046) quotes the following in the TCP case for direct
-> data placement:
-> 
-> "  Out-of-order TCP segments in the Traditional iSCSI model have to be
->    stored and reassembled before the iSCSI protocol layer within an end
->    node can place the data in the iSCSI buffers.  This reassembly is
->    required because not every TCP segment is likely to contain an iSCSI
->    header to enable its placement, and TCP itself does not have a
->    built-in mechanism for signaling Upper Level Protocol (ULP) message
->    boundaries to aid placement of out-of-order segments.  This TCP
->    reassembly at high network speeds is quite counter-productive for the
->    following reasons: wasted memory bandwidth in data copying, the need
->    for reassembly memory, wasted CPU cycles in data copying, and the
->    general store-and-forward latency from an application perspective."
-> 
-> While this does not have anything to do directly with the kernel vs. user discussion
-> for target mode storage engine, the scaling and latency case is easy enough
-> to make if we are talking about scaling TCP for 10 Gb/sec storage fabrics.
-> 
-> > If you want good performance for a service like this, you really generally 
-> > *do* need to in kernel space. You can play games in user space, but you're 
-> > fooling yourself if you think you can do as well as doing it in the 
-> > kernel. And you're *definitely* fooling yourself if you think mmap() 
-> > solves performance issues. "Zero-copy" does not equate to "fast". Memory 
-> > speeds may be slower that core CPU speeds, but not infinitely so!
-> > 
-> 
-> >From looking at this problem from a kernel space perspective for a
-> number of years, I would be inclined to believe this is true for
-> software and hardware data-path cases.  The benefits of moving various
-> control statemachines for something like say traditional iSCSI to
-> userspace has always been debateable.  The most obvious ones are things
-> like authentication, espically if something more complex than CHAP are
-> the obvious case for userspace.  However, I have thought recovery for
-> failures caused from communication path (iSCSI connections) or entire
-> nexuses (iSCSI sessions) failures was very problematic to expect to have
-> to potentially push down IOs state to userspace.
-> 
-> Keeping statemachines for protocol and/or fabric specific statemachines
-> (CSM-E and CSM-I from connection recovery in iSCSI and iSER are the
-> obvious ones) are the best canidates for residing in kernel space.
-> 
-> > (That said: there *are* alternatives to mmap, like "splice()", that really 
-> > do potentially solve some issues without the page table and TLB overheads. 
-> > But while splice() avoids the costs of paging, I strongly suspect it would 
-> > still have easily measurable latency issues. Switching between user and 
-> > kernel space multiple times is definitely not going to be free, although 
-> > it's probably not a huge issue if you have big enough requests).
-> > 
-> 
+On Feb 3, 2008 11:20 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> On Sun, Feb 03, 2008 at 10:13:53PM -0800, Russell Leidich wrote:
+> > All,
+> >
+> > You can imagine my dismay when I recently learned that, after all our
+> > collective effort, hardware thermal throttling does not work reliably
+> > on Barcelona, according to AMD.  Due to NDA restrictions, I am unable
+> > to provide further details.
+>
+> Too bad. Hopefully that code will work then on the hypothetic
+> future parts with fixed throttling. Perhaps it would be better
+> to just remove it now and readd later.
 
-Then again, having some data-path for software and hardware bulk IO
-operation of storage fabric protocol / statemachine in userspace would
-be really interesting for something like an SPU enabled engine for the
-Cell Broadband Architecture.
+I really think it's best to leave it in.  It's harmless at the moment,
+and readding it later will just create a massive amount of duplicate
+work.    Sooner or later, I'm have little doubt that AMD can make this
+feature work.
 
---nab
+>
+> All this reminds me you need to adjust the Kconfig dependencies
+> for K8_NB too to be always enabled with MCE_AMD.
+>
+> Ideally on top of this patch with a || MCE_AMD
+
+OK, if you'll take the patch, I'd be happy to do this :).  I'm
+assuming that you mean I should force K8_NB = "yes" if MCE_AMD = "yes"
+in .config.  Is that what you're asking for?
+
+>
+> -Andi
+>
+> ---
+>
+> Fix and simplify k8.c Kconfig dependencies
+>
+> - Check for K8_NUMA instead of NUMA && PCI
+> - No need to check for x86_64 explicitely
+>
+> Signed-off-by: Andi Kleen <ak@suse.de>
+>
+> Index: linux/arch/x86/Kconfig
+> ===================================================================
+> --- linux.orig/arch/x86/Kconfig
+> +++ linux/arch/x86/Kconfig
+> @@ -1540,7 +1540,7 @@ endif # X86_32
+>
+>  config K8_NB
+>         def_bool y
+> -       depends on AGP_AMD64 || (X86_64 && (GART_IOMMU || (PCI && NUMA)))
+> +       depends on AGP_AMD64 || GART_IOMMU || K8_NUMA
+>
+>  source "drivers/pcmcia/Kconfig"
+>
+>
 
 
 
+-- 
+Russell Leidich
