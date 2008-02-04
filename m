@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYBDRaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYBDRie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbYBDRaj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbYBDRab
+	id S1754300AbYBDRie (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbYBDRi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:30:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:10766 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754896AbYBDRaa (ORCPT
+	Mon, 4 Feb 2008 12:38:26 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:25007 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753735AbYBDRiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:30:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=x3rap4kOEmiE7JSZVP3bV/TSMHHg/3H5IT3+TGGgzjMtiR4JmuLg5aYbYx+BtaJ5iRanvT5VEYRHUnaFfHgQcd4ac0It0wdnckHKYFicUEkvwHLQEG3qhJMf9kUzWIq9CrXDLFk7xEjcz2E18la2ZSi1DbnpOmBSlDdl+hSPUQs=
-Message-ID: <6101e8c40802040930v7d9dcd85jd37fadd05246664f@mail.gmail.com>
-Date: Mon, 4 Feb 2008 18:30:28 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: [patch 00/27] 2.6.22-stable review
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20080202001927.GA8368@suse.de>
+	Mon, 4 Feb 2008 12:38:25 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
+Date: Mon, 4 Feb 2008 10:39:35 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <47A2644B.4000905@shaw.ca> <alpine.LFD.1.00.0802011149160.3198@www.l.google.com>
+In-Reply-To: <alpine.LFD.1.00.0802011149160.3198@www.l.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080202001927.GA8368@suse.de>
+Message-Id: <200802041039.36100.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/2/08, Greg KH <gregkh@suse.de> wrote:
-> This is the start of the stable review cycle for the 2.6.22.17 release.
-> There are 27 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
->
-> These patches are sent out with a number of different people on the
-> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-> to add your name to the list.  If you want to be off the reviewer list,
-> also email us.
->
-> Responses should be made by Feb 5 2008, 00:00:00 UTC.  Anything received
-> after that time might be too late.
->
-> Note, I think this is going to be the last .22 release, unless people
-> send me some patches they think really needs to go in, and then, it will
-> probably only be one more release.  It's time to move on :)
+On Thursday 31 January 2008 05:50:13 pm Linus Torvalds wrote:
+> On Thu, 31 Jan 2008, Robert Hancock wrote:
+> > 
+> > I think so. There was one objection that it introduced a dependency on pnpacpi
+> > loading after PCI bus enumeration, though.
+> > 
+> > Linus also suggested that pnpacpi could be marking the resources as "present
+> > but unused" so that drivers can request those regions but we still prevent
+> > dynamically assigning resources into them.
+> 
+> I _think_ that's what ACPI used to do before switching over to the PnPACPI 
+> thing, so I do think that "present but not reserved" approach is not just 
+> the right one, but also the (historically) tested one.
 
-hmm it is not a long time supperted kernel, like 2.6.16.y ? ;)
+The reservation happens in drivers/pnp/system.c, and it does mark the
+region as "not busy."
 
->
-> thanks,
->
-> the -stable release team
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+I think the problem here is that the PCI BAR is bigger and spans the
+region reported by ACPI:
 
+[   22.906654] system 00:08: iomem range 0xfebfa000-0xfebfac00 has been reserved
+[   31.133141] PCI: Unable to reserve mem region #1:4000@febf8000 for device 0000:00:1b.0
 
--- 
-Thanks,
-Oliver
+We can easily add more BIOSes to the PNP quirk.
+
+I really don't want to use the earlier quirk that scanned PCI devices
+from a PNP quirk.  I think that's just wrong because PNP (which
+conceptually includes ACPI) is what tells us about PCI root bridges.
+
+Bjorn
