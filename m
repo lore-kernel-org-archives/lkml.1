@@ -1,76 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYBDTUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYBDTU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbYBDTUB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYBDTTw
+	id S1758097AbYBDTU1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYBDTTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:19:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:47960 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbYBDTTv convert rfc822-to-8bit (ORCPT
+	Mon, 4 Feb 2008 14:19:53 -0500
+Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:39731 "HELO
+	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754437AbYBDTTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Feb 2008 14:19:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=s953srttDgetWLO9qkBOh82Ox3PNooIf8vlxllqKi580jt1SsJ5+37MqKoRg+hx/+rpbrL/m85Tb+KiJ3E9TdvdYkEMGyUAF+dmzf+ZXqkKjRtnru/olbfv0FWbzdSNTerfyrMCJDH6pBU7L8PkzLnukElfSwZjHKdo60hv+uss=
-Message-ID: <6101e8c40802041119y3dd1706cvb70944babd33abca@mail.gmail.com>
-Date: Mon, 4 Feb 2008 20:19:49 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [Kconfig {SM,E}] 2.6.24-git13 9135f1901ee6449dfe338adf6e40e9c2025b8150
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080204191305.GC16050@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <6101e8c40802040556y7c58a729m13c4f3e81aff001@mail.gmail.com>
-	 <20080204191305.GC16050@uranus.ravnborg.org>
+X-YMail-OSG: LEjvjUcVM1lLqY4EbhPV9dmYrUmGMhDKYMyq5pkRsJiSL8xpsm1DnuylqsAbzMHj8CZs5mK8Nw--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Mike Christie <michaelc@cs.wisc.edu>,
+       CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>
+In-Reply-To: <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 11:19:16 -0800
+Message-Id: <1202152756.11265.581.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/4/08, Sam Ravnborg <sam@ravnborg.org> wrote:
-> Hi Oliver.
->
-> On Mon, Feb 04, 2008 at 02:56:07PM +0100, Oliver Pinter (Pintér Olivér)
-> wrote:
-> > git top: 9135f1901ee6449dfe338adf6e40e9c2025b8150
-> >
-> > -------8<-------
-> > drivers/spi/Kconfig:156:warning: 'select' used by config symbol
-> > 'SPI_PXA2XX' refers to undefined symbol 'PXA_SSP'
-> >
-> > WARNING: vmlinux.o(.text+0xe01e): Section mismatch in reference from
-> > the function acpi_unmap_lsapic() to the variable
-> > .cpuinit.data:num_processors
-> ...
-> Yes - we all see them. They will soon be silenced and only
-> a summarycounter is printed.
-> For now you can safely ignore them.
->
-> >
-> > make[4]: Warning: File `/dev/null' has modification time 2,1e+03 s in the
-> future
-> > make[5]: Warning: File `/dev/null' has modification time 2,1e+03 s in the
-> future
-> >   CHECK   include/asm-generic/errno-base.h
->
-> These looks strange. I have not seen this message before.
-> Did you adjust your clock backwards recently?
->
+On Mon, 2008-02-04 at 11:06 -0800, Nicholas A. Bellinger wrote:
+> On Mon, 2008-02-04 at 10:29 -0800, Linus Torvalds wrote:
+> > 
+> > On Mon, 4 Feb 2008, James Bottomley wrote:
+> > > 
+> > > The way a user space solution should work is to schedule mmapped I/O
+> > > from the backing store and then send this mmapped region off for target
+> > > I/O.
+> > 
+> > mmap'ing may avoid the copy, but the overhead of a mmap operation is 
+> > quite often much *bigger* than the overhead of a copy operation.
+> > 
+> > Please do not advocate the use of mmap() as a way to avoid memory copies. 
+> > It's not realistic. Even if you can do it with a single "mmap()" system 
+> > call (which is not at all a given, considering that block devices can 
+> > easily be much larger than the available virtual memory space), the fact 
+> > is that page table games along with the fault (and even just TLB miss) 
+> > overhead is easily more than the cost of copying a page in a nice 
+> > streaming manner.
+> > 
+> > Yes, memory is "slow", but dammit, so is mmap().
+> > 
+> > > You also have to pull tricks with the mmap region in the case of writes 
+> > > to prevent useless data being read in from the backing store.  However, 
+> > > none of this involves data copies.
+> > 
+> > "data copies" is irrelevant. The only thing that matters is performance. 
+> > And if avoiding data copies is more costly (or even of a similar cost) 
+> > than the copies themselves would have been, there is absolutely no upside, 
+> > and only downsides due to extra complexity.
+> > 
+> 
+> The iSER spec (RFC-5046) quotes the following in the TCP case for direct
+> data placement:
+> 
+> "  Out-of-order TCP segments in the Traditional iSCSI model have to be
+>    stored and reassembled before the iSCSI protocol layer within an end
+>    node can place the data in the iSCSI buffers.  This reassembly is
+>    required because not every TCP segment is likely to contain an iSCSI
+>    header to enable its placement, and TCP itself does not have a
+>    built-in mechanism for signaling Upper Level Protocol (ULP) message
+>    boundaries to aid placement of out-of-order segments.  This TCP
+>    reassembly at high network speeds is quite counter-productive for the
+>    following reasons: wasted memory bandwidth in data copying, the need
+>    for reassembly memory, wasted CPU cycles in data copying, and the
+>    general store-and-forward latency from an application perspective."
+> 
+> While this does not have anything to do directly with the kernel vs. user discussion
+> for target mode storage engine, the scaling and latency case is easy enough
+> to make if we are talking about scaling TCP for 10 Gb/sec storage fabrics.
+> 
+> > If you want good performance for a service like this, you really generally 
+> > *do* need to in kernel space. You can play games in user space, but you're 
+> > fooling yourself if you think you can do as well as doing it in the 
+> > kernel. And you're *definitely* fooling yourself if you think mmap() 
+> > solves performance issues. "Zero-copy" does not equate to "fast". Memory 
+> > speeds may be slower that core CPU speeds, but not infinitely so!
+> > 
+> 
+> >From looking at this problem from a kernel space perspective for a
+> number of years, I would be inclined to believe this is true for
+> software and hardware data-path cases.  The benefits of moving various
+> control statemachines for something like say traditional iSCSI to
+> userspace has always been debateable.  The most obvious ones are things
+> like authentication, espically if something more complex than CHAP are
+> the obvious case for userspace.  However, I have thought recovery for
+> failures caused from communication path (iSCSI connections) or entire
+> nexuses (iSCSI sessions) failures was very problematic to expect to have
+> to potentially push down IOs state to userspace.
+> 
+> Keeping statemachines for protocol and/or fabric specific statemachines
+> (CSM-E and CSM-I from connection recovery in iSCSI and iSER are the
+> obvious ones) are the best canidates for residing in kernel space.
+> 
+> > (That said: there *are* alternatives to mmap, like "splice()", that really 
+> > do potentially solve some issues without the page table and TLB overheads. 
+> > But while splice() avoids the costs of paging, I strongly suspect it would 
+> > still have easily measurable latency issues. Switching between user and 
+> > kernel space multiple times is definitely not going to be free, although 
+> > it's probably not a huge issue if you have big enough requests).
+> > 
+> 
 
-no, never, and i neither have running ntp...
-> 	Sam
->
->
+Then again, having some data-path for software and hardware bulk IO
+operation of storage fabric protocol / statemachine in userspace would
+be really interesting for something like an SPU enabled engine for the
+Cell Broadband Architecture.
+
+--nab
 
 
--- 
-Thanks,
-Oliver
+
