@@ -1,167 +1,888 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYBDR1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbYBDR2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbYBDR1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbYBDR1h
+	id S1756131AbYBDR2c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbYBDR2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:27:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:6561 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754792AbYBDR1f (ORCPT
+	Mon, 4 Feb 2008 12:28:23 -0500
+Received: from postfix1-g20.free.fr ([212.27.60.42]:49373 "EHLO
+	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754767AbYBDR2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:27:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=A6R/cr4o9XgEBFIS/i8AGnquOi3YaiAsQxhyiEQpN8Mc4eW0h3JNpMxITUt+FVh60itLhiUqC6eTQt3dpa338Y5HLP5gSo7OOzNDvLeDdVS3Oiyc5GRYKQV+wxB6J1GpzVSI9OftHo308juLGBCaagwR7LntdbI0In4PX7lIBYE=
-Message-ID: <47A74B02.8050704@gmail.com>
-Date: Mon, 04 Feb 2008 18:27:30 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 4 Feb 2008 12:28:21 -0500
+Message-ID: <47A74AAB.2090904@free.fr>
+Date: Mon, 04 Feb 2008 18:26:03 +0100
+From: Cedric Le Goater <legoater@free.fr>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: David Brownell <dbrownell@users.sourceforge.net>
-CC: linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ashok.raj@intel.com, shaohua.li@intel.com,
-       anil.s.keshavamurthy@intel.com, Dave Airlie <airlied@linux.ie>
-Subject: DMAR EHCI failures
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: [PATCH 1/2] change clone_flags type to u64
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Cedric Le Goater <clg@fr.ibm.com>
 
-I have this in dmesg:
-DMAR:[DMA Write] Request device [00:02.0] fault addr ee1512000
-DMAR:[fault reason 05] PTE Write access is not set
-PCI-DMA: Intel(R) Virtualization Technology for Directed I/O
-DMAR:[DMA Read] Request device [00:1d.7] fault addr 7d5f0000
-DMAR:[fault reason 06] PTE Read access is not set
-DMAR:[DMA Read] Request device [00:1a.7] fault addr 7d5f1000
-DMAR:[fault reason 06] PTE Read access is not set
-PCI-GART: No AMD northbridge found.
-DMAR:[DMA Read] Request device [00:1a.2] fault addr 7d5f7000
-DMAR:[fault reason 06] PTE Read access is not set
+This is a preliminary patch changing the clone_flags type to 64bits
+for all the routines called by do_fork(). It prepares ground for
+the next patch which introduces an enhanced version of clone().
 
-CONFIG_DMAR=y
-CONFIG_DMAR_GFX_WA=y
-CONFIG_DMAR_FLOPPY_WA=y
+This is work in progress. All conversions might not be done yet.
 
-Without the gfx workaround, there is much more output regarding 00:02.0. Is 
-there problem with broken hw, bios or drivers?
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+---
+ arch/alpha/kernel/process.c         |    2 +-
+ arch/arm/kernel/process.c           |    2 +-
+ arch/avr32/kernel/process.c         |    2 +-
+ arch/blackfin/kernel/process.c      |    2 +-
+ arch/cris/arch-v10/kernel/process.c |    2 +-
+ arch/cris/arch-v32/kernel/process.c |    2 +-
+ arch/frv/kernel/process.c           |    2 +-
+ arch/h8300/kernel/process.c         |    2 +-
+ arch/ia64/ia32/sys_ia32.c           |    2 +-
+ arch/ia64/kernel/process.c          |    2 +-
+ arch/m32r/kernel/process.c          |    2 +-
+ arch/m68k/kernel/process.c          |    2 +-
+ arch/m68knommu/kernel/process.c     |    2 +-
+ arch/mips/kernel/process.c          |    2 +-
+ arch/mn10300/kernel/process.c       |    2 +-
+ arch/parisc/kernel/process.c        |    2 +-
+ arch/powerpc/kernel/process.c       |    2 +-
+ arch/s390/kernel/process.c          |    2 +-
+ arch/sh/kernel/process_32.c         |    2 +-
+ arch/sh/kernel/process_64.c         |    2 +-
+ arch/sparc/kernel/process.c         |    2 +-
+ arch/sparc64/kernel/process.c       |    2 +-
+ arch/um/kernel/process.c            |    2 +-
+ arch/v850/kernel/process.c          |    2 +-
+ arch/x86/kernel/process_32.c        |    2 +-
+ arch/x86/kernel/process_64.c        |    2 +-
+ arch/xtensa/kernel/process.c        |    2 +-
+ fs/namespace.c                      |    2 +-
+ include/linux/ipc_namespace.h       |    4 ++--
+ include/linux/key.h                 |    2 +-
+ include/linux/mnt_namespace.h       |    2 +-
+ include/linux/nsproxy.h             |    2 +-
+ include/linux/pid_namespace.h       |    4 ++--
+ include/linux/sched.h               |    2 +-
+ include/linux/security.h            |    6 +++---
+ include/linux/sem.h                 |    4 ++--
+ include/linux/user_namespace.h      |    4 ++--
+ include/linux/utsname.h             |    4 ++--
+ include/net/net_namespace.h         |    4 ++--
+ ipc/namespace.c                     |    2 +-
+ ipc/sem.c                           |    2 +-
+ kernel/fork.c                       |   14 +++++++-------
+ kernel/nsproxy.c                    |    4 ++--
+ kernel/pid_namespace.c              |    2 +-
+ kernel/user_namespace.c             |    2 +-
+ kernel/utsname.c                    |    2 +-
+ net/core/net_namespace.c            |    4 ++--
+ security/dummy.c                    |    2 +-
+ security/keys/process_keys.c        |    2 +-
+ security/security.c                 |    2 +-
+ security/selinux/hooks.c            |    2 +-
+ 51 files changed, 67 insertions(+), 67 deletions(-)
 
-/sys/firmware/acpi/tables/DMAR:
-http://www.fi.muni.cz/~xslaby/sklad/DMAR.bin
-dmesg:
-http://www.fi.muni.cz/~xslaby/sklad/DMAR.dmesg
-
-# for a in 00:02.0 00:1d.7 00:1a.7 00:1a.2; do lspci -vxxx -s $a; done
-00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express 
-Integrated Graphics Controller (rev 02) (prog-if 00 [VGA controller])
-         Subsystem: Intel Corporation 82G33/G31 Express Integrated Graphics 
-Controller
-         Flags: bus master, fast devsel, latency 0, IRQ 16
-         Memory at ffa80000 (32-bit, non-prefetchable) [size=512K]
-         I/O ports at ec00 [size=8]
-         Memory at d0000000 (32-bit, prefetchable) [size=256M]
-         Memory at ff900000 (32-bit, non-prefetchable) [size=1M]
-         Capabilities: [90] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 
-Enable-
-         Capabilities: [d0] Power Management version 2
-00: 86 80 c2 29 07 00 90 00 02 00 00 03 00 00 00 00
-10: 00 00 a8 ff 01 ec 00 00 08 00 00 d0 00 00 90 ff
-20: 00 00 00 00 00 00 00 00 00 00 00 00 86 80 c2 29
-30: 00 00 00 00 90 00 00 00 00 00 00 00 0a 01 00 00
-40: 09 00 0b 01 00 00 00 00 01 00 00 00 00 00 00 00
-50: 00 00 30 02 49 03 00 00 00 00 00 00 00 00 80 7d
-60: 00 00 02 03 00 00 00 00 00 00 00 00 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-90: 05 d0 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 11 11 00 00 00 00 06 03 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 01 00 22 00 00 00 00 00 00 00 00 00 00 01 02 00
-e0: 00 00 00 00 00 00 00 00 00 80 00 00 00 00 00 00
-f0: 12 00 03 00 00 00 00 00 90 0f 03 00 e4 e0 5b 7d
-
-00:1d.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI 
-Controller #1 (rev 02) (prog-if 20 [EHCI])
-         Subsystem: Intel Corporation 82801I (ICH9 Family) USB2 EHCI Controller #1
-         Flags: bus master, medium devsel, latency 0, IRQ 23
-         Memory at ffa7b000 (32-bit, non-prefetchable) [size=1K]
-         Capabilities: [50] Power Management version 2
-         Capabilities: [58] Debug port: BAR=1 offset=00a0
-         Capabilities: [98] Vendor Specific Information <?>
-         Kernel driver in use: ehci_hcd
-         Kernel modules: ehci-hcd
-00: 86 80 3a 29 06 00 90 22 02 20 03 0c 00 00 00 00
-10: 00 b0 a7 ff 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 86 80 3a 29
-30: 00 00 00 00 50 00 00 00 00 00 00 00 0a 01 00 00
-40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-50: 01 58 c2 c9 00 00 00 00 0a 98 a0 20 00 00 00 00
-60: 20 20 ff 01 00 00 00 00 01 00 00 01 00 00 08 00
-70: 00 00 cf 0f 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 09 00 06 20 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 aa ff 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 88 85 40 00 86 0f 02 00 06 17 02 20
-
-00:1a.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI 
-Controller #2 (rev 02) (prog-if 20 [EHCI])
-         Subsystem: Intel Corporation Optiplex 755
-         Flags: bus master, medium devsel, latency 0, IRQ 19
-         Memory at ffa7b400 (32-bit, non-prefetchable) [size=1K]
-         Capabilities: [50] Power Management version 2
-         Capabilities: [58] Debug port: BAR=1 offset=00a0
-         Capabilities: [98] Vendor Specific Information <?>
-         Kernel driver in use: ehci_hcd
-         Kernel modules: ehci-hcd
-00: 86 80 3c 29 06 00 90 22 02 20 03 0c 00 00 00 00
-10: 00 b4 a7 ff 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 86 80 3c 29
-30: 00 00 00 00 50 00 00 00 00 00 00 00 03 04 00 00
-40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-50: 01 58 c2 c9 00 00 00 00 0a 98 a0 20 00 00 00 00
-60: 20 20 ff 01 00 00 00 00 01 00 00 01 00 00 08 00
-70: 00 00 cf 0f 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 09 00 06 20 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 aa ff 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 88 85 40 00 86 0f 02 00 06 17 02 20
-
-00:1a.2 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI 
-Controller #6 (rev 02) (prog-if 00 [UHCI])
-         Subsystem: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #6
-         Flags: bus master, medium devsel, latency 0, IRQ 18
-         I/O ports at d480 [size=32]
-         Capabilities: [50] Vendor Specific Information <?>
-         Kernel driver in use: uhci_hcd
-00: 86 80 39 29 05 00 90 22 02 00 03 0c 00 00 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 81 d4 00 00 00 00 00 00 00 00 00 00 86 80 39 29
-30: 00 00 00 00 50 00 00 00 00 00 00 00 0c 03 00 00
-40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-50: 09 00 06 20 00 00 00 00 00 00 00 00 00 00 00 00
-60: 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 2f 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 86 0f 02 00 00 00 00 00
+Index: 2.6.24-mm1/arch/alpha/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/alpha/kernel/process.c
++++ 2.6.24-mm1/arch/alpha/kernel/process.c
+@@ -270,7 +270,7 @@ alpha_vfork(struct pt_regs *regs)
+  */
+ 
+ int
+-copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 	    unsigned long unused,
+ 	    struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/arm/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/arm/kernel/process.c
++++ 2.6.24-mm1/arch/arm/kernel/process.c
+@@ -331,7 +331,7 @@ void release_thread(struct task_struct *
+ asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+ 
+ int
+-copy_thread(int nr, unsigned long clone_flags, unsigned long stack_start,
++copy_thread(int nr, u64 clone_flags, unsigned long stack_start,
+ 	    unsigned long stk_sz, struct task_struct *p, struct pt_regs *regs)
+ {
+ 	struct thread_info *thread = task_thread_info(p);
+Index: 2.6.24-mm1/arch/avr32/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/avr32/kernel/process.c
++++ 2.6.24-mm1/arch/avr32/kernel/process.c
+@@ -325,7 +325,7 @@ int dump_fpu(struct pt_regs *regs, elf_f
+ 
+ asmlinkage void ret_from_fork(void);
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		unsigned long unused,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/blackfin/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/blackfin/kernel/process.c
++++ 2.6.24-mm1/arch/blackfin/kernel/process.c
+@@ -168,7 +168,7 @@ asmlinkage int bfin_clone(struct pt_regs
+ }
+ 
+ int
+-copy_thread(int nr, unsigned long clone_flags,
++copy_thread(int nr, u64 clone_flags,
+ 	    unsigned long usp, unsigned long topstk,
+ 	    struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/cris/arch-v10/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/cris/arch-v10/kernel/process.c
++++ 2.6.24-mm1/arch/cris/arch-v10/kernel/process.c
+@@ -116,7 +116,7 @@ int kernel_thread(int (*fn)(void *), voi
+  */
+ asmlinkage void ret_from_fork(void);
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		unsigned long unused,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/cris/arch-v32/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/cris/arch-v32/kernel/process.c
++++ 2.6.24-mm1/arch/cris/arch-v32/kernel/process.c
+@@ -135,7 +135,7 @@ kernel_thread(int (*fn)(void *), void * 
+ extern asmlinkage void ret_from_fork(void);
+ 
+ int
+-copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 	unsigned long unused,
+ 	struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/frv/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/frv/kernel/process.c
++++ 2.6.24-mm1/arch/frv/kernel/process.c
+@@ -204,7 +204,7 @@ void prepare_to_copy(struct task_struct 
+ /*
+  * set up the kernel stack and exception frames for a new process
+  */
+-int copy_thread(int nr, unsigned long clone_flags,
++int copy_thread(int nr, u64 clone_flags,
+ 		unsigned long usp, unsigned long topstk,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/h8300/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/h8300/kernel/process.c
++++ 2.6.24-mm1/arch/h8300/kernel/process.c
+@@ -192,7 +192,7 @@ asmlinkage int h8300_clone(struct pt_reg
+ 
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags,
++int copy_thread(int nr, u64 clone_flags,
+                 unsigned long usp, unsigned long topstk,
+ 		 struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/ia64/ia32/sys_ia32.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/ia64/ia32/sys_ia32.c
++++ 2.6.24-mm1/arch/ia64/ia32/sys_ia32.c
+@@ -734,7 +734,7 @@ __ia32_copy_pp_list(struct ia64_partial_
+ 
+ int
+ ia32_copy_ia64_partial_page_list(struct task_struct *p,
+-				unsigned long clone_flags)
++				u64 clone_flags)
+ {
+ 	int retval = 0;
+ 
+Index: 2.6.24-mm1/arch/ia64/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/ia64/kernel/process.c
++++ 2.6.24-mm1/arch/ia64/kernel/process.c
+@@ -401,7 +401,7 @@ ia64_load_extra (struct task_struct *tas
+  * so there is nothing to worry about.
+  */
+ int
+-copy_thread (int nr, unsigned long clone_flags,
++copy_thread (int nr, u64 clone_flags,
+ 	     unsigned long user_stack_base, unsigned long user_stack_size,
+ 	     struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/m32r/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/m32r/kernel/process.c
++++ 2.6.24-mm1/arch/m32r/kernel/process.c
+@@ -242,7 +242,7 @@ int dump_fpu(struct pt_regs *regs, elf_f
+ 	return 0; /* Task didn't use the fpu at all. */
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long spu,
++int copy_thread(int nr, u64 clone_flags, unsigned long spu,
+ 	unsigned long unused, struct task_struct *tsk, struct pt_regs *regs)
+ {
+ 	struct pt_regs *childregs = task_pt_regs(tsk);
+Index: 2.6.24-mm1/arch/m68k/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/m68k/kernel/process.c
++++ 2.6.24-mm1/arch/m68k/kernel/process.c
+@@ -235,7 +235,7 @@ asmlinkage int m68k_clone(struct pt_regs
+ 		       parent_tidptr, child_tidptr);
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		 unsigned long unused,
+ 		 struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/m68knommu/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/m68knommu/kernel/process.c
++++ 2.6.24-mm1/arch/m68knommu/kernel/process.c
+@@ -200,7 +200,7 @@ asmlinkage int m68k_clone(struct pt_regs
+         return do_fork(clone_flags, newsp, regs, 0, NULL, NULL);
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags,
++int copy_thread(int nr, u64 clone_flags,
+ 		unsigned long usp, unsigned long topstk,
+ 		struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/mips/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/mips/kernel/process.c
++++ 2.6.24-mm1/arch/mips/kernel/process.c
+@@ -100,7 +100,7 @@ void flush_thread(void)
+ {
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 	unsigned long unused, struct task_struct *p, struct pt_regs *regs)
+ {
+ 	struct thread_info *ti = task_thread_info(p);
+Index: 2.6.24-mm1/arch/mn10300/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/mn10300/kernel/process.c
++++ 2.6.24-mm1/arch/mn10300/kernel/process.c
+@@ -193,7 +193,7 @@ void prepare_to_copy(struct task_struct 
+  * set up the kernel stack for a new thread and copy arch-specific thread
+  * control information
+  */
+-int copy_thread(int nr, unsigned long clone_flags,
++int copy_thread(int nr, u64 clone_flags,
+ 		unsigned long c_usp, unsigned long ustk_size,
+ 		struct task_struct *p, struct pt_regs *kregs)
+ {
+Index: 2.6.24-mm1/arch/parisc/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/parisc/kernel/process.c
++++ 2.6.24-mm1/arch/parisc/kernel/process.c
+@@ -263,7 +263,7 @@ sys_vfork(struct pt_regs *regs)
+ }
+ 
+ int
+-copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 	    unsigned long unused,	/* in ia64 this is "user_stack_size" */
+ 	    struct task_struct * p, struct pt_regs * pregs)
+ {
+Index: 2.6.24-mm1/arch/powerpc/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/powerpc/kernel/process.c
++++ 2.6.24-mm1/arch/powerpc/kernel/process.c
+@@ -534,7 +534,7 @@ void prepare_to_copy(struct task_struct 
+ /*
+  * Copy a thread..
+  */
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		unsigned long unused, struct task_struct *p,
+ 		struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/s390/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/s390/kernel/process.c
++++ 2.6.24-mm1/arch/s390/kernel/process.c
+@@ -241,7 +241,7 @@ void release_thread(struct task_struct *
+ {
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long new_stackp,
++int copy_thread(int nr, u64 clone_flags, unsigned long new_stackp,
+ 	unsigned long unused,
+         struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/sh/kernel/process_32.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/sh/kernel/process_32.c
++++ 2.6.24-mm1/arch/sh/kernel/process_32.c
+@@ -232,7 +232,7 @@ int dump_fpu(struct pt_regs *regs, elf_f
+ 
+ asmlinkage void ret_from_fork(void);
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		unsigned long unused,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/sh/kernel/process_64.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/sh/kernel/process_64.c
++++ 2.6.24-mm1/arch/sh/kernel/process_64.c
+@@ -500,7 +500,7 @@ int dump_fpu(struct pt_regs *regs, elf_f
+ 
+ asmlinkage void ret_from_fork(void);
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		unsigned long unused,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/sparc/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/sparc/kernel/process.c
++++ 2.6.24-mm1/arch/sparc/kernel/process.c
+@@ -454,7 +454,7 @@ asmlinkage int sparc_do_fork(unsigned lo
+  */
+ extern void ret_from_fork(void);
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
++int copy_thread(int nr, u64 clone_flags, unsigned long sp,
+ 		unsigned long unused,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/sparc64/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/sparc64/kernel/process.c
++++ 2.6.24-mm1/arch/sparc64/kernel/process.c
+@@ -617,7 +617,7 @@ asmlinkage long sparc_do_fork(unsigned l
+  * Parent -->  %o0 == childs  pid, %o1 == 0
+  * Child  -->  %o0 == parents pid, %o1 == 1
+  */
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
++int copy_thread(int nr, u64 clone_flags, unsigned long sp,
+ 		unsigned long unused,
+ 		struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/um/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/um/kernel/process.c
++++ 2.6.24-mm1/arch/um/kernel/process.c
+@@ -181,7 +181,7 @@ void fork_handler(void)
+ 	userspace(&current->thread.regs.regs);
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
++int copy_thread(int nr, u64 clone_flags, unsigned long sp,
+ 		unsigned long stack_top, struct task_struct * p,
+ 		struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/v850/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/v850/kernel/process.c
++++ 2.6.24-mm1/arch/v850/kernel/process.c
+@@ -110,7 +110,7 @@ void flush_thread (void)
+ 	set_fs (USER_DS);
+ }
+ 
+-int copy_thread (int nr, unsigned long clone_flags,
++int copy_thread (int nr, u64 clone_flags,
+ 		 unsigned long stack_start, unsigned long stack_size,
+ 		 struct task_struct *p, struct pt_regs *regs)
+ {
+Index: 2.6.24-mm1/arch/x86/kernel/process_32.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/x86/kernel/process_32.c
++++ 2.6.24-mm1/arch/x86/kernel/process_32.c
+@@ -491,7 +491,7 @@ void prepare_to_copy(struct task_struct 
+ 	unlazy_fpu(tsk);
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
++int copy_thread(int nr, u64 clone_flags, unsigned long sp,
+ 	unsigned long unused,
+ 	struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/x86/kernel/process_64.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/x86/kernel/process_64.c
++++ 2.6.24-mm1/arch/x86/kernel/process_64.c
+@@ -488,7 +488,7 @@ void prepare_to_copy(struct task_struct 
+ 	unlazy_fpu(tsk);
+ }
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
++int copy_thread(int nr, u64 clone_flags, unsigned long sp,
+ 		unsigned long unused,
+ 	struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/arch/xtensa/kernel/process.c
+===================================================================
+--- 2.6.24-mm1.orig/arch/xtensa/kernel/process.c
++++ 2.6.24-mm1/arch/xtensa/kernel/process.c
+@@ -102,7 +102,7 @@ void flush_thread(void)
+  *       childregs.
+  */
+ 
+-int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++int copy_thread(int nr, u64 clone_flags, unsigned long usp,
+ 		unsigned long unused,
+                 struct task_struct * p, struct pt_regs * regs)
+ {
+Index: 2.6.24-mm1/include/linux/key.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/key.h
++++ 2.6.24-mm1/include/linux/key.h
+@@ -266,7 +266,7 @@ extern struct key root_user_keyring, roo
+ extern int alloc_uid_keyring(struct user_struct *user,
+ 			     struct task_struct *ctx);
+ extern void switch_uid_keyring(struct user_struct *new_user);
+-extern int copy_keys(unsigned long clone_flags, struct task_struct *tsk);
++extern int copy_keys(u64 clone_flags, struct task_struct *tsk);
+ extern int copy_thread_group_keys(struct task_struct *tsk);
+ extern void exit_keys(struct task_struct *tsk);
+ extern void exit_thread_group_keys(struct signal_struct *tg);
+Index: 2.6.24-mm1/include/linux/sched.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/sched.h
++++ 2.6.24-mm1/include/linux/sched.h
+@@ -1756,7 +1756,7 @@ extern struct mm_struct *get_task_mm(str
+ /* Remove the current tasks stale references to the old mm_struct */
+ extern void mm_release(struct task_struct *, struct mm_struct *);
+ 
+-extern int  copy_thread(int, unsigned long, unsigned long, unsigned long, struct task_struct *, struct pt_regs *);
++extern int  copy_thread(int, u64, unsigned long, unsigned long, struct task_struct *, struct pt_regs *);
+ extern void flush_thread(void);
+ extern void exit_thread(void);
+ 
+Index: 2.6.24-mm1/include/linux/security.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/security.h
++++ 2.6.24-mm1/include/linux/security.h
+@@ -1321,7 +1321,7 @@ struct security_operations {
+ 	int (*file_receive) (struct file * file);
+ 	int (*dentry_open)  (struct file *file);
+ 
+-	int (*task_create) (unsigned long clone_flags);
++	int (*task_create) (u64 clone_flags);
+ 	int (*task_alloc_security) (struct task_struct * p);
+ 	void (*task_free_security) (struct task_struct * p);
+ 	int (*task_setuid) (uid_t id0, uid_t id1, uid_t id2, int flags);
+@@ -1576,7 +1576,7 @@ int security_file_send_sigiotask(struct 
+ 				  struct fown_struct *fown, int sig);
+ int security_file_receive(struct file *file);
+ int security_dentry_open(struct file *file);
+-int security_task_create(unsigned long clone_flags);
++int security_task_create(u64 clone_flags);
+ int security_task_alloc(struct task_struct *p);
+ void security_task_free(struct task_struct *p);
+ int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags);
+@@ -2042,7 +2042,7 @@ static inline int security_dentry_open (
+ 	return 0;
+ }
+ 
+-static inline int security_task_create (unsigned long clone_flags)
++static inline int security_task_create (u64 clone_flags)
+ {
+ 	return 0;
+ }
+Index: 2.6.24-mm1/include/linux/sem.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/sem.h
++++ 2.6.24-mm1/include/linux/sem.h
+@@ -139,11 +139,11 @@ struct sysv_sem {
+ 
+ #ifdef CONFIG_SYSVIPC
+ 
+-extern int copy_semundo(unsigned long clone_flags, struct task_struct *tsk);
++extern int copy_semundo(u64 clone_flags, struct task_struct *tsk);
+ extern void exit_sem(struct task_struct *tsk);
+ 
+ #else
+-static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk)
++static inline int copy_semundo(u64 clone_flags, struct task_struct *tsk)
+ {
+ 	return 0;
+ }
+Index: 2.6.24-mm1/ipc/sem.c
+===================================================================
+--- 2.6.24-mm1.orig/ipc/sem.c
++++ 2.6.24-mm1/ipc/sem.c
+@@ -1260,7 +1260,7 @@ asmlinkage long sys_semop (int semid, st
+  * parent and child tasks.
+  */
+ 
+-int copy_semundo(unsigned long clone_flags, struct task_struct *tsk)
++int copy_semundo(u64 clone_flags, struct task_struct *tsk)
+ {
+ 	struct sem_undo_list *undo_list;
+ 	int error;
+Index: 2.6.24-mm1/kernel/fork.c
+===================================================================
+--- 2.6.24-mm1.orig/kernel/fork.c
++++ 2.6.24-mm1/kernel/fork.c
+@@ -547,7 +547,7 @@ fail_nocontext:
+ 	return NULL;
+ }
+ 
+-static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
++static int copy_mm(u64 clone_flags, struct task_struct * tsk)
+ {
+ 	struct mm_struct * mm, *oldmm;
+ 	int retval;
+@@ -623,7 +623,7 @@ struct fs_struct *copy_fs_struct(struct 
+ 
+ EXPORT_SYMBOL_GPL(copy_fs_struct);
+ 
+-static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
++static int copy_fs(u64 clone_flags, struct task_struct *tsk)
+ {
+ 	if (clone_flags & CLONE_FS) {
+ 		atomic_inc(&current->fs->count);
+@@ -765,7 +765,7 @@ out:
+ 	return NULL;
+ }
+ 
+-static int copy_files(unsigned long clone_flags, struct task_struct * tsk)
++static int copy_files(u64 clone_flags, struct task_struct * tsk)
+ {
+ 	struct files_struct *oldf, *newf;
+ 	int error = 0;
+@@ -851,7 +851,7 @@ int unshare_files(void)
+ 
+ EXPORT_SYMBOL(unshare_files);
+ 
+-static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
++static int copy_sighand(u64 clone_flags, struct task_struct *tsk)
+ {
+ 	struct sighand_struct *sig;
+ 
+@@ -874,7 +874,7 @@ void __cleanup_sighand(struct sighand_st
+ 		kmem_cache_free(sighand_cachep, sighand);
+ }
+ 
+-static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
++static int copy_signal(u64 clone_flags, struct task_struct *tsk)
+ {
+ 	struct signal_struct *sig;
+ 	int ret;
+@@ -965,7 +965,7 @@ static void cleanup_signal(struct task_s
+ 		__cleanup_signal(sig);
+ }
+ 
+-static void copy_flags(unsigned long clone_flags, struct task_struct *p)
++static void copy_flags(u64 clone_flags, struct task_struct *p)
+ {
+ 	unsigned long new_flags = p->flags;
+ 
+@@ -1001,7 +1001,7 @@ static void rt_mutex_init_task(struct ta
+  * parts of the process environment (as per the clone
+  * flags). The actual kick-off is left to the caller.
+  */
+-static struct task_struct *copy_process(unsigned long clone_flags,
++static struct task_struct *copy_process(u64 clone_flags,
+ 					unsigned long stack_start,
+ 					struct pt_regs *regs,
+ 					unsigned long stack_size,
+Index: 2.6.24-mm1/security/dummy.c
+===================================================================
+--- 2.6.24-mm1.orig/security/dummy.c
++++ 2.6.24-mm1/security/dummy.c
+@@ -493,7 +493,7 @@ static int dummy_dentry_open (struct fil
+ 	return 0;
+ }
+ 
+-static int dummy_task_create (unsigned long clone_flags)
++static int dummy_task_create (u64 clone_flags)
+ {
+ 	return 0;
+ }
+Index: 2.6.24-mm1/security/keys/process_keys.c
+===================================================================
+--- 2.6.24-mm1.orig/security/keys/process_keys.c
++++ 2.6.24-mm1/security/keys/process_keys.c
+@@ -278,7 +278,7 @@ int copy_thread_group_keys(struct task_s
+ /*
+  * copy the keys for fork
+  */
+-int copy_keys(unsigned long clone_flags, struct task_struct *tsk)
++int copy_keys(u64 clone_flags, struct task_struct *tsk)
+ {
+ 	key_check(tsk->thread_keyring);
+ 	key_check(tsk->request_key_auth);
+Index: 2.6.24-mm1/security/security.c
+===================================================================
+--- 2.6.24-mm1.orig/security/security.c
++++ 2.6.24-mm1/security/security.c
+@@ -578,7 +578,7 @@ int security_dentry_open(struct file *fi
+ 	return security_ops->dentry_open(file);
+ }
+ 
+-int security_task_create(unsigned long clone_flags)
++int security_task_create(u64 clone_flags)
+ {
+ 	return security_ops->task_create(clone_flags);
+ }
+Index: 2.6.24-mm1/security/selinux/hooks.c
+===================================================================
+--- 2.6.24-mm1.orig/security/selinux/hooks.c
++++ 2.6.24-mm1/security/selinux/hooks.c
+@@ -3019,7 +3019,7 @@ static int selinux_dentry_open(struct fi
+ 
+ /* task security operations */
+ 
+-static int selinux_task_create(unsigned long clone_flags)
++static int selinux_task_create(u64 clone_flags)
+ {
+ 	int rc;
+ 
+Index: 2.6.24-mm1/include/linux/nsproxy.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/nsproxy.h
++++ 2.6.24-mm1/include/linux/nsproxy.h
+@@ -62,7 +62,7 @@ static inline struct nsproxy *task_nspro
+ 	return rcu_dereference(tsk->nsproxy);
+ }
+ 
+-int copy_namespaces(unsigned long flags, struct task_struct *tsk);
++int copy_namespaces(u64 clone_flags, struct task_struct *tsk);
+ void exit_task_namespaces(struct task_struct *tsk);
+ void switch_task_namespaces(struct task_struct *tsk, struct nsproxy *new);
+ void free_nsproxy(struct nsproxy *ns);
+Index: 2.6.24-mm1/kernel/nsproxy.c
+===================================================================
+--- 2.6.24-mm1.orig/kernel/nsproxy.c
++++ 2.6.24-mm1/kernel/nsproxy.c
+@@ -47,7 +47,7 @@ static inline struct nsproxy *clone_nspr
+  * Return the newly created nsproxy.  Do not attach this to the task,
+  * leave it to the caller to do proper locking and attach it to task.
+  */
+-static struct nsproxy *create_new_namespaces(unsigned long flags,
++static struct nsproxy *create_new_namespaces(u64 flags,
+ 			struct task_struct *tsk, struct fs_struct *new_fs)
+ {
+ 	struct nsproxy *new_nsp;
+@@ -119,7 +119,7 @@ out_ns:
+  * called from clone.  This now handles copy for nsproxy and all
+  * namespaces therein.
+  */
+-int copy_namespaces(unsigned long flags, struct task_struct *tsk)
++int copy_namespaces(u64 flags, struct task_struct *tsk)
+ {
+ 	struct nsproxy *old_ns = tsk->nsproxy;
+ 	struct nsproxy *new_ns;
+Index: 2.6.24-mm1/fs/namespace.c
+===================================================================
+--- 2.6.24-mm1.orig/fs/namespace.c
++++ 2.6.24-mm1/fs/namespace.c
+@@ -1958,7 +1958,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	return new_ns;
+ }
+ 
+-struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
++struct mnt_namespace *copy_mnt_ns(u64 flags, struct mnt_namespace *ns,
+ 		struct fs_struct *new_fs)
+ {
+ 	struct mnt_namespace *new_ns;
+Index: 2.6.24-mm1/include/linux/ipc_namespace.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/ipc_namespace.h
++++ 2.6.24-mm1/include/linux/ipc_namespace.h
+@@ -42,7 +42,7 @@ extern struct ipc_namespace init_ipc_ns;
+ 
+ #if defined(CONFIG_SYSVIPC) && defined(CONFIG_IPC_NS)
+ extern void free_ipc_ns(struct kref *kref);
+-extern struct ipc_namespace *copy_ipcs(unsigned long flags,
++extern struct ipc_namespace *copy_ipcs(u64 flags,
+ 				       struct ipc_namespace *ns);
+ extern void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
+ 		      void (*free)(struct ipc_namespace *,
+@@ -60,7 +60,7 @@ static inline void put_ipc_ns(struct ipc
+ 	kref_put(&ns->kref, free_ipc_ns);
+ }
+ #else
+-static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
++static inline struct ipc_namespace *copy_ipcs(u64 flags,
+ 		struct ipc_namespace *ns)
+ {
+ 	if (flags & CLONE_NEWIPC)
+Index: 2.6.24-mm1/include/linux/mnt_namespace.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/mnt_namespace.h
++++ 2.6.24-mm1/include/linux/mnt_namespace.h
+@@ -14,7 +14,7 @@ struct mnt_namespace {
+ 	int event;
+ };
+ 
+-extern struct mnt_namespace *copy_mnt_ns(unsigned long, struct mnt_namespace *,
++extern struct mnt_namespace *copy_mnt_ns(u64, struct mnt_namespace *,
+ 		struct fs_struct *);
+ extern void __put_mnt_ns(struct mnt_namespace *ns);
+ 
+Index: 2.6.24-mm1/include/linux/pid_namespace.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/pid_namespace.h
++++ 2.6.24-mm1/include/linux/pid_namespace.h
+@@ -37,7 +37,7 @@ static inline struct pid_namespace *get_
+ 	return ns;
+ }
+ 
+-extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *ns);
++extern struct pid_namespace *copy_pid_ns(u64 flags, struct pid_namespace *ns);
+ extern void free_pid_ns(struct kref *kref);
+ extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
+ 
+@@ -56,7 +56,7 @@ static inline struct pid_namespace *get_
+ }
+ 
+ static inline struct pid_namespace *
+-copy_pid_ns(unsigned long flags, struct pid_namespace *ns)
++copy_pid_ns(u64 flags, struct pid_namespace *ns)
+ {
+ 	if (flags & CLONE_NEWPID)
+ 		ns = ERR_PTR(-EINVAL);
+Index: 2.6.24-mm1/include/linux/user_namespace.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/user_namespace.h
++++ 2.6.24-mm1/include/linux/user_namespace.h
+@@ -26,7 +26,7 @@ static inline struct user_namespace *get
+ 	return ns;
+ }
+ 
+-extern struct user_namespace *copy_user_ns(int flags,
++extern struct user_namespace *copy_user_ns(u64 flags,
+ 					   struct user_namespace *old_ns);
+ extern void free_user_ns(struct kref *kref);
+ 
+@@ -43,7 +43,7 @@ static inline struct user_namespace *get
+ 	return &init_user_ns;
+ }
+ 
+-static inline struct user_namespace *copy_user_ns(int flags,
++static inline struct user_namespace *copy_user_ns(u64 flags,
+ 						  struct user_namespace *old_ns)
+ {
+ 	if (flags & CLONE_NEWUSER)
+Index: 2.6.24-mm1/include/linux/utsname.h
+===================================================================
+--- 2.6.24-mm1.orig/include/linux/utsname.h
++++ 2.6.24-mm1/include/linux/utsname.h
+@@ -50,7 +50,7 @@ static inline void get_uts_ns(struct uts
+ 	kref_get(&ns->kref);
+ }
+ 
+-extern struct uts_namespace *copy_utsname(unsigned long flags,
++extern struct uts_namespace *copy_utsname(u64 flags,
+ 					struct uts_namespace *ns);
+ extern void free_uts_ns(struct kref *kref);
+ 
+@@ -67,7 +67,7 @@ static inline void put_uts_ns(struct uts
+ {
+ }
+ 
+-static inline struct uts_namespace *copy_utsname(unsigned long flags,
++static inline struct uts_namespace *copy_utsname(u64 flags,
+ 					struct uts_namespace *ns)
+ {
+ 	if (flags & CLONE_NEWUTS)
+Index: 2.6.24-mm1/include/net/net_namespace.h
+===================================================================
+--- 2.6.24-mm1.orig/include/net/net_namespace.h
++++ 2.6.24-mm1/include/net/net_namespace.h
+@@ -73,9 +73,9 @@ extern struct net init_net;
+ extern struct list_head net_namespace_list;
+ 
+ #ifdef CONFIG_NET
+-extern struct net *copy_net_ns(unsigned long flags, struct net *net_ns);
++extern struct net *copy_net_ns(u64 flags, struct net *net_ns);
+ #else
+-static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
++static inline struct net *copy_net_ns(u64 flags, struct net *net_ns)
+ {
+ 	/* There is nothing to copy so this is a noop */
+ 	return net_ns;
+Index: 2.6.24-mm1/ipc/namespace.c
+===================================================================
+--- 2.6.24-mm1.orig/ipc/namespace.c
++++ 2.6.24-mm1/ipc/namespace.c
+@@ -28,7 +28,7 @@ static struct ipc_namespace *clone_ipc_n
+ 	return ns;
+ }
+ 
+-struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
++struct ipc_namespace *copy_ipcs(u64 flags, struct ipc_namespace *ns)
+ {
+ 	struct ipc_namespace *new_ns;
+ 
+Index: 2.6.24-mm1/kernel/pid_namespace.c
+===================================================================
+--- 2.6.24-mm1.orig/kernel/pid_namespace.c
++++ 2.6.24-mm1/kernel/pid_namespace.c
+@@ -115,7 +115,7 @@ static void destroy_pid_namespace(struct
+ 	kmem_cache_free(pid_ns_cachep, ns);
+ }
+ 
+-struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
++struct pid_namespace *copy_pid_ns(u64 flags, struct pid_namespace *old_ns)
+ {
+ 	struct pid_namespace *new_ns;
+ 
+Index: 2.6.24-mm1/kernel/user_namespace.c
+===================================================================
+--- 2.6.24-mm1.orig/kernel/user_namespace.c
++++ 2.6.24-mm1/kernel/user_namespace.c
+@@ -49,7 +49,7 @@ static struct user_namespace *clone_user
+ 	return ns;
+ }
+ 
+-struct user_namespace * copy_user_ns(int flags, struct user_namespace *old_ns)
++struct user_namespace * copy_user_ns(u64 flags, struct user_namespace *old_ns)
+ {
+ 	struct user_namespace *new_ns;
+ 
+Index: 2.6.24-mm1/kernel/utsname.c
+===================================================================
+--- 2.6.24-mm1.orig/kernel/utsname.c
++++ 2.6.24-mm1/kernel/utsname.c
+@@ -41,7 +41,7 @@ static struct uts_namespace *clone_uts_n
+  * utsname of this process won't be seen by parent, and vice
+  * versa.
+  */
+-struct uts_namespace *copy_utsname(unsigned long flags, struct uts_namespace *old_ns)
++struct uts_namespace *copy_utsname(u64 flags, struct uts_namespace *old_ns)
+ {
+ 	struct uts_namespace *new_ns;
+ 
+Index: 2.6.24-mm1/net/core/net_namespace.c
+===================================================================
+--- 2.6.24-mm1.orig/net/core/net_namespace.c
++++ 2.6.24-mm1/net/core/net_namespace.c
+@@ -79,7 +79,7 @@ static void net_free(struct net *net)
+ 	kmem_cache_free(net_cachep, net);
+ }
+ 
+-struct net *copy_net_ns(unsigned long flags, struct net *old_net)
++struct net *copy_net_ns(u64 flags, struct net *old_net)
+ {
+ 	struct net *new_net = NULL;
+ 	int err;
+@@ -155,7 +155,7 @@ void __put_net(struct net *net)
+ EXPORT_SYMBOL_GPL(__put_net);
+ 
+ #else
+-struct net *copy_net_ns(unsigned long flags, struct net *old_net)
++struct net *copy_net_ns(u64 flags, struct net *old_net)
+ {
+ 	if (flags & CLONE_NEWNET)
+ 		return ERR_PTR(-EINVAL);
