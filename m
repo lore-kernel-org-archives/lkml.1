@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbYBDXnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbYBDXqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbYBDXnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbYBDXnZ
+	id S1757682AbYBDXqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYBDXqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:43:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51232 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755143AbYBDXnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:43:24 -0500
-Date: Tue, 5 Feb 2008 00:43:43 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>
-Subject: CodingStyle: provide good example
-Message-ID: <20080204234343.GA1901@elf.ucw.cz>
+	Mon, 4 Feb 2008 18:46:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36230 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753587AbYBDXqB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 18:46:01 -0500
+Date: Mon, 4 Feb 2008 15:45:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+In-Reply-To: <47A7986B.1070206@garzik.org>
+Message-ID: <alpine.LFD.1.00.0802041530150.3034@hp.linux-foundation.org>
+References: <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net> <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain>
+ <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204210121.GF18682@fieldses.org> <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
+ <47A7986B.1070206@garzik.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-if (!buffer) is actually prefered style, so lets use it in example.
 
-								Pavel
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+On Mon, 4 Feb 2008, Jeff Garzik wrote:
+> 
+> Well, speaking as a complete nutter who just finished the bare bones of an
+> NFSv4 userland server[1]...  it depends on your approach.
 
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 6caa146..9bb2d8a 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -406,7 +415,7 @@ int fun(int a)
- 	int result = 0;
- 	char *buffer = kmalloc(SIZE);
- 
--	if (buffer == NULL)
-+	if (!buffer)
- 		return -ENOMEM;
- 
- 	if (condition1) {
+You definitely are a complete nutter ;)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> If the userland server is the _only_ one accessing the data[2] -- i.e. the
+> database server model where ls(1) shows a couple multi-gigabyte files or a raw
+> partition -- then it's easy to get all the semantics right, including file
+> handles.  You're not racing with local kernel fileserving.
+
+It's not really simple in general even then. The problems come with file 
+handles, and two big issues in particular:
+
+ - handling a reboot (of the server) without impacting the client really 
+   does need a "look up by file handle" operation (which you can do by 
+   logging the pathname to filehandle translation, but it certainly gets 
+   problematic).
+
+ - non-Unix-like filesystems don't necessarily have a stable "st_ino" 
+   field (ie it may change over a rename or have no meaning what-so-ever, 
+   things like that), and that makes trying to generate a filehandle 
+   really interesting for them.
+
+I do agree that it's possible - we obviously _did_ have a user-level NFSD 
+for a long while, after all - but it's quite painful if you want to handle 
+things well. Only allowing access through the NFSD certainly helps a lot, 
+but still doesn't make it quite as trivial as you claim ;)
+
+Of course, I think you can make NFSv4 to use volatile filehandles instead 
+of the traditional long-lived ones, and that really should avoid almost 
+all of the problems with doing a NFSv4 server in user space. However, I'd 
+expect there to be clients that don't do the whole volatile thing, or 
+support the file handle becoming stale only at certain well-defined points 
+(ie after renames, not at random reboot times).
+
+			Linus
