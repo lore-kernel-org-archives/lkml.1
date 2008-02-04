@@ -1,106 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYBDVMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbYBDVMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbYBDVMG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 16:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYBDVLx
+	id S1755759AbYBDVMm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 16:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYBDVMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 16:11:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35532 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752772AbYBDVLv (ORCPT
+	Mon, 4 Feb 2008 16:12:33 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:41420 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbYBDVMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 16:11:51 -0500
-Date: Mon, 4 Feb 2008 13:10:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Peiffer <pierre.peiffer@bull.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2.6.24-mm1] error compiling net driver NE2000/NE1000
-Message-Id: <20080204131038.699c28c1.akpm@linux-foundation.org>
-In-Reply-To: <20080204162921.94984e72.pierre.peiffer@bull.net>
-References: <20080204162921.94984e72.pierre.peiffer@bull.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Feb 2008 16:12:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xdnlhkEaXUQjI4/xgMvDdZB4CuUz9JhShK6dzg8Unlw1mPeykluqGugrHN31bHPxjeHpEUTRtC1FlxXbJkMxqqELjYvt7hd6+ww96fBOJgClLDHxdAwL1kLSChi0V/3zSppueveMrjWfcft7nDTfpJNY+FTFDJxstzSuMH+XFZQ=
+Message-ID: <aa79d98a0802041312j442c99d5sf702a54202c34963@mail.gmail.com>
+Date: Tue, 5 Feb 2008 00:12:32 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: vmlinux_64.lds.S - use THREAD_SIZE instead of numeric constant
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Andi Kleen" <ak@suse.de>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47A777FD.7080208@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080204171037.GA6743@cvg>
+	 <20080204202241.GA16919@uranus.ravnborg.org>
+	 <20080204203315.GA31341@elte.hu> <47A777FD.7080208@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 16:29:21 +0100
-Pierre Peiffer <pierre.peiffer@bull.net> wrote:
+Sam, Ingo, Peter, i didn't commented it 'cause there was no comment in
+32bit version. And Sam, you are so right - i spent some time on trying
+to remember that 8192 bytes trick, and it seems it's not actual
+anymore for 64bits cpu. As punishment for myself i'm going to shut up
+for a week. Sorry for spent yours time.
 
-> Hi,
-> 
-> 	When I compile the kernel 2.6.24-mm1 with:
-> CONFIG_NET_ISA=y
-> CONFIG_NE2000=y
-> 
-> I have the following compile error:
-> ...
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `ne_block_output':
-> linux-2.6.24-mm1/drivers/net/ne.c:797: undefined reference to `NS8390_init'
-> drivers/built-in.o: In function `ne_drv_resume':
-> linux-2.6.24-mm1/drivers/net/ne.c:858: undefined reference to `NS8390_init'
-> drivers/built-in.o: In function `ne_probe1':
-> linux-2.6.24-mm1/drivers/net/ne.c:539: undefined reference to `NS8390_init'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make: *** [sub-make] Error 2
-
-Thanks for reporting this.
-
-> As I saw that the file 8390p.c is compiled for this driver, but not the file 
-> 8390.c which contains this function NS8390_init(), I fixed this error with
-> the following patch.
-
-Alan's
-8390-split-8390-support-into-a-pausing-and-a-non-pausing-driver-core.patch
-would be a prime suspect.  I assume this bug isn't present ing mainline or
-in 2.6.24?
-
-> As NS8390p_init() does the same thing than NS8390_init(), I suppose that this is the right fix ?
-> 
-> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
-> ---
->  drivers/net/ne.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> Index: b/drivers/net/ne.c
-> ===================================================================
-> --- a/drivers/net/ne.c
-> +++ b/drivers/net/ne.c
-> @@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_d
->  #ifdef CONFIG_NET_POLL_CONTROLLER
->  	dev->poll_controller = eip_poll;
->  #endif
-> -	NS8390_init(dev, 0);
-> +	NS8390p_init(dev, 0);
->  
->  	ret = register_netdev(dev);
->  	if (ret)
-> @@ -794,7 +794,7 @@ retry:
->  		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
->  			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
->  			ne_reset_8390(dev);
-> -			NS8390_init(dev,1);
-> +			NS8390p_init(dev,1);
->  			break;
->  		}
->  
-> @@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform
->  
->  	if (netif_running(dev)) {
->  		ne_reset_8390(dev);
-> -		NS8390_init(dev, 1);
-> +		NS8390p_init(dev, 1);
->  		netif_device_attach(dev);
->  	}
->  	return 0;
-
-
+On 2/4/08, H. Peter Anvin <hpa@zytor.com> wrote:
+> Ingo Molnar wrote:
+> > * Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> >> Hi Cyrill.
+> >> On Mon, Feb 04, 2008 at 08:10:37PM +0300, Cyrill Gorcunov wrote:
+> >>> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> >> The patch looks simple but please explain why you do what you do. It
+> >> took me some digging before I could convince mysleft this was indeed a
+> >> correct change. And I am pretty sure you did the same investigation
+> >> yourself.
+> >>
+> >> A comment like:
+> >>
+> >> arch/x866/kernel/inittask.c require all variables allocated in
+> >> the section .data.init_task to be aligned with THREAD_SIZE.
+> >>
+> >> would have made me happy.
+> >
+> > Btw., given that on x86 we've moved away from the %esp based task stack
+> > trick and use an %fs based Percpu-Data-Area (PDA) to access the current
+> > task pointer, this alignment might not be necessary anymore. It's a
+> > historic relic of the mask-%esp trick.
+> >
+>
+> Was that *ever* used on x86-64?  I thought x86-64 always used %gs for this.
+>
+> 	-hpa
+>
