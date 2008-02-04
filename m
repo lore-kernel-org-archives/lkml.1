@@ -1,92 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751348AbYBDKKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbYBDKM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751348AbYBDKKT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 05:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbYBDKKF
+	id S1751881AbYBDKM7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 05:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYBDKMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 05:10:05 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42126 "EHLO mx2.suse.de"
+	Mon, 4 Feb 2008 05:12:51 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:13636 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbYBDKKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 05:10:04 -0500
-Date: Mon, 4 Feb 2008 11:09:59 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: David Chinner <dgc@sgi.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de,
-       jens.axboe@oracle.com, James.Bottomley@SteelEye.com, andrea@suse.de,
+	id S1750885AbYBDKMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 05:12:50 -0500
+Date: Mon, 4 Feb 2008 11:12:44 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu,
+       ak@suse.de, James.Bottomley@SteelEye.com, andrea@suse.de,
        clameter@sgi.com, akpm@linux-foundation.org, andrew.vasquez@qlogic.com,
        willy@linux.intel.com, Zach Brown <zach.brown@oracle.com>
 Subject: Re: [rfc] direct IO submission and completion scalability issues
-Message-ID: <20080204100959.GA15210@wotan.suse.de>
-References: <20070728012128.GB10033@linux-os.sc.intel.com> <20080203095252.GA11043@wotan.suse.de> <20080204021052.GD155407@sgi.com> <47A69135.3060306@linux.intel.com> <20080204044020.GE155407@sgi.com>
-Mime-Version: 1.0
+Message-ID: <20080204101243.GC15220@kernel.dk>
+References: <20070728012128.GB10033@linux-os.sc.intel.com> <20080203095252.GA11043@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080204044020.GE155407@sgi.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080203095252.GA11043@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 03:40:20PM +1100, David Chinner wrote:
-> On Sun, Feb 03, 2008 at 08:14:45PM -0800, Arjan van de Ven wrote:
-> > David Chinner wrote:
-> > >Hi Nick,
-> > >
-> > >When Matthew was describing this work at an LCA presentation (not
-> > >sure whether you were at that presentation or not), Zach came up
-> > >with the idea that allowing the submitting application control the
-> > >CPU that the io completion processing was occurring would be a good
-> > >approach to try.  That is, we submit a "completion cookie" with the
-> > >bio that indicates where we want completion to run, rather than
-> > >dictating that completion runs on the submission CPU.
-> > >
-> > >The reasoning is that only the higher level context really knows
-> > >what is optimal, and that changes from application to application.
+On Sun, Feb 03 2008, Nick Piggin wrote:
+> On Fri, Jul 27, 2007 at 06:21:28PM -0700, Suresh B wrote:
 > > 
-> > well.. kinda. One of the really hard parts of the submit/completion stuff 
-> > is that
-> > the slab/slob/slub/slib allocator ends up basically "cycling" memory 
-> > through the system;
-> > there's a sink of free memory on all the submission cpus and a source of 
-> > free memory
-> > on the completion cpu. I don't think applications are capable of working 
-> > out what is
-> > best in this scenario..
+> > Second experiment which we did was migrating the IO submission to the
+> > IO completion cpu. Instead of submitting the IO on the same cpu where the
+> > request arrived, in this experiment  the IO submission gets migrated to the
+> > cpu that is processing IO completions(interrupt). This will minimize the
+> > access to remote cachelines (that happens in timers, slab, scsi layers). The
+> > IO submission request is forwarded to the kblockd thread on the cpu receiving
+> > the interrupts. As part of this, we also made kblockd thread on each cpu as the
+> > highest priority thread, so that IO gets submitted as soon as possible on the
+> > interrupt cpu with out any delay. On x86_64 SMP platform with 16 cores, this
+> > resulted in 2% performance improvement and 3.3% improvement on two node ia64
+> > platform.
+> > 
+> > Quick and dirty prototype patch(not meant for inclusion) for this io migration
+> > experiment is appended to this e-mail.
+> > 
+> > Observation #1 mentioned above is also applicable to this experiment. CPU's
+> > processing interrupts will now have to cater IO submission/processing
+> > load aswell.
+> > 
+> > Observation #2: This introduces some migration overhead during IO submission.
+> > With the current prototype, every incoming IO request results in an IPI and
+> > context switch(to kblockd thread) on the interrupt processing cpu.
+> > This issue needs to be addressed and main challenge to address is
+> > the efficient mechanism of doing this IO migration(how much batching to do and
+> > when to send the migrate request?), so that we don't delay the IO much and at
+> > the same point, don't cause much overhead during migration.
 > 
-> Applications as in "anything that calls submit_bio()". i.e, direct I/O,
-> filesystems, etc. i.e. not userspace but in-kernel applications.
+> Hi guys,
 > 
-> In XFS, simultaneous io completion on multiple CPUs can contribute greatly to
-> contention of global structures in XFS. By controlling where completions are
-> delivered, we can greatly reduce this contention, especially on large,
-> mulitpathed devices that deliver interrupts to multiple CPUs that may be far
-> distant from each other.  We have all the state and intelligence necessary
-> to control this sort policy decision effectively.....
+> Just had another way we might do this. Migrate the completions out to
+> the submitting CPUs rather than migrate submission into the completing
+> CPU.
+> 
+> I've got a basic patch that passes some stress testing. It seems fairly
+> simple to do at the block layer, and the bulk of the patch involves
+> introducing a scalable smp_call_function for it.
+> 
+> Now it could be optimised more by looking at batching up IPIs or
+> optimising the call function path or even mirating the completion event
+> at a different level...
+> 
+> However, this is a first cut. It actually seems like it might be taking
+> slightly more CPU to process block IO (~0.2%)... however, this is on my
+> dual core system that shares an llc, which means that there are very few
+> cache benefits to the migration, but non-zero overhead. So on multisocket
+> systems hopefully it might get to positive territory.
 
-Hi Dave,
+That's pretty funny, I did pretty much the exact same thing last week!
+The primary difference between yours and mine is that I used a more
+private interface to signal a softirq raise on another CPU, instead of
+allocating call data and exposing a generic interface. That put the
+locking in blk-core instead, turning blk_cpu_done into a structure with
+a lock and list_head instead of just being a list head, and intercepted
+at blk_complete_request() time instead of waiting for an already raised
+softirq on that CPU.
 
-Thanks for taking a look at the patch... yes it would be easy to turn
-this bit of state into a more flexible cookie (eg. complete on submitter;
-complete on interrupt; complete on CPUx/nodex etc.). Maybe we'll need
-something that complex... I'm not sure, it would probably need more
-fine tuning. That said, I just wanted to get this approach out there
-early for rfc.
+Didn't get around to any performance testing yet, though. Will try and
+clean it up a bit and do that.
 
-I guess both you and Arjan have points. For a _lot_ of things, completing
-on the same CPU as submitter (whether that is migrating submission as in
-the original patch in the thread, or migrating completion like I do).
-
-You get better behaviour in the slab and page allocators and locality
-and cache hotness of memory. For example, I guess in a filesystem /
-pagecache heavy workload, you have to touch each struct page, buffer head,
-fs private state, and also often have to wake the thread for completion.
-Much of this data has just been touched at submit time, so doin this on
-the same CPU is nice...
-
-I'm surprised that the xfs global state bouncing would outweigh the
-bouncing of all the per-page/block/bio/request/etc data that gets touched
-during completion. We'll see.
+-- 
+Jens Axboe
 
