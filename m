@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYBDT7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbYBDUBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYBDT7E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYBDT6x
+	id S1757509AbYBDUBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbYBDUBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:58:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53022 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754570AbYBDT6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:58:52 -0500
-Date: Mon, 4 Feb 2008 20:58:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       hpa@zytor.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
-Message-ID: <20080204195831.GA21986@elte.hu>
-References: <20080131201430.GA9375@cs181133002.pp.htv.fi> <20080131130529.b0e17815.akpm@linux-foundation.org> <20080202213628.GJ9375@cs181133002.pp.htv.fi>
+	Mon, 4 Feb 2008 15:01:35 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:37101 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756892AbYBDUBe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:01:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lx8pASnUQlgkjNnLRNqaJRC8rsDedE+6exO6R/BLwUG/K1wPbHpCGCIcICQfWcj0TluK44jVNWRK0KD6XZo/Kt1QN3r22kihF28YHBtTU30lP9bU2TgwUz/IYvJ0aPu8XnztiliIdneycYKXiYQobPwHQb9apBbkGNG/x0YS9t4=
+Message-ID: <8bd0f97a0802041201w326404b6j25c20951ee35b0b6@mail.gmail.com>
+Date: Mon, 4 Feb 2008 15:01:30 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [patch 0/4] cleanup - use _AC macro to define PAGE_SIZE
+Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, bryan.wu@analog.com, hskinnemoen@atmel.co,
+       dhowells@redhat.com
+In-Reply-To: <20080203122239.GF20810@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080202213628.GJ9375@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <47a5a65d.03eb300a.07b8.130e@mx.google.com>
+	 <20080203122239.GF20810@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Feb 3, 2008 7:22 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Sun, Feb 03, 2008 at 02:22:17PM +0300, Cyrill Gorcunov wrote:
+> > This patch series removes code duplication for PAGE_SIZE
+> > definition on various architectures.
+> >
+> > Please review. Any comments are welcome. *UNTESTED*
+>
+> Looks good.
+> Could you do a followup patch for each architecture introducing
+> use of PAGE_SIZE in their respective kernel/vmlinux.lds.S too?
+> I think more than your 4 listed architectures could need this fix.
 
-* Adrian Bunk <bunk@kernel.org> wrote:
-
-> Sorry Andrew.
-> 
-> I misunderstood the patch flow.
-> 
-> And much more important, the tone of my email was not appropriate.
-> 
-> Due to unrelated reasons I was Thursday evening in a mood in which I 
-> should not have left emails out of my postponed folder without 
-> sleeping a night over them.
-> 
-> I hope you accept my apology.
-
-i'd like to apologize to you too Adrian - i should have been (a lot) 
-more patient as well - the merge window is not for the faint hearted i 
-guess :-/
-
-	Ingo
+what did you have in mind exactly ?  afaik, the Blackfin linker script
+should already be friendly wrt using defines instead of hardcoded
+constants ...
+-mike
