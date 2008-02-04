@@ -1,57 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbYBDWDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYBDWER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757439AbYBDWDJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 17:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYBDWC5
+	id S1757921AbYBDWER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 17:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYBDWEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 17:02:57 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:33776 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753718AbYBDWC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 17:02:56 -0500
-Date: Mon, 4 Feb 2008 16:02:54 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cpw@sgi.com, linux-kernel@vger.kernel.org, clameter@sgi.com,
-       rientjes@google.com, menage@google.com, Lee.Schermerhorn@hp.com
-Subject: Re: [PATCH 2/4 v2] hotplug cpu move tasks in empty cpusets to
- parent various other fixes
-Message-Id: <20080204160254.6c0aa71d.pj@sgi.com>
-In-Reply-To: <20080204135606.b6e1a065.akpm@linux-foundation.org>
-References: <20080204174051.ACC3F1FE109@attica.americas.sgi.com>
-	<20080204135606.b6e1a065.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Feb 2008 17:04:04 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:58505 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbYBDWEB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 17:04:01 -0500
+Date: Mon, 4 Feb 2008 17:03:47 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 02/22 -v7] Add basic support for gcc profiler instrumentation
+In-Reply-To: <20080204214023.GC29646@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.58.0802041650510.4454@gandalf.stny.rr.com>
+References: <20080130031521.258552785@goodmis.org> <20080130031840.337019504@goodmis.org>
+ <1201682801.28547.162.camel@lappy> <Pine.LNX.4.58.0801300806100.29020@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0801300856330.29020@gandalf.stny.rr.com> <1201703101.28547.224.camel@lappy>
+ <20080201223413.GB9247@linux.vnet.ibm.com> <Pine.LNX.4.58.0802012012430.13664@gandalf.stny.rr.com>
+ <20080202214124.GA28612@linux.vnet.ibm.com> <Pine.LNX.4.58.0802041153420.4119@gandalf.stny.rr.com>
+ <20080204214023.GC29646@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew wrote:
-> I'm going to assume it was Paul.
 
-Yes.
+On Mon, 4 Feb 2008, Paul E. McKenney wrote:
+> OK, will see what I can do...
+>
+> > On Sat, 2 Feb 2008, Paul E. McKenney wrote:
+> >
+> > > Yep, you have dependencies, so something like the following:
+> > >
+> > > initial state:
+> > >
+> > > 	struct foo {
+> > > 		int a;
+> > > 	};
+> > > 	struct foo x = { 0 };
+> > > 	struct foo y = { 0 };
+> > > 	struct foo *global_p = &y;
+> > > 	/* other variables are appropriately declared auto variables */
+> > >
+> > > 	/* No kmalloc() or kfree(), hence no RCU grace periods. */
+> > > 	/* In the terminology of http://lwn.net/Articles/262464/, we */
+> > > 	/* are doing only publish-subscribe, nothing else. */
+> > >
+> > > writer:
+> > >
+> > > 	x.a = 1;
+> > > 	smp_wmb();  /* or smp_mb() */
+> > > 	global_p = &x;
+> > >
+> > > reader:
+> > >
+> > > 	p = global_p;
+> > > 	ta = p->a;
+> > >
+> > > Both Alpha and aggressive compiler optimizations can result in the reader
+> > > seeing the new value of the pointer (&x) but the old value of the field
+> > > (0).  Strange but true.  The fix is as follows:
+> > >
+> > > reader:
+> > >
+> > > 	p = global_p;
+> > > 	smp_read_barrier_depends();  /* or use rcu_dereference() */
+> > > 	ta = p->a;
+> > >
+> > > So how can this happen?  First note that if smp_read_barrier_depends()
+> > > was unnecessary in this case, it would be unnecessary in all cases.
+> > >
+> > > Second, let's start with the compiler.  Suppose that a highly optimizing
+> > > compiler notices that in almost all cases, the reader finds p==global_p.
+> > > Suppose that this compiler also notices that one of the registers (say
+> > > r1) almost always contains this expected value of global_p, and that
+> > > cache pressure ensures that an actual load from global_p almost always
+> > > generates an expensive cache miss.  Such a compiler would be within its
+> > > rights (as defined by the C standard) to generate code assuming that r1
+> > > already had the right value, while also generating code to validate this
+> > > assumption, perhaps as follows:
+> > >
+> > > 	r2 = global_p;  /* high latency, other things complete meanwhile */
+> > > 	ta == r1->a;
+> > > 	if (r1 != r2)
+> > > 		ta = r2->a;
+> > >
+> > > Now consider the following sequence of events on a superscalar CPU:
+> >
+> > I think you missed one step here (causing my confusion). I don't want to
+> > assume so I'll try to put in the missing step:
+> >
+> > 	writer: r1 = p;  /* happens to use r1 to store parameter p */
+>
+> You lost me on this one...  The writer has only the following three steps:
 
-> it (a From: tag) is more reliable than akpm forensics.
+You're right. I meant "writer:  r1 = x;"
 
-Well, I don't know ... akpm forensics are pretty good ;).
+>
+> writer:
+>
+> 	x.a = 1;
+> 	smp_wmb();  /* or smp_mb() */
+> 	global_p = &x;
+>
+> Where did the "r1 = p" come from?  For that matter, where did "p" come
+> from?
+>
+> > > 	reader: r2 = global_p; /* issued, has not yet completed. */
+> > > 	reader: ta = r1->a; /* which gives zero. */
+> > > 	writer: x.a = 1;
+> > > 	writer: smp_wmb();
+> > > 	writer: global_p = &x;
+> > > 	reader: r2 = global_p; /* this instruction now completes */
+> > > 	reader: if (r1 != r2) /* and these are equal, so we keep bad ta! */
+> >
+> > Is that the case?
+>
+> Ah!  Please note that I am doing something unusual here in that I am
+> working with global variables, as opposed to the normal RCU practice of
+> dynamically allocating memory.  So "x" is just a global struct, not a
+> pointer to a struct.
+>
 
-But certainly akpm has better uses for his time.
+But lets look at a simple version of my original code anyway ;-)
 
-===
+Writer:
 
-Aside to Cliff: I think this means that I should have
-suggested that you start these patches with the line:
+void add_op(struct myops *x) {
+	/* x->next may be garbage here */
+	x->next = global_p;
+	smp_wmb();
+	global_p = x;
+}
 
-  From: Paul Jackson <pj@sgi.com>
+Reader:
 
-This From line (or lacking that, the email header From line)
-is used to record the author in the source control checkin
-record.
+void read_op(void)
+{
+	struct myops *p = global_p;
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+	while (p != NULL) {
+		p->func();
+		p = next;
+		/* if p->next is garbage we crash */
+	}
+}
+
+
+Here, we are missing the read_barrier_depends(). Lets look at the Alpha
+cache issue:
+
+
+reader reads the new version of global_p, and then reads the next
+pointer. But since the next pointer is on a different cacheline than
+global_p, it may have somehow had that in it's cache still. So it uses the
+old next pointer which contains the garbage.
+
+Is that correct?
+
+But I will have to admit, that I can't see how an aggressive compiler
+might have screwed this up. Being that x is a parameter, and the function
+add_op is not in a header file.
+
+-- Steve
+
