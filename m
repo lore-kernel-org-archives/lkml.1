@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbYBDXA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYBDXAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbYBDXA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYBDXAR
+	id S1758054AbYBDXAx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbYBDXAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:00:17 -0500
-Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:31941 "HELO
-	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754748AbYBDXAO (ORCPT
+	Mon, 4 Feb 2008 18:00:43 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:48660 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757265AbYBDXAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:00:14 -0500
-X-YMail-OSG: WFE4N18VM1knbxyQGDg4wFfr_ENlHuverf2y1ILUXv2LFSZxkmT1onfzdYsh8n4tLZQZMdjGSKN8QkPFeBm__4pcprdxAa7CSi1QFJkxG2Qob6VooZM-
-X-Yahoo-Newman-Property: ymail-3
+	Mon, 4 Feb 2008 18:00:41 -0500
 Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
        Vladislav Bolkhovitin <vst@vlnb.net>,
        Bart Van Assche <bart.vanassche@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Julian Satran <Julian_Satran@il.ibm.com>
+       Mike Christie <michaelc@cs.wisc.edu>
 In-Reply-To: <20080204224314.113afe7b@core>
 References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
 	 <1201639331.3069.58.camel@localhost.localdomain>
@@ -38,14 +35,15 @@ References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
 	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
 	 <20080204224314.113afe7b@core>
 Content-Type: text/plain
-Date: Mon, 04 Feb 2008 14:59:40 -0800
-Message-Id: <1202165980.11265.653.camel@haakon2.linux-iscsi.org>
+Date: Mon, 04 Feb 2008 17:00:33 -0600
+Message-Id: <1202166033.3096.141.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
 
 On Mon, 2008-02-04 at 22:43 +0000, Alan Cox wrote:
 > > better. So for example, I personally suspect that ATA-over-ethernet is way 
@@ -54,27 +52,26 @@ On Mon, 2008-02-04 at 22:43 +0000, Alan Cox wrote:
 > 
 > Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
 > would probably trash iSCSI for latency if nothing else.
-> 
 
-In the previous iSCSI vs. FCoE points (here is the link again):
+Actually, there's also FCoE now ... which is essentially SCSI
+encapsulated in Fibre Channel Protocols (FCP) running over ethernet with
+Jumbo frames.  It does the standard SCSI TCQ, so should answer all the
+latency pieces.  Intel even has an implementation:
 
-http://www.ietf.org/mail-archive/web/ips/current/msg02325.html
+http://www.open-fcoe.org/
 
-the latency discussion is the one bit that is not mentioned.  I always
-assumed that back then (as with today) the biggest issue was getting
-ethernet hardware, espically switching equipment down to the sub
-millisecond latency, and on par with what you would expect from 'real
-RDMA' hardware.  In lowest of the low, say sub 10 ns latency, which is
-apparently possible with point to point on high-end 10 Gb/sec adapters
-today, it would be really interesting to know how much more latency
-would be expected between software iSCSI vs. *oE when we work our way
-back up the networking stack.
+I tend to prefer the low levels as well.  The whole disadvantage for IP
+as regards iSCSI was the layers of protocols on top of it for
+addressing, authenticating, encrypting and finding any iSCSI device
+anywhere in the connected universe.
 
-Julo, do you have any idea on this..?
+I tend to see loss of routing from operating at the MAC level to be a
+nicely justifiable tradeoff (most storage networks tend to be hubbed or
+switched anyway).  Plus an ethernet MAC with jumbo frames is a large
+framed nearly lossless medium, which is practically what FCP is
+expecting.  If you really have to connect large remote sites ... well
+that's what tunnelling bridges are for.
 
---nab
+James
 
-> 
-> Alan
-> 
 
