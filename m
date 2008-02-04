@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbYBDWBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYBDWBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbYBDWBW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 17:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYBDWBL
+	id S1758058AbYBDWBm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 17:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYBDWBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 17:01:11 -0500
-Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:20787 "HELO
-	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754629AbYBDWBJ (ORCPT
+	Mon, 4 Feb 2008 17:01:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42788 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755247AbYBDWBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 17:01:09 -0500
-X-YMail-OSG: UD.95WYVM1ktXbBiI1SmMy.eLDNDHtnCDXKV5lh7odEOmXggraSATglwhtUnuqm9YUfpyGXyqvW8Hy2.Qk3jPmBoU0aCyXwDOPt9ujgk9iPCEFMRyMw-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>
-In-Reply-To: <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
-References: <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204210121.GF18682@fieldses.org>
-	 <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 14:00:31 -0800
-Message-Id: <1202162431.11265.641.camel@haakon2.linux-iscsi.org>
+	Mon, 4 Feb 2008 17:01:30 -0500
+Date: Mon, 4 Feb 2008 14:00:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: jmorris@namei.org, morgan@kernel.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       serue@us.ibm.com
+Subject: Re: [PATCH] per-process securebits
+Message-Id: <20080204140004.c2f82638.akpm@linux-foundation.org>
+In-Reply-To: <20080204181721.GA8758@ucw.cz>
+References: <47A2D439.9050704@kernel.org>
+	<20080201002837.d84fc029.akpm@linux-foundation.org>
+	<Xine.LNX.4.64.0802011941140.16283@us.intercode.com.au>
+	<20080204181721.GA8758@ucw.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-04 at 13:24 -0800, Linus Torvalds wrote:
-> 
-> On Mon, 4 Feb 2008, J. Bruce Fields wrote:
+On Mon, 4 Feb 2008 18:17:22 +0000
+Pavel Machek <pavel@ucw.cz> wrote:
+
+> On Fri 2008-02-01 20:07:01, James Morris wrote:
+> > On Fri, 1 Feb 2008, Andrew Morton wrote:
 > > 
-> > I'd assumed the move was primarily because of the difficulty of getting
-> > correct semantics on a shared filesystem
+> > > Really?  I'd feel a lot more comfortable if yesterday's version 1 had led
+> > > to a stream of comments from suitably-knowledgeable kernel developers which
+> > > indicated that those developers had scrutinised this code from every
+> > > conceivable angle and had declared themselves 100% happy with it.
+> > 
+> > FWIW, I've reviewed the patch in detail a couple of times, and don't see 
+> > any issues with it that haven't already been raised by Serge.
+> > 
+> > You can add my reviewed-by.
+> > 
+> > I think it does need more eyes, and some time baking in -mm.  
 > 
-> .. not even shared. It was hard to get correct semantics full stop. 
-> 
-> Which is a traditional problem. The thing is, the kernel always has some 
-> internal state, and it's hard to expose all the semantics that the kernel 
-> knows about to user space.
-> 
-> So no, performance is not the only reason to move to kernel space. It can 
-> easily be things like needing direct access to internal data queues (for a 
-> iSCSI target, this could be things like barriers or just tagged commands - 
-> yes, you can probably emulate things like that without access to the 
-> actual IO queues, but are you sure the semantics will be entirely right?
-> 
-> The kernel/userland boundary is not just a performance boundary, it's an 
-> abstraction boundary too, and these kinds of protocols tend to break 
-> abstractions. NFS broke it by having "file handles" (which is not 
-> something that really exists in user space, and is almost impossible to 
-> emulate correctly), and I bet the same thing happens when emulating a SCSI 
-> target in user space.
-> 
-> Maybe not. I _rally_ haven't looked into iSCSI, I'm just guessing there 
-> would be things like ordering issues.
+> I don't thing -mm baking helps here. People playing with -mm are not
+> the ones trying to hack your box.
 > 
 
-<nod>.
-
-The iSCSI CDBs and write immediate, unsoliciated, or soliciated data
-payloads may be received out of order across communication paths (which
-may be going over different subnets) within the nexus, but the execution
-of the CDB to SCSI Target Port must be in the same order as it came down
-from the SCSI subsystem on the initiator port.  In iSCSI and iSER terms,
-this is called Command Sequence Number (CmdSN) ordering, and is enforced
-within each nexus.  The initiator node will be assigning the CmdSNs as
-the CDBs come down, and when communication paths fail, unacknowledged
-CmdSNs will be retried on a different communication path when using
-iSCSI/iSER connection recovery.  Already acknowledged CmdSNs will be
-explictly retried using a iSCSI specific task management function called
-TASK_REASSIGN.  This along with CSM-I and CSM-E statemachines are
-collectly known as ErrorRecoveryLevel=2 in iSCSI.
-
-Anyways, here is a great visual of a modern iSCSI Target processor and
-SCSI Target Engine.  The CmdSN ordering is representd by the oval across
-across iSCSI connections going to various network portals groups on the
-left side of the diagram.  Thanks Eddy Q!
-
-http://www.haifa.il.ibm.com/satran/ips/EddyQuicksall-iSCSI-in-diagrams/portal_groups.pdf
-
---nab
-
-
+That's for sure.  Whitebox testing and really really careful review
+is our best shot with this stuff.
