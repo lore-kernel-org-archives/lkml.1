@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbYBDULW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbYBDULg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbYBDULW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbYBDULM
+	id S1758360AbYBDULg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbYBDUL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:11:12 -0500
-Received: from ip-224-2.sn2.eutelia.it ([83.211.224.2]:57313 "EHLO
-	mail.retesintesi.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757424AbYBDULK convert rfc822-to-8bit (ORCPT
+	Mon, 4 Feb 2008 15:11:26 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:35239 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758212AbYBDULZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:11:10 -0500
-From: 4news@retesintesi.it
-Organization: S.in.te.si. srl
-To: scst-devel@lists.sourceforge.net
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-Date: Mon, 4 Feb 2008 21:06:10 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Vladislav Bolkhovitin <vst@vlnb.net>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	Mon, 4 Feb 2008 15:11:25 -0500
+Date: Mon, 4 Feb 2008 21:11:16 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Bastian Blank <bastian@waldi.eu.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-s390@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] Fix ext4 bitops
+In-Reply-To: <20080204045025.GA7494@skywalker>
+Message-ID: <Pine.LNX.4.64.0802042109020.15250@anakin>
+References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
+ <20080201122257.9524c2bb.akpm@linux-foundation.org>
+ <20080201210404.GA31271@wavehammer.waldi.eu.org> <20080203121238.GD18211@osiris.ibm.com>
+ <Pine.LNX.4.64.0802031336240.28712@anakin> <20080204045025.GA7494@skywalker>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802042106.11327.4news@retesintesi.it>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On lunedì 4 febbraio 2008, Linus Torvalds wrote:
-> So from a purely personal standpoint, I'd like to say that I'm not really
-> interested in iSCSI (and I don't quite know why I've been cc'd on this
-> whole discussion) and think that other approaches are potentially *much*
-> better. So for example, I personally suspect that ATA-over-ethernet is way
-> better than some crazy SCSI-over-TCP crap, but I'm biased for simple and
-> low-level, and against those crazy SCSI people to begin with.
+On Mon, 4 Feb 2008, Aneesh Kumar K.V wrote:
+> On Sun, Feb 03, 2008 at 01:39:02PM +0100, Geert Uytterhoeven wrote:
+> > On Sun, 3 Feb 2008, Heiko Carstens wrote:
+> > > On Fri, Feb 01, 2008 at 10:04:04PM +0100, Bastian Blank wrote:
+> > > > On Fri, Feb 01, 2008 at 12:22:57PM -0800, Andrew Morton wrote:
+> > > > > On Fri, 1 Feb 2008 21:02:08 +0100
+> > > > > Bastian Blank <bastian@waldi.eu.org> wrote:
+> > > > > > Fix ext4 bitops.
+> > > > > 
+> > > > > This is incomplete.  Please tell us what was "fixed".
+> > > > > 
+> > > > > If it was a build error then please quote the compile error output in the
+> > > > > changelog, as well as the usual description of what the problem is, and how
+> > > > > it was fixed.
+> > > > 
+> > > > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
+> > > > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
+> > > > 
+> > > > The s390 specific bitops uses parts of the generic implementation.
+> > > > Include the correct header.
+> > > 
+> > > That doesn't work:
+> > > 
+> > > fs/built-in.o: In function `ext4_mb_release_inode_pa':
+> > > mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
+> > > fs/built-in.o: In function `ext4_mb_init_cache':
+> > > mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
+> > > 
+> > > This still needs generic_find_next_le_bit which comes
+> > > from lib/find_next_bit.c. That one doesn't get built on s390 since we
+> > > don't set GENERIC_FIND_NEXT_BIT.
+> > > Currently we have the lengthly patch below queued.
+> > 
+> > Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
+> > impression the ext4 people don't (compile) test on big endian machines?
+> 
+> I have sent this patches to linux-arch expecting a review from
+> different arch people. It is true that the patches are tested only on
+> powerpc, x86-64, x86. That's the primary reason of me sending the
+> patches to linux-arch.
+> 
+> http://marc.info/?l=linux-arch&m=119503501127737&w=2
 
-surely aoe is better than iscsi almost on performance because of the lesser 
-protocol stack:
-iscsi ->  scsi - ip - eth
-aoe -> ata - eth
+Sometimes it's difficult to see what can go wrong due to a single patch that
+just adds a #define. Sorry, I missed the lack of prototype for
+generic_find_next_le_bit() and that we don't set GENERIC_FIND_NEXT_BIT,
+just like s390.
 
-but surely iscsi is more a standard than aoe and is more actively used by 
-real-world .
+And yes, usually I rely on the -mm autocompiler to catch things like
+this, but this time it didn't work out...
 
-Other really useful feature are that:
-- iscsi is capable to move to a ip based san scsi devices by routing that ( 
-i've some tape changer routed by scst to some system that don't have other 
-way to see a tape).
-- because it work on the ip layer it can be routed between long distance , so 
-having needed bandwidth you can have a really remote block device spoking a 
-standard protocol between non ethereogenus systems.
-- iscsi is now the cheapest san avaible.
+Gr{oetje,eeting}s,
 
-bye,
-marco.
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
