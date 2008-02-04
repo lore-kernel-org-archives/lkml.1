@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYBDUYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYBDUZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbYBDUYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbYBDUYa
+	id S1758668AbYBDUZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbYBDUZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:24:30 -0500
-Received: from saeurebad.de ([85.214.36.134]:41189 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758061AbYBDUY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:24:29 -0500
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Sectionized printk data
-References: <87zlugsox9.fsf@saeurebad.de>
-	<20080204180753.GB16050@uranus.ravnborg.org>
-Date: Mon, 04 Feb 2008 21:23:29 +0100
-In-Reply-To: <20080204180753.GB16050@uranus.ravnborg.org> (Sam Ravnborg's
-	message of "Mon, 4 Feb 2008 19:07:53 +0100")
-Message-ID: <87ve54sc72.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 4 Feb 2008 15:25:11 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37644 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754570AbYBDUZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:25:09 -0500
+Date: Mon, 4 Feb 2008 21:25:27 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: brk randomization breaks columns
+Message-ID: <20080204202527.GD4915@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu> <20080204132853.GA4630@elf.ucw.cz> <Pine.LNX.4.64.0802041554030.30955@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802041554030.30955@jikos.suse.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Hi!
 
-Sam Ravnborg <sam@ravnborg.org> writes:
+> > Not sure this helps... If I only randomize _end_ of heap, it still 
+> > works. If I try to randomize beggining of heap, too, it will not even 
+> > start recent binaries :-(.
+> 
+> I don't uderstand this, sorry. Ehen the mapping for the new process is 
+> being established during loading of the binary, the beginning and the end 
+> of the heap are the same ...
 
-> On Mon, Feb 04, 2008 at 04:48:34PM +0100, Johannes Weiner wrote:
->> Hi,
->> 
->> current approaches to have printk format strings in the corresponding
->> data section to the function they appear in look like the following (at
->> least what I have seen so far):
->> 
->> int __init some_function(void)
->> {
->> 	static char errmsg[] __initdata = "failure %s in %s\n";
->> 
->>         [...]
->>         printk(errmsg);
->>         [...]
->> }
->> 
->> The attached patch allows something along the lines:
->> 
->> int __init some_function(void)
->> {
->>         [...]
->>         pr_init(KERN_WARNING "failure %s in %s\n", ...);
->>         [...]
->> }
->> 
->> Another idea I had was to make printk a macro that figures out the
->> section of the surrounding function and then moves the data
->> automatically when it is a literal, but I couldn't find mechanisms that
->> allow this.  Anyone of you got an idea?
->> 
->> What do you think in general?
->
-> What is the rationale behind this?
-> In other words why should we investigate time looking into the matter?
->
-> If you say "saving memory" then please let us know with specific examples
-> in what area these savings will really pay off.
+Okay, I was assuming this is mapping heap..
 
-I was not claiming anything.  The thing is that I have seen people using
-code as schematized in the first code example.  And the point of this
-patch is to make the placing of string literals in disposable sections -
-which is already done - more convenient.
+  /* Calling set_brk effectively mmaps the pages that we need
+         * for the bss and break sections.  We must do this before
+         * mapping in the interpreter, to make sure it doesn't wind
+         * up getting placed where the bss needs to go.
+         */
+        retval = set_brk(elf_bss, elf_brk);
 
-Using code as in the first example is just ugly.  My approach is to make
-it less ugly.  But after all, it was not my idea to move the string
-literals.
+If I add
 
-drivers/net/3c505.c does it, grep for notfound_msg for an in-tree
-example.
++       elf_brk += random;
 
-You were asking me my own question.  I placed an `RFC' in the Subject:
-because I am interested in your (and others) view on this topic.
+before set_brk() (and revert the brk randomization), it works,
+including columns.
 
-I will convert some of the code to use the macros I introduced and look
-if it gains some significant size improvements on a common desktop
-configuration as I have it on my laptop.
+If I add
 
-	Hannes
++//     elf_bss += random;
+
+before set_brk(), I break everything.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
