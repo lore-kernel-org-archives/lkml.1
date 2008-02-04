@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbYBDUkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYBDUkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbYBDUkW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYBDUkG
+	id S1758585AbYBDUkn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYBDUk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:40:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54903 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755081AbYBDUkE (ORCPT
+	Mon, 4 Feb 2008 15:40:29 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:29380 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758088AbYBDUk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:40:04 -0500
-Message-ID: <47A777FD.7080208@zytor.com>
-Date: Mon, 04 Feb 2008 12:39:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 4 Feb 2008 15:40:26 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
+Date: Mon, 4 Feb 2008 13:41:36 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802041039.36100.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802041014410.3034@hp.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802041014410.3034@hp.linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: vmlinux_64.lds.S - use THREAD_SIZE instead of	numeric
- constant
-References: <20080204171037.GA6743@cvg> <20080204202241.GA16919@uranus.ravnborg.org> <20080204203315.GA31341@elte.hu>
-In-Reply-To: <20080204203315.GA31341@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802041341.37313.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
+On Monday 04 February 2008 11:18:09 am Linus Torvalds wrote:
+> On Mon, 4 Feb 2008, Bjorn Helgaas wrote:
+> > 
+> > I think the problem here is that the PCI BAR is bigger and spans the
+> > region reported by ACPI:
 > 
->> Hi Cyrill.
->> On Mon, Feb 04, 2008 at 08:10:37PM +0300, Cyrill Gorcunov wrote:
->>> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->> The patch looks simple but please explain why you do what you do. It 
->> took me some digging before I could convince mysleft this was indeed a 
->> correct change. And I am pretty sure you did the same investigation 
->> yourself.
->>
->> A comment like:
->>
->> arch/x866/kernel/inittask.c require all variables allocated in
->> the section .data.init_task to be aligned with THREAD_SIZE.
->>
->> would have made me happy.
+> Ok, then it doesn't help that it's not busy.
 > 
-> Btw., given that on x86 we've moved away from the %esp based task stack 
-> trick and use an %fs based Percpu-Data-Area (PDA) to access the current 
-> task pointer, this alignment might not be necessary anymore. It's a 
-> historic relic of the mask-%esp trick.
-> 
+> In that case, the only real fix is to simply do the ACPI reservations 
+> *after* PCI probing. Which is what it should have done to begin with.
 
-Was that *ever* used on x86-64?  I thought x86-64 always used %gs for this.
+I'm sure you're right, but I don't understand why yet.  Here's what
+I think is happening; please correct me where I'm going wrong:
 
-	-hpa
+  1) enumerate PNP & ACPI devices
+  2) initialize PNP & ACPI drivers
+     2a) register ACPI PCI root bridge driver, which enumerates PCI
+         devices behind the bridge
+     2b) register PNP system driver and reserve resources (this is
+         where the current quirk skips some reservations)
+  3) initialize PCI drivers
+     3a) register intel8x0 sound driver and reserve conflicting
+         resources
+
+> > I really don't want to use the earlier quirk that scanned PCI devices
+> > from a PNP quirk.  I think that's just wrong because PNP (which
+> > conceptually includes ACPI) is what tells us about PCI root bridges.
+> 
+> So? Do the bridge listing separately from resource marking. Why tie the 
+> two together? They have absolutely *nothing* to do with each other.
+> 
+> The fact is, scanning devices should happen first. And AFTER the device 
+> tree is scanned, we can then safely add all the special resources that 
+> don't show up as normal devices.
+
+I think you're suggesting that we should do 2a first, to enumerate all
+PCI devices, and only later do 2b.  But I don't know how to accomplish
+that cleanly.
+
+It does happen in that order today, but only because the ACPI drivers
+are registered before the PNP drivers.  I think that's an artificial
+distinction, so I don't want to rely on it.  If the PCI bridge driver
+became a PNP driver, we could use link ordering to make sure it still
+came first, although that seems a little fragile to me.
+
+Bjorn
