@@ -1,35 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYBDWAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbYBDWBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbYBDWAc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 17:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYBDWAZ
+	id S1757945AbYBDWBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 17:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYBDWBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 17:00:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:47456 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754216AbYBDWAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 17:00:24 -0500
-Subject: Re: tg3 broken after "PCI: Fix bus resource assignment on 32 bits
-	with 64b resources"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080204151222.GB25790@localhost.sw.ru>
-References: <20080204151222.GB25790@localhost.sw.ru>
+	Mon, 4 Feb 2008 17:01:11 -0500
+Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:20787 "HELO
+	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754629AbYBDWBJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 17:01:09 -0500
+X-YMail-OSG: UD.95WYVM1ktXbBiI1SmMy.eLDNDHtnCDXKV5lh7odEOmXggraSATglwhtUnuqm9YUfpyGXyqvW8Hy2.Qk3jPmBoU0aCyXwDOPt9ujgk9iPCEFMRyMw-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+In-Reply-To: <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
+References: <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204210121.GF18682@fieldses.org>
+	 <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
 Content-Type: text/plain
-Date: Tue, 05 Feb 2008 08:59:41 +1100
-Message-Id: <1202162381.7079.12.camel@pasglop>
+Date: Mon, 04 Feb 2008 14:00:31 -0800
+Message-Id: <1202162431.11265.641.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And I could also use the lspci output without the patch.
+On Mon, 2008-02-04 at 13:24 -0800, Linus Torvalds wrote:
+> 
+> On Mon, 4 Feb 2008, J. Bruce Fields wrote:
+> > 
+> > I'd assumed the move was primarily because of the difficulty of getting
+> > correct semantics on a shared filesystem
+> 
+> .. not even shared. It was hard to get correct semantics full stop. 
+> 
+> Which is a traditional problem. The thing is, the kernel always has some 
+> internal state, and it's hard to expose all the semantics that the kernel 
+> knows about to user space.
+> 
+> So no, performance is not the only reason to move to kernel space. It can 
+> easily be things like needing direct access to internal data queues (for a 
+> iSCSI target, this could be things like barriers or just tagged commands - 
+> yes, you can probably emulate things like that without access to the 
+> actual IO queues, but are you sure the semantics will be entirely right?
+> 
+> The kernel/userland boundary is not just a performance boundary, it's an 
+> abstraction boundary too, and these kinds of protocols tend to break 
+> abstractions. NFS broke it by having "file handles" (which is not 
+> something that really exists in user space, and is almost impossible to 
+> emulate correctly), and I bet the same thing happens when emulating a SCSI 
+> target in user space.
+> 
+> Maybe not. I _rally_ haven't looked into iSCSI, I'm just guessing there 
+> would be things like ordering issues.
+> 
 
-Thanks,
-Ben.
+<nod>.
+
+The iSCSI CDBs and write immediate, unsoliciated, or soliciated data
+payloads may be received out of order across communication paths (which
+may be going over different subnets) within the nexus, but the execution
+of the CDB to SCSI Target Port must be in the same order as it came down
+from the SCSI subsystem on the initiator port.  In iSCSI and iSER terms,
+this is called Command Sequence Number (CmdSN) ordering, and is enforced
+within each nexus.  The initiator node will be assigning the CmdSNs as
+the CDBs come down, and when communication paths fail, unacknowledged
+CmdSNs will be retried on a different communication path when using
+iSCSI/iSER connection recovery.  Already acknowledged CmdSNs will be
+explictly retried using a iSCSI specific task management function called
+TASK_REASSIGN.  This along with CSM-I and CSM-E statemachines are
+collectly known as ErrorRecoveryLevel=2 in iSCSI.
+
+Anyways, here is a great visual of a modern iSCSI Target processor and
+SCSI Target Engine.  The CmdSN ordering is representd by the oval across
+across iSCSI connections going to various network portals groups on the
+left side of the diagram.  Thanks Eddy Q!
+
+http://www.haifa.il.ibm.com/satran/ips/EddyQuicksall-iSCSI-in-diagrams/portal_groups.pdf
+
+--nab
 
 
