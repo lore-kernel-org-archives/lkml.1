@@ -1,398 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbYBDPMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbYBDPRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbYBDPMi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 10:12:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYBDPMa
+	id S1753471AbYBDPRa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 10:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYBDPRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 10:12:30 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:46820 "EHLO relay.sw.ru"
+	Mon, 4 Feb 2008 10:17:23 -0500
+Received: from sacred.ru ([62.205.161.221]:42030 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbYBDPM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 10:12:29 -0500
-Date: Mon, 4 Feb 2008 18:12:22 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org
-Subject: tg3 broken after "PCI: Fix bus resource assignment on 32 bits with 64b resources"
-Message-ID: <20080204151222.GB25790@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1750977AbYBDPRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 10:17:22 -0500
+Message-ID: <47A72C5B.4030307@openvz.org>
+Date: Mon, 04 Feb 2008 18:16:43 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+CC: Pavel Emelyanov <xemul@openvz.org>, Kirill Korotaev <dev@sw.ru>,
+       containers@lists.linux-foundation.org,
+       Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [Devel] Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel
+ API to change an ID
+References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru>	<47A18E47.5050206@bull.net>	<47A19AC2.7040709@sw.ru>	<47A1B78C.7050405@bull.net>	<47A1C8FE.9010700@sw.ru> <47A1F2DB.7080600@fr.ibm.com> <47A71606.5030201@sw.ru> <47A71BDF.5000801@openvz.org> <47A72891.4000404@fr.ibm.com>
+In-Reply-To: <47A72891.4000404@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 04 Feb 2008 18:16:25 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit c40a22e0ce5eb400f27449e59e43d021bee58b8d aka
-"PCI: Fix bus resource assignment on 32 bits with 64b resources"
-renders one tg3-equipped box networkless here.
+Daniel Lezcano wrote:
+> Pavel Emelyanov wrote:
+>> Kirill Korotaev wrote:
+>>> Cedric Le Goater wrote:
+>>>> Hello Kirill !
+>>>>
+>>>> Kirill Korotaev wrote:
+>>>>> Pierre,
+>>>>>
+>>>>> my point is that after you've added interface "set IPCID", you'll need
+>>>>> more and more for checkpointing:
+>>>>> - "create/setup conntrack" (otherwise connections get dropped),
+>>>>> - "set task start time" (needed for Oracle checkpointing BTW),
+>>>>> - "set some statistics counters (e.g. networking or taskstats)"
+>>>>> - "restore inotify"
+>>>>> and so on and so forth.
+>>>> right. we know that we will have to handle a lot of these
+>>>> and more and we will need an API for it :) so how should we handle it ?
+>>>> through a dedicated syscall that would be able to checkpoint and/or
+>>>> restart a process, an ipc object, an ipc namespace, a full container ?
+>>>> will it take a fd or a big binary blob ?  
+>>>> I personally really liked Pavel idea's of filesystem. but we dropped the
+>>>> thread.
+>>> Imho having a file system interface means having all its problems.
+>>> Imagine you have some information about tasks exported with a file system interface.
+>>> Obviously to collect the information you have to hold some spinlock like tasklist_lock or similar.
+>>> Obviously, you have to drop the lock between sys_read() syscalls.
+>>> So interface gets much more complicated - you have to rescan the objects and somehow find the place where
+>>> you stopped previous read. Or you have to to force reader to read everything at once.
+>> To remember the place when we stopped previous read we have a "pos" counter
+>> on the struct file.
+>>
+>> Actually, tar utility, that I propose to perform the most simple migration
+>> reads the directory contents with 4Kb buffer - that's enough for ~500 tasks.
+>>
+>> Besides, is this a real problem for a frozen container?
+> 
+> I like the idea of a C/R filesystem. Does it implies a specific user 
+> space program to orchestrate the checkpoint/restart of the different 
+> subsystems ? I mean the checkpoint is easy but what about the restart ? 
 
-	tg3.c:v3.87 (December 20, 2007)
-	tg3: (0000:02:05.0) phy probe failed, err -19
-	tg3: Problem fetching invariants of chip, aborting.
-	tg3: (0000:02:05.1) phy probe failed, err -19
-	tg3: Problem fetching invariants of chip, aborting.
+I though about smth like "writing to this fs causes restore process".
 
-It's 32-bit CONFIG_RESOURCES_64BIT=y box.
+> We must ensure, for example to restore a process before restoring the fd 
+> associated to it, or restore a deleted file before restoring the fd 
 
-Not sure what you need this, but below is some lspci -vvvxxx output:
+This is achieved by tar automatically - it extracts files in the order
+of archiving. Thus is we provide them in correct order we'll get them
+in correct one as well.
 
-
-00:06.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8111 PCI (rev 07) (prog-if 00 [Normal decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 64
-	Bus: primary=00, secondary=03, subordinate=03, sec-latency=64
-	I/O behind bridge: 0000a000-0000bfff
-	Memory behind bridge: 80000000-817fffff
-	Prefetchable memory behind bridge: 81800000-818fffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
-	BridgeCtl: Parity+ SERR+ NoISA- VGA+ MAbort- >Reset- FastB2B-
-	Capabilities: [c0] HyperTransport: Slave or Primary Interface
-		!!! Possibly incomplete decoding
-		Command: BaseUnitID=6 UnitCnt=4 MastHost- DefDir-
-		Link Control 0: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config 0: MLWI=8bit MLWO=8bit LWI=8bit LWO=8bit
-		Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ <CRCErr=0
-		Link Config 1: MLWI=8bit MLWO=8bit LWI=8bit LWO=8bit
-		Revision ID: 1.02
-	Capabilities: [f0] HyperTransport: Interrupt Discovery and Configuration
-00: 22 10 60 74 17 01 30 02 07 00 04 06 00 40 01 00
-10: 00 00 00 00 00 00 00 00 00 03 03 40 a0 b0 00 02
-20: 00 80 70 81 80 81 80 81 00 00 00 00 00 00 00 00
-30: 00 00 00 00 c0 00 00 00 00 00 00 00 ff 00 0b 00
-40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-60: 00 00 04 06 00 00 00 00 00 00 00 00 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 08 f0 86 00 20 00 00 00 d0 00 00 00 22 00 01 00
-d0: 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 0d 00 0f 00 0d 00 11 00 13 00 17 00 00 00 00 00
-f0: 08 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:07.3 Bridge: Advanced Micro Devices [AMD] AMD-8111 ACPI (rev 05)
-	Subsystem: Super Micro Computer Inc Unknown device 0811
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 6b 74 00 00 80 02 05 00 80 06 00 40 00 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 11 08
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: 80 b1 09 bc 00 00 00 00 20 04 50 00 00 00 00 03
-50: 01 00 00 00 0f 00 00 00 01 50 00 00 00 00 00 00
-60: 00 00 80 06 13 00 00 00 00 00 00 00 00 00 00 00
-70: 06 29 4b 55 0c 00 00 00 00 00 00 00 d9 15 11 08
-80: 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 31 57 46 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:0a.0 PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 13) (prog-if 00 [Normal decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 64
-	Bus: primary=00, secondary=02, subordinate=02, sec-latency=64
-	I/O behind bridge: 00009000-00009fff
-	Memory behind bridge: 81900000-819fffff
-	Prefetchable memory behind bridge: 0000000181a00000-0000000181afffff
-	Secondary status: 66MHz+ FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity+ SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
-	Capabilities: [a0] PCI-X bridge device
-		Secondary Status: 64bit+ 133MHz+ SCD- USC- SCO- SRD- Freq=100MHz
-		Status: Dev=00:0a.0 64bit+ 133MHz+ SCD- USC- SCO- SRD-
-		Upstream: Capacity=14 CommitmentLimit=65535
-		Downstream: Capacity=2 CommitmentLimit=65535
-	Capabilities: [b8] HyperTransport: Interrupt Discovery and Configuration
-	Capabilities: [c0] HyperTransport: Slave or Primary Interface
-		!!! Possibly incomplete decoding
-		Command: BaseUnitID=10 UnitCnt=2 MastHost- DefDir-
-		Link Control 0: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config 0: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-		Link Control 1: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config 1: MLWI=8bit MLWO=8bit LWI=8bit LWO=8bit
-		Revision ID: 1.02
-00: 22 10 50 74 17 01 30 02 13 00 04 06 00 40 81 00
-10: 00 00 00 00 00 00 00 00 00 02 02 40 91 91 20 22
-20: 90 81 90 81 a1 81 a1 81 01 00 00 00 01 00 00 00
-30: 00 00 00 00 a0 00 00 00 00 00 00 00 ff 00 05 00
-40: 05 00 1f 00 00 00 00 00 02 0c 00 00 01 2c 00 00
-50: 00 00 03 00 00 00 04 00 00 00 00 00 00 00 00 00
-60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 07 b8 83 00 50 00 03 00 0e 00 ff ff 02 00 ff ff
-b0: 00 00 00 00 00 00 00 00 08 c0 00 80 00 00 00 03
-c0: 08 00 4a 00 20 00 11 11 20 00 00 00 22 04 35 00
-d0: 02 00 35 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 08 08 0f 00 08 08 0d 00 0f 0f 14 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Capabilities: [80] HyperTransport: Host or Secondary Interface
-		!!! Possibly incomplete decoding
-		Command: WarmRst+ DblEnd-
-		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-		Revision ID: 1.02
-	Capabilities: [a0] HyperTransport: Host or Secondary Interface
-		!!! Possibly incomplete decoding
-		Command: WarmRst+ DblEnd-
-		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-		Revision ID: 1.02
-	Capabilities: [c0] HyperTransport: Host or Secondary Interface
-		!!! Possibly incomplete decoding
-		Command: WarmRst+ DblEnd-
-		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-		Revision ID: 1.02
-00: 22 10 00 11 00 00 10 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00
-40: 01 01 05 00 04 04 01 00 01 01 01 00 01 01 01 00
-50: 01 01 01 00 01 01 01 00 01 01 01 00 01 01 01 00
-60: 10 00 01 00 e4 02 00 00 00 c0 00 0f 1c 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 08 a0 01 21 20 00 11 11 22 06 75 80 02 00 00 00
-90: 13 56 13 04 00 00 00 00 03 00 00 00 00 00 00 00
-a0: 08 c0 01 21 20 00 11 11 22 06 75 80 02 00 00 00
-b0: 13 56 13 04 00 00 00 00 03 00 00 00 00 00 00 00
-c0: 08 00 01 21 20 00 11 11 22 04 75 80 02 00 00 00
-d0: 56 04 51 02 00 00 ff 00 07 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 01 11 00 00 00 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: 03 00 00 00 00 00 7f 00 03 00 00 01 01 00 7f 01
-50: 00 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00
-60: 00 00 00 00 04 00 00 00 00 00 00 00 05 00 00 00
-70: 00 00 00 00 06 00 00 00 00 00 00 00 07 00 00 00
-80: 03 90 fc 00 80 ff ff 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 03 0a 00 00 20 0b 00 00 03 00 80 00 20 ff ff 00
-c0: 13 10 00 00 20 f0 ff 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 03 02 00 ff 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 02 11 00 00 00 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00
-50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-60: 00 00 00 00 00 00 00 00 00 fe e0 07 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 50 00 00 00 00 00 00 00 42 35 82 13 21 0b 10 00
-90: 00 8c 23 08 08 0a 7b 0a 00 00 00 00 06 08 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: e5 d0 84 36 2e 00 00 00 4e 97 30 03 73 f0 e8 41
-c0: 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 85 ad 43 02 58 42 21 e4 92 2d 20 55 64 34 61 20
-e0: f7 94 06 36 ca 46 b7 66 e5 46 c7 9c cb 87 95 e4
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 03 11 00 00 00 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: ff 3b 00 00 40 00 50 00 00 00 00 00 00 00 00 00
-50: f8 ff ff 7f 00 00 00 00 00 00 00 00 40 ba 7d 00
-60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-70: 11 01 02 51 11 80 00 50 00 38 00 08 1b 22 00 00
-80: 00 00 07 23 13 21 13 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 60 01 00 00 00 8c 0d 01 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 3f 00 00 e0 a5 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 07 07 e2 04 10 27 00 20 25 25 00 00
-e0: 00 00 00 00 20 0f 58 00 1b 01 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:19.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Capabilities: [80] HyperTransport: Host or Secondary Interface
-		!!! Possibly incomplete decoding
-		Command: WarmRst+ DblEnd-
-		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-		Revision ID: 1.02
-	Capabilities: [a0] HyperTransport: Host or Secondary Interface
-		!!! Possibly incomplete decoding
-		Command: WarmRst+ DblEnd-
-		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0
-		Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
-		Revision ID: 1.02
-	Capabilities: [c0] HyperTransport: Host or Secondary Interface
-		!!! Possibly incomplete decoding
-		Command: WarmRst+ DblEnd-
-		Link Control: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ <CRCErr=0
-		Link Config: MLWI=16bit MLWO=16bit LWI=N/C LWO=N/C
-		Revision ID: 1.02
-00: 22 10 00 11 00 00 10 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00
-40: 04 04 01 00 01 01 05 00 01 01 01 00 01 01 01 00
-50: 01 01 01 00 01 01 01 00 01 01 01 00 01 01 01 00
-60: 11 00 01 00 e4 00 00 00 00 c0 00 0f 10 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 08 a0 01 21 20 00 11 11 22 06 75 80 02 00 00 00
-90: 13 56 13 04 00 00 00 00 03 00 00 00 00 00 00 00
-a0: 08 c0 01 21 20 00 11 11 22 06 75 80 02 00 00 00
-b0: 13 56 13 04 00 00 00 00 03 00 00 00 00 00 00 00
-c0: 08 00 01 21 d0 00 11 77 22 00 75 80 02 00 00 00
-d0: 0a 90 03 03 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:19.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 01 11 00 00 00 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: 03 00 00 00 00 00 7f 00 03 00 00 01 01 00 7f 01
-50: 00 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00
-60: 00 00 00 00 04 00 00 00 00 00 00 00 05 00 00 00
-70: 00 00 00 00 06 00 00 00 00 00 00 00 07 00 00 00
-80: 03 90 fc 00 80 ff ff 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 03 0a 00 00 20 0b 00 00 03 00 80 00 20 ff ff 00
-c0: 13 10 00 00 20 f0 ff 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 03 02 00 ff 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:19.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 02 11 00 00 00 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00
-50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-60: 00 00 00 00 00 00 00 00 00 fe e0 07 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 50 00 00 00 00 00 00 00 42 35 82 13 21 0b 10 00
-90: 00 8c 23 08 08 0a 7b 0a 00 00 00 00 06 08 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 58 cc 3c 35 2e 00 00 00 51 9e 01 19 00 08 c2 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: ae ab f8 1a 11 88 d4 b7 a4 2e 25 5c 07 07 0e ec
-e0: b1 fb 58 f9 08 6c c3 fd 57 ab 93 9d b2 c7 93 c0
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-00:19.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-00: 22 10 03 11 00 00 00 00 00 00 00 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-40: ff 3b 00 00 40 00 50 00 00 00 00 00 00 00 00 00
-50: 00 00 00 00 00 00 00 00 00 00 00 00 80 cb 67 00
-60: 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-70: 11 01 02 51 11 80 00 50 00 38 00 08 1b 22 00 00
-80: 00 00 07 23 13 21 13 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 9a 10 00 00 80 0d 94 3f 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 2b 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 07 07 e2 04 10 27 00 20 25 25 00 00
-e0: 00 00 00 00 20 0b 59 00 1b 01 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-02:05.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5704 Gigabit Ethernet (rev 10)
-	Subsystem: Super Micro Computer Inc Unknown device 1648
-	Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Interrupt: pin A routed to IRQ 26
-	Region 0: Memory at 181900000 (64-bit, non-prefetchable) [size=64K]
-	Capabilities: [40] PCI-X non-bridge device
-		Command: DPERE- ERO- RBC=512 OST=1
-		Status: Dev=02:05.0 64bit+ 133MHz+ SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=16 RSCEM- 266MHz- 533MHz-
-	Capabilities: [48] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-	Capabilities: [50] Vital Product Data
-	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 Enable-
-		Address: efa5fbedafbd4770  Data: 2971
-00: e4 14 48 16 02 01 b0 02 10 00 00 02 10 40 80 00
-10: 04 00 90 81 01 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 48 16
-30: 00 00 00 00 40 00 00 00 00 00 00 00 05 01 40 00
-40: 07 48 00 00 28 02 43 04 01 50 02 c0 00 20 00 64
-50: 03 58 fc 80 00 00 00 78 05 00 86 00 70 47 bd af
-60: ed fb a5 ef 71 29 00 00 9a 02 00 21 00 00 00 00
-70: 82 32 00 00 a6 00 00 00 20 70 00 00 00 00 00 00
-80: 00 00 00 00 72 cd a8 0a 00 00 01 00 fe 90 20 00
-90: 01 07 00 01 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-02:05.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5704 Gigabit Ethernet (rev 10)
-	Subsystem: Super Micro Computer Inc Unknown device 1648
-	Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Interrupt: pin B routed to IRQ 27
-	Region 0: Memory at 181910000 (64-bit, non-prefetchable) [size=64K]
-	Capabilities: [40] PCI-X non-bridge device
-		Command: DPERE- ERO- RBC=512 OST=1
-		Status: Dev=02:05.1 64bit+ 133MHz+ SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=16 RSCEM- 266MHz- 533MHz-
-	Capabilities: [48] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-	Capabilities: [50] Vital Product Data
-	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 Enable-
-		Address: 934fff7fffff39fc  Data: 59ff
-00: e4 14 48 16 02 01 b0 02 10 00 00 02 10 40 80 00
-10: 04 00 91 81 01 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 48 16
-30: 00 00 00 00 40 00 00 00 00 00 00 00 09 02 40 00
-40: 07 48 00 00 29 02 43 04 01 50 02 c0 00 20 00 64
-50: 03 58 fc 80 00 00 00 78 05 00 86 00 fc 39 ff ff
-60: 7f ff 4f 93 ff 59 00 00 9a 02 00 21 00 00 00 00
-70: 02 32 00 00 a6 00 00 00 50 00 00 00 00 00 00 00
-80: 03 58 fc 80 2f 14 b3 78 00 00 00 00 fe 90 60 00
-90: 01 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 04 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> opened to it, no ?
+> 
+> 
+> 
+> 
+> 
+> 
 
