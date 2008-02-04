@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYBDXia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYBDXi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYBDXia (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:38:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYBDXiV
+	id S1758295AbYBDXi4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYBDXiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:38:21 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:45020 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406AbYBDXiV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:38:21 -0500
-Message-ID: <47A7A131.8040800@qualcomm.com>
-Date: Mon, 04 Feb 2008 15:35:13 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 4 Feb 2008 18:38:46 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52382 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757835AbYBDXin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 18:38:43 -0500
+Date: Tue, 5 Feb 2008 00:39:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Abel Bernabeu <abel.bernabeu@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Fwd: brk randomization breaks columns
+Message-ID: <20080204233901.GB1559@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu> <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz> <Pine.LNX.4.64.0802041635000.30955@jikos.suse.cz> <15577be70802041016m97cddbfk43b9073408bcbce9@mail.gmail.com> <15577be70802041029o2975ba6do34589bbdc81d1652@mail.gmail.com> <20080204195251.GB4915@elf.ucw.cz> <15577be70802041354s23e5b289w56f724dfdf8c3242@mail.gmail.com> <Pine.LNX.4.64.0802042346020.30873@twin.jikos.cz> <15577be70802041513p796172b2y2e17b7882763b02c@mail.gmail.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>
-Subject: CPU hotplug and IRQ affinity with 2.6.24-rt1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <15577be70802041513p796172b2y2e17b7882763b02c@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is just an FYI. As part of the "Isolated CPU extensions" thread Daniel suggest for me
-to check out latest RT kernels. So I did or at least tried to and immediately spotted a couple
-of issues.
+Hi!
 
-The machine I'm running it on is:
-	HP xw9300, Dual Opteron, NUMA
+> > Abel, I actually don't think you have chance to have any issues with
+> > randomization, as the mentioned post talks about 2.6.22.10, which doesn't
+> > randomize the brk start at all.
+> 
+> You are rigth, my kernel just randomizes stack top.
+> 
+> I've got a bit sick with this crash in the latest days, trying to
+> understand the elf loader, trying toolchain configurations, etc... O:)
 
-It looks like with -rt kernel IRQ affinity masks are ignored on that system. ie I write 1 to 
-lets say /proc/irq/23/smp_affinity but the interrupts keep coming to CPU1. 
-Vanilla 2.6.24 does not have that issue.
+Well, elf loader is indeed evil.
+									Pavel
 
-Also the first thing I tried was to bring CPU1 off-line. Thats the fastest way to get irqs, 
-soft-irqs, timers, etc of a CPU. But the box hung completely. It also managed to mess up my 
-ext3 filesystem to the point where it required manual fsck (have not see that for a couple of
-years now). 
-I tried the same thing (ie echo 0 > /sys/devices/cpu/cpu1/online) from the console. It hang 
-again with the message that looked something like:
-	CPU1 is now off-line
-	Thread IRQ-23 is on CPU1 ...
-
-IRQ 23 is NVidia SATA. So I guess it has something to do with the borked affinity handling.
-Vanilla 2.6.24 handles this just fine.
-
-Anyway, like I said it's just an FYI, not an urgent issue.
-
-Max
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
