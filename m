@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbYBDQZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYBDQZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbYBDQZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 11:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYBDQZU
+	id S1756646AbYBDQZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 11:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbYBDQZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 11:25:20 -0500
-Received: from mail.dbd-breitband.de ([217.188.211.21]:2181 "EHLO
-	dbd-mpx01.dbd-breitband.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750979AbYBDQZT (ORCPT
+	Mon, 4 Feb 2008 11:25:46 -0500
+Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:55416 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752858AbYBDQZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 11:25:19 -0500
-From: Marc Donner <donner@dbd-breitband.de>
-Organization: DBD DeutscheBreitbandDienste
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: What's about WiMAX?
-User-Agent: KMail/1.9.6
-References: <200802041600.31677.donner@dbd-breitband.de> <20080204155935.GD3446@tuxdriver.com>
-In-Reply-To: <20080204155935.GD3446@tuxdriver.com>
+	Mon, 4 Feb 2008 11:25:44 -0500
+Message-ID: <47A73C86.3060604@vlnb.net>
+Date: Mon, 04 Feb 2008 19:25:42 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Mon, 4 Feb 2008 17:24:22 +0100
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Bart Van Assche <bart.vanassche@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	 <1201639331.3069.58.camel@localhost.localdomain>	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain>
+In-Reply-To: <1202139015.3096.5.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802041724.22486.donner@dbd-breitband.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 February 2008, you wrote:
-> On Mon, Feb 04, 2008 at 04:00:30PM +0100, Marc Donner wrote:
-> > i have here a few wimax 802.16e zyxel pcmcia cards, which only work on
-> > windows. is anybody interrested in developing a driver for these wimax
-> > cards?
->
-> I might be interested.  Do you hvae programming documentation for
-> these cards?
-no, the cards have runcom chipsets, and i don't know if there are programming 
-documentations availible.
+James Bottomley wrote:
+>>Vladislav Bolkhovitin wrote:
+>>So, James, what is your opinion on the above? Or the overall SCSI target 
+>>project simplicity doesn't matter much for you and you think it's fine 
+>>to duplicate Linux page cache in the user space to keep the in-kernel 
+>>part of the project as small as possible?
+> 
+> 
+> The answers were pretty much contained here
+> 
+> http://marc.info/?l=linux-scsi&m=120164008302435
+> 
+> and here:
+> 
+> http://marc.info/?l=linux-scsi&m=120171067107293
+> 
+> Weren't they?
 
-> We currently don't have any wimax support in the kernel, but I know of
-> a project working on it.  They are using Intel hardware -- it would
-> be good to have other hardware to validate their work before merging
-> it into the kernel.
-i can do some testing if it is required, we have a trial network running. and 
-a few alcatel basestations in the lab.
+No, sorry, it doesn't look so for me. They are about performance, but 
+I'm asking about the overall project's architecture, namely about one 
+part of it: simplicity. Particularly, what do you think about 
+duplicating Linux page cache in the user space to have zero-copy cached 
+I/O? Or can you suggest another architectural solution for that problem 
+in the STGT's approach?
 
->
-> John
-
-
+Vlad
