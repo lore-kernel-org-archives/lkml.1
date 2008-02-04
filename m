@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYBDTJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYBDTJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYBDTJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbYBDTJE
+	id S1757435AbYBDTJb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:09:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYBDTJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:09:04 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:56011 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754499AbYBDTJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:09:05 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:54187 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754409AbYBDTJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Feb 2008 14:09:03 -0500
-Date: Mon, 4 Feb 2008 11:09:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-In-Reply-To: <20080203021704.GC7185@v2.random>
-Message-ID: <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random>
- <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com>
- <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com>
- <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com>
- <20080203021704.GC7185@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: ocfs2-devel@oss.oracle.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] Move /sys/o2cb to /sys/fs/o2cb
+Date: Mon,  4 Feb 2008 11:07:40 -0800
+Message-Id: <1202152062-28370-1-git-send-email-mark.fasheh@oracle.com>
+X-Mailer: git-send-email 1.5.3.4
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Feb 2008, Andrea Arcangeli wrote:
+Hi Greg,
 
-> > Right but that pin requires taking a refcount which we cannot do.
-> 
-> GRU can use my patch without the pin. XPMEM obviously can't use my
-> patch as my invalidate_page[s] are under the PT lock (a feature to fit
-> GRU/KVM in the simplest way), this is why an incremental patch adding
-> invalidate_range_start/end would be required to support XPMEM too.
+	The following two patches move /sys/o2cb into /sys/fs/o2cb as we
+previously discussed. A symlink is created to maintain compatibility with
+existing versions of ocfs2-tools. A patch to automatically search
+/sys/fs/o2cb has been committed to the ocfs2-tools repo and a release with
+that code shouldn't be too far out. Old versions of ocfs2-tools have been
+tested and work fine with the symlink there. The development version of
+ocfs2-tools with the patch to search /sys/fs/o2cb has also been tested with
+and without the symlink. All results are as expected - the new ocfs2-tools
+works great with both setups.
 
-Doesnt the kernel in some situations release the page before releasing the 
-pte lock? Then there will be an external pte pointing to a page that may 
-now have a different use. Its really bad if that pte does allow writes.
+	Documentation of the o2cb directory has been added so that future
+hackers will have an easier time understanding what it's all about. The
+/sys/o2cb symlink has been appropariately marked as going away in two years
+- a timeline which we feel is appropriately long enough such that a very
+small number of people would be affected by it's removal.
 
+	The first patch fixes a small problem with sysfs_remove_link() which
+I encountered while coding this all up. The 2nd one actually moves the
+directory, creates the symlink and adds the appropriate documentation.
 
+	Please review, and if all goes well, indicate to me when you'd be
+comfortable with the small sysfs patch going upstream - I'd like to get this
+series out there asap as it's a fairly trivial change, and some of the ocfs2
+changes might conflict with our ongoing cluster stack rework.
+	--Mark
+
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
