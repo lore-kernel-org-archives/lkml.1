@@ -1,85 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYBDQjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYBDQoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbYBDQjQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 11:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYBDQjA
+	id S1755955AbYBDQoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 11:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYBDQoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 11:39:00 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:43486 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752900AbYBDQi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 11:38:59 -0500
-Message-ID: <47A73F97.1040804@freescale.com>
-Date: Mon, 04 Feb 2008 10:38:47 -0600
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Mon, 4 Feb 2008 11:44:46 -0500
+Received: from styx.suse.cz ([82.119.242.94]:45210 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753970AbYBDQop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 11:44:45 -0500
+Date: Mon, 4 Feb 2008 17:44:43 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix private_list handling
+Message-ID: <20080204164443.GE3426@duck.suse.cz>
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] checkpatch: add __asm__ to function-space-paren exception
- list
-References: <12016486482483-git-send-email-timur@freescale.com> <20080204112203.GA19879@shadowen.org>
-In-Reply-To: <20080204112203.GA19879@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
+There are two possible races in handling of private_list in buffer cache.
+1) When fsync_buffers_list() processes a private_list, it clears
+b_assoc_mapping and moves buffer to its private list. Now drop_buffers() comes,
+sees a buffer is on list so it calls __remove_assoc_queue() which complains
+about b_assoc_mapping being cleared (as it cannot propagate possible IO error).
+This race has been actually observed in the wild.
+2) When fsync_buffers_list() processes a private_list,
+mark_buffer_dirty_inode() can be called on bh which is already on the private
+list of fsync_buffers_list(). As buffer is on some list (note that the check is
+performed without private_lock), it is not readded to the mapping's
+private_list and after fsync_buffers_list() finishes, we have a dirty buffer
+which should be on private_list but it isn't. This race has not been reported,
+probably because most (but not all) callers of mark_buffer_dirty_inode() hold
+i_mutex and thus are serialized with fsync().
 
-> It truly is not clear what "type" of thing an __asm__ is these days.
-> Cirtainly it seems we can use it as an attribute of a type:
-> 
->         register unsigned long __r16 __asm__("$16") = rtc_access->function;
-> 
-> and yet also in its more traditional form:
-> 
-> 	__asm__("	call foo");
-> 
-> The latter form feels like a function? 
+Fix these issues by not clearing b_assoc_map when fsync_buffers_list() moves
+buffer to a dedicated list and by reinserting buffer in private_list when
+it is found dirty after we have submitted buffer for IO. We also change the
+tests whether a buffer is on a private list from
+ !list_empty(&bh->b_assoc_buffers) to bh->b_assoc_map
+so that they are single word reads and hence lockless checks are safe.
 
-But it's not.  Sure, it defines a block of code that has input and output 
-parameters, but one key distinction is that __asm__ is not the name of the 
-"function".
+Signed-off-by: Jan Kara <jack@suse.cz>
+CC: Nick Piggin <npiggin@suse.de>
 
-? But cirtainly in the examples it
-> is shown with a space some of the time, and not others. 
+---
+Hi Andrew,
 
-Well, since checkpatch.pl insists that the space be removed, that's probably why 
-it's not there a lot of the time.
+this is the latest version of the fix for private_list handling races. The
+changes are now smaller so I hope you'll like the patch more... Please
+apply if you now think the patch is fine. Thanks.
 
-> Is __asm__ an
-> attribute of the null function (;) in this context or ... well ?
+									Honza
 
-I don't think __asm__ can be compared to other C-language syntax constructs.
-
-> This patch really just removes any checks for spacing on __asm__ do we
-> have a preferred style for these? 
-
-I don't know, but I do know it's wrong for checkpatch.pl to think that "__asm__" 
-is the name of a function.
-
- > Attributes do seem to have spaces,
-> though in their most attribute like usage the __asm__ "attribute" does
-> not seem to be used with a space, so far anyhow.
-
-The problem is that checkpatch.pl thinks this is okay:
-
-	__asm__ __volatile__ ("call foo");
-
-but it doesn't like this:
-
-	__asm__ ("call foo");
-
-> Oh and why are we preferring the use of __asm__ over asm?  They both
-> seem valid.  Should we be recommending one over the other?
-
-It's a toss-up.  Depending on the architecture, one version has about 60% usage 
-and the other about 40%.  I thought I read somewhere that __asm__ is preferred, 
-but I can't remember where I read that or who wrote it.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 7249e01..76e1ab4 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -678,7 +678,7 @@ void mark_buffer_dirty_inode(struct buffer_head *bh, struct inode *inode)
+ 	} else {
+ 		BUG_ON(mapping->assoc_mapping != buffer_mapping);
+ 	}
+-	if (list_empty(&bh->b_assoc_buffers)) {
++	if (!bh->b_assoc_map) {
+ 		spin_lock(&buffer_mapping->private_lock);
+ 		list_move_tail(&bh->b_assoc_buffers,
+ 				&mapping->private_list);
+@@ -794,6 +794,7 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
+ {
+ 	struct buffer_head *bh;
+ 	struct list_head tmp;
++	struct address_space *mapping;
+ 	int err = 0, err2;
+ 
+ 	INIT_LIST_HEAD(&tmp);
+@@ -801,9 +802,14 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
+ 	spin_lock(lock);
+ 	while (!list_empty(list)) {
+ 		bh = BH_ENTRY(list->next);
++		mapping = bh->b_assoc_map;
+ 		__remove_assoc_queue(bh);
++		/* Avoid race with mark_buffer_dirty_inode() which does
++		 * a lockless check and we rely on seeing the dirty bit */
++		smp_mb();
+ 		if (buffer_dirty(bh) || buffer_locked(bh)) {
+ 			list_add(&bh->b_assoc_buffers, &tmp);
++			bh->b_assoc_map = mapping;
+ 			if (buffer_dirty(bh)) {
+ 				get_bh(bh);
+ 				spin_unlock(lock);
+@@ -822,8 +828,17 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
+ 
+ 	while (!list_empty(&tmp)) {
+ 		bh = BH_ENTRY(tmp.prev);
+-		list_del_init(&bh->b_assoc_buffers);
+ 		get_bh(bh);
++		mapping = bh->b_assoc_map;
++		__remove_assoc_queue(bh);
++		/* Avoid race with mark_buffer_dirty_inode() which does
++		 * a lockless check and we rely on seeing the dirty bit */
++		smp_mb();
++		if (buffer_dirty(bh)) {
++			list_add(&bh->b_assoc_buffers,
++				 &bh->b_assoc_map->private_list);
++			bh->b_assoc_map = mapping;
++		}
+ 		spin_unlock(lock);
+ 		wait_on_buffer(bh);
+ 		if (!buffer_uptodate(bh))
+@@ -1195,7 +1210,7 @@ void __brelse(struct buffer_head * buf)
+ void __bforget(struct buffer_head *bh)
+ {
+ 	clear_buffer_dirty(bh);
+-	if (!list_empty(&bh->b_assoc_buffers)) {
++	if (bh->b_assoc_map) {
+ 		struct address_space *buffer_mapping = bh->b_page->mapping;
+ 
+ 		spin_lock(&buffer_mapping->private_lock);
+@@ -3037,7 +3052,7 @@ drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
+ 	do {
+ 		struct buffer_head *next = bh->b_this_page;
+ 
+-		if (!list_empty(&bh->b_assoc_buffers))
++		if (bh->b_assoc_map)
+ 			__remove_assoc_queue(bh);
+ 		bh = next;
+ 	} while (bh != head);
