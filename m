@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYBDGsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYBDGzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbYBDGsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 01:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYBDGsN
+	id S1754106AbYBDGzU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 01:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYBDGzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 01:48:13 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:49963 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbYBDGsM (ORCPT
+	Mon, 4 Feb 2008 01:55:06 -0500
+Received: from numenor.qualcomm.com ([129.46.51.58]:53997 "EHLO
+	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbYBDGzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 01:48:12 -0500
-X-Greylist: delayed 2269 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Feb 2008 01:48:12 EST
-Date: Mon, 4 Feb 2008 17:08:30 +1100
-To: Sripathi Kodi <sripathik@in.ibm.com>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [ppc] Disparity between sys_clock_getres and vdso implementation
-Message-ID: <20080204060830.GS6887@bakeyournoodle.com>
-References: <200801271932.59823.sripathik@in.ibm.com>
+	Mon, 4 Feb 2008 01:55:05 -0500
+Message-ID: <47A6B666.4050208@qualcomm.com>
+Date: Sun, 03 Feb 2008 22:53:26 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200801271932.59823.sripathik@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+To: Daniel Walker <dwalker@mvista.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>, Paul Jackson <pj@sgi.com>
+Subject: Re: [CPUISOL] CPU isolation extensions
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	 <1201511305.6149.30.camel@lappy>  <479E1FD4.5040606@qualcomm.com>	 <1201563706.2826.34.camel@imap.mvista.com>  <479E6F71.4040906@qualcomm.com> <1201570413.2826.73.camel@imap.mvista.com>
+In-Reply-To: <1201570413.2826.73.camel@imap.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 07:32:59PM +0530, Sripathi Kodi wrote:
-> Hi Paul,
+Hi Daniel,
+
+Sorry for not replying right away.
+
+Daniel Walker wrote:
+> On Mon, 2008-01-28 at 16:12 -0800, Max Krasnyanskiy wrote:
 > 
-> On PPC, I see a disparity between clock_getres implementations in the
-> vdso and syscall. I am using a IBM Openpower hardware and 2.6.24 kernel
-> with CONFIG_HIGH_RES_TIMERS=y. 
+>> Not accurate enough and way too much overhead for what I need. I know at this point it probably 
+>> sounds like I'm talking BS :). I wish I've released the engine and examples by now. Anyway let 
+>> me just say that SW MAC has crazy tight deadlines with lots of small tasks. Using nanosleep() & 
+>> gettimeofday() is simply not practical. So it's all TSC based with clever time sync logic between
+>> HW and SW.
 > 
-> clock_getres call for CLOCK_REALTIME returns 1 millisecond. However,
-> when I edit arch/powerpc/kernel/vdso*/gettimeofday.S to force it to use 
-> sys_clock_getres, I get 1 nanosecond resolution. The code in vdso seems
-> to be returning some pre-defined (incorrect) variables.
-> 
-> Could you please let me know the reason for this? Is it something that
-> should be fixed in vdso?
+> I don't know if it's BS or not, you clearly fixed your own problem which
+> is good .. Although when you say "RT patches cannot achieve what I
+> needed. Even RTAI/Xenomai can't do that." , and HRT is "Not accurate
+> enough and way too much overhead" .. Given the hardware your using,
+> that's all difficult to believe.. You also said this code has been
+> running on production systems for two year, which means it's at least
+> two years old .. There's been some good sized leaps in real time linux
+> in the past two years ..
 
-Almost certainly It's something I missed when I enabled highres timers
-on powerpc.
+I've been actually tracking RT patches fairly closely. I can't say I tried all of them but I do try
+them from time to time. I just got latest 2.6.24-rt1 running on HP xw9300. Looks like it does not handle
+CPU hotplug very well, I manged to kill it by bringing cpu 1 off-line. So I cannot run any tests right 
+now will run some tomorrow.
+ 
+For now let me mention that I have a simple tests that sleeps for a millisecond, then does some bitbanging 
+for 200 usec. It measures jitter caused by the periodic scheduler tick, IPIs and other kernel activities.
+With high-res timers disabled on most of the machines I mentioned before it shows around 1-1.2usec worst case. 
+With high-res timers enabled it shows 5-6usec. This is with 2.6.24 running on an isolated CPU. Forget about
+using a user-space timer (nanosleep(), etc). Even scheduler tick itself is fairly heavy.
+gettimeofday() call on that machine takes on average 2-3usec (not a vsyscall) and SW MAC is all about precise 
+timing. That's why I said that it's not practical to use that stuff for me. I do not see anything in -rt kernel 
+that would improve this.
 
-I'll fix this tomorrow.
+This is btw not to say that -rt kernel is not useful for my app in general. We have a bunch of soft-RT threads
+that talk to the MAC thread. Those would definitely benefit. I think cpu isolation + -rt would work beautifully
+for wireless basestations.
 
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-
+Max 
