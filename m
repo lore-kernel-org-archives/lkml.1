@@ -1,40 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYBDV5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYBDV6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbYBDV5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 16:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYBDV5k
+	id S1755389AbYBDV6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 16:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYBDV6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 16:57:40 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41329 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753311AbYBDV5j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 16:57:39 -0500
-Date: Mon, 4 Feb 2008 21:56:54 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Yi Yang <yi.y.yang@intel.com>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-mm1: module params broken
-In-Reply-To: <20080203171634.58ab668b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0802042140250.8210@blonde.site>
-References: <20080203171634.58ab668b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 16:58:13 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47444 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755367AbYBDV6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 16:58:12 -0500
+Subject: Re: tg3 broken after "PCI: Fix bus resource assignment on 32 bits
+	with 64b resources"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080204151222.GB25790@localhost.sw.ru>
+References: <20080204151222.GB25790@localhost.sw.ru>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 08:57:28 +1100
+Message-Id: <1202162248.7079.10.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please chuck out:
-add-new-string-functions-strict_strto-and-convert-kernel-params-to-use-them.patch
-(along with Randy's perfectly reasonable -fix.patch).
+Oh and send me the output of /proc/iomem as well.
 
-So predictable that it would just disable loading modules with params:
-Feb  4 13:17:02 blonde kernel: thinkpad_acpi: `1' invalid for parameter `experimental'
+Cheers,
+Ben.
 
-Maybe it's something as simple as a trailing whitespace issue,
-I haven't looked, would prefer the originator to do so.
-openSUSE 10.3 if that makes any difference.
 
-Hugh
