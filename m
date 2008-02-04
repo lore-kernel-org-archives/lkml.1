@@ -1,86 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYBDUOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYBDURq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbYBDUOs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:14:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYBDUOk
+	id S1757919AbYBDURq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:17:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbYBDURi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:14:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:63276 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755586AbYBDUOj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:14:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TnNZ7nw4zb3PS90UhoZiPxtbtorTdlRlYVRDkc0Vm//eBqPCnSfEnlbN9Z9weBrdh50ZGSi5fS/VHrj5HYBjkEFOzN1MQNIgiHslGWRYqRuOXJb2qPQeZZRX/UFw5pLecbYpHiL8fzs4KAcZqDEmQ3NLQ/m00/TEbs6SfLScM1g=
-Message-ID: <6101e8c40802041214i78094f00kde109c7a22bed5ec@mail.gmail.com>
-Date: Mon, 4 Feb 2008 21:14:37 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: stable@kernel.org
-Subject: Re: {2.6.22.y} CVE-2007-6434
-Cc: linux-kernel@vger.kernel.org, "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "Greg KH" <gregkh@suse.de>, "Willy Tarreau" <w@1wt.eu>,
-       "Adrian Bunk" <bunk@kernel.org>, "Nick Piggin" <npiggin@suse.de>
-In-Reply-To: <6101e8c40802041213y4f3cb310qaff40052ed18d5df@mail.gmail.com>
+	Mon, 4 Feb 2008 15:17:38 -0500
+Received: from smtp-in.kfki.hu ([148.6.0.28]:32859 "EHLO smtp2.kfki.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754576AbYBDURg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:17:36 -0500
+Date: Mon, 4 Feb 2008 21:17:31 +0100 (CET)
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Patrick McHardy <kaber@trash.net>, lkml <linux-kernel@vger.kernel.org>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: cups slow on linux-2.6.24
+In-Reply-To: <Pine.LNX.4.64.0802042226340.28805@boston.corp.fedex.com>
+Message-ID: <Pine.LNX.4.64.0802042109230.31268@blackhole.kfki.hu>
+References: <Pine.LNX.4.64.0802042226340.28805@boston.corp.fedex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6101e8c40802041213y4f3cb310qaff40052ed18d5df@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-6434
+Hi,
 
-On 2/4/08, Oliver Pinter <oliver.pntr@gmail.com> wrote:
-> mainline: ecaf18c15aac8bb9bed7b7aa0e382fe252e275d5
->
-> --->8---
-> commit ecaf18c15aac8bb9bed7b7aa0e382fe252e275d5
-> Author: Eric Paris <eparis@redhat.com>
-> Date:   Tue Dec 4 23:45:31 2007 -0800
->
->     VM/Security: add security hook to do_brk
->
->     Given a specifically crafted binary do_brk() can be used to get low
-> pages
->     available in userspace virtual memory and can thus be used to circumvent
->     the mmap_min_addr low memory protection.  Add security checks in
-> do_brk().
->
->     Signed-off-by: Eric Paris <eparis@redhat.com>
->     Acked-by: Alan Cox <alan@redhat.com>
->     Cc: Stephen Smalley <sds@tycho.nsa.gov>
->     Cc: James Morris <jmorris@namei.org>
->     Cc: Chris Wright <chrisw@sous-sol.org>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
->
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index facc1a7..acfc13f 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1934,6 +1934,10 @@ unsigned long do_brk(unsigned long addr, unsigned
-> long le
->         if (is_hugepage_only_range(mm, addr, len))
->                 return -EINVAL;
->
-> +       error = security_file_mmap(0, 0, 0, 0, addr, 1);
-> +       if (error)
-> +               return error;
-> +
->         flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
->
->         error = arch_mmap_check(addr, len, flags);
-> ---8<---
-> --
-> Thanks,
-> Oliver
->
+On Mon, 4 Feb 2008, Jeff Chua wrote:
 
+> > Attached are the dump files mentioned.
+> 
+> Not sure whether the attached files got uploaded. So, I'm sending this one
+> more time.
 
--- 
-Thanks,
-Oliver
+I could reproduce the slow-down by a loop of socat commands. The dump you 
+sent looks exactly like the traces I got at dumping the traffic generated by 
+socat and that is good.
+
+Actively closed connections are not handled properly, i.e. the initiator 
+of the active close should not be taken into account. So could you give a 
+try to the patch below? Does it just suppress the 'invalid packed ignored' 
+and all other kernel messages or both suppresses them and produces normal 
+printing speed?
+
+commit 2067ab64ef876efaa0f4dd8fe73f48f50e215369
+Author: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Date:   Sun Feb 3 17:14:22 2008 +0100
+
+    Handle active close for both sides, it is not restricted
+    to one side alone.
+
+diff --git a/net/netfilter/nf_conntrack_proto_tcp.c b/net/netfilter/nf_conntrack_proto_tcp.c
+index 7a3f64c..8c7efe2 100644
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -135,7 +135,7 @@ enum tcp_bit_set {
+  * CLOSE_WAIT:	ACK seen (after FIN)
+  * LAST_ACK:	FIN seen (after FIN)
+  * TIME_WAIT:	last ACK seen
+- * CLOSE:	closed connection
++ * CLOSE:	closed connection (RST)
+  *
+  * LISTEN state is not used.
+  *
+@@ -834,8 +834,21 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 	case TCP_CONNTRACK_SYN_SENT:
+ 		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+ 			break;
+-		if ((conntrack->proto.tcp.seen[!dir].flags &
+-			IP_CT_TCP_FLAG_CLOSE_INIT)
++		/* RFC 1122: "When a connection is closed actively,
++		 * it MUST linger in TIME-WAIT state for a time 2xMSL
++		 * (Maximum Segment Lifetime). However, it MAY accept
++		 * a new SYN from the remote TCP to reopen the connection
++		 * directly from TIME-WAIT state, if..."
++		 * We ignore the conditions because we are in the
++		 * TIME-WAIT state anyway.
++		 *
++		 * Handle aborted connections: we and the server
++		 * think there is an existing connection but the client
++		 * aborts it and starts a new one.
++		 */
++		if (((conntrack->proto.tcp.seen[dir].flags
++		      | conntrack->proto.tcp.seen[!dir].flags)
++		     & IP_CT_TCP_FLAG_CLOSE_INIT)
+ 		    || (conntrack->proto.tcp.last_dir == dir
+ 		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
+ 			/* Attempt to reopen a closed/aborted connection.
+@@ -848,18 +861,25 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 		}
+ 		/* Fall through */
+ 	case TCP_CONNTRACK_IGNORE:
+-		/* Ignored packets:
++		/* Ignored packets: 
++		 *
++		 * Our connection entry may be out of sync, so ignore
++		 * packets which may signal the real connection between
++		 * the client and the server.
+ 		 *
+ 		 * a) SYN in ORIGINAL
+ 		 * b) SYN/ACK in REPLY
+ 		 * c) ACK in reply direction after initial SYN in original.
++		 *
++		 * If the ignored packet is invalid, the receiver will send 
++		 * a RST we'll catch below.
+ 		 */
+ 		if (index == TCP_SYNACK_SET
+ 		    && conntrack->proto.tcp.last_index == TCP_SYN_SET
+ 		    && conntrack->proto.tcp.last_dir != dir
+ 		    && ntohl(th->ack_seq) ==
+ 			     conntrack->proto.tcp.last_end) {
+-			/* This SYN/ACK acknowledges a SYN that we earlier
++			/* b) This SYN/ACK acknowledges a SYN that we earlier
+ 			 * ignored as invalid. This means that the client and
+ 			 * the server are both in sync, while the firewall is
+ 			 * not. We kill this session and block the SYN/ACK so
+@@ -938,8 +958,7 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 
+ 	conntrack->proto.tcp.state = new_state;
+ 	if (old_state != new_state
+-	    && (new_state == TCP_CONNTRACK_FIN_WAIT
+-		|| new_state == TCP_CONNTRACK_CLOSE))
++	    && new_state == TCP_CONNTRACK_FIN_WAIT)
+ 		conntrack->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
+ 	timeout = conntrack->proto.tcp.retrans >= nf_ct_tcp_max_retrans
+ 		  && *tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
+
+Best regards,
+Jozsef
+-
+E-mail  : kadlec@blackhole.kfki.hu, kadlec@sunserv.kfki.hu
+PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
+Address : KFKI Research Institute for Particle and Nuclear Physics
+          H-1525 Budapest 114, POB. 49, Hungary
