@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbYBDULg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYBDUN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758360AbYBDULg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbYBDUL0
+	id S1758133AbYBDUN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYBDUNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:11:26 -0500
-Received: from nelson.telenet-ops.be ([195.130.133.66]:35239 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758212AbYBDULZ (ORCPT
+	Mon, 4 Feb 2008 15:13:21 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:60329 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754493AbYBDUNU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:11:25 -0500
-Date: Mon, 4 Feb 2008 21:11:16 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Bastian Blank <bastian@waldi.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-s390@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] Fix ext4 bitops
-In-Reply-To: <20080204045025.GA7494@skywalker>
-Message-ID: <Pine.LNX.4.64.0802042109020.15250@anakin>
-References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
- <20080201122257.9524c2bb.akpm@linux-foundation.org>
- <20080201210404.GA31271@wavehammer.waldi.eu.org> <20080203121238.GD18211@osiris.ibm.com>
- <Pine.LNX.4.64.0802031336240.28712@anakin> <20080204045025.GA7494@skywalker>
+	Mon, 4 Feb 2008 15:13:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=WAxT+Gihz+IYFNBOjZT8/1jhzZMjrydyxxzW6y+2ttoihnUF3I5Yy6I10ugZRvojDvnarRcEnZT54vAbi0kcDunqGQTClJbqL9JjAkjqshO9U8o/NyG3tPjsU2xwkKccFNA5ng61bki7GB1jrQPqCx1fOX+UVmJOtS/lVsVZ0T4=
+Message-ID: <6101e8c40802041213y4f3cb310qaff40052ed18d5df@mail.gmail.com>
+Date: Mon, 4 Feb 2008 21:13:16 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: stable@kernel.org
+Subject: {2.6.22.y} CVE-2007-6434
+Cc: linux-kernel@vger.kernel.org, "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "Greg KH" <gregkh@suse.de>, "Willy Tarreau" <w@1wt.eu>,
+       "Adrian Bunk" <bunk@kernel.org>, "Nick Piggin" <npiggin@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008, Aneesh Kumar K.V wrote:
-> On Sun, Feb 03, 2008 at 01:39:02PM +0100, Geert Uytterhoeven wrote:
-> > On Sun, 3 Feb 2008, Heiko Carstens wrote:
-> > > On Fri, Feb 01, 2008 at 10:04:04PM +0100, Bastian Blank wrote:
-> > > > On Fri, Feb 01, 2008 at 12:22:57PM -0800, Andrew Morton wrote:
-> > > > > On Fri, 1 Feb 2008 21:02:08 +0100
-> > > > > Bastian Blank <bastian@waldi.eu.org> wrote:
-> > > > > > Fix ext4 bitops.
-> > > > > 
-> > > > > This is incomplete.  Please tell us what was "fixed".
-> > > > > 
-> > > > > If it was a build error then please quote the compile error output in the
-> > > > > changelog, as well as the usual description of what the problem is, and how
-> > > > > it was fixed.
-> > > > 
-> > > > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
-> > > > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
-> > > > 
-> > > > The s390 specific bitops uses parts of the generic implementation.
-> > > > Include the correct header.
-> > > 
-> > > That doesn't work:
-> > > 
-> > > fs/built-in.o: In function `ext4_mb_release_inode_pa':
-> > > mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
-> > > fs/built-in.o: In function `ext4_mb_init_cache':
-> > > mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
-> > > 
-> > > This still needs generic_find_next_le_bit which comes
-> > > from lib/find_next_bit.c. That one doesn't get built on s390 since we
-> > > don't set GENERIC_FIND_NEXT_BIT.
-> > > Currently we have the lengthly patch below queued.
-> > 
-> > Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
-> > impression the ext4 people don't (compile) test on big endian machines?
-> 
-> I have sent this patches to linux-arch expecting a review from
-> different arch people. It is true that the patches are tested only on
-> powerpc, x86-64, x86. That's the primary reason of me sending the
-> patches to linux-arch.
-> 
-> http://marc.info/?l=linux-arch&m=119503501127737&w=2
+mainline: ecaf18c15aac8bb9bed7b7aa0e382fe252e275d5
 
-Sometimes it's difficult to see what can go wrong due to a single patch that
-just adds a #define. Sorry, I missed the lack of prototype for
-generic_find_next_le_bit() and that we don't set GENERIC_FIND_NEXT_BIT,
-just like s390.
+--->8---
+commit ecaf18c15aac8bb9bed7b7aa0e382fe252e275d5
+Author: Eric Paris <eparis@redhat.com>
+Date:   Tue Dec 4 23:45:31 2007 -0800
 
-And yes, usually I rely on the -mm autocompiler to catch things like
-this, but this time it didn't work out...
+    VM/Security: add security hook to do_brk
 
-Gr{oetje,eeting}s,
+    Given a specifically crafted binary do_brk() can be used to get low pages
+    available in userspace virtual memory and can thus be used to circumvent
+    the mmap_min_addr low memory protection.  Add security checks in do_brk().
 
-						Geert
+    Signed-off-by: Eric Paris <eparis@redhat.com>
+    Acked-by: Alan Cox <alan@redhat.com>
+    Cc: Stephen Smalley <sds@tycho.nsa.gov>
+    Cc: James Morris <jmorris@namei.org>
+    Cc: Chris Wright <chrisw@sous-sol.org>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+diff --git a/mm/mmap.c b/mm/mmap.c
+index facc1a7..acfc13f 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1934,6 +1934,10 @@ unsigned long do_brk(unsigned long addr, unsigned long le
+        if (is_hugepage_only_range(mm, addr, len))
+                return -EINVAL;
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
++       error = security_file_mmap(0, 0, 0, 0, addr, 1);
++       if (error)
++               return error;
++
+        flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+
+        error = arch_mmap_check(addr, len, flags);
+---8<---
+-- 
+Thanks,
+Oliver
