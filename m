@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYBDRiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbYBDRk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbYBDRiv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbYBDRij
+	id S1757208AbYBDRk4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYBDRks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:38:39 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:50297 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756913AbYBDRih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:38:37 -0500
-To: staubach@redhat.com
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <47A73558.2080700@redhat.com> (message from Peter Staubach on
-	Mon, 04 Feb 2008 10:55:04 -0500)
-Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
-References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu> <47A39D8F.9010003@redhat.com> <E1JLDIq-000747-1y@pomaz-ex.szeredi.hu> <47A73558.2080700@redhat.com>
-Message-Id: <E1JM5Gh-0003Pi-Dq@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 04 Feb 2008 18:38:07 +0100
+	Mon, 4 Feb 2008 12:40:48 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:57534 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755112AbYBDRkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 12:40:47 -0500
+Date: Mon, 04 Feb 2008 11:40:46 -0600
+To: linux-kernel@vger.kernel.org
+Cc: pj@sgi.com, clameter@sgi.com, rientjes@google.com,
+       linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com, akpm@osdl.org
+Subject: [PATCH 1/4 v2] hotplug cpu move tasks in empty cpusets to parent
+ node_online_map fix
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080204174046.91FA31FE109@attica.americas.sgi.com>
+From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In FUSE interrupts are sent to userspace, and the filesystem decides
-> > what to do with them.  So it is entirely possible and valid for a
-> > filesystem to ignore an interrupt.  If an operation was non-blocking
-> > (such as one returning an error), then there would in fact be no
-> > purpose in checking interrupts.
-> >
-> >   
-> 
-> Why do you think that it is valid to ignore pending signals?
-> You seem to be asserting that it okay for processes to hang,
-> uninterruptibly, when accessing files on fuse mounted file
-> systems?
-> 
-> Perhaps the right error to return when there is a signal
-> pending is EINTR and not ESTALE or some other error?  There
-> has to be some way for the application to detect that its
-> system call was interrupted due to a signal pending.
 
-Traditionally a lot of filesystem related system calls are not
-interruptible, and for good reason.  For example what happens, if an
-app receives a signal, while the filesystem is performing a rename()
-request?  It would be very confusing if the call returned EINTR, but
-the rename would successfully complete regardless.
+As of the October 2007 kernel/cpuset.c patch "Memoryless nodes:
+Use N_HIGH_MEMORY for cpusets", cpuset nodes are relative to
+the nodes with (HIGH) memory, not relative to all nodes in
+node_online_map.
 
-We had a related problem with the open(O_CREAT) call in fuse, which
-was interruptible between the creation and the actual open because of
-a design mistake.  So it could return EINTR, after the file was
-created, and this broke a real world application (don't have details
-at hand, but could dig them out if you are interested).
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Acked-by: Cliff Wickman <cpw@sgi.com>
 
-I don't know what NFS does, but returning EINTR without actually
-canceling an operation in the server is generally not a good idea.
+---
 
-> > So while sending a signal might reliably work in NFS to break out of
-> > the loop, it does not necessarily work for other filesystems, and fuse
-> > may not be the only one affected.
-> >
-> >   
-> 
-> Have you noticed another one?  I would be happy to chat with the
-> developers for that file system to see if this support would
-> negatively impact them.
+ kernel/cpuset.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Oh, I have no idea.  And I wouldn't want to do a full audit of all the
-filesystems to find out.  But if you do, please go ahead.
-
-> > A few solutions come to mind, perhaps the best is to introduce a
-> > kernel internal errno value (ERETRYSTALE), that forces the relevant
-> > system calls to be retried.
-> >
-> > NFS could transform ESTALE errors to ERETRYSTALE and get the desired
-> > behavior, while other filesystems would not be affected.
-> 
-> We don't need more error numbers, we've got plenty already.  :-)
-
-That's a rather poor excuse against a simple solution which would
-spare us some backward compatibility problems.
-
-> Do you have anything more specific about any real problems?
-> I see lots of "mays" and "coulds", but I don't see anything
-> that I can do to make this support better.
-
-Implement the above suggestion?  Or something else.
-
-Otherwise I have to NAK this patch due to the possibility of it
-breaking existing fuse installations.
-
-Thanks,
-Miklos
+Index: linux-2.6/kernel/cpuset.c
+===================================================================
+--- linux-2.6.orig/kernel/cpuset.c
++++ linux-2.6/kernel/cpuset.c
+@@ -1762,7 +1762,8 @@ static void scan_for_empty_cpusets(const
+ 		cont = cp->css.cgroup;
+ 		/* Remove offline cpus and mems from this cpuset. */
+ 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
+-		nodes_and(cp->mems_allowed, cp->mems_allowed, node_online_map);
++		nodes_and(cp->mems_allowed, cp->mems_allowed,
++						node_states[N_HIGH_MEMORY]);
+ 		if ((cpus_empty(cp->cpus_allowed) ||
+ 		     nodes_empty(cp->mems_allowed))) {
+ 			/* Move tasks from the empty cpuset to a parent */
+@@ -1777,8 +1778,8 @@ static void scan_for_empty_cpusets(const
+ 
+ /*
+  * The cpus_allowed and mems_allowed nodemasks in the top_cpuset track
+- * cpu_online_map and node_online_map.  Force the top cpuset to track
+- * whats online after any CPU or memory node hotplug or unplug event.
++ * cpu_online_map and node_states[N_HIGH_MEMORY].  Force the top cpuset to
++ * track what's online after any CPU or memory node hotplug or unplug event.
+  *
+  * Since there are two callers of this routine, one for CPU hotplug
+  * events and one for memory node hotplug events, we could have coded
