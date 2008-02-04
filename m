@@ -1,73 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYBDQRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYBDQVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYBDQRk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 11:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYBDQRc
+	id S1754892AbYBDQVT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 11:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYBDQVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 11:17:32 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35793 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbYBDQRb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 11:17:31 -0500
-Date: Mon, 4 Feb 2008 08:14:37 -0800
-From: Greg KH <greg@kroah.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SH/Dreamcast - fix regressions, whitespace and memory
-	leaks in Maple Bus driver
-Message-ID: <20080204161437.GA20739@kroah.com>
-References: <1202068847.6262.7.camel@localhost.localdomain> <20080204052900.GB7585@kroah.com> <1202113675.6489.6.camel@localhost.localdomain>
+	Mon, 4 Feb 2008 11:21:07 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36923 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751168AbYBDQVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 11:21:03 -0500
+Date: Mon, 4 Feb 2008 10:21:03 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+Cc: "Andrew G. Morgan" <morgan@kernel.org>, akpm@osdl.org, serue@us.ibm.com,
+       jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/3] exporting capability code/name pairs (try #3)
+Message-ID: <20080204162103.GA20130@sergelap.ibm.com>
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202113675.6489.6.camel@localhost.localdomain>
+In-Reply-To: <47A2AB60.5000403@ak.jp.nec.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 08:27:55AM +0000, Adrian McMenamin wrote:
-> 
-> On Sun, 2008-02-03 at 21:29 -0800, Greg KH wrote:
-> > On Sun, Feb 03, 2008 at 08:00:47PM +0000, Adrian McMenamin wrote:
-> > > From: Adrian McMenamin
-> > > 
-> > > This patch fixes the regression noted here:
-> > > http://lkml.org/lkml/2008/1/26/189 as well as whitespace issues in the
-> > > previous commit of this driver and the memory leaks noted here:
-> > > http://lkml.org/lkml/2008/2/2/143 (as well as one or two other minor
-> > > cleanups).
+Quoting Kohei KaiGai (kaigai@ak.jp.nec.com):
+> >> All that being said, the friendliness factor of this is somewhat
+> >> undeniable, and so I can see why folk might want it in the kernel
+> >> anyway. If so, would it possible to move this code into
+> >> security/capability.c and not in the main kernel per-se - protected with
+> >> a configuration option? If it does appear in the kernel, we'll obviously
+> >> add your libcap changes too. If it doesn't, then perhaps we can meet
+> >> your needs with a slight modification to your libcap patch to read the
+> >> capabilities from an optional /etc/XXX file - and make text visibility
+> >> of 'late breaking' capabilities something that the admin can tweak as
+> >> needed?
 > > 
-> > Which portion of the patch fixes the kobject WARN_ON()?
+> > I think optional configuration file is not a good idea.
+> > It can make unneeded confusion.
+> > 
+> > If necessary, I'll move this features into security/capability.c and
+> > add a Kconfig option to select it.
 > 
+> The following patch enables to export the list of capabilities supported
+> on the running kernel, under /sys/kernel/capability .
 > 
+> Changelog from the previous version:
+> - Implementation is moved into security/capability.c from kernel/capability.c
+> - A Kconfig option SECURITY_CAPABILITIES_EXPORT is added to tuen on/off this feature.
+
+can you explain one more time exactly what this lets you do that you
+absolutely can't do with the current api?
+
+I for one don't really object even if it is "duplicated" since it is far
+easier to use, and I frequently have systems where kernel and userspace
+are out of sync so /usr/include/sys/capabilities is worthless...  Though
+I'm a little worried that b/scripts/mkcapnames.sh is the kind of thing
+that'll eventually break, but I suppose that's my fault for objecting
+two duplicated list of capability definitions :)
+
+-serge
+
+
 > 
-> +	if (mdev->registered == 0) {
-> +		retval = device_register(&mdev->dev);
-> +		if (retval) {
-> +			printk(KERN_INFO
-> +			"Maple bus: Attempt to register device"
-> +			" (%x, %x) failed.\n",
-> +			mdev->port, mdev->unit);
-> +			maple_free_dev(mdev);
-> +			mdev = NULL;
-> +			return;
-> +		}
-> +		mdev->registered = 1;
+> [kaigai@saba ~]$ for x in /sys/kernel/capability/*
+> > do
+> >   echo "$x --> `cat $x`"
+> > done
+> /sys/kernel/capability/cap_audit_control --> 30
+> /sys/kernel/capability/cap_audit_write --> 29
+>     - snip -
+> /sys/kernel/capability/cap_sys_time --> 25
+> /sys/kernel/capability/cap_sys_tty_config --> 26
+> /sys/kernel/capability/index --> 31
+> /sys/kernel/capability/version --> 0x19980330
+> [kaigai@saba ~]$
+> 
+> Thanks,
+> 
+> Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+> ----
+>  scripts/mkcapnames.sh |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  security/Kconfig      |    9 ++++++++
+>  security/Makefile     |   11 ++++++++++
+>  security/capability.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 119 insertions(+), 0 deletions(-)
+> 
+> diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
+> index e69de29..262478e 100644
+> --- a/scripts/mkcapnames.sh
+> +++ b/scripts/mkcapnames.sh
+> @@ -0,0 +1,50 @@
+> +#!/bin/sh
+> +
+> +#
+> +# generate a cap_names.h file from include/linux/capability.h
+> +#
+> +
+> +BASEDIR=`dirname $0`
+> +
+> +echo '#ifndef CAP_NAMES_H'
+> +echo '#define CAP_NAMES_H'
+> +echo
+> +echo '/*'
+> +echo ' * Do NOT edit this file directly.'
+> +echo ' * This file is generated from include/linux/capability.h automatically'
+> +echo ' */'
+> +echo
+> +echo '#ifndef SYSFS_CAPABILITY_ENTRY'
+> +echo '#error cap_names.h should be included from kernel/capability.c'
+> +echo '#else'
+> +
+> +echo 'SYSFS_CAPABILITY_ENTRY(version, "0x%08x\n", _LINUX_CAPABILITY_VERSION);'
+> +
+> +cat ${BASEDIR}/../include/linux/capability.h	\
+> +    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'	\
+> +    | awk 'BEGIN {
+> +            max_code = -1;
+> +        }
+> +        {
+> +            if ($3 > max_code)
+> +                max_code = $3;
+> +            printf("SYSFS_CAPABILITY_ENTRY(%s, \"%%u\\n\", %s);\n", tolower($2), $2);
+> +        }
+> +        END {
+> +            printf("SYSFS_CAPABILITY_ENTRY(index, \"%%u\\n\", %u);\n", max_code);
+> +        }'
+> +
+> +echo
+> +echo 'static struct attribute *capability_attrs[] = {'
+> +echo '        &version_attr.attr,'
+> +echo '        &index_attr.attr,'
+> +
+> +cat ${BASEDIR}/../include/linux/capability.h    \
+> +    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'   \
+> +    | awk '{ printf ("        &%s_attr.attr,\n", tolower($2)); }'
+> +
+> +echo '        NULL,'
+> +echo '};'
+> +
+> +echo '#endif	/* SYSFS_CAPABILITY_ENTRY */'
+> +echo '#endif	/* CAP_NAMES_H */'
+> diff --git a/security/Kconfig b/security/Kconfig
+> index 8086e61..e4d330c 100644
+> --- a/security/Kconfig
+> +++ b/security/Kconfig
+> @@ -90,6 +90,15 @@ config SECURITY_FILE_CAPABILITIES
+> 
+>  	  If in doubt, answer N.
+> 
+> +config SECURITY_CAPABILITIES_EXPORT
+> +	bool "Exporting capabilities kernel supported"
+> +	depends on SECURITY_CAPABILITIES && SYSFS
+> +	help
+> +          This enables to export any capabilities which are supported
+> +	  in the running kernel.
+> +	
+> +	  If you are unsure how to answer this question, answer Y.
+> +
+>  config SECURITY_ROOTPLUG
+>  	bool "Root Plug Support"
+>  	depends on USB=y && SECURITY
+> diff --git a/security/Makefile b/security/Makefile
+> index ef87df2..90a856d 100644
+> --- a/security/Makefile
+> +++ b/security/Makefile
+> @@ -16,3 +16,14 @@ obj-$(CONFIG_SECURITY)			+= security.o dummy.o inode.o
+>  obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+>  obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+>  obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
+> +
+> +ifeq ($(CONFIG_SECURITY_CAPABILITIES_EXPORT),y)
+> +# cap_names.h contains the code/name pair of capabilities.
+> +# It is generated using include/linux/capability.h automatically.
+> +$(obj)/capability.o: $(obj)/cap_names.h
+> +quiet_cmd_cap_names  = CAPS    $@
+> +      cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
+> +targets += cap_names.h
+> +$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
+> +	$(call if_changed,cap_names)
+> +endif
+> diff --git a/security/capability.c b/security/capability.c
+> index 9e99f36..06e0f0a 100644
+> --- a/security/capability.c
+> +++ b/security/capability.c
+> @@ -20,6 +20,8 @@
+>  #include <linux/netlink.h>
+>  #include <linux/ptrace.h>
+>  #include <linux/moduleparam.h>
+> +#include <linux/kobject.h>
+> +#include <linux/sysfs.h>
+> 
+>  static struct security_operations capability_ops = {
+>  	.ptrace =			cap_ptrace,
+> @@ -58,6 +60,53 @@ static int secondary;
+>  static int capability_disable;
+>  module_param_named(disable, capability_disable, int, 0);
+> 
+> +#ifdef CONFIG_SECURITY_CAPABILITIES_EXPORT
+> +/*
+> + * Export the list of capabilities on /sys/kernel/capability
+> + */
+> +struct capability_attribute {
+> +	struct attribute attr;
+> +	ssize_t (*show)(struct kobject *kobj,
+> +			struct capability_attribute *attr,
+> +			char *buffer);
+> +	ssize_t (*store)(struct kobject *kobj,
+> +			 struct capability_attribute *attr,
+> +			 const char *buffer, size_t count);
+> +};
+> +
+> +#define SYSFS_CAPABILITY_ENTRY(_name, _fmt, ...)			\
+> +	static ssize_t _name##_show(struct kobject *kobj,		\
+> +				    struct capability_attribute *attr,	\
+> +				    char *buffer)			\
+> +	{                                                               \
+> +		return scnprintf(buffer, PAGE_SIZE, _fmt, __VA_ARGS__);	\
+> +	}								\
+> +	static struct capability_attribute _name##_attr = __ATTR_RO(_name)
+> +/*
+> + * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
+> + * This script parses include/linux/capability.h
+> + */
+> +#include "cap_names.h"
+> +
+> +static struct attribute_group capability_attr_group = {
+> +	.name = "capability",
+> +	.attrs = capability_attrs,
+> +};
+> +
+> +static int __init capability_export_names(void)
+> +{
+> +	int rc;
+> +
+> +	rc = sysfs_create_group(kernel_kobj, &capability_attr_group);
+> +	if (rc) {
+> +		printk(KERN_ERR "Unable to export capabilities\n");
+> +		return rc;
 > +	}
->  }
+> +	return 0;
+> +}
+> +__initcall(capability_export_names);
+> +#endif
+> +
+>  static int __init capability_init (void)
+>  {
+>  	if (capability_disable) {
 > 
-> 
-> Specifically the check on mdev->registered
-
-So the code path could cause devices to be registered more than once?
-That seems broken, as no other bus that I know of needs such a check :(
-
-Is there a way to fix the root problem here, instead of this type of
-change?
-
-thanks,
-
-greg k-h
+> -- 
+> OSS Platform Development Division, NEC
+> KaiGai Kohei <kaigai@ak.jp.nec.com>
