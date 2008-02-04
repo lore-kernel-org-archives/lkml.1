@@ -1,480 +1,366 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYBDPwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbYBDPx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYBDPwp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 10:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYBDPwh
+	id S1755783AbYBDPx1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 10:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYBDPxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 10:52:37 -0500
-Received: from web52009.mail.re2.yahoo.com ([206.190.48.58]:22399 "HELO
-	web52009.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751520AbYBDPwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 10:52:35 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Feb 2008 10:52:35 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=tHYo51kQIt3OIMnE7dULuMh8+YXm8Ojkul20hFGnok5gTcDNMOm82Q5rWPSQ3aXNLRPaPTZ54Sfgh1mzBb4Bj+E2YLqIG5Mg5bDINH9HSNiK+MsC71ssnvrCfiXk/q1FeOQaIgbfyBU9r/FCv5NnCneuDmgTFdRFtAPbgR5/1gk=;
-X-YMail-OSG: pnipTMQVM1la.GPr40vzg2yW514AGihAYg1raXY.y2TCNl.dWrK4eujgMap_38XyekD8ramBSf5pWX3K0V.7.A6q1BpKi_YmZjiEWyl26gJAHFHt0Hc-
-Date: Mon, 4 Feb 2008 07:45:54 -0800 (PST)
-From: Doug Kehn <rdkehn@yahoo.com>
-Subject: Soft lockup 2.6.23.14-uc0
-To: linux-kernel@vger.kernel.org, uClinux <uclinux-dev@uclinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <394206.41470.qm@web52009.mail.re2.yahoo.com>
+	Mon, 4 Feb 2008 10:53:13 -0500
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:40411 "HELO
+	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752111AbYBDPxL convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 10:53:11 -0500
+X-YMail-OSG: obxyQ5wVM1n2QimeQrq5Oz2eyqekorV38IOUJvukinR5u5SYYdT4lCIV2JV2dcCCXHuKFDLn9fvnJlg7oh7wjyR5f4O5jPjNCK6cNIAuhEaIoquMZTA-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [Cbe-oss-dev] LIO Target iSCSI/SE PS3-Linux / FC8 builds
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Cc: cbe-oss-dev@ozlabs.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Open iSCSI <open-iscsi@googlegroups.com>
+In-Reply-To: <200802041647.06234.marc.dietrich@ap.physik.uni-giessen.de>
+References: <1202134623.11265.524.camel@haakon2.linux-iscsi.org>
+	 <200802041647.06234.marc.dietrich@ap.physik.uni-giessen.de>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 04 Feb 2008 07:52:40 -0800
+Message-Id: <1202140360.11265.543.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Hi Marc,
 
-I am observing kernel soft lockups when running
-network throughput tests with NUTTCP.  The kernel is a
-stock 2.6.23 kernel with patches from uClinux.org.  I
-have applied the incremental 2.6.23 patches to produce
-the resulting 2.6.23.14-uc0 kernel.  This kernel is
-executing on a 266MHz Intel XScale IXP420 processor
-with 16MB flash (JFFS2) and 64MB RAM.  I am also using
-the Intel Access Library v2.4 with patches from
-snapgear.org.  (The Intel Access Library is the reason
-for the tainted kernel.)  The toolchain to build the
-kernel and all applications is comprised of:
+You can generate the kernel RPM with 'make kernel ARCH=powerpc'.
 
-binutils-2.16.tar.gz
-gcc-3.4.4.tar.gz
-glibc-2.3.3.tar.gz
-glibc-linuxthreads-2.3.3.tar.gz
+Also, while module-assistant is supported on debian/ubuntu,
+trunk/buildtools/ currently does not support generating kernel module
+source rpms.  If you want to send a patch, I would be more than happy to
+take it.
 
-All applications are compiled against uClibc-0.9.27.
-
-A soft lockup dump is provided below.  Any help in
-determining the cause of the soft lock will be
-appreciated.
-
-Regards,
-...doug
+--nab
 
 
-# BUG: soft lockup - CPU#0 stuck for 11s! [awk:2960]
+On Mon, 2008-02-04 at 16:47 +0100, Marc Dietrich wrote:
+> Hi Nicholas,
+> 
+> can you please also upload a src.rpm? I'm having toubles compiling the kernel 
+> code:
+> 
+> # cd target/ ; ./autoconfig --write-to-file ; cat .make_autoconfig ; make 
+> kernel
+> /usr/src/linux-iscsi/trunk/target/.make_autoconfig
+> ARCH?=ppc
+> AUTO_CFLAGS?= -DHAS_UTS_RELEASE -DUSE_SCSI_H -I/lib/modules/2.6.24-06289-g144de36/source/drivers/scsi  -DUSE_MSLEEP -DUSE_COMPAT_IOCTL -Dscsi_execute_async_address  -DPYX_ISCSI_VENDOR='"Linux-iSCSI.org"'  -DIQN_PREFIX='"iqn.2003-01.org.linux-iscsi"'  -DLINUX -DLINUX_SCATTERLIST_HAS_PAGE -DSVN_VSN=\"209\"
+> BASENAME?=FedoraCore-R8-Werewolf.ppc
+> DISTRO?=FEDORA
+> KERNEL?=26
+> KERNEL_DIR?=/lib/modules/2.6.24-06289-g144de36/build
+> KERNEL_INCLUDE_DIR?=/lib/modules/2.6.24-06289-g144de36/source/include
+> KERNEL_SOURCE_DIR?=/lib/modules/2.6.24-06289-g144de36/source
+> KERNEL_VERSION_INFO?=LINUX_KERNEL_26
+> OSTYPE?=LINUX
+> PYX_ISCSI_VERSION?=2.9.0.209
+> RELEASE?=2.6.24-06289-g144de36
+> RELEASES?=ARRAY(0x102052d4)
+> RPM_DIR?=/usr/src/redhat
+> SNMP?=0
+> SYSTEM?=FedoraCore-R8-Werewolf
+> VERSION_IPYXD?=2.9.0.209
+> make -C target clean all
+> make[1]: Entering directory `/usr/src/linux-iscsi/trunk/target/target'
+> rm -f /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.o /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_debug_opcodes.o /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_parameters.o /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_seq_and_pdu_list.o /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_serial.o /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_thread_queue.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_datain_values.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_device.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_discovery.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_erl0.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_erl1.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_erl2.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_feature_obj.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_hba.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_info.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_ioctl.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_linux_proc.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_login.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_nego.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_nodeattrib.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_plugin.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_reportluns.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_scdb.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_seobj.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_tmr.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_tpg.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_transport.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_util.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target.o /usr/src/linux-iscsi/trunk/target/target/div64.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_raid.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_r!
+ epl.o /u
+sr/src/linux-iscsi/trunk/target/target/iscsi_target_iblock.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_pscsi.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_rd.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_file.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_vt.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_mc.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_mib.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_mod.o /usr/src/linux-iscsi/trunk/target/target/iscsi_target_mod.mod.o
+> rm -f iscsi_target_mod.ko iscsi_target_mod.mod.c
+> rm -f .*.cmd ../common/.*.cmd .make_autoconfig *~
+> rm -fr .tmp_versions
+> make -C /lib/modules/2.6.24-06289-g144de36/build 
+> SUBDIRS=/usr/src/linux-iscsi/trunk/target/target modules 
+> CWD=/usr/src/linux-iscsi/trunk/target/target ARCH=ppc KBUILD_VERBOSE=0
+> make[2]: Entering directory `/usr/src/ps3-linux'
+>   CC [M]  /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.o
+> In file included from include/asm/mmu.h:7,
+>                  from include/asm/lppaca.h:32,
+>                  from include/asm/paca.h:20,
+>                  from include/asm/hw_irq.h:17,
+>                  from include/asm/system.h:9,
+>                  from include/linux/list.h:9,
+>                  from include/linux/preempt.h:11,
+>                  from include/linux/spinlock.h:49,
+>                  from include/linux/mmzone.h:7,
+>                  from include/linux/gfp.h:4,
+>                  from include/linux/slab.h:14,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:29:
+> include/asm/mmu-hash64.h: In function ‘hpte_encode_v’:
+> include/asm/mmu-hash64.h:213: warning: left shift count >= width of type
+> include/asm/mmu-hash64.h: In function ‘hpte_encode_r’:
+> include/asm/mmu-hash64.h:228: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/mmu-hash64.h: In function ‘hpt_va’:
+> include/asm/mmu-hash64.h:245: warning: left shift count >= width of type
+> include/asm/mmu-hash64.h:245: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/mmu-hash64.h: In function ‘hpt_hash’:
+> include/asm/mmu-hash64.h:260: warning: right shift count >= width of type
+> include/asm/mmu-hash64.h:261: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/mmu-hash64.h:263: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/mmu-hash64.h: In function ‘get_kernel_vsid’:
+> include/asm/mmu-hash64.h:440: error: ‘SID_SHIFT’ undeclared (first use in this 
+> function)
+> include/asm/mmu-hash64.h:440: error: (Each undeclared identifier is reported 
+> only once
+> include/asm/mmu-hash64.h:440: error: for each function it appears in.)
+> include/asm/mmu-hash64.h:440: warning: right shift count >= width of type
+> include/asm/mmu-hash64.h:440: warning: left shift count >= width of type
+> include/asm/mmu-hash64.h:440: warning: right shift count >= width of type
+> include/asm/mmu-hash64.h:440: warning: left shift count >= width of type
+> include/asm/mmu-hash64.h:441: error: ‘SID_SHIFT_1T’ undeclared (first use in 
+> this function)
+> include/asm/mmu-hash64.h: In function ‘user_segment_size’:
+> include/asm/mmu-hash64.h:448: error: ‘SID_SHIFT_1T’ undeclared (first use in 
+> this function)
+> include/asm/mmu-hash64.h: In function ‘get_vsid’:
+> include/asm/mmu-hash64.h:458: error: ‘SID_SHIFT’ undeclared (first use in this 
+> function)
+> include/asm/mmu-hash64.h:458: warning: right shift count >= width of type
+> include/asm/mmu-hash64.h:458: warning: left shift count >= width of type
+> include/asm/mmu-hash64.h:458: warning: right shift count >= width of type
+> include/asm/mmu-hash64.h:458: warning: left shift count >= width of type
+> include/asm/mmu-hash64.h:460: error: ‘SID_SHIFT_1T’ undeclared (first use in 
+> this function)
+> In file included from include/asm/spinlock.h:25,
+>                  from include/linux/spinlock.h:87,
+>                  from include/linux/mmzone.h:7,
+>                  from include/linux/gfp.h:4,
+>                  from include/linux/slab.h:14,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:29:
+> include/asm/iseries/hv_call.h: In function ‘HvCall_setVirtualDecr’:
+> include/asm/iseries/hv_call.h:85: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/iseries/hv_call.h: In function ‘HvCall_yieldProcessor’:
+> include/asm/iseries/hv_call.h:90: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/iseries/hv_call.h: In function ‘HvCall_setEnabledInterrupts’:
+> include/asm/iseries/hv_call.h:95: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/iseries/hv_call.h: In 
+> function ‘HvCall_setLogBufferFormatAndCodepage’:
+> include/asm/iseries/hv_call.h:101: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/iseries/hv_call.h: In function ‘HvCall_sendIPI’:
+> include/asm/iseries/hv_call.h:108: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> In file included from include/asm/pgtable.h:13,
+>                  from include/linux/mm.h:39,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:27,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/asm/pgtable-ppc64.h:32:50: warning: "SID_SHIFT" is not defined
+> include/asm/pgtable-ppc64.h:33:2: error: #error TASK_SIZE_USER64 exceeds user 
+> VSID range
+> In file included from include/asm/pgtable.h:13,
+>                  from include/linux/mm.h:39,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:27,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/asm/pgtable-ppc64.h: In function ‘find_linux_pte’:
+> include/asm/pgtable-ppc64.h:429: warning: right shift count >= width of type
+> In file included from include/asm/pgtable.h:40,
+>                  from include/linux/mm.h:39,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:27,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/asm-generic/pgtable.h: In function ‘pud_none_or_clear_bad’:
+> include/asm-generic/pgtable.h:181: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm-generic/pgtable.h:181: warning: comparison is always false due to 
+> limited range of data type
+> include/asm-generic/pgtable.h: In function ‘pmd_none_or_clear_bad’:
+> include/asm-generic/pgtable.h:192: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm-generic/pgtable.h:192: warning: comparison is always false due to 
+> limited range of data type
+> In file included 
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:27,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/linux/mm.h: In function ‘virt_to_head_page’:
+> include/linux/mm.h:255: warning: integer constant is too large for ‘unsigned 
+> long’ type
+> include/linux/mm.h:255: warning: left shift count >= width of type
+> include/linux/mm.h:255: warning: integer constant is too large for ‘unsigned 
+> long’ type
+> In file included 
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:27,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/linux/mm.h:437:2: error: #error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH 
+> > FLAGS_RESERVED
+> In file included 
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:27,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/linux/mm.h: In function ‘lowmem_page_address’:
+> include/linux/mm.h:539: warning: integer constant is too large for ‘unsigned 
+> long’ type
+> include/linux/mm.h:539: warning: left shift count >= width of type
+> include/linux/mm.h:539: warning: integer constant is too large for ‘unsigned 
+> long’ type
+> include/linux/mm.h:539: warning: cast to pointer from integer of different 
+> size
+> In file included from include/linux/highmem.h:4,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:36,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/linux/fs.h: At top level:
+> include/linux/fs.h:911: warning: ‘struct flock64’ declared inside parameter 
+> list
+> include/linux/fs.h:911: warning: its scope is only this definition or 
+> declaration, which is probably not what you want
+> include/linux/fs.h:913: warning: ‘struct flock64’ declared inside parameter 
+> list
+> In file included from include/asm/cputime.h:26,
+>                  from include/linux/sched.h:67,
+>                  from include/asm/uaccess.h:7,
+>                  from include/linux/uaccess.h:5,
+>                  from include/linux/highmem.h:6,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:36,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/asm/time.h: In function ‘get_tb’:
+> include/asm/time.h:135: error: implicit declaration of function ‘mftb’
+> In file included from include/linux/uaccess.h:5,
+>                  from include/linux/highmem.h:6,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_linux_defs.h:36,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../include/iscsi_crc.h:21,
+>                  
+> from /usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.c:35:
+> include/asm/uaccess.h: In function ‘copy_from_user’:
+> include/asm/uaccess.h:342: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:342: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:343: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:343: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h: In function ‘copy_to_user’:
+> include/asm/uaccess.h:357: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:357: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:358: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:358: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h: In function ‘clear_user’:
+> include/asm/uaccess.h:452: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:452: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:453: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> include/asm/uaccess.h:453: warning: integer constant is too large 
+> for ‘unsigned long’ type
+> make[3]: *** [/usr/src/linux-iscsi/trunk/target/target/../common/iscsi_crc.o] 
+> Error 1
+> make[2]: *** [_module_/usr/src/linux-iscsi/trunk/target/target] Error 2
+> make[2]: Leaving directory `/usr/src/ps3-linux'
+> make[1]: *** [all] Error 2
+> make[1]: Leaving directory `/usr/src/linux-iscsi/trunk/target/target'
+> make: *** [kernel] Error 2
+> 
+> thanks
+> 
+> Marc
+> 
+> Am Montag 04 Februar 2008 15:17:03 schrieb Nicholas A. Bellinger:
+> > Greetings all,
+> >
+> > I have updated the wiki at:
+> >
+> > http://linux-iscsi.org/index.php/Playstation3/iSCSI
+> >
+> > and posted the first LIO target builds on the LIO Cluster:
+> >
+> > http://linux-iscsi.org/builds/ps3-linux/
+> >
+> > I will adding the documentation for both LIO SE on PS3-Linux, and the
+> > FC8 upgrade process, as the latter can still be a bit challenging for
+> > new users.
+> >
+> > Here is the info from the README:
+> >
+> > LIO Target iSCSI/SE for PS3-Linux v2.9.0.209
+> >
+> > I) Kernel module package
+> >
+> > iscsi-target-module-2.6.24-2.9.0.209-1.powerpc.rpm
+> >
+> > This modules are built for ppc64 and built with the toolkit for Fedora Core
+> > 8 ppc. This is gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-33)
+> >
+> > This module has been tested with the latest ps3-linux.git and built against
+> > arch/powerpc/configs/ps3_defconfig.  To use the BD-ROM, your 2.6.24 kernel
+> > must contain ps3rom-use-128-max-sector.diff.  Please see:
+> >
+> > http://git.kernel.org/?p=linux/kernel/git/geoff/ps3-linux.git;a=commit;h=e8
+> >2112af66a39d11bcb484de9cfa45f0d214c97f
+> >
+> > This module package should work with kernel-2.6.24-20080131.ppc64.rpm from
+> > CELL-Linux-CL_20080201-ADDON.iso, but the BD-ROM will throw an exception
+> > without ps3rom-use-128-max-sector.diff.  Please see the following link for
+> > more information about the ADDON CD, and watch for an updated kernel
+> > package soon..
+> >
+> > http://www.kernel.org/pub/linux/kernel/people/geoff/cell/
+> >
+> > II) Userspace packages
+> >
+> > iscsi-target-tools-2.9.0.209-1.ppc.rpm
+> > sbe-mibs-2.9.0.209-1.ppc.rpm
+> >
+> > Note that these are 32-bit and built on Fedora Core 8.
+> >
+> > Have fun!
+> >
+> > --nab
+> >
+> > _______________________________________________
+> > cbe-oss-dev mailing list
+> > cbe-oss-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+> 
+> 
+> 
 
-Pid: 2960, comm:                  awk
-CPU: 0    Tainted: P         (2.6.23.14-uc0 #1)
-PC is at handle_IRQ_event+0x34/0x80
-LR is at handle_level_irq+0x98/0xec
-pc : [<c0058b30>]    lr : [<c0059eb0>]    psr:
-40000013
-sp : c353deb0  ip : c353ded0  fp : c353decc
-r10: 4000d090  r9 : c353c000  r8 : 4000515c
-r7 : 00000012  r6 : 00000000  r5 : 00000000  r4 :
-c3f68a60
-r3 : 40000013  r2 : c025151c  r1 : c3f68a60  r0 :
-00000012
-Flags: nZcv  IRQs on  FIQs on  Mode SVC_32  ISA ARM 
-Segment user
-Control: 000039ff  Table: 03500000  DAC: 00000015
-[<c0020b60>] (show_regs+0x0/0x4c) from [<c005865c>]
-(softlockup_tick+0xe8/0x114)
- r4:00001e13
-[<c0058574>] (softlockup_tick+0x0/0x114) from
-[<c00401b0>] (run_local_timers+0x1
-8/0x1c)
-[<c0040198>] (run_local_timers+0x0/0x1c) from
-[<c00401f8>] (update_process_times
-+0x44/0x6c)
-[<c00401b4>] (update_process_times+0x0/0x6c) from
-[<c00512c0>] (tick_periodic+0x
-94/0xc0)
- r5:c0257900 r4:00989680
-[<c005122c>] (tick_periodic+0x0/0xc0) from
-[<c0051308>] (tick_handle_periodic+0x
-1c/0xc4)
- r5:00000000 r4:00000001
-[<c00512ec>] (tick_handle_periodic+0x0/0xc4) from
-[<c0029c7c>] (ixp4xx_timer_int
-errupt+0x28/0x38)
-[<c0029c54>] (ixp4xx_timer_interrupt+0x0/0x38) from
-[<c0058b40>] (handle_IRQ_eve
-nt+0x44/0x80)
- r4:c0242734
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353df08 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000005 r4:c0244bd8
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353de68 to 0xc353deb0)
-de60:                   00000012 c3f68a60 c025151c
-40000013 c3f68a60 00000000
-de80: 00000000 00000012 4000515c c353c000 4000d090
-c353decc c353ded0 c353deb0
-dea0: c0059eb0 c0058b30 40000013 ffffffff
- r7:00000012 r6:00000028 r5:0000001f r4:ffffffff
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353dfb0 r6:c025a5c0 r5:00000012 r4:c0244eb0
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000012 r4:c0244eb0
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353df08 to 0xc353df50)
-df00:                   ffbee004 c353c000 00000100
-20000013 00000022 00000005
-df20: 0000000a c0256300 4000515c c353c000 4000d090
-c353df6c c353df70 c353df50
-df40: c003c34c c003c29c 20000013 ffffffff
- r7:c0256300 r6:00040008 r5:0000001f r4:ffffffff
-[<c003c258>] (__do_softirq2+0x0/0xc8) from
-[<c003c34c>] (__do_softirq+0x2c/0x34)
- r7:00000000 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c003c320>] (__do_softirq+0x0/0x34) from [<c003c518>]
-(irq_exit+0x40/0x48)
-[<c003c4d8>] (irq_exit+0x0/0x48) from [<c001f048>]
-(asm_do_IRQ+0x48/0x5c)
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fbc0>]
-(__irq_usr+0x40/0x80)
-Exception stack(0xc353dfb0 to 0xc353dff8)
-dfa0:                                     000000f0
-0000007a 00000000 00008138
-dfc0: 40005060 00008aa4 4000513c 00009fe4 4000515c
-40016ee4 4000d090 00000000
-dfe0: 00000002 bed765b4 40000ccc 40000dd8 80000010
-ffffffff
- r7:00009fe4 r6:00000020 r5:0000001f r4:ffffffff
-BUG: soft lockup - CPU#0 stuck for 11s! [awk:2960]
-
-Pid: 2960, comm:                  awk
-CPU: 0    Tainted: P         (2.6.23.14-uc0 #1)
-PC is at handle_IRQ_event+0x34/0x80
-LR is at handle_level_irq+0x98/0xec
-pc : [<c0058b30>]    lr : [<c0059eb0>]    psr:
-40000013
-sp : c353deb0  ip : c353ded0  fp : c353decc
-r10: 4000d090  r9 : c353c000  r8 : 4000515c
-r7 : 00000012  r6 : 00000000  r5 : 00000000  r4 :
-c3f68a60
-r3 : 40000013  r2 : c025151c  r1 : c3f68a60  r0 :
-00000012
-Flags: nZcv  IRQs on  FIQs on  Mode SVC_32  ISA ARM 
-Segment user
-Control: 000039ff  Table: 03500000  DAC: 00000015
-[<c0020b60>] (show_regs+0x0/0x4c) from [<c005865c>]
-(softlockup_tick+0xe8/0x114)
- r4:00001e1e
-[<c0058574>] (softlockup_tick+0x0/0x114) from
-[<c00401b0>] (run_local_timers+0x1
-8/0x1c)
-[<c0040198>] (run_local_timers+0x0/0x1c) from
-[<c00401f8>] (update_process_times
-+0x44/0x6c)
-[<c00401b4>] (update_process_times+0x0/0x6c) from
-[<c00512c0>] (tick_periodic+0x
-94/0xc0)
- r5:c0257900 r4:00989680
-[<c005122c>] (tick_periodic+0x0/0xc0) from
-[<c0051308>] (tick_handle_periodic+0x
-1c/0xc4)
- r5:00000000 r4:00000001
-[<c00512ec>] (tick_handle_periodic+0x0/0xc4) from
-[<c0029c7c>] (ixp4xx_timer_int
-errupt+0x28/0x38)
-[<c0029c54>] (ixp4xx_timer_interrupt+0x0/0x38) from
-[<c0058b40>] (handle_IRQ_eve
-nt+0x44/0x80)
- r4:c0242734
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353df08 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000005 r4:c0244bd8
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353de68 to 0xc353deb0)
-de60:                   00000012 c3f68a60 c025151c
-40000013 c3f68a60 00000000
-de80: 00000000 00000012 4000515c c353c000 4000d090
-c353decc c353ded0 c353deb0
-dea0: c0059eb0 c0058b30 40000013 ffffffff
- r7:00000012 r6:00000028 r5:0000001f r4:ffffffff
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353dfb0 r6:c025a5c0 r5:00000012 r4:c0244eb0
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000012 r4:c0244eb0
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353df08 to 0xc353df50)
-df00:                   ffbee004 c353c000 00000100
-20000013 00000022 00000005
-df20: 0000000a c0256300 4000515c c353c000 4000d090
-c353df6c c353df70 c353df50
-df40: c003c34c c003c29c 20000013 ffffffff
- r7:c0256300 r6:00040008 r5:0000001f r4:ffffffff
-[<c003c258>] (__do_softirq2+0x0/0xc8) from
-[<c003c34c>] (__do_softirq+0x2c/0x34)
- r7:00000000 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c003c320>] (__do_softirq+0x0/0x34) from [<c003c518>]
-(irq_exit+0x40/0x48)
-[<c003c4d8>] (irq_exit+0x0/0x48) from [<c001f048>]
-(asm_do_IRQ+0x48/0x5c)
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fbc0>]
-(__irq_usr+0x40/0x80)
-Exception stack(0xc353dfb0 to 0xc353dff8)
-dfa0:                                     000000f0
-0000007a 00000000 00008138
-dfc0: 40005060 00008aa4 4000513c 00009fe4 4000515c
-40016ee4 4000d090 00000000
-dfe0: 00000002 bed765b4 40000ccc 40000dd8 80000010
-ffffffff
- r7:00009fe4 r6:00000020 r5:0000001f r4:ffffffff
-BUG: soft lockup - CPU#0 stuck for 11s! [awk:2960]
-
-Pid: 2960, comm:                  awk
-CPU: 0    Tainted: P         (2.6.23.14-uc0 #1)
-PC is at __aeabi_idiv+0x3c/0xcc
-LR is at do_gettimeofday+0x108/0x130
-pc : [<c00fa418>]    lr : [<c004eae0>]    psr:
-20000013
-sp : c353ddc4  ip : 34bd5d15  fp : c353ddfc
-r10: a6e5d944  r9 : 0000007f  r8 : ffffffff
-r7 : 00000000  r6 : 00f24ddf  r5 : 00000000  r4 :
-000ef02f
-r3 : 34bd5efd  r2 : 00000016  r1 : 000003e8  r0 :
-00000014
-Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM 
-Segment user
-Control: 000039ff  Table: 03500000  DAC: 00000015
-[<c0020b60>] (show_regs+0x0/0x4c) from [<c005865c>]
-(softlockup_tick+0xe8/0x114)
- r4:00001e29
-[<c0058574>] (softlockup_tick+0x0/0x114) from
-[<c00401b0>] (run_local_timers+0x1
-8/0x1c)
-[<c0040198>] (run_local_timers+0x0/0x1c) from
-[<c00401f8>] (update_process_times
-+0x44/0x6c)
-[<c00401b4>] (update_process_times+0x0/0x6c) from
-[<c00512c0>] (tick_periodic+0x
-94/0xc0)
- r5:c0257900 r4:00989680
-[<c005122c>] (tick_periodic+0x0/0xc0) from
-[<c0051308>] (tick_handle_periodic+0x
-1c/0xc4)
- r5:00000000 r4:00000001
-[<c00512ec>] (tick_handle_periodic+0x0/0xc4) from
-[<c0029c7c>] (ixp4xx_timer_int
-errupt+0x28/0x38)
-[<c0029c54>] (ixp4xx_timer_interrupt+0x0/0x38) from
-[<c0058b40>] (handle_IRQ_eve
-nt+0x44/0x80)
- r4:c0242734
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353de68 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000005 r4:c0244bd8
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353dd7c to 0xc353ddc4)
-dd60:                                                 
-              00000014
-dd80: 000003e8 00000016 34bd5efd 000ef02f 00000000
-00f24ddf 00000000 ffffffff
-dda0: 0000007f a6e5d944 c353ddfc 34bd5d15 c353ddc4
-c004eae0 c00fa418 20000013
-ddc0: ffffffff
- r7:00000000 r6:00000020 r5:0000001f r4:ffffffff
-[<c004e9d8>] (do_gettimeofday+0x0/0x130) from
-[<bf0ad708>] (0xbf0ad708)
-[<bf0ad6f4>] (0xbf0ad6f4) from [<c0058b40>]
-(handle_IRQ_event+0x44/0x80)
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353df08 r6:c025a5c0 r5:00000003 r4:c0244b68
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000003 r4:c0244b68
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353de68 to 0xc353deb0)
-de60:                   00000012 c3f68a60 c025151c
-40000013 c3f68a60 00000000
-de80: 00000000 00000012 4000515c c353c000 4000d090
-c353decc c353ded0 c353deb0
-dea0: c0059eb0 c0058b30 40000013 ffffffff
- r7:00000012 r6:00000008 r5:0000001f r4:ffffffff
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353dfb0 r6:c025a5c0 r5:00000012 r4:c0244eb0
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000012 r4:c0244eb0
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353df08 to 0xc353df50)
-df00:                   ffbee004 c353c000 00000100
-20000013 00000022 00000005
-df20: 0000000a c0256300 4000515c c353c000 4000d090
-c353df6c c353df70 c353df50
-df40: c003c34c c003c29c 20000013 ffffffff
- r7:c0256300 r6:00040008 r5:0000001f r4:ffffffff
-[<c003c258>] (__do_softirq2+0x0/0xc8) from
-[<c003c34c>] (__do_softirq+0x2c/0x34)
- r7:00000000 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c003c320>] (__do_softirq+0x0/0x34) from [<c003c518>]
-(irq_exit+0x40/0x48)
-[<c003c4d8>] (irq_exit+0x0/0x48) from [<c001f048>]
-(asm_do_IRQ+0x48/0x5c)
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fbc0>]
-(__irq_usr+0x40/0x80)
-Exception stack(0xc353dfb0 to 0xc353dff8)
-dfa0:                                     000000f0
-0000007a 00000000 00008138
-dfc0: 40005060 00008aa4 4000513c 00009fe4 4000515c
-40016ee4 4000d090 00000000
-dfe0: 00000002 bed765b4 40000ccc 40000dd8 80000010
-ffffffff
- r7:00009fe4 r6:00000020 r5:0000001f r4:ffffffff
-BUG: soft lockup - CPU#0 stuck for 11s! [awk:2960]
-
-Pid: 2960, comm:                  awk
-CPU: 0    Tainted: P         (2.6.23.14-uc0 #1)
-PC is at __aeabi_idiv+0x54/0xcc
-LR is at do_gettimeofday+0x108/0x130
-pc : [<c00fa430>]    lr : [<c004eae0>]    psr:
-80000013
-sp : c353ddc4  ip : 03440146  fp : c353ddfc
-r10: d6cc15eb  r9 : 0000007f  r8 : ffffffff
-r7 : 00000000  r6 : 00f24de0  r5 : 00000000  r4 :
-000ee69f
-r3 : 000012ae  r2 : 00000010  r1 : 00003e80  r0 :
-0000d600
-Flags: Nzcv  IRQs on  FIQs on  Mode SVC_32  ISA ARM 
-Segment user
-Control: 000039ff  Table: 03500000  DAC: 00000015
-[<c0020b60>] (show_regs+0x0/0x4c) from [<c005865c>]
-(softlockup_tick+0xe8/0x114)
- r4:00001e34
-[<c0058574>] (softlockup_tick+0x0/0x114) from
-[<c00401b0>] (run_local_timers+0x1
-8/0x1c)
-[<c0040198>] (run_local_timers+0x0/0x1c) from
-[<c00401f8>] (update_process_times
-+0x44/0x6c)
-[<c00401b4>] (update_process_times+0x0/0x6c) from
-[<c00512c0>] (tick_periodic+0x
-94/0xc0)
- r5:c0257900 r4:00989680
-[<c005122c>] (tick_periodic+0x0/0xc0) from
-[<c0051308>] (tick_handle_periodic+0x
-1c/0xc4)
- r5:00000000 r4:00000001
-[<c00512ec>] (tick_handle_periodic+0x0/0xc4) from
-[<c0029c7c>] (ixp4xx_timer_int
-errupt+0x28/0x38)
-[<c0029c54>] (ixp4xx_timer_interrupt+0x0/0x38) from
-[<c0058b40>] (handle_IRQ_eve
-nt+0x44/0x80)
- r4:c0242734
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353de68 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000005 r4:c0244bd8
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353dd7c to 0xc353ddc4)
-dd60:                                                 
-              0000d600
-dd80: 00003e80 00000010 000012ae 000ee69f 00000000
-00f24de0 00000000 ffffffff
-dda0: 0000007f d6cc15eb c353ddfc 03440146 c353ddc4
-c004eae0 c00fa430 80000013
-ddc0: ffffffff
- r7:00000000 r6:00000020 r5:0000001f r4:ffffffff
-[<c004e9d8>] (do_gettimeofday+0x0/0x130) from
-[<bf0ad708>] (0xbf0ad708)
-[<bf0ad6f4>] (0xbf0ad6f4) from [<c0058b40>]
-(handle_IRQ_event+0x44/0x80)
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353df08 r6:c025a5c0 r5:00000003 r4:c0244b68
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000003 r4:c0244b68
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353de68 to 0xc353deb0)
-de60:                   00000012 c3f68a60 c025151c
-40000013 c3f68a60 00000000
-de80: 00000000 00000012 4000515c c353c000 4000d090
-c353decc c353ded0 c353deb0
-dea0: c0059eb0 c0058b30 40000013 ffffffff
- r7:00000012 r6:00000008 r5:0000001f r4:ffffffff
-[<c0058afc>] (handle_IRQ_event+0x0/0x80) from
-[<c0059eb0>] (handle_level_irq+0x9
-8/0xec)
- r7:c353dfb0 r6:c025a5c0 r5:00000012 r4:c0244eb0
-[<c0059e18>] (handle_level_irq+0x0/0xec) from
-[<c001f044>] (asm_do_IRQ+0x44/0x5c
-)
- r5:00000012 r4:c0244eb0
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fa04>]
-(__irq_svc+0x24/0x60)
-Exception stack(0xc353df08 to 0xc353df50)
-df00:                   ffbee004 c353c000 00000100
-20000013 00000022 00000005
-df20: 0000000a c0256300 4000515c c353c000 4000d090
-c353df6c c353df70 c353df50
-df40: c003c34c c003c29c 20000013 ffffffff
- r7:c0256300 r6:00040008 r5:0000001f r4:ffffffff
-[<c003c258>] (__do_softirq2+0x0/0xc8) from
-[<c003c34c>] (__do_softirq+0x2c/0x34)
- r7:00000000 r6:c025a5c0 r5:00000005 r4:c0244bd8
-[<c003c320>] (__do_softirq+0x0/0x34) from [<c003c518>]
-(irq_exit+0x40/0x48)
-[<c003c4d8>] (irq_exit+0x0/0x48) from [<c001f048>]
-(asm_do_IRQ+0x48/0x5c)
-[<c001f000>] (asm_do_IRQ+0x0/0x5c) from [<c001fbc0>]
-(__irq_usr+0x40/0x80)
-Exception stack(0xc353dfb0 to 0xc353dff8)
-dfa0:                                     000000f0
-0000007a 00000000 00008138
-dfc0: 40005060 00008aa4 4000513c 00009fe4 4000515c
-40016ee4 4000d090 00000000
-dfe0: 00000002 bed765b4 40000ccc 40000dd8 80000010
-ffffffff
- r7:00009fe4 r6:00000020 r5:0000001f r4:ffffffff
-
-
-
-
-      ____________________________________________________________________________________
-Looking for last minute shopping deals?  
-Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
