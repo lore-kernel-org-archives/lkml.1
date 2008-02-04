@@ -1,51 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYBDXOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYBDXOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725AbYBDXOP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbYBDXOA
+	id S1758689AbYBDXOw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbYBDXOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:14:00 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:51544 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755765AbYBDXN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:13:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nTKooE8r/+xkv5Z4LQMs+zqTN4IbjVQMrBDg31QnKoWfyiGF8NpLC69Sqi223sZXE7OCnHGx5jpcBEWix36+en8tL9GGtFAaUVG8zPGY/3yBrCYPq+PPoj4OuB/k+vNkYJXnnEWd/f9juITcQxntFSLYn/PmIYRiYfoBxHXtV94=
-Message-ID: <15577be70802041513p796172b2y2e17b7882763b02c@mail.gmail.com>
-Date: Tue, 5 Feb 2008 00:13:57 +0100
-From: "Abel Bernabeu" <abel.bernabeu@gmail.com>
-To: linux-kernel@vger.kernel.org, "Jiri Kosina" <jkosina@suse.cz>,
-       "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: Fwd: brk randomization breaks columns
-In-Reply-To: <Pine.LNX.4.64.0802042346020.30873@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu>
-	 <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz>
-	 <Pine.LNX.4.64.0802041635000.30955@jikos.suse.cz>
-	 <15577be70802041016m97cddbfk43b9073408bcbce9@mail.gmail.com>
-	 <15577be70802041029o2975ba6do34589bbdc81d1652@mail.gmail.com>
-	 <20080204195251.GB4915@elf.ucw.cz>
-	 <15577be70802041354s23e5b289w56f724dfdf8c3242@mail.gmail.com>
-	 <Pine.LNX.4.64.0802042346020.30873@twin.jikos.cz>
+	Mon, 4 Feb 2008 18:14:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:57469 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756696AbYBDXOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 18:14:41 -0500
+Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+In-Reply-To: <200802041624.31228.ossthema@de.ibm.com>
+References: <200802041404.49960.ossthema@de.ibm.com>
+	 <1202136362.7672.5.camel@concordia>
+	 <200802041624.31228.ossthema@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-iipiDIJciz2breTnx5if"
+Date: Tue, 05 Feb 2008 10:14:21 +1100
+Message-Id: <1202166861.7672.11.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/2/4, Jiri Kosina <jkosina@suse.cz>:
 
-> Abel, I actually don't think you have chance to have any issues with
-> randomization, as the mentioned post talks about 2.6.22.10, which doesn't
-> randomize the brk start at all.
+--=-iipiDIJciz2breTnx5if
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-You are rigth, my kernel just randomizes stack top.
 
-I've got a bit sick with this crash in the latest days, trying to
-understand the elf loader, trying toolchain configurations, etc... O:)
+On Mon, 2008-02-04 at 16:24 +0100, Jan-Bernd Themann wrote:
+> On Monday 04 February 2008 15:46, Michael Ellerman wrote:
+> > On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
+> > > Add memory remove hotplug support
+>=20
+> > > @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
+> > >  	if (ret)
+> > >  		ehea_info("failed registering reboot notifier");
+> > > =20
+> > > +	ret =3D register_memory_notifier(&ehea_mem_nb);
+> > > +	if (ret)
+> > > +		ehea_info("failed registering memory remove notifier");
+> > >=20
+> > >  	ret =3D crash_shutdown_register(&ehea_crash_handler);
+> > >  	if (ret)
+> > >  		ehea_info("failed registering crash handler");
+> >=20
+> > You don't do anything except print a message if the registration fails.
+> > What happens when someone tries to remove memory but the memory notifie=
+r
+> > wasn't registered properly? Bang?
+>=20
+> In case the registration fails and somebody tries to free memory:
+> - Driver will not remove the affected memory from the eHEA memory region
+>   --> Firmware (phyp) can not free that memory (as marked as used)
+>   --> Therefore the removed memory could not be used in an other partitio=
+n
+>=20
+> It makes sense to allow the driver to work anyway. Having no ethernet
+> would not really be a good alternative.
 
-Yours, Abel.
+Yeah I agree. I wasn't clear from the patch that no notifier -> no
+memory removed. Rather than, no notifier -> memory removed and ehea
+isn't told about it.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-iipiDIJciz2breTnx5if
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHp5xNdSjSd0sB4dIRAiwaAJ92Njb5iA7hlwLtIey0a+wqOxaoGQCffA8q
++zpHkSlLUqJ9i1aMOFOhKTg=
+=N88B
+-----END PGP SIGNATURE-----
+
+--=-iipiDIJciz2breTnx5if--
+
