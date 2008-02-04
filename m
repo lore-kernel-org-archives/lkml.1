@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYBDNND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYBDNPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYBDNND (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:13:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYBDNMx
+	id S1755519AbYBDNPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:15:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYBDNPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:12:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40398 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751762AbYBDNMv (ORCPT
+	Mon, 4 Feb 2008 08:15:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43041 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbYBDNPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:12:51 -0500
-Date: Mon, 4 Feb 2008 05:12:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [patch] pci: pci_enable_device_bars() fix
-Message-Id: <20080204051230.70d5b735.akpm@linux-foundation.org>
-In-Reply-To: <20080204125736.GA32056@elte.hu>
-References: <20080201231147.GA18174@suse.de>
-	<20080202111322.GA30767@elte.hu>
-	<47A49171.2000003@garzik.org>
-	<20080202170828.GA12748@elte.hu>
-	<47A4A96D.2040709@garzik.org>
-	<20080202175738.GA26560@elte.hu>
-	<47A4BB3C.6050709@garzik.org>
-	<20080202193524.GC27927@elte.hu>
-	<47A4D71F.3060009@garzik.org>
-	<20080204125736.GA32056@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 4 Feb 2008 08:15:08 -0500
+Subject: Re: locking api self-test hanging
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: netdev@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Bernhard Walle <bwalle@suse.de>
+In-Reply-To: <20080204050421.0febc754.akpm@linux-foundation.org>
+References: <20080203150246.50647fa4.akpm@linux-foundation.org>
+	 <20080203150744.cf7d0415.akpm@linux-foundation.org>
+	 <20080204044304.d244e761.akpm@linux-foundation.org>
+	 <20080204050421.0febc754.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 14:14:52 +0100
+Message-Id: <1202130892.32654.81.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 13:57:36 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> * Jeff Garzik <jeff@garzik.org> wrote:
-> 
-> > Ingo Molnar wrote:
-> >> so please tell me Jeff. If Greg, who is the super-maintainer of your 
-> >> code area, and who deals with your code every day and changes it 
-> >> every minute and hour, simply did not Cc: the SCSI list - how am i, a 
-> >> largely outside party in this matter, supposed to notice that 3 
-> >> maintainers and 3 mailing lists in the Cc: were somehow not enough 
-> >> and that i was supposed to grow the already sizable Cc: list even 
-> >> more?
-> >
-> > Because, regardless of the situation, it's both common courtesy and 
-> > wise practice to CC relevant driver maintainers, when you touch a 
-> > driver.
-> >
-> > And it's just common sense: Greg simply does not know the intimate 
-> > details of every PCI driver.  Nor do I.  Nor you.
-> >
-> > In the case of lpfc here, we have an active driver maintainer, and an 
-> > up-to-date MAINTAINERS entry.  Even if you are too slack to read 
-> > MAINTAINERS, 'git log' would have given you the same info.
-> >
-> > Don't pretend there is some benefit here to ignoring the people that 
-> > best know the driver.  I don't buy that; it simply makes no 
-> > engineering sense whatsoever.
-> 
-> what you _STILL_ do not realize is the following: you still attribute 
-> the lack of Cc:s to some intention of mine. No, it was not my intention. 
-> At first glance the Cc: looked large and complete enough in an 
-> _existing_ discussion and that's was the end of my (brief) attention 
-> regarding the Cc: line. Yes, it would have been a bit better had i 
-> noticed the lack of Cc:s in an existing discussion, but i didnt.
+On Mon, 2008-02-04 at 05:04 -0800, Andrew Morton wrote:
 
-Actually I (and probably others) generally avoid cc'ing mailing lists on
-patch traffic.  I spew out enough script-generated traffic as it is.
+> After disabling both CONFIG_DEBUG_LOCKING_API_SELFTESTS and netconsole
+> (using current mainline) I get a login prompt, and also...
 
-> ...
->   mailing list aliases to get the 'guaranteed attention' of maintainers 
->
+> [    7.819146] WARNING: at kernel/lockdep.c:2033 trace_hardirqs_on+0x9b/0x10d()
 
-whoa.  You must know better mailing lists than I do ;)
+> That warning in lockdep.c should have a comment explaining to readers under
+> which circumstances it will trigger, and what they did wrong.  In fact if
+> I've interpreted it correctly I don't see why it's a DEBUG_LOCKS_WARN_ON
+> thing at all?  It should be a first-class lockdep warning?
+
+Agreed, I'll make lockdep print a nice error.
 
