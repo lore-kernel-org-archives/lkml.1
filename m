@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYBDEbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYBDEc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbYBDEbW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 23:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYBDEbM
+	id S1755193AbYBDEc5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 23:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYBDEcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 23:31:12 -0500
-Received: from web36704.mail.mud.yahoo.com ([209.191.85.38]:46400 "HELO
-	web36704.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751356AbYBDEbL (ORCPT
+	Sun, 3 Feb 2008 23:32:50 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:54797 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYBDEct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 23:31:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=dCkduZ+zgndav1D6MoOgn56bL1Mf1BLWsPEK3ndw3lv+ipooZ5tOmKI/07S2kUy9wZ8wNBH/EfPhA6Fo6qdKF+4S1MBxcy4wOtk8PxziQ5hIwe12nSLXCLIdP2j3I8P/l/NTgu7Q9F4gV8n324lalAaGFy8FlK9snJdAhpkucgQ=;
-X-YMail-OSG: kDUuhTMVM1l39mFM69pPZU7r23JUAg5nL52bHo4t7gq1er.zyBpepCAuEYpXke_2_84S6a0LzNBvNjR3X7F527rh85qo3Qy4szTfTMLyCuuEXao-
-Date: Sun, 3 Feb 2008 20:31:10 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: [PATCH] memstick: use __blk_end_request to complete requests
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20080202161635.fc02de0c.akpm@linux-foundation.org>
+	Sun, 3 Feb 2008 23:32:49 -0500
+Message-ID: <47A6951E.3000600@linux.vnet.ibm.com>
+Date: Mon, 04 Feb 2008 10:01:26 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <943786.16504.qm@web36704.mail.mud.yahoo.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, apw@shadowen.org
+Subject: Re: 2.6.24-mm1 Build Faliure on pgtable_32.c
+References: <20080203171634.58ab668b.akpm@linux-foundation.org> <20080204035543.GA8186@linux.vnet.ibm.com>
+In-Reply-To: <20080204035543.GA8186@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alex Dubov <oakad@yahoo.com>
+Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The 2.6.24-mm1 kernel build fails with 
+> 
+> arch/x86/mm/pgtable_32.c: In function `pgd_mop_up_pmds':
+> arch/x86/mm/pgtable_32.c:302: warning: passing arg 1 of `pmd_free' from incompatible pointer type
+> arch/x86/mm/pgtable_32.c:302: error: too few arguments to function `pmd_free'
+> 
+> I have tested the patch for the build failure only.
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
---- mspro_block.c.orig	2008-02-04 15:25:16.000000000 +1100
-+++ mspro_block.c	2008-02-04 15:26:28.226886699 +1100
-@@ -668,20 +668,13 @@
+Looks good to me, it seems like a conflict between origin.patch and
+add-mm-argument-to-pte-pmd-pud-pgd_free.patch
 
- 		spin_lock_irqsave(&msb->q_lock, flags);
- 		if (rc >= 0)
--			chunk = end_that_request_chunk(req, 1, rc);
-+			chunk = __blk_end_request(req, 0, rc);
- 		else
--			chunk = end_that_request_first(req, rc,
--						       req->current_nr_sectors);
-+			chunk = __blk_end_request(req, rc, 0);
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
- 		dev_dbg(&card->dev, "end chunk %d, %d\n", rc, chunk);
--		if (!chunk) {
--			add_disk_randomness(req->rq_disk);
--			blkdev_dequeue_request(req);
--			end_that_request_last(req, rc > 0 ? 1 : rc);
--		}
- 		spin_unlock_irqrestore(&msb->q_lock, flags);
- 	} while (chunk);
--
- }
-
- static int mspro_block_has_request(struct mspro_block_data *msb)
-
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ 
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
