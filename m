@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYBDVAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYBDVBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbYBDVAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 16:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbYBDVAW
+	id S1755222AbYBDVBt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 16:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYBDVBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 16:00:22 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47482 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753897AbYBDVAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 16:00:19 -0500
-Date: Mon, 4 Feb 2008 22:00:32 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: small cleanups
-Message-ID: <20080204210032.GA1662@elf.ucw.cz>
+	Mon, 4 Feb 2008 16:01:40 -0500
+Received: from pie.citi.umich.edu ([141.211.133.115]:42584 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751415AbYBDVBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 16:01:40 -0500
+Date: Mon, 4 Feb 2008 16:01:21 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Message-ID: <20080204210121.GF18682@fieldses.org>
+References: <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net> <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain> <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are small cleanups all over the tree. Please apply,
+On Mon, Feb 04, 2008 at 11:44:31AM -0800, Linus Torvalds wrote:
+...
+> Pure user-space solutions work, but tend to eventually be turned into 
+> kernel-space if they are simple enough and really do have throughput and 
+> latency considerations (eg nfsd), and aren't quite complex and crazy 
+> enough to have a large impedance-matching problem even for basic IO stuff 
+> (eg samba).
+...
+> So just going by what has happened in the past, I'd assume that iSCSI 
+> would eventually turn into "connecting/authentication in user space" with 
+> "data transfers in kernel space". But only if it really does end up 
+> mattering enough. We had a totally user-space NFS daemon for a long time, 
+> and it was perfectly fine until people really started caring.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+I'd assumed the move was primarily because of the difficulty of getting
+correct semantics on a shared filesystem--if you're content with
+NFS-only access to your filesystem, then you can probably do everything
+in userspace, but once you start worrying about getting stable
+filehandles, consistent file locking, etc., from a real disk filesystem
+with local users, then you require much closer cooperation from the
+kernel.
 
-diff --git a/fs/select.c b/fs/select.c
-index 47f4792..c414aed 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -260,7 +260,7 @@ int do_select(int n, fd_set_bits *fds, s
- 		wait = NULL;
- 		if (retval || !*timeout || signal_pending(current))
- 			break;
--		if(table.error) {
-+		if (table.error) {
- 			retval = table.error;
- 			break;
- 		}
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 4333b6d..107618c 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -220,7 +220,7 @@ void flush_signals(struct task_struct *t
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&t->sighand->siglock, flags);
--	clear_tsk_thread_flag(t,TIF_SIGPENDING);
-+	clear_tsk_thread_flag(t, TIF_SIGPENDING);
- 	flush_sigqueue(&t->pending);
- 	flush_sigqueue(&t->signal->shared_pending);
- 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
-@@ -424,7 +424,7 @@ int dequeue_signal(struct task_struct *t
- 	}
- 	if (signr &&
- 	     ((info->si_code & __SI_MASK) == __SI_TIMER) &&
--	     info->si_sys_private){
-+	     info->si_sys_private) {
- 		/*
- 		 * Release the siglock to ensure proper locking order
- 		 * of timer locks outside of siglocks.  Note, we leave
-diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
-index 51b5ee5..b376190 100644
---- a/kernel/stop_machine.c
-+++ b/kernel/stop_machine.c
-@@ -136,8 +136,7 @@ static void restart_machine(void)
- 	preempt_enable_no_resched();
- }
- 
--struct stop_machine_data
--{
-+struct stop_machine_data {
- 	int (*fn)(void *);
- 	void *data;
- 	struct completion done;
-diff --git a/mm/pdflush.c b/mm/pdflush.c
-index 8f6ee07..3931f71 100644
---- a/mm/pdflush.c
-+++ b/mm/pdflush.c
-@@ -17,8 +17,8 @@ #include <linux/spinlock.h>
- #include <linux/gfp.h>
- #include <linux/init.h>
- #include <linux/module.h>
--#include <linux/fs.h>		// Needed by writeback.h
--#include <linux/writeback.h>	// Prototypes pdflush_operation()
-+#include <linux/fs.h>		/* Needed by writeback.h	  */
-+#include <linux/writeback.h>	/* Prototypes pdflush_operation() */
- #include <linux/kthread.h>
- #include <linux/cpuset.h>
- #include <linux/freezer.h>
+And I seem to recall being told that sort of thing was the motivation
+more than performance, but I wasn't there (and I haven't seen
+performance comparisons).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--b.
