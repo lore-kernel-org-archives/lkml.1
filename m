@@ -1,132 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYBDQoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYBDQpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYBDQoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 11:44:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYBDQoq
+	id S1756556AbYBDQpf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 11:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYBDQpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 11:44:46 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45210 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753970AbYBDQop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 11:44:45 -0500
-Date: Mon, 4 Feb 2008 17:44:43 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix private_list handling
-Message-ID: <20080204164443.GE3426@duck.suse.cz>
+	Mon, 4 Feb 2008 11:45:25 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43506 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756219AbYBDQpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 11:45:24 -0500
+Date: Mon, 4 Feb 2008 10:45:24 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Ismail D??nmez <ismail@pardus.org.tr>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] per-process securebits
+Message-ID: <20080204164524.GC20130@sergelap.ibm.com>
+References: <47A2D439.9050704@kernel.org> <200802030825.49221.ismail@pardus.org.tr> <47A66119.90702@kernel.org> <200802040254.50444.ismail@pardus.org.tr> <47A6661D.7020305@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <47A6661D.7020305@kernel.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are two possible races in handling of private_list in buffer cache.
-1) When fsync_buffers_list() processes a private_list, it clears
-b_assoc_mapping and moves buffer to its private list. Now drop_buffers() comes,
-sees a buffer is on list so it calls __remove_assoc_queue() which complains
-about b_assoc_mapping being cleared (as it cannot propagate possible IO error).
-This race has been actually observed in the wild.
-2) When fsync_buffers_list() processes a private_list,
-mark_buffer_dirty_inode() can be called on bh which is already on the private
-list of fsync_buffers_list(). As buffer is on some list (note that the check is
-performed without private_lock), it is not readded to the mapping's
-private_list and after fsync_buffers_list() finishes, we have a dirty buffer
-which should be on private_list but it isn't. This race has not been reported,
-probably because most (but not all) callers of mark_buffer_dirty_inode() hold
-i_mutex and thus are serialized with fsync().
+Quoting Andrew G. Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Ismail D??nmez wrote:
+> | What I meant to ask was what does "per-process securebits" brings as
+> extra.
+>
+> It allows you to create a legacy free process tree. For example, a
+> chroot, or container (which Serge can obviously explain in more detail),
 
-Fix these issues by not clearing b_assoc_map when fsync_buffers_list() moves
-buffer to a dedicated list and by reinserting buffer in private_list when
-it is found dirty after we have submitted buffer for IO. We also change the
-tests whether a buffer is on a private list from
- !list_empty(&bh->b_assoc_buffers) to bh->b_assoc_map
-so that they are single word reads and hence lockless checks are safe.
+(Just to give my thoughts on securebits and containers)
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-CC: Nick Piggin <npiggin@suse.de>
+A container is a set of processes which has its own private namespaces
+for all or most resources - for instance it sees only processes in its
+own pid namespace, and its first process, which is sees as pid 1, is
+known as some other pid, maybe 3459, to the rest of the system.
 
----
-Hi Andrew,
+We tend to talk about 'system containers' versus 'application
+containers'.  A system container would be like a vserver or openvz
+instance, something which looks like a separate machine.  I was
+going to say I don't imagine per-process securebits being useful
+there, but actually since a system container doesn't need to do any
+hardware setup it actually might be a much easier start for a full
+SECURE_NOROOT distro than a real machine.  Heck, on a real machine init
+and a few legacy deamons could run in the init namespace, while users
+log in and apache etc run in a SECURE_NOROOT container.
 
-this is the latest version of the fix for private_list handling races. The
-changes are now smaller so I hope you'll like the patch more... Please
-apply if you now think the patch is fine. Thanks.
+But I especially like the thought of for instance postfix running in a
+carefully crafted application container (with its own virtual network
+card and limited file tree and no visibility of other processes) with
+SECURE_NOROOT on.
 
-									Honza
+-serge
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 7249e01..76e1ab4 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -678,7 +678,7 @@ void mark_buffer_dirty_inode(struct buffer_head *bh, struct inode *inode)
- 	} else {
- 		BUG_ON(mapping->assoc_mapping != buffer_mapping);
- 	}
--	if (list_empty(&bh->b_assoc_buffers)) {
-+	if (!bh->b_assoc_map) {
- 		spin_lock(&buffer_mapping->private_lock);
- 		list_move_tail(&bh->b_assoc_buffers,
- 				&mapping->private_list);
-@@ -794,6 +794,7 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
- {
- 	struct buffer_head *bh;
- 	struct list_head tmp;
-+	struct address_space *mapping;
- 	int err = 0, err2;
- 
- 	INIT_LIST_HEAD(&tmp);
-@@ -801,9 +802,14 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
- 	spin_lock(lock);
- 	while (!list_empty(list)) {
- 		bh = BH_ENTRY(list->next);
-+		mapping = bh->b_assoc_map;
- 		__remove_assoc_queue(bh);
-+		/* Avoid race with mark_buffer_dirty_inode() which does
-+		 * a lockless check and we rely on seeing the dirty bit */
-+		smp_mb();
- 		if (buffer_dirty(bh) || buffer_locked(bh)) {
- 			list_add(&bh->b_assoc_buffers, &tmp);
-+			bh->b_assoc_map = mapping;
- 			if (buffer_dirty(bh)) {
- 				get_bh(bh);
- 				spin_unlock(lock);
-@@ -822,8 +828,17 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
- 
- 	while (!list_empty(&tmp)) {
- 		bh = BH_ENTRY(tmp.prev);
--		list_del_init(&bh->b_assoc_buffers);
- 		get_bh(bh);
-+		mapping = bh->b_assoc_map;
-+		__remove_assoc_queue(bh);
-+		/* Avoid race with mark_buffer_dirty_inode() which does
-+		 * a lockless check and we rely on seeing the dirty bit */
-+		smp_mb();
-+		if (buffer_dirty(bh)) {
-+			list_add(&bh->b_assoc_buffers,
-+				 &bh->b_assoc_map->private_list);
-+			bh->b_assoc_map = mapping;
-+		}
- 		spin_unlock(lock);
- 		wait_on_buffer(bh);
- 		if (!buffer_uptodate(bh))
-@@ -1195,7 +1210,7 @@ void __brelse(struct buffer_head * buf)
- void __bforget(struct buffer_head *bh)
- {
- 	clear_buffer_dirty(bh);
--	if (!list_empty(&bh->b_assoc_buffers)) {
-+	if (bh->b_assoc_map) {
- 		struct address_space *buffer_mapping = bh->b_page->mapping;
- 
- 		spin_lock(&buffer_mapping->private_lock);
-@@ -3037,7 +3052,7 @@ drop_buffers(struct page *page, struct buffer_head **buffers_to_free)
- 	do {
- 		struct buffer_head *next = bh->b_this_page;
- 
--		if (!list_empty(&bh->b_assoc_buffers))
-+		if (bh->b_assoc_map)
- 			__remove_assoc_queue(bh);
- 		bh = next;
- 	} while (bh != head);
+> environment in which root has no privilege at all. One in which
+> privilege comes only from filesystem capabilities.
+>
+> | FWIW in Pardus 2008 we'll enable Posix file capabilities by default so
+> people
+> | could "harden" their setups.
+
+Cool.  Be good to see how that goes.  I'm curious about what conceptual
+hurdles there might be for sysadmins configuring libpam to exploit
+fI+pI.
+
+thanks,
+-serge
+
+>
+> Cheers
+>
+> Andrew
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.2.6 (GNU/Linux)
+>
+> iD8DBQFHpmYd+bHCR3gb8jsRAlDHAJ9RvFRieU2eUPJUHh7K84NMLmytTQCgupfS
+> KxdoXz400AeMWJiaikGH9U8=
+> =yx8I
+> -----END PGP SIGNATURE-----
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
