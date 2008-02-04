@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYBDPbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYBDPao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbYBDPbA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 10:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYBDPas
+	id S1756141AbYBDPao (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 10:30:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYBDPaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 10:30:48 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41268 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756196AbYBDPar convert rfc822-to-8bit (ORCPT
+	Mon, 4 Feb 2008 10:30:23 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37468 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753673AbYBDPaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 10:30:47 -0500
-Date: Mon, 4 Feb 2008 15:24:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: alejandro.riveira@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] sata_via.c: Remove missleading comment.
-Message-ID: <20080204152459.2b40cc42@core>
-In-Reply-To: <1202134792.5671.7.camel@Varda>
-References: <1202134792.5671.7.camel@Varda>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 4 Feb 2008 10:30:21 -0500
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47A7049A.9000105@vlnb.net>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 09:30:15 -0600
+Message-Id: <1202139015.3096.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Feb 2008 15:19:52 +0100
-Alejandro Riveira Fernández <alejandro.riveira@gmail.com> wrote:
+On Mon, 2008-02-04 at 15:27 +0300, Vladislav Bolkhovitin wrote:
+> Vladislav Bolkhovitin wrote:
+> So, James, what is your opinion on the above? Or the overall SCSI target 
+> project simplicity doesn't matter much for you and you think it's fine 
+> to duplicate Linux page cache in the user space to keep the in-kernel 
+> part of the project as small as possible?
 
-> Maybe for the trivial tree...
-> 
-> 
-> sata_via.c has PATA support since:
-> 
->   d73f30e1c9a9af14757fa5bf4014343926047156
->    
->   sata_via: PATA support
-> 
-> AFAICS so the TODO list is no longer true.
+The answers were pretty much contained here
 
-Yep well spotted
+http://marc.info/?l=linux-scsi&m=120164008302435
+
+and here:
+
+http://marc.info/?l=linux-scsi&m=120171067107293
+
+Weren't they?
+
+James
+
+
