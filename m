@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYBDUkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbYBDUrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbYBDUkn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:40:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYBDUk3
+	id S1757957AbYBDUrN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbYBDUrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:40:29 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:29380 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758088AbYBDUk0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:40:26 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
-Date: Mon, 4 Feb 2008 13:41:36 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
-       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
-       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
-References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802041039.36100.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802041014410.3034@hp.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802041014410.3034@hp.linux-foundation.org>
+	Mon, 4 Feb 2008 15:47:04 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:39221 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755708AbYBDUrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:47:01 -0500
+Date: Mon, 4 Feb 2008 22:45:55 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: allow 64bit setting in Kconfig
+Message-ID: <20080204204555.GC505@cs181133002.pp.htv.fi>
+References: <20080128220944.GI8767@does.not.exist> <20080201152227.GB32085@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200802041341.37313.bjorn.helgaas@hp.com>
+In-Reply-To: <20080201152227.GB32085@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 February 2008 11:18:09 am Linus Torvalds wrote:
-> On Mon, 4 Feb 2008, Bjorn Helgaas wrote:
-> > 
-> > I think the problem here is that the PCI BAR is bigger and spans the
-> > region reported by ACPI:
+On Fri, Feb 01, 2008 at 04:22:27PM +0100, Ingo Molnar wrote:
 > 
-> Ok, then it doesn't help that it's not busy.
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> In that case, the only real fix is to simply do the ACPI reservations 
-> *after* PCI probing. Which is what it should have done to begin with.
-
-I'm sure you're right, but I don't understand why yet.  Here's what
-I think is happening; please correct me where I'm going wrong:
-
-  1) enumerate PNP & ACPI devices
-  2) initialize PNP & ACPI drivers
-     2a) register ACPI PCI root bridge driver, which enumerates PCI
-         devices behind the bridge
-     2b) register PNP system driver and reserve resources (this is
-         where the current quirk skips some reservations)
-  3) initialize PCI drivers
-     3a) register intel8x0 sound driver and reserve conflicting
-         resources
-
-> > I really don't want to use the earlier quirk that scanned PCI devices
-> > from a PNP quirk.  I think that's just wrong because PNP (which
-> > conceptually includes ACPI) is what tells us about PCI root bridges.
+> >  # Select 32 or 64 bit
+> >  config 64BIT
+> > -	bool "64-bit kernel" if ARCH = "x86"
+> > +	bool "64-bit kernel"
+> >  	default ARCH = "x86_64"
 > 
-> So? Do the bridge listing separately from resource marking. Why tie the 
-> two together? They have absolutely *nothing* to do with each other.
+> NACK. You have just broken:
 > 
-> The fact is, scanning devices should happen first. And AFTER the device 
-> tree is scanned, we can then safely add all the special resources that 
-> don't show up as normal devices.
+>     make ARCH=i386 randconfig
+> 
+> on a 64-bit box that has a 32-bit .config in its kernel directory.
+> 
+> The randconfig/allyesconfig/allnoconfig variants override whatever is in 
+> the current .config. Making the result depend on whatever is in the 
+> .config at the moment is fundamentally wrong.
+> 
+> "oldconfig" on the other hand has correct sensitivity to the existing 
+> .config - and that always worked correctly. So if you pop a 32-bit or a 
+> 64-bit .config into a kernel tree, that will be listened to, no matter 
+> whether you are on a 32-bit or on a 64-bit host.
 
-I think you're suggesting that we should do 2a first, to enumerate all
-PCI devices, and only later do 2b.  But I don't know how to accomplish
-that cleanly.
+Do you have ARCH=x86 set in your environment, the command line or 
+patched into your Makefile when this works for you?
 
-It does happen in that order today, but only because the ACPI drivers
-are registered before the PNP drivers.  I think that's an artificial
-distinction, so I don't want to rely on it.  If the PCI bridge driver
-became a PNP driver, we could use link ordering to make sure it still
-came first, although that seems a little fragile to me.
+> 	Ingo
 
-Bjorn
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
