@@ -1,144 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYBDSoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYBDSu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbYBDSoN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 13:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYBDSn5
+	id S1756219AbYBDSu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 13:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbYBDSuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 13:43:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41903 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751835AbYBDSn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 13:43:56 -0500
-Message-ID: <47A75CCF.4090904@redhat.com>
-Date: Mon, 04 Feb 2008 13:43:27 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
-References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu> <47A39D8F.9010003@redhat.com> <E1JLDIq-000747-1y@pomaz-ex.szeredi.hu> <47A73558.2080700@redhat.com> <E1JM5Gh-0003Pi-Dq@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1JM5Gh-0003Pi-Dq@pomaz-ex.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Feb 2008 13:50:12 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46489 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754600AbYBDSuK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 13:50:10 -0500
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 12:49:52 -0600
+Message-Id: <1202150992.3096.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->>> In FUSE interrupts are sent to userspace, and the filesystem decides
->>> what to do with them.  So it is entirely possible and valid for a
->>> filesystem to ignore an interrupt.  If an operation was non-blocking
->>> (such as one returning an error), then there would in fact be no
->>> purpose in checking interrupts.
->>>
->>>   
->>>       
->> Why do you think that it is valid to ignore pending signals?
->> You seem to be asserting that it okay for processes to hang,
->> uninterruptibly, when accessing files on fuse mounted file
->> systems?
->>
->> Perhaps the right error to return when there is a signal
->> pending is EINTR and not ESTALE or some other error?  There
->> has to be some way for the application to detect that its
->> system call was interrupted due to a signal pending.
->>     
->
-> Traditionally a lot of filesystem related system calls are not
-> interruptible, and for good reason.  For example what happens, if an
-> app receives a signal, while the filesystem is performing a rename()
-> request?  It would be very confusing if the call returned EINTR, but
-> the rename would successfully complete regardless.
->
-> We had a related problem with the open(O_CREAT) call in fuse, which
-> was interruptible between the creation and the actual open because of
-> a design mistake.  So it could return EINTR, after the file was
-> created, and this broke a real world application (don't have details
-> at hand, but could dig them out if you are interested).
->
-> I don't know what NFS does, but returning EINTR without actually
-> canceling an operation in the server is generally not a good idea.
->
->   
+On Mon, 2008-02-04 at 10:29 -0800, Linus Torvalds wrote:
+> 
+> On Mon, 4 Feb 2008, James Bottomley wrote:
+> > 
+> > The way a user space solution should work is to schedule mmapped I/O
+> > from the backing store and then send this mmapped region off for target
+> > I/O.
+> 
+> mmap'ing may avoid the copy, but the overhead of a mmap operation is 
+> quite often much *bigger* than the overhead of a copy operation.
+> 
+> Please do not advocate the use of mmap() as a way to avoid memory copies. 
+> It's not realistic. Even if you can do it with a single "mmap()" system 
+> call (which is not at all a given, considering that block devices can 
+> easily be much larger than the available virtual memory space), the fact 
+> is that page table games along with the fault (and even just TLB miss) 
+> overhead is easily more than the cost of copying a page in a nice 
+> streaming manner.
+> 
+> Yes, memory is "slow", but dammit, so is mmap().
+> 
+> > You also have to pull tricks with the mmap region in the case of writes 
+> > to prevent useless data being read in from the backing store.  However, 
+> > none of this involves data copies.
+> 
+> "data copies" is irrelevant. The only thing that matters is performance. 
+> And if avoiding data copies is more costly (or even of a similar cost) 
+> than the copies themselves would have been, there is absolutely no upside, 
+> and only downsides due to extra complexity.
+> 
+> If you want good performance for a service like this, you really generally 
+> *do* need to in kernel space. You can play games in user space, but you're 
+> fooling yourself if you think you can do as well as doing it in the 
+> kernel. And you're *definitely* fooling yourself if you think mmap() 
+> solves performance issues. "Zero-copy" does not equate to "fast". Memory 
+> speeds may be slower that core CPU speeds, but not infinitely so!
+> 
+> (That said: there *are* alternatives to mmap, like "splice()", that really 
+> do potentially solve some issues without the page table and TLB overheads. 
+> But while splice() avoids the costs of paging, I strongly suspect it would 
+> still have easily measurable latency issues. Switching between user and 
+> kernel space multiple times is definitely not going to be free, although 
+> it's probably not a huge issue if you have big enough requests).
 
-This is what NFS has been doing, for several decades, and no one
-has complained yet.  It is just generally accepted.  I do agree
-that it isn't the best of semantics, but it does seem to work and
-does solve a real problem which exists if you don't allow an
-operation to be interrupted.  The alternative, for NFS clients,
-was potentially to block an application until a server, which
-might never come back up, comes back up.  It was a serious
-problem and worse than this resolution.
+Sorry ... this is really just a discussion of how something (zero copy)
+could be done, rather than an implementation proposal.  (I'm not
+actually planning to make the STGT people do anything ... although
+investigating splice does sound interesting).
 
-Yes, I'd like to hear the details and find out why it was a
-problem.  If you allow the fuse file system to block waiting
-on things which may never occur, than you are going to have a
-problem.  I would suggest considering this now instead of waiting
-until it is too late.  We can learn from the NFS experience instead
-of just dismissing it.
+Right at the moment, STGT seems to be performing just fine on
+measurements up to gigabit networks.  There are suggestions that there
+may be a problem on 8G IB networks, but it's not definitive yet.
+
+I'm already on record as saying I think the best fix for IB networks is
+just to reduce the context switches by increasing the transfer size, but
+the infrastructure to allow that only just went into git head.
+
+James
 
 
->>> So while sending a signal might reliably work in NFS to break out of
->>> the loop, it does not necessarily work for other filesystems, and fuse
->>> may not be the only one affected.
->>>
->>>   
->>>       
->> Have you noticed another one?  I would be happy to chat with the
->> developers for that file system to see if this support would
->> negatively impact them.
->>     
->
-> Oh, I have no idea.  And I wouldn't want to do a full audit of all the
-> filesystems to find out.  But if you do, please go ahead.
->
->   
-
-Well, you brought it up.  I thought that perhaps you had something
-other than FUD.
-
->>> A few solutions come to mind, perhaps the best is to introduce a
->>> kernel internal errno value (ERETRYSTALE), that forces the relevant
->>> system calls to be retried.
->>>
->>> NFS could transform ESTALE errors to ERETRYSTALE and get the desired
->>> behavior, while other filesystems would not be affected.
->>>       
->> We don't need more error numbers, we've got plenty already.  :-)
->>     
->
-> That's a rather poor excuse against a simple solution which would
-> spare us some backward compatibility problems.
->
->   
-
-Potential backwards compatibility problems and none are even known
-or even considered.
-
-The solution here isn't to create more hacks and a new error number
-for this purpose is just a hack.
-
->> Do you have anything more specific about any real problems?
->> I see lots of "mays" and "coulds", but I don't see anything
->> that I can do to make this support better.
->>     
->
-> Implement the above suggestion?  Or something else.
->
-> Otherwise I have to NAK this patch due to the possibility of it
-> breaking existing fuse installations.
-
-Please describe this real and existing fuse installation so that I can
-better understand the situation and the real requirements here.
-
-Instead of attempting to block this proposal, what about considering
-how to architect fuse to handle the situation instead of pretending
-that fuse won't have the same problem to solve if it isn't solved
-here?  I have a real problem to solve and I need to get it resolved.
-I have real customers, with real problems, and not just theoretical
-and vague ones.
-
-          ps
