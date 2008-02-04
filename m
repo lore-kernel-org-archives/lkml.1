@@ -1,69 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbYBDRy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYBDR4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbYBDRy1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBDRyS
+	id S1754702AbYBDR4i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYBDR43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:54:18 -0500
-Received: from styx.suse.cz ([82.119.242.94]:43681 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751835AbYBDRyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:54:16 -0500
-Date: Mon, 4 Feb 2008 18:54:15 +0100
-From: Jan Kara <jack@suse.cz>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Chris Mason <chris.mason@oracle.com>, Andreas Dilger <adilger@sun.com>,
-       Chris Snook <csnook@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-Message-ID: <20080204175415.GH3426@duck.suse.cz>
-References: <200801242336.00340.a1426z@gawab.com> <20080131171040.GL1461@duck.suse.cz> <200801311214.55287.chris.mason@oracle.com> <200802020026.00998.a1426z@gawab.com>
+	Mon, 4 Feb 2008 12:56:29 -0500
+Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:38979 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751943AbYBDR42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 12:56:28 -0500
+Message-ID: <47A751C5.60600@vlnb.net>
+Date: Mon, 04 Feb 2008 20:56:21 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802020026.00998.a1426z@gawab.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Bart Van Assche <bart.vanassche@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	 <1201639331.3069.58.camel@localhost.localdomain>	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>	 <1202144767.3096.38.camel@localhost.localdomain>	 <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain>
+In-Reply-To: <1202145901.3096.49.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 02-02-08 00:26:00, Al Boldi wrote:
-> Chris Mason wrote:
-> > On Thursday 31 January 2008, Jan Kara wrote:
-> > > On Thu 31-01-08 11:56:01, Chris Mason wrote:
-> > > > On Thursday 31 January 2008, Al Boldi wrote:
-> > > > > The big difference between ordered and writeback is that once the
-> > > > > slowdown starts, ordered goes into ~100% iowait, whereas writeback
-> > > > > continues 100% user.
-> > > >
-> > > > Does data=ordered write buffers in the order they were dirtied?  This
-> > > > might explain the extreme problems in transactional workloads.
-> > >
-> > >   Well, it does but we submit them to block layer all at once so
-> > > elevator should sort the requests for us...
-> >
-> > nr_requests is fairly small, so a long stream of random requests should
-> > still end up being random IO.
-> >
-> > Al, could you please compare the write throughput from vmstat for the
-> > data=ordered vs data=writeback runs?  I would guess the data=ordered one
-> > has a lower overall write throughput.
+James Bottomley wrote:
+> On Mon, 2008-02-04 at 20:16 +0300, Vladislav Bolkhovitin wrote:
 > 
-> That's what I would have guessed, but it's actually going up 4x fold for 
-> mysql from 559mb to 2135mb, while the db-size ends up at 549mb.
-  So you say we write 4-times as much data in ordered mode as in writeback
-mode. Hmm, probably possible because we force all the dirty data to disk
-when committing a transation in ordered mode (and don't do this in
-writeback mode). So if the workload repeatedly dirties the whole DB, we are
-going to write the whole DB several times in ordered mode but in writeback
-mode we just keep the data in memory all the time. But this is what you
-ask for if you mount in ordered mode so I wouldn't consider it a bug.
-  I still don't like your hack with per-process journal mode setting but we
-could easily do per-file journal mode setting (we already have a flag to do
-data journaling for a file) and that would help at least your DB
-workload...
+>>James Bottomley wrote:
+>>
+>>>>>>So, James, what is your opinion on the above? Or the overall SCSI target 
+>>>>>>project simplicity doesn't matter much for you and you think it's fine 
+>>>>>>to duplicate Linux page cache in the user space to keep the in-kernel 
+>>>>>>part of the project as small as possible?
+>>>>>
+>>>>>
+>>>>>The answers were pretty much contained here
+>>>>>
+>>>>>http://marc.info/?l=linux-scsi&m=120164008302435
+>>>>>
+>>>>>and here:
+>>>>>
+>>>>>http://marc.info/?l=linux-scsi&m=120171067107293
+>>>>>
+>>>>>Weren't they?
+>>>>
+>>>>No, sorry, it doesn't look so for me. They are about performance, but 
+>>>>I'm asking about the overall project's architecture, namely about one 
+>>>>part of it: simplicity. Particularly, what do you think about 
+>>>>duplicating Linux page cache in the user space to have zero-copy cached 
+>>>>I/O? Or can you suggest another architectural solution for that problem 
+>>>>in the STGT's approach?
+>>>
+>>>
+>>>Isn't that an advantage of a user space solution?  It simply uses the
+>>>backing store of whatever device supplies the data.  That means it takes
+>>>advantage of the existing mechanisms for caching.
+>>
+>>No, please reread this thread, especially this message: 
+>>http://marc.info/?l=linux-kernel&m=120169189504361&w=2. This is one of 
+>>the advantages of the kernel space implementation. The user space 
+>>implementation has to have data copied between the cache and user space 
+>>buffer, but the kernel space one can use pages in the cache directly, 
+>>without extra copy.
+> 
+> 
+> Well, you've said it thrice (the bellman cried) but that doesn't make it
+> true.
+> 
+> The way a user space solution should work is to schedule mmapped I/O
+> from the backing store and then send this mmapped region off for target
+> I/O.  For reads, the page gather will ensure that the pages are up to
+> date from the backing store to the cache before sending the I/O out.
+> For writes, You actually have to do a msync on the region to get the
+> data secured to the backing store. 
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+James, have you checked how fast is mmaped I/O if work size > size of 
+RAM? It's several times slower comparing to buffered I/O. It was many 
+times discussed in LKML and, seems, VM people consider it unavoidable. 
+So, using mmaped IO isn't an option for high performance. Plus, mmaped 
+IO isn't an option for high reliability requirements, since it doesn't 
+provide a practical way to handle I/O errors.
+
+> You also have to pull tricks with
+> the mmap region in the case of writes to prevent useless data being read
+> in from the backing store.
+
+Can you be more exact and specify what kind of tricks should be done for 
+that?
+
+>  However, none of this involves data copies.
+>
+> James
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
