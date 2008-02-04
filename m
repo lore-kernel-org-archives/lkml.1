@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYBDUN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbYBDUNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbYBDUN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYBDUNV
+	id S1758434AbYBDUNm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbYBDUNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:13:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:60329 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754493AbYBDUNU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:13:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=WAxT+Gihz+IYFNBOjZT8/1jhzZMjrydyxxzW6y+2ttoihnUF3I5Yy6I10ugZRvojDvnarRcEnZT54vAbi0kcDunqGQTClJbqL9JjAkjqshO9U8o/NyG3tPjsU2xwkKccFNA5ng61bki7GB1jrQPqCx1fOX+UVmJOtS/lVsVZ0T4=
-Message-ID: <6101e8c40802041213y4f3cb310qaff40052ed18d5df@mail.gmail.com>
-Date: Mon, 4 Feb 2008 21:13:16 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: stable@kernel.org
-Subject: {2.6.22.y} CVE-2007-6434
-Cc: linux-kernel@vger.kernel.org, "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "Greg KH" <gregkh@suse.de>, "Willy Tarreau" <w@1wt.eu>,
-       "Adrian Bunk" <bunk@kernel.org>, "Nick Piggin" <npiggin@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Feb 2008 15:13:32 -0500
+Received: from mga03.intel.com ([143.182.124.21]:64427 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758163AbYBDUNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:13:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,304,1199692800"; 
+   d="scan'208";a="375047570"
+Subject: [GIT PULL] async_tx update for 2.6.25
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Shannon Nelson <shannon.nelson@intel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Date: Mon, 04 Feb 2008 13:02:50 -0700
+Message-Id: <1202155370.27672.3.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-7.fc7) 
+X-OriginalArrivalTime: 04 Feb 2008 20:02:51.0235 (UTC) FILETIME=[EBEAC330:01C86768]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mainline: ecaf18c15aac8bb9bed7b7aa0e382fe252e275d5
+Linus, please pull from:
 
---->8---
-commit ecaf18c15aac8bb9bed7b7aa0e382fe252e275d5
-Author: Eric Paris <eparis@redhat.com>
-Date:   Tue Dec 4 23:45:31 2007 -0800
+	git://lost.foo-projects.org/~dwillia2/git/iop async-tx-for-linus
 
-    VM/Security: add security hook to do_brk
+to receive:
 
-    Given a specifically crafted binary do_brk() can be used to get low pages
-    available in userspace virtual memory and can thus be used to circumvent
-    the mmap_min_addr low memory protection.  Add security checks in do_brk().
+Dan Williams (5):
+      async_tx: fix compile breakage, mark do_async_xor __always_inline
+      async_tx: kill ASYNC_TX_ASSUME_COHERENT
+      async_tx: kill tx_set_src and tx_set_dest methods
+      async_tx: replace 'int_en' with operation preparation flags
+      async_tx: allow architecture specific async_tx_find_channel implementations
 
-    Signed-off-by: Eric Paris <eparis@redhat.com>
-    Acked-by: Alan Cox <alan@redhat.com>
-    Cc: Stephen Smalley <sds@tycho.nsa.gov>
-    Cc: James Morris <jmorris@namei.org>
-    Cc: Chris Wright <chrisw@sous-sol.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Denis Cheng (2):
+      async_tx: use LIST_HEAD instead of LIST_HEAD_INIT
+      iop-adma: use LIST_HEAD instead of LIST_HEAD_INIT
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index facc1a7..acfc13f 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1934,6 +1934,10 @@ unsigned long do_brk(unsigned long addr, unsigned long le
-        if (is_hugepage_only_range(mm, addr, len))
-                return -EINVAL;
+ crypto/async_tx/async_memcpy.c         |   38 ++++-----
+ crypto/async_tx/async_memset.c         |   28 +++---
+ crypto/async_tx/async_tx.c             |    9 +-
+ crypto/async_tx/async_xor.c            |  124 +++++++++++++++++-----------
+ drivers/dma/Kconfig                    |    1 +
+ drivers/dma/dmaengine.c                |   49 +++++++-----
+ drivers/dma/ioat_dma.c                 |   43 ++++------
+ drivers/dma/iop-adma.c                 |  138 ++++++++++++--------------------
+ include/asm-arm/arch-iop13xx/adma.h    |   18 +++--
+ include/asm-arm/hardware/iop3xx-adma.h |   30 ++++---
+ include/linux/async_tx.h               |   13 ++-
+ include/linux/dmaengine.h              |   29 ++++---
+ 12 files changed, 259 insertions(+), 261 deletions(-)
 
-+       error = security_file_mmap(0, 0, 0, 0, addr, 1);
-+       if (error)
-+               return error;
-+
-        flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+The series is a general cleanup to the async_tx-api for 2.6.25.  The
+most significant change 'async_tx: kill tx_set_src and tx_set_dest
+methods' removes the need to perform extra indirect calls when preparing
+a descriptor.  However, in order to keep the same stack footprint,
+async_xor now polls for engine resources rather than simply punting to
+cpu-xor.
 
-        error = arch_mmap_check(addr, len, flags);
----8<---
--- 
-Thanks,
-Oliver
+The code was sent out for review in December [1], and has received an
+Acked-by from Shannon@Intel for the parts that touch ioat_dma.
+Haavard@Atmel has supplied a Reviewed-by for the pieces he felt
+comfortable judging the correctness.
+
+Regards,
+Dan
+
+[1] http://lkml.org/lkml/2007/12/21/277
+
