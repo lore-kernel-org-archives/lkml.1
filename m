@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbYBDXZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbYBDX2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbYBDXZy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbYBDXZo
+	id S1757822AbYBDX2j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:28:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755765AbYBDX2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:25:44 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:48327 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756604AbYBDXZn (ORCPT
+	Mon, 4 Feb 2008 18:28:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58599 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755596AbYBDX2a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:25:43 -0500
-Message-ID: <47A79EC8.6060700@tiscali.nl>
-Date: Tue, 05 Feb 2008 00:24:56 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 4 Feb 2008 18:28:30 -0500
+Date: Mon, 4 Feb 2008 15:27:42 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+In-Reply-To: <47A79A10.4070706@garzik.org>
+Message-ID: <alpine.LFD.1.00.0802041521130.3034@hp.linux-foundation.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com> <1201639331.3069.58.camel@localhost.localdomain> <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+ <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain> <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+ <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: len.brown@intel.com, ibm-acpi@hmh.eng.br,
-       ibm-acpi-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test if (level &
- TP_EC_FAN_FULLSPEED)
-References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com>
-In-Reply-To: <ada8x20gykq.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  >                 /* safety net should the EC not support AUTO
->  >                  * or FULLSPEED mode bits and just ignore them */
->  >                 if (level & TP_EC_FAN_FULLSPEED)
->  >                         level |= 7;     /* safety min speed 7 */
->  >                 else if (level & TP_EC_FAN_FULLSPEED)
->  >                         level |= 4;     /* safety min speed 4 */
->  > 
->  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
->  > this be replaced by
+
+
+On Mon, 4 Feb 2008, Jeff Garzik wrote:
 > 
-> Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
-> (based on the comment).
-> 
+> For years I have been hoping that someone will invent a simple protocol (w/
+> strong auth) that can transit ATA and SCSI commands and responses. Heck, it
+> would be almost trivial if the kernel had a TLS/SSL implementation.
 
-Thanks Roland, for your info
+Why would you want authorization? If you don't use IP (just ethernet 
+framing), then 99% of the time the solution is to just trust the subnet. 
 
-based on the comments in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad,
-I think this should be modified like below:
+So most people would never want TLS/SSL, and the ones that *do* want it 
+would probably also want IP routing, so you'd actually be better off with 
+a separate higher-level bridging protocol rather than have TLS/SSL as part 
+of the actual packet protocol.
 
-ACPI: thinkpad-acpi: add a safety net for TPEC fan control mode
-The Linux ThinkPad community is not positive that all ThinkPads that do
-HFSP EC fan control do implement full-speed and auto modes, some of the
-earlier ones supporting HFSP might not.
+So don't add complexity. The beauty of ATA-over-ethernet is exactly that 
+it's simple and straightforward.
 
-If the EC ignores the AUTO or FULL-SPEED bits, it will pay attention to the
-lower three bits that set the fan level. And as thinkpad-acpi was leaving
-these set to zero, it would stop(!) the fan, which is Not A Good Thing.
-So, as a safety net, we now make sure to also set the fan level part of the
-HFSP register to speed 7 for full-speed, and a minimum of speed 4 for auto
-mode.
---
-second TP_EC_FAN_FULLSPEED should be P_EC_FAN_AUTO
+(Simple and straightforward is also nice for actually creating devices 
+that are the targets of this. I just *bet* that an iSCSI target device 
+probably needs two orders of magnitude more CPU power than a simple AoE 
+thing that can probably be done in an FPGA with no real software at all).
 
+Whatever. We have now officially gotten totally off topic ;)
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-index cf56647..3c323fe 100644
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -4138,7 +4138,7 @@ static int fan_set_level(int level)
- 		 * or FULLSPEED mode bits and just ignore them */
- 		if (level & TP_EC_FAN_FULLSPEED)
- 			level |= 7;	/* safety min speed 7 */
--		else if (level & TP_EC_FAN_FULLSPEED)
-+		else if (level & TP_EC_FAN_AUTO)
- 			level |= 4;	/* safety min speed 4 */
- 
- 		if (!acpi_ec_write(fan_status_offset, level))
-
+		Linus
