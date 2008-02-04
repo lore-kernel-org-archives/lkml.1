@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYBDXAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbYBDXCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbYBDXAx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbYBDXAn
+	id S1757859AbYBDXCL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYBDXB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:00:43 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48660 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757265AbYBDXAl (ORCPT
+	Mon, 4 Feb 2008 18:01:57 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:58294 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754427AbYBDXB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:00:41 -0500
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>
-In-Reply-To: <20080204224314.113afe7b@core>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 17:00:33 -0600
-Message-Id: <1202166033.3096.141.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Feb 2008 18:01:57 -0500
+Date: Mon, 4 Feb 2008 23:01:55 +0000
+From: Ben Dooks <ben@fluff.org>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Questions regarding mfd drivers
+Message-ID: <20080204230155.GD27399@fluff.org.uk>
+References: <20080204123714.4be6e10c.Kristoffer.ericson@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080204123714.4be6e10c.Kristoffer.ericson@gmail.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-02-04 at 22:43 +0000, Alan Cox wrote:
-> > better. So for example, I personally suspect that ATA-over-ethernet is way 
-> > better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
-> > low-level, and against those crazy SCSI people to begin with.
+On Mon, Feb 04, 2008 at 12:37:14PM +0100, Kristoffer Ericson wrote:
+> Greetings,
 > 
-> Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
-> would probably trash iSCSI for latency if nothing else.
+> Trying to wrap my head around sm501. From what I can tell an mfd driver is a "master" driver that takes control of all
+> memory and io areas. It then hands out areas of those to drivers. Anywhere near correct?
 
-Actually, there's also FCoE now ... which is essentially SCSI
-encapsulated in Fibre Channel Protocols (FCP) running over ethernet with
-Jumbo frames.  It does the standard SCSI TCQ, so should answer all the
-latency pieces.  Intel even has an implementation:
+Yes, it is the central management for these, but also ensures that any
+of the sub-drivers have properly locked access to the clocks, gpio and
+other shared resources.
 
-http://www.open-fcoe.org/
+The mfd driver for the sm501 exports a number of functions for the
+sub drivers to use, you should be able to see what is exported easily
+by the fact they are exported with EXPORT_SYMBOL_GPL(). The header
+files should document basic functionality of this.
+ 
+> I can see some benefit but still hard for me to motivate. What am I missing? What will the mfd be able to do, that I lack now?
+> 
+> The sm501 driver seems way more advanced than I will need for hd64461/hd64465 anyhow, but still need to understand sm501 completely before
+> attempting to write one on my own. Anyone know any documentation aside from example drivers?
 
-I tend to prefer the low levels as well.  The whole disadvantage for IP
-as regards iSCSI was the layers of protocols on top of it for
-addressing, authenticating, encrypting and finding any iSCSI device
-anywhere in the connected universe.
+Are you trying to write your own SM501, or something else? It seems
+you are writing for something else.
 
-I tend to see loss of routing from operating at the MAC level to be a
-nicely justifiable tradeoff (most storage networks tend to be hubbed or
-switched anyway).  Plus an ethernet MAC with jumbo frames is a large
-framed nearly lossless medium, which is practically what FCP is
-expecting.  If you really have to connect large remote sites ... well
-that's what tunnelling bridges are for.
+If the chip you are targetting has shared resources, such as clock
+gates, PLLs, or gpio that other drivers need to touch, then the best
+way to go is for an mfd driver to provide this functionality and have
+all the child drivers use the exported functionality.
 
-James
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-
+  'a smiley only costs 4 bytes'
