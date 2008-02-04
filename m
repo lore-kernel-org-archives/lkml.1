@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbYBDVh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYBDVih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbYBDVh4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 16:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYBDVhr
+	id S1757499AbYBDVih (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 16:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYBDVia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 16:37:47 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:44724 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbYBDVhq (ORCPT
+	Mon, 4 Feb 2008 16:38:30 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47164 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752925AbYBDVi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 16:37:46 -0500
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: Diego Zuccato <diego@otello.alma.unibo.it>,
-       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47A764ED.8030605@weinigel.se>
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
-	 <47A5D895.20300@davidnewall.com> <47A6E742.80408@otello.alma.unibo.it>
-	 <47A764ED.8030605@weinigel.se>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 22:38:11 +0100
-Message-Id: <1202161091.15090.84.camel@violet>
+	Mon, 4 Feb 2008 16:38:29 -0500
+Date: Mon, 4 Feb 2008 13:38:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: legoater@free.fr, linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       xemul@openvz.org
+Subject: Re: [PATCH 2/2] extend clone_flags using parent_tidptr argument
+Message-Id: <20080204133810.0077ec0d.akpm@linux-foundation.org>
+In-Reply-To: <20080204202416.GA26422@sergelap.austin.ibm.com>
+References: <47A74AED.1080806@free.fr>
+	<20080204202416.GA26422@sergelap.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christer,
+On Mon, 4 Feb 2008 14:24:16 -0600
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-> > In the cited example it's illegal to go outside certain parameters 
-> > SOMEWHERE (if it was illegal everywhere, the the hardware shouldn't 
-> > allow it and the sw could do nothing... not considering hw mods).
-> > Another example is WiFi: USA, Europe and Japan allows a different number 
-> > of channels. But every AP I have had simply asks which country the user 
-> > is in, then allows only a limited choice for the channel to use.
-> > If I'm in Europe but tell my AP that I'm in Japan, it lets me choose 
-> > channel 13 (Europe allows up to ch 11). If the "cops" find it out, they 
-> > prosecute ME, not my AP! It's not a TECHNICAL limit, it's a LEGAL one.
-> > So there's no point in keeping a driver closed *just* because else 
-> > someone could hack it to make it work outside the allowed parameters: 
-> > even a closed driver is hackable (just reverse engineer it...).
-> > 
-> > Think about this scenario: a closed source driver contains:
-> > if(power<100)
-> >     setpower(power);
-> > else
-> >     setpower(100);
-> > to limit tx power and make it legal. Then the user finds this 100 and 
-> > replaces it with 255 (inside the binary-only module), actually allowing 
-> > for more than twice (if power is in mW) the legally permitted power.
-> > Is it legal?
+> Quoting Cedric Le Goater (legoater@free.fr):
+> > From: Cedric Le Goater <clg@fr.ibm.com>
+> >
+> > We have at least 2 patchsets requiring each a new clone flag and there it 
+> > is, we've reached the limit, none are left.  
+> > This patch uses the CLONE_DETACHED flag (unused) as a marker to extend the 
 > 
-> > I don't think so (and I doubt you can find any lawyer that does). But 
-> > it's not THE DRIVER that's doing something illegal. It's THE USER.
-> > It would be equally illegal if the driver was open source. Simpler to 
-> > do, but equally illegal.
-> 
-> It isn't that easy.  The "Tamper-Proof Torx" screws on a vacuum cleaner 
-> or a toaster won't stop anybody from opening up the thing, I mean every 
-> little hardware store stocks those Torx bits.  But by using a slightly 
-> odd screw, the company can say "look, we'we done all we can to stop 
-> them, but the user bypassed our security device, and it's not our 
-> fault".  Apparently Intel and Atheros are trying to protect themselves 
-> in a similar way, they Open Source everything except for the regulatory 
-> daemon (Intel) or HAL object file (Atheros).  Why?  Because they belive 
-> that if they give away the sources to those parts they do the software 
-> equivalent of putting a normal Phillips screw in a home appliance. 
-> (Personally I think what they are doing is ridiculous, but apparently 
-> those companies' lawyers dont' agree).
+> Are we pretty sure that there is no legacy software out there which has
+> continued to specify CLONE_DETACHED since the kernel ignores it?
 
-while the HAL case of Atheros might be still true despite the fact that
-an OpenHAL has been around for a long time now. The Intel argument is
-out of the picture since quite some time. The regulatory daemon was an
-interim solution and has been replaced by a proper firmware solution. So
-please get your examples up-to-date.
+Please see -mm's
+clone-prepare-to-recycle-clone_detached-and-clone_stopped.patch
 
-You might wanna now point to hiding something in firmware, but the
-hardware, firmware, driver separation (with being hardware and firmware
-closed source) is an accepted solution. It is a clean separation.
-Interface wise and license wise. Remember that nobody inside the
-community ever asked for any kind of IP or trade secrets. We only want
-specifications so we can write the drivers under an appropriate open
-source license. If the specification describes an API exposed via
-firmware then that is perfectly fine.
+That patch has been cut back to only recycle CLONE_STOPPED because there
+indeed was software out there which is setting CLONE_DETACHED.
 
-Regards
-
-Marcel
-
+See http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg04293.html
 
