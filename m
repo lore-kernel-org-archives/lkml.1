@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYBDGpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYBDGsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYBDGpi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 01:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYBDGp3
+	id S1755319AbYBDGsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 01:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYBDGsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 01:45:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38705 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbYBDGp3 (ORCPT
+	Mon, 4 Feb 2008 01:48:13 -0500
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:49963 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbYBDGsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 01:45:29 -0500
-Date: Mon, 4 Feb 2008 08:20:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Russell Leidich <rml@google.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       valdis.kletnieks@vt.edu
-Subject: Re: [PATCH] Remove Barcelona Thermal Throttling
-Message-ID: <20080204072013.GB571@one.firstfloor.org>
-References: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 4 Feb 2008 01:48:12 -0500
+X-Greylist: delayed 2269 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Feb 2008 01:48:12 EST
+Date: Mon, 4 Feb 2008 17:08:30 +1100
+To: Sripathi Kodi <sripathik@in.ibm.com>
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [ppc] Disparity between sys_clock_getres and vdso implementation
+Message-ID: <20080204060830.GS6887@bakeyournoodle.com>
+References: <200801271932.59823.sripathik@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200801271932.59823.sripathik@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 03, 2008 at 10:13:53PM -0800, Russell Leidich wrote:
-> All,
+On Sun, Jan 27, 2008 at 07:32:59PM +0530, Sripathi Kodi wrote:
+> Hi Paul,
 > 
-> You can imagine my dismay when I recently learned that, after all our
-> collective effort, hardware thermal throttling does not work reliably
-> on Barcelona, according to AMD.  Due to NDA restrictions, I am unable
-> to provide further details.
+> On PPC, I see a disparity between clock_getres implementations in the
+> vdso and syscall. I am using a IBM Openpower hardware and 2.6.24 kernel
+> with CONFIG_HIGH_RES_TIMERS=y. 
+> 
+> clock_getres call for CLOCK_REALTIME returns 1 millisecond. However,
+> when I edit arch/powerpc/kernel/vdso*/gettimeofday.S to force it to use 
+> sys_clock_getres, I get 1 nanosecond resolution. The code in vdso seems
+> to be returning some pre-defined (incorrect) variables.
+> 
+> Could you please let me know the reason for this? Is it something that
+> should be fixed in vdso?
 
-Too bad. Hopefully that code will work then on the hypothetic
-future parts with fixed throttling. Perhaps it would be better
-to just remove it now and readd later.
+Almost certainly It's something I missed when I enabled highres timers
+on powerpc.
 
-All this reminds me you need to adjust the Kconfig dependencies
-for K8_NB too to be always enabled with MCE_AMD.
+I'll fix this tomorrow.
 
-Ideally on top of this patch with a || MCE_AMD
+Yours Tony
 
--Andi
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
 
----
-
-Fix and simplify k8.c Kconfig dependencies
-
-- Check for K8_NUMA instead of NUMA && PCI
-- No need to check for x86_64 explicitely
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/x86/Kconfig
-===================================================================
---- linux.orig/arch/x86/Kconfig
-+++ linux/arch/x86/Kconfig
-@@ -1540,7 +1540,7 @@ endif # X86_32
- 
- config K8_NB
- 	def_bool y
--	depends on AGP_AMD64 || (X86_64 && (GART_IOMMU || (PCI && NUMA)))
-+	depends on AGP_AMD64 || GART_IOMMU || K8_NUMA
- 
- source "drivers/pcmcia/Kconfig"
- 
