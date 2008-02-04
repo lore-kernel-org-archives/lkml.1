@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbYBDLVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbYBDLhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923AbYBDLVm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 06:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbYBDLVf
+	id S1753090AbYBDLhM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 06:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYBDLhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 06:21:35 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2279 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbYBDLVe (ORCPT
+	Mon, 4 Feb 2008 06:37:00 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53319 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbYBDLg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 06:21:34 -0500
-Date: Mon, 4 Feb 2008 11:22:03 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] checkpatch: add __asm__ to function-space-paren exception list
-Message-ID: <20080204112203.GA19879@shadowen.org>
-References: <12016486482483-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12016486482483-git-send-email-timur@freescale.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Feb 2008 06:36:59 -0500
+Subject: Re: 2.6.24-git4+ regression
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080204111747.GB4450@ics.muni.cz>
+References: <20080130135609.GA5100@ics.muni.cz>
+	 <20080131102919.GC27157@elte.hu>  <20080204111747.GB4450@ics.muni.cz>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 12:36:36 +0100
+Message-Id: <1202124997.32654.78.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 05:17:28PM -0600, Timur Tabi wrote:
-> checkpatch.pl thinks that __asm__ is a function name, so it complains about
-> a space between the function name and a parenthesis when it sees
-> "__asm__ ("mov ax,bx")".
+
+On Mon, 2008-02-04 at 12:17 +0100, Lukas Hejtmanek wrote:
+> Ingo,
 > 
-> This change will also encourage developers to use '__asm__' instead of 'asm'.
+> any progress here? I've tried to revert this patch:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=67e9fb2a39a1d454218d50383094940982be138f
 > 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->  scripts/checkpatch.pl |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> as it was marked as suspicious patch in this case
+> (http://www.uwsg.indiana.edu/hypermail/linux/kernel/0801.3/1665.html)
 > 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index 579f50f..971c822 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -1115,7 +1115,7 @@ sub process {
->  
->  # check for spaces between functions and their parentheses.
->  		while ($line =~ /($Ident)\s+\(/g) {
-> -			if ($1 !~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case)$/ &&
-> +			if ($1 !~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case|__asm__)$/ &&
->  		            $line !~ /$Type\s+\(/ && $line !~ /^.\#\s*define\b/) {
->  				WARN("no space between function name and open parenthesis '('\n" . $herecurr);
->  			}
-> -- 
+> but in such a case, kernel 2.6.24-git13 does oops at startup in sched_slice.
+> 
+> I think this is really *big* regression in 2.6.24 kernel.
 
-It truly is not clear what "type" of thing an __asm__ is these days.
-Cirtainly it seems we can use it as an attribute of a type:
+I can't reproduce this with a pure cpu load. I started 10 
+  while :; do :; done &
+instances and aside from slowing down, nothing bad happened.
 
-        register unsigned long __r16 __asm__("$16") = rtc_access->function;
+May I suggest you try latency top to see if there is something in your
+build scenario that generates horrible latencies (some IO path or
+whatnot).
 
-and yet also in its more traditional form:
-
-	__asm__("	call foo");
-
-The latter form feels like a function?  But cirtainly in the examples it
-is shown with a space some of the time, and not others.  Is __asm__ an
-attribute of the null function (;) in this context or ... well ?
-
-This patch really just removes any checks for spacing on __asm__ do we
-have a preferred style for these?  Attributes do seem to have spaces,
-though in their most attribute like usage the __asm__ "attribute" does
-not seem to be used with a space, so far anyhow.
-
-Oh and why are we preferring the use of __asm__ over asm?  They both
-seem valid.  Should we be recommending one over the other?
-
--apw
