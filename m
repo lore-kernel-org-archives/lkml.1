@@ -1,95 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbYBDRln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbYBDRnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbYBDRln (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYBDRlM
+	id S1757429AbYBDRnY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYBDRnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:41:12 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43759 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757512AbYBDRlK (ORCPT
+	Mon, 4 Feb 2008 12:43:16 -0500
+Received: from mga09.intel.com ([134.134.136.24]:53643 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751886AbYBDRnP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:41:10 -0500
-Date: Mon, 04 Feb 2008 11:41:09 -0600
-To: linux-kernel@vger.kernel.org
-Cc: pj@sgi.com, akpm@osdl.org
-Subject: [PATCH 4/4 v2] hotplug cpu move tasks in empty cpusets -
- refinements
-User-Agent: nail 11.25 7/29/05
+	Mon, 4 Feb 2008 12:43:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,303,1199692800"; 
+   d="scan'208";a="295669127"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080204174109.77D4D1FE109@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
+Date: Mon, 4 Feb 2008 09:44:24 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE7830C7@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <20080203163255.467256d4.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
+Thread-Index: AchmxdTwADZMi/gIStWR895q+edGnwAj5Jww
+References: <200801261506.28544.toralf.foerster@gmx.de> <20080203163255.467256d4.akpm@linux-foundation.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       =?iso-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Cc: <linux-kernel@vger.kernel.org>, <cpufreq@www.linux.org.uk>
+X-OriginalArrivalTime: 04 Feb 2008 17:43:12.0955 (UTC) FILETIME=[6A12B0B0:01C86755]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-   Narrow the scope of callback_mutex in scan_for_empty_cpusets().
-    Avoid rewriting the cpus, mems of cpusets except when it is
-         likely that we'll be changing them.
-    Have remove_tasks_in_empty_cpuset() also check for empty mems.
-
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Acked-by: Cliff Wickman <cpw@sgi.com>
-
-
----
-
- kernel/cpuset.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/kernel/cpuset.c
-===================================================================
---- linux-2.6.orig/kernel/cpuset.c
-+++ linux-2.6/kernel/cpuset.c
-@@ -1709,7 +1709,8 @@ static void remove_tasks_in_empty_cpuset
- 	 * has online cpus, so can't be empty).
- 	 */
- 	parent = cs->parent;
--	while (cpus_empty(parent->cpus_allowed))
-+	while (cpus_empty(parent->cpus_allowed) ||
-+			nodes_empty(parent->mems_allowed))
- 		parent = parent->parent;
  
- 	move_member_tasks_to_cpuset(cs, parent);
-@@ -1741,7 +1742,6 @@ static void scan_for_empty_cpusets(const
- 
- 	list_add_tail((struct list_head *)&root->stack_list, &queue);
- 
--	mutex_lock(&callback_mutex);
- 	while (!list_empty(&queue)) {
- 		cp = container_of(queue.next, struct cpuset, stack_list);
- 		list_del(queue.next);
-@@ -1750,19 +1750,24 @@ static void scan_for_empty_cpusets(const
- 			list_add_tail(&child->stack_list, &queue);
- 		}
- 		cont = cp->css.cgroup;
-+
-+		/* Continue past cpusets with all cpus, mems online */
-+		if (cpus_subset(cp->cpus_allowed, cpu_online_map) &&
-+		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
-+			continue;
-+
- 		/* Remove offline cpus and mems from this cpuset. */
-+		mutex_lock(&callback_mutex);
- 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
- 		nodes_and(cp->mems_allowed, cp->mems_allowed,
- 						node_states[N_HIGH_MEMORY]);
-+		mutex_unlock(&callback_mutex);
-+
-+		/* Move tasks from the empty cpuset to a parent */
- 		if (cpus_empty(cp->cpus_allowed) ||
--		     nodes_empty(cp->mems_allowed)) {
--			/* Move tasks from the empty cpuset to a parent */
--			mutex_unlock(&callback_mutex);
-+		     nodes_empty(cp->mems_allowed))
- 			remove_tasks_in_empty_cpuset(cp);
--			mutex_lock(&callback_mutex);
--		}
- 	}
--	mutex_unlock(&callback_mutex);
- }
- 
- /*
+
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org 
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Andrew Morton
+>Sent: Sunday, February 03, 2008 4:33 PM
+>To: Toralf Förster
+>Cc: linux-kernel@vger.kernel.org; cpufreq@www.linux.org.uk
+>Subject: Re: (ondemand) CPU governor regression between 2.6.23 
+>and 2.6.24
+>
+>On Sat, 26 Jan 2008 15:06:25 +0100 Toralf Förster 
+><toralf.foerster@gmx.de> wrote:
+>
+>> I use a 1-liner for a simple performance check : "time 
+>factor 819734028463158891"
+>> Here is the result for the new (Gentoo) kernel 2.6.24:
+>> 
+>> With the  ondemand governor of the  I get:
+>> 
+>> tfoerste@n22 ~/tmp $ time factor 819734028463158891
+>> 819734028463158891: 3 273244676154386297
+>> 
+>> real    0m32.997s
+>> user    0m15.732s
+>> sys     0m0.014s
+>> 
+>> With the ondemand governor the CPU runs at 600 MHz,
+>> whereas with the performance governor I get :
+>> 
+>> tfoerste@n22 ~/tmp $ time factor 819734028463158891
+>> 819734028463158891: 3 273244676154386297
+>> 
+>> real    0m10.893s
+>> user    0m5.444s
+>> sys     0m0.000s
+>> 
+>> (~5.5 sec as I expected) b/c the CPU is set to 1.7 GHz.
+>> 
+>> The ondeman governor of previous kernel versions however 
+>automatically increased
+>> the CPU speed from 600 MHz to 1.7 GHz.
+>> 
+>> My system is a ThinkPad T41, I'll attach the .config 
+>> 
+>
+
+This looks like is related to the report here
+http://www.ussg.iu.edu/hypermail/linux/kernel/0801.3/1260.html
+
+Can you try the workarounds on that thread and see whether the problem goes away.
+
+Thanks,
+Venki
