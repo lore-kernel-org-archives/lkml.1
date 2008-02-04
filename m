@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbYBDMI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYBDMLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbYBDMI3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 07:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYBDMIV
+	id S1754386AbYBDMLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 07:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYBDMLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 07:08:21 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39351 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751791AbYBDMIV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 07:08:21 -0500
-Date: Mon, 4 Feb 2008 04:08:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: bugme-daemon@bugzilla.kernel.org, Greg KH <greg@kroah.com>,
-       Shaohua Li <shaohua.li@intel.com>, plamen.petrov@tk.ru.acad.bg,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 9884] using the attached config hangs the kernel at boot
-Message-Id: <20080204040801.9f445d10.akpm@linux-foundation.org>
-In-Reply-To: <200802041304.20680.rjw@sisk.pl>
-References: <20080204115803.450AF108018@picon.linux-foundation.org>
-	<200802041304.20680.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Feb 2008 07:11:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:45557 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752226AbYBDMLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 07:11:32 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 0/5] typesafe callbacks
+Date: Mon, 4 Feb 2008 23:11:18 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802042311.18762.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 13:04:19 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi all,
 
-> > Meanwhile, please set CONFIG_PCIEASPM.
-> 
-> Surely unset?
+   More typesafety is usually good, and these patches apply that to some 
+common callbacks, using a new conditional cast.
 
-Yup.  I meant "please set CONFIG_PCIEASPM=n"
+(I'm nominally on holiday for all of Feb, so my replies will be sporadic.  
+Please sort this out amongst yourselves).
+
+Cheers!
+Rusty.
