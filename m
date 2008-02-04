@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbYBDPRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYBDPYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753471AbYBDPRa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 10:17:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYBDPRX
+	id S1753976AbYBDPYu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 10:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbYBDPYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 10:17:23 -0500
-Received: from sacred.ru ([62.205.161.221]:42030 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbYBDPRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 10:17:22 -0500
-Message-ID: <47A72C5B.4030307@openvz.org>
-Date: Mon, 04 Feb 2008 18:16:43 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 4 Feb 2008 10:24:38 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:28401 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbYBDPYh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 10:24:37 -0500
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
+Date: Mon, 4 Feb 2008 16:24:30 +0100
+User-Agent: KMail/1.8.2
+Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+References: <200802041404.49960.ossthema@de.ibm.com> <1202136362.7672.5.camel@concordia>
+In-Reply-To: <1202136362.7672.5.camel@concordia>
 MIME-Version: 1.0
-To: Daniel Lezcano <dlezcano@fr.ibm.com>
-CC: Pavel Emelyanov <xemul@openvz.org>, Kirill Korotaev <dev@sw.ru>,
-       containers@lists.linux-foundation.org,
-       Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [Devel] Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel
- API to change an ID
-References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru>	<47A18E47.5050206@bull.net>	<47A19AC2.7040709@sw.ru>	<47A1B78C.7050405@bull.net>	<47A1C8FE.9010700@sw.ru> <47A1F2DB.7080600@fr.ibm.com> <47A71606.5030201@sw.ru> <47A71BDF.5000801@openvz.org> <47A72891.4000404@fr.ibm.com>
-In-Reply-To: <47A72891.4000404@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 04 Feb 2008 18:16:25 +0300 (MSK)
+Content-Disposition: inline
+Message-Id: <200802041624.31228.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Lezcano wrote:
-> Pavel Emelyanov wrote:
->> Kirill Korotaev wrote:
->>> Cedric Le Goater wrote:
->>>> Hello Kirill !
->>>>
->>>> Kirill Korotaev wrote:
->>>>> Pierre,
->>>>>
->>>>> my point is that after you've added interface "set IPCID", you'll need
->>>>> more and more for checkpointing:
->>>>> - "create/setup conntrack" (otherwise connections get dropped),
->>>>> - "set task start time" (needed for Oracle checkpointing BTW),
->>>>> - "set some statistics counters (e.g. networking or taskstats)"
->>>>> - "restore inotify"
->>>>> and so on and so forth.
->>>> right. we know that we will have to handle a lot of these
->>>> and more and we will need an API for it :) so how should we handle it ?
->>>> through a dedicated syscall that would be able to checkpoint and/or
->>>> restart a process, an ipc object, an ipc namespace, a full container ?
->>>> will it take a fd or a big binary blob ?  
->>>> I personally really liked Pavel idea's of filesystem. but we dropped the
->>>> thread.
->>> Imho having a file system interface means having all its problems.
->>> Imagine you have some information about tasks exported with a file system interface.
->>> Obviously to collect the information you have to hold some spinlock like tasklist_lock or similar.
->>> Obviously, you have to drop the lock between sys_read() syscalls.
->>> So interface gets much more complicated - you have to rescan the objects and somehow find the place where
->>> you stopped previous read. Or you have to to force reader to read everything at once.
->> To remember the place when we stopped previous read we have a "pos" counter
->> on the struct file.
->>
->> Actually, tar utility, that I propose to perform the most simple migration
->> reads the directory contents with 4Kb buffer - that's enough for ~500 tasks.
->>
->> Besides, is this a real problem for a frozen container?
-> 
-> I like the idea of a C/R filesystem. Does it implies a specific user 
-> space program to orchestrate the checkpoint/restart of the different 
-> subsystems ? I mean the checkpoint is easy but what about the restart ? 
+On Monday 04 February 2008 15:46, Michael Ellerman wrote:
+> On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
+> > Add memory remove hotplug support
 
-I though about smth like "writing to this fs causes restore process".
+> > @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
+> >  	if (ret)
+> >  		ehea_info("failed registering reboot notifier");
+> >  
+> > +	ret = register_memory_notifier(&ehea_mem_nb);
+> > +	if (ret)
+> > +		ehea_info("failed registering memory remove notifier");
+> > 
+> >  	ret = crash_shutdown_register(&ehea_crash_handler);
+> >  	if (ret)
+> >  		ehea_info("failed registering crash handler");
+> 
+> You don't do anything except print a message if the registration fails.
+> What happens when someone tries to remove memory but the memory notifier
+> wasn't registered properly? Bang?
 
-> We must ensure, for example to restore a process before restoring the fd 
-> associated to it, or restore a deleted file before restoring the fd 
+In case the registration fails and somebody tries to free memory:
+- Driver will not remove the affected memory from the eHEA memory region
+  --> Firmware (phyp) can not free that memory (as marked as used)
+  --> Therefore the removed memory could not be used in an other partition
 
-This is achieved by tar automatically - it extracts files in the order
-of archiving. Thus is we provide them in correct order we'll get them
-in correct one as well.
+It makes sense to allow the driver to work anyway. Having no ethernet
+would not really be a good alternative.
 
-> opened to it, no ?
-> 
-> 
-> 
-> 
-> 
-> 
-
+Regards,
+Jan-Bernd
