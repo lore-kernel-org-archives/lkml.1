@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbYBDLOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYBDLSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbYBDLOq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 06:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYBDLOg
+	id S1753242AbYBDLSY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 06:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYBDLSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 06:14:36 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42105 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751372AbYBDLOf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 06:14:35 -0500
-Date: Mon, 4 Feb 2008 03:14:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: schwidefsky@de.ibm.com, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/3] CONFIG_HIGHPTE vs. sub-page page tables.
-Message-Id: <20080204031415.c7d9816e.akpm@linux-foundation.org>
-In-Reply-To: <20080204110238.GB2791@flint.arm.linux.org.uk>
-References: <20071112143009.425807965@de.ibm.com>
-	<20071112144009.831296895@de.ibm.com>
-	<20080201151541.8e3e0359.akpm@linux-foundation.org>
-	<1202017020.7208.2.camel@pasglop>
-	<20080202215315.3ac6907d.akpm@linux-foundation.org>
-	<1202121409.31801.7.camel@localhost>
-	<20080204025133.511ac3e2.akpm@linux-foundation.org>
-	<20080204110238.GB2791@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Feb 2008 06:18:17 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:59005 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750891AbYBDLSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 06:18:16 -0500
+Date: Mon, 4 Feb 2008 12:17:47 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.24-git4+ regression
+Message-ID: <20080204111747.GB4450@ics.muni.cz>
+References: <20080130135609.GA5100@ics.muni.cz> <20080131102919.GC27157@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080131102919.GC27157@elte.hu>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 04 Feb 2008 12:17:48 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 11:02:38 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+Ingo,
 
-> I don't see any end to these bun fights at the start of the merge window.
-> I believe it's inevitable given the work flow that we're now using.
+any progress here? I've tried to revert this patch:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=67e9fb2a39a1d454218d50383094940982be138f
 
-I'm trying to find someone who will run an merged tree of all the
-subsystems (I dub it "linux-next").  Subsystem maintainers will put their
-2.6.x+1 material into branches or quilt directories for that tree.
+as it was marked as suspicious patch in this case
+(http://www.uwsg.indiana.edu/hypermail/linux/kernel/0801.3/1665.html)
 
-Once that person is found and the system is up and running we can solicit
-testing of that tree - it's basically like -mm without the -mm bits. 
-Obviously I'll be able to put a lot of -mm in there too (uml, fbdev, etc,
-etc).
+but in such a case, kernel 2.6.24-git13 does oops at startup in sched_slice.
 
-Right now, the merge practices of the subsystem maintainers will drive that
-person insane, so some pushback will be needed to make it practical.
+I think this is really *big* regression in 2.6.24 kernel.
 
-None of which is really relevant to your complaint.  But if/when linux-next
-is running, we can do more things around it.  One might be "if a non-bugfix
-patch wasn't in linux-next one week prior to 2.6.x, it doesn't get merged
-into 2.6.x+1".  For example.
+On Thu, Jan 31, 2008 at 11:29:19AM +0100, Ingo Molnar wrote:
+> 
+> * Lukas Hejtmanek <xhejtman@ics.muni.cz> wrote:
+> 
+> > I noticed short thread in LKM regarding "sched: add vslice" causes 
+> > horrible interactivity under load.
+> > 
+> > I can see similar behavior. If I stress both CPU cores, even typing on 
+> > keyboard suffers from huge latencies, I can see letters appearing with 
+> > delay (typing into xterm). No swap is used at all, having 1GB free 
+> > RAM.
+> > 
+> > I noticed this bad behavior with 2.6.24-git[46], 2.6.24-rc8-git was 
+> > OK.
+> 
+> if you apply the current sched-fixes (rollup patch below), does it get 
+> any better?
+> 
+> 	Ingo
+> 
+> Index: linux/kernel/sched_fair.c
+> ===================================================================
+> --- linux.orig/kernel/sched_fair.c
+> +++ linux/kernel/sched_fair.c
+> @@ -520,7 +520,7 @@ place_entity(struct cfs_rq *cfs_rq, stru
+>  
+>  	if (!initial) {
+>  		/* sleeps upto a single latency don't count. */
+> -		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
+> +		if (sched_feat(NEW_FAIR_SLEEPERS))
+>  			vruntime -= sysctl_sched_latency;
+>  
+>  		/* ensure we never gain time by being placed backwards. */
+> @@ -1106,7 +1106,11 @@ static void check_preempt_wakeup(struct 
+>  	}
+>  
+>  	gran = sysctl_sched_wakeup_granularity;
+> -	if (unlikely(se->load.weight != NICE_0_LOAD))
+> +	/*
+> +	 * More easily preempt - nice tasks, while not making
+> +	 * it harder for + nice tasks.
+> +	 */
+> +	if (unlikely(se->load.weight > NICE_0_LOAD))
+>  		gran = calc_delta_fair(gran, &se->load);
+>  
+>  	if (pse->vruntime + gran < se->vruntime)
 
+-- 
+Luká¹ Hejtmánek
