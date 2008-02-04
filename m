@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757613AbYBDTPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYBDTRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757613AbYBDTPT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:15:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbYBDTPG
+	id S1757450AbYBDTRk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:17:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYBDTRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:15:06 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49745 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754892AbYBDTPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:15:05 -0500
-Date: Mon, 4 Feb 2008 20:15:03 +0100
-From: Jan Kara <jack@suse.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/10] udf: constify udf_bitmap_lookup array
-Message-ID: <20080204191503.GM3426@duck.suse.cz>
-References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-11-git-send-email-marcin.slusarz@gmail.com> <20080131165244.GJ1461@duck.suse.cz> <20080202213659.GA8495@joi>
+	Mon, 4 Feb 2008 14:17:32 -0500
+Received: from rtr.ca ([76.10.145.34]:2947 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754707AbYBDTRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:17:31 -0500
+Message-ID: <47A764C9.8080600@rtr.ca>
+Date: Mon, 04 Feb 2008 14:17:29 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080202213659.GA8495@joi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+       lenb@kernel.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 20000+ wake-ups/second in 2.6.24.   Bug?
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org>	<20071201154646.5a288c9e@laptopd505.fenrus.org>	<4751F484.6040204@rtr.ca>	<200712020120.36439.rjw@sisk.pl>	<47A74B5F.7020202@rtr.ca> <20080204095059.6f92d875@laptopd505.fenrus.org>
+In-Reply-To: <20080204095059.6f92d875@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 02-02-08 22:37:07, Marcin Slusarz wrote:
-> On Thu, Jan 31, 2008 at 05:52:44PM +0100, Jan Kara wrote:
-> > On Wed 30-01-08 22:04:00, marcin.slusarz@gmail.com wrote:
-> > > udf_bitmap_lookup never changes, so constify it
-> > > 
-> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > > Cc: Jan Kara <jack@suse.cz>
-> >   Hmm, rather than doing this, could you change the function to use
-> > standard functions for counting set bits? I guess bitmap_weight() in
-> > include/linux/bitmap.h should be what we need... Thanks.
+Arjan van de Ven wrote:
+> On Mon, 04 Feb 2008 12:29:03 -0500
+> Mark Lord <lkml@rtr.ca> wrote:
 > 
-> ---
-> udf: convert udf_count_free_bitmap to use bitmap_weight
+>> re:  http://bugzilla.kernel.org/show_bug.cgi?id=9489
+>>
+>> This just happened here again.  Or at least I finally noticed that
+>> the fan on my notebook seemed to be running hard for much longer
+>> than usual.  :)
+>>
+>> Powertop showed 2.6.24-final running with 10000-36000 wakeups/sec,
+>> with *nothing* significant running:  top showed 97+% idle on both
+>> cores.
+>>
+>> -               Device: Errors: Correctable- Non-Fatal- Fatal+
+>> Unsupported-
+>> +               Device: Errors: Correctable+ Non-Fatal+ Fatal+
+>> Unsupported+ Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+>>                 Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+>>                 Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1,
+>> Port 1 @@ -101,12 +101,12 @@
+>>         Latency: 0, Cache Line Size: 64 bytes
+>>         Bus: primary=00, secondary=0c, subordinate=0c, sec-latency=0
+>>         Memory behind bridge: efc00000-efcfffff
+>> -       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast
+>>> TAbort- <TAbort- <MAbort- <SERR- <PERR-
+>> +       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast
+>>> TAbort- <TAbort- <MAbort+ <SERR- <PERR- BridgeCtl: Parity- SERR+
+>>> NoISA- VGA- MAbort- >Reset- FastB2B-
 > 
-> replace handwritten bits counting with bitmap_weight
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Jan Kara <jack@suse.cz>
-  Acked-by: Jan Kara <jack@suse.cz>
+> this shows you're having various types of really bad things going on, like PCI
+> master aborts and the like. Those would certainly be a factor in waking the cpu up;
+> they're basically hardware exceptions, and I can totally believe (would need to find out
+> from hw guys how this works in practice) that this sort of serious error would keep the
+> cpu out of deep C states until resolved.
+..
 
-								Honza
-> ---
->  fs/udf/super.c |   17 +++++------------
->  1 files changed, 5 insertions(+), 12 deletions(-)
-> 
-> diff --git a/fs/udf/super.c b/fs/udf/super.c
-> index 3afe764..0dcee12 100644
-> --- a/fs/udf/super.c
-> +++ b/fs/udf/super.c
-> @@ -53,6 +53,7 @@
->  #include <linux/vfs.h>
->  #include <linux/vmalloc.h>
->  #include <linux/errno.h>
-> +#include <linux/bitmap.h>
->  #include <asm/byteorder.h>
->  
->  #include <linux/udf_fs.h>
-> @@ -1969,10 +1970,6 @@ static int udf_statfs(struct dentry *dentry, struct kstatfs *buf)
->  	return 0;
->  }
->  
-> -static unsigned char udf_bitmap_lookup[16] = {
-> -	0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
-> -};
-> -
->  static unsigned int udf_count_free_bitmap(struct super_block *sb,
->  					  struct udf_bitmap *bitmap)
->  {
-> @@ -1982,7 +1979,6 @@ static unsigned int udf_count_free_bitmap(struct super_block *sb,
->  	int block = 0, newblock;
->  	kernel_lb_addr loc;
->  	uint32_t bytes;
-> -	uint8_t value;
->  	uint8_t *ptr;
->  	uint16_t ident;
->  	struct spaceBitmapDesc *bm;
-> @@ -2008,13 +2004,10 @@ static unsigned int udf_count_free_bitmap(struct super_block *sb,
->  	ptr = (uint8_t *)bh->b_data;
->  
->  	while (bytes > 0) {
-> -		while ((bytes > 0) && (index < sb->s_blocksize)) {
-> -			value = ptr[index];
-> -			accum += udf_bitmap_lookup[value & 0x0f];
-> -			accum += udf_bitmap_lookup[value >> 4];
-> -			index++;
-> -			bytes--;
-> -		}
-> +		u32 cur_bytes = min_t(u32, bytes, sb->s_blocksize - index);
-> +		accum += bitmap_weight((const unsigned long *)(ptr + index),
-> +					cur_bytes * 8);
-> +		bytes -= cur_bytes;
->  		if (bytes) {
->  			brelse(bh);
->  			newblock = udf_get_lb_pblock(sb, loc, ++block);
-> -- 
-> 1.5.3.7
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Or perhaps some initialization on the main-boot patch
+just doesn't happen on the resume-from-hibernate paths ?
+(either in the BIOS or kernel or drivers ..)
