@@ -1,108 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYBDO6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYBDO7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbYBDO6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 09:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbYBDO6E
+	id S1755903AbYBDO7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 09:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYBDO7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 09:58:04 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:51729 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYBDO6C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 09:58:02 -0500
-Date: Mon, 4 Feb 2008 15:58:01 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Petr Vandrovec <petr@vandrovec.name>, Ingo Molnar <mingo@elte.hu>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Commit f06e4ec breaks vmware
-In-Reply-To: <20080204115144.GA17850@elte.hu>
-Message-ID: <Pine.LNX.4.64.0802041316470.16441@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
- <20080204115144.GA17850@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 09:59:43 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1064 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750981AbYBDO7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 09:59:42 -0500
+Date: Mon, 4 Feb 2008 14:59:32 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 23/37] Suspend: Clean up Kconfig (V2)
+Message-ID: <20080204145932.GA8004@ucw.cz>
+References: <edae89f5d1eb1fbe1cab74333db5a8e29776900e.1201840183.git.len.brown@intel.com> <9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9a72d19a83ff28dd65eae54e210a9141ad993e88.1201840183.git.len.brown@intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Feb 3 2008 20:19, Petr Vandrovec wrote:
->> 
->> sad to say, but f06e4ec... breaks booting the kernel in vmware (bisected).
->> Booting just stops after
->> 
->>  Checking for 'hlt' instruction...
->> 
->> commit f06e4ec1c15691b0cfd2397ae32214fa36c90d71
->> Author: Ingo Molnar <mingo@elte.hu>
->> Date:   Wed Jan 30 13:32:39 2008 +0100
->> 
->>     x86: read_tsc sync
->>     
->>     make native_read_tsc() always non-speculative.
->> 
->> Any debugging hints?
->
-> It does not make lot of sense...  What is processor (AMD/Intel, VT/SVM, ...),
-> kernel (32/64), and product?
-
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 6
-model           : 8
-model name      : AMD Athlon(tm) XP 2000+
-stepping        : 0
-cpu MHz         : 1666.779
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow up ts
-bogomips        : 3334.92
-clflush size    : 32
-
-No hardware virtualization.
-Host: 32-bit 2.6.23.14, VMware Workstation 6.0.2-b59824.
-Guest: 32-bit f06e4ec...
-
-
-> Can you try adding
->
-> monitor_control.disable_rdtscopt_bt="TRUE"
-
-Nope.
-
-> monitor_control.virtual_rdtsc="FALSE"
-
-No change either.
-
-
-But booting the guest kernel with 'notsc' works around the issue.
-
-
-On Feb 4 2008 12:51, Ingo Molnar wrote:
->
->if latest -git still fails, does the patch below solve the problem?
-
-Latest git (9135f1901ee6449dfe338adf6e40e9c2025b8150) works, as does the 
-patch on top of f06e4ec1c15691b0cfd2397ae32214fa36c90d71.
-
-
->@@ -407,8 +407,7 @@ void default_idle(void);
->  */
-> static inline void rdtsc_barrier(void)
-> {
->-	alternative(ASM_NOP3, "mfence", X86_FEATURE_MFENCE_RDTSC);
->-	alternative(ASM_NOP3, "lfence", X86_FEATURE_LFENCE_RDTSC);
->+	smp_mb();
-> }
+On Thu 2008-01-31 23:36:54, Len Brown wrote:
+> From: Johannes Berg <johannes@sipsolutions.net>
 > 
-> #endif
->
+> This cleans up the suspend Kconfig and removes the need to
+> declare centrally which architectures support suspend. All
+> architectures that currently support suspend are modified
+> accordingly.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Acked-by: Russell King <rmk@arm.linux.org.uk>
+> Acked-by: Paul Mackerras <paulus@samba.org>
+> Acked-by: Ralf Baechle <ralf@linux-mips.org>
+> Acked-by: Paul Mundt <lethal@linux-sh.org>
+> Cc: Pavel Machek <pavel@suse.cz>
+
+ACK.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
