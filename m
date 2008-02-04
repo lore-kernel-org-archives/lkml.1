@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYBDCwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYBDCz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbYBDCwV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 21:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYBDCwL
+	id S1755533AbYBDCz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 21:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYBDCzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 21:52:11 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:1841 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbYBDCwJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 21:52:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=muRg6t9tnTA/77Pfe9FwMpgGRuqgiUpwXEG74z3U/Ha4/9ZbkpgiBJSQ4w3NQ8yW5H0JW6Rx2zaj+wPD0UgUlpw/n5kgQCvfQ7U9tCAW3OdGVgXLZ0AoKs9JNQlWNndeQnfSESyVIaQnT/IurET0oxy3EcMqv2OLsjCAQ9NDvm0=
-Message-ID: <86802c440802031852m2f5b758g4d0a5a784621f417@mail.gmail.com>
-Date: Sun, 3 Feb 2008 18:52:08 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Yinghai Lu" <Yinghai.Lu@sun.com>
-Subject: Re: about x86: relax RAM check in ioremap
-Cc: "Ingo Molnar" <mingo@elte.hu>, kjwinchester@gmail.com,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <200802031538.14213.yinghai.lu@sun.com>
+	Sun, 3 Feb 2008 21:55:51 -0500
+Received: from pip10.gyao.ne.jp ([61.122.117.248]:56218 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753723AbYBDCzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 21:55:50 -0500
+Date: Mon, 4 Feb 2008 11:54:53 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [SH] remove unneeded cast
+Message-ID: <20080204025453.GA24901@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-sh@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20080202230347.a126a143.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200802031538.14213.yinghai.lu@sun.com>
+In-Reply-To: <20080202230347.a126a143.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 3, 2008 3:38 PM, Yinghai Lu <Yinghai.Lu@sun.com> wrote:
-> wonder if you still need that patch after following patch is a applied.
->
-> YH
->
-> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-> index 608152a..f645413 100644
-> --- a/arch/x86/kernel/aperture_64.c
-> +++ b/arch/x86/kernel/aperture_64.c
-> @@ -278,7 +278,7 @@ void __init early_gart_iommu_check(void)
->                 last_aper_enabled = aper_enabled;
->         }
->
-> -       if (!fix && !aper_enabled)
-> +       if (!fix /* && !aper_enabled*/)
->                 return;
->
->         if (!aper_base || !aper_size || aper_base + aper_size > 0x100000000UL)
-> --
-
-forget about it, it seem kevin is using 32 bit kernel.
-
-YH
+On Sat, Feb 02, 2008 at 11:03:47PM +1100, Stephen Rothwell wrote:
+> now that platform_device_register_simple() takes a "const chat *".
+> 
+Presumably you mean 'const char *'. Also, in the future, please don't use
+a subject purposely crafted to thwart git-am. Trivial patches are enough
+of a nuisance without having to do things manually. I've applied it by
+hand this time, grudgingly.
