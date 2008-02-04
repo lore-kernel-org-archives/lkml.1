@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbYBDTvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbYBDTwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757072AbYBDTvn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYBDTvf
+	id S1757589AbYBDTwp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:52:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbYBDTwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:51:35 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38691 "EHLO amd.ucw.cz"
+	Mon, 4 Feb 2008 14:52:37 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38725 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755425AbYBDTvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:51:35 -0500
-Date: Mon, 4 Feb 2008 20:51:50 +0100
+	id S1755455AbYBDTwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:52:36 -0500
+Date: Mon, 4 Feb 2008 20:52:51 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Thery <benjamin.thery@bull.net>
-Cc: pierre.peiffer@bull.net, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rc8-mm1 00/15] IPC: code rewrite + new
-	functionalities
-Message-ID: <20080204195150.GA4915@elf.ucw.cz>
-References: <20080129160229.612172683@bull.net> <20080202182351.GC4456@ucw.cz> <47A732E2.1000504@bull.net>
+To: Abel Bernabeu <abel.bernabeu@gmail.com>
+Cc: mingo@elte.hu, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: brk randomization breaks columns
+Message-ID: <20080204195251.GB4915@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu> <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz> <Pine.LNX.4.64.0802041635000.30955@jikos.suse.cz> <15577be70802041016m97cddbfk43b9073408bcbce9@mail.gmail.com> <15577be70802041029o2975ba6do34589bbdc81d1652@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47A732E2.1000504@bull.net>
+In-Reply-To: <15577be70802041029o2975ba6do34589bbdc81d1652@mail.gmail.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> >
+> > > I still don't seem to fully understand what is happening here --
+> > > aparently this is triggerable only with old programs linked against
+> > > libc.so.5, and I am not able to trigger it with my trivial program when
+> > > I link it against old libc.so.5, which just basically does brk() and
+> > > checks whether /proc/<pid>/maps are OK. Seems to me that (at least
+> > > certain versions) of libc.so.5 (wrongly) assume that end of the bss is
+> > > the start of the heap, but I will try to investigate it more.
+> 
+> I think I am getting the some problem with brand new binaries produced
+> by myself :(
+> 
+> Look at this report I posted days ago:
+> 
+> http://marc.info/?l=linux-kernel&m=120169141603789&w=2
 
->>> 	As the namespaces and the "containers" are being integrated in the
->>> kernel, these functionalities may be a first step to implement  the
->>> checkpoint/restart of an application: in fact the existing API does not allow
->>> to specify or to change an ID when creating an IPC, when restarting an
->>> application, and the times/pids values of each IPCs are also altered. May be
->>> someone may find another interest about this ?
->>>
->>> So again, comments are welcome.
->>
->> Checkpoint/restart is nice, but... sysV ipc is broken by design, do we
->> really want to extend it?
-
->
-> For my personal culture, what do you mean by "broken by design"?
-
-
-       int shmget(key_t key, size_t size, int shmflg);
-
-....so how do you produce key in a way that is guaranteed not to
-interfere with other uses?
+Your crash is in kernel, no? Anyway, I can workaround mine by
+disabling randomization...
 								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
