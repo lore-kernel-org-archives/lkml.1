@@ -1,99 +1,322 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYBDN2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYBDNee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYBDN2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYBDN2j
+	id S1755278AbYBDNee (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYBDNeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:28:39 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59569 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753833AbYBDN2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:28:39 -0500
-Date: Mon, 4 Feb 2008 14:28:53 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: jikos@suse.cz, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: brk randomization breaks columns
-Message-ID: <20080204132853.GA4630@elf.ucw.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080204130156.GA8730@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 4 Feb 2008 08:34:22 -0500
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:23939 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754116AbYBDNeU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 08:34:20 -0500
+X-YMail-OSG: aBFRchgVM1kGztV3Wma67EMP649.uqgiS0nZxF7BjKuDfEJcP_2BldtMlii_eUqYJPgsfWtFsUXu2TtDDgZTSUjFGGHm0kIm0_KhztSZ0AptxCUteg--
+X-Yahoo-Newman-Property: ymail-3
+Subject: [Fwd: 2.6.24 kernel and LIO Target memory mapping]
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: linux-iscsi-target-dev@googlegroups.com,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       STGT-Devel <stgt-devel@lists.berlios.de>, Andrew Morton <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="=-n/04jwNwQ3y9H6HA9sj3"
+Date: Mon, 04 Feb 2008 05:33:52 -0800
+Message-Id: <1202132032.11265.498.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > Hmm, code in binfmt_elf is really strange.
-> > 
-> >         elf_bss += load_bias;
-> >         elf_brk += load_bias;
-> >         start_code += load_bias;
-> >         end_code += load_bias;
-> >         start_data += load_bias;
-> >         end_data += load_bias;
-> > 
-> >         /* Calling set_brk effectively mmaps the pages that we need
-> >          * for the bss and break sections.  We must do this before
-> >          * mapping in the interpreter, to make sure it doesn't wind
-> >          * up getting placed where the bss needs to go.
-> >          */
-> >         retval = set_brk(elf_bss, elf_brk);
-> > 
-> > ... so we allocate non-randoimzed brk, but later we just overwrite bss 
-> > variable with new, shiner and better randomized value... without 
-> > unmapping the old one... The code in binfmt_elf.c is really a mess.
+--=-n/04jwNwQ3y9H6HA9sj3
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+Sorry, resend..
+
+--=-n/04jwNwQ3y9H6HA9sj3
+Content-Disposition: inline
+Content-Description: Forwarded message - 2.6.24 kernel and LIO Target
+	memory mapping
+Content-Type: message/rfc822
+
+Subject: 2.6.24 kernel and LIO Target memory mapping
+From: "Nicholas A. Bellinger" <nab@kernel.org>
+Reply-To: nab@kernel.org
+To: linux-iscsi-target-dev@googlegroups.com, linux-scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>, Geoff Levand <geoffrey.levand@am.sony.com>, Jens Axboe <jens.axboe@oracle.com>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Mike Christie <michaelc@cs.wisc.edu>, STGT-Devel <stgt-devel@lists.berlios.de>, Andrew Morton <akpm@osdl.org>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>
+In-Reply-To: <1201958796.11265.415.camel@haakon2.linux-iscsi.org>
+References: <e2e108260802010609m12af3990k58a385b8f8598ec7@mail.gmail.com>
+	 <1201877400.11265.311.camel@haakon2.linux-iscsi.org>
+	 <1201958796.11265.415.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Message-Id: <1202131640.11265.494.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Date: Mon, 04 Feb 2008 05:27:23 -0800
+Content-Transfer-Encoding: 7bit
+
+On Sat, 2008-02-02 at 05:26 -0800, Nicholas A. Bellinger wrote: 
+> Hi Bart,
 > 
-> hm, so it seems that it isnt even the randomization that causes the 
-> problem - but somehow the randomization code itself is broken, right? 
+> Ok, I have 2.6.24 running on ppc64 doing iSCSI/HD on PS3-Linux.  The
+> changes for struct scatterlist->page moving to struct
+> scatterlist->page_link where pretty straightforward, considering the LIO
+> storage engine does not depend on struct scatterlist.  I am going to
+> take another look at the diffs later today and make sure everything
+> looks corerct, and will make the commits then.
 > 
-> Would you be interested in figuring out how to unbreak this? [if not, 
-> could you send me the binary?]
+> If you could test these on your setup with 2.6.24 in the non IPoIB case
+> (that from my previous emails I am guessing will be fine on your setup)
+> I would really appreciate it.  I will put 2.6.24 in VM on the
+> Linux-iSCSI.org fabric in the upcoming days, and do some additional
+> testing.  Getting the CentOS v5u1 x86_64 builds release are a bit higher
+> priority than 2.6.24, but I think that the 2.6.24 changes are reasonable
+> and do not cause concern with the LIO v2.9 codebase.
+> 
+> Have you made any futher progress on debugging the issue LIO Target with
+> IPoIB..?
+> 
+> Many thanks for your most valuable of time,
+> 
+> --nab
+> 
+> On Fri, 2008-02-01 at 06:50 -0800, Nicholas A. Bellinger wrote:
+> > Hi There,
+> > 
+> > I will doing a 2.6.24 build for LIO on PS3-Linux this weekend now that
+> > ps3rom.c is reporting the proper struct scsi_host_template->max_sectors.
+> > Also in the queue are releasing updated builds for CentOS v5.1 x86_64.
+> > I have recently upgraded one pair of core nodes on the Linux-iSCSI.org
+> > fabric to the newest CentOS release, and minus a few minor issues with
+> > the upgrade process, everything is looking very stable.  The few issues
+> > that I had (an lvremove issue on v4.5, and qemu-dm performance with HVM
+> > on v5.0) have been resolved and the fabric is running much smoother for
+> > the VMs that are providing OCFS2 cluster storage to the LIO debian and
+> > ubuntu repositories.  
+> > 
+> > I will let you know when I get 2.6.24 building.  Until then, feel free
+> > to post the build failure log here.
+> > 
+> > Many thanks for your most valuable of time,
+> > 
+> > --nab
+> > 
+> > On Fri, 2008-02-01 at 15:09 +0100, Bart Van Assche wrote:
+> > > Hello,
+> > > 
+> > > The Linux-iSCSI target (kernel module) does not compile on the 2.6.24
+> > > kernel because of changes in the scatterlist API. Has a target date
+> > > for a version that compiles with the 2.6.24 kernel headers already
+> > > been set ?
+> > > 
+> > > Bart Van Assche.
+> > > 
+> 
 
-Not sure this helps... If I only randomize _end_ of heap, it still
-works. If I try to randomize beggining of heap, too, it will not even
-start recent binaries :-(.
-								Pavel
+Here are the changes to transport_memcpy_[write,read]_[contig,sg]()
+respectively.  This functions are legacy within v2.9 LIO SE, and are
+currently unused in kernel mode because the SE core does not rely on
+struct scatterlist.
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 18ed6dd..9afc58f 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -980,6 +983,16 @@ #endif
- 	}
+Index: target/iscsi_target_transport.c
+===================================================================
+--- target/iscsi_target_transport.c	(revision 205)
++++ target/iscsi_target_transport.c	(revision 206)
+@@ -4181,7 +4181,7 @@
+ 		if (length > total_length)
+ 			length = total_length;
  
- 	loc->elf_ex.e_entry += load_bias;
-+
-+
-+	printk("%d: %x\n", current->pid, elf_brk);
-+
-+	extern unsigned long 	randomize_range(unsigned long start, unsigned long end, unsigned long len);
-+
-+	long random = randomize_range(0, 0x200000, 0);
-+	elf_brk += random;
-+//	elf_bss += random;
-+
- 	elf_bss += load_bias;
- 	elf_brk += load_bias;
- 	start_code += load_bias;
-@@ -1076,12 +1093,6 @@ #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGE
- 	current->mm->end_data = end_data;
- 	current->mm->start_stack = bprm->p;
+-		src = GET_ADDR_SG(sg_s, i);
++		src = GET_ADDR_SG(&sg_s[i]);
  
--#ifdef arch_randomize_brk
--	if (current->flags & PF_RANDOMIZE)
--		current->mm->brk = current->mm->start_brk =
--			arch_randomize_brk(current->mm);
--#endif
--
- 	if (current->personality & MMAP_PAGE_ZERO) {
- 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
- 		   and some applications "depend" upon this behavior.
+ 		memcpy(dst, src, length);
+ 
+@@ -4211,12 +4211,12 @@
+ 			if (length > total_length)
+ 				length = total_length;
+ 
+-			dst = GET_ADDR_SG(sg_d, i) + dst_offset;
++			dst = GET_ADDR_SG(&sg_d[i]) + dst_offset;
+ 			if (!dst)
+ 				BUG();
+ 			i++;
+ 			
+-			src = GET_ADDR_SG(sg_s, j) + src_offset;
++			src = GET_ADDR_SG(&sg_s[j]) + src_offset;
+ 			if (!src)
+ 				BUG();
+ 
+@@ -4228,7 +4228,7 @@
+ 			if (length > total_length)
+ 				length = total_length;
+ 
+-			dst = GET_ADDR_SG(sg_d, i) + dst_offset;
++			dst = GET_ADDR_SG(&sg_d[i]) + dst_offset;
+ 			if (!dst)
+ 				BUG();
+ 
+@@ -4238,7 +4238,7 @@
+ 			} else
+ 				dst_offset = length;
+ 
+-			src = GET_ADDR_SG(sg_s, j) + src_offset;
++			src = GET_ADDR_SG(&sg_s[j]) + src_offset;
+ 			if (!src)
+ 				BUG();
+ 			j++;
+@@ -4269,7 +4269,7 @@
+ 		if (length > total_length)
+ 			length = total_length;
+ 
+-		dst = GET_ADDR_SG(sg_d, i);
++		dst = GET_ADDR_SG(&sg_d[i]);
+ 
+ 		memcpy(dst, src, length);
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+These changes are followed up by transport_map_sg_to_mem()
+and transport_map_mem_to_sg()..  The latter is the default path for
+LIO SE v2.9 to v2.6 Linux storage subsystems along with the other completely
+virtual subsystem drivers.  Note the former does reverse contigious
+scatterlist array mapping to SE linked list memory which is then handed to
+the SCSI transport, in the LIO case, traditional iSCSI.  This is currently
+unused, but may be useful in some future cases.
+ 
+@@ -4299,12 +4299,12 @@
+ 			if (length > total_length)
+ 				length = total_length;
+ 
+-			src = GET_ADDR_SG(sg_s, i) + src_offset;
++			src = GET_ADDR_SG(&sg_s[i]) + src_offset;
+ 			if (!src)
+ 				BUG();
+ 			i++;
+ 
+-			dst = GET_ADDR_SG(sg_d, j) + dst_offset;
++			dst = GET_ADDR_SG(&sg_d[j]) + dst_offset;
+ 			if (!dst)
+ 				BUG();
+ 
+@@ -4316,7 +4316,7 @@
+ 			if (length > total_length)
+ 				length = total_length;
+ 
+-			src = GET_ADDR_SG(sg_s, i) + src_offset;
++			src = GET_ADDR_SG(&sg_s[i]) + src_offset;
+ 			if (!src)
+ 				BUG();
+ 
+@@ -4326,7 +4326,7 @@
+ 			} else
+ 				src_offset = length;
+ 
+-			dst = GET_ADDR_SG(sg_d, j) + dst_offset;
++			dst = GET_ADDR_SG(&sg_d[j]) + dst_offset;
+ 			if (!dst)
+ 				BUG();
+ 			j++;
+@@ -5191,7 +5191,7 @@
+ 		INIT_LIST_HEAD(&se_mem->se_list);
+ 
+ 		if (*task_offset == 0) {
+-			se_mem->se_page = sg_s[j].page;
++			se_mem->se_page = GET_PAGE_SG(&sg_s[j]);
+ 			se_mem->se_off = sg_s[j].offset;
+ 
+ 			if (task_size >= sg_s[j].length)
+@@ -5208,7 +5208,7 @@
+ 			if (saved_task_offset)
+ 				*task_offset = saved_task_offset;
+ 		} else {
+-			se_mem->se_page = sg_s[j].page;
++			se_mem->se_page = GET_PAGE_SG(&sg_s[j]);
+ 			se_mem->se_off = (*task_offset + sg_s[j].offset);
+ 
+ 			if ((sg_s[j].length - *task_offset) > task_size) {
+@@ -5348,7 +5348,7 @@
+ 
+ 	while (task_size) {
+ 		if (*task_offset == 0) {
+-			sg[sg_no].page = se_mem->se_page;
++			SET_PAGE_SG(&sg[sg_no], se_mem->se_page);
+ 			sg[sg_no].offset = se_mem->se_off;
+ 
+ 			if (task_size >= se_mem->se_len) {
+@@ -5375,7 +5375,7 @@
+ 			if (saved_task_offset)
+ 				*task_offset = saved_task_offset;
+ 		} else {
+-			sg[sg_no].page = se_mem->se_page;
++			SET_PAGE_SG(&sg[sg_no], se_mem->se_page);
+ 			sg[sg_no].offset = (*task_offset + se_mem->se_off);
+ 
+ 			if ((se_mem->se_len - *task_offset) > task_size) {
+
+
+The SE algoritims can also potentially accept preallocated memory for
+RDMA operations and then map said memory to contiguous struct
+scatterlist buffers that are then mapped to the SCSI, BIO, and
+[read,write]v() for struct file.
+
+Here are the macro changes for new and legacy operation:
+
+Index: include/iscsi_linux_defs.h
+===================================================================
+--- include/iscsi_linux_defs.h (revision 207)
++++ include/iscsi_linux_defs.h (revision 208)
+@@ -44,15 +44,29 @@
+#define inline
+#endif
+
+-/* added to address 64bit addressing issues. */
++/*
++ * 2.6.24 provides an updated struct scatterlist API.  Use macros for
+the new
++ * code, and use inline functions for legacy operation. 
++ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+# define GET_ADDR_SG(sg) sg_virt(sg)
+# define GET_PAGE_SG(sg) sg_page(sg)
+# define SET_PAGE_SG(sg, page) sg_assign_page(sg, page)
+#else
+-# define GET_ADDR_SG(sg) page_address(sg->page) + sg->offset
+-# define GET_PAGE_SG(sg) sg->page
+-# define SET_PAGE_SG(sg, page) sg->page = page
++#include <linux/scatterlist.h>
++static inline void *GET_ADDR_SG(struct scatterlist *sg)
++{
++ return(page_address(sg->page) + sg->offset);
++}
++static inline struct page *GET_PAGE_SG(struct scatterlist *sg)
++{
++ return(sg->page);
++}
++static inline void SET_PAGE_SG(struct scatterlist *sg, struct page
+*page)
++{
++ sg->page = page;
++ return;
++}
+#endif
+
+/*
+
+--nab
+
+> 
+> --~--~---------~--~----~------------~-------~--~----~
+> You received this message because you are subscribed to the Google Groups "Linux-iSCSI.org Target Development" group.
+> To post to this group, send email to linux-iscsi-target-dev@googlegroups.com
+> To unsubscribe from this group, send email to linux-iscsi-target-dev-unsubscribe@googlegroups.com
+> For more options, visit this group at http://groups.google.com/group/linux-iscsi-target-dev?hl=en
+> -~----------~----~----~----~------~----~------~--~---
+> 
+
+--=-n/04jwNwQ3y9H6HA9sj3--
+
