@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbYBDP31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYBDPaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474AbYBDP31 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 10:29:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYBDP3R
+	id S1755348AbYBDPaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 10:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbYBDPaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 10:29:17 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:35107 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYBDP3Q (ORCPT
+	Mon, 4 Feb 2008 10:30:16 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:1894 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbYBDPaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 10:29:16 -0500
-Date: Mon, 4 Feb 2008 16:29:21 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2.6.24-mm1] error compiling net driver NE2000/NE1000
-Message-Id: <20080204162921.94984e72.pierre.peiffer@bull.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 04/02/2008 16:38:04,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 04/02/2008 16:38:04,
-	Serialize complete at 04/02/2008 16:38:04
+	Mon, 4 Feb 2008 10:30:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MUQGR65KVw5EmoootDwTfvqXYYOpxD1nQ2zM8KRDHQL5aO/TXeI+JsbfRebcbiXEC37aVdjSLhotsd0m03MnkB2UhnnmGLH6D6Je9T/z+Se34H4I7+mT6yt3EI1RqBXNN40hSPBmIutvXqBID60W50FCGYVFKN5/elbJ2QLitxY=
+Message-ID: <b6a2187b0802040730y44580594i56b26ed0fcb8292e@mail.gmail.com>
+Date: Mon, 4 Feb 2008 23:30:12 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Commit f06e4ec breaks vmware
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       petr@vandrovec.name, "Glauber de Oliveira Costa" <gcosta@redhat.com>
+In-Reply-To: <20080204145311.GB13154@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
+	 <20080204115144.GA17850@elte.hu>
+	 <b6a2187b0802040601s76222435t306aef2059cbbb2b@mail.gmail.com>
+	 <20080204145311.GB13154@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Feb 4, 2008 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > commit 8d947344c47a40626730bb80d136d8daac9f2060
+> > Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+> > Date:   Wed Jan 30 13:31:12 2008 +0100
+> >
+> >     x86: change write_idt_entry signature
+>
+> does the patch below ontop of x86.git#mm fix this?
 
-	When I compile the kernel 2.6.24-mm1 with:
-CONFIG_NET_ISA=y
-CONFIG_NE2000=y
 
-I have the following compile error:
-...
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `ne_block_output':
-linux-2.6.24-mm1/drivers/net/ne.c:797: undefined reference to `NS8390_init'
-drivers/built-in.o: In function `ne_drv_resume':
-linux-2.6.24-mm1/drivers/net/ne.c:858: undefined reference to `NS8390_init'
-drivers/built-in.o: In function `ne_probe1':
-linux-2.6.24-mm1/drivers/net/ne.c:539: undefined reference to `NS8390_init'
-make[1]: *** [.tmp_vmlinux1] Error 1
-make: *** [sub-make] Error 2
+> 32-bit or 64-bit guest kernel?
 
-As I saw that the file 8390p.c is compiled for this driver, but not the file 
-8390.c which contains this function NS8390_init(), I fixed this error with
-the following patch.
+32-bit.
 
-As NS8390p_init() does the same thing than NS8390_init(), I suppose that this is the right fix ?
+Yep, this fixed the problem.
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
----
- drivers/net/ne.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+You're amazingly fast!
 
-Index: b/drivers/net/ne.c
-===================================================================
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_d
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	dev->poll_controller = eip_poll;
- #endif
--	NS8390_init(dev, 0);
-+	NS8390p_init(dev, 0);
- 
- 	ret = register_netdev(dev);
- 	if (ret)
-@@ -794,7 +794,7 @@ retry:
- 		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
- 			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
- 			ne_reset_8390(dev);
--			NS8390_init(dev,1);
-+			NS8390p_init(dev,1);
- 			break;
- 		}
- 
-@@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform
- 
- 	if (netif_running(dev)) {
- 		ne_reset_8390(dev);
--		NS8390_init(dev, 1);
-+		NS8390p_init(dev, 1);
- 		netif_device_attach(dev);
- 	}
- 	return 0;
-
--- 
-Pierre
+Thank you,
+Jeff.
