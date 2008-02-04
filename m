@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYBDCmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYBDCwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbYBDCmH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 21:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbYBDClz
+	id S1755317AbYBDCwV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 21:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYBDCwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 21:41:55 -0500
-Received: from mail1.key-systems.net ([81.3.43.211]:53125 "HELO
-	mail1.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755290AbYBDCly (ORCPT
+	Sun, 3 Feb 2008 21:52:11 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:1841 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbYBDCwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 21:41:54 -0500
-Subject: Re: data corruption with dmcrypt/LUKS
-From: Christoph Anton Mitterer <calestyo@scientia.net>
-To: Milan Broz <mbroz@redhat.com>
-Cc: linux-kernel@vger.kernel.org, dm-crypt@saout.de
-In-Reply-To: <47A63AD3.6080501@redhat.com>
-References: <1202050237.3200.33.camel@fermat.scientia.net>
-	 <47A63AD3.6080501@redhat.com>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 01:43:49 +0100
-Message-Id: <1202085829.3223.19.camel@fermat.scientia.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Sun, 3 Feb 2008 21:52:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=muRg6t9tnTA/77Pfe9FwMpgGRuqgiUpwXEG74z3U/Ha4/9ZbkpgiBJSQ4w3NQ8yW5H0JW6Rx2zaj+wPD0UgUlpw/n5kgQCvfQ7U9tCAW3OdGVgXLZ0AoKs9JNQlWNndeQnfSESyVIaQnT/IurET0oxy3EcMqv2OLsjCAQ9NDvm0=
+Message-ID: <86802c440802031852m2f5b758g4d0a5a784621f417@mail.gmail.com>
+Date: Sun, 3 Feb 2008 18:52:08 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Yinghai Lu" <Yinghai.Lu@sun.com>
+Subject: Re: about x86: relax RAM check in ioremap
+Cc: "Ingo Molnar" <mingo@elte.hu>, kjwinchester@gmail.com,
+       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <200802031538.14213.yinghai.lu@sun.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200802031538.14213.yinghai.lu@sun.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Milan Broz
+On Feb 3, 2008 3:38 PM, Yinghai Lu <Yinghai.Lu@sun.com> wrote:
+> wonder if you still need that patch after following patch is a applied.
+>
+> YH
+>
+> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+> index 608152a..f645413 100644
+> --- a/arch/x86/kernel/aperture_64.c
+> +++ b/arch/x86/kernel/aperture_64.c
+> @@ -278,7 +278,7 @@ void __init early_gart_iommu_check(void)
+>                 last_aper_enabled = aper_enabled;
+>         }
+>
+> -       if (!fix && !aper_enabled)
+> +       if (!fix /* && !aper_enabled*/)
+>                 return;
+>
+>         if (!aper_base || !aper_size || aper_base + aper_size > 0x100000000UL)
+> --
 
-On Sun, 2008-02-03 at 23:06 +0100, Milan Broz wrote:
-> Are you sure, that your USB-stick is not faulty ?
-I actually tested the stick, too. But I consider problems in the stick
-(you mean the key-holding stick, do you?) as highly unlikely. 
-If the key would be wrong a good crypto system should give me completely
-different data and not just these "minor" faults.
+forget about it, it seem kevin is using 32 bit kernel.
 
-
-> Could you reproduce it with different piece of hw ?
-> (Several strange reports for dm-crypt over USB were identified to be 
-> USB hw faults.)
-I'll test it tomorrow.
-
-
-
-> > 2) The second bug happens only rarely and leads to a panic.
-> > Unfortunately it's difficult to reproduce, but it always happened when I
-> > mkfs.ext3 on the /dev/mapper/sda2.
-> > There's a stack-trace printed which clearly involves some dmcrypt
-> > lines...
-> But no stack trace attached here... please attach it.
-Unfortunately I don't have one,... nothing was written to the logs and I
-forgot to write it up :-/
-
-
-
-> It can be known bug which was fixed in stable version some time ago
-> see http://lkml.org/lkml/2007/7/20/211
-Uhm but that patch should be part of 2.6.24, shouldn't it?
-
-
-> No known bugs causing data corruption, no such reports so far
-> for stable kernel.
-Uhm ok,.. well as told above I'll make some other tests (without the
-USB-sticks) but it would be great some people here could try this, too.
-
-Best wishes,
-Chris.
-
-btw: What's about the dmcrypt mailing list,.. I've tried to subscribe
-but no answers, and I get not posts (not even my owns).
-
+YH
