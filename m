@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbYBDKhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbYBDKmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753064AbYBDKhF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 05:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYBDKgy
+	id S1753083AbYBDKmo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 05:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYBDKmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 05:36:54 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:39317 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbYBDKgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 05:36:53 -0500
-Subject: Re: [patch 2/3] CONFIG_HIGHPTE vs. sub-page page tables.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080202215315.3ac6907d.akpm@linux-foundation.org>
-References: <20071112143009.425807965@de.ibm.com>
-	 <20071112144009.831296895@de.ibm.com>
-	 <20080201151541.8e3e0359.akpm@linux-foundation.org>
-	 <1202017020.7208.2.camel@pasglop>
-	 <20080202215315.3ac6907d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 04 Feb 2008 11:36:49 +0100
-Message-Id: <1202121409.31801.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Feb 2008 05:42:36 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:45100 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbYBDKmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 05:42:35 -0500
+Date: Mon, 4 Feb 2008 10:42:32 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+Message-ID: <20080204104232.GB29484@csn.ul.ie>
+References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net> <20080201202518.GJ18688@csn.ul.ie> <20080201210656.174030@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080201210656.174030@gmx.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-02-02 at 21:53 -0800, Andrew Morton wrote:
-> On Sun, 03 Feb 2008 16:37:00 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On (01/02/08 22:06), Gerhard Pircher didst pronounce:
 > 
-> > Why dropping add-mm-argument-to-pte-pmd-pud-pgd_free.patch though ?
+> -------- Original-Nachricht --------
+> > Datum: Fri, 1 Feb 2008 20:25:18 +0000
+> > Von: Mel Gorman <mel@csn.ul.ie>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > CC: linux-kernel@vger.kernel.org
+> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machine
 > 
-> I dropped the whole series.
-
-Sniff .. my patches .. ;-)
-
-> > It's a sane patch and a helps going further, and a total pain to re-do
-> > later on. Besides, I may have some use for it on powerpc at some point
-> > too...
+> > I meant uninitialised memory but I also wonder could something like this
+> > happen if you are trying to use memory that doesn't exist. i.e. you are
+> > trying to access more memory than you really have but you indicate later
+> > that this is not the case.
+>
+> Good question. The memory is in the physical address range from 0x00000000
+> to 0x60000000 (1536MB).
 > 
-> OK, I'll try to reestablish it.
+> > > > 2. Any chance of seeing a dmesg log?
+> > > That's a little bit of a problem. The kernel log in memory doesn't show
+> > > any kernel oops, but is also fragmented (small fragments seem to have
+> > > been overwritten with 0x0).
+> > 
+> > err, that doesn't sound very healthy.
+>
+> Yeah, I know. But the platform code hasn't changed much when porting it
+> from arch/ppc to arch/powerpc. That's why I'm a little bit lost in this
+> case. :-)
+> 
 
-Fine. I've got the patch-merge message, so the first of the series is
-done. 
+I'm at a bit of a loss to guess what might have changed in powerpc code
+that would explain this. I've added the linuxppc-dev mailing list in
+case they can make a guess.
 
-> Look: I can't fix *everyone's* stuff.  This was a consequence of ongoing
-> unbounded churn in the x86 tree.  If we can find a way of preventing those
-> guys (and everyone else) from trashing everyone else's stuff then we'd have
-> much smoother sailing.
+I think you are also going to need to start bisecting searching
+specifically for the patch that causes these overwrites.
 
-Understood. That is where I jump in and regenerate my patches on the
-latest available level. That the patches did hold up for some months in
--mm now without really breaking anything is an indication that we can
-push them upstream now, isn't ? That would make the patch problem go
-away and I could queue my s390 specific page table rework. Our KVM
-people keep asking about it.
+> > > Well, I can't answer this question. The kernel currently locks up when
+> > > loading the INIT program. But that is another problem (I still have to
+> > > bisect it) and doesn't seem to be related to this problem.
+> > 
+> > INIT would be the first MOVABLE allocation so it would be using memory
+> > at the end of the physical adddress range. i.e. the crash happens when
+> > memory towards the end and the only difference between the patch applied
+> > and reverted is when it happens.
+> Oh, that sounds interesting!
+> 
+> > Could you try booting with 16MB less memory using mem=?
+> I started the kernel with 512MB RAM (mem=496) and 1.5GB (mem=1520). The
+> kernel oopes in both cases with a "Unable to handle kernel paging request
+> for data address 0xbffff000", followed by a "Oops: kernel access of bad
+> area, sig 11" message. The end of the stack trace shows the start_here()
+> function.
+> I'm not a PowerPC expert, but if 0xbffff000 is a virtual address, then
+> it would be in the user program address space, right? If it is a physical
+> address, then it is somewhere in the unallocated PCI address space.
+> 
+
+It's a virtual address so it depends on the value of CONFIG_KERNEL_START
+as to whether this is a user program address or not.
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
