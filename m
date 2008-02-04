@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbYBDV0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYBDV0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756296AbYBDV0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 16:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbYBDV0B
+	id S1757042AbYBDV0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 16:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbYBDV0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 16:26:01 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41431 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753196AbYBDVZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 16:25:59 -0500
-Date: Mon, 4 Feb 2008 13:24:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-In-Reply-To: <20080204210121.GF18682@fieldses.org>
-Message-ID: <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
-References: <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net> <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain>
- <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204210121.GF18682@fieldses.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 16:26:39 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48868 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756500AbYBDV0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 16:26:38 -0500
+Date: Mon, 4 Feb 2008 22:26:43 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: vmlinux_64.lds.S - use THREAD_SIZE instead of numeric constant
+Message-ID: <20080204212643.GA17604@uranus.ravnborg.org>
+References: <20080204171037.GA6743@cvg> <20080204202241.GA16919@uranus.ravnborg.org> <20080204203315.GA31341@elte.hu> <47A777FD.7080208@zytor.com> <aa79d98a0802041312j442c99d5sf702a54202c34963@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aa79d98a0802041312j442c99d5sf702a54202c34963@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 05, 2008 at 12:12:32AM +0300, Cyrill Gorcunov wrote:
+> Sam, Ingo, Peter, i didn't commented it 'cause there was no comment in
+> 32bit version. And Sam, you are so right - i spent some time on trying
+> to remember that 8192 bytes trick, and it seems it's not actual
+> anymore for 64bits cpu. As punishment for myself i'm going to shut up
+> for a week. Sorry for spent yours time.
 
+Please take this as learning-by-doing - and continue to submit patches.
+It it by no means the last time you are asked to do something different.
+It happens all the time for all of us.
 
-On Mon, 4 Feb 2008, J. Bruce Fields wrote:
-> 
-> I'd assumed the move was primarily because of the difficulty of getting
-> correct semantics on a shared filesystem
-
-.. not even shared. It was hard to get correct semantics full stop. 
-
-Which is a traditional problem. The thing is, the kernel always has some 
-internal state, and it's hard to expose all the semantics that the kernel 
-knows about to user space.
-
-So no, performance is not the only reason to move to kernel space. It can 
-easily be things like needing direct access to internal data queues (for a 
-iSCSI target, this could be things like barriers or just tagged commands - 
-yes, you can probably emulate things like that without access to the 
-actual IO queues, but are you sure the semantics will be entirely right?
-
-The kernel/userland boundary is not just a performance boundary, it's an 
-abstraction boundary too, and these kinds of protocols tend to break 
-abstractions. NFS broke it by having "file handles" (which is not 
-something that really exists in user space, and is almost impossible to 
-emulate correctly), and I bet the same thing happens when emulating a SCSI 
-target in user space.
-
-Maybe not. I _rally_ haven't looked into iSCSI, I'm just guessing there 
-would be things like ordering issues.
-
-		Linus
+	Sam
