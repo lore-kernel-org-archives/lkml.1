@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbYBDPGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbYBDPKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbYBDPGo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 10:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYBDPGg
+	id S1753471AbYBDPKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 10:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYBDPKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 10:06:36 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34260 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbYBDPGg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 10:06:36 -0500
-Date: Mon, 4 Feb 2008 07:04:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Matthew <jackdachef@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080204150450.GB19611@kroah.com>
-References: <e85b9d30802040343j13a0ec39if646740b0c26b7c6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e85b9d30802040343j13a0ec39if646740b0c26b7c6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 4 Feb 2008 10:10:24 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54908 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbYBDPKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 10:10:23 -0500
+Date: Tue, 5 Feb 2008 02:10:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] powerpc: free_property() mustn't be __init
+Message-Id: <20080205021005.6bbf8559.sfr@canb.auug.org.au>
+In-Reply-To: <20080130200313.GG29368@does.not.exist>
+References: <20080130200313.GG29368@does.not.exist>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 12:43:11PM +0100, Matthew wrote:
-> Hi everybody,
-> 
-> >Over two years ago, the Linux USB developers stated that they believed
-> >there was no way to create a USB kernel driver that was not under the
-> >GPL.  This patch moves the USB apis to enforce that decision.
-> 
-> >There are no known closed source USB drivers in the wild, so this patch
-> >should cause no problems.
-> 
-> hm, I'm not sure, but will your patch make Samsung's Unified Linux
-> Driver for printing & scanning stop working?
-> http://org.downloadcenter.samsung.com/downloadfile/ContentsFile.aspx?CDSite=DE&CttFileID=801111&CDCttType=DR&ModelType=N&ModelName=SCX-4521F&VPath=DR/200707/20070720165133984_UnifiedLinuxDriver.tar.gz
+--Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No, in looking at that package, I do not see any kernel modules, just
-userspace programs.  They must be using the usbfs interface to the
-kernel from userspace, a perfict example of how a vendor can control USB
-device from userspace, without needing a kernel driver :)
+On Wed, 30 Jan 2008 22:03:13 +0200 Adrian Bunk <bunk@kernel.org> wrote:
+>
+> This patch fixes the following section mismatch:
+>=20
+> <--  snip  -->
+>=20
+> ...
+> WARNING: vmlinux.o(.text+0x55648): Section mismatch in reference from the=
+ function .free_node() to the function .init.text:.free_property()
+> ...
+>=20
+> <--  snip  -->
+>=20
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-So it should continue to work just fine.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-> another Manufacturer / Candidate I'm worrying about is Brother:
-> http://solutions.brother.com/linux/en_us/index.html
-> Brother is providing opensource cups drivers (kudos to the developers
-> @ Brother for that!), the sane-drivers however seem to be closed
-> source, will those work ?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Both sane and cups are userspace programs, using usbfs and the kernel
-usblp driver respectively, and should not see anything change at all.
+--Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9
+Content-Type: application/pgp-signature
 
-> I'm no developer, just a heavy user ;) so unfortunately I can't tell
-> whether those drivers are dependent on being NOT GPL,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-You would be seeing some warnings in the kernel log for the past 2 years
-when using these products, about how the symbols were going to be
-changed in the future.  If not, you are fine.
+iD8DBQFHpyrTTgG2atn1QN8RAoVwAKCVJpcm9sf2B/ydDvczvOYQNQhitgCgir4X
+gakVv7jd7vpG9GRDA9dSkZc=
+=n0eB
+-----END PGP SIGNATURE-----
 
-thanks,
-
-greg k-h
+--Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9--
