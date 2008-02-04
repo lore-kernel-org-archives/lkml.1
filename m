@@ -1,94 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYBDOHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYBDORo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYBDOHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 09:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbYBDOH2
+	id S1755121AbYBDORo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 09:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYBDORd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 09:07:28 -0500
-Received: from sacred.ru ([62.205.161.221]:36565 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753615AbYBDOH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 09:07:27 -0500
-Message-ID: <47A71BDF.5000801@openvz.org>
-Date: Mon, 04 Feb 2008 17:06:23 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Kirill Korotaev <dev@sw.ru>
-CC: Cedric Le Goater <clg@fr.ibm.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [Devel] Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel
- API to change an ID
-References: <20080129160229.612172683@bull.net>	<20080129162000.454857358@bull.net>	<20080129210656.GB1990@martell.zuzino.mipt.ru>	<47A18E47.5050206@bull.net>	<47A19AC2.7040709@sw.ru>	<47A1B78C.7050405@bull.net>	<47A1C8FE.9010700@sw.ru> <47A1F2DB.7080600@fr.ibm.com> <47A71606.5030201@sw.ru>
-In-Reply-To: <47A71606.5030201@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Feb 2008 09:17:33 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:47807 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751791AbYBDORc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 09:17:32 -0500
+X-YMail-OSG: nrjje9IVM1la7SJKaf8V2hu.J9O3gUCl4vlNxhdAgLpxLKz5z1T.VRKb4LUi5WNj15S7Zr4zmCAim0mhVWz8sj1zMiR2q6mMsmSNGmFIVPsFjKGbow--
+X-Yahoo-Newman-Property: ymail-3
+Subject: LIO Target iSCSI/SE PS3-Linux / FC8 builds
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Masakazu Mokuno <Masakazu_Mokuno@hq.scei.sony.co.jp>,
+       FUJITA Tomonori <tomof@acm.org>, Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Pete Wyckoff <pw@osc.edu>, Bart Van Assche <bart.vanassche@gmail.com>,
+       Bernard Li <bernard@vanhpc.org>,
+       Open iSCSI <open-iscsi@googlegroups.com>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 06:17:03 -0800
+Message-Id: <1202134623.11265.524.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 04 Feb 2008 17:06:05 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill Korotaev wrote:
-> 
-> Cedric Le Goater wrote:
->> Hello Kirill !
->>
->> Kirill Korotaev wrote:
->>> Pierre,
->>>
->>> my point is that after you've added interface "set IPCID", you'll need
->>> more and more for checkpointing:
->>> - "create/setup conntrack" (otherwise connections get dropped),
->>> - "set task start time" (needed for Oracle checkpointing BTW),
->>> - "set some statistics counters (e.g. networking or taskstats)"
->>> - "restore inotify"
->>> and so on and so forth.
->> right. we know that we will have to handle a lot of these
->> and more and we will need an API for it :) so how should we handle it ?
->> through a dedicated syscall that would be able to checkpoint and/or
->> restart a process, an ipc object, an ipc namespace, a full container ?
->> will it take a fd or a big binary blob ?  
->> I personally really liked Pavel idea's of filesystem. but we dropped the
->> thread.
-> 
-> Imho having a file system interface means having all its problems.
-> Imagine you have some information about tasks exported with a file system interface.
-> Obviously to collect the information you have to hold some spinlock like tasklist_lock or similar.
-> Obviously, you have to drop the lock between sys_read() syscalls.
-> So interface gets much more complicated - you have to rescan the objects and somehow find the place where
-> you stopped previous read. Or you have to to force reader to read everything at once.
+Greetings all,
 
-To remember the place when we stopped previous read we have a "pos" counter
-on the struct file.
+I have updated the wiki at:
 
-Actually, tar utility, that I propose to perform the most simple migration
-reads the directory contents with 4Kb buffer - that's enough for ~500 tasks.
+http://linux-iscsi.org/index.php/Playstation3/iSCSI
 
-Besides, is this a real problem for a frozen container?
+and posted the first LIO target builds on the LIO Cluster:
 
->> that's for the user API but we will need also kernel services to expose
->> (checkpoint) states and restore them. If it's too
->> early to talk about the user API, we could try first to refactor
->> the kernel internals to expose correctly what we need.
-> 
-> That's what I would start with.
-> 
->> That's what Pierre's patchset is trying to do.
-> 
-> Not exactly. For checkpointing/restoring we actually need only one new API call for each
-> subsystem - create some object with given ID (and maybe parameters, if they are not dynamically changeable by user).
-> While Pierre's patchset adds different API call - change object ID.
-> 
-> Thanks,
-> Kirill
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
-> 
-> _______________________________________________
-> Devel mailing list
-> Devel@openvz.org
-> https://openvz.org/mailman/listinfo/devel
-> 
+http://linux-iscsi.org/builds/ps3-linux/
+
+I will adding the documentation for both LIO SE on PS3-Linux, and the
+FC8 upgrade process, as the latter can still be a bit challenging for
+new users.
+
+Here is the info from the README:
+
+LIO Target iSCSI/SE for PS3-Linux v2.9.0.209 
+
+I) Kernel module package
+
+iscsi-target-module-2.6.24-2.9.0.209-1.powerpc.rpm
+
+This modules are built for ppc64 and built with the toolkit for Fedora Core 8 ppc.
+This is gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-33)
+
+This module has been tested with the latest ps3-linux.git and built against
+arch/powerpc/configs/ps3_defconfig.  To use the BD-ROM, your 2.6.24 kernel
+must contain ps3rom-use-128-max-sector.diff.  Please see:
+
+http://git.kernel.org/?p=linux/kernel/git/geoff/ps3-linux.git;a=commit;h=e82112af66a39d11bcb484de9cfa45f0d214c97f
+
+This module package should work with kernel-2.6.24-20080131.ppc64.rpm from
+CELL-Linux-CL_20080201-ADDON.iso, but the BD-ROM will throw an exception without
+ps3rom-use-128-max-sector.diff.  Please see the following link for more
+information about the ADDON CD, and watch for an updated kernel package soon..
+
+http://www.kernel.org/pub/linux/kernel/people/geoff/cell/
+
+II) Userspace packages
+
+iscsi-target-tools-2.9.0.209-1.ppc.rpm
+sbe-mibs-2.9.0.209-1.ppc.rpm
+
+Note that these are 32-bit and built on Fedora Core 8.
+
+Have fun!
+
+--nab
 
