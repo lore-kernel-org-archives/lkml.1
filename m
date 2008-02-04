@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYBDRsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYBDRvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbYBDRsW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYBDRsO
+	id S1755664AbYBDRvv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYBDRvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:48:14 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:42063 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753981AbYBDRsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:48:13 -0500
-Message-ID: <47A74FDC.8020201@s5r6.in-berlin.de>
-Date: Mon, 04 Feb 2008 18:48:12 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Mon, 4 Feb 2008 12:51:43 -0500
+Received: from mga09.intel.com ([134.134.136.24]:26361 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbYBDRvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 12:51:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,303,1199692800"; 
+   d="scan'208";a="295670994"
+Date: Mon, 4 Feb 2008 09:55:26 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: Pull request: DMA pool updates
+Message-ID: <20080204175526.GA21144@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20080129001147.GD31101@parisc-linux.org>
 MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9] firewire-sbp2: misc hotplug related patches
-References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <18343.13598.546459.760900@stoffel.org>
-In-Reply-To: <18343.13598.546459.760900@stoffel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129001147.GD31101@parisc-linux.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Stoffel wrote:
-> I've completely given up on my Firewire/USB external enclosure with a
-> PL-3xxx chipset.
+On Mon, Jan 28, 2008 at 05:11:47PM -0700, Matthew Wilcox wrote:
+> G'day Linus, mate
+> 
+> Could you pull the dmapool branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git please?
+> 
+> All the patches have been posted to linux-kernel before, and various
+> comments (and acks) have been taken into account.
+> 
+> It's a fairly nice performance improvement, so would be good to get in.
+> It's survived a few hours of *mumble* high-stress database benchmark,
+> so I have high confidence in its stability.
 
-Is it a variant whose firmware cannot be updated?
+I haven't looked at this yet but, I've been doing some work with the
+IOMMU performance impacts on DMA operations.  DMApooling  could provide
+a way to mitigate some of the spankage gotten when using IOMMU's.
 
-> Do you want it for further testing purposes?  I'd be
-> happy to ship it to you if you like.  
+--mgross
 
-The offer is appreciated, but as mentioned in PM, the shipping costs
-would be out of proportion.
--- 
-Stefan Richter
--=====-==--- --=- --=--
-http://arcgraph.de/sr/
+> 
+> -- 
+> Intel are signing my paycheques ... these opinions are still mine
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
