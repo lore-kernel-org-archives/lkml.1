@@ -1,73 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYBDSV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYBDSWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbYBDSV2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 13:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYBDSVU
+	id S1756695AbYBDSWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 13:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbYBDSWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 13:21:20 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:55390 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754603AbYBDSVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 13:21:19 -0500
-Message-ID: <47A7579F.2050809@oracle.com>
-Date: Mon, 04 Feb 2008 10:21:19 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Nick Piggin <npiggin@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu,
-       ak@suse.de, jens.axboe@oracle.com, James.Bottomley@SteelEye.com,
-       andrea@suse.de, clameter@sgi.com, akpm@linux-foundation.org,
-       andrew.vasquez@qlogic.com, willy@linux.intel.com
-Subject: Re: [rfc] direct IO submission and completion scalability issues
-References: <20070728012128.GB10033@linux-os.sc.intel.com> <20080203095252.GA11043@wotan.suse.de> <20080204021052.GD155407@sgi.com>
-In-Reply-To: <20080204021052.GD155407@sgi.com>
-Content-Type: text/plain; charset=us-ascii
+	Mon, 4 Feb 2008 13:22:10 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46739 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753196AbYBDSWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 13:22:08 -0500
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47A751C5.60600@vlnb.net>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>  <47A751C5.60600@vlnb.net>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 12:22:02 -0600
+Message-Id: <1202149322.3096.66.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ ugh, still jet lagged. ]
-
-> Hi Nick,
+On Mon, 2008-02-04 at 20:56 +0300, Vladislav Bolkhovitin wrote:
+> James Bottomley wrote:
+> > On Mon, 2008-02-04 at 20:16 +0300, Vladislav Bolkhovitin wrote:
+> > 
+> >>James Bottomley wrote:
+> >>
+> >>>>>>So, James, what is your opinion on the above? Or the overall SCSI target 
+> >>>>>>project simplicity doesn't matter much for you and you think it's fine 
+> >>>>>>to duplicate Linux page cache in the user space to keep the in-kernel 
+> >>>>>>part of the project as small as possible?
+> >>>>>
+> >>>>>
+> >>>>>The answers were pretty much contained here
+> >>>>>
+> >>>>>http://marc.info/?l=linux-scsi&m=120164008302435
+> >>>>>
+> >>>>>and here:
+> >>>>>
+> >>>>>http://marc.info/?l=linux-scsi&m=120171067107293
+> >>>>>
+> >>>>>Weren't they?
+> >>>>
+> >>>>No, sorry, it doesn't look so for me. They are about performance, but 
+> >>>>I'm asking about the overall project's architecture, namely about one 
+> >>>>part of it: simplicity. Particularly, what do you think about 
+> >>>>duplicating Linux page cache in the user space to have zero-copy cached 
+> >>>>I/O? Or can you suggest another architectural solution for that problem 
+> >>>>in the STGT's approach?
+> >>>
+> >>>
+> >>>Isn't that an advantage of a user space solution?  It simply uses the
+> >>>backing store of whatever device supplies the data.  That means it takes
+> >>>advantage of the existing mechanisms for caching.
+> >>
+> >>No, please reread this thread, especially this message: 
+> >>http://marc.info/?l=linux-kernel&m=120169189504361&w=2. This is one of 
+> >>the advantages of the kernel space implementation. The user space 
+> >>implementation has to have data copied between the cache and user space 
+> >>buffer, but the kernel space one can use pages in the cache directly, 
+> >>without extra copy.
+> > 
+> > 
+> > Well, you've said it thrice (the bellman cried) but that doesn't make it
+> > true.
+> > 
+> > The way a user space solution should work is to schedule mmapped I/O
+> > from the backing store and then send this mmapped region off for target
+> > I/O.  For reads, the page gather will ensure that the pages are up to
+> > date from the backing store to the cache before sending the I/O out.
+> > For writes, You actually have to do a msync on the region to get the
+> > data secured to the backing store. 
 > 
-> When Matthew was describing this work at an LCA presentation (not
-> sure whether you were at that presentation or not), Zach came up
-> with the idea that allowing the submitting application control the
-> CPU that the io completion processing was occurring would be a good
-> approach to try.  That is, we submit a "completion cookie" with the
-> bio that indicates where we want completion to run, rather than
-> dictating that completion runs on the submission CPU.
+> James, have you checked how fast is mmaped I/O if work size > size of 
+> RAM? It's several times slower comparing to buffered I/O. It was many 
+> times discussed in LKML and, seems, VM people consider it unavoidable. 
+
+Erm, but if you're using the case of work size > size of RAM, you'll
+find buffered I/O won't help because you don't have the memory for
+buffers either.
+
+> So, using mmaped IO isn't an option for high performance. Plus, mmaped 
+> IO isn't an option for high reliability requirements, since it doesn't 
+> provide a practical way to handle I/O errors.
+
+I think you'll find it does ... the page gather returns -EFAULT if
+there's an I/O error in the gathered region.  msync does something
+similar if there's a write failure.
+
+> > You also have to pull tricks with
+> > the mmap region in the case of writes to prevent useless data being read
+> > in from the backing store.
 > 
-> The reasoning is that only the higher level context really knows
-> what is optimal, and that changes from application to application.
-> The "complete on the submission CPU" policy _may_ be more optimal
-> for database workloads, but it is definitely suboptimal for XFS and
-> transaction I/O completion handling because it simply drags a bunch
-> of global filesystem state around between all the CPUs running
-> completions. In that case, we really only want a single CPU to be
-> handling the completions.....
-> 
-> (Zach - please correct me if I've missed anything)
+> Can you be more exact and specify what kind of tricks should be done for 
+> that?
 
-Yeah, I think Nick's patch (and Jens' approach, presumably) is just the
-sort of thing we were hoping for when discussing this during Matthew's talk.
+Actually, just avoid touching it seems to do the trick with a recent
+kernel.
 
-I was imagining the patch a little bit differently (per-cpu tasks, do a
-wake_up from the driver instead of cpu nr testing up in blk, work
-queues, whatever), but we know how to iron out these kinds of details ;).
+James
 
-> Looking at your patch - if you turn it around so that the
-> "submission CPU" field can be specified as the "completion cpu" then
-> I think the patch will expose the policy knobs needed to do the
-> above.
 
-Yeah, that seems pretty straight forward.
-
-We might need some logic for noticing that the desired cpu has been
-hot-plugged away while the IO was in flight, it occurs to me.
-
-- z
