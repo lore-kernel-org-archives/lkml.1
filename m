@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbYBDKmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYBDKm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753083AbYBDKmo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 05:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYBDKmg
+	id S1754040AbYBDKm7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 05:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYBDKmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 4 Feb 2008 05:42:37 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:48754 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751029AbYBDKmg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Feb 2008 05:42:36 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:45100 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbYBDKmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 05:42:35 -0500
-Date: Mon, 4 Feb 2008 10:42:32 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
-Message-ID: <20080204104232.GB29484@csn.ul.ie>
-References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net> <20080201202518.GJ18688@csn.ul.ie> <20080201210656.174030@gmx.net>
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=6kQ3u2OIffbYLokEPM6XvCr/5iX7IHxQ37pNdIjsVhMxT2EHqRUvrQLFKU3/oJzpnu1Vg0Zu3LX/JP3PgZYYv4TXT6KKTbZy5qo1bF23ZTBhWfzdnBh3NQDSy6T2EcLkToBeF9NOp1qP4JxDADUuizk5vq+r6TbbIhnjKjy62PA=  ;
+X-YMail-OSG: 58p0oLYVM1kOhYswA4AKjqdaSm1kH4P0hWqYhXDmMEV9SYfxPegFqFGssVVd_zCvc8xbcQXDew--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Robin Lee Powell <rlpowell@digitalkingdom.org>
+Subject: Re: Monthly md check == hung machine; how do I debug?
+Date: Mon, 4 Feb 2008 21:40:55 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20080203212155.GF12173@digitalkingdom.org>
+In-Reply-To: <20080203212155.GF12173@digitalkingdom.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080201210656.174030@gmx.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200802042140.55521.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (01/02/08 22:06), Gerhard Pircher didst pronounce:
-> 
-> -------- Original-Nachricht --------
-> > Datum: Fri, 1 Feb 2008 20:25:18 +0000
-> > Von: Mel Gorman <mel@csn.ul.ie>
-> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > CC: linux-kernel@vger.kernel.org
-> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machine
-> 
-> > I meant uninitialised memory but I also wonder could something like this
-> > happen if you are trying to use memory that doesn't exist. i.e. you are
-> > trying to access more memory than you really have but you indicate later
-> > that this is not the case.
+On Monday 04 February 2008 08:21, Robin Lee Powell wrote:
+> I've got a machine with a 4 disk SATA raid10 configuration using md.
+> The entire disk is loop-AES encrypted, but that shouldn't matter
+> here.
 >
-> Good question. The memory is in the physical address range from 0x00000000
-> to 0x60000000 (1536MB).
-> 
-> > > > 2. Any chance of seeing a dmesg log?
-> > > That's a little bit of a problem. The kernel log in memory doesn't show
-> > > any kernel oops, but is also fragmented (small fragments seem to have
-> > > been overwritten with 0x0).
-> > 
-> > err, that doesn't sound very healthy.
+> Once a month, Debian runs:
 >
-> Yeah, I know. But the platform code hasn't changed much when porting it
-> from arch/ppc to arch/powerpc. That's why I'm a little bit lost in this
-> case. :-)
-> 
+>     /usr/share/mdadm/checkarray --cron --all --quiet
+>
+> and the machine hangs within 30 minutes of that starting.
+>
+> It seems that I can avoid the hang by not having "mdadm --monitor"
+> running, but I'm not certain if that's the case or if I've just been
+> lucky this go-round.
+>
+> I'm on kernel 2.6.23.1, my own compile thereof, x86_64, AMD
+> Athlon(tm) 64 Processor 3700+.
+>
+> I've looked through all the 2.6.23 and 2.6.24 Changelogs, and I
+> can't find anything that looks relevant.
+>
+> So, how can I (help you all) debug this?
 
-I'm at a bit of a loss to guess what might have changed in powerpc code
-that would explain this. I've added the linuxppc-dev mailing list in
-case they can make a guess.
+Do you have a serial console? Does it respond to pings?
 
-I think you are also going to need to start bisecting searching
-specifically for the patch that causes these overwrites.
-
-> > > Well, I can't answer this question. The kernel currently locks up when
-> > > loading the INIT program. But that is another problem (I still have to
-> > > bisect it) and doesn't seem to be related to this problem.
-> > 
-> > INIT would be the first MOVABLE allocation so it would be using memory
-> > at the end of the physical adddress range. i.e. the crash happens when
-> > memory towards the end and the only difference between the patch applied
-> > and reverted is when it happens.
-> Oh, that sounds interesting!
-> 
-> > Could you try booting with 16MB less memory using mem=?
-> I started the kernel with 512MB RAM (mem=496) and 1.5GB (mem=1520). The
-> kernel oopes in both cases with a "Unable to handle kernel paging request
-> for data address 0xbffff000", followed by a "Oops: kernel access of bad
-> area, sig 11" message. The end of the stack trace shows the start_here()
-> function.
-> I'm not a PowerPC expert, but if 0xbffff000 is a virtual address, then
-> it would be in the user program address space, right? If it is a physical
-> address, then it is somewhere in the unallocated PCI address space.
-> 
-
-It's a virtual address so it depends on the value of CONFIG_KERNEL_START
-as to whether this is a user program address or not.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Can you try to get sysrq+T traces, and sysrq+P traces, and post
+them?
