@@ -1,111 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbYBDR2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYBDR3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbYBDR2y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbYBDR2q
+	id S1757528AbYBDR3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbYBDR3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:28:46 -0500
-Received: from postfix2-g20.free.fr ([212.27.60.43]:42907 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755811AbYBDR2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:28:46 -0500
-Message-ID: <47A74AED.1080806@free.fr>
-Date: Mon, 04 Feb 2008 18:27:09 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 4 Feb 2008 12:29:07 -0500
+Received: from rtr.ca ([76.10.145.34]:3922 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756057AbYBDR3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 12:29:05 -0500
+Message-ID: <47A74B5F.7020202@rtr.ca>
+Date: Mon, 04 Feb 2008 12:29:03 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 2/2] extend clone_flags using parent_tidptr argument
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, abelay@novell.com,
+       lenb@kernel.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 20000+ wake-ups/second in 2.6.24.   Bug?
+References: <200711302153.lAULrZ7n026255@imap1.linux-foundation.org> <20071201154646.5a288c9e@laptopd505.fenrus.org> <4751F484.6040204@rtr.ca> <200712020120.36439.rjw@sisk.pl>
+In-Reply-To: <200712020120.36439.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cedric Le Goater <clg@fr.ibm.com>
+re:  http://bugzilla.kernel.org/show_bug.cgi?id=9489
 
-We have at least 2 patchsets requiring each a new clone flag and 
-there it is, we've reached the limit, none are left.  
+This just happened here again.  Or at least I finally noticed that
+the fan on my notebook seemed to be running hard for much longer
+than usual.  :)
 
-This patch uses the CLONE_DETACHED flag (unused) as a marker to 
-extend the clone flags through the parent_tidptr argument.
+Powertop showed 2.6.24-final running with 10000-36000 wakeups/sec,
+with *nothing* significant running:  top showed 97+% idle on both cores.
 
-Initially, we thought on using the last bit but it has recently 
-been taken by CLONE_IO.
+/proc/interrupts didn't have anything interesting either.
 
-Obviously, this hack doesn't work for unshare() for which I don't 
-see any other solution than to add a new syscall : 
+I've put a snap of the powertop output into Bug 9489 (link above),
+along with the kernel .config again.
 
-	long sys_unshare64(unsigned long clone_flags_high, 
-			unsigned long clone_flags_low);
+This was after an uptime of many days, with lots of suspend/resume (RAM)
+cycles and even a few hibernate/resume cycles.
+
+lspci -vv  doesn't show much different from a fresh reboot
+versus what was seem "during" the problem:
+
+--- lspci.rebooted      2008-02-04 12:18:53.000000000 -0500
++++ lspci.during        2008-02-04 12:16:04.000000000 -0500
+@@ -44,7 +44,7 @@
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0, Cache Line Size: 64 bytes
+-       Interrupt: pin A routed to IRQ 21
++       Interrupt: pin A routed to IRQ 20
+        Region 0: Memory at efffc000 (64-bit, non-prefetchable) [size=16K]
+        Capabilities: [50] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+@@ -174,7 +174,7 @@
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+-       Interrupt: pin B routed to IRQ 21
++       Interrupt: pin B routed to IRQ 20
+        Region 4: I/O ports at bf60 [size=32]
+
+ 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 01) (prog-if 00 [UHCI])
+@@ -182,7 +182,7 @@
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+-       Interrupt: pin C routed to IRQ 22
++       Interrupt: pin C routed to IRQ 21
+        Region 4: I/O ports at bf40 [size=32]
+
+ 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 01) (prog-if 00 [UHCI])
+@@ -190,7 +190,7 @@
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+-       Interrupt: pin D routed to IRQ 23
++       Interrupt: pin D routed to IRQ 22
+        Region 4: I/O ports at bf20 [size=32]
+
+ 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 01) (prog-if 20 [EHCI])
+@@ -296,7 +296,7 @@
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 64
+-       Interrupt: pin B routed to IRQ 20
++       Interrupt: pin B routed to IRQ 23
+        Region 0: Memory at ef9fd400 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
 
 
+Interestingly, lspci *does* show larger differences from "fresh reboot"
+to "fresh resume from hibernate" after said reboot.  I don't think this should happen:
 
-Is this the right path to extend the clone flags ? should we add a 
-clone64() rather than hack the extending clone() ? 
+--- lspci.rebooted      2008-02-04 12:18:53.000000000 -0500
++++ lspci.afterhib2     2008-02-04 12:22:29.000000000 -0500
+@@ -13,7 +13,7 @@
+        I/O behind bridge: 0000e000-0000efff
+        Memory behind bridge: efd00000-efefffff
+        Prefetchable memory behind bridge: 00000000d0000000-00000000dfffffff
+-       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
++       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity- SERR+ NoISA- VGA+ MAbort- >Reset- FastB2B-
+        Capabilities: [88] Subsystem: Dell Unknown device 01cd
+        Capabilities: [80] Power Management version 2
+@@ -24,7 +24,7 @@
+        Capabilities: [a0] Express Root Port (Slot+) IRQ 0
+                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+                Device: Latency L0s <64ns, L1 <1us
+-               Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
++               Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+                Link: Supported Speed 2.5Gb/s, Width x16, ASPM L0s L1, Port 2
+@@ -69,12 +69,12 @@
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0, Cache Line Size: 64 bytes
+        Bus: primary=00, secondary=0b, subordinate=0b, sec-latency=0
+-       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
++       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Express Root Port (Slot+) IRQ 0
+                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+                Device: Latency L0s unlimited, L1 unlimited
+-               Device: Errors: Correctable- Non-Fatal- Fatal+ Unsupported-
++               Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+                Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 1
+@@ -101,12 +101,12 @@
+        Latency: 0, Cache Line Size: 64 bytes
+        Bus: primary=00, secondary=0c, subordinate=0c, sec-latency=0
+        Memory behind bridge: efc00000-efcfffff
+-       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
++       Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [40] Express Root Port (Slot+) IRQ 0
+                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+                Device: Latency L0s unlimited, L1 unlimited
+-               Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
++               Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+                Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 2
+@@ -140,7 +140,7 @@
+        Capabilities: [40] Express Root Port (Slot+) IRQ 0
+                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+                Device: Latency L0s unlimited, L1 unlimited
+-               Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
++               Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+                Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 4
 
-Thanks for any comments !
 
-C.
-
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- include/linux/sched.h |    1 +
- kernel/fork.c         |   14 +++++++++++++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
-
-Index: 2.6.24-mm1/include/linux/sched.h
-===================================================================
---- 2.6.24-mm1.orig/include/linux/sched.h
-+++ 2.6.24-mm1/include/linux/sched.h
-@@ -28,6 +28,7 @@
- #define CLONE_NEWPID		0x20000000	/* New pid namespace */
- #define CLONE_NEWNET		0x40000000	/* New network namespace */
- #define CLONE_IO		0x80000000	/* Clone io context */
-+#define CLONE_EXTFLAGS		CLONE_DETACHED	/* use parent_tidptr as an extended set of flags */
- 
- /*
-  * Scheduling policies
-Index: 2.6.24-mm1/kernel/fork.c
-===================================================================
---- 2.6.24-mm1.orig/kernel/fork.c
-+++ 2.6.24-mm1/kernel/fork.c
-@@ -1012,6 +1012,14 @@ static struct task_struct *copy_process(
- 	struct task_struct *p;
- 	int cgroup_callbacks_done = 0;
- 
-+	/*
-+	 * It is not permitted to specify both CLONE_EXTFLAGS and
-+	 * CLONE_PARENT_SETTID
-+	 */
-+	if ((clone_flags & (CLONE_EXTFLAGS|CLONE_PARENT_SETTID)) ==
-+	    (CLONE_EXTFLAGS|CLONE_PARENT_SETTID))
-+		return ERR_PTR(-EINVAL);
-+
- 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
- 		return ERR_PTR(-EINVAL);
- 
-@@ -1455,6 +1463,7 @@ long do_fork(unsigned long clone_flags,
- 	struct task_struct *p;
- 	int trace = 0;
- 	long nr;
-+	u64 clone_flags64 = clone_flags;
- 
- 	/*
- 	 * We hope to recycle these flags after 2.6.26
-@@ -1479,7 +1488,10 @@ long do_fork(unsigned long clone_flags,
- 			clone_flags |= CLONE_PTRACE;
- 	}
- 
--	p = copy_process(clone_flags, stack_start, regs, stack_size,
-+	if (clone_flags & CLONE_EXTFLAGS)
-+		clone_flags64 = ((u64) (uintptr_t) parent_tidptr << 32) | clone_flags;
-+
-+	p = copy_process(clone_flags64, stack_start, regs, stack_size,
- 			child_tidptr, NULL);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
+Rafael ?
