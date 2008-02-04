@@ -1,147 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbYBDXRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbYBDXSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758304AbYBDXRA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbYBDXQu
+	id S1758559AbYBDXSM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:18:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbYBDXR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:16:50 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:46291 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755772AbYBDXQt (ORCPT
+	Mon, 4 Feb 2008 18:17:58 -0500
+Received: from de01egw01.freescale.net ([192.88.165.102]:41364 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755772AbYBDXR6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:16:49 -0500
-X-YMail-OSG: uwhIBs8VM1lsAQg9gJWwf0orUy3J3cHUbPUiL9_CwbDb3T3C0FNb6RkkxuwA3XqC_BJSMZjPkX.EIfcFgL1rZqgATvzbmqvQm9PMzuVF1QqFd4XXOQ--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Julian Satran <Julian_Satran@il.ibm.com>
-In-Reply-To: <1202166745.11265.662.camel@haakon2.linux-iscsi.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core>
-	 <1202166033.3096.141.camel@localhost.localdomain>
-	 <1202166745.11265.662.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 04 Feb 2008 15:16:20 -0800
-Message-Id: <1202166980.11265.665.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 8bit
+	Mon, 4 Feb 2008 18:17:58 -0500
+Message-ID: <47A79D09.6090806@freescale.com>
+Date: Mon, 04 Feb 2008 17:17:29 -0600
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+MIME-Version: 1.0
+To: Roel Kluin <12o3l@tiscali.nl>, Timur Tabi <timur@freescale.com>,
+       liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] [PATCH][sound/soc/fsl/mpc8610_hpcd.c] duplicate
+ strcasecmp test for "rj-master" in mpc8610_hpcd_probe()
+References: <47A77EB2.6070703@tiscali.nl> <20080204231114.GA7842@sirena.org.uk>
+In-Reply-To: <20080204231114.GA7842@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-04 at 15:12 -0800, Nicholas A. Bellinger wrote:
-> On Mon, 2008-02-04 at 17:00 -0600, James Bottomley wrote:
-> > On Mon, 2008-02-04 at 22:43 +0000, Alan Cox wrote:
-> > > > better. So for example, I personally suspect that ATA-over-ethernet is way 
-> > > > better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
-> > > > low-level, and against those crazy SCSI people to begin with.
-> > > 
-> > > Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
-> > > would probably trash iSCSI for latency if nothing else.
-> > 
-> > Actually, there's also FCoE now ... which is essentially SCSI
-> > encapsulated in Fibre Channel Protocols (FCP) running over ethernet with
-> > Jumbo frames.  It does the standard SCSI TCQ, so should answer all the
-> > latency pieces.  Intel even has an implementation:
-> > 
-> > http://www.open-fcoe.org/
-> > 
-> > I tend to prefer the low levels as well.  The whole disadvantage for IP
-> > as regards iSCSI was the layers of protocols on top of it for
-> > addressing, authenticating, encrypting and finding any iSCSI device
-> > anywhere in the connected universe.
+Mark Brown wrote:
+> On Mon, Feb 04, 2008 at 10:08:02PM +0100, Roel Kluin wrote:
+>> In linus' git tree I found this problem. Is it also in the alsa tree?
+>> please confirm it's the right fix. The patch was not yet tested.
 > 
-> Btw, while simple in-band discovery of iSCSI exists, the standards based
-> IP storage deployments (iSCSI and iFCP) use iSNS (RFC-4171) for
-> discovery and network fabric management, for things like sending state
-> change notifications when a particular network portal is going away so
-> that the initiator can bring up a different communication patch to a
-> different network portal, etc.
+> Timur, this looks like a good catch?
+
+Yes, thank you!  The change below should be made.
+
 > 
-> > 
-> > I tend to see loss of routing from operating at the MAC level to be a
-> > nicely justifiable tradeoff (most storage networks tend to be hubbed or
-> > switched anyway).  Plus an ethernet MAC with jumbo frames is a large
-> > framed nearly lossless medium, which is practically what FCP is
-> > expecting.  If you really have to connect large remote sites ... well
-> > that's what tunnelling bridges are for.
-> > 
-> 
-> Some of the points by Julo on the IPS TWG iSCSI vs. FCoE thread:
-> 
->       * the network is limited in physical span and logical span (number
->         of switches)
->       * flow-control/congestion control is achieved with a mechanism
->         adequate for a limited span network (credits). The packet loss
->         rate is almost nil and that allows FCP to avoid using a
->         transport (end-to-end) layer
->       * FCP she switches are simple (addresses are local and the memory
->         requirements cam be limited through the credit mechanism)
->       * The credit mechanisms is highly unstable for large networks
->         (check switch vendors planning docs for the network diameter
->         limits) – the scaling argument
->       * Ethernet has no credit mechanism and any mechanism with a
->         similar effect increases the end point cost. Building a
->         transport layer in the protocol stack has always been the
->         preferred choice of the networking community – the community
->         argument
->       * The "performance penalty" of a complete protocol stack has
->         always been overstated (and overrated). Advances in protocol
->         stack implementation and finer tuning of the congestion control
->         mechanisms make conventional TCP/IP performing well even at 10
->         Gb/s and over. Moreover the multicore processors that become
->         dominant on the computing scene have enough compute cycles
->         available to make any "offloading" possible as a mere code
->         restructuring exercise (see the stack reports from Intel, IBM
->         etc.)
->       * Building on a complete stack makes available a wealth of
->         operational and management mechanisms built over the years by
->         the networking community (routing, provisioning, security,
->         service location etc.) – the community argument
->       * Higher level storage access over an IP network is widely
->         available and having both block and file served over the same
->         connection with the same support and management structure is
->         compelling– the community argument
->       * Highly efficient networks are easy to build over IP with optimal
->         (shortest path) routing while Layer 2 networks use bridging and
->         are limited by the logical tree structure that bridges must
->         follow. The effort to combine routers and bridges (rbridges) is
->         promising to change that but it will take some time to finalize
->         (and we don't know exactly how it will operate). Untill then the
->         scale of Layer 2 network is going to seriously limited – the
->         scaling argument
+>> --
+>> duplicate test for "rj-master"
+>>
+>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+>> ---
+>> diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+>> index f26c4b2..a00aac7 100644
+>> --- a/sound/soc/fsl/mpc8610_hpcd.c
+>> +++ b/sound/soc/fsl/mpc8610_hpcd.c
+>> @@ -314,9 +314,9 @@ static int mpc8610_hpcd_probe(struct of_device *ofdev,
+>>  	} else if (strcasecmp(sprop, "lj-master") == 0) {
+>>  		machine_data->dai_format = SND_SOC_DAIFMT_LEFT_J;
+>>  		machine_data->codec_clk_direction = SND_SOC_CLOCK_IN;
+>>  		machine_data->cpu_clk_direction = SND_SOC_CLOCK_OUT;
+>> -	} else if (strcasecmp(sprop, "rj-master") == 0) {
+>> +	} else if (strcasecmp(sprop, "rj-slave") == 0) {
+>>  		machine_data->dai_format = SND_SOC_DAIFMT_RIGHT_J;
+>>  		machine_data->codec_clk_direction = SND_SOC_CLOCK_OUT;
+>>  		machine_data->cpu_clk_direction = SND_SOC_CLOCK_IN;
+>>  	} else if (strcasecmp(sprop, "rj-master") == 0) {
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
 > 
 
-Another data point from the "The "performance penalty of a complete
-protocol stack has always been overstated (and overrated)" bullet above:
 
-"As a side argument – a performance comparison made in 1998 showed SCSI
-over TCP (a predecessor of the later iSCSI) to perform better than FCP
-at 1Gbs for block sizes typical for OLTP (4-8KB). That was what
-convinced us to take the path that lead to iSCSI – and we used plain
-vanilla x86 servers with plain-vanilla NICs and Linux (with similar
-measurements conducted on Windows)."
-
---nab
-
-
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
