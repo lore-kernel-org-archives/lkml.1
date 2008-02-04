@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYBDUZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYBDUZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbYBDUZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbYBDUZL
+	id S1758803AbYBDUZo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbYBDUZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:25:11 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37644 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754570AbYBDUZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:25:09 -0500
-Date: Mon, 4 Feb 2008 21:25:27 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: brk randomization breaks columns
-Message-ID: <20080204202527.GD4915@elf.ucw.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu> <20080204132853.GA4630@elf.ucw.cz> <Pine.LNX.4.64.0802041554030.30955@jikos.suse.cz>
+	Mon, 4 Feb 2008 15:25:23 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:14567 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758544AbYBDUZT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:25:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=jA+1+caCgW8svWYZcer3DOQ5pxfwkpqaPrXsH4TGNdhWKWP2CVSPGpwFjr0pcRAAJwqRsTDeNaAN7DM5HY9PyAFjgmCvtM4Bw/WQPr+WcPwNGHqml3mMjumtnQlZEz5mCPHAjf/Xmju0Tx8eJpQs35NLiypjwX+3p0tjEml2L9I=
+Message-ID: <47A774AB.5060008@gmail.com>
+Date: Mon, 04 Feb 2008 21:25:15 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802041554030.30955@jikos.suse.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: =?ISO-8859-2?Q?=22Oliver_Pinter_=28Pint=E9r_Oliv=E9r=29=22?= 
+	<oliver.pntr@gmail.com>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       Bruno Randolf <bruno@thinktube.com>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ath5k-devel@lists.ath5k.org
+Subject: Re: [Wireless, ath5k] 2.6.24-git13 9135f1901ee6449dfe338adf6e40e9c2025b8150
+References: <6101e8c40802040600q804e40cs97d0031920e58d9d@mail.gmail.com>
+In-Reply-To: <6101e8c40802040600q804e40cs97d0031920e58d9d@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Not sure this helps... If I only randomize _end_ of heap, it still 
-> > works. If I try to randomize beggining of heap, too, it will not even 
-> > start recent binaries :-(.
+On 02/04/2008 03:00 PM, Oliver Pinter (Pintér Olivér) wrote:
+> git top: 9135f1901ee6449dfe338adf6e40e9c2025b8150
 > 
-> I don't uderstand this, sorry. Ehen the mapping for the new process is 
-> being established during loading of the binary, the beginning and the end 
-> of the heap are the same ...
+> [  399.582185] wpa_supplicant[4383]: segfault at 30 ip 080697ca sp
+> bf87a690 error 4 in wpa_supplicant[8048000+4c000]
+> [  406.277199] wpa_supplicant[4384]: segfault at 30 ip 080697ca sp
+> bfc13a30 error 4 in wpa_supplicant[8048000+4c000]
+> [  407.586375] wpa_supplicant[4385]: segfault at 30 ip 080697ca sp
+> bf9ed000 error 4 in wpa_supplicant[8048000+4c000]
+> [  411.671037] wpa_supplicant[4386]: segfault at 30 ip 080697ca sp
+> bf8f3710 error 4 in wpa_supplicant[8048000+4c000]
+> [  412.569843] wpa_supplicant[4387]: segfault at 30 ip 080697ca sp
+> bfc19a30 error 4 in wpa_supplicant[8048000+4c000]
+> [  413.118874] wpa_supplicant[4388]: segfault at 30 ip 080697ca sp
+> bfc9cab0 error 4 in wpa_supplicant[8048000+4c000]
 
-Okay, I was assuming this is mapping heap..
+Seems like wpa_supplicant is broken. Is this a regression?
 
-  /* Calling set_brk effectively mmaps the pages that we need
-         * for the bss and break sections.  We must do this before
-         * mapping in the interpreter, to make sure it doesn't wind
-         * up getting placed where the bss needs to go.
-         */
-        retval = set_brk(elf_bss, elf_brk);
+> home:~# wpa_supplicant -Dwext -iath0 -c /etc/wpa_supplicant/wpa_supplicant.conf
 
-If I add
+ath0? udev renamed it?
 
-+       elf_brk += random;
+> ioctl[SIOCSIWAUTH]: Operation not supported
+> WEXT auth param 4 value 0x0 - bind(PF_UNIX): Address already in use
 
-before set_brk() (and revert the brk randomization), it works,
-including columns.
+4 - 0x0 is TKIP, nothing we should worry about.
 
-If I add
+> ctrl_iface exists and seems to be in use - cannot override it
+> Delete '/var/run/wpa_supplicant/ath0' manually if it is not used anymore
+> Failed to initialize control interface '/var/run/wpa_supplicant'.
+> You may have another wpa_supplicant process already running or the file was
+> left by an unclean termination of wpa_supplicant in which case you will need
+> to manually remove this file before starting wpa_supplicant again.
 
-+//     elf_bss += random;
+Have you?
 
-before set_brk(), I break everything.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I guess ltrace would help here. And maybe strace...
