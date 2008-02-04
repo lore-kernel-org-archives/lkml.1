@@ -1,137 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbYBDSiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYBDSiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbYBDSiV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 13:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYBDSiH
+	id S1756820AbYBDSiv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 13:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbYBDSil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 13:38:07 -0500
-Received: from mail-relay-02.mailcluster.net ([77.221.130.214]:39359 "EHLO
-	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754267AbYBDSiF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 13:38:05 -0500
-Message-ID: <47A75B8A.3020503@vlnb.net>
-Date: Mon, 04 Feb 2008 21:38:02 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Mon, 4 Feb 2008 13:38:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40091 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756134AbYBDSik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 13:38:40 -0500
+Date: Mon, 4 Feb 2008 13:38:10 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [mm] Crashkernel memory reservation fails with 2.6.24-rc8-mm1
+Message-ID: <20080204183810.GE16021@redhat.com>
+References: <47A7391F.2020408@in.ibm.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	 <1201639331.3069.58.camel@localhost.localdomain>	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>	 <1202144767.3096.38.camel@localhost.localdomain>	 <47A7488B.4080000@vlnb.net>	 <1202145901.3096.49.camel@localhost.localdomain>  <47A751C5.60600@vlnb.net> <1202149322.3096.66.camel@localhost.localdomain>
-In-Reply-To: <1202149322.3096.66.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47A7391F.2020408@in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Mon, 2008-02-04 at 20:56 +0300, Vladislav Bolkhovitin wrote:
-> 
->>James Bottomley wrote:
->>
->>>On Mon, 2008-02-04 at 20:16 +0300, Vladislav Bolkhovitin wrote:
->>>
->>>
->>>>James Bottomley wrote:
->>>>
->>>>
->>>>>>>>So, James, what is your opinion on the above? Or the overall SCSI target 
->>>>>>>>project simplicity doesn't matter much for you and you think it's fine 
->>>>>>>>to duplicate Linux page cache in the user space to keep the in-kernel 
->>>>>>>>part of the project as small as possible?
->>>>>>>
->>>>>>>
->>>>>>>The answers were pretty much contained here
->>>>>>>
->>>>>>>http://marc.info/?l=linux-scsi&m=120164008302435
->>>>>>>
->>>>>>>and here:
->>>>>>>
->>>>>>>http://marc.info/?l=linux-scsi&m=120171067107293
->>>>>>>
->>>>>>>Weren't they?
->>>>>>
->>>>>>No, sorry, it doesn't look so for me. They are about performance, but 
->>>>>>I'm asking about the overall project's architecture, namely about one 
->>>>>>part of it: simplicity. Particularly, what do you think about 
->>>>>>duplicating Linux page cache in the user space to have zero-copy cached 
->>>>>>I/O? Or can you suggest another architectural solution for that problem 
->>>>>>in the STGT's approach?
->>>>>
->>>>>
->>>>>Isn't that an advantage of a user space solution?  It simply uses the
->>>>>backing store of whatever device supplies the data.  That means it takes
->>>>>advantage of the existing mechanisms for caching.
->>>>
->>>>No, please reread this thread, especially this message: 
->>>>http://marc.info/?l=linux-kernel&m=120169189504361&w=2. This is one of 
->>>>the advantages of the kernel space implementation. The user space 
->>>>implementation has to have data copied between the cache and user space 
->>>>buffer, but the kernel space one can use pages in the cache directly, 
->>>>without extra copy.
->>>
->>>
->>>Well, you've said it thrice (the bellman cried) but that doesn't make it
->>>true.
->>>
->>>The way a user space solution should work is to schedule mmapped I/O
->>>from the backing store and then send this mmapped region off for target
->>>I/O.  For reads, the page gather will ensure that the pages are up to
->>>date from the backing store to the cache before sending the I/O out.
->>>For writes, You actually have to do a msync on the region to get the
->>>data secured to the backing store. 
->>
->>James, have you checked how fast is mmaped I/O if work size > size of 
->>RAM? It's several times slower comparing to buffered I/O. It was many 
->>times discussed in LKML and, seems, VM people consider it unavoidable. 
-> 
-> 
-> Erm, but if you're using the case of work size > size of RAM, you'll
-> find buffered I/O won't help because you don't have the memory for
-> buffers either.
+On Mon, Feb 04, 2008 at 09:41:11PM +0530, Sachin P. Sant wrote:
+> While trying to configure kdump with 2.6.24-rc8-mm1 [ on a x86-64 box ]
+> i ran into this problem. Here is the snippet from dmesg during the
+> failure. [ dmesg log attached ]
+>
+> early_ioremap(000000000000040e, 00000002) => -000002103442418
+> early_iounmap(ffffffff82a0040e, 00000002)
+> early_ioremap(000000000009dc00, 00001000) => -000002102797312
+> early_iounmap(ffffffff82a9dc00, 00001000)
+> crashkernel reservation failed - memory is in use
+> [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001200000 on node 0
+> [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001600000 on node 0
+> [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001a00000 on node 0
+> [ffffe20000600000-ffffe200007fffff] PMD ->ffff810001e00000 on node 0
+>
+> I am using 128M@32M value for crashkernel parameter.
+>
 
-James, just check and you will see, buffered I/O is a lot faster.
+Hmm..., So somebody has already reserved the memory we are trying to
+reserve. Bernhard's BOOTMEM_EXCLUSIVE flag is atleast giving the warning
+otherwise it would have silently created an overlapping reserved memory
+area.
 
->>So, using mmaped IO isn't an option for high performance. Plus, mmaped 
->>IO isn't an option for high reliability requirements, since it doesn't 
->>provide a practical way to handle I/O errors.
-> 
-> I think you'll find it does ... the page gather returns -EFAULT if
-> there's an I/O error in the gathered region. 
+Sachin, can you please put some debugging statements before the calls
+to reserve_bootmem() in arch/x86 to find out who all are reserving what
+memory area and then we can nail down the guy who is reserving some
+memory between 32M and 160M
 
-Err, to whom return? If you try to read from a mmaped page, which can't 
-be populated due to I/O error, you will get SIGBUS or SIGSEGV, I don't 
-remember exactly. It's quite tricky to get back to the faulted command 
-from the signal handler.
+Wished we had some debugging printk statements for reserve_bootmem too
+(the way we have for early_ioremap and early_iounmap).
 
-Or do you mean mmap(MAP_POPULATE)/munmap() for each command? Do you 
-think that such mapping/unmapping is good for performance?
+Bernahard, any idea who is the competitor here?
 
-> msync does something
-> similar if there's a write failure.
-> 
->>>You also have to pull tricks with
->>>the mmap region in the case of writes to prevent useless data being read
->>>in from the backing store.
->>
->>Can you be more exact and specify what kind of tricks should be done for 
->>that?
-> 
-> Actually, just avoid touching it seems to do the trick with a recent
-> kernel.
-
-Hmm, how can one write to an mmaped page and don't touch it?
-
-> James
-> 
-> 
-> 
-
+Thanks
+Vivek
