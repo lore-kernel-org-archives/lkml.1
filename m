@@ -1,100 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYBDXOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbYBDXRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbYBDXOw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbYBDXOm
+	id S1758304AbYBDXRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbYBDXQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:14:42 -0500
-Received: from ozlabs.org ([203.10.76.45]:57469 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756696AbYBDXOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:14:41 -0500
-Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
-In-Reply-To: <200802041624.31228.ossthema@de.ibm.com>
-References: <200802041404.49960.ossthema@de.ibm.com>
-	 <1202136362.7672.5.camel@concordia>
-	 <200802041624.31228.ossthema@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-iipiDIJciz2breTnx5if"
-Date: Tue, 05 Feb 2008 10:14:21 +1100
-Message-Id: <1202166861.7672.11.camel@concordia>
+	Mon, 4 Feb 2008 18:16:50 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:46291 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755772AbYBDXQt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 18:16:49 -0500
+X-YMail-OSG: uwhIBs8VM1lsAQg9gJWwf0orUy3J3cHUbPUiL9_CwbDb3T3C0FNb6RkkxuwA3XqC_BJSMZjPkX.EIfcFgL1rZqgATvzbmqvQm9PMzuVF1QqFd4XXOQ--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Julian Satran <Julian_Satran@il.ibm.com>
+In-Reply-To: <1202166745.11265.662.camel@haakon2.linux-iscsi.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204224314.113afe7b@core>
+	 <1202166033.3096.141.camel@localhost.localdomain>
+	 <1202166745.11265.662.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 04 Feb 2008 15:16:20 -0800
+Message-Id: <1202166980.11265.665.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-02-04 at 15:12 -0800, Nicholas A. Bellinger wrote:
+> On Mon, 2008-02-04 at 17:00 -0600, James Bottomley wrote:
+> > On Mon, 2008-02-04 at 22:43 +0000, Alan Cox wrote:
+> > > > better. So for example, I personally suspect that ATA-over-ethernet is way 
+> > > > better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
+> > > > low-level, and against those crazy SCSI people to begin with.
+> > > 
+> > > Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
+> > > would probably trash iSCSI for latency if nothing else.
+> > 
+> > Actually, there's also FCoE now ... which is essentially SCSI
+> > encapsulated in Fibre Channel Protocols (FCP) running over ethernet with
+> > Jumbo frames.  It does the standard SCSI TCQ, so should answer all the
+> > latency pieces.  Intel even has an implementation:
+> > 
+> > http://www.open-fcoe.org/
+> > 
+> > I tend to prefer the low levels as well.  The whole disadvantage for IP
+> > as regards iSCSI was the layers of protocols on top of it for
+> > addressing, authenticating, encrypting and finding any iSCSI device
+> > anywhere in the connected universe.
+> 
+> Btw, while simple in-band discovery of iSCSI exists, the standards based
+> IP storage deployments (iSCSI and iFCP) use iSNS (RFC-4171) for
+> discovery and network fabric management, for things like sending state
+> change notifications when a particular network portal is going away so
+> that the initiator can bring up a different communication patch to a
+> different network portal, etc.
+> 
+> > 
+> > I tend to see loss of routing from operating at the MAC level to be a
+> > nicely justifiable tradeoff (most storage networks tend to be hubbed or
+> > switched anyway).  Plus an ethernet MAC with jumbo frames is a large
+> > framed nearly lossless medium, which is practically what FCP is
+> > expecting.  If you really have to connect large remote sites ... well
+> > that's what tunnelling bridges are for.
+> > 
+> 
+> Some of the points by Julo on the IPS TWG iSCSI vs. FCoE thread:
+> 
+>       * the network is limited in physical span and logical span (number
+>         of switches)
+>       * flow-control/congestion control is achieved with a mechanism
+>         adequate for a limited span network (credits). The packet loss
+>         rate is almost nil and that allows FCP to avoid using a
+>         transport (end-to-end) layer
+>       * FCP she switches are simple (addresses are local and the memory
+>         requirements cam be limited through the credit mechanism)
+>       * The credit mechanisms is highly unstable for large networks
+>         (check switch vendors planning docs for the network diameter
+>         limits) – the scaling argument
+>       * Ethernet has no credit mechanism and any mechanism with a
+>         similar effect increases the end point cost. Building a
+>         transport layer in the protocol stack has always been the
+>         preferred choice of the networking community – the community
+>         argument
+>       * The "performance penalty" of a complete protocol stack has
+>         always been overstated (and overrated). Advances in protocol
+>         stack implementation and finer tuning of the congestion control
+>         mechanisms make conventional TCP/IP performing well even at 10
+>         Gb/s and over. Moreover the multicore processors that become
+>         dominant on the computing scene have enough compute cycles
+>         available to make any "offloading" possible as a mere code
+>         restructuring exercise (see the stack reports from Intel, IBM
+>         etc.)
+>       * Building on a complete stack makes available a wealth of
+>         operational and management mechanisms built over the years by
+>         the networking community (routing, provisioning, security,
+>         service location etc.) – the community argument
+>       * Higher level storage access over an IP network is widely
+>         available and having both block and file served over the same
+>         connection with the same support and management structure is
+>         compelling– the community argument
+>       * Highly efficient networks are easy to build over IP with optimal
+>         (shortest path) routing while Layer 2 networks use bridging and
+>         are limited by the logical tree structure that bridges must
+>         follow. The effort to combine routers and bridges (rbridges) is
+>         promising to change that but it will take some time to finalize
+>         (and we don't know exactly how it will operate). Untill then the
+>         scale of Layer 2 network is going to seriously limited – the
+>         scaling argument
+> 
 
---=-iipiDIJciz2breTnx5if
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Another data point from the "The "performance penalty of a complete
+protocol stack has always been overstated (and overrated)" bullet above:
 
+"As a side argument – a performance comparison made in 1998 showed SCSI
+over TCP (a predecessor of the later iSCSI) to perform better than FCP
+at 1Gbs for block sizes typical for OLTP (4-8KB). That was what
+convinced us to take the path that lead to iSCSI – and we used plain
+vanilla x86 servers with plain-vanilla NICs and Linux (with similar
+measurements conducted on Windows)."
 
-On Mon, 2008-02-04 at 16:24 +0100, Jan-Bernd Themann wrote:
-> On Monday 04 February 2008 15:46, Michael Ellerman wrote:
-> > On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
-> > > Add memory remove hotplug support
->=20
-> > > @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
-> > >  	if (ret)
-> > >  		ehea_info("failed registering reboot notifier");
-> > > =20
-> > > +	ret =3D register_memory_notifier(&ehea_mem_nb);
-> > > +	if (ret)
-> > > +		ehea_info("failed registering memory remove notifier");
-> > >=20
-> > >  	ret =3D crash_shutdown_register(&ehea_crash_handler);
-> > >  	if (ret)
-> > >  		ehea_info("failed registering crash handler");
-> >=20
-> > You don't do anything except print a message if the registration fails.
-> > What happens when someone tries to remove memory but the memory notifie=
-r
-> > wasn't registered properly? Bang?
->=20
-> In case the registration fails and somebody tries to free memory:
-> - Driver will not remove the affected memory from the eHEA memory region
->   --> Firmware (phyp) can not free that memory (as marked as used)
->   --> Therefore the removed memory could not be used in an other partitio=
-n
->=20
-> It makes sense to allow the driver to work anyway. Having no ethernet
-> would not really be a good alternative.
+--nab
 
-Yeah I agree. I wasn't clear from the patch that no notifier -> no
-memory removed. Rather than, no notifier -> memory removed and ehea
-isn't told about it.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-iipiDIJciz2breTnx5if
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHp5xNdSjSd0sB4dIRAiwaAJ92Njb5iA7hlwLtIey0a+wqOxaoGQCffA8q
-+zpHkSlLUqJ9i1aMOFOhKTg=
-=N88B
------END PGP SIGNATURE-----
-
---=-iipiDIJciz2breTnx5if--
 
