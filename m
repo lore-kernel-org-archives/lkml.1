@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYBDXrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYBDXsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbYBDXrp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbYBDXrh
+	id S1758746AbYBDXsQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbYBDXsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:47:37 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57920 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754133AbYBDXrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:47:37 -0500
-Date: Mon, 4 Feb 2008 15:47:36 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [git pull] SLUB updates for 2.6.25
-In-Reply-To: <200802051010.49372.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0802041542570.4774@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802041206190.3241@schroedinger.engr.sgi.com>
- <20080204142845.4c734f94.akpm@linux-foundation.org>
- <20080204143053.9fac9eac.akpm@linux-foundation.org> <200802051010.49372.nickpiggin@yahoo.com.au>
+	Mon, 4 Feb 2008 18:48:00 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35161 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756218AbYBDXr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 18:47:59 -0500
+Date: Tue, 5 Feb 2008 00:48:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Timer cleanups
+Message-ID: <20080204234813.GA1927@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008, Nick Piggin wrote:
 
-> > erk, sorry, I misremembered.   I was about to merge all the patches we
-> > weren't going to merge.  oops.
-> 
-> While you're there, can you drop the patch(es?) I commented on
-> and didn't get an answer to. Like the ones that open code their
-> own locking primitives and do risky looking things with barriers
-> to boot...
+Add anotations, so that timertop produces nicer results. Relative
+expiry time can get negative, so it should be signed.
 
-That patch will be moved to a special archive for 
-microbenchmarks. It shows the same issues like the __unlock patch.
+Signed-off-by: Pavel Machek <Pavel@suse.cz>
+
+
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 429d084..235fd6c 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -368,8 +368,8 @@ static int hpet_clocksource_register(voi
+ 	return 0;
+ }
  
-> Also, WRT this one:
-> slub-use-non-atomic-bit-unlock.patch
-> 
-> This is strange that it is unwanted. Avoiding atomic operations
-> is a pretty good idea. The fact that it appears to be slower on
-> some microbenchmark on some architecture IMO either means that
-> their __clear_bit_unlock or the CPU isn't implemented so well...
+-/*
+- * Try to setup the HPET timer
++/**
++ * hpet_enable - Try to setup the HPET timer. Returns 1 on success.
+  */
+ int __init hpet_enable(void)
+ {
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index d3d94c1..0fab3ca 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -65,9 +65,9 @@ #ifdef CONFIG_TIMER_STATS
+ 	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
+ #endif
+ 	SEQ_printf(m, "\n");
+-	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
++	SEQ_printf(m, " # expires at %Lu nsecs [in %Ld nsecs]\n",
+ 		(unsigned long long)ktime_to_ns(timer->expires),
+-		(unsigned long long)(ktime_to_ns(timer->expires) - now));
++		(long long)(ktime_to_ns(timer->expires) - now));
+ }
+ 
+ static void
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 52db48e..6cbec10 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -219,6 +219,7 @@ int queue_delayed_work_on(int cpu, struc
+ 	struct timer_list *timer = &dwork->timer;
+ 	struct work_struct *work = &dwork->work;
+ 
++	timer_stats_timer_set_start_info(&dwork->timer);
+ 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+ 		BUG_ON(timer_pending(timer));
+ 		BUG_ON(!list_empty(&work->entry));
+@@ -580,6 +581,7 @@ EXPORT_SYMBOL(schedule_delayed_work);
+ int schedule_delayed_work_on(int cpu,
+ 			struct delayed_work *dwork, unsigned long delay)
+ {
++	timer_stats_timer_set_start_info(&dwork->timer);
+ 	return queue_delayed_work_on(cpu, keventd_wq, dwork, delay);
+ }
+ EXPORT_SYMBOL(schedule_delayed_work_on);
 
-Its slower on x86_64 and that is a pretty important arch. So 
-I am to defer this until we have analyzed the situation some more. Could 
-there be some effect of atomic ops on the speed with which a cacheline is 
-released?
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
