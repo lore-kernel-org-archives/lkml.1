@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYBDNpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbYBDNpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbYBDNpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbYBDNmm
+	id S1757322AbYBDNpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbYBDNmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:42:42 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:3574 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756045AbYBDNmg (ORCPT
+	Mon, 4 Feb 2008 08:42:43 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:19271 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756051AbYBDNmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Feb 2008 08:42:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=p4PppMVRl1vNsZ5QBJr/7gAA4PcPwLFDXIIZit6dP0/ESv7Oybw0Vt5GeUUPrSYxUKmHvmdlIikrPcSbVdvf0PA+GSZqAugpJwU0eBgpQzROwdPQiYPQrLB5V0ph+8hfbVddAZzbLyBldBhfvHbm/zi/XcfGHr7rM4iB7wqnUnY=
+        b=iYqq+h82mkNMZjyOcwFDDIAro/aFyOhtxvE4aIIgdOeikzgsAjFX1Tde55e1rfzwghBg8RmwiDN6j7J8DrQjroMwTxAkIdsSpIX83HnbFQEqsQY3AJ1K6e7lZ1yk6xJy7R3nf7h5xoTo5T6GHKviGdZNCZivEiX2nwOKFrvqF9Q=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 09/22] ide-tape: remove idetape_increase_max_pipeline_stages()
-Date: Mon,  4 Feb 2008 14:40:27 +0100
-Message-Id: <1202132440-26648-10-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 17/22] ide-tape: collect module-related macro calls at the end
+Date: Mon,  4 Feb 2008 14:40:35 +0100
+Message-Id: <1202132440-26648-18-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email debian.1.5.3.7.1-dirty
 In-Reply-To: <1202132440-26648-1-git-send-email-petkovbb@gmail.com>
 References: <1202132440-26648-1-git-send-email-petkovbb@gmail.com>
@@ -28,67 +28,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This function was being used only at one place so fold it in there.
-
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-tape.c |   36 ++++++++++++++++--------------------
- 1 files changed, 16 insertions(+), 20 deletions(-)
+ drivers/ide/ide-tape.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index b4944ef..ae2c76d 100644
+index 24f048f..cfcf5b0 100644
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -771,25 +771,6 @@ static void idetape_activate_next_stage(ide_drive_t *drive)
+@@ -3681,9 +3681,6 @@ failed:
+ 	return -ENODEV;
  }
  
- /*
-- *	idetape_increase_max_pipeline_stages is a part of the feedback
-- *	loop which tries to find the optimum number of stages. In the
-- *	feedback loop, we are starting from a minimum maximum number of
-- *	stages, and if we sense that the pipeline is empty, we try to
-- *	increase it, until we reach the user compile time memory limit.
-- */
--static void idetape_increase_max_pipeline_stages (ide_drive_t *drive)
--{
--	idetape_tape_t *tape = drive->driver_data;
--	int increase = (tape->max_pipeline - tape->min_pipeline) / 10;
+-MODULE_DESCRIPTION("ATAPI Streaming TAPE Driver");
+-MODULE_LICENSE("GPL");
 -
--	debug_log(DBG_PROCS, "Enter %s\n", __func__);
--
--	tape->max_stages += max(increase, 1);
--	tape->max_stages = max(tape->max_stages, tape->min_pipeline);
--	tape->max_stages = min(tape->max_stages, tape->max_pipeline);
--}
--
--/*
-  *	idetape_kfree_stage calls kfree to completely free a stage, along with
-  *	its related buffers.
-  */
-@@ -937,7 +918,22 @@ static int idetape_end_request(ide_drive_t *drive, int uptodate, int nr_sects)
- 			(void)ide_do_drive_cmd(drive, tape->active_data_rq,
- 						ide_end);
- 		} else if (!error) {
--				idetape_increase_max_pipeline_stages(drive);
-+			/*
-+			 * This is a part of the feedback loop which tries to
-+			 * find the optimum number of stages. We are starting
-+			 * from a minimum maximum number of stages, and if we
-+			 * sense that the pipeline is empty, we try to increase
-+			 * it, until we reach the user compile time memory
-+			 * limit.
-+			 */
-+			int i = (tape->max_pipeline - tape->min_pipeline) / 10;
-+
-+			tape->max_stages += max(i, 1);
-+			tape->max_stages = max(tape->max_stages,
-+						tape->min_pipeline);
-+			tape->max_stages = min(tape->max_stages,
-+						tape->max_pipeline);
-+
- 		}
- 	}
- 	ide_end_drive_cmd(drive, 0, 0);
+ static void __exit idetape_exit (void)
+ {
+ 	driver_unregister(&idetape_driver.gen_driver);
+@@ -3726,3 +3723,5 @@ MODULE_ALIAS("ide:*m-tape*");
+ module_init(idetape_init);
+ module_exit(idetape_exit);
+ MODULE_ALIAS_CHARDEV_MAJOR(IDETAPE_MAJOR);
++MODULE_DESCRIPTION("ATAPI Streaming TAPE Driver");
++MODULE_LICENSE("GPL");
 -- 
 1.5.3.7
 
