@@ -1,112 +1,757 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYBDGOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbYBDG3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbYBDGOR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 01:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYBDGOE
+	id S1754285AbYBDG3p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 01:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbYBDG3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 01:14:04 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:27409 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbYBDGOD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 01:14:03 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:mime-version:content-type;
-	b=pEMJT5odPI+8UUK3zNAZQBzI+Tg9RVCPtcTtev/pSWPjnP9T5qctQyttyHxUusWty
-	SxRuc9gPqHqlGIMIAslyA==
-Message-ID: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
-Date: Sun, 3 Feb 2008 22:13:53 -0800
-From: "Russell Leidich" <rml@google.com>
-To: "Andi Kleen" <andi@firstfloor.org>,
-       "Torsten Kaiser" <just.for.lkml@googlemail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>, valdis.kletnieks@vt.edu
-Subject: [PATCH] Remove Barcelona Thermal Throttling
+	Mon, 4 Feb 2008 01:29:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53760 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbYBDG3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 01:29:24 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: stable@kernel.org
+Subject: [PATCH 2.6.23.stable] ACPI: sync blacklist w/ latest
+Date: Mon, 4 Feb 2008 00:38:13 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_3227_12485041.1202105633918"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802040038.14079.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_3227_12485041.1202105633918
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Len Brown <len.brown@intel.com>
 
-All,
+This patch is appropriate for supporting a 2.6.23-based products.
 
-You can imagine my dismay when I recently learned that, after all our
-collective effort, hardware thermal throttling does not work reliably
-on Barcelona, according to AMD.  Due to NDA restrictions, I am unable
-to provide further details.
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/acpi/blacklist.c  |  388 ++++++++++++++++++++++++++++++++++++++++++++-
+ drivers/acpi/osl.c        |  173 +++++++++++++++-----
+ drivers/firmware/dmi-id.c |    2 -
+ include/linux/acpi.h      |    7 +-
+ include/linux/dmi.h       |    2 +
+ 5 files changed, 523 insertions(+), 49 deletions(-)
 
-But the effort has not been a waste; whenever AMD manages to make a
-reliable hardware thermal sensor, this code should "just work" along
-with all the other northbridge initialization associated with the
-device IDs in k8_northbridges[].
-
-This patch Blacklists Barcelona as non-hardware-thermal-throttlable
-(in addition to RevF, which was already blacklisted).  On the
-recommendation of my colleagues, it also contains these politeness
-enhancements: (1) warns the user if the CPU is _not_ blacklisted, but
-the BIOS neglected to enable thermal throttling (as a safety measure)
-and (2) uses the PCI_SLOT macro instead of the more obnoxious
-shift-right-by-3 to compute PCI device numbers.
-
-This patch assumes that it is being applied _after_ my previous patch
-has already been integrated.  I mailed out that patch on 1/17/2008
-with subject "Re: [PATCH] AMD Thermal Interrupt Support".
+diff --git a/drivers/acpi/blacklist.c b/drivers/acpi/blacklist.c
+index 3ec110c..d2e5298 100644
+--- a/drivers/acpi/blacklist.c
++++ b/drivers/acpi/blacklist.c
+@@ -3,6 +3,7 @@
+  *
+  *  Check to see if the given machine has a known bad ACPI BIOS
+  *  or if the BIOS is too old.
++ *  Check given machine against acpi_osi_dmi_table[].
+  *
+  *  Copyright (C) 2004 Len Brown <len.brown@intel.com>
+  *  Copyright (C) 2002 Andy Grover <andrew.grover@intel.com>
+@@ -50,6 +51,8 @@ struct acpi_blacklist_item {
+ 	u32 is_critical_error;
+ };
+ 
++static struct dmi_system_id acpi_osi_dmi_table[] __initdata;
++
+ /*
+  * POLICY: If *anything* doesn't work, put it on the blacklist.
+  *	   If they are critical errors, mark it critical, and abort driver load.
+@@ -67,8 +70,6 @@ static struct acpi_blacklist_item acpi_blacklist[] __initdata = {
+ 	/* IBM 600E - _ADR should return 7, but it returns 1 */
+ 	{"IBM   ", "TP600E  ", 0x00000105, ACPI_SIG_DSDT, less_than_or_equal,
+ 	 "Incorrect _ADR", 1},
+-	{"ASUS\0\0", "P2B-S   ", 0, ACPI_SIG_DSDT, all_versions,
+-	 "Bogus PCI routing", 1},
+ 
+ 	{""}
+ };
+@@ -165,5 +166,388 @@ int __init acpi_blacklisted(void)
+ 
+ 	blacklisted += blacklist_by_year();
+ 
++	dmi_check_system(acpi_osi_dmi_table);
++
+ 	return blacklisted;
+ }
++#ifdef CONFIG_DMI
++static int __init dmi_enable_osi_linux(struct dmi_system_id *d)
++{
++	acpi_dmi_osi_linux(1, d);	/* enable */
++	return 0;
++}
++static int __init dmi_disable_osi_linux(struct dmi_system_id *d)
++{
++	acpi_dmi_osi_linux(0, d);	/* disable */
++	return 0;
++}
++static int __init dmi_unknown_osi_linux(struct dmi_system_id *d)
++{
++	acpi_dmi_osi_linux(-1, d);	/* unknown */
++	return 0;
++}
++
++/*
++ * Most BIOS that invoke OSI(Linux) do nothing with it.
++ * But some cause Linux to break.
++ * Only a couple use it to make Linux run better.
++ *
++ * Thus, Linux should continue to disable OSI(Linux) by default,
++ * should continue to discourage BIOS writers from using it, and
++ * should whitelist the few existing systems that require it.
++ *
++ * If it appears clear a vendor isn't using OSI(Linux)
++ * for anything constructive, blacklist them by name to disable
++ * unnecessary dmesg warnings on all of their products.
++ */
++
++static struct dmi_system_id acpi_osi_dmi_table[] __initdata = {
++	/*
++	 * Disable OSI(Linux) warnings on all "Acer, inc."
++	 *
++	 * _OSI(Linux) disables the latest Windows BIOS code:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 3100"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5050"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5100"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5580"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 3010"),
++	 * _OSI(Linux) effect unknown:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Ferrari 5000"),
++	 */
++	/*
++	 * note that dmi_check_system() uses strstr()
++	 * to match sub-strings rather than !strcmp(),
++	 * so "Acer" below matches "Acer, inc." above.
++	 */
++	/*
++	 * Disable OSI(Linux) warnings on all "Acer"
++	 *
++	 * _OSI(Linux) effect unknown:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5315"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5610"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 7720Z"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 5520"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 6460"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 7510"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Extensa 5220"),
++	 */
++	{
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Acer",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "Apple Computer, Inc."
++	 *
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "MacBook1,1"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "MacBook2,1"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro2,2"),
++	 * _OSI(Linux) effect unknown:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "MacPro2,1"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro1,1"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro3,1"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Apple",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "BenQ"
++	 *
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Joybook S31"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "BenQ",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "BenQ"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "Clevo Co."
++	 *
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "M570RU"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Clevo",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Clevo Co."),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "COMPAL"
++	 *
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * DMI_MATCH(DMI_BOARD_NAME, "HEL8X"),
++	 * _OSI(Linux) unknown effect:
++	 * DMI_MATCH(DMI_BOARD_NAME, "IFL91"),
++	 */
++	{
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Compal",
++	.matches = {
++		     DMI_MATCH(DMI_BIOS_VENDOR, "COMPAL"),
++		},
++	},
++	{ /* OSI(Linux) touches USB, unknown side-effect */
++	.callback = dmi_disable_osi_linux,
++	.ident = "Dell Dimension 5150",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Dell DM051"),
++		},
++	},
++	{ /* OSI(Linux) is a NOP */
++	.callback = dmi_disable_osi_linux,
++	.ident = "Dell",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 1501"),
++		},
++	},
++	{ /* OSI(Linux) effect unknown */
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Dell",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Latitude D830"),
++		},
++	},
++	{ /* OSI(Linux) effect unknown */
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Dell",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex GX620"),
++		},
++	},
++	{ /* OSI(Linux) effect unknown */
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Dell",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "PowerEdge 1900"),
++		},
++	},
++	{ /* OSI(Linux) touches USB */
++	.callback = dmi_disable_osi_linux,
++	.ident = "Dell",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Precision WorkStation 390"),
++		},
++	},
++	{ /* OSI(Linux) is a NOP */
++	.callback = dmi_disable_osi_linux,
++	.ident = "Dell Vostro 1000",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Vostro   1000"),
++		},
++	},
++	{ /* OSI(Linux) effect unknown */
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Dell",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "PowerEdge SC440"),
++		},
++	},
++	{ /* OSI(Linux) effect unknown */
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Dialogue Flybook V5",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Dialogue Technology Corporation"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Flybook V5"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "FUJITSU SIEMENS"
++	 *
++	 * _OSI(Linux) disables latest Windows BIOS code:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pa 2510"),
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pi 1536"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pi 1556"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Xi 1546"),
++	 * _OSI(Linux) unknown effect:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Amilo M1425"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Amilo Si 1520"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "ESPRIMO Mobile V5505"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Fujitsu Siemens",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "Hewlett-Packard"
++	 *
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * .ident = "HP Pavilion tx 1000"
++	 * DMI_MATCH(DMI_BOARD_NAME, "30BF"),
++	 * .ident = "HP Pavilion dv2000"
++	 * DMI_MATCH(DMI_BOARD_NAME, "30B5"),
++	 * .ident = "HP Pavilion dv5000",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30A7"),
++	 * .ident = "HP Pavilion dv6300 30BC",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30BC"),
++	 * .ident = "HP Pavilion dv6000",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30B7"),
++	 * DMI_MATCH(DMI_BOARD_NAME, "30B8"),
++	 * .ident = "HP Pavilion dv9000",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30B9"),
++	 * .ident = "HP Pavilion dv9500",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30CB"),
++	 * .ident = "HP/Compaq Presario C500",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30C6"),
++	 * .ident = "HP/Compaq Presario F500",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30D3"),
++	 * _OSI(Linux) unknown effect:
++	 * .ident = "HP Pavilion dv6500",
++	 * DMI_MATCH(DMI_BOARD_NAME, "30D0"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Hewlett-Packard",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		},
++	},
++	/*
++	 * Lenovo has a mix of systems OSI(Linux) situations
++	 * and thus we can not wildcard the vendor.
++	 *
++	 * _OSI(Linux) helps sound
++	 * DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad R61"),
++	 * DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad T61"),
++	 * _OSI(Linux) is a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
++	 */
++	{
++	.callback = dmi_enable_osi_linux,
++	.ident = "Lenovo ThinkPad R61",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++		     DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad R61"),
++		},
++	},
++	{
++	.callback = dmi_enable_osi_linux,
++	.ident = "Lenovo ThinkPad T61",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++		     DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad T61"),
++		},
++	},
++	{
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Lenovo 3000 V100",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++		     DMI_MATCH(DMI_PRODUCT_VERSION, "LENOVO3000 V100"),
++		},
++	},
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Lenovo 3000 N100",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++		     DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "LG Electronics"
++	 *
++	 * _OSI(Linux) confirmed to be a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "P1-J150B"),
++	 * with DMI_MATCH(DMI_BOARD_NAME, "ROCKY"),
++	 *
++	 * unknown:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "S1-MDGDG"),
++	 * with DMI_MATCH(DMI_BOARD_NAME, "ROCKY"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "LG",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "LG Electronics"),
++		},
++	},
++	/* NEC - OSI(Linux) effect unknown */
++	{
++	.callback = dmi_unknown_osi_linux,
++	.ident = "NEC VERSA M360",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "NEC Computers SAS"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "NEC VERSA M360"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "Samsung Electronics"
++	 *
++	 * OSI(Linux) disables PNP0C32 and other BIOS code for Windows:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "R40P/R41P"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "R59P/R60P/R61P"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Samsung",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "Sony Corporation"
++	 *
++	 * _OSI(Linux) is a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "VGN-SZ650N"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "VGN-SZ38GP_C"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "VGN-TZ21MN_N"),
++	 * _OSI(Linux) unknown effect:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "VGN-FZ11M"),
++	 */
++	{
++	.callback = dmi_unknown_osi_linux,
++	.ident = "Sony",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++		},
++	},
++	/*
++	 * Disable OSI(Linux) warnings on all "TOSHIBA"
++	 *
++	 * _OSI(Linux) breaks sound (bugzilla 7787):
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite P100"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite P105"),
++	 * _OSI(Linux) is a NOP:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite A100"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite A210"),
++	 * _OSI(Linux) unknown effect:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite A135"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite A200"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite P205"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Satellite U305"),
++	 */
++	{
++	.callback = dmi_disable_osi_linux,
++	.ident = "Toshiba",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
++		},
++	},
++	{}
++};
++
++#endif /* CONFIG_DMI */
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 12c09fa..cd573e4 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -77,11 +77,55 @@ static struct workqueue_struct *kacpi_notify_wq;
+ #define	OSI_STRING_LENGTH_MAX 64	/* arbitrary */
+ static char osi_additional_string[OSI_STRING_LENGTH_MAX];
+ 
+-static int osi_linux;		/* disable _OSI(Linux) by default */
++/*
++ * "Ode to _OSI(Linux)"
++ *
++ * osi_linux -- Control response to BIOS _OSI(Linux) query.
++ *
++ * As Linux evolves, the features that it supports change.
++ * So an OSI string such as "Linux" is not specific enough
++ * to be useful across multiple versions of Linux.  It
++ * doesn't identify any particular feature, interface,
++ * or even any particular version of Linux...
++ *
++ * Unfortunately, Linux-2.6.22 and earlier responded "yes"
++ * to a BIOS _OSI(Linux) query.  When
++ * a reference mobile BIOS started using it, its use
++ * started to spread to many vendor platforms.
++ * As it is not supportable, we need to halt that spread.
++ *
++ * Today, most BIOS references to _OSI(Linux) are noise --
++ * they have no functional effect and are just dead code
++ * carried over from the reference BIOS.
++ *
++ * The next most common case is that _OSI(Linux) harms Linux,
++ * usually by causing the BIOS to follow paths that are
++ * not tested during Windows validation.
++ *
++ * Finally, there is a short list of platforms
++ * where OSI(Linux) benefits Linux.
++ *
++ * In Linux-2.6.23, OSI(Linux) is first disabled by default.
++ * DMI is used to disable the dmesg warning about OSI(Linux)
++ * on platforms where it is known to have no effect.
++ * But a dmesg warning remains for systems where
++ * we do not know if OSI(Linux) is good or bad for the system.
++ * DMI is also used to enable OSI(Linux) for the machines
++ * that are known to need it.
++ *
++ * BIOS writers should NOT query _OSI(Linux) on future systems.
++ * It will be ignored by default, and to get Linux to
++ * not ignore it will require a kernel source update to
++ * add a DMI entry, or a boot-time "acpi_osi=Linux" invocation.
++ */
++#define OSI_LINUX_ENABLE 0
+ 
+-#ifdef CONFIG_DMI
+-static struct __initdata dmi_system_id acpi_osl_dmi_table[];
+-#endif
++static struct osi_linux {
++	unsigned int	enable:1;
++	unsigned int	dmi:1;
++	unsigned int	cmdline:1;
++	unsigned int	known:1;
++} osi_linux = { OSI_LINUX_ENABLE, 0, 0, 0};
+ 
+ static void __init acpi_request_region (struct acpi_generic_address *addr,
+ 	unsigned int length, char *desc)
+@@ -133,7 +177,6 @@ device_initcall(acpi_reserve_resources);
+ 
+ acpi_status __init acpi_os_initialize(void)
+ {
+-	dmi_check_system(acpi_osl_dmi_table);
+ 	return AE_OK;
+ }
+ 
+@@ -971,13 +1014,37 @@ static int __init acpi_os_name_setup(char *str)
+ 
+ __setup("acpi_os_name=", acpi_os_name_setup);
+ 
+-static void enable_osi_linux(int enable) {
++static void __init set_osi_linux(unsigned int enable)
++{
++	if (osi_linux.enable != enable) {
++		osi_linux.enable = enable;
++		printk(KERN_NOTICE PREFIX "%sed _OSI(Linux)\n",
++			enable ? "Add": "Delet");
++	}
++	return;
++}
+ 
+-	if (osi_linux != enable)
+-		printk(KERN_INFO PREFIX "%sabled _OSI(Linux)\n",
+-			enable ? "En": "Dis");
++static void __init acpi_cmdline_osi_linux(unsigned int enable)
++{
++	osi_linux.cmdline = 1;	/* cmdline set the default */
++	set_osi_linux(enable);
++
++	return;
++}
++
++void __init acpi_dmi_osi_linux(int enable, const struct dmi_system_id *d)
++{
++	osi_linux.dmi = 1;	/* DMI knows that this box asks OSI(Linux) */
++
++	printk(KERN_NOTICE PREFIX "DMI detected: %s\n", d->ident);
++
++	if (enable == -1)
++		return;
++
++	osi_linux.known = 1;	/* DMI knows which OSI(Linux) default needed */
++
++	set_osi_linux(enable);
+ 
+-	osi_linux = enable;
+ 	return;
+ }
+ 
+@@ -994,12 +1061,12 @@ static int __init acpi_osi_setup(char *str)
+ 		printk(KERN_INFO PREFIX "_OSI method disabled\n");
+ 		acpi_gbl_create_osi_method = FALSE;
+ 	} else if (!strcmp("!Linux", str)) {
+-		enable_osi_linux(0);
++		acpi_cmdline_osi_linux(0);	/* !enable */
+ 	} else if (*str == '!') {
+ 		if (acpi_osi_invalidate(++str) == AE_OK)
+ 			printk(KERN_INFO PREFIX "Deleted _OSI(%s)\n", str);
+ 	} else if (!strcmp("Linux", str)) {
+-		enable_osi_linux(1);
++		acpi_cmdline_osi_linux(1);	/* enable */
+ 	} else if (*osi_additional_string == '\0') {
+ 		strncpy(osi_additional_string, str, OSI_STRING_LENGTH_MAX);
+ 		printk(KERN_INFO PREFIX "Added _OSI(%s)\n", str);
+@@ -1156,6 +1223,34 @@ acpi_status acpi_os_release_object(acpi_cache_t * cache, void *object)
+ 	return (AE_OK);
+ }
+ 
++/**
++ *	acpi_dmi_dump - dump DMI slots needed for blacklist entry
++ *
++ *	Returns 0 on success
++ */
++static int acpi_dmi_dump(void)
++{
++
++	if (!dmi_available)
++		return -1;
++
++	printk(KERN_NOTICE PREFIX "DMI System Vendor: %s\n",
++		dmi_get_system_info(DMI_SYS_VENDOR));
++	printk(KERN_NOTICE PREFIX "DMI Product Name: %s\n",
++		dmi_get_system_info(DMI_PRODUCT_NAME));
++	printk(KERN_NOTICE PREFIX "DMI Product Version: %s\n",
++		dmi_get_system_info(DMI_PRODUCT_VERSION));
++	printk(KERN_NOTICE PREFIX "DMI Board Name: %s\n",
++		dmi_get_system_info(DMI_BOARD_NAME));
++	printk(KERN_NOTICE PREFIX "DMI BIOS Vendor: %s\n",
++		dmi_get_system_info(DMI_BIOS_VENDOR));
++	printk(KERN_NOTICE PREFIX "DMI BIOS Date: %s\n",
++		dmi_get_system_info(DMI_BIOS_DATE));
++
++	return 0;
++}
++
++
+ /******************************************************************************
+  *
+  * FUNCTION:    acpi_os_validate_interface
+@@ -1175,13 +1270,29 @@ acpi_os_validate_interface (char *interface)
+ 	if (!strncmp(osi_additional_string, interface, OSI_STRING_LENGTH_MAX))
+ 		return AE_OK;
+ 	if (!strcmp("Linux", interface)) {
+-		printk(KERN_WARNING PREFIX
+-			"System BIOS is requesting _OSI(Linux)\n");
+-		printk(KERN_WARNING PREFIX
+-			"If \"acpi_osi=Linux\" works better,\n"
+-			"Please send dmidecode "
+-			"to linux-acpi@vger.kernel.org\n");
+-		if(osi_linux)
++
++		printk(KERN_NOTICE PREFIX
++			"BIOS _OSI(Linux) query %s%s\n",
++			osi_linux.enable ? "honored" : "ignored",
++			osi_linux.cmdline ? " via cmdline" :
++			osi_linux.dmi ? " via DMI" : "");
++
++		if (!osi_linux.dmi) {
++			if (acpi_dmi_dump())
++				printk(KERN_NOTICE PREFIX
++					"[please extract dmidecode output]\n");
++			printk(KERN_NOTICE PREFIX
++				"Please send DMI info above to "
++				"linux-acpi@vger.kernel.org\n");
++		}
++		if (!osi_linux.known && !osi_linux.cmdline) {
++			printk(KERN_NOTICE PREFIX
++				"If \"acpi_osi=%sLinux\" works better, "
++				"please notify linux-acpi@vger.kernel.org\n",
++				osi_linux.enable ? "!" : "");
++		}
++
++		if (osi_linux.enable)
+ 			return AE_OK;
+ 	}
+ 	return AE_SUPPORT;
+@@ -1213,28 +1324,4 @@ acpi_os_validate_address (
+     return AE_OK;
+ }
+ 
+-#ifdef CONFIG_DMI
+-static int dmi_osi_linux(struct dmi_system_id *d)
+-{
+-	printk(KERN_NOTICE "%s detected: enabling _OSI(Linux)\n", d->ident);
+-	enable_osi_linux(1);
+-	return 0;
+-}
+-
+-static struct dmi_system_id acpi_osl_dmi_table[] __initdata = {
+-	/*
+-	 * Boxes that need _OSI(Linux)
+-	 */
+-	{
+-	 .callback = dmi_osi_linux,
+-	 .ident = "Intel Napa CRB",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "MPAD-MSAE Customer Reference Boards"),
+-		     },
+-	 },
+-	{}
+-};
+-#endif /* CONFIG_DMI */
+-
+ #endif
+diff --git a/drivers/firmware/dmi-id.c b/drivers/firmware/dmi-id.c
+index 59c3b5a..ed0d030 100644
+--- a/drivers/firmware/dmi-id.c
++++ b/drivers/firmware/dmi-id.c
+@@ -159,8 +159,6 @@ static struct device *dmi_dev;
+ 	if (dmi_get_system_info(_field)) \
+ 		sys_dmi_attributes[i++] = & sys_dmi_##_name##_attr.attr;
+ 
+-extern int dmi_available;
+-
+ static int __init dmi_id_init(void)
+ {
+ 	int ret, i;
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index bf5e000..919e0a5 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -40,6 +40,7 @@
+ #include <acpi/acpi_drivers.h>
+ #include <acpi/acpi_numa.h>
+ #include <asm/acpi.h>
++#include <linux/dmi.h>
+ 
+ 
+ #ifdef CONFIG_ACPI
+@@ -187,7 +188,9 @@ extern int ec_transaction(u8 command,
+ #endif /*CONFIG_ACPI_EC*/
+ 
+ extern int acpi_blacklisted(void);
+-extern void acpi_bios_year(char *s);
++#ifdef CONFIG_DMI
++extern void acpi_dmi_osi_linux(int enable, const struct dmi_system_id *d);
++#endif
+ 
+ #define	ACPI_CSTATE_LIMIT_DEFINED	/* for driver builds */
+ #ifdef	CONFIG_ACPI
+@@ -247,5 +250,5 @@ static inline int acpi_boot_table_init(void)
+ 	return 0;
+ }
+ 
+-#endif	/* CONFIG_ACPI */
++#endif	/* !CONFIG_ACPI */
+ #endif	/*_LINUX_ACPI_H*/
+diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+index b8ac7b0..d8a946f 100644
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -78,6 +78,7 @@ extern struct dmi_device * dmi_find_device(int type, const char *name,
+ extern void dmi_scan_machine(void);
+ extern int dmi_get_year(int field);
+ extern int dmi_name_in_vendors(char *str);
++extern int dmi_available;
+ 
+ #else
+ 
+@@ -87,6 +88,7 @@ static inline struct dmi_device * dmi_find_device(int type, const char *name,
+ 	struct dmi_device *from) { return NULL; }
+ static inline int dmi_get_year(int year) { return 0; }
+ static inline int dmi_name_in_vendors(char *s) { return 0; }
++#define dmi_available 0
+ 
+ #endif
+ 
 -- 
-Russell Leidich
+1.5.4.rc5.16.gc0279
 
-------=_Part_3227_12485041.1202105633918
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fc8mn64j0
-Content-Disposition: attachment; filename=patch.txt
-
-U2lnbmVkLW9mZi1ieTogUnVzc2VsbCBMZWlkaWNoIDxybWxAZ29vZ2xlLmNvbT4KLS0tIGxpbnV4
-LTIuNi4yNC1yYzUub3JpZy9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2VfYW1kXzY0CTIw
-MDgtMDItMDMgMjE6MTc6NTguMTg2NjEzMDAwIC0wODAwCisrKyBsaW51eC0yLjYuMjQtcmM1L2Fy
-Y2gveDg2L2tlcm5lbC9jcHUvbWNoZWNrL21jZV9hbWRfNjQuYwkyMDA4LTAyLTAzIDIxOjUxOjM4
-LjgxMDk4OTAwMCAtMDgwMApAQCAtNzQyLDEzICs3NDIsMjAgQEAgc3RhdGljIHZvaWQgc21wX3Ro
-ZXJtYWxfbm9ydGhicmlkZ2VfaW5pdAogCQkgKi8KIAkJcGNpX3JlYWRfY29uZmlnX2R3b3JkKGs4
-X25vcnRoYnJpZGdlc1tuYl9udW1dLAogCQkJCQlUSEVSTV9DVExfRjNYNjQsICZ0aGVybV9jdGxf
-ZjN4NjQpOwotCQl0aGVybV9jdGxfZjN4NjQgfD0gUFNMX0FQSUNfSElfRU4gfCBIVENfRU47CisJ
-CXRoZXJtX2N0bF9mM3g2NCB8PSBQU0xfQVBJQ19ISV9FTjsKIAkJdGhlcm1fY3RsX2YzeDY0ICY9
-ICh+UFNMX0FQSUNfTE9fRU4pOwogCQlwY2lfd3JpdGVfY29uZmlnX2R3b3JkKGs4X25vcnRoYnJp
-ZGdlc1tuYl9udW1dLAogCQkJCQlUSEVSTV9DVExfRjNYNjQsIHRoZXJtX2N0bF9mM3g2NCk7Ci0J
-CXByaW50ayhLRVJOX0lORk8gIkNQVSB0aGVybWFsIHRocm90dGxpbmcgaW50ZXJydXB0cyBlbmFi
-bGVkIGluICIKLQkJCSJQQ0kgYnVzIDB4MCwgZGV2aWNlIDB4JXgsIGZ1bmN0aW9uIDB4MywgcmVn
-aXN0ZXIgMHg2NC4iCi0JCQkiXG4iLCBrOF9ub3J0aGJyaWRnZXNbbmJfbnVtXS0+ZGV2Zm4gPj4g
-Myk7CisJCWlmICh0aGVybV9jdGxfZjN4NjQgJiBIVENfRU4pCisJCQlwcmludGsoS0VSTl9JTkZP
-ICJDUFUgdGhlcm1hbCB0aHJvdHRsaW5nIGludGVycnVwdHMgIgorCQkJCSJlbmFibGVkIGluIFBD
-SSBidXMgMHgwLCBkZXZpY2UgMHgleCwgZnVuY3Rpb24gIgorCQkJCSIweDMsIHJlZ2lzdGVyIDB4
-NjQuXG4iLAorCQkJCVBDSV9TTE9UKGs4X25vcnRoYnJpZGdlc1tuYl9udW1dLT5kZXZmbikpOwor
-CQllbHNlCisJCQlwcmludGsoS0VSTl9XQVJOSU5HICJDUFUgdGhlcm1hbCB0aHJvdHRsaW5nIGRp
-c2FibGVkIGJ5IgorCQkJCSIgdGhlIEJJT1MgaW4gUENJIGJ1cyAweDAsIGRldmljZSAweCV4LCAi
-CisJCQkJImZ1bmN0aW9uIDB4MywgcmVnaXN0ZXIgMHg2NCwgYml0IDB4MC5cbiIsCisJCQkJUENJ
-X1NMT1Qoazhfbm9ydGhicmlkZ2VzW25iX251bV0tPmRldmZuKSk7CiAJfQogfQogCkBAIC04MzUs
-NyArODQyLDcgQEAgc3RhdGljIHZvaWQgc21wX3RoZXJtYWxfZWFybHlfdGhyb3R0bGVfYwogICog
-Y29ycmVzcG9uZGluZyBBUElDIGluaXRpYWxpemF0aW9uIG9uIGVhY2ggY29yZS4KICAqCiAgKiBE
-dWUgdG8gYW4gZXJyYXR1bSBpbnZvbHZpbmcgdGhlIHRoZXJtYWwgc2Vuc29yLCB0aGlzIGNvZGUg
-ZG9lcyBub3Qgd29yayBvbgotICogYW55IENQVSBwcmlvciB0byBGYW1pbHkgMHgxMC4KKyAqIENQ
-VXMgd2l0aCBjZXJ0YWluIG5vcnRoYnJpZGdlIGRldmljZSBJRHMsIGFzIGNvZGVkIGJlbG93Lgog
-ICovCiBzdGF0aWMgaW50IHNtcF90aGVybWFsX2ludGVycnVwdF9pbml0KHZvaWQpCiB7CkBAIC04
-NDQsMTMgKzg1MSwxNSBAQCBzdGF0aWMgaW50IHNtcF90aGVybWFsX2ludGVycnVwdF9pbml0KHZv
-CiAJaWYgKG51bV9rOF9ub3J0aGJyaWRnZXMgPT0gMCkKIAkJZ290byBvdXQ7CiAJLyoKLQkgKiBJ
-ZiBhbnkgb2YgdGhlIG5vcnRoYnJpZGdlcyBoYXMgUENJIElEIDB4MTEwMywgdGhlbiBpdHMgdGhl
-cm1hbAotCSAqIGhhcmR3YXJlIHN1ZmZlcnMgZnJvbSBhbiBlcnJhdHVtIHdoaWNoIHByZXZlbnRz
-IHRoaXMgY29kZSBmcm9tCi0JICogd29ya2luZywgc28gYWJvcnQuICAoVGhpcyBpbXBsaWVzIHRo
-YXQgaXQgb25seSB3b3JrcyBvbiBGYW1pbHkKLQkgKiAweDEwLikKKwkgKiBJZiBhbnkgb2YgdGhl
-IG5vcnRoYnJpZGdlcyBoYXMgYW55IG9mIHRoZSBkZXZpY2UgSURzIGluIHRoZSBmb2xsb3dpbmcK
-KwkgKiBsb29wLCB0aGVuIHRoZSBoYXJkd2FyZSBzdWZmZXJzIGZyb20gYW4gZXJyYXR1bSB3aGlj
-aCBwcmV2ZW50cworCSAqIHRoaXMgY29kZSBmcm9tIHdvcmtpbmcsIHNvIGFib3J0LgogCSAqLwog
-CWZvciAobmJfbnVtID0gMDsgbmJfbnVtIDwgbnVtX2s4X25vcnRoYnJpZGdlczsgbmJfbnVtKysp
-IHsKLQkJaWYgKChrOF9ub3J0aGJyaWRnZXNbbmJfbnVtXS0+ZGV2aWNlKSA9PSAweDExMDMpCisJ
-CV9fdTMyIGRldmljZV9pZDsKKworCQlkZXZpY2VfaWQgPSBrOF9ub3J0aGJyaWRnZXNbbmJfbnVt
-XS0+ZGV2aWNlOworCQlpZiAoKGRldmljZV9pZCA9PSAweDExMDMpIHx8IChkZXZpY2VfaWQgPT0g
-MHgxMjAzKSkKIAkJCWdvdG8gb3V0OwogCX0KIAkvKgo=
-------=_Part_3227_12485041.1202105633918--
