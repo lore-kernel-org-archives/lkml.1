@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYBDW0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYBDW26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbYBDW0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 17:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYBDW0J
+	id S1757127AbYBDW26 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 17:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbYBDW2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 17:26:09 -0500
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:58567 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbYBDW0I (ORCPT
+	Mon, 4 Feb 2008 17:28:51 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34866 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754883AbYBDW2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 17:26:08 -0500
-X-Greylist: delayed 1600 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Feb 2008 17:26:08 EST
-Message-ID: <47A78AB9.5020901@hotmail.com>
-Date: Mon, 04 Feb 2008 22:59:21 +0100
-From: Roel kluin <rjckluin@hotmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: ibm-acpi@hmh.eng.br, len.brown@intel.com
-CC: linux-acpi@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test 'if (level &
- TP_EC_FAN_FULLSPEED)'
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Feb 2008 17:28:50 -0500
+Date: Mon, 4 Feb 2008 14:28:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [git pull] SLUB updates for 2.6.25
+Message-Id: <20080204142845.4c734f94.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802041206190.3241@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802041206190.3241@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-in drivers/misc/thinkpad_acpi.c, lines 4137-4142 it reads:
+On Mon, 4 Feb 2008 12:08:34 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-                /* safety net should the EC not support AUTO
-                 * or FULLSPEED mode bits and just ignore them */
-                if (level & TP_EC_FAN_FULLSPEED)
-                        level |= 7;     /* safety min speed 7 */
-                else if (level & TP_EC_FAN_FULLSPEED)
-                        level |= 4;     /* safety min speed 4 */
+> Updates for slub are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git slub-linus
+> 
+> Christoph Lameter (5):
+>       SLUB: Fix sysfs refcounting
+>       Move count_partial before kmem_cache_shrink
+>       SLUB: rename defrag to remote_node_defrag_ratio
+>       Add parameter to add_partial to avoid having two functions
+>       Explain kmem_cache_cpu fields
+> 
+> Harvey Harrison (1):
+>       slub: fix shadowed variable sparse warnings
+> 
+> Pekka Enberg (1):
+>       SLUB: Fix coding style violations
+> 
+> root (1):
+>       SLUB: Do not upset lockdep
+> 
 
-note the nonsense duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'.
-should this be changed to:
+err, what?  I though I was going to merge these:
 
-                if (level & TP_EC_FAN_FULLSPEED)
-                        level |= 7;     /* safety min speed 7 */
-                else
-                        level |= 4;     /* safety min speed 4 */
+slub-move-count_partial.patch
+slub-rename-numa-defrag_ratio-to-remote_node_defrag_ratio.patch
+slub-consolidate-add_partial-and-add_partial_tail-to-one-function.patch
+slub-use-non-atomic-bit-unlock.patch
+slub-fix-coding-style-violations.patch
+slub-noinline-some-functions-to-avoid-them-being-folded-into-alloc-free.patch
+slub-move-kmem_cache_node-determination-into-add_full-and-add_partial.patch
+slub-avoid-checking-for-a-valid-object-before-zeroing-on-the-fast-path.patch
+slub-__slab_alloc-exit-path-consolidation.patch
+slub-provide-unique-end-marker-for-each-slab.patch
+slub-avoid-referencing-kmem_cache-structure-in-__slab_alloc.patch
+slub-optional-fast-path-using-cmpxchg_local.patch
+slub-do-our-own-locking-via-slab_lock-and-slab_unlock.patch
+slub-restructure-slab-alloc.patch
+slub-comment-kmem_cache_cpu-structure.patch
+slub-fix-sysfs-refcounting.patch
 
-or maybe
+before you went and changed things under my feet.
 
-                if (level & TP_EC_FAN_FULLSPEED)
-                        level |= 7;     /* safety min speed 7 */
-                if (level & TP_EC_FAN_FULLSPEED)
-                        level |= 4;     /* safety min speed 4 */
-
-?
+Please clarify.
