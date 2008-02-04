@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbYBDWsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbYBDWtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757093AbYBDWsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 17:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbYBDWsI
+	id S1757690AbYBDWtk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 17:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYBDWt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 17:48:08 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:33673 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755906AbYBDWsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 17:48:07 -0500
-Date: Mon, 4 Feb 2008 23:48:01 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Abel Bernabeu <abel.bernabeu@gmail.com>
-cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: Fwd: brk randomization breaks columns
-In-Reply-To: <15577be70802041354s23e5b289w56f724dfdf8c3242@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802042346020.30873@twin.jikos.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu>
-  <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz> 
- <Pine.LNX.4.64.0802041635000.30955@jikos.suse.cz> 
- <15577be70802041016m97cddbfk43b9073408bcbce9@mail.gmail.com> 
- <15577be70802041029o2975ba6do34589bbdc81d1652@mail.gmail.com> 
- <20080204195251.GB4915@elf.ucw.cz> <15577be70802041354s23e5b289w56f724dfdf8c3242@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 17:49:29 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48461 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755610AbYBDWt1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 17:49:27 -0500
+Date: Mon, 4 Feb 2008 22:43:14 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Message-ID: <20080204224314.113afe7b@core>
+In-Reply-To: <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	<1201639331.3069.58.camel@localhost.localdomain>
+	<47A05CBD.5050803@vlnb.net>
+	<47A7049A.9000105@vlnb.net>
+	<1202139015.3096.5.camel@localhost.localdomain>
+	<47A73C86.3060604@vlnb.net>
+	<1202144767.3096.38.camel@localhost.localdomain>
+	<47A7488B.4080000@vlnb.net>
+	<1202145901.3096.49.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	<1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	<alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008, Abel Bernabeu wrote:
+> better. So for example, I personally suspect that ATA-over-ethernet is way 
+> better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
+> low-level, and against those crazy SCSI people to begin with.
 
-> > > I think I am getting the some problem with brand new binaries produced
-> > > by myself :(
-> > > Look at this report I posted days ago:
-> > > http://marc.info/?l=linux-kernel&m=120169141603789&w=2
-> > Your crash is in kernel, no? Anyway, I can workaround mine by 
-> > disabling randomization...
-> Yes, my crash happens at kernel space, but is due to the randomized 
-> params passed to set_brk (the same thing that makes your game crash 
-> later at runtime).
+Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
+would probably trash iSCSI for latency if nothing else.
 
-[ please don't drop me from CC, thanks ]
 
-Abel, I actually don't think you have chance to have any issues with 
-randomization, as the mentioned post talks about 2.6.22.10, which doesn't 
-randomize the brk start at all.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
-
+Alan
