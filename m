@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbYBDSZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYBDSZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbYBDSZe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 13:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYBDSZZ
+	id S1756821AbYBDSZz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 13:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbYBDSZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 13:25:25 -0500
-Received: from mail.suse.de ([195.135.220.2]:44594 "EHLO mx1.suse.de"
+	Mon, 4 Feb 2008 13:25:43 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44642 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420AbYBDSZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 13:25:24 -0500
+	id S1756237AbYBDSZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 13:25:42 -0500
 From: Frank Seidel <fseidel@suse.de>
 Organization: SUSE LINUX Products GmbH
 To: Philip Langdale <philipl@overt.org>
-Subject: Re: [PATCH] mmc: extend ricoh_mmc to support Ricoh RL5c476
-Date: Mon, 4 Feb 2008 19:25:20 +0100
+Subject: [PATCH] mmc: Handle suspend/resume in Ricoh MMC disabler (resent refreshed)
+Date: Mon, 4 Feb 2008 19:25:38 +0100
 User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
 Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
        Pierre Ossman <drzeus@drzeus.cx>,
@@ -25,24 +25,160 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802041925.21340.fseidel@suse.de>
+Message-Id: <200802041925.39529.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Philip Langdale <philipl@overt.org>
 
-On Samstag 02 Februar 2008 08:16:48, you (Philip Langdale) wrote:
-> Again, thanks a lot for investigating and finding the appropriate magic
-> incantations. My main comment is to please base this on top of my suspend/resume
-> patch which Pierre said he accepted but which isn't in his tree yet - I guess
-> he's busy offline right now - haven't heard from him in a while.
+As pci config space is reinitialised on suspend/resume cycle, the
+disabler needs to work its magic at resume time. For symmetry this
+change also explicitly enables the controller at suspend time but
+it's not strictly necessary.
 
-to any reason i had some strange problems applying your patch. But i finally made
-it and rebased my patch on top of it.
-So, in a few moments i'll sent it here as v2 and also a quilt refreshed version
-of yours (just in case also somebody had problems.. ah and i fixed a typo
-in your signed-off and added mine).
+Signed-off-by: Philip Langdale <philipl@overt.org>
+Signed-off-by: Frank Seidel <fseidel@suse.de>
+---
+ drivers/mmc/host/ricoh_mmc.c |   97 +++++++++++++++++++++++++++++++------------
+ 1 file changed, 72 insertions(+), 25 deletions(-)
 
-Thanks,
-Frank
+--- a/drivers/mmc/host/ricoh_mmc.c
++++ b/drivers/mmc/host/ricoh_mmc.c
+@@ -41,6 +41,46 @@ static const struct pci_device_id pci_id
+ 
+ MODULE_DEVICE_TABLE(pci, pci_ids);
+ 
++static int ricoh_mmc_disable(struct pci_dev *fw_dev)
++{
++	u8 write_enable;
++	u8 disable;
++
++	pci_read_config_byte(fw_dev, 0xCB, &disable);
++	if (disable & 0x02) {
++		printk(KERN_INFO DRIVER_NAME
++		       ": Controller already disabled. Nothing to do.\n");
++		return -ENODEV;
++	}
++
++	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
++	pci_write_config_byte(fw_dev, 0xCA, 0x57);
++	pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
++	pci_write_config_byte(fw_dev, 0xCA, write_enable);
++
++	printk(KERN_INFO DRIVER_NAME
++	       ": Controller is now disabled.\n");
++
++	return 0;
++}
++
++static int ricoh_mmc_enable(struct pci_dev *fw_dev)
++{
++	u8 write_enable;
++	u8 disable;
++
++	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
++	pci_read_config_byte(fw_dev, 0xCB, &disable);
++	pci_write_config_byte(fw_dev, 0xCA, 0x57);
++	pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
++	pci_write_config_byte(fw_dev, 0xCA, write_enable);
++
++	printk(KERN_INFO DRIVER_NAME
++	       ": Controller is now re-enabled.\n");
++
++	return 0;
++}
++
+ static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+ 				     const struct pci_device_id *ent)
+ {
+@@ -61,26 +101,12 @@ static int __devinit ricoh_mmc_probe(str
+ 	while ((fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH, PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
+ 		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
+ 		    pdev->bus == fw_dev->bus) {
+-			u8 write_enable;
+-			u8 disable;
+-
+-			pci_read_config_byte(fw_dev, 0xCB, &disable);
+-			if (disable & 0x02) {
+-				printk(KERN_INFO DRIVER_NAME
+-				       ": Controller already disabled. Nothing to do.\n");
++			if (ricoh_mmc_disable(fw_dev) != 0) {
+ 				return -ENODEV;
+ 			}
+ 
+-			pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+-			pci_write_config_byte(fw_dev, 0xCA, 0x57);
+-			pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
+-			pci_write_config_byte(fw_dev, 0xCA, write_enable);
+-
+ 			pci_set_drvdata(pdev, fw_dev);
+ 
+-			printk(KERN_INFO DRIVER_NAME
+-			       ": Controller is now disabled.\n");
+-
+ 			break;
+ 		}
+ 	}
+@@ -96,30 +122,51 @@ static int __devinit ricoh_mmc_probe(str
+ 
+ static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
+ {
+-	u8 write_enable;
+-	u8 disable;
+ 	struct pci_dev *fw_dev = NULL;
+ 
+ 	fw_dev = pci_get_drvdata(pdev);
+ 	BUG_ON(fw_dev == NULL);
+ 
+-	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+-	pci_read_config_byte(fw_dev, 0xCB, &disable);
+-	pci_write_config_byte(fw_dev, 0xCA, 0x57);
+-	pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
+-	pci_write_config_byte(fw_dev, 0xCA, write_enable);
+-
+-	printk(KERN_INFO DRIVER_NAME
+-	       ": Controller is now re-enabled.\n");
++	ricoh_mmc_enable(fw_dev);
+ 
+ 	pci_set_drvdata(pdev, NULL);
+ }
+ 
++static int ricoh_mmc_suspend (struct pci_dev *pdev, pm_message_t state)
++{
++	struct pci_dev *fw_dev = NULL;
++
++	fw_dev = pci_get_drvdata(pdev);
++	BUG_ON(fw_dev == NULL);
++
++	printk(KERN_INFO DRIVER_NAME ": Suspending.\n");
++
++	ricoh_mmc_enable(fw_dev);
++
++	return 0;
++}
++
++static int ricoh_mmc_resume (struct pci_dev *pdev)
++{
++	struct pci_dev *fw_dev = NULL;
++
++	fw_dev = pci_get_drvdata(pdev);
++	BUG_ON(fw_dev == NULL);
++
++	printk(KERN_INFO DRIVER_NAME ": Resuming.\n");
++
++	ricoh_mmc_disable(fw_dev);
++
++	return 0;
++}
++
+ static struct pci_driver ricoh_mmc_driver = {
+ 	.name = 	DRIVER_NAME,
+ 	.id_table =	pci_ids,
+ 	.probe = 	ricoh_mmc_probe,
+ 	.remove =	__devexit_p(ricoh_mmc_remove),
++	.suspend =	ricoh_mmc_suspend,
++	.resume =	ricoh_mmc_resume,
+ };
+ 
+ /*****************************************************************************\
