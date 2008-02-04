@@ -1,206 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYBDS0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYBDSa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbYBDS0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 13:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbYBDSZv
+	id S1756030AbYBDSa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 13:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYBDSaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 13:25:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60816 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756656AbYBDSZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 13:25:49 -0500
-From: Frank Seidel <fseidel@suse.de>
-Organization: SUSE LINUX Products GmbH
-To: Philip Langdale <philipl@overt.org>
-Subject: [PATCH v2] mmc: extend ricoh_mmc to support Ricoh RL5c476
-Date: Mon, 4 Feb 2008 19:25:42 +0100
-User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
-Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>
-References: <200801311838.24743.fseidel@suse.de> <47A418E0.6040205@overt.org>
-In-Reply-To: <47A418E0.6040205@overt.org>
+	Mon, 4 Feb 2008 13:30:16 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59387 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753202AbYBDSaO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 13:30:14 -0500
+Date: Mon, 4 Feb 2008 10:29:38 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+In-Reply-To: <1202145901.3096.49.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>  <1201639331.3069.58.camel@localhost.localdomain>  <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>  <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+  <1202144767.3096.38.camel@localhost.localdomain>  <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802041925.43081.fseidel@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <fseidel@suse.de>
 
-This patch (base on current linus git tree plus Philip Langdales
-suspend/resume patch) adds support for the Ricoh RL5c476 chip:
-with this the mmc adapter that needs this disabler (R5C843) can
-also be handled correctly when it sits on a RL5c476.
-(+ minor style changes (removed spaces between function names
-and open parenthesis .. checkpatch warned from previos patch))
 
-Signed-off-by: Frank Seidel <fseidel@suse.de>
----
- drivers/mmc/host/ricoh_mmc.c |  101 ++++++++++++++++++++++++++++++++++---------
- 1 file changed, 80 insertions(+), 21 deletions(-)
+On Mon, 4 Feb 2008, James Bottomley wrote:
+> 
+> The way a user space solution should work is to schedule mmapped I/O
+> from the backing store and then send this mmapped region off for target
+> I/O.
 
---- a/drivers/mmc/host/ricoh_mmc.c
-+++ b/drivers/mmc/host/ricoh_mmc.c
-@@ -44,19 +44,43 @@ MODULE_DEVICE_TABLE(pci, pci_ids);
- static int ricoh_mmc_disable(struct pci_dev *fw_dev)
- {
- 	u8 write_enable;
-+	u8 write_target;
- 	u8 disable;
- 
--	pci_read_config_byte(fw_dev, 0xCB, &disable);
--	if (disable & 0x02) {
--		printk(KERN_INFO DRIVER_NAME
--		       ": Controller already disabled. Nothing to do.\n");
--		return -ENODEV;
--	}
-+	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
-+		/* via RL5C476 */
-+
-+		pci_read_config_byte(fw_dev, 0xB7, &disable);
-+		if (disable & 0x02) {
-+			printk(KERN_INFO DRIVER_NAME
-+				": Controller already disabled. " \
-+				"Nothing to do.\n");
-+			return -ENODEV;
-+		}
-+
-+		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
-+		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
-+		pci_read_config_byte(fw_dev, 0x8D, &write_target);
-+		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
-+		pci_write_config_byte(fw_dev, 0xB7, disable | 0x02);
-+		pci_write_config_byte(fw_dev, 0x8E, write_enable);
-+		pci_write_config_byte(fw_dev, 0x8D, write_target);
-+	} else {
-+		/* via R5C832 */
-+
-+		pci_read_config_byte(fw_dev, 0xCB, &disable);
-+		if (disable & 0x02) {
-+			printk(KERN_INFO DRIVER_NAME
-+			       ": Controller already disabled. " \
-+				"Nothing to do.\n");
-+			return -ENODEV;
-+		}
- 
--	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
--	pci_write_config_byte(fw_dev, 0xCA, 0x57);
--	pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
--	pci_write_config_byte(fw_dev, 0xCA, write_enable);
-+		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
-+		pci_write_config_byte(fw_dev, 0xCA, 0x57);
-+		pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
-+		pci_write_config_byte(fw_dev, 0xCA, write_enable);
-+	}
- 
- 	printk(KERN_INFO DRIVER_NAME
- 	       ": Controller is now disabled.\n");
-@@ -67,13 +91,29 @@ static int ricoh_mmc_disable(struct pci_
- static int ricoh_mmc_enable(struct pci_dev *fw_dev)
- {
- 	u8 write_enable;
-+	u8 write_target;
- 	u8 disable;
- 
--	pci_read_config_byte(fw_dev, 0xCA, &write_enable);
--	pci_read_config_byte(fw_dev, 0xCB, &disable);
--	pci_write_config_byte(fw_dev, 0xCA, 0x57);
--	pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
--	pci_write_config_byte(fw_dev, 0xCA, write_enable);
-+	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
-+		/* via RL5C476 */
-+
-+		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
-+		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
-+		pci_read_config_byte(fw_dev, 0x8D, &write_target);
-+		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
-+		pci_read_config_byte(fw_dev, 0xB7, &disable);
-+		pci_write_config_byte(fw_dev, 0xB7, disable & ~0x02);
-+		pci_write_config_byte(fw_dev, 0x8E, write_enable);
-+		pci_write_config_byte(fw_dev, 0x8D, write_target);
-+	} else {
-+		/* via R5C832 */
-+
-+		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
-+		pci_read_config_byte(fw_dev, 0xCB, &disable);
-+		pci_write_config_byte(fw_dev, 0xCA, 0x57);
-+		pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
-+		pci_write_config_byte(fw_dev, 0xCA, write_enable);
-+	}
- 
- 	printk(KERN_INFO DRIVER_NAME
- 	       ": Controller is now re-enabled.\n");
-@@ -85,6 +125,7 @@ static int __devinit ricoh_mmc_probe(str
- 				     const struct pci_device_id *ent)
- {
- 	u8 rev;
-+	u8 ctrlfound = 0;
- 
- 	struct pci_dev *fw_dev = NULL;
- 
-@@ -98,20 +139,38 @@ static int __devinit ricoh_mmc_probe(str
- 		pci_name(pdev), (int)pdev->vendor, (int)pdev->device,
- 		(int)rev);
- 
--	while ((fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH, PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
-+	while ((fw_dev =
-+		pci_get_device(PCI_VENDOR_ID_RICOH,
-+			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
- 		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
- 		    pdev->bus == fw_dev->bus) {
--			if (ricoh_mmc_disable(fw_dev) != 0) {
-+			if (ricoh_mmc_disable(fw_dev) != 0)
- 				return -ENODEV;
--			}
- 
- 			pci_set_drvdata(pdev, fw_dev);
- 
-+			++ctrlfound;
- 			break;
- 		}
- 	}
- 
--	if (pci_get_drvdata(pdev) == NULL) {
-+	fw_dev = NULL;
-+
-+	while (!ctrlfound &&
-+	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
-+					PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
-+		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
-+		    pdev->bus == fw_dev->bus) {
-+			if (ricoh_mmc_disable(fw_dev) != 0)
-+				return -ENODEV;
-+
-+			pci_set_drvdata(pdev, fw_dev);
-+
-+			++ctrlfound;
-+		}
-+	}
-+
-+	if (!ctrlfound) {
- 		printk(KERN_WARNING DRIVER_NAME
- 		       ": Main firewire function not found. Cannot disable controller.\n");
- 		return -ENODEV;
-@@ -132,7 +191,7 @@ static void __devexit ricoh_mmc_remove(s
- 	pci_set_drvdata(pdev, NULL);
- }
- 
--static int ricoh_mmc_suspend (struct pci_dev *pdev, pm_message_t state)
-+static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct pci_dev *fw_dev = NULL;
- 
-@@ -146,7 +205,7 @@ static int ricoh_mmc_suspend (struct pci
- 	return 0;
- }
- 
--static int ricoh_mmc_resume (struct pci_dev *pdev)
-+static int ricoh_mmc_resume(struct pci_dev *pdev)
- {
- 	struct pci_dev *fw_dev = NULL;
- 
+mmap'ing may avoid the copy, but the overhead of a mmap operation is 
+quite often much *bigger* than the overhead of a copy operation.
+
+Please do not advocate the use of mmap() as a way to avoid memory copies. 
+It's not realistic. Even if you can do it with a single "mmap()" system 
+call (which is not at all a given, considering that block devices can 
+easily be much larger than the available virtual memory space), the fact 
+is that page table games along with the fault (and even just TLB miss) 
+overhead is easily more than the cost of copying a page in a nice 
+streaming manner.
+
+Yes, memory is "slow", but dammit, so is mmap().
+
+> You also have to pull tricks with the mmap region in the case of writes 
+> to prevent useless data being read in from the backing store.  However, 
+> none of this involves data copies.
+
+"data copies" is irrelevant. The only thing that matters is performance. 
+And if avoiding data copies is more costly (or even of a similar cost) 
+than the copies themselves would have been, there is absolutely no upside, 
+and only downsides due to extra complexity.
+
+If you want good performance for a service like this, you really generally 
+*do* need to in kernel space. You can play games in user space, but you're 
+fooling yourself if you think you can do as well as doing it in the 
+kernel. And you're *definitely* fooling yourself if you think mmap() 
+solves performance issues. "Zero-copy" does not equate to "fast". Memory 
+speeds may be slower that core CPU speeds, but not infinitely so!
+
+(That said: there *are* alternatives to mmap, like "splice()", that really 
+do potentially solve some issues without the page table and TLB overheads. 
+But while splice() avoids the costs of paging, I strongly suspect it would 
+still have easily measurable latency issues. Switching between user and 
+kernel space multiple times is definitely not going to be free, although 
+it's probably not a huge issue if you have big enough requests).
+
+		Linus
