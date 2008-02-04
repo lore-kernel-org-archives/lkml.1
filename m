@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbYBDNIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYBDNND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbYBDNIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbYBDNIk
+	id S1755209AbYBDNND (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:13:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYBDNMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:08:40 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:61547 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755832AbYBDNIj (ORCPT
+	Mon, 4 Feb 2008 08:12:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40398 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751762AbYBDNMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:08:39 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CABKdpkdMQWYq/2dsb2JhbACBWKlB
-Date: Mon, 4 Feb 2008 08:08:36 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
+	Mon, 4 Feb 2008 08:12:51 -0500
+Date: Mon, 4 Feb 2008 05:12:30 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Garzik <jeff@garzik.org>, Greg KH <gregkh@suse.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kbuild: Fix instrumentation removal breakage on avr32
-Message-ID: <20080204130835.GA16379@Krystal>
-References: <20080203211042.GF2648@uranus.ravnborg.org> <20080204124448.3633e937@dhcp-252-066.norway.atmel.com>
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [patch] pci: pci_enable_device_bars() fix
+Message-Id: <20080204051230.70d5b735.akpm@linux-foundation.org>
+In-Reply-To: <20080204125736.GA32056@elte.hu>
+References: <20080201231147.GA18174@suse.de>
+	<20080202111322.GA30767@elte.hu>
+	<47A49171.2000003@garzik.org>
+	<20080202170828.GA12748@elte.hu>
+	<47A4A96D.2040709@garzik.org>
+	<20080202175738.GA26560@elte.hu>
+	<47A4BB3C.6050709@garzik.org>
+	<20080202193524.GC27927@elte.hu>
+	<47A4D71F.3060009@garzik.org>
+	<20080204125736.GA32056@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080204124448.3633e937@dhcp-252-066.norway.atmel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:07:50 up 92 days, 18:13,  3 users,  load average: 1.58, 1.01,
-	1.10
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Haavard Skinnemoen (hskinnemoen@atmel.com) wrote:
-> On Sun, 3 Feb 2008 22:10:42 +0100
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > Mathieu Desnoyers (5):
-> >       Move Kconfig.instrumentation to arch/Kconfig and init/Kconfig
-> 
-> AVR32 still includes Kconfig.instrumentation, so it won't build after
-> this...
-> 
-> I did point this out when the patch was submitted, I sent the avr32
-> pull request early as promised (more than a week ago), but it still
-> broke. Please apply the fix below. This fixes 2.6.24-mm1 too.
-> 
+On Mon, 4 Feb 2008 13:57:36 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-This one slipped through.
-
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> ---
->  arch/avr32/Kconfig |    2 --
->  1 file changed, 2 deletions(-)
 > 
-> Index: linux-2.6.24-mm1/arch/avr32/Kconfig
-> ===================================================================
-> --- linux-2.6.24-mm1.orig/arch/avr32/Kconfig	2008-02-04 12:28:31.000000000 +0100
-> +++ linux-2.6.24-mm1/arch/avr32/Kconfig	2008-02-04 12:28:36.000000000 +0100
-> @@ -236,8 +236,6 @@ source "drivers/Kconfig"
->  
->  source "fs/Kconfig"
->  
-> -source "kernel/Kconfig.instrumentation"
-> -
->  source "arch/avr32/Kconfig.debug"
->  
->  source "security/Kconfig"
+> * Jeff Garzik <jeff@garzik.org> wrote:
+> 
+> > Ingo Molnar wrote:
+> >> so please tell me Jeff. If Greg, who is the super-maintainer of your 
+> >> code area, and who deals with your code every day and changes it 
+> >> every minute and hour, simply did not Cc: the SCSI list - how am i, a 
+> >> largely outside party in this matter, supposed to notice that 3 
+> >> maintainers and 3 mailing lists in the Cc: were somehow not enough 
+> >> and that i was supposed to grow the already sizable Cc: list even 
+> >> more?
+> >
+> > Because, regardless of the situation, it's both common courtesy and 
+> > wise practice to CC relevant driver maintainers, when you touch a 
+> > driver.
+> >
+> > And it's just common sense: Greg simply does not know the intimate 
+> > details of every PCI driver.  Nor do I.  Nor you.
+> >
+> > In the case of lpfc here, we have an active driver maintainer, and an 
+> > up-to-date MAINTAINERS entry.  Even if you are too slack to read 
+> > MAINTAINERS, 'git log' would have given you the same info.
+> >
+> > Don't pretend there is some benefit here to ignoring the people that 
+> > best know the driver.  I don't buy that; it simply makes no 
+> > engineering sense whatsoever.
+> 
+> what you _STILL_ do not realize is the following: you still attribute 
+> the lack of Cc:s to some intention of mine. No, it was not my intention. 
+> At first glance the Cc: looked large and complete enough in an 
+> _existing_ discussion and that's was the end of my (brief) attention 
+> regarding the Cc: line. Yes, it would have been a bit better had i 
+> noticed the lack of Cc:s in an existing discussion, but i didnt.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Actually I (and probably others) generally avoid cc'ing mailing lists on
+patch traffic.  I spew out enough script-generated traffic as it is.
+
+> ...
+>   mailing list aliases to get the 'guaranteed attention' of maintainers 
+>
+
+whoa.  You must know better mailing lists than I do ;)
+
