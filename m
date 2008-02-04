@@ -1,124 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYBDMRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYBDMS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYBDMRw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 07:17:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYBDMRo
+	id S1754850AbYBDMS5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 07:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYBDMSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 07:17:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:53279 "EHLO ozlabs.org"
+	Mon, 4 Feb 2008 07:18:49 -0500
+Received: from ozlabs.org ([203.10.76.45]:53317 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbYBDMRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 07:17:44 -0500
+	id S1752083AbYBDMSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 07:18:49 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 3/5] typesafe: kthread_create and kthread_run
-Date: Mon, 4 Feb 2008 23:17:29 +1100
+Subject: [PATCH 4/5] typesafe: request_irq and devm_request_irq
+Date: Mon, 4 Feb 2008 23:18:33 +1100
 User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <200802042311.18762.rusty@rustcorp.com.au> <200802042314.18738.rusty@rustcorp.com.au> <200802042316.02963.rusty@rustcorp.com.au>
-In-Reply-To: <200802042316.02963.rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+References: <200802042311.18762.rusty@rustcorp.com.au> <200802042316.02963.rusty@rustcorp.com.au> <200802042317.29130.rusty@rustcorp.com.au>
+In-Reply-To: <200802042317.29130.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802042317.29130.rusty@rustcorp.com.au>
+Message-Id: <200802042318.33503.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using cast_if_type() we can have a callback funciton either of the
-exactly correct type to take "data", or to take a void *.
+This patch lets interrupt handler functions have their natural type
+(ie. exactly match the data pointer type); it allows the old irq_handler_t
+type as well.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- include/linux/kthread.h |   30 +++++++++++++++++++++++++++---
- kernel/kthread.c        |   29 +++++------------------------
- 2 files changed, 32 insertions(+), 27 deletions(-)
+ include/linux/interrupt.h |   17 +++++++++++++++--
+ kernel/irq/devres.c       |   10 +++++-----
+ kernel/irq/manage.c       |    6 +++---
+ 3 files changed, 23 insertions(+), 10 deletions(-)
 
-diff -r 5748be68d6ee include/linux/kthread.h
---- a/include/linux/kthread.h	Wed Jan 23 12:08:28 2008 +1100
-+++ b/include/linux/kthread.h	Wed Jan 23 12:14:00 2008 +1100
-@@ -4,9 +4,33 @@
- #include <linux/err.h>
- #include <linux/sched.h>
+diff -r 0fe1a980708b include/linux/interrupt.h
+--- a/include/linux/interrupt.h	Thu Jan 17 14:48:56 2008 +1100
++++ b/include/linux/interrupt.h	Thu Jan 17 15:42:01 2008 +1100
+@@ -69,13 +69,26 @@ struct irqaction {
+ };
  
--struct task_struct *kthread_create(int (*threadfn)(void *data),
--				   void *data,
--				   const char namefmt[], ...);
-+/**
-+ * kthread_create - create a kthread.
-+ * @threadfn: the function to run until signal_pending(current).
-+ * @data: data ptr for @threadfn.
-+ * @namefmt: printf-style name for the thread.
-+ *
-+ * Description: This helper function creates and names a kernel
-+ * thread.  The thread will be stopped: use wake_up_process() to start
-+ * it.  See also kthread_run(), kthread_create_on_cpu().
-+ *
-+ * When woken, the thread will run @threadfn() with @data as its
-+ * argument. @threadfn() can either call do_exit() directly if it is a
-+ * standalone thread for which noone will call kthread_stop(), or
-+ * return when 'kthread_should_stop()' is true (which means
-+ * kthread_stop() has been called).  The return value should be zero
-+ * or a negative error number; it will be passed to kthread_stop().
-+ *
-+ * Returns a task_struct or ERR_PTR(-ENOMEM).
-+ */
-+#define kthread_create(threadfn, data, namefmt...)			\
-+	__kthread_create(cast_if_type((threadfn), int(*)(typeof(data)), \
-+				      int(*)(void *)),			\
-+			 (data), namefmt)
+ extern irqreturn_t no_action(int cpl, void *dev_id);
+-extern int __must_check request_irq(unsigned int, irq_handler_t handler,
 +
-+struct task_struct *__kthread_create(int (*threadfn)(void *data),
-+				     void *data,
-+				     const char namefmt[], ...);
++/* Typesafe version of request_irq.  Also takes old-style void * handlers. */
++#define request_irq(irq, handler, flags, name, dev_id)			\
++	__request_irq((irq),						\
++		      cast_if_type((handler), int (*)(int, typeof(dev_id)), \
++				   irq_handler_t),			\
++		      (flags), (name), (dev_id))
++
++extern int __must_check __request_irq(unsigned int, irq_handler_t handler,
+ 		       unsigned long, const char *, void *);
+ extern void free_irq(unsigned int, void *);
  
- /**
-  * kthread_run - create and wake a thread.
-diff -r 5748be68d6ee kernel/kthread.c
---- a/kernel/kthread.c	Wed Jan 23 12:08:28 2008 +1100
-+++ b/kernel/kthread.c	Wed Jan 23 12:14:00 2008 +1100
-@@ -102,29 +102,10 @@ static void create_kthread(struct kthrea
- 	complete(&create->done);
- }
+ struct device;
  
--/**
-- * kthread_create - create a kthread.
-- * @threadfn: the function to run until signal_pending(current).
-- * @data: data ptr for @threadfn.
-- * @namefmt: printf-style name for the thread.
-- *
-- * Description: This helper function creates and names a kernel
-- * thread.  The thread will be stopped: use wake_up_process() to start
-- * it.  See also kthread_run(), kthread_create_on_cpu().
-- *
-- * When woken, the thread will run @threadfn() with @data as its
-- * argument. @threadfn() can either call do_exit() directly if it is a
-- * standalone thread for which noone will call kthread_stop(), or
-- * return when 'kthread_should_stop()' is true (which means
-- * kthread_stop() has been called).  The return value should be zero
-- * or a negative error number; it will be passed to kthread_stop().
-- *
-- * Returns a task_struct or ERR_PTR(-ENOMEM).
-- */
--struct task_struct *kthread_create(int (*threadfn)(void *data),
--				   void *data,
--				   const char namefmt[],
--				   ...)
-+struct task_struct *__kthread_create(int (*threadfn)(void *data),
-+				     void *data,
-+				     const char namefmt[],
-+				     ...)
+-extern int __must_check devm_request_irq(struct device *dev, unsigned int irq,
++#define devm_request_irq(dev, irq, handler, flags, name, dev_id)	\
++	__devm_request_irq((dev), (irq),				\
++		      cast_if_type((handler), int (*)(int, typeof(dev_id)), \
++				   irq_handler_t),			\
++		      (flags), (name), (dev_id))
++extern int __must_check __devm_request_irq(struct device *dev, unsigned int irq,
+ 			    irq_handler_t handler, unsigned long irqflags,
+ 			    const char *devname, void *dev_id);
+ extern void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id);
+diff -r 0fe1a980708b kernel/irq/devres.c
+--- a/kernel/irq/devres.c	Thu Jan 17 14:48:56 2008 +1100
++++ b/kernel/irq/devres.c	Thu Jan 17 15:42:01 2008 +1100
+@@ -41,9 +41,9 @@ static int devm_irq_match(struct device 
+  *	If an IRQ allocated with this function needs to be freed
+  *	separately, dev_free_irq() must be used.
+  */
+-int devm_request_irq(struct device *dev, unsigned int irq,
+-		     irq_handler_t handler, unsigned long irqflags,
+-		     const char *devname, void *dev_id)
++int __devm_request_irq(struct device *dev, unsigned int irq,
++		       irq_handler_t handler, unsigned long irqflags,
++		       const char *devname, void *dev_id)
  {
- 	struct kthread_create_info create;
+ 	struct irq_devres *dr;
+ 	int rc;
+@@ -53,7 +53,7 @@ int devm_request_irq(struct device *dev,
+ 	if (!dr)
+ 		return -ENOMEM;
  
-@@ -149,7 +130,7 @@ struct task_struct *kthread_create(int (
- 	}
- 	return create.result;
+-	rc = request_irq(irq, handler, irqflags, devname, dev_id);
++	rc = __request_irq(irq, handler, irqflags, devname, dev_id);
+ 	if (rc) {
+ 		devres_free(dr);
+ 		return rc;
+@@ -65,7 +65,7 @@ int devm_request_irq(struct device *dev,
+ 
+ 	return 0;
  }
--EXPORT_SYMBOL(kthread_create);
-+EXPORT_SYMBOL(__kthread_create);
+-EXPORT_SYMBOL(devm_request_irq);
++EXPORT_SYMBOL(__devm_request_irq);
  
  /**
-  * kthread_bind - bind a just-created kthread to a cpu.
+  *	devm_free_irq - free an interrupt
+diff -r 0fe1a980708b kernel/irq/manage.c
+--- a/kernel/irq/manage.c	Thu Jan 17 14:48:56 2008 +1100
++++ b/kernel/irq/manage.c	Thu Jan 17 15:42:01 2008 +1100
+@@ -514,8 +514,8 @@ EXPORT_SYMBOL(free_irq);
+  *	IRQF_SAMPLE_RANDOM	The interrupt can be used for entropy
+  *
+  */
+-int request_irq(unsigned int irq, irq_handler_t handler,
+-		unsigned long irqflags, const char *devname, void *dev_id)
++int __request_irq(unsigned int irq, irq_handler_t handler,
++		  unsigned long irqflags, const char *devname, void *dev_id)
+ {
+ 	struct irqaction *action;
+ 	int retval;
+@@ -576,4 +576,4 @@ int request_irq(unsigned int irq, irq_ha
+ 
+ 	return retval;
+ }
+-EXPORT_SYMBOL(request_irq);
++EXPORT_SYMBOL(__request_irq);
