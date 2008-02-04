@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYBDTff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbYBDTh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYBDTff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbYBDTf1
+	id S1757132AbYBDTh0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbYBDThR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:35:27 -0500
-Received: from mail.suse.de ([195.135.220.2]:58093 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755066AbYBDTf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:35:27 -0500
-Date: Mon, 4 Feb 2008 20:35:25 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Sachin P. Sant" <sachinp@in.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org
-Subject: Re: [mm] Crashkernel memory reservation fails with 2.6.24-rc8-mm1
-Message-ID: <20080204193524.GA11104@suse.de>
-Mail-Followup-To: Vivek Goyal <vgoyal@redhat.com>,
-	"Sachin P. Sant" <sachinp@in.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	kexec@lists.infradead.org
-References: <47A7391F.2020408@in.ibm.com> <20080204183810.GE16021@redhat.com>
+	Mon, 4 Feb 2008 14:37:17 -0500
+Received: from styx.suse.cz ([82.119.242.94]:50422 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752598AbYBDThP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:37:15 -0500
+Date: Mon, 4 Feb 2008 20:37:14 +0100
+From: Jan Kara <jack@suse.cz>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/6] udf: next round of cleanups
+Message-ID: <20080204193714.GO3426@duck.suse.cz>
+References: <1202063631-18145-1-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080204183810.GE16021@redhat.com>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1202063631-18145-1-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@redhat.com> [2008-02-04 19:38]:
+On Sun 03-02-08 19:33:45, marcin.slusarz@gmail.com wrote:
+> Hi
 > 
-> Bernahard, any idea who is the competitor here?
+> This patchset contains next round of various UDF fs cleanups.
+> 
+> [PATCH 1/6] udf: udf_get_block, inode_bmap - remove unneeded checks
+> 
+> [PATCH 2/6] udf: create function for conversion from timestamp to timespec
+> [PATCH 3/6] udf: convert udf_stamp_to_time to return struct timespec
+> [PATCH 4/6] udf: convert udf_stamp_to_time and udf_time_to_stamp to use timestamps
+> [PATCH 5/6] udf: remove unneeded kernel_timestamp type
+> These 4 patches can be folded into one if requested, but I think it's
+> easier to analyze them when they are split.
+> 
+> [PATCH 6/6] udf: super.c reorganization
+> Pretty mechanical work. Can be dropped and redone if it will
+> conflict with someone else patch.
+> 
+>  fs/udf/ecma_167.h |   13 -
+>  fs/udf/inode.c    |  183 ++++++-----------
+>  fs/udf/super.c    |  553 ++++++++++++++++++++++++++----------------------------
+>  fs/udf/udfdecl.h  |    8 
+>  fs/udf/udfend.h   |   22 --
+>  fs/udf/udftime.c  |   39 +--
+>  6 files changed, 358 insertions(+), 460 deletions(-)
+> 
+> Applies on top of patches I've sent lately (http://lkml.org/lkml/2008/1/30/482)
+> 
+> Jan: Are you going to create git tree for udf?
+  I was already thinking about it to take some burden from Andrew. So if
+you think you are going to have more time for these cleanups then I can
+setup one (it would be useless when I send to Andrew one fix per month ;)...
 
-Hm ..., can you boot the kernel without crashkernel= and provide the
-/proc/iomem?
-
-
-        Bernhard
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
