@@ -1,82 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYBDXLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbYBDXNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbYBDXLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbYBDXLU
+	id S1758403AbYBDXNN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbYBDXM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:11:20 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:42995 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758302AbYBDXLS (ORCPT
+	Mon, 4 Feb 2008 18:12:57 -0500
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:30408 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755947AbYBDXMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:11:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Cj7JKdW/UeYjeBNVsrcZ9ihrp9kl8wEIusRfg4XpSdsrSKZNxp0QnSstHz3oDYBFlxGxYBKX2Cu6CKhITOBJFcf28QapCp0QDY8tgppEYP5Gkm4X9dwMkUnevAVDq3yKQEz5bjStSO73srEPKutKTUUYEVoBQGqUfPy5wMMoWv4=  ;
-X-YMail-OSG: 5o9WDo0VM1n22hteVYq8FFQGZtTynYHbwyW8LEs0hqczt295kTXL0_35xd7siTQtHtFR3mV5ZA--
+	Mon, 4 Feb 2008 18:12:55 -0500
+X-YMail-OSG: FZk1oWMVM1ksDtcQwLVX8Cp69rPv0dB2AA9kyOljEk1MoG561pSuTsSe0W9lmFIgffNGkzjPuPLnLupVG5Ovv1dnBYhzC9zCl.ZeTo5_lg_Fp4Etp1M-
 X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] SLUB updates for 2.6.25
-Date: Tue, 5 Feb 2008 10:10:49 +1100
-User-Agent: KMail/1.9.5
-Cc: clameter@sgi.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <Pine.LNX.4.64.0802041206190.3241@schroedinger.engr.sgi.com> <20080204142845.4c734f94.akpm@linux-foundation.org> <20080204143053.9fac9eac.akpm@linux-foundation.org>
-In-Reply-To: <20080204143053.9fac9eac.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802051010.49372.nickpiggin@yahoo.com.au>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Julian Satran <Julian_Satran@il.ibm.com>
+In-Reply-To: <1202166033.3096.141.camel@localhost.localdomain>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204224314.113afe7b@core>
+	 <1202166033.3096.141.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 04 Feb 2008 15:12:25 -0800
+Message-Id: <1202166745.11265.662.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 February 2008 09:30, Andrew Morton wrote:
-> On Mon, 4 Feb 2008 14:28:45 -0800
->
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > root (1):
-> > >       SLUB: Do not upset lockdep
-> >
-> > err, what?  I though I was going to merge these:
-> >
-> > slub-move-count_partial.patch
-> > slub-rename-numa-defrag_ratio-to-remote_node_defrag_ratio.patch
-> > slub-consolidate-add_partial-and-add_partial_tail-to-one-function.patch
-> > slub-use-non-atomic-bit-unlock.patch
-> > slub-fix-coding-style-violations.patch
-> > slub-noinline-some-functions-to-avoid-them-being-folded-into-alloc-free.p
-> >atch
-> > slub-move-kmem_cache_node-determination-into-add_full-and-add_partial.pat
-> >ch
-> > slub-avoid-checking-for-a-valid-object-before-zeroing-on-the-fast-path.pa
-> >tch slub-__slab_alloc-exit-path-consolidation.patch
-> > slub-provide-unique-end-marker-for-each-slab.patch
-> > slub-avoid-referencing-kmem_cache-structure-in-__slab_alloc.patch
-> > slub-optional-fast-path-using-cmpxchg_local.patch
-> > slub-do-our-own-locking-via-slab_lock-and-slab_unlock.patch
-> > slub-restructure-slab-alloc.patch
-> > slub-comment-kmem_cache_cpu-structure.patch
-> > slub-fix-sysfs-refcounting.patch
-> >
-> > before you went and changed things under my feet.
->
-> erk, sorry, I misremembered.   I was about to merge all the patches we
-> weren't going to merge.  oops.
+On Mon, 2008-02-04 at 17:00 -0600, James Bottomley wrote:
+> On Mon, 2008-02-04 at 22:43 +0000, Alan Cox wrote:
+> > > better. So for example, I personally suspect that ATA-over-ethernet is way 
+> > > better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
+> > > low-level, and against those crazy SCSI people to begin with.
+> > 
+> > Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
+> > would probably trash iSCSI for latency if nothing else.
+> 
+> Actually, there's also FCoE now ... which is essentially SCSI
+> encapsulated in Fibre Channel Protocols (FCP) running over ethernet with
+> Jumbo frames.  It does the standard SCSI TCQ, so should answer all the
+> latency pieces.  Intel even has an implementation:
+> 
+> http://www.open-fcoe.org/
+> 
+> I tend to prefer the low levels as well.  The whole disadvantage for IP
+> as regards iSCSI was the layers of protocols on top of it for
+> addressing, authenticating, encrypting and finding any iSCSI device
+> anywhere in the connected universe.
 
-While you're there, can you drop the patch(es?) I commented on
-and didn't get an answer to. Like the ones that open code their
-own locking primitives and do risky looking things with barriers
-to boot...
+Btw, while simple in-band discovery of iSCSI exists, the standards based
+IP storage deployments (iSCSI and iFCP) use iSNS (RFC-4171) for
+discovery and network fabric management, for things like sending state
+change notifications when a particular network portal is going away so
+that the initiator can bring up a different communication patch to a
+different network portal, etc.
 
-Also, WRT this one:
-slub-use-non-atomic-bit-unlock.patch
+> 
+> I tend to see loss of routing from operating at the MAC level to be a
+> nicely justifiable tradeoff (most storage networks tend to be hubbed or
+> switched anyway).  Plus an ethernet MAC with jumbo frames is a large
+> framed nearly lossless medium, which is practically what FCP is
+> expecting.  If you really have to connect large remote sites ... well
+> that's what tunnelling bridges are for.
+> 
 
-This is strange that it is unwanted. Avoiding atomic operations
-is a pretty good idea. The fact that it appears to be slower on
-some microbenchmark on some architecture IMO either means that
-their __clear_bit_unlock or the CPU isn't implemented so well...
+Some of the points by Julo on the IPS TWG iSCSI vs. FCoE thread:
+
+      * the network is limited in physical span and logical span (number
+        of switches)
+      * flow-control/congestion control is achieved with a mechanism
+        adequate for a limited span network (credits). The packet loss
+        rate is almost nil and that allows FCP to avoid using a
+        transport (end-to-end) layer
+      * FCP she switches are simple (addresses are local and the memory
+        requirements cam be limited through the credit mechanism)
+      * The credit mechanisms is highly unstable for large networks
+        (check switch vendors planning docs for the network diameter
+        limits) – the scaling argument
+      * Ethernet has no credit mechanism and any mechanism with a
+        similar effect increases the end point cost. Building a
+        transport layer in the protocol stack has always been the
+        preferred choice of the networking community – the community
+        argument
+      * The "performance penalty" of a complete protocol stack has
+        always been overstated (and overrated). Advances in protocol
+        stack implementation and finer tuning of the congestion control
+        mechanisms make conventional TCP/IP performing well even at 10
+        Gb/s and over. Moreover the multicore processors that become
+        dominant on the computing scene have enough compute cycles
+        available to make any "offloading" possible as a mere code
+        restructuring exercise (see the stack reports from Intel, IBM
+        etc.)
+      * Building on a complete stack makes available a wealth of
+        operational and management mechanisms built over the years by
+        the networking community (routing, provisioning, security,
+        service location etc.) – the community argument
+      * Higher level storage access over an IP network is widely
+        available and having both block and file served over the same
+        connection with the same support and management structure is
+        compelling– the community argument
+      * Highly efficient networks are easy to build over IP with optimal
+        (shortest path) routing while Layer 2 networks use bridging and
+        are limited by the logical tree structure that bridges must
+        follow. The effort to combine routers and bridges (rbridges) is
+        promising to change that but it will take some time to finalize
+        (and we don't know exactly how it will operate). Untill then the
+        scale of Layer 2 network is going to seriously limited – the
+        scaling argument
+
+Perhaps it would be of worth to get some more linux-net guys in on the
+discussion.  :-)
+
+--nab
+
+
+> James
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
