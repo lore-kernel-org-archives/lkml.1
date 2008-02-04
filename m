@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbYBDQNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYBDQRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbYBDQNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 11:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYBDQMq
+	id S1755362AbYBDQRk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 11:17:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYBDQRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 11:12:46 -0500
-Received: from styx.suse.cz ([82.119.242.94]:58505 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753797AbYBDQMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 11:12:44 -0500
-Date: Mon, 4 Feb 2008 17:12:43 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: brk randomization breaks columns
-In-Reply-To: <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz>
-Message-ID: <Pine.LNX.4.64.0802041635000.30955@jikos.suse.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu>
- <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz>
+	Mon, 4 Feb 2008 11:17:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35793 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbYBDQRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 11:17:31 -0500
+Date: Mon, 4 Feb 2008 08:14:37 -0800
+From: Greg KH <greg@kroah.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SH/Dreamcast - fix regressions, whitespace and memory
+	leaks in Maple Bus driver
+Message-ID: <20080204161437.GA20739@kroah.com>
+References: <1202068847.6262.7.camel@localhost.localdomain> <20080204052900.GB7585@kroah.com> <1202113675.6489.6.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202113675.6489.6.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008, Jiri Kosina wrote:
+On Mon, Feb 04, 2008 at 08:27:55AM +0000, Adrian McMenamin wrote:
+> 
+> On Sun, 2008-02-03 at 21:29 -0800, Greg KH wrote:
+> > On Sun, Feb 03, 2008 at 08:00:47PM +0000, Adrian McMenamin wrote:
+> > > From: Adrian McMenamin
+> > > 
+> > > This patch fixes the regression noted here:
+> > > http://lkml.org/lkml/2008/1/26/189 as well as whitespace issues in the
+> > > previous commit of this driver and the memory leaks noted here:
+> > > http://lkml.org/lkml/2008/2/2/143 (as well as one or two other minor
+> > > cleanups).
+> > 
+> > Which portion of the patch fixes the kobject WARN_ON()?
+> 
+> 
+> 
+> +	if (mdev->registered == 0) {
+> +		retval = device_register(&mdev->dev);
+> +		if (retval) {
+> +			printk(KERN_INFO
+> +			"Maple bus: Attempt to register device"
+> +			" (%x, %x) failed.\n",
+> +			mdev->port, mdev->unit);
+> +			maple_free_dev(mdev);
+> +			mdev = NULL;
+> +			return;
+> +		}
+> +		mdev->registered = 1;
+> +	}
+>  }
+> 
+> 
+> Specifically the check on mdev->registered
 
-> I still don't seem to fully understand what is happening here -- 
-> aparently this is triggerable only with old programs linked against 
-> libc.so.5, and I am not able to trigger it with my trivial program when 
-> I link it against old libc.so.5, which just basically does brk() and 
-> checks whether /proc/<pid>/maps are OK. Seems to me that (at least 
-> certain versions) of libc.so.5 (wrongly) assume that end of the bss is 
-> the start of the heap, but I will try to investigate it more.
+So the code path could cause devices to be registered more than once?
+That seems broken, as no other bus that I know of needs such a check :(
 
-And I really think that (at least Pavel's version of) libc.so.5 is making 
-some strange assumptions about memory layout of the process, which could 
-also explain the other failures.
+Is there a way to fix the root problem here, instead of this type of
+change?
 
-Pavel, could you please link the source code below against libc.so.5 with 
-brk randomization turned on, and show the output, and if it segfaults, 
-send the backtrace at the time of the crash? I suspect that it will crash 
-somewhere in exit path when calling .dtor functions, as it will try to 
-perform some cleanup in unmapped area. Thanks.
+thanks,
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-int main()
-{
-        int *curr_brk = sbrk(0);
-        char command[1024];
-
-        sprintf(command, "/bin/cat /proc/%d/maps", getpid());
-
-        printf("brk set to %p\n", curr_brk);
-        system(command);
-
-        brk(curr_brk + 0x00001000);
-        curr_brk = sbrk(0);
-
-        printf("brk set to %p\n", curr_brk);
-        system(command);
-        exit(0);
-}
-
--- 
-Jiri Kosina
-SUSE Labs
+greg k-h
