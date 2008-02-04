@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYBDOqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYBDOss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbYBDOqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 09:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbYBDOqH
+	id S1755564AbYBDOss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 09:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYBDOsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 09:46:07 -0500
-Received: from ozlabs.org ([203.10.76.45]:52483 "EHLO ozlabs.org"
+	Mon, 4 Feb 2008 09:48:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37236 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750861AbYBDOqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 09:46:05 -0500
-Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
-In-Reply-To: <200802041404.49960.ossthema@de.ibm.com>
-References: <200802041404.49960.ossthema@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-QCqq2JusPKhITC7rc0pv"
-Date: Tue, 05 Feb 2008 01:46:02 +1100
-Message-Id: <1202136362.7672.5.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1750943AbYBDOsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 09:48:40 -0500
+Date: Mon, 4 Feb 2008 15:48:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       petr@vandrovec.name
+Subject: Re: Commit f06e4ec breaks vmware
+Message-ID: <20080204144824.GA13154@elte.hu>
+References: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr> <20080204115144.GA17850@elte.hu> <b6a2187b0802040601s76222435t306aef2059cbbb2b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b6a2187b0802040601s76222435t306aef2059cbbb2b@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0008]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-QCqq2JusPKhITC7rc0pv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Jeff Chua <jeff.chua.linux@gmail.com> wrote:
 
-On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
-> Add memory remove hotplug support
->=20
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
->=20
-> ---
->  Comment: This patch depends on the following patch that
->  exports the symbols
->   register_memory_notifier()
->   unregister_memory_notifier()
->=20
->  http://lkml.org/lkml/2008/2/1/293
->=20
->=20
->  drivers/net/ehea/ehea_main.c |   25 +++++++++++++++++++++++++
->  1 files changed, 25 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-> index 21af674..b75afcc 100644
-> --- a/drivers/net/ehea/ehea_main.c
-> +++ b/drivers/net/ehea/ehea_main.c
+> On Feb 4, 2008 7:51 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > sad to say, but f06e4ec... breaks booting the kernel in vmware
+> > > commit f06e4ec1c15691b0cfd2397ae32214fa36c90d71
+> 
+> I had the same problem. But I bisect down to a earlier commit.
+> Reverting this patch, and I can boot up using vmware.
+> 
+> commit 8d947344c47a40626730bb80d136d8daac9f2060
+> Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+> Date:   Wed Jan 30 13:31:12 2008 +0100
+> 
+>     x86: change write_idt_entry signature
 
-> @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
->  	if (ret)
->  		ehea_info("failed registering reboot notifier");
-> =20
-> +	ret =3D register_memory_notifier(&ehea_mem_nb);
-> +	if (ret)
-> +		ehea_info("failed registering memory remove notifier");
->=20
->  	ret =3D crash_shutdown_register(&ehea_crash_handler);
->  	if (ret)
->  		ehea_info("failed registering crash handler");
+32-bit or 64-bit guest kernel?
 
-You don't do anything except print a message if the registration fails.
-What happens when someone tries to remove memory but the memory notifier
-wasn't registered properly? Bang?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-QCqq2JusPKhITC7rc0pv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHpyUqdSjSd0sB4dIRAlyPAJ9PYmPC9I2vIrITHjtSdFBllbxuvgCfR5+g
-vSN9TbNs1YIbuevLozy2Izw=
-=WdXK
------END PGP SIGNATURE-----
-
---=-QCqq2JusPKhITC7rc0pv--
-
+	Ingo
