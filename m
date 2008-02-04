@@ -1,101 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYBDVxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbYBDVzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbYBDVxl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 16:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYBDVxc
+	id S1756792AbYBDVzJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 16:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYBDVy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 16:53:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48826 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857AbYBDVxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 16:53:30 -0500
-Subject: Re: [Wireless, ath5k] 2.6.24-git13
-	9135f1901ee6449dfe338adf6e40e9c2025b8150
-From: Dan Williams <dcbw@redhat.com>
-To: Oliver Pinter <oliver.pntr@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Bruno Randolf <bruno@thinktube.com>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ath5k-devel@lists.ath5k.org
-In-Reply-To: <6101e8c40802041334o20b2b391la5b0a5f557ee67c5@mail.gmail.com>
-References: <6101e8c40802040600q804e40cs97d0031920e58d9d@mail.gmail.com>
-	 <47A774AB.5060008@gmail.com>
-	 <6101e8c40802041334o20b2b391la5b0a5f557ee67c5@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 04 Feb 2008 16:52:14 -0500
-Message-Id: <1202161934.24527.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-7.fc7) 
-Content-Transfer-Encoding: 8bit
+	Mon, 4 Feb 2008 16:54:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:17294 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754246AbYBDVy5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 16:54:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wUw247W37XJSUDY2XwtVupHhwQO5Np4WPOfq0YUBhaic5k/l+xZ9eccf7ySC4xN437M3fWUbUFQFyBywnKk5GFUIk/sQ5CaRldku6bBf8IpP2azUG6rkDnrLwJy6V9uZHs21Wwb01ZKxZ3+/E52t6oBbc0AYQ4XKdjGJPiUlz9M=
+Message-ID: <15577be70802041354s23e5b289w56f724dfdf8c3242@mail.gmail.com>
+Date: Mon, 4 Feb 2008 22:54:54 +0100
+From: "Abel Bernabeu" <abel.bernabeu@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: brk randomization breaks columns
+In-Reply-To: <20080204195251.GB4915@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080204122837.GA1647@elf.ucw.cz> <20080204130156.GA8730@elte.hu>
+	 <Pine.LNX.4.64.0802041528470.30955@jikos.suse.cz>
+	 <Pine.LNX.4.64.0802041635000.30955@jikos.suse.cz>
+	 <15577be70802041016m97cddbfk43b9073408bcbce9@mail.gmail.com>
+	 <15577be70802041029o2975ba6do34589bbdc81d1652@mail.gmail.com>
+	 <20080204195251.GB4915@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-04 at 22:34 +0100, Oliver Pinter wrote:
-> On 2/4/08, Jiri Slaby <jirislaby@gmail.com> wrote:
-> > On 02/04/2008 03:00 PM, Oliver Pinter (Pintér Olivér) wrote:
-> > > git top: 9135f1901ee6449dfe338adf6e40e9c2025b8150
+2008/2/4, Pavel Machek <pavel@ucw.cz>:
 > > >
-> > > [  399.582185] wpa_supplicant[4383]: segfault at 30 ip 080697ca sp
-> > > bf87a690 error 4 in wpa_supplicant[8048000+4c000]
-> > > [  406.277199] wpa_supplicant[4384]: segfault at 30 ip 080697ca sp
-> > > bfc13a30 error 4 in wpa_supplicant[8048000+4c000]
-> > > [  407.586375] wpa_supplicant[4385]: segfault at 30 ip 080697ca sp
-> > > bf9ed000 error 4 in wpa_supplicant[8048000+4c000]
-> > > [  411.671037] wpa_supplicant[4386]: segfault at 30 ip 080697ca sp
-> > > bf8f3710 error 4 in wpa_supplicant[8048000+4c000]
-> > > [  412.569843] wpa_supplicant[4387]: segfault at 30 ip 080697ca sp
-> > > bfc19a30 error 4 in wpa_supplicant[8048000+4c000]
-> > > [  413.118874] wpa_supplicant[4388]: segfault at 30 ip 080697ca sp
-> > > bfc9cab0 error 4 in wpa_supplicant[8048000+4c000]
+> > > > I still don't seem to fully understand what is happening here --
+> > > > aparently this is triggerable only with old programs linked against
+> > > > libc.so.5, and I am not able to trigger it with my trivial program when
+> > > > I link it against old libc.so.5, which just basically does brk() and
+> > > > checks whether /proc/<pid>/maps are OK. Seems to me that (at least
+> > > > certain versions) of libc.so.5 (wrongly) assume that end of the bss is
+> > > > the start of the heap, but I will try to investigate it more.
 > >
-> > Seems like wpa_supplicant is broken. Is this a regression?
-> 
-> yes, but with madwifi is all ok
+> > I think I am getting the some problem with brand new binaries produced
+> > by myself :(
 > >
-> > > home:~# wpa_supplicant -Dwext -iath0 -c
-> > /etc/wpa_supplicant/wpa_supplicant.conf
+> > Look at this report I posted days ago:
 > >
-> > ath0? udev renamed it?
-> 
-> yes
-> >
-> > > ioctl[SIOCSIWAUTH]: Operation not supported
-> > > WEXT auth param 4 value 0x0 - bind(PF_UNIX): Address already in use
-> >
-> > 4 - 0x0 is TKIP, nothing we should worry about.
-> >
-> > > ctrl_iface exists and seems to be in use - cannot override it
-> > > Delete '/var/run/wpa_supplicant/ath0' manually if it is not used anymore
-> > > Failed to initialize control interface '/var/run/wpa_supplicant'.
-> > > You may have another wpa_supplicant process already running or the file
-> > was
-> > > left by an unclean termination of wpa_supplicant in which case you will
-> > need
-> > > to manually remove this file before starting wpa_supplicant again.
-> >
-> > Have you?
-> 
-> yes
-> >
-> > I guess ltrace would help here. And maybe strace...
-> >
-> 
-> strace attached and wpa_supplicant more verbose output
+> > http://marc.info/?l=linux-kernel&m=120169141603789&w=2
+>
+> Your crash is in kernel, no? Anyway, I can workaround mine by
+> disabling randomization...
 
-It doesn't look like the driver is returning _any_ scan results.  What
-does '/sbin/iwlist wlan0 scan' show from the command line.  If the
-driver isn't returning scan results to the supplicant, there's not much
-the supplicant can do.  You may need to ensure the interface is up
-before scanning.
+Yes, my crash happens at kernel space, but is due to the randomized
+params passed to set_brk (the same thing that makes your game crash
+later at runtime).
 
-Note that the specific behavior of the process requesting scan results
-can sometimes interact badly with the driver.  The driver most likely
-needs to cope with this (by caching the BSS list internally for example)
-and handle whatever behavior userspace programs throw at it.
+I did not understand why my kernel was crashing before reading your
+comments, but now I think is all happening because of the brk
+randomization. Sorry, I will not be able to try disabling
+randomization until tomorrow at office in order to confirm you this.
 
-Dan
+I am trying to figure out what is relation the brk randomization
+feature and my crash... but makes sense to me now, trying to find it.
 
+Yours, Abel.
