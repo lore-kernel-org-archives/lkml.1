@@ -1,19 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYBDNee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYBDNiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbYBDNee (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYBDNeW
+	id S1755487AbYBDNiM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYBDNh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:34:22 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:23939 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754116AbYBDNeU (ORCPT
+	Mon, 4 Feb 2008 08:37:57 -0500
+Received: from smtp107.sbc.mail.re2.yahoo.com ([68.142.229.98]:37575 "HELO
+	smtp107.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751643AbYBDNh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:34:20 -0500
-X-YMail-OSG: aBFRchgVM1kGztV3Wma67EMP649.uqgiS0nZxF7BjKuDfEJcP_2BldtMlii_eUqYJPgsfWtFsUXu2TtDDgZTSUjFGGHm0kIm0_KhztSZ0AptxCUteg--
+	Mon, 4 Feb 2008 08:37:56 -0500
+X-Greylist: delayed 605 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Feb 2008 08:37:55 EST
+X-YMail-OSG: 0egeHrgVM1nnCnboHWsjrMZ2ei4_4TlInUn364S9zmnuhlacyjY2hYC4bgjn3hXhRFNQE9bfcKyRG80idJNuORAzdsXCYPCUiWN.5BY3v5Up_HchVA--
 X-Yahoo-Newman-Property: ymail-3
-Subject: [Fwd: 2.6.24 kernel and LIO Target memory mapping]
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: 2.6.24 kernel and LIO Target memory mapping
+From: "Nicholas A. Bellinger" <nab@kernel.org>
+Reply-To: nab@kernel.org
 To: linux-iscsi-target-dev@googlegroups.com,
        linux-scsi <linux-scsi@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
@@ -23,43 +25,20 @@ To: linux-iscsi-target-dev@googlegroups.com,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Mike Christie <michaelc@cs.wisc.edu>,
        STGT-Devel <stgt-devel@lists.berlios.de>, Andrew Morton <akpm@osdl.org>
-Content-Type: multipart/mixed; boundary="=-n/04jwNwQ3y9H6HA9sj3"
-Date: Mon, 04 Feb 2008 05:33:52 -0800
-Message-Id: <1202132032.11265.498.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <linux-kernel.vger.kernel.org>
-X-Mailing-List: linux-kernel@vger.kernel.org
-
-
---=-n/04jwNwQ3y9H6HA9sj3
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Sorry, resend..
-
---=-n/04jwNwQ3y9H6HA9sj3
-Content-Disposition: inline
-Content-Description: Forwarded message - 2.6.24 kernel and LIO Target
-	memory mapping
-Content-Type: message/rfc822
-
-Subject: 2.6.24 kernel and LIO Target memory mapping
-From: "Nicholas A. Bellinger" <nab@kernel.org>
-Reply-To: nab@kernel.org
-To: linux-iscsi-target-dev@googlegroups.com, linux-scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, CBE-OSS-DEV <cbe-oss-dev@ozlabs.org>, Geoff Levand <geoffrey.levand@am.sony.com>, Jens Axboe <jens.axboe@oracle.com>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Mike Christie <michaelc@cs.wisc.edu>, STGT-Devel <stgt-devel@lists.berlios.de>, Andrew Morton <akpm@osdl.org>
 Cc: Bart Van Assche <bart.vanassche@gmail.com>
 In-Reply-To: <1201958796.11265.415.camel@haakon2.linux-iscsi.org>
 References: <e2e108260802010609m12af3990k58a385b8f8598ec7@mail.gmail.com>
 	 <1201877400.11265.311.camel@haakon2.linux-iscsi.org>
 	 <1201958796.11265.415.camel@haakon2.linux-iscsi.org>
 Content-Type: text/plain
+Date: Mon, 04 Feb 2008 05:27:20 -0800
 Message-Id: <1202131640.11265.494.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 
-Date: Mon, 04 Feb 2008 05:27:23 -0800
 Content-Transfer-Encoding: 7bit
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, 2008-02-02 at 05:26 -0800, Nicholas A. Bellinger wrote: 
 > Hi Bart,
@@ -317,6 +296,4 @@ the new
 > For more options, visit this group at http://groups.google.com/group/linux-iscsi-target-dev?hl=en
 > -~----------~----~----~----~------~----~------~--~---
 > 
-
---=-n/04jwNwQ3y9H6HA9sj3--
 
