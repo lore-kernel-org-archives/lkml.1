@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbYBDX2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYBDXa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbYBDX2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 18:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755765AbYBDX2b
+	id S1757282AbYBDXa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 18:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYBDXaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 18:28:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58599 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755596AbYBDX2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 18:28:30 -0500
-Date: Mon, 4 Feb 2008 15:27:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-In-Reply-To: <47A79A10.4070706@garzik.org>
-Message-ID: <alpine.LFD.1.00.0802041521130.3034@hp.linux-foundation.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com> <1201639331.3069.58.camel@localhost.localdomain> <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
- <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain> <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
- <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 18:30:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:55283 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754133AbYBDXaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 18:30:18 -0500
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080204222047.243670@gmx.net>
+References: <20080201184254.174020@gmx.net>
+	 <20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net>
+	 <20080201202518.GJ18688@csn.ul.ie> <20080201210656.174030@gmx.net>
+	 <20080204104232.GB29484@csn.ul.ie>  <20080204222047.243670@gmx.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1AXqJ/0d1vMyoWOf4omx"
+Date: Tue, 05 Feb 2008 10:30:16 +1100
+Message-Id: <1202167816.7672.18.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-1AXqJ/0d1vMyoWOf4omx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 4 Feb 2008, Jeff Garzik wrote:
-> 
-> For years I have been hoping that someone will invent a simple protocol (w/
-> strong auth) that can transit ATA and SCSI commands and responses. Heck, it
-> would be almost trivial if the kernel had a TLS/SSL implementation.
+On Mon, 2008-02-04 at 23:20 +0100, Gerhard Pircher wrote:
+> -------- Original-Nachricht --------
+> > Datum: Mon, 4 Feb 2008 10:42:32 +0000
+> > Von: Mel Gorman <mel@csn.ul.ie>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machi=
+ne
+>=20
+> > > > > > 2. Any chance of seeing a dmesg log?
+> > > > > That's a little bit of a problem. The kernel log in memory doesn'=
+t
+> > > > > show any kernel oops, but is also fragmented (small fragments see=
+m
+> > > > > to have been overwritten with 0x0).
+> > > >=20
+> > > > err, that doesn't sound very healthy.
+> > >
+> > > Yeah, I know. But the platform code hasn't changed much when porting =
+it
+> > > from arch/ppc to arch/powerpc. That's why I'm a little bit lost in th=
+is
+> > > case. :-)
+> > >=20
+> >=20
+> > I'm at a bit of a loss to guess what might have changed in powerpc code
+> > that would explain this. I've added the linuxppc-dev mailing list in
+> > case they can make a guess.
+> Yes, I'll try to get some comments on the linuxppc-dev mailing list.
+>=20
+> > I think you are also going to need to start bisecting searching
+> > specifically for the patch that causes these overwrites.
+> I think I had a similar problem with kernel v2.6.23, too and therefore
+> waited for kernel 2.6.24. So the problem may exist since a long time.
+>=20
+> > It's a virtual address so it depends on the value of CONFIG_KERNEL_STAR=
+T
+> > as to whether this is a user program address or not.
+> AFAIK start_kernel() is called very early in the boot process, were no
+> user or kernel thread is active. I also wonder why the kernel crashes whe=
+n
+> the mem boot option is used. Let's see what the linuxppc-dev people say.
 
-Why would you want authorization? If you don't use IP (just ethernet 
-framing), then 99% of the time the solution is to just trust the subnet. 
+Can you post a fresh bug report? There's lots of details missing from
+the email you forwarded.
 
-So most people would never want TLS/SSL, and the ones that *do* want it 
-would probably also want IP routing, so you'd actually be better off with 
-a separate higher-level bridging protocol rather than have TLS/SSL as part 
-of the actual packet protocol.
+cheers
 
-So don't add complexity. The beauty of ATA-over-ethernet is exactly that 
-it's simple and straightforward.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-(Simple and straightforward is also nice for actually creating devices 
-that are the targets of this. I just *bet* that an iSCSI target device 
-probably needs two orders of magnitude more CPU power than a simple AoE 
-thing that can probably be done in an FPGA with no real software at all).
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Whatever. We have now officially gotten totally off topic ;)
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-		Linus
+--=-1AXqJ/0d1vMyoWOf4omx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHp6AIdSjSd0sB4dIRAkNOAJ4l9wltKBymwt8bkEeYv2VtTzhzZQCfZCl/
+20w/qrzLOAGEUKD43gfUGaM=
+=Vg5n
+-----END PGP SIGNATURE-----
+
+--=-1AXqJ/0d1vMyoWOf4omx--
+
