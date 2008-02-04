@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbYBDGjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYBDGpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755295AbYBDGjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 01:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYBDGjJ
+	id S1755193AbYBDGpi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 01:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYBDGp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 01:39:09 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:29228 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751613AbYBDGjI (ORCPT
+	Mon, 4 Feb 2008 01:45:29 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38705 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbYBDGp3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 01:39:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ST8Bv3ETjGEkgM2c1ZZR0128wCwARQC9/ex/abfUvtA8PnMGCPpBdC2ZYUmDqrTkM
-	mPbfblNfN9r9Xe3PtUBhw==
-Message-ID: <3f1a065b0802032239t251fac96p800c4c60afdb915c@mail.gmail.com>
-Date: Sun, 3 Feb 2008 22:39:03 -0800
-From: "Russell Leidich" <rml@google.com>
-To: "Andi Kleen" <andi@firstfloor.org>,
-       "Torsten Kaiser" <just.for.lkml@googlemail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>, valdis.kletnieks@vt.edu
+	Mon, 4 Feb 2008 01:45:29 -0500
+Date: Mon, 4 Feb 2008 08:20:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Russell Leidich <rml@google.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       valdis.kletnieks@vt.edu
 Subject: Re: [PATCH] Remove Barcelona Thermal Throttling
-In-Reply-To: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-ID: <20080204072013.GB571@one.firstfloor.org>
 References: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f1a065b0802032213j713fe551t9a0642ea2b83994@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-P.S. This patch also moves the responsibility for enabling hardware
-thermal control from the OS to the BIOS.
-
-On Feb 3, 2008 10:13 PM, Russell Leidich <rml@google.com> wrote:
+On Sun, Feb 03, 2008 at 10:13:53PM -0800, Russell Leidich wrote:
 > All,
->
+> 
 > You can imagine my dismay when I recently learned that, after all our
 > collective effort, hardware thermal throttling does not work reliably
 > on Barcelona, according to AMD.  Due to NDA restrictions, I am unable
 > to provide further details.
->
-> But the effort has not been a waste; whenever AMD manages to make a
-> reliable hardware thermal sensor, this code should "just work" along
-> with all the other northbridge initialization associated with the
-> device IDs in k8_northbridges[].
->
-> This patch Blacklists Barcelona as non-hardware-thermal-throttlable
-> (in addition to RevF, which was already blacklisted).  On the
-> recommendation of my colleagues, it also contains these politeness
-> enhancements: (1) warns the user if the CPU is _not_ blacklisted, but
-> the BIOS neglected to enable thermal throttling (as a safety measure)
-> and (2) uses the PCI_SLOT macro instead of the more obnoxious
-> shift-right-by-3 to compute PCI device numbers.
->
-> This patch assumes that it is being applied _after_ my previous patch
-> has already been integrated.  I mailed out that patch on 1/17/2008
-> with subject "Re: [PATCH] AMD Thermal Interrupt Support".
-> --
-> Russell Leidich
->
 
+Too bad. Hopefully that code will work then on the hypothetic
+future parts with fixed throttling. Perhaps it would be better
+to just remove it now and readd later.
 
+All this reminds me you need to adjust the Kconfig dependencies
+for K8_NB too to be always enabled with MCE_AMD.
 
--- 
-Russell Leidich
+Ideally on top of this patch with a || MCE_AMD
+
+-Andi
+
+---
+
+Fix and simplify k8.c Kconfig dependencies
+
+- Check for K8_NUMA instead of NUMA && PCI
+- No need to check for x86_64 explicitely
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/arch/x86/Kconfig
+===================================================================
+--- linux.orig/arch/x86/Kconfig
++++ linux/arch/x86/Kconfig
+@@ -1540,7 +1540,7 @@ endif # X86_32
+ 
+ config K8_NB
+ 	def_bool y
+-	depends on AGP_AMD64 || (X86_64 && (GART_IOMMU || (PCI && NUMA)))
++	depends on AGP_AMD64 || GART_IOMMU || K8_NUMA
+ 
+ source "drivers/pcmcia/Kconfig"
+ 
