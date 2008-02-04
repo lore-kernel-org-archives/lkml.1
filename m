@@ -1,75 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYBDN4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbYBDN44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbYBDN4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbYBDN4d
+	id S1758261AbYBDN44 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:56:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbYBDN4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:56:33 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:37310 "EHLO smtp6.pp.htv.fi"
+	Mon, 4 Feb 2008 08:56:44 -0500
+Received: from mail.mev.co.uk ([62.49.15.74]:51475 "EHLO mail.mev.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753567AbYBDN4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:56:32 -0500
-Date: Mon, 4 Feb 2008 15:56:32 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Lee Revell <rlrevell@joe-job.com>, Chris Friesen <cfriesen@nortel.com>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, Pavel Roskin <proski@gnu.org>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080204135632.GA27206@cs181133002.pp.htv.fi>
-References: <20080129225701.GS8767@does.not.exist> <754585.89171.qm@web32403.mail.mud.yahoo.com> <20080130175447.GB29368@does.not.exist> <47A0C138.2070807@nortel.com> <20080130185446.GF29368@does.not.exist> <75b66ecd0801301136n193fa44bg890ad4dab9b61eb5@mail.gmail.com> <20080204124208.1b32fc04@core>
+	id S1758078AbYBDN4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 08:56:43 -0500
+Message-ID: <47A71994.3050409@mev.co.uk>
+Date: Mon, 04 Feb 2008 13:56:36 +0000
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080204124208.1b32fc04@core>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [PATCH 2.6.22.stable] PCI: Fix fakephp deadlock
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Feb 2008 13:56:36.0376 (UTC) FILETIME=[C1E16180:01C86735]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 12:42:08PM +0000, Alan Cox wrote:
-> On Wed, 30 Jan 2008 14:36:19 -0500
-> "Lee Revell" <rlrevell@joe-job.com> wrote:
-> 
-> > On Jan 30, 2008 1:54 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > > IANAL, and I would therefore ask a lawyer whether, and if yes under
-> > > which circumstances, shipping a binary driver written for another OS
-> > > dynamically linked into the Linux kernel would not be a criminal offense.
-> > >
-> > 
-> > Please stop throwing around words like "criminal".  If this is in fact
-> > illegal it would be a civil matter.
-> 
-> Actually in large parts of europe multiple repeated infractions of
-> copyright law are criminal matters.
+From: Ian Abbott <abbotti@mev.co.uk>
 
-"multiple repeated infractions" might not be required.
+Stable request for 2.6.22.
 
-I remember one case in Germany where offering 272 songs in a P2P network 
-once resulted in a fine based on criminal law. [1]
+This patch works around a problem in the fakephp driver when a process
+writing "0" to a "power" sysfs file to fake removal of a PCI device ends
+up deadlocking itself in the sysfs code.
 
-Convictions under civil law seem to be easier and result in higher costs 
-for the copyright violators, so the music industry tends to use the 
-reportings of offences in Germany only for getting the names of the 
-people from the IP addresses they have (happened in a five digit number 
-of cases), don't care about whether the criminal law cases proceed, and 
-focus on the civil law cases.
+The patch is functionally identical to the one in Linus' tree post 2.6.24:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5c796ae7a7ebe56967ed9b9963d7c16d733635ff
 
-But if you are doing more than just filesharing, or even make a profit 
-out of it, the maximum penalties go up to 5 years in jail...
+I have tested it on a 2.6.22 kernel.
 
-> Alan
-
-cu
-Adrian
-
-[1] http://www.jurpc.de/rechtspr/20040236.pdf
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+---
+--- linux-2.6.22/drivers/pci/hotplug/fakephp.c.orig	2007-07-09 00:32:17.000000000 +0100
++++ linux-2.6.22/drivers/pci/hotplug/fakephp.c	2008-02-04 11:21:29.000000000 +0000
+@@ -39,6 +39,7 @@
+ #include <linux/init.h>
+ #include <linux/string.h>
+ #include <linux/slab.h>
++#include <linux/workqueue.h>
+ #include "../pci.h"
+ 
+ #if !defined(MODULE)
+@@ -63,10 +64,16 @@ struct dummy_slot {
+ 	struct list_head node;
+ 	struct hotplug_slot *slot;
+ 	struct pci_dev *dev;
++	struct work_struct remove_work;
++	unsigned long removed;
+ };
+ 
+ static int debug;
+ static LIST_HEAD(slot_list);
++static struct workqueue_struct *dummyphp_wq;
++
++static void pci_rescan_worker(struct work_struct *work);
++static DECLARE_WORK(pci_rescan_work, pci_rescan_worker);
+ 
+ static int enable_slot (struct hotplug_slot *slot);
+ static int disable_slot (struct hotplug_slot *slot);
+@@ -109,7 +116,7 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->name = &dev->dev.bus_id[0];
+ 	dbg("slot->name = %s\n", slot->name);
+ 
+-	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
++	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+ 
+@@ -164,6 +171,14 @@ static void remove_slot(struct dummy_slo
+ 		err("Problem unregistering a slot %s\n", dslot->slot->name);
+ }
+ 
++/* called from the single-threaded workqueue handler to remove a slot */
++static void remove_slot_worker(struct work_struct *work)
++{
++	struct dummy_slot *dslot =
++		container_of(work, struct dummy_slot, remove_work);
++	remove_slot(dslot);
++}
++
+ /**
+  * Rescan slot.
+  * Tries hard not to re-enable already existing devices
+@@ -267,11 +282,17 @@ static inline void pci_rescan(void) {
+ 	pci_rescan_buses(&pci_root_buses);
+ }
+ 
++/* called from the single-threaded workqueue handler to rescan all pci buses */
++static void pci_rescan_worker(struct work_struct *work)
++{
++	pci_rescan();
++}
+ 
+ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	/* mis-use enable_slot for rescanning of the pci bus */
+-	pci_rescan();
++	cancel_work_sync(&pci_rescan_work);
++	queue_work(dummyphp_wq, &pci_rescan_work);
+ 	return -ENODEV;
+ }
+ 
+@@ -306,6 +327,10 @@ static int disable_slot(struct hotplug_s
+ 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+ 		return -ENODEV;
+ 	}
++	if (test_and_set_bit(0, &dslot->removed)) {
++		dbg("Slot already scheduled for removal\n");
++		return -ENODEV;
++	}
+ 	/* search for subfunctions and disable them first */
+ 	if (!(dslot->dev->devfn & 7)) {
+ 		for (func = 1; func < 8; func++) {
+@@ -328,8 +353,9 @@ static int disable_slot(struct hotplug_s
+ 	/* remove the device from the pci core */
+ 	pci_remove_bus_device(dslot->dev);
+ 
+-	/* blow away this sysfs entry and other parts. */
+-	remove_slot(dslot);
++	/* queue work item to blow away this sysfs entry and other parts. */
++	INIT_WORK(&dslot->remove_work, remove_slot_worker);
++	queue_work(dummyphp_wq, &dslot->remove_work);
+ 
+ 	return 0;
+ }
+@@ -340,6 +366,7 @@ static void cleanup_slots (void)
+ 	struct list_head *next;
+ 	struct dummy_slot *dslot;
+ 
++	destroy_workqueue(dummyphp_wq);
+ 	list_for_each_safe (tmp, next, &slot_list) {
+ 		dslot = list_entry (tmp, struct dummy_slot, node);
+ 		remove_slot(dslot);
+@@ -351,6 +378,10 @@ static int __init dummyphp_init(void)
+ {
+ 	info(DRIVER_DESC "\n");
+ 
++	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
++	if (!dummyphp_wq)
++		return -ENOMEM;
++
+ 	return pci_scan_buses();
+ }
+ 
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
 
