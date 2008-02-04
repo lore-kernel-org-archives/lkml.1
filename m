@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYBDUKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbYBDULW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbYBDUKm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYBDUKf
+	id S1758185AbYBDULW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbYBDULM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:10:35 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:29201 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754427AbYBDUKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:10:34 -0500
-Date: Mon, 4 Feb 2008 21:10:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: David Chinner <dgc@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu,
-       ak@suse.de, James.Bottomley@SteelEye.com, andrea@suse.de,
-       clameter@sgi.com, akpm@linux-foundation.org, andrew.vasquez@qlogic.com,
-       willy@linux.intel.com
-Subject: Re: [rfc] direct IO submission and completion scalability issues
-Message-ID: <20080204201027.GJ15220@kernel.dk>
-References: <20070728012128.GB10033@linux-os.sc.intel.com> <20080203095252.GA11043@wotan.suse.de> <20080204021052.GD155407@sgi.com> <47A7579F.2050809@oracle.com>
+	Mon, 4 Feb 2008 15:11:12 -0500
+Received: from ip-224-2.sn2.eutelia.it ([83.211.224.2]:57313 "EHLO
+	mail.retesintesi.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757424AbYBDULK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:11:10 -0500
+From: 4news@retesintesi.it
+Organization: S.in.te.si. srl
+To: scst-devel@lists.sourceforge.net
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+Date: Mon, 4 Feb 2008 21:06:10 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Vladislav Bolkhovitin <vst@vlnb.net>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <47A7579F.2050809@oracle.com>
+Message-Id: <200802042106.11327.4news@retesintesi.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04 2008, Zach Brown wrote:
-> [ ugh, still jet lagged. ]
-> 
-> > Hi Nick,
-> > 
-> > When Matthew was describing this work at an LCA presentation (not
-> > sure whether you were at that presentation or not), Zach came up
-> > with the idea that allowing the submitting application control the
-> > CPU that the io completion processing was occurring would be a good
-> > approach to try.  That is, we submit a "completion cookie" with the
-> > bio that indicates where we want completion to run, rather than
-> > dictating that completion runs on the submission CPU.
-> > 
-> > The reasoning is that only the higher level context really knows
-> > what is optimal, and that changes from application to application.
-> > The "complete on the submission CPU" policy _may_ be more optimal
-> > for database workloads, but it is definitely suboptimal for XFS and
-> > transaction I/O completion handling because it simply drags a bunch
-> > of global filesystem state around between all the CPUs running
-> > completions. In that case, we really only want a single CPU to be
-> > handling the completions.....
-> > 
-> > (Zach - please correct me if I've missed anything)
-> 
-> Yeah, I think Nick's patch (and Jens' approach, presumably) is just the
-> sort of thing we were hoping for when discussing this during Matthew's talk.
-> 
-> I was imagining the patch a little bit differently (per-cpu tasks, do a
-> wake_up from the driver instead of cpu nr testing up in blk, work
-> queues, whatever), but we know how to iron out these kinds of details ;).
+On lunedì 4 febbraio 2008, Linus Torvalds wrote:
+> So from a purely personal standpoint, I'd like to say that I'm not really
+> interested in iSCSI (and I don't quite know why I've been cc'd on this
+> whole discussion) and think that other approaches are potentially *much*
+> better. So for example, I personally suspect that ATA-over-ethernet is way
+> better than some crazy SCSI-over-TCP crap, but I'm biased for simple and
+> low-level, and against those crazy SCSI people to begin with.
 
-per-cpu tasks/wq's might be better, it's a little awkward to jump
-through hoops
+surely aoe is better than iscsi almost on performance because of the lesser 
+protocol stack:
+iscsi ->  scsi - ip - eth
+aoe -> ata - eth
 
-> > Looking at your patch - if you turn it around so that the
-> > "submission CPU" field can be specified as the "completion cpu" then
-> > I think the patch will expose the policy knobs needed to do the
-> > above.
-> 
-> Yeah, that seems pretty straight forward.
-> 
-> We might need some logic for noticing that the desired cpu has been
-> hot-plugged away while the IO was in flight, it occurs to me.
+but surely iscsi is more a standard than aoe and is more actively used by 
+real-world .
 
-the softirq completion stuff already handles cpus going away, at least
-with my patch that stuff works fine (with a dead flag added).
+Other really useful feature are that:
+- iscsi is capable to move to a ip based san scsi devices by routing that ( 
+i've some tape changer routed by scst to some system that don't have other 
+way to see a tape).
+- because it work on the ip layer it can be routed between long distance , so 
+having needed bandwidth you can have a really remote block device spoking a 
+standard protocol between non ethereogenus systems.
+- iscsi is now the cheapest san avaible.
 
--- 
-Jens Axboe
+bye,
+marco.
 
