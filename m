@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbYBDTSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbYBDTSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbYBDTSU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbYBDTSJ
+	id S1758033AbYBDTSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbYBDTSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:18:09 -0500
-Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:51248 "EHLO
-	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbYBDTSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:18:07 -0500
-Message-ID: <47A764ED.8030605@weinigel.se>
-Date: Mon, 04 Feb 2008 20:18:05 +0100
-From: Christer Weinigel <christer@weinigel.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 4 Feb 2008 14:18:14 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43217 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757583AbYBDTSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:18:13 -0500
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX18nEagfrvsnCSoS/WrTdY15tY/coGdKn/wsyJlHuJ
+	cmCRLV/CFSMBx6
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
+Date: Mon, 4 Feb 2008 20:18:04 +0100
+User-Agent: KMail/1.9.7
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       cpufreq@www.linux.org.uk
+References: <200801261506.28544.toralf.foerster@gmx.de> <20080203163255.467256d4.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE7830C7@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE7830C7@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Diego Zuccato <diego@otello.alma.unibo.it>
-CC: David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <47A5D895.20300@davidnewall.com> <47A6E742.80408@otello.alma.unibo.it>
-In-Reply-To: <47A6E742.80408@otello.alma.unibo.it>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1419441.xcOoMoaQrd";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200802042018.09172.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diego Zuccato wrote:
-> In the cited example it's illegal to go outside certain parameters 
-> SOMEWHERE (if it was illegal everywhere, the the hardware shouldn't 
-> allow it and the sw could do nothing... not considering hw mods).
-> Another example is WiFi: USA, Europe and Japan allows a different number 
-> of channels. But every AP I have had simply asks which country the user 
-> is in, then allows only a limited choice for the channel to use.
-> If I'm in Europe but tell my AP that I'm in Japan, it lets me choose 
-> channel 13 (Europe allows up to ch 11). If the "cops" find it out, they 
-> prosecute ME, not my AP! It's not a TECHNICAL limit, it's a LEGAL one.
-> So there's no point in keeping a driver closed *just* because else 
-> someone could hack it to make it work outside the allowed parameters: 
-> even a closed driver is hackable (just reverse engineer it...).
-> 
-> Think about this scenario: a closed source driver contains:
-> if(power<100)
->     setpower(power);
-> else
->     setpower(100);
-> to limit tx power and make it legal. Then the user finds this 100 and 
-> replaces it with 255 (inside the binary-only module), actually allowing 
-> for more than twice (if power is in mW) the legally permitted power.
-> Is it legal?
+--nextPart1419441.xcOoMoaQrd
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I don't think so (and I doubt you can find any lawyer that does). But 
-> it's not THE DRIVER that's doing something illegal. It's THE USER.
-> It would be equally illegal if the driver was open source. Simpler to 
-> do, but equally illegal.
+At Monday 04 February 2008 Pallipadi, Venkatesh wrote :
+>=20
+> This looks like is related to the report here
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0801.3/1260.html
+>=20
+> Can you try the workarounds on that thread and see whether the problem go=
+es away.
+>=20
+Yes, I already answered here :
 
-It isn't that easy.  The "Tamper-Proof Torx" screws on a vacuum cleaner 
-or a toaster won't stop anybody from opening up the thing, I mean every 
-little hardware store stocks those Torx bits.  But by using a slightly 
-odd screw, the company can say "look, we'we done all we can to stop 
-them, but the user bypassed our security device, and it's not our 
-fault".  Apparently Intel and Atheros are trying to protect themselves 
-in a similar way, they Open Source everything except for the regulatory 
-daemon (Intel) or HAL object file (Atheros).  Why?  Because they belive 
-that if they give away the sources to those parts they do the software 
-equivalent of putting a normal Phillips screw in a home appliance. 
-(Personally I think what they are doing is ridiculous, but apparently 
-those companies' lawyers dont' agree).
+http://lkml.org/lkml/2008/1/28/195
 
-It's of course possible to argue that normal users don't compile their 
-own drivers, they use a driver from their distribution maker, and 
-compiling a hacked driver which allows them to override the limits is 
-just as hard as it is for a Windows user to replace the driver binary 
-with a hacked binary which overrides the limits, so hiding the source 
-really doesn't help.
+:-)
+=2D-=20
+MfG/Sincerely
 
-> Another example: how do you detect, from a driver, if the user actually 
-> got a license/permission from the government (somewhere it's needed, or 
-> you need to pay an annual fee) to use the device? You can't. Does this 
-> missing check make the device illegal? Nope. Just its USE.
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
 
-Welcome to the modern world, companies spend so much money on protecting 
-themselves against potential lawsuit that it is silly.
+--nextPart1419441.xcOoMoaQrd
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-   /Christer
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHp2TxhyrlCH22naMRAvqNAJ94cZH03xwAmmQAMdLP8oWaze4JSwCgsBKX
+CKsQDrmnBG8Z6cyxbvyM54s=
+=l17p
+-----END PGP SIGNATURE-----
+
+--nextPart1419441.xcOoMoaQrd--
