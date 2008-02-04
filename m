@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYBDNCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYBDNDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbYBDNCb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 08:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbYBDNCW
+	id S1755542AbYBDNDY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 08:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYBDNDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 08:02:22 -0500
-Received: from sacred.ru ([62.205.161.221]:33802 "EHLO sacred.ru"
+	Mon, 4 Feb 2008 08:03:17 -0500
+Received: from sacred.ru ([62.205.161.221]:34011 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754634AbYBDNCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 08:02:21 -0500
-Message-ID: <47A70CCA.7020105@openvz.org>
-Date: Mon, 04 Feb 2008 16:02:02 +0300
+	id S1752856AbYBDNDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 08:03:16 -0500
+Message-ID: <47A70D10.5000305@openvz.org>
+Date: Mon, 04 Feb 2008 16:03:12 +0300
 From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
@@ -18,85 +18,82 @@ To: Andrew Morton <akpm@linux-foundation.org>
 CC: Oleg Nesterov <oleg@tv-sign.ru>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        devel@openvz.org
-Subject: [PATCH 1/2 (resend)] Clean up the kill_someting_info
+Subject: [PATCH 2/2 (resend)] Get rid of the kill_pgrp_info() function
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 04 Feb 2008 16:01:46 +0300 (MSK)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 04 Feb 2008 16:02:55 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first step (of two) in removing the kill_pgrp_info.
+There's only one caller left - the kill_pgrp one - so merge
+these two functions and forget the kill_pgrp_info one.
 
-All the users of this function are in kernel/signal.c, but all
-they need is to call __kill_pgrp_info() with the tasklist_lock
-read-locked.
-
-Fortunately, one of its users is the kill_something_info(),
-which already needs this lock in one of its branches, so clean
-these branches up and call the __kill_pgrp_info() directly.
-
-Based on Oleg's view of how this function should look.
-
-Changes from v1:
-* Fixed double rcu_read_lock() in the if (pid > 0) branch.
-  This caused udev die from segfault on FC3, as noticed by Andrew.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Reviewed-by: Oleg Nesterov <oleg@tv-sign.ru>
 
 ---
- kernel/signal.c |   26 +++++++++++++++-----------
- 1 files changed, 15 insertions(+), 11 deletions(-)
+ include/linux/sched.h |    1 -
+ kernel/signal.c       |   21 ++++++++-------------
+ 2 files changed, 8 insertions(+), 14 deletions(-)
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 1256e25..64def57 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1689,7 +1689,6 @@ extern int send_sig_info(int, struct siginfo *, struct task_struct *);
+ extern int force_sigsegv(int, struct task_struct *);
+ extern int force_sig_info(int, struct siginfo *, struct task_struct *);
+ extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp);
+-extern int kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp);
+ extern int kill_pid_info(int sig, struct siginfo *info, struct pid *pid);
+ extern int kill_pid_info_as_uid(int, struct siginfo *, struct pid *, uid_t, uid_t, u32);
+ extern int kill_pgrp(struct pid *pid, int sig, int priv);
 diff --git a/kernel/signal.c b/kernel/signal.c
-index cc45a6b..a805c74 100644
+index a805c74..2c1f08d 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1134,14 +1134,22 @@ EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
- static int kill_something_info(int sig, struct siginfo *info, int pid)
+@@ -1018,7 +1018,7 @@ int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+ }
+ 
+ /*
+- * kill_pgrp_info() sends a signal to a process group: this is what the tty
++ * __kill_pgrp_info() sends a signal to a process group: this is what the tty
+  * control characters do (^C, ^Z etc)
+  */
+ 
+@@ -1037,17 +1037,6 @@ int __kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp)
+ 	return success ? 0 : retval;
+ }
+ 
+-int kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp)
+-{
+-	int retval;
+-
+-	read_lock(&tasklist_lock);
+-	retval = __kill_pgrp_info(sig, info, pgrp);
+-	read_unlock(&tasklist_lock);
+-
+-	return retval;
+-}
+-
+ int kill_pid_info(int sig, struct siginfo *info, struct pid *pid)
  {
- 	int ret;
--	rcu_read_lock();
--	if (!pid) {
--		ret = kill_pgrp_info(sig, info, task_pgrp(current));
--	} else if (pid == -1) {
-+
-+	if (pid > 0) {
-+		rcu_read_lock();
-+		ret = kill_pid_info(sig, info, find_vpid(pid));
-+		rcu_read_unlock();
-+		return ret;
-+	}
+ 	int error = -ESRCH;
+@@ -1236,7 +1225,13 @@ force_sigsegv(int sig, struct task_struct *p)
+ 
+ int kill_pgrp(struct pid *pid, int sig, int priv)
+ {
+-	return kill_pgrp_info(sig, __si_special(priv), pid);
++	int ret;
 +
 +	read_lock(&tasklist_lock);
-+	if (pid != -1) {
-+		ret = __kill_pgrp_info(sig, info,
-+				pid ? find_vpid(-pid) : task_pgrp(current));
-+	} else {
- 		int retval = 0, count = 0;
- 		struct task_struct * p;
- 
--		read_lock(&tasklist_lock);
- 		for_each_process(p) {
- 			if (p->pid > 1 && !same_thread_group(p, current)) {
- 				int err = group_send_sig_info(sig, info, p);
-@@ -1150,14 +1158,10 @@ static int kill_something_info(int sig, struct siginfo *info, int pid)
- 					retval = err;
- 			}
- 		}
--		read_unlock(&tasklist_lock);
- 		ret = count ? retval : -ESRCH;
--	} else if (pid < 0) {
--		ret = kill_pgrp_info(sig, info, find_vpid(-pid));
--	} else {
--		ret = kill_pid_info(sig, info, find_vpid(pid));
- 	}
--	rcu_read_unlock();
++	ret = __kill_pgrp_info(sig, __si_special(priv), pid);
 +	read_unlock(&tasklist_lock);
 +
- 	return ret;
++	return ret;
  }
+ EXPORT_SYMBOL(kill_pgrp);
  
 -- 
 1.5.3.4
