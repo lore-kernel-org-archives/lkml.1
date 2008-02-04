@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYBDTDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYBDTDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756967AbYBDTDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 14:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYBDTDO
+	id S1757292AbYBDTDq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 14:03:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbYBDTDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 14:03:14 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45771 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755197AbYBDTDN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 14:03:13 -0500
-To: staubach@redhat.com
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <47A75CCF.4090904@redhat.com> (message from Peter Staubach on
-	Mon, 04 Feb 2008 13:43:27 -0500)
-Subject: Re: [PATCH 2/3] enhanced syscall ESTALE error handling (v2)
-References: <4790C768.4080207@redhat.com> <47A387D4.70605@redhat.com> <E1JL3a0-0006H7-U3@pomaz-ex.szeredi.hu> <47A39471.4010105@redhat.com> <E1JL3yn-0006KQ-AS@pomaz-ex.szeredi.hu> <47A39D8F.9010003@redhat.com> <E1JLDIq-000747-1y@pomaz-ex.szeredi.hu> <47A73558.2080700@redhat.com> <E1JM5Gh-0003Pi-Dq@pomaz-ex.szeredi.hu> <47A75CCF.4090904@redhat.com>
-Message-Id: <E1JM6aW-0003aJ-Eh@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 04 Feb 2008 20:02:40 +0100
+	Mon, 4 Feb 2008 14:03:36 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:57900 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757089AbYBDTDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 14:03:36 -0500
+Date: Mon, 4 Feb 2008 11:03:32 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lee.Schermerhorn@hp.com
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+In-Reply-To: <20080202113045.GA29441@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0802041101290.9656@schroedinger.engr.sgi.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <20080202090914.GA27723@one.firstfloor.org> <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <20080202113045.GA29441@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I don't know what NFS does, but returning EINTR without actually
-> > canceling an operation in the server is generally not a good idea.
-> >
-> >   
-> 
-> This is what NFS has been doing, for several decades, and no one
-> has complained yet.
+On Sat, 2 Feb 2008, Andi Kleen wrote:
 
-Is it really?  Man nfs says something quite different (emphasis mine):
+> To be honest I've never tried seriously to make 32bit NUMA policy
+> (with highmem) work well; just kept it at a "should not break"
+> level. That is because with highmem the kernel's choices at 
+> placing memory are seriously limited anyways so I doubt 32bit
+> NUMA will ever work very well.
 
-   intr        If an NFS file operation has a *major timeout* and  it  is
-               hard  mounted,  then  allow signals to interupt the file
-               operation and cause it to return EINTR  to  the  calling
-               program.  The *default* is to *not* allow file operations to
-               be *interrupted*.
+Memory policies do not work reliably with config highmem (I have never 
+seen such usage because large memory systems are typically 64 bit 
+which have no highmem, but there are some 32bit numa uses of HIGHMEM) ....
 
-> >> Have you noticed another one?  I would be happy to chat with the
-> >> developers for that file system to see if this support would
-> >> negatively impact them.
-> >>     
-> >
-> > Oh, I have no idea.  And I wouldn't want to do a full audit of all the
-> > filesystems to find out.  But if you do, please go ahead.
-> >
-> >   
-> 
-> Well, you brought it up.  I thought that perhaps you had something
-> other than FUD.
-
-It's not FUD, it's being careful not to break an implementation when
-changing an API in a backward incompatbile way.
-
-> Please describe this real and existing fuse installation so that I can
-> better understand the situation and the real requirements here.
-
-I have already done so:
-
-  "Also up till now, returning ESTALE in a fuse filesystem was a
-   perfectly valid thing to do.  This patch changes the behavior of
-   that rather drastically.  There might be installed systems that
-   rely on current behavior, and we want to avoid breaking those on a
-   kernel upgrade."
-
-Miklos
+Memory policies are only applied to the highest zone. So if a system has 
+highmem on some nodes and not on the others then policies will only be 
+applied if allocations happen to occur on the highmem nodes.
