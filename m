@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYBDLnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbYBDLpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYBDLnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 06:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYBDLnP
+	id S1753816AbYBDLpX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 06:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYBDLpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 06:43:15 -0500
-Received: from wx-out-0506.google.com ([66.249.82.237]:16397 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbYBDLnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 06:43:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=S3rqR8BwADwLFkksKMo9/XcfsjkudIlZbzBLN1SCEBnrqH4OSXFjdndjqXQ3bJ0kHKWpxTOzIsDHOF0azJTbKo3CG3aH0XhdsvBx0EGjC9QpPInvggDi1IPlkml5QdegMnxKCRkmH3EMf0eZtkNal4oaUMtfcn6pz3tO2+CHBN8=
-Message-ID: <e85b9d30802040343j13a0ec39if646740b0c26b7c6@mail.gmail.com>
-Date: Mon, 4 Feb 2008 12:43:11 +0100
-From: Matthew <jackdachef@gmail.com>
-To: greg@kroah.com
-Subject: [PATCH] USB: mark USB drivers as being GPL only
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Feb 2008 06:45:11 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:64350 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751680AbYBDLpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 06:45:10 -0500
+Date: Mon, 4 Feb 2008 12:44:48 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH] kbuild: Fix instrumentation removal breakage on avr32
+Message-ID: <20080204124448.3633e937@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080203211042.GF2648@uranus.ravnborg.org>
+References: <20080203211042.GF2648@uranus.ravnborg.org>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+On Sun, 3 Feb 2008 22:10:42 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
->Over two years ago, the Linux USB developers stated that they believed
->there was no way to create a USB kernel driver that was not under the
->GPL.  This patch moves the USB apis to enforce that decision.
+> Mathieu Desnoyers (5):
+>       Move Kconfig.instrumentation to arch/Kconfig and init/Kconfig
 
->There are no known closed source USB drivers in the wild, so this patch
->should cause no problems.
+AVR32 still includes Kconfig.instrumentation, so it won't build after
+this...
 
-hm, I'm not sure, but will your patch make Samsung's Unified Linux
-Driver for printing & scanning stop working?
-http://org.downloadcenter.samsung.com/downloadfile/ContentsFile.aspx?CDSite=DE&CttFileID=801111&CDCttType=DR&ModelType=N&ModelName=SCX-4521F&VPath=DR/200707/20070720165133984_UnifiedLinuxDriver.tar.gz
+I did point this out when the patch was submitted, I sent the avr32
+pull request early as promised (more than a week ago), but it still
+broke. Please apply the fix below. This fixes 2.6.24-mm1 too.
 
-another Manufacturer / Candidate I'm worrying about is Brother:
-http://solutions.brother.com/linux/en_us/index.html
-Brother is providing opensource cups drivers (kudos to the developers
-@ Brother for that!), the sane-drivers however seem to be closed
-source, will those work ?
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ arch/avr32/Kconfig |    2 --
+ 1 file changed, 2 deletions(-)
 
-I'm no developer, just a heavy user ;) so unfortunately I can't tell
-whether those drivers are dependent on being NOT GPL,
-if your patch will find its inclusion into Linus' mainline-tree,
-there's still the possibility to revert that patch, right ? (freedom
-of doing with the code what I need to)
-
-Many thanks in advance & thanks a lot for your work :)
-
-Mat
+Index: linux-2.6.24-mm1/arch/avr32/Kconfig
+===================================================================
+--- linux-2.6.24-mm1.orig/arch/avr32/Kconfig	2008-02-04 12:28:31.000000000 +0100
++++ linux-2.6.24-mm1/arch/avr32/Kconfig	2008-02-04 12:28:36.000000000 +0100
+@@ -236,8 +236,6 @@ source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
+-source "kernel/Kconfig.instrumentation"
+-
+ source "arch/avr32/Kconfig.debug"
+ 
+ source "security/Kconfig"
