@@ -1,95 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYBDRFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYBDRF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756466AbYBDRFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYBDRFc
+	id S1756816AbYBDRF7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbYBDRFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:05:32 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:35037 "EHLO
+	Mon, 4 Feb 2008 12:05:36 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35040 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbYBDRFc (ORCPT
+	with ESMTP id S1753230AbYBDRFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:05:32 -0500
-Message-Id: <20080204170528.097544613@szeredi.hu>
+	Mon, 4 Feb 2008 12:05:33 -0500
+Message-Id: <20080204170529.622970833@szeredi.hu>
 References: <20080204170409.991123259@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 04 Feb 2008 18:04:12 +0100
+Date: Mon, 04 Feb 2008 18:04:13 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [patch 2/3] fuse: clean up setting i_size in write
-Content-Disposition: inline; filename=fuse_write_update_size.patch
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>
+Subject: [patch 3/3] fuse: implement perform_write
+Content-Disposition: inline; filename=fuse_perform_write.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+From: Nick Piggin <npiggin@suse.de>
 
-Extract common code for setting i_size in write functions into a
-common helper.
+Introduce fuse_perform_write. With fusexmp (a passthrough filesystem), large
+(1MB) writes into a backing tmpfs filesystem are sped up by almost 4 times
+(256MB/s vs 71MB/s).
 
+[mszeredi@suse.cz]:
+
+ - split into smaller functions
+ - testing
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
 Index: linux/fs/fuse/file.c
 ===================================================================
---- linux.orig/fs/fuse/file.c	2008-02-04 13:01:39.000000000 +0100
-+++ linux/fs/fuse/file.c	2008-02-04 13:02:03.000000000 +0100
-@@ -610,13 +610,24 @@ static int fuse_write_begin(struct file 
- 	return 0;
+--- linux.orig/fs/fuse/file.c	2008-02-04 17:11:18.000000000 +0100
++++ linux/fs/fuse/file.c	2008-02-04 17:11:59.000000000 +0100
+@@ -677,6 +677,148 @@ static int fuse_write_end(struct file *f
+ 	return res;
  }
  
-+static void fuse_write_update_size(struct inode *inode, loff_t pos)
++static size_t fuse_send_write_pages(struct fuse_req *req, struct file *file,
++				    struct inode *inode, loff_t pos,
++				    size_t count)
 +{
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+	struct fuse_inode *fi = get_fuse_inode(inode);
++	size_t res;
++	unsigned offset;
++	unsigned i;
 +
-+	spin_lock(&fc->lock);
-+	fi->attr_version = ++fc->attr_version;
-+	if (pos > inode->i_size)
-+		i_size_write(inode, pos);
-+	spin_unlock(&fc->lock);
++	for (i = 0; i < req->num_pages; i++)
++		fuse_wait_on_page_writeback(inode, req->pages[i]->index);
++
++	res = fuse_send_write(req, file, inode, pos, count, NULL);
++
++	offset = req->page_offset;
++	count = res;
++	for (i = 0; i < req->num_pages; i++) {
++		struct page *page = req->pages[i];
++
++		if (!req->out.h.error && !offset && count >= PAGE_CACHE_SIZE)
++			SetPageUptodate(page);
++
++		/* Just ignore count underflow on last page */
++		count -= PAGE_CACHE_SIZE - offset;
++		offset = 0;
++
++		unlock_page(page);
++		page_cache_release(page);
++	}
++
++	return res;
 +}
 +
- static int fuse_buffered_write(struct file *file, struct inode *inode,
- 			       loff_t pos, unsigned count, struct page *page)
- {
- 	int err;
- 	size_t nres;
- 	struct fuse_conn *fc = get_fuse_conn(inode);
--	struct fuse_inode *fi = get_fuse_inode(inode);
- 	unsigned offset = pos & (PAGE_CACHE_SIZE - 1);
- 	struct fuse_req *req;
- 
-@@ -643,12 +654,7 @@ static int fuse_buffered_write(struct fi
- 		err = -EIO;
- 	if (!err) {
- 		pos += nres;
--		spin_lock(&fc->lock);
--		fi->attr_version = ++fc->attr_version;
--		if (pos > inode->i_size)
--			i_size_write(inode, pos);
--		spin_unlock(&fc->lock);
--
++static ssize_t fuse_fill_write_pages(struct fuse_req *req,
++			       struct address_space *mapping,
++			       struct iov_iter *ii, loff_t pos)
++{
++	struct fuse_conn *fc = get_fuse_conn(mapping->host);
++	unsigned offset = pos & (PAGE_CACHE_SIZE - 1);
++	size_t count = 0;
++	int err;
++
++	req->page_offset = offset;
++
++	do {
++		size_t tmp;
++		struct page *page;
++		pgoff_t index = pos >> PAGE_CACHE_SHIFT;
++		size_t bytes = min_t(size_t, PAGE_CACHE_SIZE - offset,
++				     iov_iter_count(ii));
++
++		bytes = min_t(size_t, bytes, fc->max_write - count);
++
++ again:
++		err = -EFAULT;
++		if (iov_iter_fault_in_readable(ii, bytes))
++			break;
++
++		err = -ENOMEM;
++		page = __grab_cache_page(mapping, index);
++		if (!page)
++			break;
++
++		pagefault_disable();
++		tmp = iov_iter_copy_from_user_atomic(page, ii, offset, bytes);
++		pagefault_enable();
++		flush_dcache_page(page);
++
++		if (!tmp) {
++			unlock_page(page);
++			page_cache_release(page);
++			bytes = min(bytes, iov_iter_single_seg_count(ii));
++			goto again;
++		}
++
++		err = 0;
++		req->pages[req->num_pages] = page;
++		req->num_pages++;
++
++		iov_iter_advance(ii, tmp);
++		count += tmp;
++		pos += tmp;
++		offset += tmp;
++		if (offset == PAGE_CACHE_SIZE)
++			offset = 0;
++
++	} while (iov_iter_count(ii) && count < fc->max_write &&
++		 req->num_pages < FUSE_MAX_PAGES_PER_REQ && offset == 0);
++
++	return count > 0 ? count : err;
++}
++
++static ssize_t fuse_perform_write(struct file *file,
++				  struct address_space *mapping,
++				  struct iov_iter *ii, loff_t pos)
++{
++	struct inode *inode = mapping->host;
++	struct fuse_conn *fc = get_fuse_conn(inode);
++	int err = 0;
++	ssize_t res = 0;
++
++	if (is_bad_inode(inode))
++		return -EIO;
++
++	do {
++		struct fuse_req *req;
++		ssize_t count;
++
++		req = fuse_get_req(fc);
++		if (IS_ERR(req)) {
++			err = PTR_ERR(req);
++			break;
++		}
++
++		count = fuse_fill_write_pages(req, mapping, ii, pos);
++		if (count <= 0) {
++			err = count;
++		} else {
++			size_t num_written;
++
++			num_written = fuse_send_write_pages(req, file, inode,
++							    pos, count);
++			err = req->out.h.error;
++			if (!err) {
++				res += num_written;
++				pos += num_written;
++
++				/* break out of the loop on short write */
++				if (num_written != count)
++					err = -EIO;
++			}
++		}
++		fuse_put_request(fc, req);
++	} while (!err && iov_iter_count(ii));
++
++	if (res > 0)
 +		fuse_write_update_size(inode, pos);
- 		if (count == PAGE_CACHE_SIZE)
- 			SetPageUptodate(page);
- 	}
-@@ -766,12 +772,8 @@ static ssize_t fuse_direct_io(struct fil
- 	}
- 	fuse_put_request(fc, req);
- 	if (res > 0) {
--		if (write) {
--			spin_lock(&fc->lock);
--			if (pos > inode->i_size)
--				i_size_write(inode, pos);
--			spin_unlock(&fc->lock);
--		}
-+		if (write)
-+			fuse_write_update_size(inode, pos);
- 		*ppos = pos;
- 	}
- 	fuse_invalidate_attr(inode);
++
++	fuse_invalidate_attr(inode);
++
++	return res > 0 ? res : err;
++}
++
+ static void fuse_release_user_pages(struct fuse_req *req, int write)
+ {
+ 	unsigned i;
+@@ -1247,6 +1389,7 @@ static const struct address_space_operat
+ 	.launder_page	= fuse_launder_page,
+ 	.write_begin	= fuse_write_begin,
+ 	.write_end	= fuse_write_end,
++	.perform_write	= fuse_perform_write,
+ 	.readpages	= fuse_readpages,
+ 	.set_page_dirty	= __set_page_dirty_nobuffers,
+ 	.bmap		= fuse_bmap,
 
 --
