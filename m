@@ -1,103 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYBDRGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYBDRGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756967AbYBDRGY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 12:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbYBDRFl
+	id S1757174AbYBDRGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 12:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbYBDRFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 12:05:41 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:35045 "EHLO
+	Mon, 4 Feb 2008 12:05:50 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35049 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568AbYBDRFk (ORCPT
+	with ESMTP id S1756684AbYBDRFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 12:05:40 -0500
-Message-Id: <20080204170526.922820156@szeredi.hu>
-References: <20080204170409.991123259@szeredi.hu>
+	Mon, 4 Feb 2008 12:05:48 -0500
+Message-Id: <20080204170409.991123259@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 04 Feb 2008 18:04:11 +0100
+Date: Mon, 04 Feb 2008 18:04:10 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>
-Subject: [patch 1/3] vfs: introduce perform_write in a_ops
-Content-Disposition: inline; filename=perform_write.patch
+       linux-mm@kvack.org
+Subject: [patch 0/3] add perform_write to a_ops
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <npiggin@suse.de>
+a_ops->perform_write() was left out from Nick Piggin's new a_ops
+patchset, as it was non-essential, and postponed for later inclusion.
 
-Introduce a new perform_write() address space operation.
+This short series reintroduces it, but only adds the fuse
+implementation and not simple_perform_write(), which I'm not sure
+would be a significant improvement.
 
-This is a single-call, bulk version of write_begin/write_end
-operations.  It is only used in the buffered write path (write_begin
-must still be implemented), and not for in-kernel writes to pagecache.
+This allows larger than 4k buffered writes for fuse, which is one of
+the most requested features.
 
-For some filesystems, using this can provide significant speedups.
+This goes on top of the "fuse: writable mmap" patches.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
-
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2008-02-04 15:24:03.000000000 +0100
-+++ linux/include/linux/fs.h	2008-02-04 16:24:19.000000000 +0100
-@@ -469,6 +469,9 @@ struct address_space_operations {
- 				loff_t pos, unsigned len, unsigned copied,
- 				struct page *page, void *fsdata);
- 
-+	ssize_t (*perform_write)(struct file *, struct address_space *mapping,
-+				struct iov_iter *i, loff_t pos);
-+
- 	/* Unfortunately this kludge is needed for FIBMAP. Don't use it */
- 	sector_t (*bmap)(struct address_space *, sector_t);
- 	void (*invalidatepage) (struct page *, unsigned long);
-Index: linux/mm/filemap.c
-===================================================================
---- linux.orig/mm/filemap.c	2008-02-04 15:24:03.000000000 +0100
-+++ linux/mm/filemap.c	2008-02-04 16:22:55.000000000 +0100
-@@ -2312,7 +2312,9 @@ generic_file_buffered_write(struct kiocb
- 	struct iov_iter i;
- 
- 	iov_iter_init(&i, iov, nr_segs, count, written);
--	if (a_ops->write_begin)
-+	if (a_ops->perform_write)
-+		status = a_ops->perform_write(file, mapping, &i, pos);
-+	else if (a_ops->write_begin)
- 		status = generic_perform_write(file, &i, pos);
- 	else
- 		status = generic_perform_write_2copy(file, &i, pos);
-Index: linux/Documentation/filesystems/vfs.txt
-===================================================================
---- linux.orig/Documentation/filesystems/vfs.txt	2008-02-04 12:28:50.000000000 +0100
-+++ linux/Documentation/filesystems/vfs.txt	2008-02-04 16:23:44.000000000 +0100
-@@ -533,6 +533,9 @@ struct address_space_operations {
- 	int (*write_end)(struct file *, struct address_space *mapping,
- 				loff_t pos, unsigned len, unsigned copied,
- 				struct page *page, void *fsdata);
-+	ssize_t (*perform_write)(struct file *, struct address_space *mapping,
-+				struct iov_iter *i, loff_t pos);
-+
- 	sector_t (*bmap)(struct address_space *, sector_t);
- 	int (*invalidatepage) (struct page *, unsigned long);
- 	int (*releasepage) (struct page *, int);
-@@ -664,6 +667,17 @@ struct address_space_operations {
-         Returns < 0 on failure, otherwise the number of bytes (<= 'copied')
-         that were able to be copied into pagecache.
- 
-+  perform_write: This is a single-call, bulk version of write_begin/write_end
-+        operations. It is only used in the buffered write path (write_begin
-+        must still be implemented), and not for in-kernel writes to pagecache.
-+        It takes an iov_iter structure, which provides a descriptor for the
-+        source data (and has associated iov_iter_xxx helpers to operate on
-+        that data). There are also file, mapping, and pos arguments, which
-+        specify the destination of the data.
-+
-+        Returns < 0 on failure if nothing was written out, otherwise returns
-+        the number of bytes copied into pagecache.
-+
-   bmap: called by the VFS to map a logical block offset within object to
-   	physical block number. This method is used by the FIBMAP
-   	ioctl and for working with swap-files.  To be able to swap to
+Thanks,
+Miklos
 
 --
