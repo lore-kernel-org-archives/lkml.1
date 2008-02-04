@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYBDAuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYBDAyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbYBDAuq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Feb 2008 19:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbYBDAui
+	id S1755421AbYBDAyj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Feb 2008 19:54:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYBDAyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Feb 2008 19:50:38 -0500
-Received: from mout2.freenet.de ([195.4.92.92]:35838 "EHLO mout2.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753950AbYBDAuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Feb 2008 19:50:37 -0500
-Message-ID: <47A6615D.9090201@freenet.de>
-Date: Mon, 04 Feb 2008 01:50:37 +0100
-From: Patrick Ringl <patrick_@freenet.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sun, 3 Feb 2008 19:54:31 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:35630 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754103AbYBDAya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Feb 2008 19:54:30 -0500
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Organization: Pardus / KDE
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Subject: Re: [PATCH] per-process securebits
+Date: Mon, 4 Feb 2008 02:54:50 +0200
+User-Agent: KMail/1.9.8
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+References: <47A2D439.9050704@kernel.org> <200802030825.49221.ismail@pardus.org.tr> <47A66119.90702@kernel.org>
+In-Reply-To: <47A66119.90702@kernel.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-usb@vger.kernel.org, linux-storage@vger.kernel.org
-Subject: wrong cylinders of kingston usb pendrive [intel 82801DB]
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802040254.50444.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+At Monday 04 February 2008 around 02:49:29 Andrew G. Morgan wrote:
+> Another way to put this is that there needs to be some application code
+> and documentation available to guide the way... Adding such things to
+> the example programs in libcap2 helped me find the 24-rc2 CAP_SETPCAP
+> bug and until I've gone through the task of testing all the bits
+> together, I won't believe the kernel support is anything other than
+> 'experimental'.
+>
+> Other folk are actively advocating and exploring this model. For
+> example, Chris Friedhoff has a page here that describes some first
+> steps for using filesystem capabilities:
+>
+> ~  http://www.friedhoff.org/posixfilecaps.html
 
-I am suffering from the following (usb-related?) problem:
+I already know and enjoy File system base capabilities thanks to Chris' 
+website and Serge's developerWorks article.
 
-I have several different mashines - all x86 architecture - just lets 
-call them mashineA, mashineB and mashineC.
-Anyway, mashineA has a severe problem with a 
-Kingston-USB-pendrive(2gig). I simply cant install anything on it - the 
-kernel usually moans with problems like "attempt to access beyond end of 
-device" - while it does work fine with several noname usb-pendrives of 
-the same size.
-Now, I just tested that kingston pendrive on mashineB and mashineC - 
-where it runs fine .. I can install debian to it (same installation 
-media) without any problem or kernel errors.
+What I meant to ask was what does "per-process securebits" brings as extra. 
+FWIW in Pardus 2008 we'll enable Posix file capabilities by default so people 
+could "harden" their setups.
 
-I compared the output of dmesg and fdisk from mashineA and mashineB and 
-C .. and the difference is simple: mashineA always shows 248 cylinders - 
-while all the other mashines show 228 cylinders.
+Regards,
+ismail
 
-So I guess this is the problem and especially the reason why using it on 
-mashineA always fails.
-
-mashineA has the following usb chipset:
-
-vendor     = 'Intel Corporation'
-device     = '82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB 2.0 EHCI Controller'
-
-
-Hopefully you have any suggestions.
-
-PS: I am not subscribed so please CC to me.
-
-
-regards,
-Patrick
-
+-- 
+Never learn by your mistakes, if you do you may never dare to try again.
