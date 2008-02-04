@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbYBDLwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYBDMBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbYBDLwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 06:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYBDLwF
+	id S1753542AbYBDMBw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 07:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYBDMBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 06:52:05 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53144 "EHLO mx3.mail.elte.hu"
+	Mon, 4 Feb 2008 07:01:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42417 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbYBDLwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 06:52:03 -0500
-Date: Mon, 4 Feb 2008 12:51:44 +0100
+	id S1751881AbYBDMBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 07:01:43 -0500
+Date: Mon, 4 Feb 2008 13:01:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       petr@vandrovec.name
-Subject: Re: Commit f06e4ec breaks vmware
-Message-ID: <20080204115144.GA17850@elte.hu>
-References: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.24-git4+ regression
+Message-ID: <20080204120131.GA20962@elte.hu>
+References: <20080130135609.GA5100@ics.muni.cz> <20080131102919.GC27157@elte.hu> <20080204111747.GB4450@ics.muni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20080204111747.GB4450@ics.muni.cz>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,42 +35,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+* Lukas Hejtmanek <xhejtman@ics.muni.cz> wrote:
 
-> sad to say, but f06e4ec... breaks booting the kernel in vmware 
-> (bisected). Booting just stops after
-> 
-> 	Checking for 'hlt' instruction...
-> 
-> commit f06e4ec1c15691b0cfd2397ae32214fa36c90d71
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Wed Jan 30 13:32:39 2008 +0100
-> 
->     x86: read_tsc sync
->     
->     make native_read_tsc() always non-speculative.
+> but in such a case, kernel 2.6.24-git13 does oops at startup in 
+> sched_slice.
 
-could you send us the /proc/cpuinfo data of the guest CPU?
-
-if latest -git still fails, does the patch below solve the problem?
+could you tell me more about this oops? You booted unmodified, latest 
+-git and it oopsed in sched_slice()? The patch below should work around 
+any oopses in sched_slice(). [but this is really a 'must not happen' 
+scenario - so a just-for-testing patch]
 
 	Ingo
 
----
- include/asm-x86/system.h |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-Index: linux-x86.q/include/asm-x86/system.h
+Index: linux-x86.q/kernel/sched_fair.c
 ===================================================================
---- linux-x86.q.orig/include/asm-x86/system.h
-+++ linux-x86.q/include/asm-x86/system.h
-@@ -407,8 +407,7 @@ void default_idle(void);
-  */
- static inline void rdtsc_barrier(void)
- {
--	alternative(ASM_NOP3, "mfence", X86_FEATURE_MFENCE_RDTSC);
--	alternative(ASM_NOP3, "lfence", X86_FEATURE_LFENCE_RDTSC);
-+	smp_mb();
- }
+--- linux-x86.q.orig/kernel/sched_fair.c
++++ linux-x86.q/kernel/sched_fair.c
+@@ -268,7 +268,8 @@ static u64 sched_slice(struct cfs_rq *cf
+ 	u64 slice = __sched_period(cfs_rq->nr_running);
  
- #endif
+ 	slice *= se->load.weight;
+-	do_div(slice, cfs_rq->load.weight);
++	if (cfs_rq->load.weight)
++		do_div(slice, cfs_rq->load.weight);
+ 
+ 	return slice;
+ }
