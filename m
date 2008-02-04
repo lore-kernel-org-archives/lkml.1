@@ -1,100 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbYBDLuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbYBDLwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754170AbYBDLuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 06:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYBDLuI
+	id S1754428AbYBDLwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 06:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYBDLwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 06:50:08 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45129 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbYBDLuG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 06:50:06 -0500
-To: linuxram@us.ibm.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@ftp.linux.org.uk, a.p.zijlstra@chello.nl
-In-reply-to: <1202116505.3949.91.camel@ram.us.ibm.com> (message from Ram Pai
-	on Mon, 04 Feb 2008 01:15:05 -0800)
-Subject: Re: [RFC PATCH] vfs: optimization to /proc/<pid>/mountinfo patch
-References: <E1JJqxt-0004r2-Vf@pomaz-ex.szeredi.hu>
-	 <20080130160839.828c4363.akpm@linux-foundation.org>
-	 <E1JKVY6-0001wd-BE@pomaz-ex.szeredi.hu>
-	 <1201805123.10358.23.camel@ram.us.ibm.com> <1202116505.3949.91.camel@ram.us.ibm.com>
-Message-Id: <E1JLzp9-0002QN-PP@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 04 Feb 2008 12:49:19 +0100
+	Mon, 4 Feb 2008 06:52:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53144 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752060AbYBDLwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 06:52:03 -0500
+Date: Mon, 4 Feb 2008 12:51:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       petr@vandrovec.name
+Subject: Re: Commit f06e4ec breaks vmware
+Message-ID: <20080204115144.GA17850@elte.hu>
+References: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1) reports deleted inode in dentry_path() consistent with that in __d_path()
-> 2) modified __d_path() to use prepend(), reducing the size of __d_path()
-> 3) moved all the functionality that reports mount information in /proc under
-> 	CONFIG_PROC_FS.
+
+* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+
+> sad to say, but f06e4ec... breaks booting the kernel in vmware 
+> (bisected). Booting just stops after
 > 
-> Could not verify if the code would work with CONFIG_PROC_FS=n, since it was
-> impossible to disable CONFIG_PROC_FS. Looking for ideas on how to disable
-> CONFIG_PROC_FS.
-> 	
+> 	Checking for 'hlt' instruction...
 > 
+> commit f06e4ec1c15691b0cfd2397ae32214fa36c90d71
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Wed Jan 30 13:32:39 2008 +0100
 > 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  fs/dcache.c              |   59 +++++++++++++++++++----------------------------
->  fs/namespace.c           |    2 +
->  fs/seq_file.c            |    2 +
->  include/linux/dcache.h   |    3 ++
->  include/linux/seq_file.h |    3 ++
->  5 files changed, 34 insertions(+), 35 deletions(-)
-> 
-> Index: linux-2.6.23/fs/dcache.c
-> ===================================================================
-> --- linux-2.6.23.orig/fs/dcache.c
-> +++ linux-2.6.23/fs/dcache.c
-> @@ -1747,6 +1747,17 @@ shouldnt_be_hashed:
->  	goto shouldnt_be_hashed;
->  }
->  
-> +static int prepend(char **buffer, int *buflen, const char *str,
-> +			  int namelen)
-> +{
-> +	*buflen -= namelen;
-> +	if (*buflen < 0)
-> +		return 1;
+>     x86: read_tsc sync
+>     
+>     make native_read_tsc() always non-speculative.
 
-This is confusing.  Should return -ENAMETOOLONG intead (see Chapter 16
-in Documentation/CodingStyle).
+could you send us the /proc/cpuinfo data of the guest CPU?
 
-> +	*buffer -= namelen;
-> +	memcpy(*buffer, str, namelen);
-> +	return 0;
-> +}
-> +
->  /**
->   * d_path - return the path of a dentry
->   * @dentry: dentry to report
-> @@ -1768,17 +1779,11 @@ static char *__d_path(struct dentry *den
->  {
->  	char * end = buffer+buflen;
->  	char * retval;
-> -	int namelen;
->  
-> -	*--end = '\0';
-> -	buflen--;
-> -	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
-> -		buflen -= 10;
-> -		end -= 10;
-> -		if (buflen < 0)
-> +	prepend(&end, &buflen, "\0", 1);
-> +	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
-> +		prepend(&end, &buflen, " (deleted)", 10))
+if latest -git still fails, does the patch below solve the problem?
 
-And this should test for "prepend() != 0" or "prepend() < 0" instead,
-otherwise it could easily be misread as "if prepend() succeeded,
-then...".
+	Ingo
 
-And similarly for all the later calls.
+---
+ include/asm-x86/system.h |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Thanks,
-Miklos
+Index: linux-x86.q/include/asm-x86/system.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/system.h
++++ linux-x86.q/include/asm-x86/system.h
+@@ -407,8 +407,7 @@ void default_idle(void);
+  */
+ static inline void rdtsc_barrier(void)
+ {
+-	alternative(ASM_NOP3, "mfence", X86_FEATURE_MFENCE_RDTSC);
+-	alternative(ASM_NOP3, "lfence", X86_FEATURE_LFENCE_RDTSC);
++	smp_mb();
+ }
+ 
+ #endif
