@@ -1,121 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYBDUYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYBDUYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbYBDUYa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 15:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYBDUYX
+	id S1757711AbYBDUYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 15:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbYBDUYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 15:24:23 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55849 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755434AbYBDUYW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 15:24:22 -0500
-Date: Mon, 4 Feb 2008 14:24:16 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Cedric Le Goater <legoater@free.fr>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [PATCH 2/2] extend clone_flags using parent_tidptr argument
-Message-ID: <20080204202416.GA26422@sergelap.austin.ibm.com>
-References: <47A74AED.1080806@free.fr>
+	Mon, 4 Feb 2008 15:24:30 -0500
+Received: from saeurebad.de ([85.214.36.134]:41189 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758061AbYBDUY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 15:24:29 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Sectionized printk data
+References: <87zlugsox9.fsf@saeurebad.de>
+	<20080204180753.GB16050@uranus.ravnborg.org>
+Date: Mon, 04 Feb 2008 21:23:29 +0100
+In-Reply-To: <20080204180753.GB16050@uranus.ravnborg.org> (Sam Ravnborg's
+	message of "Mon, 4 Feb 2008 19:07:53 +0100")
+Message-ID: <87ve54sc72.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A74AED.1080806@free.fr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Cedric Le Goater (legoater@free.fr):
-> From: Cedric Le Goater <clg@fr.ibm.com>
->
-> We have at least 2 patchsets requiring each a new clone flag and there it 
-> is, we've reached the limit, none are left.  
-> This patch uses the CLONE_DETACHED flag (unused) as a marker to extend the 
+Hi Sam,
 
-Are we pretty sure that there is no legacy software out there which has
-continued to specify CLONE_DETACHED since the kernel ignores it?
+Sam Ravnborg <sam@ravnborg.org> writes:
 
-> clone flags through the parent_tidptr argument.
+> On Mon, Feb 04, 2008 at 04:48:34PM +0100, Johannes Weiner wrote:
+>> Hi,
+>> 
+>> current approaches to have printk format strings in the corresponding
+>> data section to the function they appear in look like the following (at
+>> least what I have seen so far):
+>> 
+>> int __init some_function(void)
+>> {
+>> 	static char errmsg[] __initdata = "failure %s in %s\n";
+>> 
+>>         [...]
+>>         printk(errmsg);
+>>         [...]
+>> }
+>> 
+>> The attached patch allows something along the lines:
+>> 
+>> int __init some_function(void)
+>> {
+>>         [...]
+>>         pr_init(KERN_WARNING "failure %s in %s\n", ...);
+>>         [...]
+>> }
+>> 
+>> Another idea I had was to make printk a macro that figures out the
+>> section of the surrounding function and then moves the data
+>> automatically when it is a literal, but I couldn't find mechanisms that
+>> allow this.  Anyone of you got an idea?
+>> 
+>> What do you think in general?
 >
-> Initially, we thought on using the last bit but it has recently been taken 
-> by CLONE_IO.
+> What is the rationale behind this?
+> In other words why should we investigate time looking into the matter?
 >
-> Obviously, this hack doesn't work for unshare() for which I don't see any 
-> other solution than to add a new syscall : 
-> 	long sys_unshare64(unsigned long clone_flags_high, 			unsigned long 
-> clone_flags_low);
->
->
->
-> Is this the right path to extend the clone flags ? should we add a 
-> clone64() rather than hack the extending clone() ? 
-> Thanks for any comments !
->
-> C.
->
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> ---
-> include/linux/sched.h |    1 +
-> kernel/fork.c         |   14 +++++++++++++-
-> 2 files changed, 14 insertions(+), 1 deletion(-)
->
-> Index: 2.6.24-mm1/include/linux/sched.h
-> ===================================================================
-> --- 2.6.24-mm1.orig/include/linux/sched.h
-> +++ 2.6.24-mm1/include/linux/sched.h
-> @@ -28,6 +28,7 @@
-> #define CLONE_NEWPID		0x20000000	/* New pid namespace */
-> #define CLONE_NEWNET		0x40000000	/* New network namespace */
-> #define CLONE_IO		0x80000000	/* Clone io context */
-> +#define CLONE_EXTFLAGS		CLONE_DETACHED	/* use parent_tidptr as an extended 
-> set of flags */
->
-> /*
->  * Scheduling policies
-> Index: 2.6.24-mm1/kernel/fork.c
-> ===================================================================
-> --- 2.6.24-mm1.orig/kernel/fork.c
-> +++ 2.6.24-mm1/kernel/fork.c
-> @@ -1012,6 +1012,14 @@ static struct task_struct *copy_process(
-> 	struct task_struct *p;
-> 	int cgroup_callbacks_done = 0;
->
-> +	/*
-> +	 * It is not permitted to specify both CLONE_EXTFLAGS and
-> +	 * CLONE_PARENT_SETTID
-> +	 */
-> +	if ((clone_flags & (CLONE_EXTFLAGS|CLONE_PARENT_SETTID)) ==
-> +	    (CLONE_EXTFLAGS|CLONE_PARENT_SETTID))
-> +		return ERR_PTR(-EINVAL);
-> +
-> 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
-> 		return ERR_PTR(-EINVAL);
->
-> @@ -1455,6 +1463,7 @@ long do_fork(unsigned long clone_flags,
-> 	struct task_struct *p;
-> 	int trace = 0;
-> 	long nr;
-> +	u64 clone_flags64 = clone_flags;
->
-> 	/*
-> 	 * We hope to recycle these flags after 2.6.26
-> @@ -1479,7 +1488,10 @@ long do_fork(unsigned long clone_flags,
-> 			clone_flags |= CLONE_PTRACE;
-> 	}
->
-> -	p = copy_process(clone_flags, stack_start, regs, stack_size,
-> +	if (clone_flags & CLONE_EXTFLAGS)
-> +		clone_flags64 = ((u64) (uintptr_t) parent_tidptr << 32) | clone_flags;
-> +
-> +	p = copy_process(clone_flags64, stack_start, regs, stack_size,
-> 			child_tidptr, NULL);
-> 	/*
-> 	 * Do this prior waking up the new thread - the thread pointer
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+> If you say "saving memory" then please let us know with specific examples
+> in what area these savings will really pay off.
+
+I was not claiming anything.  The thing is that I have seen people using
+code as schematized in the first code example.  And the point of this
+patch is to make the placing of string literals in disposable sections -
+which is already done - more convenient.
+
+Using code as in the first example is just ugly.  My approach is to make
+it less ugly.  But after all, it was not my idea to move the string
+literals.
+
+drivers/net/3c505.c does it, grep for notfound_msg for an in-tree
+example.
+
+You were asking me my own question.  I placed an `RFC' in the Subject:
+because I am interested in your (and others) view on this topic.
+
+I will convert some of the code to use the macros I introduced and look
+if it gains some significant size improvements on a common desktop
+configuration as I have it on my laptop.
+
+	Hannes
