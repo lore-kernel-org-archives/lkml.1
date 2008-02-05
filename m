@@ -1,194 +1,426 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYBEFfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYBEFf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbYBEFfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 00:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYBEFfd
+	id S1754494AbYBEFf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 00:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbYBEFfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 00:35:33 -0500
-Received: from crca.org.au ([67.207.131.56]:48133 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbYBEFfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 00:35:32 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <47A7F581.8060300@nigel.suspend2.net>
-Date: Tue, 05 Feb 2008 16:34:57 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 5 Feb 2008 00:35:45 -0500
+Received: from web31808.mail.mud.yahoo.com ([68.142.207.71]:21650 "HELO
+	web31808.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756168AbYBEFfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 00:35:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=Phe4T24XloJcf6KlV8/StTMSp/R4xhHpR7ze8ZZCGfqh9hTmySY0k3oAVE55ljeKdmzGFZ8R0QoUSUs/Uobw1OItgFD3ekIOqWhgZ5SVrFfhVBrXj4w01WChXBsK09UrHbUmJWPne40aNwud+O8kLgsqvJDjfX7Rsuz54t6YYEY=;
+X-YMail-OSG: FTajTfcVM1klaUZjPnSxfKw3tDgJ2zU9xUQSez0oRoGAiu3P0utlg8x1h_M.3Nv6Zlv8yg--
+X-Mailer: YahooMailWebService/0.7.162
+Date: Mon, 4 Feb 2008 21:35:40 -0800 (PST)
+From: Luben Tuikov <ltuikov@yahoo.com>
+Reply-To: ltuikov@yahoo.com
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <1202186263.3096.183.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Re: Small pm documentation cleanups
-References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl>
-In-Reply-To: <200802050224.51039.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <150265.33450.qm@web31808.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-Rafael J. Wysocki wrote:
-> Len, please pick this up, thanks.
+--- On Mon, 2/4/08, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > --- On Mon, 2/4/08, James Bottomley
+> <James.Bottomley@HansenPartnership.com> wrote:
+> > > On Mon, 2008-02-04 at 18:01 -0800, Luben Tuikov
+> wrote:
+> > > > --- On Mon, 2/4/08, James Bottomley
+> > > <James.Bottomley@HansenPartnership.com>
+> wrote:
+> > > > > > > The enclosure misc device is
+> really
+> > > just a
+> > > > > library providing
+> > > > > > > sysfs
+> > > > > > > support for physical
+> enclosure devices
+> > > and their
+> > > > > > > components.
+> > > > > > 
+> > > > > > Who is the target audience/user of
+> those
+> > > facilities?
+> > > > > > a) The kernel itself needing to
+> read/write
+> > > SES pages?
+> > > > > 
+> > > > > That depends on the enclosure
+> integration, but
+> > > right at the
+> > > > > moment, it
+> > > > > doesn't
+> > > > 
+> > > > Yes, I didn't suspect so.
+> > > > 
+> > > > > 
+> > > > > > b) A user space application using
+> sysfs to
+> > > read/write
+> > > > > >    SES pages?
+> > > > > 
+> > > > > Not an application so much as a user. 
+> The idea
+> > > of sysfs is
+> > > > > to allow
+> > > > > users to get and set the information in
+> addition
+> > > to
+> > > > > applications.
+> > > > 
+> > > > Exactly the same argument stands for a
+> user-space
+> > > > application with a user-space library.
+> > > > 
+> > > > This is the classical case of where it is
+> better to
+> > > > do this in user-space as opposed to the
+> kernel.
+> > > > 
+> > > > The kernel provides capability to access the
+> SES
+> > > > device.  The user space application and
+> library
+> > > > provide interpretation and control.  Thus if
+> the
+> > > > enclosure were upgraded, one doesn't
+> need to
+> > > > upgrade their kernel in order to utilize the
+> new
+> > > > capabilities of the SES device.  Plus
+> upgrading
+> > > > a user-space application is a lot easier
+> than
+> > > > the kernel (and no reboot necessary).
+> > > 
+> > > The implementation is modular, so it's remove
+> and
+> > > insert ...
+> > 
+> > I guess the same could be said for STGT and SCST,
+> right?
 > 
-> On Tuesday, 5 of February 2008, Pavel Machek wrote:
->> Small documentation fixes/additions that accumulated in my tree.
->>
->> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> You mean both of their kernel pieces are modular? 
+> That's correct.
+
+No, you know very well what I mean.
+
+By the same logic you're preaching to include your
+solution part of the kernel, you can also apply to
+SCST.
+
+> > LOL, no seriously, this is unnecessary kernel bloat,
+> > or rather at the wrong place (see below).
+> > 
+> > > 
+> > > > Consider another thing: vendors would really
+> like
+> > > > unprecedented access to the SES device in
+> the
+> > > enclosure
+> > > > so as your ses/enclosure code keeps state it
+> would
+> > > > get out of sync when vendor user-space
+> enclosure
+> > > > applications access (and modify) the SES
+> device's
+> > > > pages.
+> > > 
+> > > The state model doesn't assume nothing else
+> will alter
+> > > the state.
+> > 
+> > But it would be trivial exercise to show that an
+> > inconsistent state can be had by modifying pages
+> > of the SES device directly from userspace bypassing
+> > your implementation.
 > 
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> I don't think so ... if you actually look at the code,
+> you'll see it
+> doesn't really have persistent state for the enclosure.
 > 
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index cf38689..3be3328 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -147,8 +147,10 @@ and is between 256 and 4096 characters. 
->>  			default: 0
->>  
->>  	acpi_sleep=	[HW,ACPI] Sleep options
->> -			Format: { s3_bios, s3_mode }
->> -			See Documentation/power/video.txt
->> +			Format: { s3_bios, s3_mode, s3_beep }
->> +			See Documentation/power/video.txt for s3_bios and s3_mode.
->> +			s3_beep is for debugging; it beeps on PC speaker as soon as
->> +			kernel's real-mode entry point is called.
-
-s/kernel's/the kernel's/
-
->>  
->>  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
->>  			Format: { level | edge | high | low }
->> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
->> index aea7e92..d3e5e4e 100644
->> --- a/Documentation/power/swsusp.txt
->> +++ b/Documentation/power/swsusp.txt
->> @@ -386,6 +386,11 @@ before suspending; then remount them aft
->>  There is a work-around for this problem.  For more information, see
->>  Documentation/usb/persist.txt.
->>  
->> +Q: Can I suspend-to-disk using a swap partition under LVM?
->> +
->> +A: No. You can suspend successfully, but you'll not be able to
->> +resume. uswsusp should be able to work with LVM, see suspend.sf.net.
-
-s/LVM, see/LVM. See/
-
->> +
->>  Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
->>  compiled with the similar configuration files. Anyway I found that
->>  suspend to disk (and resume) is much slower on 2.6.16 compared to
->> diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
->> index fd1c4ba..058d0be 100644
->> --- a/drivers/acpi/hardware/hwsleep.c
->> +++ b/drivers/acpi/hardware/hwsleep.c
->> @@ -286,13 +286,13 @@ acpi_status asmlinkage acpi_enter_sleep_
->>  	}
->>  
->>  	/*
->> +	 * 1) Disable/Clear all GPEs
->>  	 * 2) Enable all wakeup GPEs
->>  	 */
->>  	status = acpi_hw_disable_all_gpes();
->>  	if (ACPI_FAILURE(status)) {
->>  		return_ACPI_STATUS(status);
->>  	}
->> -
->>  	acpi_gbl_system_awake_and_running = FALSE;
->>  
->>  	status = acpi_hw_enable_all_wakeup_gpes();
->> diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
->> index 485de13..56e09cf 100644
->> --- a/drivers/acpi/sleep/main.c
->> +++ b/drivers/acpi/sleep/main.c
->> @@ -170,7 +170,7 @@ static int acpi_pm_enter(suspend_state_t
->>  	/* Reprogram control registers and execute _BFS */
->>  	acpi_leave_sleep_state_prep(acpi_state);
->>  
->> -	/* ACPI 3.0 specs (P62) says that it's the responsabilty
->> +	/* ACPI 3.0 specs (P62) says that it's the responsibilty
-
-s/responsibilty/responsibility/
-
->>  	 * of the OSPM to clear the status bit [ implying that the
->>  	 * POWER_BUTTON event should not reach userspace ]
->>  	 */
->> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
->> index ef9b802..b275ffb 100644
->> --- a/kernel/power/Kconfig
->> +++ b/kernel/power/Kconfig
->> @@ -74,14 +74,14 @@ config PM_TRACE_RTC
->>  	RTC across reboots, so that you can debug a machine that just hangs
->>  	during suspend (or more commonly, during resume).
->>  
->> -	To use this debugging feature you should attempt to suspend the machine,
->> -	then reboot it, then run
->> +	To use this debugging feature you should attempt to suspend the
->> +	machine, then reboot it, then run
-
-More readable would be "machine, reboot it and then run"
-
->>  
->>  		dmesg -s 1000000 | grep 'hash matches'
->>  
->>  	CAUTION: this option will cause your machine's real-time clock to be
->>  	set to an invalid time after a resume.
->>  
->>  config PM_SLEEP_SMP
->>  	bool
->>  	depends on SMP
->> @@ -123,7 +129,8 @@ config HIBERNATION
->>  	  called "hibernation" in user interfaces.  STD checkpoints the
->>  	  system and powers it off; and restores that checkpoint on reboot.
->>  
->> -	  You can suspend your machine with 'echo disk > /sys/power/state'.
->> +	  You can suspend your machine with 'echo disk > /sys/power/state' 
->> +	  after placing resume=/dev/swappartition on kernel command line.
-
-s/on kernel/on the kernel/
-
-Maybe add "in your bootloader's configuration file"?
-
->>  	  Alternatively, you can use the additional userland tools available
->>  	  from <http://suspend.sf.net>.
->>  
->> diff --git a/kernel/power/main.c b/kernel/power/main.c
->> index 6a6d5eb..d3df5af 100644
->> --- a/kernel/power/main.c
->> +++ b/kernel/power/main.c
->> @@ -223,6 +226,7 @@ void __attribute__ ((weak)) arch_suspend
->>   *	@state:		state to enter
->>   *
->>   *	This function should be called after devices have been suspended.
->> + *	May not sleep.
->>   */
->>  static int suspend_enter(suspend_state_t state)
->>  {
->> @@ -250,6 +255,8 @@ static int suspend_enter(suspend_state_t
->>   *	suspend_devices_and_enter - suspend devices and enter the desired system
->>   *				    sleep state.
->>   *	@state:		  state to enter
->> + *
->> + *	Needs to be called from process context and may sleep.
->>   */
->>  int suspend_devices_and_enter(suspend_state_t state)
->>  {
->> @@ -341,6 +349,8 @@ static inline int valid_state(suspend_st
->>   *	happen when we wake up.
->>   *	Then, do the setup for suspend, enter the state, and cleaup (after
->>   *	we've woken up).
->> + *
->> + *	Needs to be called from process context, and may sleep.
->>   */
->>  static int enter_state(suspend_state_t state)
->>  {
->>
+> > > > You can test this yourself: submit a patch
+> > > > that removes SES /dev/sgX support; advertise
+> your
+> > > > ses/class solution and watch the fun.
+> > > > 
+> > > > > > At the moment SES device
+> management is done
+> > > via
+> > > > > > an application (user-space) and a
+> user-space
+> > > library
+> > > > > > used by the application and
+> /dev/sgX to send
+> > > SCSI
+> > > > > > commands to the SES device.
+> > > > > 
+> > > > > I must have missed that when I was
+> looking for
+> > > > > implementations; what's
+> > > > > the URL?
+> > > > 
+> > > > I'm not aware of any GPLed ones.  That
+> doesn't
+> > > > necessarily mean that the best course of
+> action is
+> > > > to bloat the kernel.  You can move your
+> ses/enclosure
+> > > > stuff to a user space application library
+> > > > and thus start a GPLed one.
+> > > 
+> > > Certainly ... patches welcome.
+> > 
+> > I've non at the moment, plus I don't think
+> you'd be
+> > the point of contact for a user-space SES library.
+> > Unless of course you've already started something
+> up
+> > on sourceforge.
+> > 
+> > Really, such an effort already exists: it is called
+> > sg_ses(8).
+> > 
+> > > 
+> > > > > But, if we have non-scsi enclosures to
+> integrate,
+> > > that
+> > > > > makes it harder
+> > > > > for a user application because it has
+> to know all
+> > > the
+> > > > > implementations.
+> > > > 
+> > > > So does the kernel.  And as I pointed out
+> above, it
+> > > > is a lot easier to upgrade a user-space
+> application
+> > > and
+> > > > library than it is to upgrade a new kernel
+> and having
+> > > > to reboot the computer to run the new
+> kernel.
+> > > 
+> > > No, think again ... it's easy for SES based
+> enclosures
+> > > because they have
+> > > a SCSI transport.  We have no transport for SGPIO
+> based
+> > > enclosures nor
+> > > for any of the other more esoteric ones.
+> > 
+> > Yes, for which the transport layer, implements the
+> > scsi device node for the SES device.  It doesn't
+> really
+> > matter if the SCSI commands sent to the SES device go
+> > over SGPIO or FC or SAS or Bluetooth or I2C, etc, the
+> > transport layer can implement that and present the
+> > /dev/sgX node.
 > 
-> 
-> 
+> But it does matter if the enclosure device doesn't
+> speak SCSI.
 
-Regards,
+Enclosure management isn't as simple as you're
+portraying it here.  The enclosure management
+device speaks either SES or SAF-TE.  The transport
+protocol to access it could be SGPIO or I2C or...
 
-Nigel
+>  SGPIO
+> isn't a SCSI protocol ... it's a general purpose
+> serial bus protocol.
+> It's pretty simple and register based, but it might (or
+> might not) be
+> accessible via a SCSI bridge.
+
+I see.  You've just discovered SGPIO -- good for you.
+
+At any rate, I told you already that what is needed
+is not what you've provided but a _device node_
+exported by the kernel, either a processor or
+enclosure type.
+
+> > Case in point: the protocol FW running on the ASIC
+> > provides this capability so really the LLDD would
+> > only see a the pure SCSI SES or processor device and
+> > register that with the kernel.  At which point no new
+> > kernel bloat is required.
+> > 
+> > Your code doesn't quite do that at the moment as
+> it
+> > actually goes further in to read and present SES
+> pages.
+> > Ideally it would simply provide capability for
+> transport
+> > layers to register a SCSI device of type SES, or
+> processor.
+> 
+> Yes, it provides a glue between the enclosure services and
+> the SES
+> protocol.
+
+You're jumping over layers here.
+
+And that's not what's needed.  What is needed
+is an instrumentation by the kernel to present the
+enclosure device as a device node to user space
+so that general utilities tools, like for example
+sg_ses(8) can work with it.
+
+Your solution seems to be interpreting SES in the
+kernel and this is really unwieldy. 
+
+Just provide the device node to user space.
+You shouldn't have to interpret SES in the kernel
+as you're currently doing since the kernel itself
+has no use of it.
+
+> > Architecturally, the LLDD/transport layer would
+> register
+> > the SGPIO device on one end with the SGPIO layer and
+> on
+> > the other end as a SCSI SES/processpr device.  After
+> that
+> > sg_ses(8) or sglib, fits the bill for user space
+> applications.
+> 
+> That's possible, but none of these layers exist yet ...
+> although I think
+> (assuming I can find a SGPIO enclosure) that SGPIO might be
+> next.
+
+Vendors prefer to abstract the transport protocol
+in HW/FW so that to ULD the device is of
+type processor or enclosure.
+
+This makes it easy for the vendor (in terms of
+support) and for the customer (in terms of
+usability).
+
+> 
+> > > That's not to say it can't be done, but
+> it does
+> > > mean that it can't be
+> > > completely userspace.
+> > 
+> > See previous paragraph.
+> > 
+> > > 
+> > > > > A sysfs framework on the other hand is
+> a
+> > > universal known
+> > > > > thing for the
+> > > > > user applications.
+> > > > 
+> > > > So would a user-space ses library, a la
+> libses.so.
+> > > > 
+> > > > > > One could have a very good
+> argument to not
+> > > bloat
+> > > > > > the kernel with this but leave it
+> to a
+> > > user-space
+> > > > > > application and a library to do
+> all this and
+> > > > > > communicate with the SES device
+> via the
+> > > kernel's
+> > > > > /dev/sgX.
+> > > > > 
+> > > > > The same thing goes for other esoteric
+> SCSI
+> > > infrastructure
+> > > > > pieces like
+> > > > > cd changers.  On the whole, given that
+> ATA is
+> > > asking for
+> > > > > enclosure
+> > > > > management in kernel, it makes sense to
+> > > consolidate the
+> > > > > infrastructure
+> > > > > and a ses ULD is a very good test bed.
+> > > > 
+> > > > What is wrong with exporting the SES device
+> as
+> > > /dev/sgX
+> > > > and having a user-space application and
+> library to
+> > > > do all this?
+> > > 
+> > > How do you transport the enclosure commands over
+> /dev/sgX? 
+> > > Only SES has
+> > > SCSI command encapsulation ... the rest won't
+> even be
+> > > SCSI targets ...
+> > 
+> > What is the protocol of those "rest" that
+> you talk about?
+> 
+> At the moment it looks to be SES, SGPIO and AHCI.
+
+You should separate "what it talks" by "how it
+gets there".
+
+> 
+> > At any rate, this capability lies in the kernel
+> providing
+> > a _device node_ -- not quite what your patch is doing.
+> 
+> So your idea is to provide a separate interface per
+> enclosure in kernel?
+
+No.  My idea is to provide a device node of
+type processor or enclosure for each enclosure.
+
+Expanders already do this by providing a virtual
+phy which is "connected" to the SES-2 device, so
+a device of type SES is discovered and registered
+with the kernel as any other device on the domain.
+Then the enclosure can be controlled via sg_ses(8)
+from user space.
+
+Host adapters already do this in their FW, since
+it is there where they do the transport protocol
+abstraction as well.
+
+You can help AHCI (if this really is needed of
+course) to achieve the same thing by providing
+code so that a LLDD/etc can register a
+processor/enclosure device accessible via the
+ASIC.  At any rate the actual protocol to talk
+to the enclosure device is abstracted away by
+the HW solution (either in FW or HW).
+
+At this moment I see all this effort in vain
+for reasons I've described above.
+
+> Sure ... like I said patches welcome.  I just did a common
+> in-kernel
+> interface that abstracts common enclosure services.
+
+I know -- this is why and where I responded to your
+patches.
+
+So I guess by what you just said, we're back
+at square one? ... is this really needed, who is the
+intended user/audience... why not just a device
+node to be controlled via sg_ses(8) from user
+space, as is already done for other enclosure
+devices... etc.
+
+      Luben
+
