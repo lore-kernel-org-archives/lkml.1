@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYBEMPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbYBEM3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYBEMPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 07:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYBEMPg
+	id S1753444AbYBEM3y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 07:29:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYBEM3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:15:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:25338 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYBEMPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:15:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=BKN6bt8wu9oACVc1m3ZOkIBLvk+XjZbSlySmmsVXIke1pGnUw5mFQVll45Bcv82Nnc7OmNE6LIjUZUhHZhu9Ff8NlIdJOyTHYDPZlcuZ6+dC1xqVIg77/Tt85g9ojSXBCugw8nTN1HUlFB6ilcqhBlExMpT7zyUaHyd6u36Zm6E=
-Message-ID: <eb3ff54b0802050415h3c4672b1r7048143b599303dd@mail.gmail.com>
-Date: Tue, 5 Feb 2008 14:15:34 +0200
-From: "Rami Rosen" <ramirose@gmail.com>
-To: netdev@vger.kernel.org, jeff@garzik.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [PPPOL2TP] Label unused warning when CONFIG_PROC_FS is not set.
+	Tue, 5 Feb 2008 07:29:46 -0500
+Received: from smtp2.sssup.it ([193.205.80.100]:45485 "EHLO smpt.sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751837AbYBEM3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 07:29:45 -0500
+Message-ID: <47A856AF.5010202@gandalf.sssup.it>
+Date: Tue, 05 Feb 2008 13:29:35 +0100
+From: michael <trimarchi@gandalf.sssup.it>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_6456_4426760.1202213734294"
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+CC: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
+       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
+       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
+References: <20080129224316.GA23155@gandalf.sssup.it>	<479FB2D7.4020804@gandalf.sssup.it>	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	<47A051A7.7030004@gandalf.sssup.it>	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>	<47A09723.7020000@gandalf.sssup.it>	<20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>	<47A12A2E.5040309@gandalf.sssup.it>	<20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>	<47A76106.3000103@gandalf.sssup.it> <20080204212523.07a6da9e@siona>
+In-Reply-To: <20080204212523.07a6da9e@siona>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_6456_4426760.1202213734294
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+hi,
 
-Hi,
+> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+> index cb70cc5..f310a80 100644
+> --- a/drivers/serial/atmel_serial.c
+> +++ b/drivers/serial/atmel_serial.c
+> @@ -552,7 +552,7 @@ static irqreturn_t atmel_interrupt(int irq, void *dev_id)
+>  		atmel_handle_transmit(port, pending);
+>  	} while (pass_counter++ < ATMEL_ISR_PASS_LIMIT);
+>  
+> -	return IRQ_HANDLED;
+> +	return pass_counter ? IRQ_HANDLED : IRQ_NONE;
+>  }
+>  
+>  /*
+>
+>   
+Just one question:
+Receiving with hardware handshake works without PDC?
 
-When CONFIG_PROC_FS is not set and CONFIG_PPPOL2TP is set,
-we have the following warning in build:
-  drivers/net/pppol2tp.c: In function 'pppol2tp_init':
-  drivers/net/pppol2tp.c:2472: warning: label
-'out_unregister_pppox_proto' defined but not used
+Regards Michael
 
-This patches fixes this warning by adding appropriate #ifdef.
-
-Regards,
-Rami Rosen
-
-
-Signed-off-by: Rami Rosen <ramirose@gmail.com>
-
-------=_Part_6456_4426760.1202213734294
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fcaexqwq0
-Content-Disposition: attachment; filename=patch.txt
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L3BwcG9sMnRwLmMgYi9kcml2ZXJzL25ldC9wcHBvbDJ0
-cC5jCmluZGV4IDFiNTFiYjYuLjVhYTBhODAgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbmV0L3BwcG9s
-MnRwLmMKKysrIGIvZHJpdmVycy9uZXQvcHBwb2wydHAuYwpAQCAtMjQ2OCw5ICsyNDY4LDEwIEBA
-IHN0YXRpYyBpbnQgX19pbml0IHBwcG9sMnRwX2luaXQodm9pZCkKIAogb3V0OgogCXJldHVybiBl
-cnI7Ci0KKyNpZmRlZiBDT05GSUdfUFJPQ19GUwogb3V0X3VucmVnaXN0ZXJfcHBwb3hfcHJvdG86
-CiAJdW5yZWdpc3Rlcl9wcHBveF9wcm90byhQWF9QUk9UT19PTDJUUCk7CisjZW5kaWYKIG91dF91
-bnJlZ2lzdGVyX3BwcG9sMnRwX3Byb3RvOgogCXByb3RvX3VucmVnaXN0ZXIoJnBwcG9sMnRwX3Nr
-X3Byb3RvKTsKIAlnb3RvIG91dDsK
-------=_Part_6456_4426760.1202213734294--
