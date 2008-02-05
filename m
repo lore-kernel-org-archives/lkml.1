@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYBEOJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYBEOKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbYBEOJV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 09:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYBEOJO
+	id S1754636AbYBEOKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 09:10:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYBEOKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 09:09:14 -0500
-Received: from rn-out-0910.google.com ([64.233.170.185]:7545 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbYBEOJN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 09:09:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=ZtKFhtEyxCbWxWSschJbtTWkL6LJfPmsvpvigyNLI6iKe5Nji4hUc9SlsZZFGI/oi9A0KPJGFPjpx2DuxIsbIaIwBrrjmyLSMoGroPU3UMQij4AUyQq9bmYBrlkeYtdRe1DVc9HLNcL/9/0bz1Sod43sQ/UhyVuuYK8gtznBMcw=
-Date: Tue, 5 Feb 2008 15:04:35 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Layton <jlayton@redhat.com>, Guenter Kukkukk <linux@kukkukk.com>,
-       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, sfrench@samba.org
-Subject: Re: [2.6 patch] remove smbfs
-Message-ID: <20080205150435.474178aa@Varda>
-In-Reply-To: <20080205001805.0ea014f3.akpm@linux-foundation.org>
-References: <20080128220835.GF8767@does.not.exist>
-	<200801302216.13788.linux@kukkukk.com>
-	<20080130174103.17ff8197@tleilax.poochiereds.net>
-	<20080205001805.0ea014f3.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Feb 2008 09:10:08 -0500
+Received: from hempcity.net ([81.171.100.190]:36302 "EHLO hempcity.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751808AbYBEOKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 09:10:06 -0500
+Message-ID: <59776.81.171.100.191.1202220590.squirrel@webmail.coolzero.info>
+In-Reply-To: <20080205140216.GD12009@ruf099.fkie.fgan.de>
+References: <20080205100423.GA12009@ruf099.fkie.fgan.de>
+    <38602.81.171.100.191.1202213194.squirrel@webmail.coolzero.info>
+    <20080205140216.GD12009@ruf099.fkie.fgan.de>
+Date: Tue, 5 Feb 2008 15:09:50 +0100 (CET)
+Subject: Re: OOM killer on idle machine
+From: "Jim van Wel" <jim@coolzero.info>
+To: "Michael Bussmann" <bus@mb-net.net>
+Cc: linux-kernel@vger.kernel.org
+Reply-To: jim@coolzero.info
+User-Agent: SquirrelMail/1.4.8-4.0.1.el4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 5 Feb 2008 00:18:05 -0800
-Andrew Morton <akpm@linux-foundation.org> escribió:
+Funny,
 
+I also got 32bits kernels running, and moving to 64bits because that's
+more stable what we tested here...
 
->  	struct smb_fattr root;
->  	int ver;
->  	void *mem;
-> +	static int warn_count;
-> +
-> +	if (warn_count < 5) {
-> +		warn_count++;
-> +		printk(KERN_EMERG "smbfs is deprecated and will be removed in"
-> +				" December, 2006.  Please migrate to cifs\n");
+Greetings,
+Jim.
 
-Surely you mean                             ^^^^ ??? ¿2008?
-
-> +	}
->  
->  	if (!raw_data)
->  		goto out_no_data;
-> _
-> 
-> 
-> queued for over 1.5 years waiting for the go-ahead from Steve.
-> 
-> It looks like it's time?  If so, what should I set the date to?
+> Hi Jim,
+>
+> On 2008-02-05 13:06:34 +0100, Jim van Wel wrote:
+>
+>> http://lkml.org/lkml/2007/11/6/44
+>
+> Oops, I didn't expect the problem to be 3 months old.  Next time I'll
+> browse the archives more thoroughly.
+>
+>> Got same issue, but somewhat different hardware. I'm really wondering,
+>> are
+>> you using a 64bits kernel or a 32bit?
+>
+> It's a 32-bit kernel.  Hmm, there are two similar systems at a customer's
+> site with a 64-bit kernel that don't seem to be affected by this bug.
+> Another system with a 32-bit kernel is still running, but it only has 2 GB
+> RAM in it.  Interesting...
+>
+> Cheers,
+> MB
+>
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Michael Bussmann <bus@mb-net.net>
+> BOFH excuse #232:
+>
+> Ionization from the air-conditioning
+>
+
