@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbYBEUjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbYBEUkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760353AbYBEUjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbYBEUjH
+	id S1760745AbYBEUkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759178AbYBEUkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:39:07 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:23162 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758480AbYBEUjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:39:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XXb5Wbxr+d1ZdHBZ9FlXAF+c6DG9CNR952Kd+IF/1JAqEDJ5gDHSeYdVkOnU+ReP4ksasmbVCqskrwhanq+KwBD1DiIW4WNbdWs3CJkV+R8q/PqNyxG5bexnortPKl91N6zog1OnktrrC7ONecJusqHqzgUjE7JdkU7FhacACUY=
-Subject: [PATCH 1/8] x86: fix sparse error in traps_32.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 12:38:57 -0800
-Message-Id: <1202243942.18081.15.camel@brick>
+	Tue, 5 Feb 2008 15:40:03 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:55758 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758234AbYBEUkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 15:40:00 -0500
+Date: Tue, 5 Feb 2008 23:39:11 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080205203911.GA9891@2ka.mipt.ru>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205200211.GA26150@one.firstfloor.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205200211.GA26150@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/x86/kernel/traps_32.c:1193:31: error: dubious one-bit signed bitfield
+On Tue, Feb 05, 2008 at 09:02:11PM +0100, Andi Kleen (andi@firstfloor.org) wrote:
+> On Tue, Feb 05, 2008 at 10:29:28AM -0800, Glenn Griffin wrote:
+> > > Syncookies are discouraged these days. They disable too many
+> > > valuable TCP features (window scaling, SACK) and even without them
+> > > the kernel is usually strong enough to defend against syn floods
+> > > and systems have much more memory than they used to be.
+> > >
+> > > So I don't think it makes much sense to add more code to it, sorry.
 
-This was being used to ensure the proper alignment of the FXSAVE/FXRSTOR data.
-This would create a sparse error in the _correct_ cases, hiding further
-warnings.  Use BUILD_BUG_ON instead.
+How does syncookies prevent windows from growing?
+Most (if not all) distributions have them enabled and window growing
+works just fine. Actually I do not see any reason why connection
+establishment handshake should prevent any run-time operations at all,
+even if it was setup during handshake.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/traps_32.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 2f94f69..47ca425 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -1182,17 +1182,12 @@ void __init trap_init(void)
- #endif
- 	set_trap_gate(19,&simd_coprocessor_error);
- 
-+	/*
-+	 * Verify that the FXSAVE/FXRSTOR data will be 16-byte aligned.
-+	 * Generate a build-time error if the alignment is wrong.
-+	 */
-+	BUILD_BUG_ON(offsetof(struct task_struct, thread.i387.fxsave) & 15);
- 	if (cpu_has_fxsr) {
--		/*
--		 * Verify that the FXSAVE/FXRSTOR data will be 16-byte aligned.
--		 * Generates a compile-time "error: zero width for bit-field" if
--		 * the alignment is wrong.
--		 */
--		struct fxsrAlignAssert {
--			int _:!(offsetof(struct task_struct,
--					thread.i387.fxsave) & 15);
--		};
--
- 		printk(KERN_INFO "Enabling fast FPU save and restore... ");
- 		set_in_cr4(X86_CR4_OSFXSR);
- 		printk("done.\n");
 -- 
-1.5.4.rc5.1138.g2602
-
-
+	Evgeniy Polyakov
