@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762922AbYBEWsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762872AbYBEWvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762922AbYBEWsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762084AbYBEWsW
+	id S1762872AbYBEWvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYBEWvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:48:22 -0500
-Received: from ozlabs.org ([203.10.76.45]:49207 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760785AbYBEWsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:48:21 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Whine about suspicious return values from module's ->init() hook
-Date: Wed, 6 Feb 2008 09:48:10 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-References: <20080204154215.GA26618@localhost.sw.ru> <200802051708.37349.rusty@rustcorp.com.au> <20080204222457.286b962f.akpm@linux-foundation.org>
-In-Reply-To: <20080204222457.286b962f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 5 Feb 2008 17:51:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43175 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760557AbYBEWvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 17:51:05 -0500
+Date: Tue, 5 Feb 2008 16:50:58 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: rientjes@google.com, kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, clameter@sgi.com, mel@csn.ul.ie
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+Message-Id: <20080205165058.fdb48527.pj@sgi.com>
+In-Reply-To: <1202249070.5332.58.camel@localhost>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080202090914.GA27723@one.firstfloor.org>
+	<20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<1202149243.5028.61.camel@localhost>
+	<20080205041755.3411b5cc.pj@sgi.com>
+	<alpine.DEB.0.9999.0802051146300.5854@chino.kir.corp.google.com>
+	<20080205145141.ae658c12.pj@sgi.com>
+	<alpine.DEB.1.00.0802051259090.26206@chino.kir.corp.google.com>
+	<20080205153326.5c820dbc.pj@sgi.com>
+	<1202249070.5332.58.camel@localhost>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802060948.11133.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 February 2008 17:24:57 Andrew Morton wrote:
-> On Tue, 5 Feb 2008 17:08:37 +1100 Rusty Russell <rusty@rustcorp.com.au> 
-wrote:
-> > On Tuesday 05 February 2008 14:53:18 Andrew Morton wrote:
-> > > That risks killing previously-working setups.  WARN_ON is sufficient.
-> >
-> > I disagree.  WARN_ON is useful for developers, but they can handle
-> > BUG_ON, too.
->
-> For developers, BUG_ON has zero benefit relative to WARN_ON.
->
-> For non-developers, BUG_ON has large disadvantages relative to WARN_ON.
->
-> It's a no-brainer.
+Lee wrote:
+> Also, your cpuset/mempolicy work will probably need to undo the
+> unconditional masking in contextualize_policy() and/or save the original
+> node mask somewhere...
 
-For non-developers, WARN_ON is a noop.
+Yeah, something like that ... just a small matter of code.
 
-For developers, WARN_ON is often a noop.
-
-BUG_ON() will make us fix it in return for short-term pain.  WARN_ON() wont, 
-in return for less pain.  It's mildly better than nothing, but not worth the 
-patch.
-
-Rusty.
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
