@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762644AbYBEWU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762215AbYBEWW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762644AbYBEWU2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760028AbYBEWUT
+	id S1762215AbYBEWW1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbYBEWWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:20:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56152 "EHLO mx1.suse.de"
+	Tue, 5 Feb 2008 17:22:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54891 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864AbYBEWUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:20:18 -0500
-Date: Tue, 5 Feb 2008 14:18:05 -0800
-From: Greg KH <gregkh@suse.de>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for review] ACPI: Create /sys/firmware/acpi/interrupts/
-	counters
-Message-ID: <20080205221805.GC6950@suse.de>
-References: <200802050230.10873.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802050230.10873.lenb@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755161AbYBEWWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 17:22:15 -0500
+Date: Tue, 5 Feb 2008 14:19:44 -0800
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Oliver Pinter" <oliver.pntr@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, "James Morris" <jmorris@namei.org>,
+       linux-usb@vger.kernel.org, zaitcev@redhat.com
+Subject: Re: [2.6.24 REGRESSION] BUG: Soft lockup - with VFS
+Message-Id: <20080205141944.773140a1.zaitcev@redhat.com>
+In-Reply-To: <20080205140506.c6354490.akpm@linux-foundation.org>
+References: <6101e8c40801280031v1a860e90gfb3992ae5db37047@mail.gmail.com>
+	<20080204213911.1bcbaf66.akpm@linux-foundation.org>
+	<1202219216.27371.24.camel@moss-spartans.epoch.ncsc.mil>
+	<20080205104028.190192b1.akpm@linux-foundation.org>
+	<6101e8c40802051115v12d3c02br24873ef1014dbea9@mail.gmail.com>
+	<6101e8c40802051321l13268239m913fd90f56891054@mail.gmail.com>
+	<6101e8c40802051348w2250e593x54f777bb771bd903@mail.gmail.com>
+	<20080205140506.c6354490.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 02:30:10AM -0500, Len Brown wrote:
-> # cat /sys/firmware/acpi/interrupts/summary
-> pm_timer     0
-> glbl_lock    0
-> power_btn    0
-> sleep_btn    0
-> rtc          0
-> gpe00    0
-> gpe01    0
-> gpe02    0
-> gpe03    0
-> gpe04    0
-> gpe05    0
-> gpe06    0
-> gpe07    0
-> gpe08    0
-> gpe09    2
-> gpe0A    0
-> gpe0B    0
-> gpe0C    0
-> gpe0D    0
-> gpe0E    0
-> gpe0F    0
-> gpe10    0
-> gpe11   60
-> gpe12    0
-> gpe13    0
-> gpe14    0
-> gpe15    0
-> gpe16    0
-> gpe17    0
-> gpe18    0
-> gpe19    1
-> gpe1A    0
-> gpe1B    0
-> gpe1C    0
-> gpe1D    0
-> gpe1E    0
-> gpe1F    0
-> gpe_hi    0
-> gpe_total   63
-> acpi_irq    63
+On Tue, 5 Feb 2008 14:05:06 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Eeek!  Why?  What's wrong with individual files here?  What's to ensure
-that you aren't going to overflow your buffer?  There's a reason we
-don't have the seq file interface for sysfs, to prevent this very kind
-of thing...
+> Looks like you deadlocked in ub_request_fn().  I assume that you were using
+> ub.c in 2.6.23 and that it worked OK?  If so, we broke it, possibly via
+> changes to the core block layer.
+> 
+> I think ub.c is basically abandoned in favour of usb-storage.  If so,
+> perhaps we should remove or disble ub.c?
 
+Actually I think it may be an argument for keeping ub, if ub exposes
+a bug in the __blk_end_request. I'll look at the head of the thread
+and see if Mr. Pinter has hit anything related to Mr. Ueda's work.
 
-> +	/*
-> +	 * General Purpose Events
-> +	 */
-> +	for (i = 0; i < number_of_gpes; i++) {
-> +		count += sprintf(buf + count, "gpe%02X %4d\n",
-> +			i, acpi_gpe_counters[i]);
-> +	}
-
-Nope, no error checking, fun chance of blowing the memory buffer :(
-
-Please change the interface to not do this.
-
-Oh, and for every new sysfs file, you need a Documentation/ABI/
-addition, please also add that.
-
-thanks,
-
-greg k-h
+-- Pete
