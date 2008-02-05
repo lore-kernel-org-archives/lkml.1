@@ -1,57 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbYBEQ3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbYBEQbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757204AbYBEQ3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYBEQ3L
+	id S1757793AbYBEQbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYBEQa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:29:11 -0500
-Received: from qb-out-0506.google.com ([72.14.204.231]:12231 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbYBEQ3J (ORCPT
+	Tue, 5 Feb 2008 11:30:56 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:1765 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbYBEQaz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:29:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ccZyovYewVhqEWLzarFxyFfZtZnkCSzeBcGT73fIrAipj3J6X3WCToRpWKscZayKMU3bnQHI0RDdQY//HU4ZnLFyl8JiwZHn8CqMfxzuRV/mZgWAkxI687cybc3ZMLyyc2s4ciY6zfxNwQgnePMAUpeLByDBwVy3il3uQKw1hYE=
-Date: Wed, 6 Feb 2008 00:25:57 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@karaya.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [-mm Patch] arch/um/kernel/initrd.c: fix a missed conversion
-	specifier
-Message-ID: <20080205162557.GC2966@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080203171634.58ab668b.akpm@linux-foundation.org>
+	Tue, 5 Feb 2008 11:30:55 -0500
+Message-ID: <47A88F2C.5050407@hp.com>
+Date: Tue, 05 Feb 2008 11:30:36 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080203171634.58ab668b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-driver@qlogic.com
+Subject: Re: 2.6.24 regression w/ QLA2300
+References: <47A88736.6090706@hp.com> <20080205160246.GF19882@plap3.qlogic.org>
+In-Reply-To: <20080205160246.GF19882@plap3.qlogic.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Vasquez wrote:
+> On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
+> 
+>> commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
+>> Merge: 50d9a12... 23c3e29...
+>> Author: Linus Torvalds <torvalds@linux-foundation.org>
+>> Date:   Fri Jan 25 17:19:08 2008 -0800
+>>
+>>     Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
+>>
+>>     * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6: (200 commits)
+>>
+>> I believe a regression was introduced. I'm running on a 4-way IA64,
+>> with straight 2.6.24 and 2 dual-port cards:
+>>
+>> 40:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>> 40:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>> c0:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>> c0:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>>
+>> the adapters failed initialization. In particular, I narrowed it down
+>> to failing the qla2x00_mbox_command call within qla2x00_init_firmware
+>> function. I went and removed the qla2x00-related parts of this (large-ish)
+>> merge, and the 4 ports initialized just fine.
+> 
+> Could you load the (default 2.6.24) driver with
+> ql2xextended_error_logging modules parameter set:
+> 
+> 	# insmod qla2xxx ql2xextended_error_logging=1
+> 
+> and send the resultant kernel logs?
 
-Fix a missed conversion specifier of a printk in
-arch/um/kernel/initrd.c.
+Here's the output to the console (if there are other logs you need, let me know). I'll try the patch next, and sorry, hadn't realized merges were still coming in under 2.6.24 in Linus' tree... 
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Jeff Dike <jdike@karaya.com>
-
----
-
-Index: linux/arch/um/kernel/initrd.c
-===================================================================
---- linux.orig/arch/um/kernel/initrd.c
-+++ linux/arch/um/kernel/initrd.c
-@@ -32,7 +32,7 @@ static int __init read_initrd(void)
- 	 * ask for no memory.
- 	 */
- 	if (size == 0) {
--		printk(KERN_ERR "\"%\" is a zero-size initrd\n");
-+		printk(KERN_ERR "\"%s\" is a zero-size initrd\n", initrd);
- 		return 0;
- 	}
- 
+QLogic Fibre Channel HBA Driver
+ACPI: PCI Interrupt 0000:40:01.0[A] -> GSI 38 (level, low) -> IRQ 58
+qla2xxx 0000:40:01.0: Found an ISP2312, irq 58, iobase 0xc0000000a0041000
+qla2xxx 0000:40:01.0: Configuring PCI space...
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids da1c.
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids 1f61c.
+qla2xxx 0000:40:01.0: Configure NVRAM parameters...
+qla2xxx 0000:40:01.0: Verifying loaded RISC code...
+scsi(14): **** Load RISC code ****
+scsi(14): Verifying Checksum of loaded RISC code.
+scsi(14): Checksum OK, start firmware.
+qla2xxx 0000:40:01.0: Allocated (412 KB) for firmware dump...
+scsi(14): Issue init firmware.
+qla2x00_mailbox_command(14): **** FAILED. mbx0=4001, mbx1=0, mbx2=ba8a, cmd=48 ****
+qla2x00_init_firmware(14): failed=102 mb0=4001.
+scsi(14): Init firmware **** FAILED ****.
+qla2xxx 0000:40:01.0: Failed to initialize adapter
+scsi(14): Failed to initialize adapter - Adapter flags 10.
+ACPI: PCI Interrupt 0000:40:01.1[B] -> GSI 39 (level, low) -> IRQ 59
+qla2xxx 0000:40:01.1: Found an ISP2312, irq 59, iobase 0xc0000000a0040000
+qla2xxx 0000:40:01.1: Configuring PCI space...
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids da1c.
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids 1f61c.
+qla2xxx 0000:40:01.1: Configure NVRAM parameters...
+qla2xxx 0000:40:01.1: Verifying loaded RISC code...
+scsi(15): **** Load RISC code ****
+scsi(15): Verifying Checksum of loaded RISC code.
+scsi(15): Checksum OK, start firmware.
+qla2xxx 0000:40:01.1: Allocated (412 KB) for firmware dump...
+scsi(15): Issue init firmware.
+qla2x00_mailbox_command(15): **** FAILED. mbx0=4001, mbx1=0, mbx2=bac6, cmd=48 ****
+qla2x00_init_firmware(15): failed=102 mb0=4001.
+scsi(15): Init firmware **** FAILED ****.
+qla2xxx 0000:40:01.1: Failed to initialize adapter
+scsi(15): Failed to initialize adapter - Adapter flags 10.
+ACPI: PCI Interrupt 0000:c0:01.0[A] -> GSI 71 (level, low) -> IRQ 60
+qla2xxx 0000:c0:01.0: Found an ISP2312, irq 60, iobase 0xc0000000e0041000
+qla2xxx 0000:c0:01.0: Configuring PCI space...
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids c61c.
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids 1da1c.
+qla2xxx 0000:c0:01.0: Configure NVRAM parameters...
+qla2xxx 0000:c0:01.0: Verifying loaded RISC code...
+scsi(16): **** Load RISC code ****
+scsi(16): Verifying Checksum of loaded RISC code.
+scsi(16): Checksum OK, start firmware.
+qla2xxx 0000:c0:01.0: Allocated (412 KB) for firmware dump...
+scsi(16): Issue init firmware.
+qla2x00_mailbox_command(16): **** FAILED. mbx0=4001, mbx1=0, mbx2=bae3, cmd=48 ****
+qla2x00_init_firmware(16): failed=102 mb0=4001.
+scsi(16): Init firmware **** FAILED ****.
+qla2xxx 0000:c0:01.0: Failed to initialize adapter
+scsi(16): Failed to initialize adapter - Adapter flags 10.
+ACPI: PCI Interrupt 0000:c0:01.1[B] -> GSI 72 (level, low) -> IRQ 61
+qla2xxx 0000:c0:01.1: Found an ISP2312, irq 61, iobase 0xc0000000e0040000
+qla2xxx 0000:c0:01.1: Configuring PCI space...
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids c61c.
+qla2x00_get_flash_version(): Unrecognized code type ff at pcids 1da1c.
+qla2xxx 0000:c0:01.1: Configure NVRAM parameters...
+qla2xxx 0000:c0:01.1: Verifying loaded RISC code...
+scsi(17): **** Load RISC code ****
+scsi(17): Verifying Checksum of loaded RISC code.
+scsi(17): Checksum OK, start firmware.
+qla2xxx 0000:c0:01.1: Allocated (412 KB) for firmware dump...
+scsi(17): Issue init firmware.
+qla2x00_mailbox_command(17): **** FAILED. mbx0=4001, mbx1=0, mbx2=bb06, cmd=48 ****
+qla2x00_init_firmware(17): failed=102 mb0=4001.
+scsi(17): Init firmware **** FAILED ****.
+qla2xxx 0000:c0:01.1: Failed to initialize adapter
+scsi(17): Failed to initialize adapter - Adapter flags 10.
