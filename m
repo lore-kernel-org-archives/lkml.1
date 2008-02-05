@@ -1,131 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758790AbYBEQBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYBEQC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758790AbYBEQBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbYBEQBS
+	id S1756877AbYBEQC7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:02:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYBEQCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:01:18 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49140 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758597AbYBEQBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:01:16 -0500
-Date: Tue, 5 Feb 2008 17:01:15 +0100
-From: Jan Kara <jack@suse.cz>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/6] udf: remove unneeded kernel_timestamp type
-Message-ID: <20080205160115.GJ25464@duck.suse.cz>
-References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-6-git-send-email-marcin.slusarz@gmail.com>
+	Tue, 5 Feb 2008 11:02:49 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:2765 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbYBEQCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:02:48 -0500
+Date: Tue, 5 Feb 2008 08:02:46 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-driver@qlogic.com
+Subject: Re: 2.6.24 regression w/ QLA2300
+Message-ID: <20080205160246.GF19882@plap3.qlogic.org>
+References: <47A88736.6090706@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202063771-18172-6-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <47A88736.6090706@hp.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 05 Feb 2008 16:02:47.0942 (UTC) FILETIME=[8D4C6A60:01C86810]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 03-02-08 19:36:10, marcin.slusarz@gmail.com wrote:
-> remove now unneeded kernel_timestamp type with conversion functions
-  OK. Acked-by: Jan Kara <jack@suse.cz>
+On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
 
-								Honza
+> commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
+> Merge: 50d9a12... 23c3e29...
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Fri Jan 25 17:19:08 2008 -0800
 > 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Jan Kara <jack@suse.cz>
-> ---
->  fs/udf/ecma_167.h |   13 -------------
->  fs/udf/super.c    |    9 +++++----
->  fs/udf/udfend.h   |   22 ----------------------
->  3 files changed, 5 insertions(+), 39 deletions(-)
+>     Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
 > 
-> diff --git a/fs/udf/ecma_167.h b/fs/udf/ecma_167.h
-> index 5638771..a0974df 100644
-> --- a/fs/udf/ecma_167.h
-> +++ b/fs/udf/ecma_167.h
-> @@ -70,19 +70,6 @@ typedef struct {
->  	uint8_t		microseconds;
->  } __attribute__ ((packed)) timestamp;
->  
-> -typedef struct {
-> -	uint16_t	typeAndTimezone;
-> -	int16_t		year;
-> -	uint8_t		month;
-> -	uint8_t		day;
-> -	uint8_t		hour;
-> -	uint8_t		minute;
-> -	uint8_t		second;
-> -	uint8_t		centiseconds;
-> -	uint8_t		hundredsOfMicroseconds;
-> -	uint8_t		microseconds;
-> -} __attribute__ ((packed)) kernel_timestamp;
-> -
->  /* Type and Time Zone (ECMA 167r3 1/7.3.1) */
->  #define TIMESTAMP_TYPE_MASK		0xF000
->  #define TIMESTAMP_TYPE_CUT		0x0000
-> diff --git a/fs/udf/super.c b/fs/udf/super.c
-> index 8a98a2e..3a7faad 100644
-> --- a/fs/udf/super.c
-> +++ b/fs/udf/super.c
-> @@ -916,12 +916,13 @@ static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
->  
->  	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
->  			      pvoldesc->recordingDateAndTime)) {
-> -		kernel_timestamp ts;
-> -		ts = lets_to_cpu(pvoldesc->recordingDateAndTime);
-> +#ifdef UDFFS_DEBUG
-> +		timestamp *ts = &pvoldesc->recordingDateAndTime;
->  		udf_debug("recording time %04u/%02u/%02u"
->  			  " %02u:%02u (%x)\n",
-> -			  ts.year, ts.month, ts.day, ts.hour,
-> -			  ts.minute, ts.typeAndTimezone);
-> +			  le16_to_cpu(ts->year), ts->month, ts->day, ts->hour,
-> +			  ts->minute, le16_to_cpu(ts->typeAndTimezone));
-> +#endif
->  	}
->  
->  	if (!udf_build_ustr(&instr, pvoldesc->volIdent, 32))
-> diff --git a/fs/udf/udfend.h b/fs/udf/udfend.h
-> index c4bd120..489f52f 100644
-> --- a/fs/udf/udfend.h
-> +++ b/fs/udf/udfend.h
-> @@ -24,17 +24,6 @@ static inline lb_addr cpu_to_lelb(kernel_lb_addr in)
->  	return out;
->  }
->  
-> -static inline kernel_timestamp lets_to_cpu(timestamp in)
-> -{
-> -	kernel_timestamp out;
-> -
-> -	memcpy(&out, &in, sizeof(timestamp));
-> -	out.typeAndTimezone = le16_to_cpu(in.typeAndTimezone);
-> -	out.year = le16_to_cpu(in.year);
-> -
-> -	return out;
-> -}
-> -
->  static inline short_ad lesa_to_cpu(short_ad in)
->  {
->  	short_ad out;
-> @@ -85,15 +74,4 @@ static inline kernel_extent_ad leea_to_cpu(extent_ad in)
->  	return out;
->  }
->  
-> -static inline timestamp cpu_to_lets(kernel_timestamp in)
-> -{
-> -	timestamp out;
-> -
-> -	memcpy(&out, &in, sizeof(timestamp));
-> -	out.typeAndTimezone = cpu_to_le16(in.typeAndTimezone);
-> -	out.year = cpu_to_le16(in.year);
-> -
-> -	return out;
-> -}
-> -
->  #endif /* __UDF_ENDIAN_H */
-> -- 
-> 1.5.3.7
+>     * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6: (200 commits)
 > 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> I believe a regression was introduced. I'm running on a 4-way IA64,
+> with straight 2.6.24 and 2 dual-port cards:
+> 
+> 40:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> 40:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> c0:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> c0:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> 
+> the adapters failed initialization. In particular, I narrowed it down
+> to failing the qla2x00_mbox_command call within qla2x00_init_firmware
+> function. I went and removed the qla2x00-related parts of this (large-ish)
+> merge, and the 4 ports initialized just fine.
+
+Could you load the (default 2.6.24) driver with
+ql2xextended_error_logging modules parameter set:
+
+	# insmod qla2xxx ql2xextended_error_logging=1
+
+and send the resultant kernel logs?
+
+> Specifically, reverting the "patch" below enabled the devices to initialize properly.
+> 
+> If need be, I'm certainly willing to help narrow down to the specific part in
+> this patch...
+
+That's a rather large patch... :(   Any chance you could git-bisect?
+Also, could you send your .config file you are using?
+
+Thanks,
+Andrew Vasquez
