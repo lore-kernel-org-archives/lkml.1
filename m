@@ -1,223 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbYBETM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbYBETNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760055AbYBETM4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYBETMr
+	id S1760140AbYBETNn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbYBETNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:12:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:34756 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbYBETMp (ORCPT
+	Tue, 5 Feb 2008 14:13:30 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:44116 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753221AbYBETN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:12:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=g3Vf73BrO5gFXtdRinbY+B/2jkCDVGlIgRdyp4AptjDx/jhkePn3xtE6u0LeUQGr43FMXpaIz25z7uTVpaqNg4VX0bC0hAJgHBre/Mms58Y44Ql2tUy+83L0H0OBfiaUSsstWjlEuQcI8l4+0pQcrJ1an4vwyytF85FRjMjp3nM=
-Date: Tue, 5 Feb 2008 20:12:05 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/6] udf: convert udf_stamp_to_time to return struct
-	timespec
-Message-ID: <20080205191136.GA6234@joi>
-References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-4-git-send-email-marcin.slusarz@gmail.com> <20080205154831.GH25464@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205154831.GH25464@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 5 Feb 2008 14:13:28 -0500
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <47A8B210.8040202@vlnb.net>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>	<47A751C5.60600@vlnb.net>
+	 <1202149322.3096.66.camel@localhost.localdomain>
+	 <47A75B8A.3020503@vlnb.net>
+	 <1202151293.3096.80.camel@localhost.localdomain>
+	 <47A8B210.8040202@vlnb.net>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 13:13:22 -0600
+Message-Id: <1202238802.3133.71.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 04:48:31PM +0100, Jan Kara wrote:
-> 
->   Uh, oh. I guess you somehow mangled the ordering of patches. In this
-> patch you revert what you've done in the previous patch. Otherwise I agree
-> with the idea of the change...
-No, the ordering is ok. Creation of udf_fill_inode_time was an intermediate
-state in this cleanup. Every step is obvious and easy. When I tried to create
-just one patch it didn't look so obvious, so I decided to send it in 4 parts.
-
-> 
-> On Sun 03-02-08 19:36:08, marcin.slusarz@gmail.com wrote:
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Cc: Jan Kara <jack@suse.cz>
-> > ---
-> >  fs/udf/inode.c   |   49 ++++++++++++++++++++++++++-----------------------
-> >  fs/udf/super.c   |    9 ++-------
-> >  fs/udf/udfdecl.h |    4 ++--
-> >  fs/udf/udftime.c |   17 +++++++----------
-> >  4 files changed, 37 insertions(+), 42 deletions(-)
+On Tue, 2008-02-05 at 21:59 +0300, Vladislav Bolkhovitin wrote:
+> >>Hmm, how can one write to an mmaped page and don't touch it?
 > > 
-> > diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> > index 2578677..252efe0 100644
-> > --- a/fs/udf/inode.c
-> > +++ b/fs/udf/inode.c
-> > @@ -1151,20 +1151,6 @@ static void __udf_read_inode(struct inode *inode)
-> >  	brelse(bh);
-> >  }
-> >  
-> > -static void udf_fill_inode_time(struct timespec *tspec,
-> > -				const timestamp *tstamp,
-> > -				struct udf_sb_info *sbi)
-> > -{
-> > -	time_t convtime;
-> > -	long convtime_usec;
-> > -	if (udf_stamp_to_time(&convtime, &convtime_usec,
-> > -				lets_to_cpu(*tstamp))) {
-> > -		tspec->tv_sec = convtime;
-> > -		tspec->tv_nsec = convtime_usec * 1000;
-> > -	} else
-> > -		*tspec = sbi->s_record_time;
-> > -}
-> > -
+> > I meant from user space ... the writes are done inside the kernel.
 > 
-> >  static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
-> >  {
-> >  	struct fileEntry *fe;
-> > @@ -1256,10 +1242,17 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
-> >  		inode->i_blocks = le64_to_cpu(fe->logicalBlocksRecorded) <<
-> >  			(inode->i_sb->s_blocksize_bits - 9);
-> >  
-> > -		udf_fill_inode_time(&inode->i_atime, &fe->accessTime, sbi);
-> > -		udf_fill_inode_time(&inode->i_mtime, &fe->modificationTime,
-> > -				    sbi);
-> > -		udf_fill_inode_time(&inode->i_ctime, &fe->attrTime, sbi);
-> > +		if (!udf_stamp_to_time(&inode->i_atime,
-> > +					lets_to_cpu(fe->accessTime)))
-> > +			inode->i_atime = sbi->s_record_time;
-> > +
-> > +		if (!udf_stamp_to_time(&inode->i_mtime,
-> > +					lets_to_cpu(fe->modificationTime)))
-> > +			inode->i_mtime = sbi->s_record_time;
-> > +
-> > +		if (!udf_stamp_to_time(&inode->i_ctime,
-> > +					lets_to_cpu(fe->attrTime)))
-> > +			inode->i_ctime = sbi->s_record_time;
-> >  
-> >  		iinfo->i_unique = le64_to_cpu(fe->uniqueID);
-> >  		iinfo->i_lenEAttr = le32_to_cpu(fe->lengthExtendedAttr);
-> > @@ -1269,11 +1262,21 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
-> >  		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
-> >  		    (inode->i_sb->s_blocksize_bits - 9);
-> >  
-> > -		udf_fill_inode_time(&inode->i_atime, &efe->accessTime, sbi);
-> > -		udf_fill_inode_time(&inode->i_mtime, &efe->modificationTime,
-> > -				    sbi);
-> > -		udf_fill_inode_time(&iinfo->i_crtime, &efe->createTime, sbi);
-> > -		udf_fill_inode_time(&inode->i_ctime, &efe->attrTime, sbi);
-> > +		if (!udf_stamp_to_time(&inode->i_atime,
-> > +					lets_to_cpu(efe->accessTime)))
-> > +			inode->i_atime = sbi->s_record_time;
-> > +
-> > +		if (!udf_stamp_to_time(&inode->i_mtime,
-> > +					lets_to_cpu(efe->modificationTime)))
-> > +			inode->i_mtime = sbi->s_record_time;
-> > +
-> > +		if (!udf_stamp_to_time(&iinfo->i_crtime,
-> > +					lets_to_cpu(efe->createTime)))
-> > +			iinfo->i_crtime = sbi->s_record_time;
-> > +
-> > +		if (!udf_stamp_to_time(&inode->i_ctime,
-> > +					lets_to_cpu(efe->attrTime)))
-> > +			inode->i_ctime = sbi->s_record_time;
-> >  
-> >  		iinfo->i_unique = le64_to_cpu(efe->uniqueID);
-> >  		iinfo->i_lenEAttr = le32_to_cpu(efe->lengthExtendedAttr);
-> > diff --git a/fs/udf/super.c b/fs/udf/super.c
-> > index 0dcee12..9f565a9 100644
-> > --- a/fs/udf/super.c
-> > +++ b/fs/udf/super.c
-> > @@ -909,24 +909,19 @@ static int udf_find_fileset(struct super_block *sb,
-> >  static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
-> >  {
-> >  	struct primaryVolDesc *pvoldesc;
-> > -	time_t recording;
-> > -	long recording_usec;
-> >  	struct ustr instr;
-> >  	struct ustr outstr;
-> >  
-> >  	pvoldesc = (struct primaryVolDesc *)bh->b_data;
-> >  
-> > -	if (udf_stamp_to_time(&recording, &recording_usec,
-> > +	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
-> >  			      lets_to_cpu(pvoldesc->recordingDateAndTime))) {
-> >  		kernel_timestamp ts;
-> >  		ts = lets_to_cpu(pvoldesc->recordingDateAndTime);
-> > -		udf_debug("recording time %ld/%ld, %04u/%02u/%02u"
-> > +		udf_debug("recording time %04u/%02u/%02u"
-> >  			  " %02u:%02u (%x)\n",
-> > -			  recording, recording_usec,
-> >  			  ts.year, ts.month, ts.day, ts.hour,
-> >  			  ts.minute, ts.typeAndTimezone);
-> > -		UDF_SB(sb)->s_record_time.tv_sec = recording;
-> > -		UDF_SB(sb)->s_record_time.tv_nsec = recording_usec * 1000;
-> >  	}
-> >  
-> >  	if (!udf_build_ustr(&instr, pvoldesc->volIdent, 32))
-> > diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
-> > index 375be1b..508be85 100644
-> > --- a/fs/udf/udfdecl.h
-> > +++ b/fs/udf/udfdecl.h
-> > @@ -204,7 +204,7 @@ extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
-> >  extern uint16_t udf_crc(const uint8_t *, uint32_t, uint16_t);
-> >  
-> >  /* udftime.c */
-> > -extern time_t *udf_stamp_to_time(time_t *, long *, kernel_timestamp);
-> > -extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *, struct timespec);
-> > +extern struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src);
-> > +extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec src);
-> >  
-> >  #endif				/* __UDF_DECL_H */
-> > diff --git a/fs/udf/udftime.c b/fs/udf/udftime.c
-> > index ce59573..12fae6c 100644
-> > --- a/fs/udf/udftime.c
-> > +++ b/fs/udf/udftime.c
-> > @@ -85,7 +85,7 @@ extern struct timezone sys_tz;
-> >  #define SECS_PER_HOUR	(60 * 60)
-> >  #define SECS_PER_DAY	(SECS_PER_HOUR * 24)
-> >  
-> > -time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
-> > +struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
-> >  {
-> >  	int yday;
-> >  	uint8_t type = src.typeAndTimezone >> 12;
-> > @@ -97,23 +97,20 @@ time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
-> >  		offset = (offset >> 4);
-> >  		if (offset == -2047) /* unspecified offset */
-> >  			offset = 0;
-> > -	} else {
-> > +	} else
-> >  		offset = 0;
-> > -	}
-> >  
-> >  	if ((src.year < EPOCH_YEAR) ||
-> >  	    (src.year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
-> > -		*dest = -1;
-> > -		*dest_usec = -1;
-> >  		return NULL;
-> >  	}
-> > -	*dest = year_seconds[src.year - EPOCH_YEAR];
-> > -	*dest -= offset * 60;
-> > +	dest->tv_sec = year_seconds[src.year - EPOCH_YEAR];
-> > +	dest->tv_sec -= offset * 60;
-> >  
-> >  	yday = ((__mon_yday[__isleap(src.year)][src.month - 1]) + src.day - 1);
-> > -	*dest += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
-> > -	*dest_usec = src.centiseconds * 10000 +
-> > -			src.hundredsOfMicroseconds * 100 + src.microseconds;
-> > +	dest->tv_sec += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
-> > +	dest->tv_nsec = 1000 * (src.centiseconds * 10000 +
-> > +			src.hundredsOfMicroseconds * 100 + src.microseconds);
-> >  	return dest;
-> >  }
-> >  
-> > -- 
-> > 1.5.3.7
+> Sure, the mmap() approach agreed to be unpractical, but could you 
+> elaborate more on this anyway, please? I'm just curious. Do you think 
+> about implementing a new syscall, which would put pages with data in the 
+> mmap'ed area?
+
+No, it has to do with the way invalidation occurs.  When you mmap a
+region from a device or file, the kernel places page translations for
+that region into your vm_area.  The regions themselves aren't backed
+until faulted.  For write (i.e. incoming command to target) you specify
+the write flag and send the area off to receive the data.  The gather,
+expecting the pages to be overwritten, backs them with pages marked
+dirty but doesn't fault in the contents (unless it already exists in the
+page cache).  The kernel writes the data to the pages and the dirty
+pages go back to the user.  msync() flushes them to the device.
+
+The disadvantage of all this is that the handle for the I/O if you will
+is a virtual address in a user process that doesn't actually care to see
+the data. non-x86 architectures will do flushes/invalidates on this
+address space as the I/O occurs.
+
+
+> > However, as Linus has pointed out, this discussion is getting a bit off
+> > topic. 
 > 
-> 									Honza
-> -- 
-> Jan Kara <jack@suse.cz>
-> SUSE Labs, CR
+> No, that isn't off topic. We've just proved that there is no good way to 
+> implement zero-copy cached I/O for STGT. I see the only practical way 
+> for that, proposed by FUJITA Tomonori some time ago: duplicating Linux 
+> page cache in the user space. But will you like it?
+
+Well, there's no real evidence that zero copy or lack of it is a problem
+yet.
+
+James
+
+
