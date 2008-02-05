@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbYBEV0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbYBEV2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761376AbYBEV0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758922AbYBEV0m
+	id S1761271AbYBEV2N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbYBEV15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:26:42 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41035 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758806AbYBEV0l (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:26:41 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-mm1
-In-Reply-To: Your message of "Tue, 05 Feb 2008 11:50:11 PST."
-             <47A8BDF3.6080609@linux.intel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080203171634.58ab668b.akpm@linux-foundation.org> <10779.1202230436@turing-police.cc.vt.edu> <47A89664.8020407@linux.intel.com> <3289.1202240894@turing-police.cc.vt.edu>
-            <47A8BDF3.6080609@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1202246727_3253P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 5 Feb 2008 16:27:57 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:4960 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758792AbYBEV14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 16:27:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eV8R1DqhL8TuHx142PxzhXRbMgcW5Q4KSGF2xR3nE5WlKsaWBNqiEaM+f+rKUirqsjIJ7ptDH9cAXpBPTItvA0JnPS0NfrDm7gbzWYZCEnnJ5R52HIRhqKZO6FsuIJdNOQ9aEK13vUJyfIcht0+waetfIgSryOcRxWwFM1nli0s=
+Message-ID: <9a8748490802051327q38f63c41ie5ea1f923eb2c08d@mail.gmail.com>
+Date: Tue, 5 Feb 2008 22:27:53 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [linux-pm] Re: Small pm documentation cleanups
+Cc: "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Len Brown" <len.brown@intel.com>,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Trivial patch monkey" <trivial@kernel.org>
+In-Reply-To: <20080205182712.GA9483@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 05 Feb 2008 16:25:27 -0500
-Message-ID: <9255.1202246727@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl>
+	 <47A7F581.8060300@nigel.suspend2.net>
+	 <20080205182712.GA9483@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1202246727_3253P
-Content-Type: text/plain; charset=us-ascii
+On 05/02/2008, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+> >> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+> >>> Small documentation fixes/additions that accumulated in my tree.
+> >>>
+> >>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> >>
+> >> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >>
+> ...
+...
+>
+> Thanks for comments, I applied them.
+>
+> Small documentation fixes/additions that accumulated in my tree.
+>
+> Len, please pick this up, thanks.
+>                                                                         Pavel
+>
+>
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>
 
-On Tue, 05 Feb 2008 11:50:11 PST, Arjan van de Ven said:
-> > A bugfix?
-> 
-> yes it was a really painful bugfix, but still.
+I've put this on my watch list for the trivial tree.
+So, if it doesn't get merged elsewhere I'll take care of pushing it
+again during the 2.6.26 merge window (and beyond).
 
-I'm not saying that it wasn't needed, it *was* a busticated API.
-
-> I'll repeat the question. What would waiting for an -mm release have bought for this bugfix?
-> Answer: nothing more than what was done on Linus git.
-
-Just wondering what happened to the "large changes should percolate in -mm
-for a bit beforehand" concept.  We've seen a lot of patchsets that totalled
-up to a *lot* less intrusiveness get pushed off with "This needs to cook in
--mm for a while".  
-
-
---==_Exmh_1202246727_3253P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD4DBQFHqNRHcC3lWbTT17ARAgA6AKCvBbnhHjMoc0JVGyBwviY6ubQgrACY9D0Z
-7gJ5KwQNLB6ZYo8BqNkBWw==
-=abiS
------END PGP SIGNATURE-----
-
---==_Exmh_1202246727_3253P--
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
