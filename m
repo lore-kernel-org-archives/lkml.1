@@ -1,103 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYBEQPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYBEQS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbYBEQPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYBEQPG
+	id S1755958AbYBEQS1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYBEQST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:15:06 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:5181 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbYBEQPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:15:04 -0500
-Date: Tue, 5 Feb 2008 08:15:01 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-driver@qlogic.com, Seokmann Ju <seokmann.ju@qlogic.com>
-Subject: Re: 2.6.24 regression w/ QLA2300
-Message-ID: <20080205161501.GG19882@plap3.qlogic.org>
-References: <47A88736.6090706@hp.com> <20080205160246.GF19882@plap3.qlogic.org>
+	Tue, 5 Feb 2008 11:18:19 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50868 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751837AbYBEQSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:18:18 -0500
+Date: Tue, 5 Feb 2008 17:18:10 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Abel Bernabeu <abel.bernabeu@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [regression] Re: brk randomization breaks columns
+Message-ID: <20080205161810.GF24331@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz> <20080205110632.GB3758@elf.ucw.cz> <Pine.LNX.4.64.0802051216340.30955@jikos.suse.cz> <20080205125426.GA27724@elte.hu> <20080205130546.GF30691@devserv.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205160246.GF19882@plap3.qlogic.org>
-Organization: QLogic Corporation
+In-Reply-To: <20080205130546.GF30691@devserv.devel.redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 05 Feb 2008 16:15:03.0439 (UTC) FILETIME=[43B059F0:01C86812]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008, Andrew Vasquez wrote:
-
-> On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
+On Tue 2008-02-05 08:05:46, Jakub Jelinek wrote:
+> On Tue, Feb 05, 2008 at 01:54:26PM +0100, Ingo Molnar wrote:
+> > * Jiri Kosina <jkosina@suse.cz> wrote:
+> > 
+> > > On Tue, 5 Feb 2008, Pavel Machek wrote:
+> > > 
+> > > > > Actually, this clearly shows that either prehistoric libc.so.5 or the 
+> > > > > program itself are broken.
+> > > > I believe it shows clear regression in latest 2.6.25 kernel.
+> > > 
+> > > I am still not completely sure. It might be a regression, but it also 
+> > > might just trigger the bug in ancient version in libc.so.5 which might 
+> > > be fixed in some later version [...]
+> > 
+> > which too is a regression ...
+> > 
+> > really, lets add a sysctl for this, and a .config option that either 
+> > disables or enables it. Then we will default to disabled. (but users can 
+> > enable it - and distros can build their kernels with this .config option 
+> > enabled)
 > 
-> > commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
-> > Merge: 50d9a12... 23c3e29...
-> > Author: Linus Torvalds <torvalds@linux-foundation.org>
-> > Date:   Fri Jan 25 17:19:08 2008 -0800
-> > 
-> >     Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
-> > 
-> >     * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6: (200 commits)
-> > 
-> > I believe a regression was introduced. I'm running on a 4-way IA64,
-> > with straight 2.6.24 and 2 dual-port cards:
-> > 
-> > 40:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> > 40:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> > c0:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> > c0:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> > 
-> > the adapters failed initialization. In particular, I narrowed it down
-> > to failing the qla2x00_mbox_command call within qla2x00_init_firmware
-> > function. I went and removed the qla2x00-related parts of this (large-ish)
-> > merge, and the 4 ports initialized just fine.
-> 
-> Could you load the (default 2.6.24) driver with
-> ql2xextended_error_logging modules parameter set:
-> 
-> 	# insmod qla2xxx ql2xextended_error_logging=1
-> 
-> and send the resultant kernel logs?
+> I don't think kernel should care about programs which are buggy and make invalid
+> assumptions, and that's the case here.  I remember we have been
 
-Could you tray the patch referenced here:
+Those "invalid assumptions" crept into documentation. Everybody knew
+heap starts at the end of bss in 1995.
 
-qla2xxx: Correct issue where incorrect init-fw mailbox command was used on non-NPIV capable ISPs.
-http://article.gmane.org/gmane.linux.scsi/38240
+> 5 years ago when brk randomization has been added to Red Hat kernels.  There was
+> one or two broken programs which made assumptions on what brk(0) is supposed
+> to return at program startup, everything else was ok.
 
-Thanks, av
+That's not the problem. Problem is that programs assume
+brk(0x12345678) allocates space between end of bss and 0x12345678;
+which is no longer the case.
 
----
+And actually even
+http://opengroup.org/onlinepubs/007908775/xsh/brk.html only talks
+about "ammount of space"... implying begging of that space is well
+known.
 
-qla2xxx: Correct issue where incorrect init-fw mailbox command was used on non-NPIV capable ISPs.
+								Pavel
+PS: It would be nice to fix linux man pages to say that it brk() moves
+end of the heap, only, and that any usage of brk() is invalid w/o
+doing brk(0) before.
 
-BIT_2 of the firmware attributes is only valid on FW-interface-2
-type HBAs.  Code in commit
-c48339decceec8e011498b0fc4c7c7d8b2ea06c1 would cause the
-incorrect initialize-firmware mailbox command to be issued for
-non-NPIV capable ISPs.  Correct this by reverting to previously
-used (and correct) pre-condition 'if' check.
-
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
----
- drivers/scsi/qla2xxx/qla_mbx.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
-index 0c10c0b..99d29ff 100644
---- a/drivers/scsi/qla2xxx/qla_mbx.c
-+++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -980,7 +980,7 @@ qla2x00_init_firmware(scsi_qla_host_t *ha, uint16_t size)
- 	DEBUG11(printk("qla2x00_init_firmware(%ld): entered.\n",
- 	    ha->host_no));
- 
--	if (ha->fw_attributes & BIT_2)
-+	if (ha->flags.npiv_supported)
- 		mcp->mb[0] = MBC_MID_INITIALIZE_FIRMWARE;
- 	else
- 		mcp->mb[0] = MBC_INITIALIZE_FIRMWARE;
 -- 
-1.5.4.rc5.5.gab98
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
