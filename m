@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762440AbYBEW1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762787AbYBEW1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762440AbYBEW1m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbYBEW1D
+	id S1762787AbYBEW1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762232AbYBEW1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:27:03 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:32871 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754820AbYBEW1B (ORCPT
+	Tue, 5 Feb 2008 17:27:36 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:57498
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762164AbYBEW1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:27:01 -0500
-Date: Tue, 5 Feb 2008 22:26:01 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH] stop c_p_a corrupting the pds
-Message-ID: <Pine.LNX.4.64.0802052218190.11822@blonde.site>
+	Tue, 5 Feb 2008 17:27:34 -0500
+Message-ID: <47A8E2D5.6010503@microgate.com>
+Date: Tue, 05 Feb 2008 16:27:33 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Rick Warner <rick@microway.com>, linux-kernel@vger.kernel.org
+Subject: Re: serial port regression caused by "Char: tty_ioctl, use wait_event_interruptible_timeout"
+ patch
+References: <200802051402.26816.rick@microway.com> <47A8C4AB.3030301@microgate.com> <47A8CCC0.8020703@microgate.com> <200802051632.54058.rick@microway.com> <47A8D71F.4050601@microgate.com> <47A8DC2B.20604@gmail.com>
+In-Reply-To: <47A8DC2B.20604@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When change_page_attr splits a large page on x86_32 (without PAE), it is
-currently corrupting every process's page directory: fix that by removing
-the thinko which passes down a physical instead of a virtual address.
+Jiri Slaby wrote:
+> It should be fixed already as of
+> git-describe db99247a
+> v2.6.24-rc6-95-gdb99247
+> 
+> So since 2.6.24-rc7.
+> 
+> Maybe we should consider the fix for 2.6.23 too.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Whoops, I missed that.
+Problem solved :-)
 
---- 2.6.24-git/arch/x86/mm/pageattr.c	2008-02-05 16:43:45.000000000 +0000
-+++ linux/arch/x86/mm/pageattr.c	2008-02-05 21:34:18.000000000 +0000
-@@ -237,7 +237,6 @@ static void __set_pmd_pte(pte_t *kpte, u
- 	if (!SHARED_KERNEL_PMD) {
- 		struct page *page;
- 
--		address = __pa(address);
- 		list_for_each_entry(page, &pgd_list, lru) {
- 			pgd_t *pgd;
- 			pud_t *pud;
+Thanks,
+Paul
