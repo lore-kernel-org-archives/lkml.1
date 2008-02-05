@@ -1,57 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYBEQN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYBEQPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbYBEQN4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYBEQNq
+	id S1756838AbYBEQPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYBEQPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:13:46 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36637 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYBEQNp (ORCPT
+	Tue, 5 Feb 2008 11:15:06 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:5181 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752451AbYBEQPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:13:45 -0500
-Date: Tue, 5 Feb 2008 17:48:37 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205164837.GC23145@one.firstfloor.org>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <20080205154213.059ac6e8@core> <20080205163912.GB23145@one.firstfloor.org> <20080205160301.7b2369ee@core>
-Mime-Version: 1.0
+	Tue, 5 Feb 2008 11:15:04 -0500
+Date: Tue, 5 Feb 2008 08:15:01 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-driver@qlogic.com, Seokmann Ju <seokmann.ju@qlogic.com>
+Subject: Re: 2.6.24 regression w/ QLA2300
+Message-ID: <20080205161501.GG19882@plap3.qlogic.org>
+References: <47A88736.6090706@hp.com> <20080205160246.GF19882@plap3.qlogic.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205160301.7b2369ee@core>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080205160246.GF19882@plap3.qlogic.org>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 05 Feb 2008 16:15:03.0439 (UTC) FILETIME=[43B059F0:01C86812]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 04:03:01PM +0000, Alan Cox wrote:
-> > Also your sub PC class appliances rarely run LISTEN servers anyways
-> > that are open to the world.
+On Tue, 05 Feb 2008, Andrew Vasquez wrote:
+
+> On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
 > 
-> Really. The ones that first come to mind often have exposed ports
-> including PDA devices and phones. (Ditto low end PC boxes - portscan an
-> EEPC some day ;))
+> > commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
+> > Merge: 50d9a12... 23c3e29...
+> > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date:   Fri Jan 25 17:19:08 2008 -0800
+> > 
+> >     Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
+> > 
+> >     * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6: (200 commits)
+> > 
+> > I believe a regression was introduced. I'm running on a 4-way IA64,
+> > with straight 2.6.24 and 2 dual-port cards:
+> > 
+> > 40:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> > 40:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> > c0:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> > c0:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+> > 
+> > the adapters failed initialization. In particular, I narrowed it down
+> > to failing the qla2x00_mbox_command call within qla2x00_init_firmware
+> > function. I went and removed the qla2x00-related parts of this (large-ish)
+> > merge, and the 4 ports initialized just fine.
+> 
+> Could you load the (default 2.6.24) driver with
+> ql2xextended_error_logging modules parameter set:
+> 
+> 	# insmod qla2xxx ql2xextended_error_logging=1
+> 
+> and send the resultant kernel logs?
 
-What kind of LISTEN ports? And does it matter if they're DoS'ed?
+Could you tray the patch referenced here:
 
-The only one I can think of right now would be ident and frankly nobody
-will really care if that one works or not.
+qla2xxx: Correct issue where incorrect init-fw mailbox command was used on non-NPIV capable ISPs.
+http://article.gmane.org/gmane.linux.scsi/38240
 
-If it's just the management interface etc. (which should really be firewalled) 
-then likely not.
+Thanks, av
 
+---
 
-> Is the other stuff enough - good question, and can be measured easily
-> enough on a little dlink router or similar.
+qla2xxx: Correct issue where incorrect init-fw mailbox command was used on non-NPIV capable ISPs.
 
-My guess would be that it is.
+BIT_2 of the firmware attributes is only valid on FW-interface-2
+type HBAs.  Code in commit
+c48339decceec8e011498b0fc4c7c7d8b2ea06c1 would cause the
+incorrect initialize-firmware mailbox command to be issued for
+non-NPIV capable ISPs.  Correct this by reverting to previously
+used (and correct) pre-condition 'if' check.
 
-If it's not it would be probably better to look at improving the standard queue 
-management again; e.g.readd RED.
+Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+---
+ drivers/scsi/qla2xxx/qla_mbx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--Andi
+diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
+index 0c10c0b..99d29ff 100644
+--- a/drivers/scsi/qla2xxx/qla_mbx.c
++++ b/drivers/scsi/qla2xxx/qla_mbx.c
+@@ -980,7 +980,7 @@ qla2x00_init_firmware(scsi_qla_host_t *ha, uint16_t size)
+ 	DEBUG11(printk("qla2x00_init_firmware(%ld): entered.\n",
+ 	    ha->host_no));
+ 
+-	if (ha->fw_attributes & BIT_2)
++	if (ha->flags.npiv_supported)
+ 		mcp->mb[0] = MBC_MID_INITIALIZE_FIRMWARE;
+ 	else
+ 		mcp->mb[0] = MBC_INITIALIZE_FIRMWARE;
+-- 
+1.5.4.rc5.5.gab98
 
