@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbYBETv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYBET6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758899AbYBETv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYBETvt
+	id S1758041AbYBET6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYBET6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:51:49 -0500
-Received: from mga06.intel.com ([134.134.136.21]:17481 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751746AbYBETvs (ORCPT
+	Tue, 5 Feb 2008 14:58:00 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33675 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYBET57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:51:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,308,1199692800"; 
-   d="scan'208";a="335386544"
-Message-ID: <47A8BDF3.6080609@linux.intel.com>
-Date: Tue, 05 Feb 2008 11:50:11 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	Tue, 5 Feb 2008 14:57:59 -0500
+Date: Tue, 5 Feb 2008 20:57:58 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-mm1
-References: <20080203171634.58ab668b.akpm@linux-foundation.org> <10779.1202230436@turing-police.cc.vt.edu>            <47A89664.8020407@linux.intel.com> <3289.1202240894@turing-police.cc.vt.edu>
-In-Reply-To: <3289.1202240894@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+In-Reply-To: <20080205155558.GA23145@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0802052056120.16441@fbirervta.pbzchgretzou.qr>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com>
+ <20080205155558.GA23145@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
->> I don't think it's a realistic expectation to delay every bugfix and arch patch until Andrew
->> gets around to releasing an -mm, not do I see the point of that, what would have been different?
-> 
-> A bugfix?
 
-yes it was a really painful bugfix, but still.
+On Feb 5 2008 16:55, Andi Kleen wrote:
+>On Mon, Feb 04, 2008 at 03:01:01PM -0800, Glenn Griffin wrote:
+>> Add IPv6 support to TCP SYN cookies.  This is written and tested against
+>> 2.6.24, and applies cleanly to linus' current HEAD (d2fc0b).  Unfortunately
+>> linus' HEAD breaks my sky2 card at the moment, so I'm unable to test against
+>> that.  I see no reason why it would be affected though.  Comments/suggestions
+>> are welcome.
+>
+>Syncookies are discouraged these days. They disable too many 
+>valuable TCP features (window scaling, SACK) and even without them 
+>the kernel is usually strong enough to defend against syn floods
+>and systems have much more memory than they used to be.
+>
+>So I don't think it makes much sense to add more code to it, sorry.
 
-I'll repeat the question. What would waiting for an -mm release have bought for this bugfix?
-Answer: nothing more than what was done on Linus git.
+Distributions should then probably deactivate it by default.
+SUSE 10.3 for example still has it enabled on default installs.
