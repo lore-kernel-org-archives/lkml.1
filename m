@@ -1,219 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYBEP3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYBEPaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbYBEP3d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYBEP30
+	id S1755275AbYBEPaU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 10:30:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYBEPaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:29:26 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53479 "EHLO duck.suse.cz"
+	Tue, 5 Feb 2008 10:30:07 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53481 "EHLO duck.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751589AbYBEP3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 10:29:25 -0500
-Date: Tue, 5 Feb 2008 16:29:23 +0100
+	id S1750875AbYBEPaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 10:30:06 -0500
+Date: Tue, 5 Feb 2008 16:30:05 +0100
 From: Jan Kara <jack@suse.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: marcin.slusarz@gmail.com
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/10] udf: fix udf_build_ustr
-Message-ID: <20080205152923.GE25464@duck.suse.cz>
-References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-3-git-send-email-marcin.slusarz@gmail.com> <20080131104532.GB1461@duck.suse.cz> <20080131195730.GB6222@joi> <20080204193107.GN3426@duck.suse.cz> <20080204212733.GA12562@joi>
+Subject: Re: [PATCH 1/6] udf: udf_get_block, inode_bmap - remove unneeded
+	checks
+Message-ID: <20080205153005.GF25464@duck.suse.cz>
+References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-2-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080204212733.GA12562@joi>
+In-Reply-To: <1202063771-18172-2-git-send-email-marcin.slusarz@gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 04-02-08 22:27:39, Marcin Slusarz wrote:
-> On Mon, Feb 04, 2008 at 08:31:07PM +0100, Jan Kara wrote:
-> > On Thu 31-01-08 20:57:47, Marcin Slusarz wrote:
-> > > On Thu, Jan 31, 2008 at 11:45:32AM +0100, Jan Kara wrote:
-> > > > On Wed 30-01-08 22:03:52, marcin.slusarz@gmail.com wrote:
-> > > > > udf_build_ustr was completely broken when
-> > > > > size >= UDF_NAME_LEN - 1 or size < 2
-> > > > > 
-> > > > > nobody noticed because all callers set size
-> > > > > to acceptable values (constants)
-> > > > > 
-> > > > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > > > > Cc: Jan Kara <jack@suse.cz>
-> > > > > ---
-> > > > >  fs/udf/unicode.c |   12 ++++++------
-> > > > >  1 files changed, 6 insertions(+), 6 deletions(-)
-> > > > > 
-> > > > > diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
-> > > > > index f969617..f4e54e5 100644
-> > > > > --- a/fs/udf/unicode.c
-> > > > > +++ b/fs/udf/unicode.c
-> > > > > @@ -47,16 +47,16 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
-> > > > >   */
-> > > > >  int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
-> > > > >  {
-> > > > > -	int usesize;
-> > > > > +	u8 usesize;
-> > > >   What is the purpose for this? Why not just leave int there? Arithmetics
-> > > > is usually best done in ints if that's possible...
-> > > I made it to stress that length of string fits in one byte.
-> > > (struct ustr->u_len is uint8_t)
-> >   I see. I don't think this is really worthwhile, please keep int there.
-> > 
-> > > > > -	if ((!dest) || (!ptr) || (!size))
-> > > > > +	if (!dest || !ptr || size < 2)
-> > > > >  		return -1;
-> > > > >  
-> > > > > -	memset(dest, 0, sizeof(struct ustr));
-> > > > > -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
-> > > > > +	usesize = min_t(size_t, size - 2, sizeof(dest->u_name));
-> > > > >  	dest->u_cmpID = ptr[0];
-> > > > > -	dest->u_len = ptr[size - 1];
-> > > > > -	memcpy(dest->u_name, ptr + 1, usesize - 1);
-> > > > > +	dest->u_len = usesize;
-> > > > > +	memcpy(dest->u_name, ptr + 1, usesize);
-> > > > > +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
-> > > >   Hmm, after parsing what the standard says (ugh), I don't think the code is
-> > > > wrong (at least I think you made it incorrect). The caller of
-> > > > udf_char_to_ustr() specifies length of the field (not length of the
-> > > > string). Now, in the last character of the field is stored the number of
-> > > > characters in the string and in the first character of the field is stored
-> > > > encoding of the string. So the original code seems correct.
-> > > You are right. I broke length calculation.
-> > > 
-> > > But observe that:
-> > > - when size == 1:
-> > > 	dest->u_len = ptr[1 - 1], but at ptr[0] there's cmpID,
-> > > 	so we create string with wrong length
-> >   Yes, but that never happens. This function should always be used for
-> > fixed-length strings whose maximum length is defined in the standard so if
-> > someone calls it with size == 1, it is a bug. So you can just do
-> > BUG_ON(size < 2).
-> > 
-> > > - when size > 1 and size < UDF_NAME_LEN:
-> > > 	we set u_len correctly, but memcpy copies one needless byte
-> > > - when size == UDF_NAME_LEN - 1:
-> > > 	memcpy overwrites u_len - with correct value, but...
-> >   Yes, you're right.
-> > 
-> > > - when size >= UDF_NAME_LEN:
-> > > 	we copy UDF_NAME_LEN - 1 bytes, but dest->u_name is array
-> > > 	of UDF_NAME_LEN - 2 bytes, so we are overwriting u_len with
-> > > 	character from input string
-> >   Again, this should not happen because UDF_NAME_LEN is large enough but
-> > you are right it's better to clean this.
-> > 
-> > > So if I didn't mess up someting, correct change would look like this:
-> > > ---
-> > > udf: fix udf_build_ustr
-> > > 
-> > > udf_build_ustr was broken when
-> > > size >= UDF_NAME_LEN or size < 2
-> > > 
-> > > nobody noticed because all callers set size
-> > > to acceptable values (constants whitin range)
-> > > 
-> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > > Cc: Jan Kara <jack@suse.cz>
-> > > ---
-> > >  fs/udf/unicode.c |   13 +++++++------
-> > >  1 files changed, 7 insertions(+), 6 deletions(-)
-> > > 
-> > > diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
-> > > index 335fc56..83ae9fc 100644
-> > > --- a/fs/udf/unicode.c
-> > > +++ b/fs/udf/unicode.c
-> > > @@ -47,16 +47,17 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
-> > >   */
-> > >  int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
-> > >  {
-> > > -	int usesize;
-> > > +	u8 usesize;
-> >   Just use int here..
-> Ok
->  
-> > >  
-> > > -	if ((!dest) || (!ptr) || (!size))
-> > > +	if (!dest || !ptr || size < 2)
-> > >  		return -1;
-> > >  
-> > > -	memset(dest, 0, sizeof(struct ustr));
-> > > -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
-> > > +	usesize = min_t(size_t, ptr[size - 1], sizeof(dest->u_name));
-> > > +	usesize = min_t(size_t, usesize, size - 2);
-> >   And here use just min() in both cases so that it's easier to read.
-> I used min_t because gcc and sparse warned about different types.
->  
-> > >  	dest->u_cmpID = ptr[0];
-> > > -	dest->u_len = ptr[size - 1];
-> > > -	memcpy(dest->u_name, ptr + 1, usesize - 1);
-> > > +	dest->u_len = usesize;
-> > > +	memcpy(dest->u_name, ptr + 1, usesize);
-> > > +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
-> > >  
-> > >  	return 0;
-> > >  }
-> >   Otherwise it looks fine. Thanks for the cleanups.
-> 
-> Updated patch:
-> ---
-> udf: fix udf_build_ustr
-> 
-> udf_build_ustr was broken:
-> 
-> - size == 1:
->     dest->u_len = ptr[1 - 1], but at ptr[0] there's cmpID,
->     so we created string with wrong length
->     it should not happen, so we BUG() it
-> - size > 1 and size < UDF_NAME_LEN:
->     we set u_len correctly, but memcpy copied one needless byte
-> - size == UDF_NAME_LEN - 1:
->     memcpy overwrited u_len - with correct value, but...
-> - size >= UDF_NAME_LEN:
->     we copied UDF_NAME_LEN - 1 bytes, but dest->u_name is array
->     of UDF_NAME_LEN - 2 bytes, so we were overwriting u_len with
->     character from input string
-> 
-> nobody noticed because all callers set size
-> to acceptable values (constants whitin range)
+On Sun 03-02-08 19:36:06, marcin.slusarz@gmail.com wrote:
+> block cannot be less than 0, because it's sector_t,
+> so remove unneeded checks
 > 
 > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 > Cc: Jan Kara <jack@suse.cz>
+  Acked-by: Jan Kara <jack@suse.cz>
+
+								Honza
 > ---
->  fs/udf/unicode.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
+>  fs/udf/inode.c |   12 ------------
+>  1 files changed, 0 insertions(+), 12 deletions(-)
 > 
-> diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
-> index 335fc56..442d38a 100644
-> --- a/fs/udf/unicode.c
-> +++ b/fs/udf/unicode.c
-> @@ -49,14 +49,16 @@ int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
->  {
->  	int usesize;
+> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+> index c2d0477..531443d 100644
+> --- a/fs/udf/inode.c
+> +++ b/fs/udf/inode.c
+> @@ -323,9 +323,6 @@ static int udf_get_block(struct inode *inode, sector_t block,
 >  
-> -	if ((!dest) || (!ptr) || (!size))
-> +	if (!dest || !ptr || !size)
->  		return -1;
-> +	BUG_ON(size < 2);
+>  	lock_kernel();
 >  
-> -	memset(dest, 0, sizeof(struct ustr));
-> -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
-> +	usesize = min_t(size_t, ptr[size - 1], sizeof(dest->u_name));
-> +	usesize = min(usesize, size - 2);
->  	dest->u_cmpID = ptr[0];
-> -	dest->u_len = ptr[size - 1];
-> -	memcpy(dest->u_name, ptr + 1, usesize - 1);
-> +	dest->u_len = usesize;
-> +	memcpy(dest->u_name, ptr + 1, usesize);
-> +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
->  
->  	return 0;
+> -	if (block < 0)
+> -		goto abort_negative;
+> -
+>  	iinfo = UDF_I(inode);
+>  	if (block == iinfo->i_next_alloc_block + 1) {
+>  		iinfo->i_next_alloc_block++;
+> @@ -347,10 +344,6 @@ static int udf_get_block(struct inode *inode, sector_t block,
+>  abort:
+>  	unlock_kernel();
+>  	return err;
+> -
+> -abort_negative:
+> -	udf_warning(inode->i_sb, "udf_get_block", "block < 0");
+> -	goto abort;
 >  }
-  OK, fine, thanks. Acked-by: Jan Kara <jack@suse.cz>
-
-									Honza
-
-PS: I'm working on getting access to kernel.org so that I can run UDF git
-tree there so we try merging these patches with the new git when I set that
-up :).
+>  
+>  static struct buffer_head *udf_getblk(struct inode *inode, long block,
+> @@ -2081,11 +2074,6 @@ int8_t inode_bmap(struct inode *inode, sector_t block,
+>  	int8_t etype;
+>  	struct udf_inode_info *iinfo;
+>  
+> -	if (block < 0) {
+> -		printk(KERN_ERR "udf: inode_bmap: block < 0\n");
+> -		return -1;
+> -	}
+> -
+>  	iinfo = UDF_I(inode);
+>  	pos->offset = 0;
+>  	pos->block = iinfo->i_location;
+> -- 
+> 1.5.3.7
+> 
 -- 
 Jan Kara <jack@suse.cz>
 SUSE Labs, CR
