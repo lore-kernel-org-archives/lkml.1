@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760973AbYBEVMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbYBEVPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760973AbYBEVMU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758393AbYBEVML
+	id S1760536AbYBEVPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbYBEVO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:12:11 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:54558 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756810AbYBEVMK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:12:10 -0500
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: David Newall <davidn@davidnewall.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47A8C893.6000103@nortel.com>
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
-	 <47A5D9CD.5070001@davidnewall.com>
-	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-	 <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet>
-	 <courier.47A84ADB.000047C1@hawking.rebel.net.au>
-	 <1202241819.15090.133.camel@violet>  <47A8C893.6000103@nortel.com>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 22:12:38 +0100
-Message-Id: <1202245958.15090.145.camel@violet>
+	Tue, 5 Feb 2008 16:14:58 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:50612 "EHLO smtp1.cc.lut.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755515AbYBEVO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 16:14:57 -0500
+Date: Tue, 5 Feb 2008 23:14:52 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] x86 mmiotrace: fix relay-buffer-full flag for SMP
+Message-ID: <20080205231452.16cc2f88@daedalus.pq.iki.fi>
+In-Reply-To: <47A8CA97.30008@cosmosbay.com>
+References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
+	<1201660102.8837.9.camel@brick>
+	<1201660453.8837.13.camel@brick>
+	<20080130200827.322c4f7d@daedalus.pq.iki.fi>
+	<20080131150746.GB11996@elte.hu>
+	<20080131180253.6c007852@daedalus.pq.iki.fi>
+	<20080131081507.5edcde10@laptopd505.fenrus.org>
+	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
+	<20080203070321.GA8293@elte.hu>
+	<20080205222807.7b35ef2b@daedalus.pq.iki.fi>
+	<20080205223046.668309be@daedalus.pq.iki.fi>
+	<47A8CA97.30008@cosmosbay.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chris,
+On Tue, 05 Feb 2008 21:44:07 +0100
+Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-> > If the developers say that this symbol can only be used in GPL code (and
-> > with EXPORT_SYMBOL_GPL it is quite clear) then you have to obey to that
-> > license or don't use this symbol at all.
-> > 
-> > If you use that symbol inside non-GPL (meaning you link at runtime) then
-> > you are in violation of the GPL license. We can't make it much clearer.
+> Pekka Paalanen a écrit :
+> > diff --git a/arch/x86/kernel/mmiotrace/mmio-mod.c b/arch/x86/kernel/mmiotrace/mmio-mod.c
+> > index 82ae920..f492b65 100644
+> > --- a/arch/x86/kernel/mmiotrace/mmio-mod.c
+> > +++ b/arch/x86/kernel/mmiotrace/mmio-mod.c
+> > @@ -47,9 +48,13 @@ struct trap_reason {
+> >  	int active_traces;
+> >  };
+> >  
+> > +/* Accessed per-cpu. */
+> >  static struct trap_reason pf_reason[NR_CPUS];
+> >  static struct mm_io_header_rw cpu_trace[NR_CPUS];
+> >  
+> > +/* Access to this is not per-cpu. */
+> > +static atomic_t dropped[NR_CPUS];
+> > +
 > 
-> Not necessarily so.  The developers feel that any code using that symbol 
-> is necessarily a derivative work, but at the end of the day it would be 
-> up to the legal system to decide whether it really is or not.
+> Please dont introduce NR_CPUS new arrays, since people are working hard to zap 
+> them from kernel.
 > 
-> If the courts decided that the symbol could be used and the driver 
-> wouldn't be a derivative work, it would be perfectly legal to use a 
-> GPL'd shim to "re-export" the symbol, essentially stripping off the 
-> GPL-only protection for that symbol.
+> You probably can use a per_cpu variable ?
 
-I agree with you that a court can decide that the usage of a
-EXPORT_SYMBOL_GPL symbol is not derivative work, but I see the
-likelihood of this happening as almost non existent. And even if so then
-you still have to deal with the fact that the license of this symbol is
-clearly GPL. No questions asked about that, because it says so and due
-technical means you can't load a non-GPL kernel module that uses
-EXPORT_SYMBOL_GPL symbol without tainting the kernel.
+Yes, it would probably be more appropriate to use DEFINE_PER_CPU()
+for 'pf_reason' and 'cpu_trace', but I wasn't sure since the examples
+of DEFINE_PER_CPU I saw always had integers or pointers, not
+whole structs. Is it okay for whole structs?
 
-The same fact is valid in userspace where you can't link (not even
-runtime) a GPL library into a non-GPL program.
+'dropped' on the other hand is not accessed in per-cpu style, any cpu
+may access any element. DEFINE_PER_CPU is not valid here, is it?
 
-However if anyone wants to fight the license, be my guest and do so :)
+Thanks for the note, I knew I should fix that at some point.
 
-> In our group all kernel modules that we write are GPL'd, as it lets us 
-> sleep at night, simplifies our lives, and makes the lawyers much 
-> happier.  Other people may be willing to take more risks.
-
-All big companies are going this way. And licenses beside, there are
-valid technical points in making your driver open source and get it
-merged upstream. Just a hint for all these binary-only people :)
-
-Regards
-
-Marcel
-
-
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
