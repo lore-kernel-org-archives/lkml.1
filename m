@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbYBENAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbYBENFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753789AbYBENAS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 08:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYBENAF
+	id S1753099AbYBENFc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 08:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYBENFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 08:00:05 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:56496 "EHLO smtp5.pp.htv.fi"
+	Tue, 5 Feb 2008 08:05:24 -0500
+Received: from dspnet.fr.eu.org ([213.186.44.138]:3278 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbYBENAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 08:00:04 -0500
-Date: Tue, 5 Feb 2008 15:00:08 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Michael Gerdau <mgerdau@tiscali.de>
-Cc: Lee Revell <rlrevell@joe-job.com>, Chris Friesen <cfriesen@nortel.com>,
-       Giridhar Pemmasani <pgiri@yahoo.com>, Pavel Roskin <proski@gnu.org>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080205130008.GB21042@cs181133002.pp.htv.fi>
-References: <20080129225701.GS8767@does.not.exist> <75b66ecd0801301136n193fa44bg890ad4dab9b61eb5@mail.gmail.com> <20080130202821.GP29368@does.not.exist> <200801310200.49236.mgerdau@tiscali.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1751017AbYBENFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 08:05:23 -0500
+Date: Tue, 5 Feb 2008 14:05:17 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Message-ID: <20080205130517.GA35763@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"J. Bruce Fields" <bfields@fieldses.org>,
+	"Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Vladislav Bolkhovitin <vst@vlnb.net>,
+	Bart Van Assche <bart.vanassche@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Mike Christie <michaelc@cs.wisc.edu>
+References: <47A73C86.3060604@vlnb.net> <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain> <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204210121.GF18682@fieldses.org> <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org> <47A7986B.1070206@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801310200.49236.mgerdau@tiscali.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <47A7986B.1070206@garzik.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 02:00:31AM +0100, Michael Gerdau wrote:
-> > > > IANAL, and I would therefore ask a lawyer whether, and if yes under
-> > > > which circumstances, shipping a binary driver written for another OS
-> > > > dynamically linked into the Linux kernel would not be a criminal offense.
-> > > 
-> > > Please stop throwing around words like "criminal".  If this is in fact
-> > > illegal it would be a civil matter.
-> > 
-> > You are living in a country where copyright violations can't bring 
-> > people into jail?
+On Mon, Feb 04, 2008 at 05:57:47PM -0500, Jeff Garzik wrote:
+> iSCSI and NBD were passe ideas at birth.  :)
 > 
-> AFAICS you are misunderstanding the words "criminal" and "civil matter".
-> 
-> AFAIK in german law the difference between the two is that "criminal"
-> offences are prosecuted by the government out of their own accord while
-> "civil matters" require someone else to sue.
-> 
-> Murder and robbery are criminal offences.
-> 
-> Assuming the above is correct then copyright violations definitely are
-> "civil matters" in germany regardless whether you could go into jail or not.
+> Networked block devices are attractive because the concepts and 
+> implementation are more simple than networked filesystems... but usually 
+> you want to run some sort of filesystem on top.  At that point you might 
+> as well run NFS or [gfs|ocfs|flavor-of-the-week], and ditch your 
+> networked block device (and associated complexity).
 
-Please read a book or ask someone who knows what he is talking about to 
-explain the basics of legal systems to you.
+Call me a sysadmin, but I find easier to plug in and keep in place an
+ethernet cable than these parallel scsi cables from hell.  Every
+server has at least two ethernet ports by default, with rarely any
+surprises at the kernel level.  Adding ethernet cards is inexpensive,
+and you pretty much never hear of compatibility problems between
+cards.
 
-> Best,
-> Michael
+So ethernet as a connection medium is really nice compared to scsi.
+Too bad iscsi is demented and ATAoE/NBD inexistant.  Maybe external
+SAS will be nice, but I don't see it getting to the level of
+universality of ethernet any time soon.  And it won't get the same
+amount of user-level compatibility testing in any case.
 
-cu
-Adrian
+  OG.
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
