@@ -1,96 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757109AbYBERUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYBER1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757109AbYBERUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 12:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYBERTw
+	id S1755862AbYBER1n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 12:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYBER1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 12:19:52 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:35299 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbYBERTv convert rfc822-to-8bit (ORCPT
+	Tue, 5 Feb 2008 12:27:33 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56443 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbYBER1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 12:19:51 -0500
-Message-Id: <47A852E8.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 05 Feb 2008 10:13:28 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Daniel Walker" <dwalker@dwalker1.mvista.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: CPU hotplug and IRQ affinity with 2.6.24-rt1
-References: <47A7A131.8040800@qualcomm.com>
- <20080205025144.GA31774@dwalker1.mvista.com>
- <47A7A784.BA47.005A.0@novell.com>
- <20080205165936.GA18613@dwalker1.mvista.com>
-In-Reply-To: <20080205165936.GA18613@dwalker1.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Feb 2008 12:27:32 -0500
+Date: Tue, 5 Feb 2008 18:27:31 +0100
+From: Jan Kara <jack@suse.cz>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
+Message-ID: <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
+References: <20080131161417.GA29679@unused.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080131161417.GA29679@unused.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Feb 5, 2008 at 11:59 AM, in message
-<20080205165936.GA18613@dwalker1.mvista.com>, Daniel Walker
-<dwalker@dwalker1.mvista.com> wrote: 
-> On Mon, Feb 04, 2008 at 10:02:12PM -0700, Gregory Haskins wrote:
->> >>> On Mon, Feb 4, 2008 at  9:51 PM, in message
->> <20080205025144.GA31774@dwalker1.mvista.com>, Daniel Walker
->> <dwalker@dwalker1.mvista.com> wrote: 
->> > I get the following when I tried it,
->> > 
->> > BUG: sleeping function called from invalid context bash(5126) at
->> > kernel/rtmutex.c:638
->> > in_atomic():1 [00000001], irqs_disabled():1
->> 
->> Hi Daniel,
->>   Can you try this patch and let me know if it fixes your problem?
->> 
->> -----------------------
->> 
->> use rcu for root-domain kfree
->> 
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> 
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index e6ad493..77e86c1 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -339,6 +339,7 @@ struct root_domain {
->>         atomic_t refcount;
->>         cpumask_t span;
->>         cpumask_t online;
->> +       struct rcu_head rcu;
->> 
->>         /*
->>          * The "RT overload" flag: it gets set if a CPU has more than
->> @@ -6222,6 +6223,12 @@ sd_parent_degenerate(struct sched_domain *sd, struct 
-> sched_domain *parent)
->>         return 1;
->>  }
->> 
->> +/* rcu callback to free a root-domain */
->> +static void rq_free_root(struct rcu_head *rcu)
->> +{
->> +       kfree(container_of(rcu, struct root_domain, rcu));
->> +}
->> +
-> 
-> I looked at the code a bit, and I'm not sure you need this complexity..
-> Once you have replace the old_rq, there is no reason it needs to
-> protection of the run queue spinlock .. So you could just move the kfree
-> down below the spin_unlock_irqrestore() ..
+  Hello,
 
-Indeed.  When I looked last night at the stack, I thought the in_atomic was coming from further up in the trace.  I see the issue now, thanks Daniel.  (Anyone have a spare brown bag?)
+  Sorry for replying a bit late but I'm currently falling behind in
+maling-list reading...
 
--Greg
+> The way jbd tries to determine if there is enough space left on the journal in
+> order to start a new transaction is looking at the space left in the journal and
+> the space needed for the committing transaction, which is 1/4 of the journal +
+> the number of t_outstanding_credits for that transaction.  In this case its
+> assumed that t_outstanding_credits accurately represents the number of credits
+  Yes.
 
-> 
-> Daniel
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> waiting to be written to the journal, but this sometimes isn't the case.  The
+> transaction has two counters for buffers, t_outstanding_credits which is used in
+> conjunction with handles that are added to the transaction, and t_nr_buffers
+> which is only incremented/decremented when buffers are added/removed from the
+> transaction and are actually destined to be journaled.  Normally these two
+  t_nr_buffers actually represents number of buffers on BJ_Metadata list
+and nobody uses it (except for the assertion in
+__journal_temp_unlink_buffer()). t_outstanding_credits is supposed to be *the*
+counter making sure we don't write more than we have credits for.
 
+> counters are the same, however there are cases where the committing transaction
+> can have buffers moved to the next running transaction, for example any buffers
+> on the committing transactions t_reserved list would be moved to the next
+> (running) transaction, and if it had been dirtied in the process it would
+> immediately make it onto the t_updates list, which would increment t_nr_buffers
+  You probably mean t_buffers list here...
+> but not t_outstanding_credits.  So you get into this situation where
+  But which moving and dirtying do you mean? The caller which dirties
+the buffer must make sure that he has acquired enough credits for the
+transaction where the buffer ends up... So if there were not enough
+buffers in the running transaction where we refiled the buffer it is a
+bug in the caller which dirties the buffer.
 
+> t_nr_buffers (the actual number of buffers that are on the transaction) is
+> greater than the number of buffers accounted for via t_outstanding_credits.
+> This presents a problem since as we loop through writting buffers to the
+> journal, we decrement t_outstanding_credits, and if t_nr_buffers is more than
+> t_outstanding_credits then we end up with a negative number for
+> t_outstanding_credits, which means we start saying we need less than 1/4 of the
+> journal for our committing transaction and allow more transactions than we can
+> handle to start, and then bam we fail because journal_next_log_block doesn't
+> have enough free blocks in order to handle the request.  This has been tested
+> and fixes the issue (which could not be reproduced by me but several other
+> people could get it to reproduce using postmark), and although I couldn't
+> reproduce the assertion, I could very easily reproduce the situation where
+> t_outstanding_credits was < than t_nr_buffers.
+  I suppose you see the assertion J_ASSERT(journal->j_free > 1); to
+fail, right? I don't see how your patch could help avoid that assertion.
+You've just removed accounting of t_outstanding_credits which has no
+impact on the real number of free blocks in the journal stored in
+j_free. Anyway, if you can reproduce t_outstanding_credits <
+t_nr_buffers, then there's something fishy. Are you able to reproduce it
+also with a current kernel?
+  Thanks for looking into the problem :)
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
