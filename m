@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbYBEXet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761252AbYBEXfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761110AbYBEXet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 18:34:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763092AbYBEXeY
+	id S1761252AbYBEXfK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:35:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763389AbYBEXen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 18:34:24 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:43378 "EHLO
+	Tue, 5 Feb 2008 18:34:43 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:43588 "EHLO
 	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761115AbYBEXeX (ORCPT
+	with ESMTP id S1763372AbYBEXek (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 18:34:23 -0500
-Message-ID: <47A8F27D.3030004@web.de>
-Date: Wed, 06 Feb 2008 00:34:21 +0100
+	Tue, 5 Feb 2008 18:34:40 -0500
+Message-ID: <47A8F28E.6000102@web.de>
+Date: Wed, 06 Feb 2008 00:34:38 +0100
 From: Jan Kiszka <jan.kiszka@web.de>
 User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
@@ -19,129 +19,187 @@ To: Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        kgdb-bugreport@lists.sourceforge.net,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 2/3] KGDB_8250: consolidate config string
+Subject: [PATCH 3/3] KGDB: Update documentation
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1//AonUFPJ5tvySoYj3gS+5x01OmcBh+ylvqcGF
-	v7dUWWBtLZr6Q7SIaZhT4xO9wI1x48G+9k8FCJsO+uUU/ciG0G
-	mRxMH7oxA=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Provags-ID: V01U2FsdGVkX1/sDxrfkyTbxwXz4GvGsUy2/4bFzxHwom7AZuVG
+	To4WVNURvPFepuctgCAvGatg2p/TAHEXgDrzdrxpQb3nZie1tq
+	MMwpVsZHM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Merge mmio and mmap of the KGDB_8250 config string into mmio (with
-mapping semantic). I see no point in current mmio that accepts
-pre-mapped addresses from the user. Moreover, this conforms to the
-interface of 8250_early.
+Align KGDB's DocBook chapters with all previous changes. To avoid
+confusion, it removes references to the not-yet-merged KGDBOE driver.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
 ---
- drivers/serial/8250_kgdb.c |   36 ++++++++++++++----------------------
- lib/Kconfig.kgdb           |    2 +-
- 2 files changed, 15 insertions(+), 23 deletions(-)
+ Documentation/DocBook/kgdb.tmpl |  132 ++++++++++++++++------------------------
+ 1 file changed, 55 insertions(+), 77 deletions(-)
 
-Index: b/drivers/serial/8250_kgdb.c
+Index: b/Documentation/DocBook/kgdb.tmpl
 ===================================================================
---- a/drivers/serial/8250_kgdb.c
-+++ b/drivers/serial/8250_kgdb.c
-@@ -208,7 +208,7 @@ static int kgdb8250_uart_init(void)
- 
- /*
-  * Syntax for this cmdline option is:
-- *   <io|mmio|mmap>,<address>[/<regshift>],<baud rate>,<irq> or
-+ *   <io|mmio>,<address>[/<regshift>],<baud rate>,<irq> or
-  *   ttyS<n>,<baud rate>
-  */
- static int kgdb8250_parse_config(char *str)
-@@ -225,13 +225,9 @@ static int kgdb8250_parse_config(char *s
- 	if (!strncmp(str, "io", 2)) {
- 		kgdb8250_port.iotype = UPIO_PORT;
- 		str += 2;
--	} else if (!strncmp(str, "mmap", 4)) {
--		kgdb8250_port.iotype = UPIO_MEM;
--		kgdb8250_port.flags |= UPF_IOREMAP;
--		str += 4;
- 	} else if (!strncmp(str, "mmio", 4)) {
- 		kgdb8250_port.iotype = UPIO_MEM;
--		kgdb8250_port.flags &= ~UPF_IOREMAP;
-+		kgdb8250_port.flags = UPF_IOREMAP;
- 		str += 4;
- 	} else if (!strncmp(str, "ttyS", 4)) {
- 		str += 4;
-@@ -246,7 +242,7 @@ static int kgdb8250_parse_config(char *s
- 			if (late_init_passed)
- 				return err;
- 			printk(KERN_WARNING "kgdb8250: ttyS%d init delayed, "
--			       "use io|mmio|mmap syntax for early init.\n",
-+			       "use io/mmio syntax for early init.\n",
- 			       line);
- 			return 0;
- 		}
-@@ -272,14 +268,9 @@ static int kgdb8250_parse_config(char *s
- 
- 	if (kgdb8250_port.iotype == UPIO_PORT)
- 		kgdb8250_port.iobase = simple_strtoul(str, &str, 16);
--	else {
--		if (kgdb8250_port.flags & UPF_IOREMAP)
--			kgdb8250_port.mapbase =
--				(unsigned long) simple_strtoul(str, &str, 16);
--		else
--			kgdb8250_port.membase =
--				(void *) simple_strtoul(str, &str, 16);
--	}
-+	else
-+		kgdb8250_port.mapbase =
-+			(unsigned long)simple_strtoul(str, &str, 16);
- 
- 	if (*str == '/') {
- 		str++;
-@@ -362,11 +353,11 @@ static int kgdb8250_late_init(void)
- 	kgdb8250_uart_init();
- 
- 	/* Request memory/io regions that we use. */
--	if (kgdb8250_port.flags & UPF_IOREMAP) {
-+	if (kgdb8250_port.iotype == UPIO_MEM) {
- 		if (!request_mem_region(kgdb8250_port.mapbase,
- 					8 << kgdb8250_port.regshift, "kgdb"))
- 			goto rollback;
--	} else if (kgdb8250_port.iotype == UPIO_PORT) {
-+	} else {
- 		if (!request_region(kgdb8250_port.iobase,
- 				    8 << kgdb8250_port.regshift, "kgdb"))
- 			goto rollback;
-@@ -423,14 +414,15 @@ static void kgdb8250_cleanup(void)
- 
- 	fully_initialized = 0;
- 
--	if (kgdb8250_port.iotype == UPIO_PORT) {
-+	if (kgdb8250_port.iotype == UPIO_MEM) {
-+		if (kgdb8250_port.flags & UPF_IOREMAP)
-+			iounmap(kgdb8250_port.membase);
-+		release_mem_region(kgdb8250_port.mapbase,
-+				   8 << kgdb8250_port.regshift);
-+	} else {
- 		ioport_unmap(ioaddr);
- 		release_region(kgdb8250_port.iobase,
- 			       8 << kgdb8250_port.regshift);
--	} else if (kgdb8250_port.flags & UPF_IOREMAP) {
--		iounmap(kgdb8250_port.membase);
--		release_mem_region(kgdb8250_port.mapbase,
--				   8 << kgdb8250_port.regshift);
- 	}
- 
- 	/* Give the port back to the 8250 driver. */
-Index: b/lib/Kconfig.kgdb
-===================================================================
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -43,7 +43,7 @@ config KGDB_8250
- 	  passed as kernel or module parameter, respectively.  The
- 	  configuration comes in two flavors:
- 
--	  <io|mmio|mmap>,<address>[/<regshift>],<baud rate>,<irq>
-+	  <io|mmio>,<address>[/<regshift>],<baud rate>,<irq>
- 	    or
- 	  ttyS<n>,<baud rate>
- 
+--- a/Documentation/DocBook/kgdb.tmpl
++++ b/Documentation/DocBook/kgdb.tmpl
+@@ -77,23 +77,16 @@
+     and then select "KGDB: kernel debugging with remote gdb".
+     </para>
+     <para>
+-    The first choice for I/O is <symbol>CONFIG_KGDB_ONLY_MODULES</symbol>.
+-    This means that you will only be able to use KGDB after loading a
+-    kernel module that defines how you want to be able to talk with
+-    KGDB.  There are two other choices (more on some architectures) that
+-    can be enabled as modules later, if not picked here.
+-    </para>
+-    <para>The first of these is <symbol>CONFIG_KGDB_8250_NOMODULE</symbol>.
+-    This has sub-options such as <symbol>CONFIG_KGDB_SIMPLE_SERIAL</symbol>
+-    which toggles choosing the serial port by ttyS number or by specifying
+-    a port and IRQ number.
+-    </para>
+-    <para>
+-    The second of these choices on most systems for I/O is
+-    <symbol>CONFIG_KGDBOE</symbol>. This requires that the machine to be
+-    debugged has an ethernet card which supports the netpoll API, such as
+-    the cards supported by <symbol>CONFIG_E100</symbol>.  There are no
+-    sub-options for this, but a kernel command line option is required.
++    Next you should choose one of more I/O drivers to interconnect debugging
++    host and debugged target.  If debugging early boot steps is required,
++    at least one driver has to be built in.  I/O driver configuration takes
++    place via kernel or module parameters, see following chapter.
++    </para>
++    <para>
++    While KGDB is connect with the host, it can dump console messages over
++    this link.  This is specifically useful for collecting critical kernel
++    messages while only a single serial port is available.  Enable
++    <symbol>CONFIG_KGDB_CONSOLE</symbol> to activate this feature.
+     </para>
+   </chapter>
+   <chapter id="BootingTheKernel">
+@@ -103,54 +96,60 @@
+     wait for gdb connection during booting of a kernel.  If the
+     <symbol>CONFIG_KGDB_8250</symbol> driver is used (or if applicable,
+     another serial driver) this breakpoint will happen very early on, before
+-    console output.  If you wish to change serial port information and you
+-    have enabled both <symbol>CONFIG_KGDB_8250</symbol> and
+-    <symbol>CONFIG_KGDB_SIMPLE_SERIAL</symbol> then you must pass the option
+-    <constant>kgdb8250=&lt;io or mmio&gt;,&lt;address&gt;,&lt;baud
+-    rate&gt;,&lt;irq&gt;</constant> before <constant>kgdbwait</constant>.
+-    The values <constant>io</constant> or <constant>mmio</constant> refer to
+-    if the address being passed next needs to be memory mapped
+-    (<constant>mmio</constant>) or not. The <constant>address</constant> must
+-    be passed in hex and is the hardware address and will be remapped if
+-    passed as <constant>mmio</constant>. The value
+-    <constant>baud rate</constant> and <constant>irq</constant> are base-10.
+-    The supported values for <constant>baud rate</constant> are
+-    <constant>9600</constant>, <constant>19200</constant>,
+-    <constant>38400</constant>, <constant>57600</constant>, and
+-    <constant>115200</constant>.
++    console output.
+     </para>
+     <para>
+-    To have KGDB stop the kernel and wait, with the compiled values for the
+-    serial driver, pass in: <constant>kgdbwait</constant>.
++    The serial port configuration must be passed via the
++    option <constant>kgdb8250=&lt;io|mmio&gt;,&lt;address&gt;[/&lt;regshift&gt;],&lt;baud
++    rate&gt;,&lt;irq&gt;</constant>.  The values <constant>io</constant> or
++    <constant>mmio</constant> refer to if the address being passed next needs
++    to be memory mapped (<constant>mmio</constant>) or not.  The
++    <constant>address</constant> must be passed in hex and is the hardware
++    address and will be remapped if passed as <constant>mmio</constant>. An
++    optional <constant>regshift</constant> value can be given to express
++    address spreading of the 8250 registers. <constant>regshift</constant>
++    just as the succeeding <constant>baud rate</constant> and
++    <constant>irq</constant> values are base-10. The supported values for
++    <constant>baud rate</constant> are <constant>9600</constant>,
++    <constant>19200</constant>, <constant>38400</constant>,
++    <constant>57600</constant>, and <constant>115200</constant>.
+     </para>
+     <para>
+     To specify the values of the serial port at boot:
+-    <constant>kgdb8250=io,3f8,115200,3</constant>.
++    </para>
++    <para>
++    <constant>kgdb8250=io,3f8,115200,3</constant>
++    </para>
++    <para>
+     On IA64 this could also be:
++    </para>
++    <para>
+     <constant>kgdb8250=mmio,0xff5e0000,115200,74</constant>
+-    And to have KGDB also stop the kernel and wait for GDB to connect, pass in
+-    <constant>kgdbwait</constant> after this arguement.
+     </para>
+     <para>
+-    To configure the <symbol>CONFIG_KGDBOE</symbol> driver, pass in
+-    <constant>kgdboe=[src-port]@&lt;src-ip&gt;/[dev],[tgt-port]@&lt;tgt-ip&gt;/[tgt-macaddr]</constant>
+-    where:
+-    <itemizedlist>
+-      <listitem><para>src-port (optional): source for UDP packets (defaults to <constant>6443</constant>)</para></listitem>
+-      <listitem><para>src-ip: source IP to use (interface address)</para></listitem>
+-      <listitem><para>dev (optional): network interface (<constant>eth0</constant>)</para></listitem>
+-      <listitem><para>tgt-port (optional): port GDB will use (defaults to <constant>6442</constant>)</para></listitem>
+-      <listitem><para>tgt-ip: IP address GDB will be connecting from</para></listitem>
+-      <listitem><para>tgt-macaddr (optional): ethernet MAC address for logging agent (default is broadcast)</para></listitem>
+-    </itemizedlist>
+-    </para>
+-    <para>
+-    The <symbol>CONFIG_KGDBOE</symbol> driver can be reconfigured at run time,
+-    if <symbol>CONFIG_SYSFS</symbol> and <symbol>CONFIG_MODULES</symbol>
+-    are enabled, by echo'ing a new config string to
+-    <constant>/sys/module/kgdboe/parameter/kgdboe</constant>.  The
+-    driver can be unconfigured with the special string
+-    <constant>not_configured</constant>.
++    If the debugger is not needed early, the alternative configuration format
++    <constant>kgdb8250=ttyS&lt;n&gt;,&lt;baud rate&gt;</constant> can be used.
++    The required parameters are then obtained from the standard 8250 driver.
++    Example:
++    </para>
++    <para>
++    <constant>kgdb8250=ttyS0,115200</constant>
++    </para>
++    <para>
++    To configure the <symbol>CONFIG_KGDBOC</symbol> driver, just pass in
++    <constant>kgdboc=&lt;tty-device&gt;</constant>.  It will try to connect
++    to gdb over the given serial console.  Note that KGDBOC does not support
++    interrupting the target via the gdb remote protocol.  Instead you will
++    need to issue sysrq-g via the console or locally on the target.
++    </para>
++    <para>
++    All drivers can be reconfigured at run time, if
++    <symbol>CONFIG_SYSFS</symbol> and <symbol>CONFIG_MODULES</symbol> are
++    enabled, by echo'ing a new config string to
++    <constant>/sys/module/&lt;driver&gt;/parameter/&lt;option&gt;</constant>.
++    The driver can be unconfigured by passing an empty string.  You cannot
++    change the configuration while the debugger is attached.  In that case
++    issue the required <constant>detach</constant> command via gdb first.
+     </para>
+   </chapter>
+   <chapter id="ConnectingGDB">
+@@ -212,25 +211,4 @@
+       </para>
+ !Iinclude/linux/kgdb.h
+   </chapter>
+-  <chapter id="CommonBackEndOpt">
+-    <title>The common backend (optional)</title>
+-      <para>
+-      These functions are part of the common backend, found in kernel/kgdb.c
+-      and are optionally implemented.  Some functions (with _hw_ in the name)
+-      end up being required on arches which use hardware breakpoints.
+-      </para>
+-<!--
+-X!Ikernel/kgdb.c
+--->
+-  </chapter>
+-  <chapter id="DriverSpecificFunctions">
+-    <title>Driver-Specific Functions</title>
+-      <para>
+-      Some of the I/O drivers have additional functions that can be
+-      called, that are specific to the driver.  Calls from other places
+-      to these functions must be wrapped in #ifdefs for the driver in
+-      question.
+-      </para>
+-!Idrivers/serial/8250_kgdb.c
+-   </chapter>
+ </book>
