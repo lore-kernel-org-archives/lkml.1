@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYBETmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbYBETnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbYBETmz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYBETmm
+	id S1759605AbYBETnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758099AbYBETmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:42:42 -0500
-Received: from kallisti.us ([67.59.168.233]:34753 "EHLO kallisti.us"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356AbYBETml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:42:41 -0500
-X-Greylist: delayed 994 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 14:42:41 EST
-From: Ross Vandegrift <ross@kallisti.us>
-Date: Tue, 5 Feb 2008 14:25:59 -0500
-To: Glenn Griffin <ggriffin.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+	Tue, 5 Feb 2008 14:42:50 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:59561 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757923AbYBETms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:42:48 -0500
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Newall <davidn@davidnewall.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205192559.GA10573@kallisti.us>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <courier.47A8497B.0000472E@hawking.rebel.net.au>
+References: <20080125180232.GA4613@kroah.com>
+	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
+	 <47A5D9CD.5070001@davidnewall.com>
+	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
+	 <47A5E67D.9040804@davidnewall.com>
+	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>
+	 <courier.47A8497B.0000472E@hawking.rebel.net.au>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 20:43:09 +0100
+Message-Id: <1202240590.15090.119.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 10:29:28AM -0800, Glenn Griffin wrote:
-> > Syncookies are discouraged these days. They disable too many
-> > valuable TCP features (window scaling, SACK) and even without them
-> > the kernel is usually strong enough to defend against syn floods
-> > and systems have much more memory than they used to be.
-> >
-> > So I don't think it makes much sense to add more code to it, sorry.
+Hi David,
+
+> > I think you're missing my point: as long as the license stays the way
+> > it is now, you can never distribute proprietary code unless you've
+> > consulted a lawyer and even then you run the risk of being sued for
+> > infringement if the copyright holder thinks what you have is derived
+> > work.
 > 
-> As you say the kernel is usually strong enough to defend against syn flood
-> attacks, but what about the situations where it isn't?  As valuable as the TCP
-> features are I would give them up if it means I'm able to connect to my sshd
-> port when I otherwise would be unable to.  While increased synq sizes, better
-> dropping algorithms, and minisocks are a great way to mitigate the attacks and
-> in most cases are enough, there are situations where syncookies are nice.
-> 
-> Regardless, I would say as long as ipv4 has syncookie support it will
-> accurately be viewed as a deficiency of ipv6 if it lacks support.  So perhaps
-> the discussion should be we whether all the other defenses are enough to
-> warrant the removal of syncookie support from ipv4.  That topic may bring in
-> more opinions.
+> Yes I can, if the proprietary code is not linked with GPL code (and the 
+> proprietary code is original).  Loadable modules are not linked.  This is a 
+> very clear-cut case.
 
-Yes, syncookies, while presenting some tradeoffs, are a necessary tool
-to have.
+that is not clear-cut case. You link at run-time. Otherwise the module
+would do nothing.
 
-The problem is that any reasonably recent PC can generate enough
-forged SYN packets to overwhelm reasonable SYN queues on a much more
-powerful server.
+Regards
 
-Imagine a server with a few hundres Apache virtual hosts.  One website
-pisses off the wrong person and it impacts service for everyone.
-While syncookies isn't always enough, enabling it often helps
-make the server more resiliant during attacks.  And for web service, most
-of the connections are short-lived connections for small pieces of data -
-so I'm not really convinced that window scaling and selective ACK are all
-that important.
+Marcel
 
 
--- 
-Ross Vandegrift
-ross@kallisti.us
-
-"The good Christian should beware of mathematicians, and all those who
-make empty prophecies. The danger already exists that the mathematicians
-have made a covenant with the devil to darken the spirit and to confine
-man in the bonds of Hell."
-	--St. Augustine, De Genesi ad Litteram, Book II, xviii, 37
