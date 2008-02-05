@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbYBEUGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYBEUIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760502AbYBEUGa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:06:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760333AbYBEUGT
+	id S1760601AbYBEUIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYBEUIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:06:19 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60345 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760331AbYBEUGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:06:18 -0500
-Date: Tue, 5 Feb 2008 21:06:23 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: aic7xxx build failure
-Message-ID: <20080205200623.GA26798@uranus.ravnborg.org>
-References: <20080205174024.GE505@cs181133002.pp.htv.fi> <20080205184735.GA26270@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205184735.GA26270@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 5 Feb 2008 15:08:23 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:35815 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756186AbYBEUIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 15:08:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=L9Rugig3BtwrxHofmliZwD5E9Ip4ZsJEcIzQsCWwVEK9VvJuIUcQkT3sB28fUhXxX
+	BTSAZfxFvjQ/YMnj27+Lw==
+Date: Tue, 5 Feb 2008 12:06:50 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
+       mel@csn.ul.ie, kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+In-Reply-To: <20080205131517.1189104f.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0802051159310.5854@chino.kir.corp.google.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080202090914.GA27723@one.firstfloor.org> <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1202149243.5028.61.camel@localhost> <20080205143149.GA4207@csn.ul.ie> <1202225017.5332.1.camel@localhost>
+ <Pine.LNX.4.64.0802051011400.11705@schroedinger.engr.sgi.com> <1202236056.5332.17.camel@localhost> <Pine.LNX.4.64.0802051050300.12425@schroedinger.engr.sgi.com> <20080205131517.1189104f.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 07:47:35PM +0100, Sam Ravnborg wrote:
-> On Tue, Feb 05, 2008 at 07:40:24PM +0200, Adrian Bunk wrote:
-> > Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
-> > compilation:
-> > 
-> > <--  snip  -->
-> > 
-> > $ make O=../out/x86-full
-> > ...
-> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
-> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
-> >   CC      drivers/scsi/aic7xxx/aic79xx_core.o
-> > gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
-> > gcc: no input files
-> > make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
-> > 
-> > <--  snip  -->
-> > 
-> > Next "make" run brings the same failure in 
-> > drivers/scsi/aic7xxx/aic7xxx_core.c.
-> > 
-> > With the third "make" it works.
-> > 
-> > It might compile for people with SMP systems using -j?
+On Tue, 5 Feb 2008, Paul Jackson wrote:
+
+> Since any of those future patches only add optional modes
+> with new flags, while preserving current behaviour if you
+> don't use one of the new flags, therefore the current behavior
+> has to work as best it can.
 > 
-> I can reproduce it and will fix it.
-Seems I was sidetracked by some wrong assumptions.
-Could you please test this fix.
 
-Works for me but this time I will do more testing....
+There's a subtlety to this issue that allows it to be fixed and easily 
+extended for two upcoming changes:
 
-	Sam
+ - Paul Jackson's mempolicy and cpuset interactions change that will
+   probably allow set_mempolicy() callers to specify with a MPOL_*
+   flag whether they are referring to "dynamic" or "static" nodemasks[*],
+   and
 
-diff --git a/drivers/scsi/aic7xxx/Makefile b/drivers/scsi/aic7xxx/Makefile
-index 4c54954..6aa49e7 100644
---- a/drivers/scsi/aic7xxx/Makefile
-+++ b/drivers/scsi/aic7xxx/Makefile
-@@ -44,8 +44,8 @@ clean-files += aic79xx_seq.h aic79xx_reg.h aic79xx_reg_print.c
- 
- # Dependencies for generated files need to be listed explicitly
- 
--$(addprefix $(src)/,$(aic7xxx-y:.o=.c)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
--$(addprefix $(src)/,$(aic79xx-y:.o=.c)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
-+$(addprefix $(src)/,$(aic7xxx-y)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
-+$(addprefix $(src)/,$(aic79xx-y)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
- 
- aic7xxx-gen-$(CONFIG_AIC7XXX_BUILD_FIRMWARE)	:= $(obj)/aic7xxx_reg.h
- aic7xxx-gen-$(CONFIG_AIC7XXX_REG_PRETTY_PRINT)	+= $(obj)/aic7xxx_reg_print.c
+ - node hotplug (both add and remove) that will change the state of a
+   node with an identical id.
 
+Paul, with his patch, will need to preserve the "intent" of the mempolicy 
+as the nodemask that was passed by the user and attempt on all successive 
+rebinds to accomodate that intent as much as possible.
+
+So at the time of rebind it is quite simple to intersect the set of system 
+nodes that have memory with the intent of the mempolicy to yield the 
+effected nodemask.  This nodemask is saved in the mempolicy (pol->v.nodes 
+in this case for interleave) and only steps through the set of nodes that 
+can allow interleaved allocations.
+
+When the available nodes changes, either by cpuset change or node hotplug, 
+the rebind is quite simple when the intent is preserved.  So we're going 
+to need an additional nodemask_t added to struct mempolicy that saves this 
+intent and modify contextualize_policy() to allow it.  This will basically 
+make any set_mempolicy() call succeed even if the application does not 
+have access to any of the mempolicy nodes because it is possible that they 
+will become accessible in the future.  In that case the mempolicy is 
+effectively MPOL_DEFAULT until the desired nodes become available and it 
+is effected.
+
+		David
