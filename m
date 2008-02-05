@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbYBETWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbYBETWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759971AbYBETWW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759247AbYBETV6
+	id S1760225AbYBETWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbYBETWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:21:58 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:53497 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758694AbYBETV4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:21:56 -0500
-Message-ID: <47A8B757.10101@vlnb.net>
-Date: Tue, 05 Feb 2008 22:21:59 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mike Christie <michaelc@cs.wisc.edu>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	<1201639331.3069.58.camel@localhost.localdomain>	<47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>	<1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>	<1202144767.3096.38.camel@localhost.localdomain>	<47A7488B.4080000@vlnb.net>	<1202145901.3096.49.camel@localhost.localdomain>	<alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>	<1202151989.11265.576.camel@haakon2.linux-iscsi.org>	<alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>	<20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org> <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
-In-Reply-To: <47A8B510.8000807@garzik.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 14:22:33 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41445 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755912AbYBETWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:22:32 -0500
+Date: Tue, 5 Feb 2008 20:22:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] x86 updates
+Message-ID: <20080205192236.GA26426@uranus.ravnborg.org>
+References: <20080204161219.GA8092@elte.hu> <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->>> iSCSI is way, way too complicated. 
->>
->> I fully agree. From one side, all that complexity is unavoidable for 
->> case of multiple connections per session, but for the regular case of 
->> one connection per session it must be a lot simpler.
+On Tue, Feb 05, 2008 at 10:47:07AM -0800, Linus Torvalds wrote:
 > 
-> Actually, think about those multiple connections...  we already had to 
-> implement fast-failover (and load bal) SCSI multi-pathing at a higher 
-> level.  IMO that portion of the protocol is redundant:   You need the 
-> same capability elsewhere in the OS _anyway_, if you are to support 
-> multi-pathing.
+> 
+> Ingo, Thomas,
+>  should we not do this?
+> 
+> Otherwise, it seems we generate a section that isn't allocated?
+> 
+> I think toolchain should add the right flags automatically for sections 
+> that start with ".[ro]data" and ".text", but not for the kernel-specific 
+> ".init.*" sections.
 
-I'm thinking about MC/S as about a way to improve performance using 
-several physical links. There's no other way, except MC/S, to keep 
-commands processing order in that case. So, it's really valuable 
-property of iSCSI, although with a limited application.
+With a bit of help from the bin-utils people (Alan Modra) I recently
+discovered that the linker generate sections with different names
+when the flags differs, so fogetting "aw" casues the linekr to generate
+a section named .init.data.1 (or some other number).
+But I nevet got to investigate if ld does something magically
+with these autogenerated section names.
+But I added a check in modpost and it should warn about the
+code below.
 
-Vlad
+I would prefer the use of
+__CPUINITDATA
+__FINITDATA
+
+as defined in linux/init.h but otherwise - yes it should be fixed.
+With the use of __CPUINITDATA we can kill the ifdef too.
+
+	Sam
+
+So something like this (untested - sorry):
+I sneaked an extra ENTRY() in just to clean up a bit.
+
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 4f283ad..09b38d5 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -250,18 +250,13 @@ ENTRY(secondary_startup_64)
+ 	lretq
+ 
+ 	/* SMP bootup changes these two */
+-#ifndef CONFIG_HOTPLUG_CPU
+-	.pushsection .init.data
+-#endif
++	__CPUINITDATA
+ 	.align	8
+-	.globl	initial_code
+-initial_code:
++	ENTRY(initial_code)
+ 	.quad	x86_64_start_kernel
+-#ifndef CONFIG_HOTPLUG_CPU
+-	.popsection
+-#endif
+-	.globl init_rsp
+-init_rsp:
++	__FINITDATA
++
++	ENTRY(init_rsp)
+ 	.quad  init_thread_union+THREAD_SIZE-8
+ 
+ bad_address:
