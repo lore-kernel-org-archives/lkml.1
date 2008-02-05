@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYBESFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbYBESGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbYBESFY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYBESFM
+	id S1757845AbYBESGG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYBESFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:05:12 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60904 "EHLO amd.ucw.cz"
+	Tue, 5 Feb 2008 13:05:55 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:53749 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751756AbYBESFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:05:11 -0500
-Date: Tue, 5 Feb 2008 19:05:19 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Abel Bernabeu <abel.bernabeu@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: brk randomization breaks columns
-Message-ID: <20080205180519.GA1525@elf.ucw.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
+	id S1752077AbYBESFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:05:54 -0500
+Date: Tue, 5 Feb 2008 10:05:52 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: SLUB: Support for statistics to help analyze allocator behavior
+In-Reply-To: <Pine.LNX.4.64.0802050923220.14675@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0802051005010.11705@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0802050923220.14675@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 5 Feb 2008, Pekka J Enberg wrote:
 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 8295577..1c3b48f 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -241,7 +241,7 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
->  
->  	down_write(&mm->mmap_sem);
->  
-> -	if (brk < mm->end_code)
-> +	if (brk < mm->start_brk)
->  		goto out;
->  
->  	/*
+> Hi Christoph,
+> 
+> On Mon, 4 Feb 2008, Christoph Lameter wrote:
+> > The statistics provided here allow the monitoring of allocator behavior
+> > at the cost of some (minimal) loss of performance. Counters are placed in
+> > SLUB's per cpu data structure that is already written to by other code.
+> 
+> Looks good but I am wondering if we want to make the statistics per-CPU so 
+> that we can see the kmalloc/kfree ping-pong of, for example, hackbench 
 
-Sorry, I now tested the patch. It looked good to my untrained eyes,
-but upon testing it on columns:
+We could do that.... Any idea how to display that kind of information 
+in a meaningful way. Parameter conventions for slabinfo?
 
-...
-personality(PER_LINUX)                  = 4194304
-geteuid()                               = 1000
-getuid()                                = 1000
-getgid()                                = 1002
-getegid()                               = 1002
-brk(0x8054098)                          = 0x922d000
---- SIGSEGV (Segmentation fault) @ 0 (0) ---
-
-...it should have said -EINVAL or something like that.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
