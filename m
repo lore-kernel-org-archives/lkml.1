@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbYBEVkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbYBEVkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762601AbYBEVkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:40:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761694AbYBEViA
+	id S1762679AbYBEVkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761822AbYBEViH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:38:00 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:36272 "EHLO
+	Tue, 5 Feb 2008 16:38:07 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36274 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761656AbYBEVhx (ORCPT
+	with ESMTP id S1761730AbYBEVh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:37:53 -0500
-Message-Id: <20080205213703.641613411@szeredi.hu>
+	Tue, 5 Feb 2008 16:37:58 -0500
+Message-Id: <20080205213709.719200022@szeredi.hu>
 References: <20080205213616.343721693@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 05 Feb 2008 22:36:22 +0100
+Date: Tue, 05 Feb 2008 22:36:26 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 06/10] unprivileged mounts: allow unprivileged mounts
-Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-mounts.patch
+Subject: [patch 10/10] unprivileged mounts: add "no submounts" flag
+Content-Disposition: inline; filename=unprivileged-mounts-add-no-submounts-flag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-For "safe" filesystems allow unprivileged mounting and forced
-unmounting.
+Add a new mount flag "nosubmnt", which denies submounts for the owner.
+This would be useful, if we want to support traditional /etc/fstab
+based user mounts.
 
-A filesystem type is considered "safe", if mounting it by an
-unprivileged user may not cause a security problem.  This is somewhat
-subjective, so setting this property is left to userspace (implemented
-in the next patch).
-
-Since most filesystems haven't been designed with unprivileged
-mounting in mind, a thorough audit is recommended before setting this
-property.
-
-Make this a separate integer member in 'struct file_system_type'
-instead of a flag, since that is easier to handle by sysctl code.
-
-Move subtype handling from do_kern_mount() into do_new_mount().  All
-other callers are kernel-internal and do not need subtype support.
+In this case mount(8) would still have to be suid-root, to check the
+mountpoint against the user/users flag in /etc/fstab, but /etc/mtab
+would no longer be mandatory for storing the actual owner of the
+mount.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
@@ -49,205 +40,63 @@ Acked-by: Serge Hallyn <serue@us.ibm.com>
 
 Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/namespace.c	2008-02-04 23:48:00.000000000 +0100
-+++ linux/fs/namespace.c	2008-02-04 23:48:02.000000000 +0100
-@@ -1105,14 +1105,16 @@ static bool is_mount_owner(struct vfsmou
- /*
-  * umount is permitted for
-  *  - sysadmin
-- *  - mount owner, if not forced umount
-+ *  - mount owner
-+ *    o if not forced umount,
-+ *    o if forced umount, and filesystem is "safe"
-  */
- static bool permit_umount(struct vfsmount *mnt, int flags)
- {
- 	if (capable(CAP_SYS_ADMIN))
- 		return true;
- 
--	if (flags & MNT_FORCE)
-+	if ((flags & MNT_FORCE) && !(mnt->mnt_sb->s_type->fs_safe))
- 		return false;
- 
- 	return is_mount_owner(mnt, current->fsuid);
-@@ -1170,13 +1172,17 @@ asmlinkage long sys_oldumount(char __use
-  * - mountpoint is not a symlink
-  * - mountpoint is in a mount owned by the user
-  */
--static bool permit_mount(struct nameidata *nd, int *flags)
-+static bool permit_mount(struct nameidata *nd, struct file_system_type *type,
-+			 int *flags)
- {
- 	struct inode *inode = nd->path.dentry->d_inode;
- 
- 	if (capable(CAP_SYS_ADMIN))
- 		return true;
- 
-+	if (type && !type->fs_safe)
-+		return false;
-+
+--- linux.orig/fs/namespace.c	2008-02-04 23:48:08.000000000 +0100
++++ linux/fs/namespace.c	2008-02-04 23:48:10.000000000 +0100
+@@ -783,6 +783,7 @@ static void show_mnt_opts(struct seq_fil
+ 		{ MNT_NOATIME, ",noatime" },
+ 		{ MNT_NODIRATIME, ",nodiratime" },
+ 		{ MNT_RELATIME, ",relatime" },
++		{ MNT_NOSUBMNT, ",nosubmnt" },
+ 		{ 0, NULL }
+ 	};
+ 	const struct proc_fs_info *fs_infop;
+@@ -1189,6 +1190,9 @@ static bool permit_mount(struct nameidat
  	if (S_ISLNK(inode->i_mode))
  		return false;
  
-@@ -1430,7 +1436,7 @@ static int do_loopback(struct nameidata 
- 	struct vfsmount *mnt = NULL;
- 	int err;
- 
--	if (!permit_mount(nd, &flags))
-+	if (!permit_mount(nd, NULL, &flags))
- 		return -EPERM;
- 	if (!old_name || !*old_name)
- 		return -EINVAL;
-@@ -1611,30 +1617,76 @@ out:
- 	return err;
- }
- 
-+static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
-+{
-+	int err;
-+	const char *subtype = strchr(fstype, '.');
-+	if (subtype) {
-+		subtype++;
-+		err = -EINVAL;
-+		if (!subtype[0])
-+			goto err;
-+	} else
-+		subtype = "";
++	if (nd->path.mnt->mnt_flags & MNT_NOSUBMNT)
++		return false;
 +
-+	mnt->mnt_sb->s_subtype = kstrdup(subtype, GFP_KERNEL);
-+	err = -ENOMEM;
-+	if (!mnt->mnt_sb->s_subtype)
-+		goto err;
-+	return mnt;
-+
-+ err:
-+	mntput(mnt);
-+	return ERR_PTR(err);
-+}
-+
- /*
-  * create a new mount for userspace and request it to be added into the
-  * namespace's tree
-  */
--static int do_new_mount(struct nameidata *nd, char *type, int flags,
-+static int do_new_mount(struct nameidata *nd, char *fstype, int flags,
- 			int mnt_flags, char *name, void *data)
- {
-+	int err;
- 	struct vfsmount *mnt;
-+	struct file_system_type *type;
+ 	if (!is_mount_owner(nd->path.mnt, current->fsuid))
+ 		return false;
  
--	if (!type || !memchr(type, 0, PAGE_SIZE))
-+	if (!fstype || !memchr(fstype, 0, PAGE_SIZE))
- 		return -EINVAL;
+@@ -2033,9 +2037,11 @@ long do_mount(char *dev_name, char *dir_
+ 		mnt_flags |= MNT_RELATIME;
+ 	if (flags & MS_RDONLY)
+ 		mnt_flags |= MNT_READONLY;
++	if (flags & MS_NOSUBMNT)
++		mnt_flags |= MNT_NOSUBMNT;
  
--	/* we need capabilities... */
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
--
--	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
--	if (IS_ERR(mnt))
-+	type = get_fs_type(fstype);
-+	if (!type)
-+		return -ENODEV;
-+
-+	err = -EPERM;
-+	if (!permit_mount(nd, type, &flags))
-+		goto out_put_filesystem;
-+
-+	if (flags & MS_SETUSER) {
-+		err = reserve_user_mount();
-+		if (err)
-+			goto out_put_filesystem;
-+	}
-+
-+	mnt = vfs_kern_mount(type, flags & ~MS_SETUSER, name, data);
-+	if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
-+	    !mnt->mnt_sb->s_subtype)
-+		mnt = fs_set_subtype(mnt, fstype);
-+	put_filesystem(type);
-+	if (IS_ERR(mnt)) {
-+		if (flags & MS_SETUSER)
-+			dec_nr_user_mounts();
- 		return PTR_ERR(mnt);
-+	}
+-	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+-		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT);
++	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE | MS_NOATIME |
++		   MS_NODIRATIME | MS_RELATIME | MS_KERNMOUNT | MS_NOSUBMNT);
  
- 	if (flags & MS_SETUSER)
--		set_mnt_user(mnt);
-+		__set_mnt_user(mnt);
- 
- 	return do_add_mount(mnt, nd, mnt_flags, NULL);
-+
-+ out_put_filesystem:
-+	put_filesystem(type);
-+	return err;
- }
- 
- /*
-@@ -1665,7 +1717,7 @@ int do_add_mount(struct vfsmount *newmnt
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
- 
--	/* MNT_USER was set earlier */
-+	/* some flags may have been set earlier */
- 	newmnt->mnt_flags |= mnt_flags;
- 	if ((err = graft_tree(newmnt, nd)))
- 		goto unlock;
-Index: linux/fs/super.c
-===================================================================
---- linux.orig/fs/super.c	2008-02-04 23:47:46.000000000 +0100
-+++ linux/fs/super.c	2008-02-04 23:48:02.000000000 +0100
-@@ -925,29 +925,6 @@ out:
- 
- EXPORT_SYMBOL_GPL(vfs_kern_mount);
- 
--static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
--{
--	int err;
--	const char *subtype = strchr(fstype, '.');
--	if (subtype) {
--		subtype++;
--		err = -EINVAL;
--		if (!subtype[0])
--			goto err;
--	} else
--		subtype = "";
--
--	mnt->mnt_sb->s_subtype = kstrdup(subtype, GFP_KERNEL);
--	err = -ENOMEM;
--	if (!mnt->mnt_sb->s_subtype)
--		goto err;
--	return mnt;
--
-- err:
--	mntput(mnt);
--	return ERR_PTR(err);
--}
--
- struct vfsmount *
- do_kern_mount(const char *fstype, int flags, const char *name, void *data)
- {
-@@ -956,9 +933,6 @@ do_kern_mount(const char *fstype, int fl
- 	if (!type)
- 		return ERR_PTR(-ENODEV);
- 	mnt = vfs_kern_mount(type, flags, name, data);
--	if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
--	    !mnt->mnt_sb->s_subtype)
--		mnt = fs_set_subtype(mnt, fstype);
- 	put_filesystem(type);
- 	return mnt;
- }
+ 	/* ... and get the mountpoint */
+ 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
 Index: linux/include/linux/fs.h
 ===================================================================
---- linux.orig/include/linux/fs.h	2008-02-04 23:47:58.000000000 +0100
-+++ linux/include/linux/fs.h	2008-02-04 23:48:02.000000000 +0100
-@@ -1437,6 +1437,7 @@ int sync_inode(struct inode *inode, stru
- struct file_system_type {
- 	const char *name;
- 	int fs_flags;
-+	int fs_safe;
- 	int (*get_sb) (struct file_system_type *, int,
- 		       const char *, void *, struct vfsmount *);
- 	void (*kill_sb) (struct super_block *);
+--- linux.orig/include/linux/fs.h	2008-02-04 23:48:08.000000000 +0100
++++ linux/include/linux/fs.h	2008-02-04 23:48:10.000000000 +0100
+@@ -129,6 +129,7 @@ extern int dir_notify_enable;
+ #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
+ #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
+ #define MS_SETUSER	(1<<24) /* set mnt_uid to current user */
++#define MS_NOSUBMNT	(1<<25) /* don't allow unprivileged submounts */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
+ 
+Index: linux/include/linux/mount.h
+===================================================================
+--- linux.orig/include/linux/mount.h	2008-02-04 23:47:50.000000000 +0100
++++ linux/include/linux/mount.h	2008-02-04 23:48:10.000000000 +0100
+@@ -30,6 +30,7 @@ struct mnt_namespace;
+ #define MNT_NODIRATIME	0x10
+ #define MNT_RELATIME	0x20
+ #define MNT_READONLY	0x40	/* does the user want this to be r/o? */
++#define MNT_NOSUBMNT	0x80
+ 
+ #define MNT_SHRINKABLE	0x100
+ #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
 
 --
