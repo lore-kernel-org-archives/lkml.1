@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbYBEQDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbYBEQEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbYBEQDe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYBEQDZ
+	id S1758254AbYBEQEa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:04:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYBEQEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:03:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44172 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752162AbYBEQDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:03:24 -0500
-Date: Tue, 5 Feb 2008 17:02:14 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Abel Bernabeu <abel.bernabeu@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: brk randomization breaks columns
-Message-ID: <20080205160214.GD24331@elf.ucw.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
-MIME-Version: 1.0
+	Tue, 5 Feb 2008 11:04:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43342 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbYBEQET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:04:19 -0500
+Date: Tue, 5 Feb 2008 17:39:12 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080205163912.GB23145@one.firstfloor.org>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <20080205154213.059ac6e8@core>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080205154213.059ac6e8@core>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Still, it will probably not fix your particular program crashes, just 
-> because it will always assume that brk starts immediately after the end of 
-> the bss, which is plain wrong and has never been assured. Could you please 
-> check whether there is any compat-* package available for you 
-> distribution, that upgrades libc.so.5 to any fixed version?
-
-I got libc.so.5 as a binary from some Slackware-based system, IIRC,
-and I can't find any relevant compat-* packages :-(.
-
-> From: Jiri Kosina <jkosina@suse.cz>
+On Tue, Feb 05, 2008 at 03:42:13PM +0000, Alan Cox wrote:
+> > Syncookies are discouraged these days. They disable too many 
+> > valuable TCP features (window scaling, SACK) and even without them 
+> > the kernel is usually strong enough to defend against syn floods
+> > and systems have much more memory than they used to be.
 > 
-> brk: check the lower bound properly
+> Somewhat untrue. Network speeds have risen dramatically, the number of
+
+With strong I meant Linux has much better algorithms to handle the standard
+syn queue (syncookies was originally added when it had only dumb head drop) 
+and there are minisocks which also require significantly less overhead
+to manage than full sockets (less memory etc.) 
+
+When I wrote syncookies originally that all was not true.
+
+> appliances running Linux that are not PC class means memory has fallen
+> not risen and CPU has been pretty level.
 > 
-> There is a check in sys_brk(), that tries to make sure that we do not 
-> underflow the area that is dedicated to brk heap.
+> > So I don't think it makes much sense to add more code to it, sorry.
 > 
-> The check is however wrong, as it assumes that brk area starts immediately 
-> after the end of the code (+bss), which is wrong for example in 
-> environments with randomized brk start. The proper way is to check whether 
-> the address is not below the start_brk address.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> I think it makes a lot of sense 
 
-ACK.
+I have my doubts. It would be probably better to recheck everything
+and then remove syncookies.
 
+Also your sub PC class appliances rarely run LISTEN servers anyways
+that are open to the world.
 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 8295577..1c3b48f 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -241,7 +241,7 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
->  
->  	down_write(&mm->mmap_sem);
->  
-> -	if (brk < mm->end_code)
-> +	if (brk < mm->start_brk)
->  		goto out;
->  
->  	/*
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
