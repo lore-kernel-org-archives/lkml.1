@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbYBEDx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYBEEKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbYBEDx7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 22:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYBEDxu
+	id S1754048AbYBEEKA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 23:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYBEEJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 22:53:50 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58933 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751827AbYBEDxt (ORCPT
+	Mon, 4 Feb 2008 23:09:51 -0500
+Received: from numenor.qualcomm.com ([129.46.51.58]:56981 "EHLO
+	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750726AbYBEEJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 22:53:49 -0500
-Date: Mon, 4 Feb 2008 19:53:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Whine about suspicious return values from module's
- ->init() hook
-Message-Id: <20080204195318.bf653285.akpm@linux-foundation.org>
-In-Reply-To: <200802051443.31783.rusty@rustcorp.com.au>
-References: <20080204154215.GA26618@localhost.sw.ru>
-	<200802051443.31783.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Feb 2008 23:09:50 -0500
+Message-ID: <47A7E13D.6060709@qualcomm.com>
+Date: Mon, 04 Feb 2008 20:08:29 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       srostedt@redhat.com, ghaskins@novell.com
+Subject: Re: Integrating cpusets and cpu isolation [was Re: [CPUISOL] CPU
+ isolation extensions]
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	<1201511305.6149.30.camel@lappy>	<20080128085910.7d38e9f5.pj@sgi.com>	<479E20DA.2080403@qualcomm.com>	<20080128130637.60db148e.pj@sgi.com>	<47A21C53.2010502@qualcomm.com>	<20080202001612.98354ff2.pj@sgi.com>	<47A557E3.4080206@qualcomm.com>	<20080203015315.6053d3dd.pj@sgi.com>	<47A6AABD.7080006@qualcomm.com>	<20080204045429.7738c25c.pj@sgi.com>	<47A79D73.7080402@qualcomm.com> <20080204204650.1385ae3e.pj@sgi.com>
+In-Reply-To: <20080204204650.1385ae3e.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 14:43:31 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Tuesday 05 February 2008 02:42:15 Alexey Dobriyan wrote:
-> > One head-scratching session could be noticeably shorter with this patch...
-> >
-> > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> 
-> If we want to prevent > 0 returns, let's just BUG_ON().
-> 
 
-That risks killing previously-working setups.  WARN_ON is sufficient.
+Paul Jackson wrote:
+> Max K wrote:
+>>>     And for another thing, we already declare externs in cpumask.h for
+>>>     the other, more widely used, cpu_*_map variables cpu_possible_map,
+>>>     cpu_online_map, and cpu_present_map.
+>> Well, to address #2 and #3 isolated map will need to be exported as well.
+>> Those other maps do not really have much to do with the scheduler code.
+>> That's why I think either kernel/cpumask.c or kernel/cpu.c is a better place for them.
+> 
+> Well, if you have need it to be exported for #2 or #3, then that's ok
+> by me - export it.
+> 
+> I'm unaware of any kernel/cpumask.c.  If you meant lib/cpumask.c, then
+> I'd prefer you not put it there, as lib/cpumask.c just contains the
+> implementation details of the abstract data type cpumask_t, not any of
+> its uses.  If you mean kernel/cpuset.c, then that's not a good choice
+> either, as that just contains the implementation details of the cpuset
+> subsystem.  You should usually define such things in one of the files
+> using it, and unless there is clearly a -better- place to move the
+> definition, it's usually better to just leave it where it is.
+
+I was thinking of creating the new file kernel/cpumask.c. But it probably does not make sense 
+just for the masks. I'm now thinking kernel/cpu.c is the best place for it. It contains all 
+the cpu hotplug logic that deals with those maps at the very top it has stuff like
+
+/* Serializes the updates to cpu_online_map, cpu_present_map */
+static DEFINE_MUTEX(cpu_add_remove_lock);
+
+So it seems to make sense to keep the maps in there.
+
+Max
