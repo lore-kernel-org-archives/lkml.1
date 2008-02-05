@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbYBESVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbYBESWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759276AbYBESVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbYBESVF
+	id S1758848AbYBESWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbYBESWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:21:05 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:41903 "EHLO mail.dvmed.net"
+	Tue, 5 Feb 2008 13:22:23 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:41932 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753740AbYBESVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:21:03 -0500
-Message-ID: <47A8A90B.6010602@garzik.org>
-Date: Tue, 05 Feb 2008 13:20:59 -0500
+	id S1751484AbYBESWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:22:22 -0500
+Message-ID: <47A8A95B.4060905@garzik.org>
+Date: Tue, 05 Feb 2008 13:22:19 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: netdev@vger.kernel.org, michael.pyne@kdemail.net, AAbdulla@nvidia.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
- (regression in 2.6.23)
-References: <200802050746.m157ktY9010399@imap1.linux-foundation.org>
-In-Reply-To: <200802050746.m157ktY9010399@imap1.linux-foundation.org>
+To: Rami Rosen <ramirose@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] [PPPOL2TP] Label unused warning when CONFIG_PROC_FS is
+ not set.
+References: <eb3ff54b0802050415h3c4672b1r7048143b599303dd@mail.gmail.com>
+In-Reply-To: <eb3ff54b0802050415h3c4672b1r7048143b599303dd@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,58 +30,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> From: Michael Pyne <michael.pyne@kdemail.net>
+Rami Rosen wrote:
+> Hi,
 > 
-> Partially revert a change to mac address detection introduced to the forcedeth
-> driver.  The change was intended to correct mac address detection for newer
-> nVidia chipsets where the mac address was stored in reverse order.  One of
-> those chipsets appears to still have the mac address in reverse order (or at
-> least, it does on my system).
+> When CONFIG_PROC_FS is not set and CONFIG_PPPOL2TP is set,
+> we have the following warning in build:
+>   drivers/net/pppol2tp.c: In function 'pppol2tp_init':
+>   drivers/net/pppol2tp.c:2472: warning: label
+> 'out_unregister_pppox_proto' defined but not used
 > 
-> The change that broke mac address detection for my card was commit
-> ef756b3e56c68a4d76d9d7b9a73fa8f4f739180f "forcedeth: mac address correct"
+> This patches fixes this warning by adding appropriate #ifdef.
 > 
-> My network card is an nVidia built-in Ethernet card, output from lspci as
-> follows (with text and numeric ids):
-> $ lspci | grep Ethernet
-> 00:07.0 Bridge: nVidia Corporation MCP61 Ethernet (rev a2)
-> $ lspci -n | grep 07.0
-> 00:07.0 0680: 10de:03ef (rev a2)
+> Regards,
+> Rami Rosen
 > 
-> The vendor id is, of course, nVidia.  The device id corresponds to the
-> NVIDIA_NVENET_19 entry.
 > 
-> The included patch fixes the MAC address detection on my system.
-> Interestingly, the MAC address appears to be in the range reserved for my
-> motherboard manufacturer (Gigabyte) and not nVidia.
-> 
-> Signed-off-by: Michael J. Pyne <michael.pyne@kdemail.net>
-> Cc: Jeff Garzik <jeff@garzik.org>
-> Cc: Ayaz Abdulla <aabdulla@nvidia.com>
-> Cc: <stable@kernel.org>
-> 
-> On Wed, 21 Nov 2007 15:34:52 -0800
-> "Ayaz Abdulla" <AAbdulla@nvidia.com> wrote:
-> 
->> The solution is to get the OEM to update their BIOS (instead of
->> integrating this patch) since the MCP61 specs indicate that the MAC
->> Address should be in correct order from BIOS.
->>
->> By changing the feature DEV_HAS_CORRECT_MACADDR to all MCP61 boards, it
->> could cause it to break on other OEM systems who have implemented it
->> correctly.
->>
-> 
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-
-NAK - this fixes one set of users, and breaks a working set of users.
-
-Need to add DMI check for the specific motherboard (dmi_check_system), 
-and flip flag according to success/failure of that check.
-
-	Jeff
+> Signed-off-by: Rami Rosen <ramirose@gmail.com>
 
 
-
+David or Paul, wanna pick this up?
 
