@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbYBESzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759159AbYBESzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbYBESzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYBESzM
+	id S1759159AbYBESzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbYBESzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:55:12 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:48642 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYBESzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:55:11 -0500
-Date: Tue, 5 Feb 2008 19:55:11 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: SLUB: Support for statistics to help analyze allocator behavior
-Message-Id: <20080205195511.b396ea4b.dada1@cosmosbay.com>
-In-Reply-To: <Pine.LNX.4.64.0802051007270.11705@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0802050923220.14675@sbz-30.cs.Helsinki.FI>
-	<47A81513.4010301@cosmosbay.com>
-	<Pine.LNX.4.64.0802050952300.16488@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0802051007270.11705@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 13:55:20 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:60587 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755474AbYBESzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:55:18 -0500
+Date: Tue, 5 Feb 2008 13:55:17 -0500
+To: Robin Lee Powell <rlpowell@digitalkingdom.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: Monthly md check == hung machine; how do I debug?
+Message-ID: <20080205185517.GE26259@csclub.uwaterloo.ca>
+References: <20080203212155.GF12173@digitalkingdom.org> <200802042140.55521.nickpiggin@yahoo.com.au> <20080205171005.GA9284@digitalkingdom.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205171005.GA9284@digitalkingdom.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 10:08:00 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Tue, 5 Feb 2008, Pekka J Enberg wrote:
+On Tue, Feb 05, 2008 at 09:10:05AM -0800, Robin Lee Powell wrote:
+> On Mon, Feb 04, 2008 at 09:40:55PM +1100, Nick Piggin wrote:
+> > On Monday 04 February 2008 08:21, Robin Lee Powell wrote:
+> > > I've got a machine with a 4 disk SATA raid10 configuration using
+> > > md. The entire disk is loop-AES encrypted, but that shouldn't
+> > > matter here.
+> > >
+> > > Once a month, Debian runs:
+> > >
+> > >     /usr/share/mdadm/checkarray --cron --all --quiet
+> > >
+> > > and the machine hangs within 30 minutes of that starting.
+> > >
+> > > It seems that I can avoid the hang by not having "mdadm
+> > > --monitor" running, but I'm not certain if that's the case or if
+> > > I've just been lucky this go-round.
+> > >
+> > > I'm on kernel 2.6.23.1, my own compile thereof, x86_64, AMD
+> > > Athlon(tm) 64 Processor 3700+.
+> > >
+> > > I've looked through all the 2.6.23 and 2.6.24 Changelogs, and I
+> > > can't find anything that looks relevant.
+> > >
+> > > So, how can I (help you all) debug this?
+> > 
+> > Do you have a serial console? Does it respond to pings?
 > 
-> > Heh, sure, but it's not exported to userspace which is required for 
-> > slabinfo to display the statistics.
+> No and yes.
 > 
-> Well we could do the same as for numa stats. Output the global count and 
-> then add
+> > Can you try to get sysrq+T traces, and sysrq+P traces, and post
+> > them?
 > 
-> c<proc>=count
+> I played with those after you suggested it, but without serial
+> console had no way to capture them.
 > 
+> I was able to solve the problem, however, like so:
 
-Yes, or the reverse, to avoid two loops and possible sum errors (Sum of c<proc>=count different than the global count)
+I tend to adjust the max disk speed raid is allowed to use, since the
+default of 200MB/s makes the system close to unusable while it is taking
+place.  Could having slow disk access be causing things to lock up?
 
-Since text##_show is going to be too big, you could use one function instead of several ones ?
+Things made much more sense some years ago when the default was 10MB/s
+or something along those lines.
 
-(and char *buf is PAGE_SIZE, so you should add a limit ?)
+Who has 200MB/s capable hardware anyhow?
 
-Note I used for_each_possible_cpu() here instead of 'online' variant, or stats might be corrupted when a cpu goes offline.
-
-static ssize_t text_show(struct kmem_cache *s, char *buf, unsigned int si)
-{								
-	unsigned long val, sum = 0;					
-	int cpu;
-	size_t off = 0;						
-	size_t buflen = PAGE_SIZE;
-								
-	for_each_possible_cpu(cpu) {				
-		val = get_cpu_slab(s, cpu)->stat[si];
-#ifdef CONFIG_SMP
-		if (val)
-			off += snprintf(buf + off, buflen - off, "c%d=%lu ", cpu, val);
-#endif
-		sum += val;		
-        }
-	off += snprintf(buf + off, buflen - off, "%lu\n", sum);			
-	return off;
-}								
-
-
+--
+Len Sorensen
