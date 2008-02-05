@@ -1,105 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYBEE4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYBEE7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbYBEE4T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 23:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYBEE4F
+	id S1755352AbYBEE7l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 23:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYBEE7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 23:56:05 -0500
-Received: from garbage.rmnet.it ([82.145.99.230]:46401 "EHLO garbage.rmnet.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870AbYBEE4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 23:56:02 -0500
-X-Greylist: delayed 650 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Feb 2008 23:56:01 EST
-User-Agent: Microsoft-Entourage/11.3.6.070618
-Date: Tue, 05 Feb 2008 05:43:10 +0100
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux
- kernel
-From: Matteo Tescione <matteo@rmnet.it>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>
-CC: Mike Christie <michaelc@cs.wisc.edu>, Vladislav Bolkhovitin <vst@vlnb.net>,
-       <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       <scst-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-ID: <C3CDA7EE.5784%matteo@rmnet.it>
-Thread-Topic: [Scst-devel] Integration of SCST in the mainstream Linux
- kernel
-Thread-Index: AchnsZsn2fwOENOkEdyg7QAZ4zZdpQ==
-In-Reply-To: <alpine.LFD.1.00.0802041620110.3237@woody.linux-foundation.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-RMnet-garbage-MailScanner: Found to be clean
-X-RMnet-garbage-MailScanner-SpamCheck: non spam,
-	SpamAssassin (punteggio=-1.799, necessario 4.5, autolearn=not spam,
-	ALL_TRUSTED -1.80, BAYES_50 0.00)
+	Mon, 4 Feb 2008 23:59:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51355 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbYBEE7c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 23:59:32 -0500
+Date: Mon, 4 Feb 2008 20:57:59 -0800
+From: Greg KH <greg@kroah.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SH/Dreamcast - fix regressions, whitespace and memory
+	leaks in Maple Bus driver
+Message-ID: <20080205045759.GA19282@kroah.com>
+References: <1202068847.6262.7.camel@localhost.localdomain> <20080204052900.GB7585@kroah.com> <1202113675.6489.6.camel@localhost.localdomain> <20080204161437.GA20739@kroah.com> <1202164657.7046.5.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202164657.7046.5.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-And sorry for intrusion, i am not a developer but i work everyday with iscsi
-and i found it fantastic.
-Altough Aoe, Fcoe and so on could be better, we have to look in real world
-implementations what is needed *now*, and if we look at vmware world,
-virtual iron, microsoft clustering etc, the answer is iSCSI.
-And now, SCST is the best open-source iSCSI target. So, from an end-user
-point of view, what are the really problems to not integrate scst in the
-mainstream kernel?
+On Mon, Feb 04, 2008 at 10:37:37PM +0000, Adrian McMenamin wrote:
+> 
+> On Mon, 2008-02-04 at 08:14 -0800, Greg KH wrote:
+> > On Mon, Feb 04, 2008 at 08:27:55AM +0000, Adrian McMenamin wrote:
+> > > 
+> > > On Sun, 2008-02-03 at 21:29 -0800, Greg KH wrote:
+> > > > On Sun, Feb 03, 2008 at 08:00:47PM +0000, Adrian McMenamin wrote:
+> > > > > From: Adrian McMenamin
+> > > > > 
+> > > > > This patch fixes the regression noted here:
+> > > > > http://lkml.org/lkml/2008/1/26/189 as well as whitespace issues in the
+> > > > > previous commit of this driver and the memory leaks noted here:
+> > > > > http://lkml.org/lkml/2008/2/2/143 (as well as one or two other minor
+> > > > > cleanups).
+> > > > 
+> > > > Which portion of the patch fixes the kobject WARN_ON()?
+> > > 
+> > > 
+> > > 
+> > > +	if (mdev->registered == 0) {
+> > > +		retval = device_register(&mdev->dev);
+> > > +		if (retval) {
+> > > +			printk(KERN_INFO
+> > > +			"Maple bus: Attempt to register device"
+> > > +			" (%x, %x) failed.\n",
+> > > +			mdev->port, mdev->unit);
+> > > +			maple_free_dev(mdev);
+> > > +			mdev = NULL;
+> > > +			return;
+> > > +		}
+> > > +		mdev->registered = 1;
+> > > +	}
+> > >  }
+> > > 
+> > > 
+> > > Specifically the check on mdev->registered
+> > 
+> > So the code path could cause devices to be registered more than once?
+> > That seems broken, as no other bus that I know of needs such a check :(
+> > 
+> > Is there a way to fix the root problem here, instead of this type of
+> > change?
+> > 
+> 
+> The hardware is very flaky. If I add in delays to the bus start, it will
+> detect the devices, but it's not brilliant. Registering an empty device
+> got round that problem, at the price of testing for the earlier
+> registration.
 
-Just my two cent,
---
-So long and thank for all the fish
---
-#Matteo Tescione
-#RMnet srl
+That sounds like you are just papering over the problem.  Just delay
+and let the hardware settle down if needed :)
 
+thanks,
 
-> 
-> 
-> On Mon, 4 Feb 2008, Matt Mackall wrote:
->> 
->> But ATAoE is boring because it's not IP. Which means no routing,
->> firewalls, tunnels, congestion control, etc.
-> 
-> The thing is, that's often an advantage. Not just for performance.
-> 
->> NBD and iSCSI (for all its hideous growths) can take advantage of these
->> things.
-> 
-> .. and all this could equally well be done by a simple bridging protocol
-> (completely independently of any AoE code).
-> 
-> The thing is, iSCSI does things at the wrong level. It *forces* people to
-> use the complex protocols, when it's a known that a lot of people don't
-> want it. 
-> 
-> Which is why these AoE and FCoE things keep popping up.
-> 
-> It's easy to bridge ethernet and add a new layer on top of AoE if you need
-> it. In comparison, it's *impossible* to remove an unnecessary layer from
-> iSCSI.
-> 
-> This is why "simple and low-level is good". It's always possible to build
-> on top of low-level protocols, while it's generally never possible to
-> simplify overly complex ones.
-> 
-> Linus
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2008.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> _______________________________________________
-> Scst-devel mailing list
-> Scst-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/scst-devel
-> 
-
-
+greg k-h
