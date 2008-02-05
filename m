@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbYBESk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbYBESlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759207AbYBESk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYBESkT
+	id S1759314AbYBESlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYBESlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:40:19 -0500
-Received: from mx.mccann.com.mk ([217.16.69.3]:35537 "EHLO on.net.mk"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756350AbYBESkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:40:17 -0500
-X-Greylist: delayed 3604 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 13:40:17 EST
-From: =?utf-8?b?0JTQsNC80ZjQsNC9INCT0LXQvtGA0LPQuNC10LLRgdC60Lg=?= 
-	<penguinista@mail.net.mk>
-Organization: =?utf-8?b?0KHQu9C+0LHQvtC00LXQvSDRgdC+0YTRgtCy0LXRgA==?=
- =?utf-8?b?INCc0LDQutC10LTQvtC90LjRmNCw?=
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: PCIE ASPM support hangs my laptop pretty often
-Date: Tue, 5 Feb 2008 18:40:04 +0100
-User-Agent: KMail/1.9.7
-Cc: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 13:41:08 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:50367 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755134AbYBESlH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:41:07 -0500
+Date: Tue, 5 Feb 2008 21:40:42 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: adaplas@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] fb: fix warning: no return statement in function returning non-void
+Message-ID: <20080205184042.GA16247@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200802051840.05237.penguinista@mail.net.mk>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've patched my kernel with the PCIe ASPM and after setting
-echo powersave > /sys/module/pcie_aspm/parameters/policy
+Warning is reproducible with selected FB_CFB_REV_PIXELS_IN_BYTE.
 
-I started to experience random hangs of my laptop.
-Hardware info:
-Thinkpad x60s 1704-5UG
-also tested on a firends X60s 1702-F6U
+  CC      drivers/video/sysfillrect.o
+In file included from drivers/video/sysfillrect.c:18:
+drivers/video/fb_draw.h: In function ‘fb_rev_pixels_in_long’:
+drivers/video/fb_draw.h:94: warning: no return statement in function returning non-void
+  CC      drivers/video/syscopyarea.o
+In file included from drivers/video/syscopyarea.c:22:
+drivers/video/fb_draw.h: In function ‘fb_rev_pixels_in_long’:
+drivers/video/fb_draw.h:94: warning: no return statement in function returning non-void
 
-Kernel is 2.6.24 + these patches:
- tuxonice 3.0-rc5
- thinkpad_acpi v0.19-20080107
- tp_smapi 0.36
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/video/fb_draw.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-
+diff --git a/drivers/video/fb_draw.h b/drivers/video/fb_draw.h
+index cdafbe1..a2a0618 100644
+--- a/drivers/video/fb_draw.h
++++ b/drivers/video/fb_draw.h
+@@ -91,6 +91,7 @@ static inline unsigned long fb_rev_pixels_in_long(unsigned long val,
+ 		val = comp(val >> 2, val << 2, REV_PIXELS_MASK2);
+ 	if (bswapmask & 3)
+ 		val = comp(val >> 4, val << 4, REV_PIXELS_MASK4);
++	return val;
+ }
+ 
+ static inline u32 fb_shifted_pixels_mask_u32(u32 index, u32 bswapmask)
 -- 
-Damjan Georgievski
+1.5.2.2
