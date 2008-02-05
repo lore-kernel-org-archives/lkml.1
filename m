@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762644AbYBEXOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbYBEXPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762644AbYBEXOt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 18:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYBEXOk
+	id S1763133AbYBEXPc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759378AbYBEXPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 18:14:40 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34371 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756042AbYBEXOj (ORCPT
+	Tue, 5 Feb 2008 18:15:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36855 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755615AbYBEXPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 18:14:39 -0500
-References: <20080125180232.GA4613@kroah.com>
-            <20080202123710.42df1aa0@weinigel.se>
-            <20080202191930.GA19826@kroah.com>
-            <20080203124849.0226560f@weinigel.se>
-            <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>
-            <47A5F418.6030104@weinigel.se>
-            <20080203231530.GB15692@kroah.com>
-In-Reply-To: <20080203231530.GB15692@kroah.com>
-From: David Newall <davidn@davidnewall.com>
-To: Greg KH <greg@kroah.com>
-Cc: Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Date: Wed, 06 Feb 2008 09:44:36 +1030
+	Tue, 5 Feb 2008 18:15:22 -0500
+Date: Tue, 5 Feb 2008 15:14:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [X86 ACPI SMP] system slow after cold start if processor module
+ loaded
+Message-Id: <20080205151451.a47535c2.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802021558340.5546@axis700.grange>
+References: <Pine.LNX.4.64.0802021558340.5546@axis700.grange>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <courier.47A8EDDC.0000785F@hawking.rebel.net.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH writes:
-> No, it really is not a gray area at all, especially when you are writing
-> a new driver for Linux.  Go talk to a lawyer if you want the details.
+On Sat, 2 Feb 2008 16:05:41 +0100 (CET)
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-If we're still talking about whether a kernel module is required to be 
-released under GPL, then yes, this is not a gray area.  This is something 
-that authors of original works can decide for themselves.  They have no 
-obligation to release under GPL, however they must take special care to 
-ensure that the module does not (statically) link with the kernel.  Richard 
-Stallman (apparently, according to Pavel Roskin, although he didn't forward 
-Richard's message as requested) said it nicely: 
+> Hi
+> 
+> Don't know if this should be considered a bug-report, or just another ACPI 
+> bug on my system. In any case, if the CONFIG_ACPI_PROCESSOR is enabled, on 
+> first boot after a power off the system is slow. Not like if only 1 of 2 
+> CPUs actually was running, much slower yet. Respectively, if the module is 
+> built into the kernel, it is slow more or less from the beginning - I 
+> guess, from the moment, when the module is initialized, if built as a 
+> module, it is slow after the module gets loaded. Also funny, it is only 
+> slow on the first boot, after a reboot into the same kernel it runs 
+> normally. The system is a dual P-II@400MHz, Compaq AP400. It is known to 
+> have various ACPI bugs, so, this is just another one of them. No idea 
+> whether or not this shall and can be fixed. At least wanted to document it 
+> in case someone has a similar problem.
+> 
 
-According to Pavel Roskin, Richard Stallman said:
-> It is not in general the case that "dynamic linking cannot violate the
-> GPL".  It depends on circumstances.  Running a non-free program in a
-> process in a GNU/Linux system is not linking of any kind with Linux.
-> The program probably links with GNU libc, but the license of GNU libc
-> permits that.
+(added linux-acpi)
 
-A kernel module is akin to a process.  It uses services of the kernel 
-without being part of the kernel.  However in order to use the kernel it 
-might very well statically link with kernel support functions, such as 
-copy_from_user().  This, it may not do without garnering a requirement to be 
-released under GPL.  That being said, a module can be written such that it 
-only dynamically links with the kernel.  Ndiswrapper is an example of how 
-this can be done: None of the drivers that work under ndiswrapper make any 
-direct use of the kernel, not in any way, indeed a wrapper could be written 
-for a different operating system.  There is no obligation for ndis drivers 
-to be released under GPL, and even though they are not, they break no 
-licence condition by calling services, even those exported as GPL-only. 
+If nothing happens with this (likely) then please raise a report against
+acpi at bugzilla.kernel.org, thanks.
 
-Bringing this back to the point, the notion that some exported symbols may 
-be accessed by proprietary modules and others can't is wrong.  The licence 
-under which Linux is released makes no mention of this possibility, and so 
-no such condition exists.  In order to prevent proprietary modules from 
-using a symbol, that symbol must be provided in such a way that a second 
-module can only statically link to it.  I think that precludes exporting it 
-via EXPORT_SYMBOL or EXPORT_SYMBOL_GPL. 
-
-Summarising the point: To claim all USB drivers must be released under GPL 
-is wrong.
