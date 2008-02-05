@@ -1,173 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbYBEB07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbYBEB2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758474AbYBEB07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 20:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbYBEB0v
+	id S1758872AbYBEB2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 20:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYBEB2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 20:26:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47697 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755044AbYBEB0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 20:26:50 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Small pm documentation cleanups
-Date: Tue, 5 Feb 2008 02:24:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       Len Brown <len.brown@intel.com>
-References: <20080204234700.GA1912@elf.ucw.cz>
-In-Reply-To: <20080204234700.GA1912@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 4 Feb 2008 20:28:03 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:44100 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753732AbYBEB2C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 20:28:02 -0500
+Subject: Re: Commit f06e4ec breaks vmware
+From: Zachary Amsden <zach@vmware.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       petr@vandrovec.name, Glauber de Oliveira Costa <gcosta@redhat.com>
+In-Reply-To: <20080204153631.GA30943@elte.hu>
+References: <Pine.LNX.4.64.0802020120150.18790@fbirervta.pbzchgretzou.qr>
+	 <20080204115144.GA17850@elte.hu>
+	 <b6a2187b0802040601s76222435t306aef2059cbbb2b@mail.gmail.com>
+	 <20080204145311.GB13154@elte.hu>
+	 <b6a2187b0802040730y44580594i56b26ed0fcb8292e@mail.gmail.com>
+	 <20080204153631.GA30943@elte.hu>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 17:31:46 -0800
+Message-Id: <1202175106.28740.4.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802050224.51039.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len, please pick this up, thanks.
 
-On Tuesday, 5 of February 2008, Pavel Machek wrote:
+On Mon, 2008-02-04 at 16:36 +0100, Ingo Molnar wrote:
+> * Jeff Chua <jeff.chua.linux@gmail.com> wrote:
 > 
-> Small documentation fixes/additions that accumulated in my tree.
+> > On Feb 4, 2008 10:53 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > commit 8d947344c47a40626730bb80d136d8daac9f2060
+> > > > Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+> > > > Date:   Wed Jan 30 13:31:12 2008 +0100
+> > > >
+> > > >     x86: change write_idt_entry signature
+> > >
+> > > does the patch below ontop of x86.git#mm fix this?
+> > 
+> > 
+> > > 32-bit or 64-bit guest kernel?
+> > 
+> > 32-bit.
+> > 
+> > Yep, this fixed the problem.
 > 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index cf38689..3be3328 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -147,8 +147,10 @@ and is between 256 and 4096 characters. 
->  			default: 0
->  
->  	acpi_sleep=	[HW,ACPI] Sleep options
-> -			Format: { s3_bios, s3_mode }
-> -			See Documentation/power/video.txt
-> +			Format: { s3_bios, s3_mode, s3_beep }
-> +			See Documentation/power/video.txt for s3_bios and s3_mode.
-> +			s3_beep is for debugging; it beeps on PC speaker as soon as
-> +			kernel's real-mode entry point is called.
->  
->  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
->  			Format: { level | edge | high | low }
-> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-> index aea7e92..d3e5e4e 100644
-> --- a/Documentation/power/swsusp.txt
-> +++ b/Documentation/power/swsusp.txt
-> @@ -386,6 +386,11 @@ before suspending; then remount them aft
->  There is a work-around for this problem.  For more information, see
->  Documentation/usb/persist.txt.
->  
-> +Q: Can I suspend-to-disk using a swap partition under LVM?
-> +
-> +A: No. You can suspend successfully, but you'll not be able to
-> +resume. uswsusp should be able to work with LVM, see suspend.sf.net.
-> +
->  Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
->  compiled with the similar configuration files. Anyway I found that
->  suspend to disk (and resume) is much slower on 2.6.16 compared to
-> diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
-> index fd1c4ba..058d0be 100644
-> --- a/drivers/acpi/hardware/hwsleep.c
-> +++ b/drivers/acpi/hardware/hwsleep.c
-> @@ -286,13 +286,13 @@ acpi_status asmlinkage acpi_enter_sleep_
->  	}
->  
->  	/*
-> +	 * 1) Disable/Clear all GPEs
->  	 * 2) Enable all wakeup GPEs
->  	 */
->  	status = acpi_hw_disable_all_gpes();
->  	if (ACPI_FAILURE(status)) {
->  		return_ACPI_STATUS(status);
->  	}
-> -
->  	acpi_gbl_system_awake_and_running = FALSE;
->  
->  	status = acpi_hw_enable_all_wakeup_gpes();
-> diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-> index 485de13..56e09cf 100644
-> --- a/drivers/acpi/sleep/main.c
-> +++ b/drivers/acpi/sleep/main.c
-> @@ -170,7 +170,7 @@ static int acpi_pm_enter(suspend_state_t
->  	/* Reprogram control registers and execute _BFS */
->  	acpi_leave_sleep_state_prep(acpi_state);
->  
-> -	/* ACPI 3.0 specs (P62) says that it's the responsabilty
-> +	/* ACPI 3.0 specs (P62) says that it's the responsibilty
->  	 * of the OSPM to clear the status bit [ implying that the
->  	 * POWER_BUTTON event should not reach userspace ]
->  	 */
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index ef9b802..b275ffb 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -74,14 +74,14 @@ config PM_TRACE_RTC
->  	RTC across reboots, so that you can debug a machine that just hangs
->  	during suspend (or more commonly, during resume).
->  
-> -	To use this debugging feature you should attempt to suspend the machine,
-> -	then reboot it, then run
-> +	To use this debugging feature you should attempt to suspend the
-> +	machine, then reboot it, then run
->  
->  		dmesg -s 1000000 | grep 'hash matches'
->  
->  	CAUTION: this option will cause your machine's real-time clock to be
->  	set to an invalid time after a resume.
->  
->  config PM_SLEEP_SMP
->  	bool
->  	depends on SMP
-> @@ -123,7 +129,8 @@ config HIBERNATION
->  	  called "hibernation" in user interfaces.  STD checkpoints the
->  	  system and powers it off; and restores that checkpoint on reboot.
->  
-> -	  You can suspend your machine with 'echo disk > /sys/power/state'.
-> +	  You can suspend your machine with 'echo disk > /sys/power/state' 
-> +	  after placing resume=/dev/swappartition on kernel command line.
->  	  Alternatively, you can use the additional userland tools available
->  	  from <http://suspend.sf.net>.
->  
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 6a6d5eb..d3df5af 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -223,6 +226,7 @@ void __attribute__ ((weak)) arch_suspend
->   *	@state:		state to enter
->   *
->   *	This function should be called after devices have been suspended.
-> + *	May not sleep.
->   */
->  static int suspend_enter(suspend_state_t state)
->  {
-> @@ -250,6 +255,8 @@ static int suspend_enter(suspend_state_t
->   *	suspend_devices_and_enter - suspend devices and enter the desired system
->   *				    sleep state.
->   *	@state:		  state to enter
-> + *
-> + *	Needs to be called from process context and may sleep.
->   */
->  int suspend_devices_and_enter(suspend_state_t state)
->  {
-> @@ -341,6 +349,8 @@ static inline int valid_state(suspend_st
->   *	happen when we wake up.
->   *	Then, do the setup for suspend, enter the state, and cleaup (after
->   *	we've woken up).
-> + *
-> + *	Needs to be called from process context, and may sleep.
->   */
->  static int enter_state(suspend_state_t state)
->  {
+> great! I've added:
 > 
+>    Tested-by: Jeff Chua <jeff.chua.linux@gmail.com>
+> 
+> to the commit message as well, if you dont mind. Full patch is below.
 
+Acked-by: Zachary Amsden <zach@vmware.com>
 
+Thanks, Ingo!
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
