@@ -1,105 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763395AbYBEXqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763339AbYBEXr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763395AbYBEXqq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 18:46:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761019AbYBEXqZ
+	id S1763339AbYBEXr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759341AbYBEXru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 18:46:25 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40052 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760746AbYBEXqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 18:46:23 -0500
-Date: Tue, 5 Feb 2008 15:44:13 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: markus.rechberger@amd.com, "Matt_Domsch@dell.com" <Matt_Domsch@dell.com>,
-       Jos?? Luis Tall??n <jltallon@adv-solutions.net>,
-       "Douglas_Warzecha@dell.com" <Douglas_Warzecha@dell.com>,
-       "Abhay_Salunke@dell.com" <Abhay_Salunke@dell.com>,
-       linux-kernel@vger.kernel.org,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
-Message-ID: <20080205234413.GA9386@suse.de>
-References: <20080129184129.GA23681@kroah.com> <xJSmDwPr.1201644922.4322840.khali@gcu-squad.org> <20080205064547.GA20384@suse.de> <20080205211642.2c49e3d0@hyperion.delvare>
+	Tue, 5 Feb 2008 18:47:50 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:53146
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756843AbYBEXru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 18:47:50 -0500
+Date: Wed, 6 Feb 2008 00:47:42 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080205234742.GI7441@v2.random>
+References: <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com> <20080205052525.GD7441@v2.random> <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com> <20080205180802.GE7441@v2.random> <Pine.LNX.4.64.0802051013440.11705@schroedinger.engr.sgi.com> <20080205205519.GF7441@v2.random> <Pine.LNX.4.64.0802051400200.14665@schroedinger.engr.sgi.com> <20080205222657.GG7441@v2.random> <Pine.LNX.4.64.0802051504450.16261@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205211642.2c49e3d0@hyperion.delvare>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0802051504450.16261@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 09:16:42PM +0100, Jean Delvare wrote:
-> On Mon, 4 Feb 2008 22:45:47 -0800, Greg KH wrote:
-> > On Tue, Jan 29, 2008 at 11:15:22PM +0100, Jean Delvare wrote:
-> > > I'm a bit confused. It seems to me that the "class devices" are named
-> > > differently in recent kernels. The i2c-dev class devices were originally
-> > > showing as i2c-%d in their parent device directories (causing the
-> > > collision), and now show as i2c-dev:i2c-%d. This suggests that the
-> > > collision the patch above was trying to solve is in fact already fixed
-> > > (by prefixing the device name with the class name). The good news is
-> > > that it would mean that we can just revert the patch in question...
-> > > 
-> > > But quite frankly I'm not really sure, the class devices look different
-> > > on every kernel I looked at, depending on the version and whether
-> > > CONFIG_SYSFS_DEPRECATED is set or not.
+On Tue, Feb 05, 2008 at 03:10:52PM -0800, Christoph Lameter wrote:
+> On Tue, 5 Feb 2008, Andrea Arcangeli wrote:
+> 
+> > > You can avoid the page-pin and the pt lock completely by zapping the 
+> > > mappings at _start and then holding off new references until _end.
 > > 
-> > THe naming is different depending on that sysfs variable, yes.  But it
-> > should be consistant other than that.  If not, please let me know.
-> > 
-> > And yes, we did have to add the ":" a while ago to handle the namespace
-> > collisions we were having.
+> > "holding off new references until _end" = per-range mutex less scalar
+> > and more expensive than the PT lock that has to be taken anyway.
 > 
-> OK, I am officially confused now.
+> You can of course setup a 2M granularity lock to get the same granularity 
+> as the pte lock. That would even work for the cases where you have to page 
+> pin now.
 
-Heh, it is a mess :)
+If you set a 2M granularity lock, the _start callback would need to
+do:
 
-> This is 2.6.24, CONFIG_SYSFS_DEPRECATED=y:
-> 
-> # ls -l /sys/class/i2c-adapter/i2c-0
-> total 0
-> lrwxrwxrwx 1 root root    0 f?v  5 18:07 device -> ../../../devices/pci0000:00/0000:00:01.0/0000:01:00.0
-> lrwxrwxrwx 1 root root    0 f?v  5 18:17 i2c-dev:i2c-0 -> ../../../class/i2c-dev/i2c-0
-> -r--r--r-- 1 root root 4096 f?v  5 18:07 name
-> drwxr-xr-x 2 root root    0 f?v  5 18:17 power
-> lrwxrwxrwx 1 root root    0 f?v  5 18:07 subsystem -> ../../../class/i2c-adapter
-> -rw-r--r-- 1 root root 4096 f?v  5  2008 uevent
-> 
-> 2.6.24 rebuilt without CONFIG_SYSFS_DEPRECATED:
-> 
-> # ls -l /sys/class/i2c-adapter/i2c-0/
-> total 0
-> lrwxrwxrwx 1 root root    0 f?v  5 18:42 device -> ../../../../../../devices/pci0000:00/0000:00:01.0/0000:01:00.0
-> drwxr-xr-x 3 root root    0 f?v  5 18:42 i2c-0
-> -r--r--r-- 1 root root 4096 f?v  5 18:31 name
-> drwxr-xr-x 2 root root    0 f?v  5 18:42 power
-> lrwxrwxrwx 1 root root    0 f?v  5 18:31 subsystem -> ../../../../../../class/i2c-adapter
-> -rw-r--r-- 1 root root 4096 f?v  5  2008 uevent
-> 
-> The latter corresponds to what older kernels had ("i2c-0"). This means
-> that enabling CONFIG_SYSFS_DEPRECATED causes the i2c-dev class device
-> names to change.
+	for_each_2m_lock()
+		mutex_lock()
 
-Yes.  Well, no, not really.  The class device names are the same, it's
-just that it is a symlink in the DEPRECATED=Y name and a real directory
-in the =N case.
+so you'd run zillon of mutex_lock in a row, you're the one with the
+million of operations argument.
 
-> Isn't it supposed to be exactly the other way around, i.e. enabling
-> CONFIG_SYSFS_DEPRECATED should preserve the names as they were in
-> older kernels?
+> The size of the mmap is relevant if you have to perform callbacks on 
+> every mapped page that involved take mmu specific locks. That seems to be 
+> the case with this approach.
 
-The real name is the same (look above, it's really called "i2c-0" in
-both cases, just that the symlink in the =Y case has to have a different
-name to handle the fact that there could be duplicate names in this
-format.
+mmap should never trigger any range_start/_end callback unless it's
+overwriting an older mapping which is definitely not the interesting
+workload for those apps including kvm.
 
-Does that help?
+> Optimizing do_exit by taking a single lock to zap all external references 
+> instead of 1 mio callbacks somehow leads to slowdown?
 
-It's really to keep older programs still work properly.  The =N case is
-what you should pay attention to for all modern distros.
-
-thanks,
-
-greg k-h
+It can if the application runs for more than a couple of seconds,
+i.e. not a fork flood in which you care about do_exit speed. Keep in
+mind if you had 1mio invalidate_pages callback it means you previously
+called follow_page 1 mio of times too...
