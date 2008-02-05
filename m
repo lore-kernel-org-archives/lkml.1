@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbYBEBVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbYBEBXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758653AbYBEBVt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 20:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbYBEBVj
+	id S1758923AbYBEBXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 20:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbYBEBXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 20:21:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46749 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757268AbYBEBVi (ORCPT
+	Mon, 4 Feb 2008 20:23:00 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:9191 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755597AbYBEBW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 20:21:38 -0500
-Date: Mon, 4 Feb 2008 17:20:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-In-Reply-To: <47A7A903.1060000@garzik.org>
-Message-ID: <alpine.LFD.1.00.0802041718140.3237@woody.linux-foundation.org>
-References: <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net> <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net> <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain>
- <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204210121.GF18682@fieldses.org> <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
- <47A7986B.1070206@garzik.org> <alpine.LFD.1.00.0802041530150.3034@hp.linux-foundation.org> <47A7A903.1060000@garzik.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 20:22:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=V0evCMUKna0tezADF/K2UsvzqYHYTShYrK2WFjCp3JlAeUo2W7QnWuawJaYPtsLOLoL4ok+jEIxcMDzA7Z0iGAK8h73eqsRu7F1j4oHv22568gBhCxlRkl9OGGfwff9WhGTr9GZNr8yaNw0EtNUPS2bK2I8ymHULXApR8Y69iLY=
+Subject: [PATCH 1/2] kvm: move address_mask define to static function
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Avi Kivity <avi@qumranet.com>, Yaniv Kamay <yaniv@qumranet.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 17:22:57 -0800
+Message-Id: <1202174577.6452.7.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kvm/x86_emulate.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index 7958600..649e14d 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -427,11 +427,21 @@ static u16 twobyte_table[256] = {
+ })
+ 
+ /* Access/update address held in a register, based on addressing mode. */
+-#define address_mask(reg)						\
+-	((c->ad_bytes == sizeof(unsigned long)) ? 			\
+-		(reg) :	((reg) & ((1UL << (c->ad_bytes << 3)) - 1)))
++static inline unsigned long ad_mask(struct decode_cache *c)
++{
++	return (1UL << (c->ad_bytes << 3)) - 1;
++}
++
++static unsigned long address_mask(struct decode_cache *c, unsigned long reg)
++{
++	if (c->ad_bytes == sizeof(unsigned long))
++		return reg;
++	else
++		return reg & ad_mask(c);
++}
++
+ #define register_address(base, reg)                                     \
+-	((base) + address_mask(reg))
++	((base) + address_mask(c, reg))
+ #define register_address_increment(reg, inc)                            \
+ 	do {								\
+ 		/* signed type ensures sign extension to long */        \
+@@ -1393,7 +1403,7 @@ special_insn:
+ 				1,
+ 				(c->d & ByteOp) ? 1 : c->op_bytes,
+ 				c->rep_prefix ?
+-				address_mask(c->regs[VCPU_REGS_RCX]) : 1,
++				address_mask(c, c->regs[VCPU_REGS_RCX]) : 1,
+ 				(ctxt->eflags & EFLG_DF),
+ 				register_address(ctxt->es_base,
+ 						 c->regs[VCPU_REGS_RDI]),
+@@ -1409,7 +1419,7 @@ special_insn:
+ 				0,
+ 				(c->d & ByteOp) ? 1 : c->op_bytes,
+ 				c->rep_prefix ?
+-				address_mask(c->regs[VCPU_REGS_RCX]) : 1,
++				address_mask(c, c->regs[VCPU_REGS_RCX]) : 1,
+ 				(ctxt->eflags & EFLG_DF),
+ 				register_address(c->override_base ?
+ 							*c->override_base :
+-- 
+1.5.4.rc5.1138.g2602
 
 
-On Mon, 4 Feb 2008, Jeff Garzik wrote:
-> 
-> Both of these are easily handled if the server is 100% in charge of managing
-> the filesystem _metadata_ and data.  That's what I meant by complete control.
-> 
-> i.e. it not ext3 or reiserfs or vfat, its a block device or 1000GB file
-> managed by a userland process.
-
-Oh ok.
-
-Yes, if you bring the filesystem into user mode too, then the problems go 
-away - because now your NFSD can interact directly with the filesystem 
-without any kernel/usermode abstraction layer rules in between. So that 
-has all the same properties as moving NFSD entirely into the kernel.
-
-			Linus
