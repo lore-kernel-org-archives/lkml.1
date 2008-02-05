@@ -1,116 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYBEAp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbYBEAqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbYBEAp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 19:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbYBEApT
+	id S1759100AbYBEAqc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 19:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbYBEAqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 19:45:19 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37500 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757463AbYBEApR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 19:45:17 -0500
-Date: Mon, 4 Feb 2008 16:45:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: v2.6.24-mm1 lockdep.c warning
-Message-Id: <20080204164509.a98d4ff5.akpm@linux-foundation.org>
-In-Reply-To: <47A7AD18.9050304@gmail.com>
-References: <47A7AD18.9050304@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 4 Feb 2008 19:46:23 -0500
+Received: from waste.org ([66.93.16.53]:57753 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756643AbYBEAqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 19:46:22 -0500
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+In-Reply-To: <alpine.LFD.1.00.0802041620110.3237@woody.linux-foundation.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204224314.113afe7b@core>
+	 <1202170060.17934.142.camel@cinder.waste.org>
+	 <alpine.LFD.1.00.0802041620110.3237@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 18:45:14 -0600
+Message-Id: <1202172314.17934.161.camel@cinder.waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Feb 2008 20:26:00 -0400
-Kevin Winchester <kjwinchester@gmail.com> wrote:
 
-> Found this in my dmesg:
+On Mon, 2008-02-04 at 16:24 -0800, Linus Torvalds wrote:
 > 
-> [   10.671500] ------------[ cut here ]------------
-> [   10.671500] WARNING: at kernel/lockdep.c:2037
-> trace_hardirqs_on+0xba/0x113()
-> [   10.671500] Pid: 0, comm: swapper Not tainted 2.6.24-mm1 #2
-> [   10.671500]  [<c011a54f>] warn_on_slowpath+0x3c/0x4c
-> [   10.671500]  [<c01335a0>] ? check_usage_forwards+0x19/0x3b
-> [   10.671500]  [<c013376d>] ? mark_lock+0x1ab/0x3ae
-> [   10.671500]  [<c026c84d>] ? ata_hsm_qc_complete+0xbc/0xc2
-> [   10.671500]  [<c03495eb>] ? _spin_unlock_irq+0x22/0x42
-> [   10.671500]  [<c0133b0e>] trace_hardirqs_on+0xba/0x113
-> [   10.671500]  [<c03495eb>] _spin_unlock_irq+0x22/0x42
-> [   10.671500]  [<c011103d>] hpet_rtc_interrupt+0xe8/0x299
-> [   10.671500]  [<c0139547>] handle_IRQ_event+0x1a/0x46
-> [   10.671500]  [<c013a359>] handle_edge_irq+0xa6/0x102
-> [   10.671500]  [<c013a2b3>] ? handle_edge_irq+0x0/0x102
-> [   10.671500]  [<c0106070>] do_IRQ+0x87/0xb0
-> [   10.671500]  [<c010470a>] common_interrupt+0x2e/0x34
-> [   10.671500]  [<c0102974>] ? default_idle+0x45/0x72
-> [   10.671500]  [<c010292f>] ? default_idle+0x0/0x72
-> [   10.671500]  [<c01028ff>] cpu_idle+0x73/0xa3
-> [   10.671500]  [<c033fcd1>] rest_init+0x61/0x63
-> [   10.671500]  =======================
-> [   10.671500] ---[ end trace e5cdd42f557be0f0 ]---
+> On Mon, 4 Feb 2008, Matt Mackall wrote:
+> > 
+> > But ATAoE is boring because it's not IP. Which means no routing,
+> > firewalls, tunnels, congestion control, etc.
 > 
-yup, I hit that too.  It looks like Ingo has deided to merge the
-below into mainline.  I'll put it in the hot-fixes directory.
+> The thing is, that's often an advantage. Not just for performance.
+> 
+> > NBD and iSCSI (for all its hideous growths) can take advantage of these
+> > things.
+> 
+> .. and all this could equally well be done by a simple bridging protocol 
+> (completely independently of any AoE code).
+> 
+> The thing is, iSCSI does things at the wrong level. It *forces* people to 
+> use the complex protocols, when it's a known that a lot of people don't 
+> want it. 
 
+I frankly think NBD is at a pretty comfortable level. It's internally
+very simple (and hardware-agnostic). And moderately easy to do in
+silicon.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+But I'm not going to defend iSCSI. I worked on the first implementation
+(what became the Cisco iSCSI driver) and I have no love for iSCSI at
+all. It should have been (and started out as) a nearly trivial
+encapsulation of SCSI over TCP much like ATA over Ethernet but quickly
+lost the plot when committees got ahold of it.
 
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- include/asm-generic/rtc.h |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-diff -puN include/linux/rtc.h~hpet-borkage-fix include/linux/rtc.h
-diff -puN include/asm-generic/rtc.h~hpet-borkage-fix include/asm-generic/rtc.h
---- a/include/asm-generic/rtc.h~hpet-borkage-fix
-+++ a/include/asm-generic/rtc.h
-@@ -35,10 +35,11 @@
- static inline unsigned char rtc_is_updating(void)
- {
- 	unsigned char uip;
-+	unsigned long flags;
- 
--	spin_lock_irq(&rtc_lock);
-+	spin_lock_irqsave(&rtc_lock, flags);
- 	uip = (CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP);
--	spin_unlock_irq(&rtc_lock);
-+	spin_unlock_irqrestore(&rtc_lock, flags);
- 	return uip;
- }
- 
-@@ -46,6 +47,8 @@ static inline unsigned int get_rtc_time(
- {
- 	unsigned long uip_watchdog = jiffies;
- 	unsigned char ctrl;
-+	unsigned long flags;
-+
- #ifdef CONFIG_MACH_DECSTATION
- 	unsigned int real_year;
- #endif
-@@ -72,7 +75,7 @@ static inline unsigned int get_rtc_time(
- 	 * RTC has RTC_DAY_OF_WEEK, we ignore it, as it is only updated
- 	 * by the RTC when initially set to a non-zero value.
- 	 */
--	spin_lock_irq(&rtc_lock);
-+	spin_lock_irqsave(&rtc_lock, flags);
- 	time->tm_sec = CMOS_READ(RTC_SECONDS);
- 	time->tm_min = CMOS_READ(RTC_MINUTES);
- 	time->tm_hour = CMOS_READ(RTC_HOURS);
-@@ -83,7 +86,7 @@ static inline unsigned int get_rtc_time(
- 	real_year = CMOS_READ(RTC_DEC_YEAR);
- #endif
- 	ctrl = CMOS_READ(RTC_CONTROL);
--	spin_unlock_irq(&rtc_lock);
-+	spin_unlock_irqrestore(&rtc_lock, flags);
- 
- 	if (!(ctrl & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
- 	{
-_
+-- 
+Mathematics is the supreme nostalgia of our time.
 
