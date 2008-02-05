@@ -1,573 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYBEP5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYBEQAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbYBEP5z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbYBEP5r
+	id S1757440AbYBEQAP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYBEP77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:57:47 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1886 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbYBEP5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 10:57:45 -0500
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] update checkpatch.pl to version 0.14
-Date: Tue, 5 Feb 2008 15:58:45 -0000
-Message-Id: <1202227125.0@pinky>
+	Tue, 5 Feb 2008 10:59:59 -0500
+Received: from styx.suse.cz ([82.119.242.94]:38062 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751639AbYBEP76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 10:59:58 -0500
+Date: Tue, 5 Feb 2008 16:59:56 +0100
+From: Jan Kara <jack@suse.cz>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/6] udf: convert udf_stamp_to_time and
+	udf_time_to_stamp to use timestamps
+Message-ID: <20080205155956.GI25464@duck.suse.cz>
+References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-5-git-send-email-marcin.slusarz@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202063771-18172-5-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 03-02-08 19:36:09, marcin.slusarz@gmail.com wrote:
+> kernel_timestamp type was almost unused - only callers of udf_stamp_to_time
+> and udf_time_to_stamp used it, so let these functions handle endianness
+> internally and don't clutter code with conversions
+  OK, but please also rename the functions to something like
+udf_disk_stamp_to_time() and udf_time_to_disk_stamp() so that the name
+suggests that it internally handles endianess...
 
-This version brings the remainder of the queued fixes.  A number of fixes
-for items missed reported by Andrew Morton and others.  Also a handful
-of new checks and fixes for false positives.  Of note:
-
- - new warning associated with --file to try and avoid cleanup only patches,
- - corrected handling of completly empty files,
- - corrected report handling with multiple files,
- - handling of possible types in the face of multiple declarations,
- - detection of unnessary braces on complex if statements (where present), and
- - all new comment spacing handling.
-
-Andi Kleen (1):
-      Introduce a warning when --file mode is used
-
-Andy Whitcroft (14):
-      Version: 0.14
-      clean up some space violations in checkpatch.pl
-      a completly empty file should not provoke a whinge
-      reset report lines buffers between files
-      unary ++/-- may abutt close braces
-      __typeof__ is also unary
-      comments: revamp comment handling
-      add --summary-file option adding filename to summary line
-      trailing backslashes are not trailing statements
-      handle operators passed as parameters such as to ASSERTCMP
-      possible types -- enhance debugging
-      check for boolean operations with constants
-      possible types: handle multiple declarations
-      detect and report if statements where all branches are single statements
-
-Arjan van de Ven (1):
-      quiet option should not print the summary on no errors
-
-Bartlomiej Zolnierkiewicz (1):
-      warn about using __FUNCTION__
-
-Timur Tabi (1):
-      loosen spacing checks for __asm__
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- scripts/checkpatch.pl |  226 ++++++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 184 insertions(+), 42 deletions(-)
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 545471a..2086a85 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -9,7 +9,7 @@ use strict;
- my $P = $0;
- $P =~ s@.*/@@g;
- 
--my $V = '0.13';
-+my $V = '0.14';
- 
- use Getopt::Long qw(:config no_auto_abbrev);
- 
-@@ -24,6 +24,7 @@ my $file = 0;
- my $check = 0;
- my $summary = 1;
- my $mailback = 0;
-+my $summary_file = 0;
- my $root;
- my %debug;
- GetOptions(
-@@ -31,7 +32,6 @@ GetOptions(
- 	'tree!'		=> \$tree,
- 	'signoff!'	=> \$chk_signoff,
- 	'patch!'	=> \$chk_patch,
--	'test-type!'	=> \$tst_type,
- 	'emacs!'	=> \$emacs,
- 	'terse!'	=> \$terse,
- 	'file!'		=> \$file,
-@@ -40,7 +40,10 @@ GetOptions(
- 	'root=s'	=> \$root,
- 	'summary!'	=> \$summary,
- 	'mailback!'	=> \$mailback,
-+	'summary-file!'	=> \$summary_file,
-+
- 	'debug=s'	=> \%debug,
-+	'test-type!'	=> \$tst_type,
- ) or exit;
- 
- my $exit = 0;
-@@ -48,13 +51,15 @@ my $exit = 0;
- if ($#ARGV < 0) {
- 	print "usage: $P [options] patchfile\n";
- 	print "version: $V\n";
--	print "options: -q           => quiet\n";
--	print "         --no-tree    => run without a kernel tree\n";
--	print "         --terse      => one line per report\n";
--	print "         --emacs      => emacs compile window format\n";
--	print "         --file       => check a source file\n";
--	print "         --strict     => enable more subjective tests\n";
--	print "         --root       => path to the kernel tree root\n";
-+	print "options: -q               => quiet\n";
-+	print "         --no-tree        => run without a kernel tree\n";
-+	print "         --terse          => one line per report\n";
-+	print "         --emacs          => emacs compile window format\n";
-+	print "         --file           => check a source file\n";
-+	print "         --strict         => enable more subjective tests\n";
-+	print "         --root           => path to the kernel tree root\n";
-+	print "         --no-summary     => suppress the per-file summary\n";
-+	print "         --summary-file   => include the filename in summary\n";
- 	exit(1);
- }
- 
-@@ -213,6 +218,7 @@ for my $filename (@ARGV) {
- 		$exit = 1;
- 	}
- 	@rawlines = ();
-+	@lines = ();
- }
- 
- exit($exit);
-@@ -321,14 +327,14 @@ sub sanitise_line {
- 	}
- 
- 	# Clear out the comments.
--	while ($res =~ m@(/\*.*?\*/)@) {
--		substr($res, $-[1], $+[1] - $-[1]) = ' ' x ($+[1] - $-[1]);
-+	while ($res =~ m@(/\*.*?\*/)@g) {
-+		substr($res, $-[1], $+[1] - $-[1]) = $; x ($+[1] - $-[1]);
- 	}
- 	if ($res =~ m@(/\*.*)@) {
--		substr($res, $-[1], $+[1] - $-[1]) = ' ' x ($+[1] - $-[1]);
-+		substr($res, $-[1], $+[1] - $-[1]) = $; x ($+[1] - $-[1]);
- 	}
- 	if ($res =~ m@^.(.*\*/)@) {
--		substr($res, $-[1], $+[1] - $-[1]) = ' ' x ($+[1] - $-[1]);
-+		substr($res, $-[1], $+[1] - $-[1]) = $; x ($+[1] - $-[1]);
- 	}
- 
- 	# The pathname on a #include may be surrounded by '<' and '>'.
-@@ -352,10 +358,14 @@ sub ctx_statement_block {
- 	my $soff = $off;
- 	my $coff = $off - 1;
- 
-+	my $loff = 0;
-+
- 	my $type = '';
- 	my $level = 0;
- 	my $c;
- 	my $len = 0;
-+
-+	my $remainder;
- 	while (1) {
- 		#warn "CSB: blk<$blk>\n";
- 		# If we are about to drop off the end, pull in more
-@@ -364,6 +374,7 @@ sub ctx_statement_block {
- 			for (; $remain > 0; $line++) {
- 				next if ($lines[$line] =~ /^-/);
- 				$remain--;
-+				$loff = $len;
- 				$blk .= $lines[$line] . "\n";
- 				$len = length($blk);
- 				$line++;
-@@ -371,11 +382,12 @@ sub ctx_statement_block {
- 			}
- 			# Bail if there is no further context.
- 			#warn "CSB: blk<$blk> off<$off> len<$len>\n";
--			if ($off == $len) {
-+			if ($off >= $len) {
- 				last;
- 			}
- 		}
- 		$c = substr($blk, $off, 1);
-+		$remainder = substr($blk, $off);
- 
- 		#warn "CSB: c<$c> type<$type> level<$level>\n";
- 		# Statement ends at the ';' or a close '}' at the
-@@ -384,6 +396,12 @@ sub ctx_statement_block {
- 			last;
- 		}
- 
-+		# An else is really a conditional as long as its not else if
-+		if ($level == 0 && $remainder =~ /(\s+else)(?:\s|{)/ &&
-+					$remainder !~ /\s+else\s+if\b/) {
-+			$coff = $off + length($1);
-+		}
-+
- 		if (($type eq '' || $type eq '(') && $c eq '(') {
- 			$level++;
- 			$type = '(';
-@@ -410,6 +428,10 @@ sub ctx_statement_block {
- 		}
- 		$off++;
- 	}
-+	if ($off == $len) {
-+		$line++;
-+		$remain--;
-+	}
- 
- 	my $statement = substr($blk, $soff, $off - $soff + 1);
- 	my $condition = substr($blk, $soff, $coff - $soff + 1);
-@@ -417,7 +439,30 @@ sub ctx_statement_block {
- 	#warn "STATEMENT<$statement>\n";
- 	#warn "CONDITION<$condition>\n";
- 
--	return ($statement, $condition);
-+	#print "off<$off> loff<$loff>\n";
-+
-+	return ($statement, $condition,
-+			$line, $remain + 1, $off - $loff + 1, $level);
-+}
-+
-+sub ctx_statement_full {
-+	my ($linenr, $remain, $off) = @_;
-+	my ($statement, $condition, $level);
-+
-+	my (@chunks);
-+
-+	($statement, $condition, $linenr, $remain, $off, $level) =
-+				ctx_statement_block($linenr, $remain, $off);
-+	#print "F: c<$condition> s<$statement>\n";
-+	for (;;) {
-+		push(@chunks, [ $condition, $statement ]);
-+		last if (!($remain > 0 && $condition =~ /^.\s*(?:if|else|do)/));
-+		($statement, $condition, $linenr, $remain, $off, $level) =
-+				ctx_statement_block($linenr, $remain, $off);
-+		#print "C: c<$condition> s<$statement>\n";
-+	}
-+
-+	return ($level, $linenr, @chunks);
- }
- 
- sub ctx_block_get {
-@@ -598,7 +643,7 @@ sub annotate_values {
- 			}
- 			$type = 'N';
- 
--		} elsif ($cur =~ /^(if|while|typeof|for)\b/o) {
-+		} elsif ($cur =~ /^(if|while|typeof|__typeof__|for)\b/o) {
- 			print "COND($1)\n" if ($dbg_values > 1);
- 			$av_paren_type[$av_paren] = 'N';
- 			$type = 'N';
-@@ -635,8 +680,12 @@ sub annotate_values {
- 			print "ASSIGN($1)\n" if ($dbg_values > 1);
- 			$type = 'N';
- 
--		} elsif ($cur =~ /^(;|{|}|\?|:|\[)/o) {
-+		} elsif ($cur =~/^(;)/) {
- 			print "END($1)\n" if ($dbg_values > 1);
-+			$type = 'E';
-+
-+		} elsif ($cur =~ /^(;|{|}|\?|:|\[)/o) {
-+			print "CLOSE($1)\n" if ($dbg_values > 1);
- 			$type = 'N';
- 
- 		} elsif ($cur =~ /^($Operators)/o) {
-@@ -658,7 +707,7 @@ sub annotate_values {
- }
- 
- sub possible {
--	my ($possible) = @_;
-+	my ($possible, $line) = @_;
- 
- 	#print "CHECK<$possible>\n";
- 	if ($possible !~ /^(?:$Storage|$Type|DEFINE_\S+)$/ &&
-@@ -666,7 +715,7 @@ sub possible {
- 	    $possible ne 'struct' && $possible ne 'enum' &&
- 	    $possible ne 'case' && $possible ne 'else' &&
- 	    $possible ne 'typedef') {
--		warn "POSSIBLE: $possible\n" if ($dbg_possible);
-+		warn "POSSIBLE: $possible ($line)\n" if ($dbg_possible);
- 		push(@typeList, $possible);
- 		build_types();
- 	}
-@@ -674,16 +723,15 @@ sub possible {
- 
- my $prefix = '';
- 
--my @report = ();
- sub report {
- 	my $line = $prefix . $_[0];
- 
- 	$line = (split('\n', $line))[0] . "\n" if ($terse);
- 
--	push(@report, $line);
-+	push(our @report, $line);
- }
- sub report_dump {
--	@report;
-+	our @report;
- }
- sub ERROR {
- 	report("ERROR: $_[0]\n");
-@@ -721,6 +769,7 @@ sub process {
- 	my $signoff = 0;
- 	my $is_patch = 0;
- 
-+	our @report = ();
- 	our $cnt_lines = 0;
- 	our $cnt_error = 0;
- 	our $cnt_warn = 0;
-@@ -735,7 +784,10 @@ sub process {
- 	my $comment_edge = 0;
- 	my $first_line = 0;
- 
--	my $prev_values = 'N';
-+	my $prev_values = 'E';
-+
-+	# suppression flags
-+	my $suppress_ifbraces = 0;
- 
- 	# Pre-scan the patch sanitizing the lines.
- 	# Pre-scan the patch looking for any __setup documentation.
-@@ -791,7 +843,9 @@ sub process {
- 				$realcnt=1+1;
- 			}
- 			annotate_reset();
--			$prev_values = 'N';
-+			$prev_values = 'E';
-+
-+			$suppress_ifbraces = $linenr - 1;
- 			next;
- 		}
- 
-@@ -953,22 +1007,22 @@ sub process {
- 
- 			# definitions in global scope can only start with types
- 			} elsif ($line =~ /^.(?:$Storage\s+)?(?:$Inline\s+)?(?:const\s+)?($Ident)\b/) {
--				possible($1);
-+				possible($1, $line);
- 
- 			# declarations always start with types
--			} elsif ($prev_values eq 'N' && $line =~ /^.\s*(?:$Storage\s+)?(?:const\s+)?($Ident)\b(:?\s+$Sparse)?\s*\**\s*$Ident\s*(?:;|=)/) {
-+			} elsif ($prev_values eq 'E' && $line =~ /^.\s*(?:$Storage\s+)?(?:const\s+)?($Ident)\b(:?\s+$Sparse)?\s*\**\s*$Ident\s*(?:;|=|,)/) {
- 				possible($1);
- 			}
- 
- 			# any (foo ... *) is a pointer cast, and foo is a type
- 			while ($line =~ /\(($Ident)(?:\s+$Sparse)*\s*\*+\s*\)/g) {
--				possible($1);
-+				possible($1, $line);
- 			}
- 
- 			# Check for any sort of function declaration.
- 			# int foo(something bar, other baz);
- 			# void (*store_gdt)(x86_descr_ptr *);
--			if ($prev_values eq 'N' && $line =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/) {
-+			if ($prev_values eq 'E' && $line =~ /^(.(?:typedef\s*)?(?:(?:$Storage|$Inline)\s*)*\s*$Type\s*(?:\b$Ident|\(\*\s*$Ident\))\s*)\(/) {
- 				my ($name_len) = length($1);
- 				my ($level, @ctx) = ctx_statement_level($linenr, $realcnt, $name_len);
- 				my $ctx = join("\n", @ctx);
-@@ -979,7 +1033,7 @@ sub process {
- 				for my $arg (split(/\s*,\s*/, $ctx)) {
- 					if ($arg =~ /^(?:const\s+)?($Ident)(?:\s+$Sparse)*\s*\**\s*(:?\b$Ident)?$/ || $arg =~ /^($Ident)$/) {
- 
--						possible($1);
-+						possible($1, $line);
- 					}
- 				}
- 			}
-@@ -1189,7 +1243,7 @@ sub process {
- 			my $ctx = substr($line, 0, $-[1]);
- 
- 			# Ignore those directives where spaces _are_ permitted.
--			if ($name =~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case)$/) {
-+			if ($name =~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case|__asm__)$/) {
- 
- 			# cpp #define statements have non-optional spaces, ie
- 			# if there is a space between the name and the open
-@@ -1212,7 +1266,7 @@ sub process {
- 				=>|->|<<|>>|<|>|=|!|~|
- 				&&|\|\||,|\^|\+\+|--|&|\||\+|-|\*|\/|%
- 			}x;
--			my @elements = split(/($ops|;)/, $opline);
-+			my @elements = split(/($;+|$ops|;)/, $opline);
- 			my $off = 0;
- 
- 			my $blank = copy_spacing($opline);
-@@ -1272,8 +1326,15 @@ sub process {
- 				#	print "UNARY: <$op_left$op_type $is_unary $a:$op:$c> <$ca:$op:$cc> <$unary_ctx>\n";
- 				#}
- 
-+				# Ignore operators passed as parameters.
-+				if ($op_type ne 'V' &&
-+				    $ca =~ /\s$/ && $cc =~ /^\s*,/) {
-+
-+				# Ignore comments
-+				} elsif ($op =~ /^$;+$/) {
-+
- 				# ; should have either the end of line or a space or \ after it
--				if ($op eq ';') {
-+				} elsif ($op eq ';') {
- 					if ($ctx !~ /.x[WEB]/ && $cc !~ /^\\/ &&
- 					    $cc !~ /^;/) {
- 						ERROR("need space after that '$op' $at\n" . $hereptr);
-@@ -1315,7 +1376,7 @@ sub process {
- 					if ($ctx !~ /[WOB]x[^W]/ && $ctx !~ /[^W]x[WOBE]/) {
- 						ERROR("need space one side of that '$op' $at\n" . $hereptr);
- 					}
--					if ($ctx =~ /Wx./ && $cc =~ /^;/) {
-+					if ($ctx =~ /WxB/ || ($ctx =~ /Wx./ && $cc =~ /^;/)) {
- 						ERROR("no space before that '$op' $at\n" . $hereptr);
- 					}
- 
-@@ -1388,7 +1449,7 @@ sub process {
- 		    $line !~ /for\s*\(\s+;/) {
- 			ERROR("no space after that open parenthesis '('\n" . $herecurr);
- 		}
--		if ($line =~ /\s\)/ && $line !~ /^.\s*\)/ &&
-+		if ($line =~ /(\s+)\)/ && $line !~ /^.\s*\)/ &&
- 		    $line !~ /for\s*\(.*;\s+\)/) {
- 			ERROR("no space before that close parenthesis ')'\n" . $herecurr);
- 		}
-@@ -1416,16 +1477,34 @@ sub process {
- 			# conditional.
- 			substr($s, 0, length($c)) = '';
- 			$s =~ s/\n.*//g;
--
--			if (length($c) && $s !~ /^\s*({|;|\/\*.*\*\/)?\s*\\*\s*$/) {
-+			$s =~ s/$;//g; 	# Remove any comments
-+			if (length($c) && $s !~ /^\s*({|;|)\s*\\*\s*$/) {
- 				ERROR("trailing statements should be on next line\n" . $herecurr);
- 			}
- 		}
- 
-+# Check for bitwise tests written as boolean
-+		if ($line =~ /
-+			(?:
-+				(?:\[|\(|\&\&|\|\|)
-+				\s*0[xX][0-9]+\s*
-+				(?:\&\&|\|\|)
-+			|
-+				(?:\&\&|\|\|)
-+				\s*0[xX][0-9]+\s*
-+				(?:\&\&|\|\||\)|\])
-+			)/x)
-+		{
-+			WARN("boolean test with hexadecimal, perhaps just 1 \& or \|?\n" . $herecurr);
-+		}
-+
- # if and else should not have general statements after it
--		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
--		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
--			ERROR("trailing statements should be on next line\n" . $herecurr);
-+		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/) {
-+			my $s = $1;
-+			$s =~ s/$;//g; 	# Remove any comments
-+			if ($s !~ /^\s*(?:\sif|(?:{|)\s*\\?\s*$)/) {
-+				ERROR("trailing statements should be on next line\n" . $herecurr);
-+			}
- 		}
- 
- 		# Check for }<nl>else {, these must be at the same
-@@ -1518,7 +1597,48 @@ sub process {
- 		}
- 
- # check for redundant bracing round if etc
--		if ($line =~ /\b(if|while|for|else)\b/) {
-+		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/) {
-+			my ($level, $endln, @chunks) =
-+				ctx_statement_full($linenr, $realcnt, 0);
-+			#print "chunks<$#chunks> linenr<$linenr> endln<$endln> level<$level>\n";
-+			if ($#chunks > 1 && $level == 0) {
-+				my $allowed = 0;
-+				my $seen = 0;
-+				for my $chunk (@chunks) {
-+					my ($cond, $block) = @{$chunk};
-+
-+					substr($block, 0, length($cond)) = '';
-+
-+					$seen++ if ($block =~ /^\s*{/);
-+
-+					$block =~ s/(^|\n)./$1/g;
-+					$block =~ s/^\s*{//;
-+					$block =~ s/}\s*$//;
-+					$block =~ s/^\s*//;
-+					$block =~ s/\s*$//;
-+
-+					my @lines = ($block =~ /\n/g);
-+					my @statements = ($block =~ /;/g);
-+
-+					#print "cond<$cond> block<$block> lines<" . scalar(@lines) . "> statements<" . scalar(@statements) . "> seen<$seen> allowed<$allowed>\n";
-+					if (scalar(@lines) != 0) {
-+						$allowed = 1;
-+					}
-+					if ($block =~/\b(?:if|for|while)\b/) {
-+						$allowed = 1;
-+					}
-+					if (scalar(@statements) > 1) {
-+						$allowed = 1;
-+					}
-+				}
-+				if ($seen && !$allowed) {
-+					WARN("braces {} are not necessary for any arm of this statement\n" . $herecurr);
-+					$suppress_ifbraces = $endln;
-+				}
-+			}
-+		}
-+		if ($linenr > $suppress_ifbraces &&
-+					$line =~ /\b(if|while|for|else)\b/) {
- 			# Locate the end of the opening statement.
- 			my @control = ctx_statement($linenr, $realcnt, 0);
- 			my $nr = $linenr + (scalar(@control) - 1);
-@@ -1541,7 +1661,7 @@ sub process {
- 				my $after = $1;
- 
- 				#print "block<" . join(' ', @block) . "><" . scalar(@block) . ">\n";
--				#print "stmt<$stmt>\n\n";
-+				#print "before<$before> stmt<$stmt> after<$after>\n\n";
- 
- 				# Count the newlines, if there is only one
- 				# then the block should not have {}'s.
-@@ -1659,6 +1779,17 @@ sub process {
- 		if ($line =~ /\*\s*\)\s*k[czm]alloc\b/) {
- 			WARN("unnecessary cast may hide bugs, see http://c-faq.com/malloc/mallocnocast.html\n" . $herecurr);
- 		}
-+
-+# check for gcc specific __FUNCTION__
-+		if ($line =~ /__FUNCTION__/) {
-+			WARN("__func__ should be used instead of gcc specific __FUNCTION__\n"  . $herecurr);
-+		}
-+	}
-+
-+	# If we have no input at all, then there is nothing to report on
-+	# so just keep quiet.
-+	if ($#rawlines == -1) {
-+		exit(0);
- 	}
- 
- 	# In mailback mode only produce a report in the negative, for
-@@ -1681,7 +1812,8 @@ sub process {
- 	}
- 
- 	print report_dump();
--	if ($summary) {
-+	if ($summary && !($clean == 1 && $quiet == 1)) {
-+		print "$filename " if ($summary_file);
- 		print "total: $cnt_error errors, $cnt_warn warnings, " .
- 			(($check)? "$cnt_chk checks, " : "") .
- 			"$cnt_lines lines checked\n";
-@@ -1696,5 +1828,15 @@ sub process {
- 		print "are false positives report them to the maintainer, see\n";
- 		print "CHECKPATCH in MAINTAINERS.\n";
- 	}
-+	print <<EOL if ($file == 1 && $quiet == 0);
-+
-+WARNING: Using --file mode. Please do not send patches to linux-kernel
-+that change whole existing files if you did not significantly change most
-+of the the file for other reasons anyways or just wrote the file newly
-+from scratch. Pure code style patches have a significant cost in a
-+quickly changing code base like Linux because they cause rejects
-+with other changes.
-+EOL
-+
- 	return $clean;
- }
+								Honza
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Jan Kara <jack@suse.cz>
+> ---
+>  fs/udf/inode.c   |   43 ++++++++++++++-----------------------------
+>  fs/udf/super.c   |   16 ++++++----------
+>  fs/udf/udfdecl.h |    4 ++--
+>  fs/udf/udftime.c |   22 ++++++++++++----------
+>  4 files changed, 34 insertions(+), 51 deletions(-)
+> 
+> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+> index 252efe0..654b504 100644
+> --- a/fs/udf/inode.c
+> +++ b/fs/udf/inode.c
+> @@ -1242,16 +1242,13 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+>  		inode->i_blocks = le64_to_cpu(fe->logicalBlocksRecorded) <<
+>  			(inode->i_sb->s_blocksize_bits - 9);
+>  
+> -		if (!udf_stamp_to_time(&inode->i_atime,
+> -					lets_to_cpu(fe->accessTime)))
+> +		if (!udf_stamp_to_time(&inode->i_atime, fe->accessTime))
+>  			inode->i_atime = sbi->s_record_time;
+>  
+> -		if (!udf_stamp_to_time(&inode->i_mtime,
+> -					lets_to_cpu(fe->modificationTime)))
+> +		if (!udf_stamp_to_time(&inode->i_mtime, fe->modificationTime))
+>  			inode->i_mtime = sbi->s_record_time;
+>  
+> -		if (!udf_stamp_to_time(&inode->i_ctime,
+> -					lets_to_cpu(fe->attrTime)))
+> +		if (!udf_stamp_to_time(&inode->i_ctime, fe->attrTime))
+>  			inode->i_ctime = sbi->s_record_time;
+>  
+>  		iinfo->i_unique = le64_to_cpu(fe->uniqueID);
+> @@ -1262,20 +1259,16 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+>  		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
+>  		    (inode->i_sb->s_blocksize_bits - 9);
+>  
+> -		if (!udf_stamp_to_time(&inode->i_atime,
+> -					lets_to_cpu(efe->accessTime)))
+> +		if (!udf_stamp_to_time(&inode->i_atime, efe->accessTime))
+>  			inode->i_atime = sbi->s_record_time;
+>  
+> -		if (!udf_stamp_to_time(&inode->i_mtime,
+> -					lets_to_cpu(efe->modificationTime)))
+> +		if (!udf_stamp_to_time(&inode->i_mtime, efe->modificationTime))
+>  			inode->i_mtime = sbi->s_record_time;
+>  
+> -		if (!udf_stamp_to_time(&iinfo->i_crtime,
+> -					lets_to_cpu(efe->createTime)))
+> +		if (!udf_stamp_to_time(&iinfo->i_crtime, efe->createTime))
+>  			iinfo->i_crtime = sbi->s_record_time;
+>  
+> -		if (!udf_stamp_to_time(&inode->i_ctime,
+> -					lets_to_cpu(efe->attrTime)))
+> +		if (!udf_stamp_to_time(&inode->i_ctime, efe->attrTime))
+>  			inode->i_ctime = sbi->s_record_time;
+>  
+>  		iinfo->i_unique = le64_to_cpu(efe->uniqueID);
+> @@ -1412,7 +1405,6 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+>  	uint32_t udfperms;
+>  	uint16_t icbflags;
+>  	uint16_t crclen;
+> -	kernel_timestamp cpu_time;
+>  	int err = 0;
+>  	struct udf_sb_info *sbi = UDF_SB(inode->i_sb);
+>  	unsigned char blocksize_bits = inode->i_sb->s_blocksize_bits;
+> @@ -1515,12 +1507,9 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+>  			(inode->i_blocks + (1 << (blocksize_bits - 9)) - 1) >>
+>  			(blocksize_bits - 9));
+>  
+> -		if (udf_time_to_stamp(&cpu_time, inode->i_atime))
+> -			fe->accessTime = cpu_to_lets(cpu_time);
+> -		if (udf_time_to_stamp(&cpu_time, inode->i_mtime))
+> -			fe->modificationTime = cpu_to_lets(cpu_time);
+> -		if (udf_time_to_stamp(&cpu_time, inode->i_ctime))
+> -			fe->attrTime = cpu_to_lets(cpu_time);
+> +		udf_time_to_stamp(&fe->accessTime, inode->i_atime);
+> +		udf_time_to_stamp(&fe->modificationTime, inode->i_mtime);
+> +		udf_time_to_stamp(&fe->attrTime, inode->i_ctime);
+>  		memset(&(fe->impIdent), 0, sizeof(regid));
+>  		strcpy(fe->impIdent.ident, UDF_ID_DEVELOPER);
+>  		fe->impIdent.identSuffix[0] = UDF_OS_CLASS_UNIX;
+> @@ -1555,14 +1544,10 @@ static int udf_update_inode(struct inode *inode, int do_sync)
+>  		     iinfo->i_crtime.tv_nsec > inode->i_ctime.tv_nsec))
+>  			iinfo->i_crtime = inode->i_ctime;
+>  
+> -		if (udf_time_to_stamp(&cpu_time, inode->i_atime))
+> -			efe->accessTime = cpu_to_lets(cpu_time);
+> -		if (udf_time_to_stamp(&cpu_time, inode->i_mtime))
+> -			efe->modificationTime = cpu_to_lets(cpu_time);
+> -		if (udf_time_to_stamp(&cpu_time, iinfo->i_crtime))
+> -			efe->createTime = cpu_to_lets(cpu_time);
+> -		if (udf_time_to_stamp(&cpu_time, inode->i_ctime))
+> -			efe->attrTime = cpu_to_lets(cpu_time);
+> +		udf_time_to_stamp(&efe->accessTime, inode->i_atime);
+> +		udf_time_to_stamp(&efe->modificationTime, inode->i_mtime);
+> +		udf_time_to_stamp(&efe->createTime, iinfo->i_crtime);
+> +		udf_time_to_stamp(&efe->attrTime, inode->i_ctime);
+>  
+>  		memset(&(efe->impIdent), 0, sizeof(regid));
+>  		strcpy(efe->impIdent.ident, UDF_ID_DEVELOPER);
+> diff --git a/fs/udf/super.c b/fs/udf/super.c
+> index 9f565a9..8a98a2e 100644
+> --- a/fs/udf/super.c
+> +++ b/fs/udf/super.c
+> @@ -915,7 +915,7 @@ static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
+>  	pvoldesc = (struct primaryVolDesc *)bh->b_data;
+>  
+>  	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
+> -			      lets_to_cpu(pvoldesc->recordingDateAndTime))) {
+> +			      pvoldesc->recordingDateAndTime)) {
+>  		kernel_timestamp ts;
+>  		ts = lets_to_cpu(pvoldesc->recordingDateAndTime);
+>  		udf_debug("recording time %04u/%02u/%02u"
+> @@ -1561,7 +1561,6 @@ static void udf_open_lvid(struct super_block *sb)
+>  	struct udf_sb_info *sbi = UDF_SB(sb);
+>  	struct buffer_head *bh = sbi->s_lvid_bh;
+>  	if (bh) {
+> -		kernel_timestamp cpu_time;
+>  		struct logicalVolIntegrityDesc *lvid =
+>  				(struct logicalVolIntegrityDesc *)bh->b_data;
+>  		struct logicalVolIntegrityDescImpUse *lvidiu =
+> @@ -1569,8 +1568,7 @@ static void udf_open_lvid(struct super_block *sb)
+>  
+>  		lvidiu->impIdent.identSuffix[0] = UDF_OS_CLASS_UNIX;
+>  		lvidiu->impIdent.identSuffix[1] = UDF_OS_ID_LINUX;
+> -		if (udf_time_to_stamp(&cpu_time, CURRENT_TIME))
+> -			lvid->recordingDateAndTime = cpu_to_lets(cpu_time);
+> +		udf_time_to_stamp(&lvid->recordingDateAndTime, CURRENT_TIME);
+>  		lvid->integrityType = LVID_INTEGRITY_TYPE_OPEN;
+>  
+>  		lvid->descTag.descCRC = cpu_to_le16(
+> @@ -1585,7 +1583,6 @@ static void udf_open_lvid(struct super_block *sb)
+>  
+>  static void udf_close_lvid(struct super_block *sb)
+>  {
+> -	kernel_timestamp cpu_time;
+>  	struct udf_sb_info *sbi = UDF_SB(sb);
+>  	struct buffer_head *bh = sbi->s_lvid_bh;
+>  	struct logicalVolIntegrityDesc *lvid;
+> @@ -1600,8 +1597,7 @@ static void udf_close_lvid(struct super_block *sb)
+>  							udf_sb_lvidiu(sbi);
+>  		lvidiu->impIdent.identSuffix[0] = UDF_OS_CLASS_UNIX;
+>  		lvidiu->impIdent.identSuffix[1] = UDF_OS_ID_LINUX;
+> -		if (udf_time_to_stamp(&cpu_time, CURRENT_TIME))
+> -			lvid->recordingDateAndTime = cpu_to_lets(cpu_time);
+> +		udf_time_to_stamp(&lvid->recordingDateAndTime, CURRENT_TIME);
+>  		if (UDF_MAX_WRITE_VERSION > le16_to_cpu(lvidiu->maxUDFWriteRev))
+>  			lvidiu->maxUDFWriteRev =
+>  					cpu_to_le16(UDF_MAX_WRITE_VERSION);
+> @@ -1786,12 +1782,12 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
+>  	}
+>  
+>  	if (!silent) {
+> -		kernel_timestamp ts;
+> +		timestamp ts;
+>  		udf_time_to_stamp(&ts, sbi->s_record_time);
+>  		udf_info("UDF: Mounting volume '%s', "
+>  			 "timestamp %04u/%02u/%02u %02u:%02u (%x)\n",
+> -			 sbi->s_volume_ident, ts.year, ts.month, ts.day,
+> -			 ts.hour, ts.minute, ts.typeAndTimezone);
+> +			 sbi->s_volume_ident, le16_to_cpu(ts.year), ts.month, ts.day,
+> +			 ts.hour, ts.minute, le16_to_cpu(ts.typeAndTimezone));
+>  	}
+>  	if (!(sb->s_flags & MS_RDONLY))
+>  		udf_open_lvid(sb);
+> diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+> index 508be85..2dd04bb 100644
+> --- a/fs/udf/udfdecl.h
+> +++ b/fs/udf/udfdecl.h
+> @@ -204,7 +204,7 @@ extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
+>  extern uint16_t udf_crc(const uint8_t *, uint32_t, uint16_t);
+>  
+>  /* udftime.c */
+> -extern struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src);
+> -extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec src);
+> +extern struct timespec *udf_stamp_to_time(struct timespec *dest, timestamp src);
+> +extern timestamp *udf_time_to_stamp(timestamp *dest, struct timespec src);
+>  
+>  #endif				/* __UDF_DECL_H */
+> diff --git a/fs/udf/udftime.c b/fs/udf/udftime.c
+> index 12fae6c..d125bd9 100644
+> --- a/fs/udf/udftime.c
+> +++ b/fs/udf/udftime.c
+> @@ -85,14 +85,16 @@ extern struct timezone sys_tz;
+>  #define SECS_PER_HOUR	(60 * 60)
+>  #define SECS_PER_DAY	(SECS_PER_HOUR * 24)
+>  
+> -struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
+> +struct timespec *udf_stamp_to_time(struct timespec *dest, timestamp src)
+>  {
+>  	int yday;
+> -	uint8_t type = src.typeAndTimezone >> 12;
+> +	u16 typeAndTimezone = le16_to_cpu(src.typeAndTimezone);
+> +	u16 year = le16_to_cpu(src.year);
+> +	uint8_t type = typeAndTimezone >> 12;
+>  	int16_t offset;
+>  
+>  	if (type == 1) {
+> -		offset = src.typeAndTimezone << 4;
+> +		offset = typeAndTimezone << 4;
+>  		/* sign extent offset */
+>  		offset = (offset >> 4);
+>  		if (offset == -2047) /* unspecified offset */
+> @@ -100,21 +102,21 @@ struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
+>  	} else
+>  		offset = 0;
+>  
+> -	if ((src.year < EPOCH_YEAR) ||
+> -	    (src.year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
+> +	if ((year < EPOCH_YEAR) ||
+> +	    (year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
+>  		return NULL;
+>  	}
+> -	dest->tv_sec = year_seconds[src.year - EPOCH_YEAR];
+> +	dest->tv_sec = year_seconds[year - EPOCH_YEAR];
+>  	dest->tv_sec -= offset * 60;
+>  
+> -	yday = ((__mon_yday[__isleap(src.year)][src.month - 1]) + src.day - 1);
+> +	yday = ((__mon_yday[__isleap(year)][src.month - 1]) + src.day - 1);
+>  	dest->tv_sec += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
+>  	dest->tv_nsec = 1000 * (src.centiseconds * 10000 +
+>  			src.hundredsOfMicroseconds * 100 + src.microseconds);
+>  	return dest;
+>  }
+>  
+> -kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec ts)
+> +timestamp *udf_time_to_stamp(timestamp *dest, struct timespec ts)
+>  {
+>  	long int days, rem, y;
+>  	const unsigned short int *ip;
+> @@ -125,7 +127,7 @@ kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec ts)
+>  	if (!dest)
+>  		return NULL;
+>  
+> -	dest->typeAndTimezone = 0x1000 | (offset & 0x0FFF);
+> +	dest->typeAndTimezone = cpu_to_le16(0x1000 | (offset & 0x0FFF));
+>  
+>  	ts.tv_sec += offset * 60;
+>  	days = ts.tv_sec / SECS_PER_DAY;
+> @@ -148,7 +150,7 @@ kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec ts)
+>  			 - LEAPS_THRU_END_OF(y - 1));
+>  		y = yg;
+>  	}
+> -	dest->year = y;
+> +	dest->year = cpu_to_le16(y);
+>  	ip = __mon_yday[__isleap(y)];
+>  	for (y = 11; days < (long int)ip[y]; --y)
+>  		continue;
+> -- 
+> 1.5.3.7
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
