@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYBEQiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbYBEQk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbYBEQiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYBEQiL
+	id S1756149AbYBEQk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYBEQkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:38:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37131 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864AbYBEQiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:38:10 -0500
-Date: Tue, 5 Feb 2008 17:37:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jakub Jelinek <jakub@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Abel Bernabeu <abel.bernabeu@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [regression] Re: brk randomization breaks columns
-Message-ID: <20080205163724.GA31286@elte.hu>
-References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz> <20080205110632.GB3758@elf.ucw.cz> <Pine.LNX.4.64.0802051216340.30955@jikos.suse.cz> <20080205125426.GA27724@elte.hu> <20080205130546.GF30691@devserv.devel.redhat.com> <20080205161810.GF24331@elf.ucw.cz>
+	Tue, 5 Feb 2008 11:40:15 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:10210 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752451AbYBEQkO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:40:14 -0500
+Date: Tue, 5 Feb 2008 08:40:12 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-driver@qlogic.com
+Subject: Re: 2.6.24 regression w/ QLA2300
+Message-ID: <20080205164012.GI19882@plap3.qlogic.org>
+References: <47A88736.6090706@hp.com> <20080205160246.GF19882@plap3.qlogic.org> <47A88F2C.5050407@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205161810.GF24331@elf.ucw.cz>
+In-Reply-To: <47A88F2C.5050407@hp.com>
+Organization: QLogic Corporation
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 05 Feb 2008 16:40:13.0744 (UTC) FILETIME=[C7E69B00:01C86815]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
 
-* Pavel Machek <pavel@ucw.cz> wrote:
-
-> > > > I am still not completely sure. It might be a regression, but it 
-> > > > also might just trigger the bug in ancient version in libc.so.5 
-> > > > which might be fixed in some later version [...]
-> > > 
-> > > which too is a regression ...
-> > > 
-> > > really, lets add a sysctl for this, and a .config option that 
-> > > either disables or enables it. Then we will default to disabled. 
-> > > (but users can enable it - and distros can build their kernels 
-> > > with this .config option enabled)
-> > 
-> > I don't think kernel should care about programs which are buggy and 
-> > make invalid assumptions, and that's the case here.  I remember we 
-> > have been
+> > and send the resultant kernel logs?
 > 
-> Those "invalid assumptions" crept into documentation. Everybody knew 
-> heap starts at the end of bss in 1995.
+> Here's the output to the console (if there are other logs you need,
+> let me know). I'll try the patch next, and sorry, hadn't realized
+> merges were still coming in under 2.6.24 in Linus' tree... 
+> 
+> QLogic Fibre Channel HBA Driver
+> ACPI: PCI Interrupt 0000:40:01.0[A] -> GSI 38 (level, low) -> IRQ 58
+> qla2xxx 0000:40:01.0: Found an ISP2312, irq 58, iobase 0xc0000000a0041000
+> qla2xxx 0000:40:01.0: Configuring PCI space...
+> qla2x00_get_flash_version(): Unrecognized code type ff at pcids da1c.
+> qla2x00_get_flash_version(): Unrecognized code type ff at pcids 1f61c.
+> qla2xxx 0000:40:01.0: Configure NVRAM parameters...
+> qla2xxx 0000:40:01.0: Verifying loaded RISC code...
+> scsi(14): **** Load RISC code ****
+> scsi(14): Verifying Checksum of loaded RISC code.
+> scsi(14): Checksum OK, start firmware.
+> qla2xxx 0000:40:01.0: Allocated (412 KB) for firmware dump...
+> scsi(14): Issue init firmware.
+> qla2x00_mailbox_command(14): **** FAILED. mbx0=4001, mbx1=0, mbx2=ba8a, cmd=48 ****
 
-what matters most isnt really any documentation but what programs really 
-do, and how it affects users.
+Ok, this is what I would have expected with the linus' tree prior to
+the fix.  I just double-checked, the fix in question has yet to make
+it's way to Linus' tree.  It's currently in scsi-misc-2.6:
 
-in this case i think we should offer a .config option to set the 
-randomization behavior, and should perhaps make the more conservative 
-one the default.
+http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=a571fdf7caa010e17f6a70c0c52e0992e87af7db
 
-New distros (with 10,000+ binaries that work just fine with 
-randomization) will turn on max randomization by default, while people 
-like you who mix 1996 binaries with a 2008 kernel will use a more 
-conservative default.
+which should filter up to linux-2.6.git during Linus' next pull.
 
-	Ingo
+thanks, av
