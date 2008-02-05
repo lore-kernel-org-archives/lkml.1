@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbYBESho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYBESji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbYBESho (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758518AbYBESh3
+	id S1758691AbYBESji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYBESj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:37:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55075 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757927AbYBESh1 (ORCPT
+	Tue, 5 Feb 2008 13:39:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58729 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753230AbYBESj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:37:27 -0500
-Date: Tue, 5 Feb 2008 10:37:00 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: aic7xxx build failure
-Message-ID: <20080205103700.63b658f2@laptopd505.fenrus.org>
-In-Reply-To: <1202236256.3133.52.camel@localhost.localdomain>
-References: <20080205174024.GE505@cs181133002.pp.htv.fi>
-	<1202235484.3133.49.camel@localhost.localdomain>
-	<20080205182441.GF505@cs181133002.pp.htv.fi>
-	<1202236256.3133.52.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 Feb 2008 13:39:27 -0500
+Message-ID: <47A8AD40.7010007@zytor.com>
+Date: Tue, 05 Feb 2008 10:38:56 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       michael.pyne@kdemail.net, AAbdulla@nvidia.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
+ (regression in 2.6.23)
+References: <200802050746.m157ktY9010399@imap1.linux-foundation.org> <47A8A90B.6010602@garzik.org>
+In-Reply-To: <47A8A90B.6010602@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 12:30:56 -0600
-
-> > make: *** [sub-make] Error 2
+Jeff Garzik wrote:
+>>
+>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 > 
-> Do I assume from this that you have different source and object
-> directories?  There shouldn't be a failure if this is building
-> in /home/bunk/linux/kernel-2.6/git/linux-2.6/ because the source file
-> should be there.
+> NAK - this fixes one set of users, and breaks a working set of users.
 > 
-> James
+> Need to add DMI check for the specific motherboard (dmi_check_system), 
+> and flip flag according to success/failure of that check.
+> 
 
-time to run a fsck as well just to rule stuff out?
+Either that, or detect the Gigabyte prefix used as a suffix, since they 
+seem to be the source of this particular f*ckup.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	-hpa
