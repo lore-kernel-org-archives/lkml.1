@@ -1,80 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbYBEKJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYBEKQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbYBEKJj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 05:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbYBEKJb
+	id S1756740AbYBEKQx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 05:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYBEKQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 05:09:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49731 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754822AbYBEKJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 05:09:30 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20420.1201625624@turing-police.cc.vt.edu>
-References: <20420.1201625624@turing-police.cc.vt.edu>
-To: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc6-mm1 - iget-stop-isofs-from-using-read_inode-fix-2.patch
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Tue, 05 Feb 2008 10:09:21 +0000
-Message-ID: <30832.1202206161@redhat.com>
+	Tue, 5 Feb 2008 05:16:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48120 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754747AbYBEKQl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 05:16:41 -0500
+Date: Tue, 5 Feb 2008 02:16:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Toralf =?ISO-8859-1?B?RvZyc3Rlcg==?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Shaohua Li <shaohua.li@intel.com>
+Subject: Re: Why do I have a /sys/devices/system/cpu/cpuidle under kernel
+ 2.6.24 with a Pentium M processor ?
+Message-Id: <20080205021654.37286791.akpm@linux-foundation.org>
+In-Reply-To: <200801311400.17811.toralf.foerster@gmx.de>
+References: <200801311400.17811.toralf.foerster@gmx.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Jan 2008 14:00:14 +0100 Toralf Förster <toralf.foerster@gmx.de> wrote:
 
-How about this patch?
+(suitable cc's added)
 
-David
----
-IGET: Fix isofs_get_block() to only return 0 on success.
+> I'm asking b/c this confuses the current sysstat up to version 8.0.4. An
 
-From: David Howells <dhowells@redhat.com>
+That would be bad.  Please define "confuses"?
 
-Fix isofs_get_block() to return only 0 on success.  It shouldn't return a +ve
-block count for example.
-
-Also make sure that isofs_get_blocks() doesn't accidentally return an error if
-rv is 0 come the return statement.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/isofs/inode.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-
-diff --git a/fs/isofs/inode.c b/fs/isofs/inode.c
-index 0f5ed8c..875d37f 100644
---- a/fs/isofs/inode.c
-+++ b/fs/isofs/inode.c
-@@ -1022,6 +1022,7 @@ int isofs_get_blocks(struct inode *inode, sector_t iblock_s,
- 		rv++;
- 	}
- 
-+	error = 0;
- abort:
- 	unlock_kernel();
- 	return rv != 0 ? rv : error;
-@@ -1033,12 +1034,15 @@ abort:
- static int isofs_get_block(struct inode *inode, sector_t iblock,
- 		    struct buffer_head *bh_result, int create)
- {
-+	int ret;
-+
- 	if (create) {
- 		printk(KERN_DEBUG "%s: Kernel tries to allocate a block\n", __func__);
- 		return -EROFS;
- 	}
- 
--	return isofs_get_blocks(inode, iblock, &bh_result, 1);
-+	ret = isofs_get_blocks(inode, iblock, &bh_result, 1);
-+	return ret < 0 ? ret : 0;
- }
- 
- static int isofs_bmap(struct inode *inode, sector_t block)
+> $ ls -lR /sys/devices/system/cpu/
+> 
+> gives :
+> 
+> /sys/devices/system/cpu/:
+> total 0
+> drwxr-xr-x 4 root root 0 Jan 30 09:36 cpu0
+> drwxr-xr-x 2 root root 0 Jan 30 09:36 cpuidle
+> 
+> /sys/devices/system/cpu/cpu0:
+> total 0
+> drwxr-xr-x 3 root root 0 Jan 30 09:36 cpufreq
+> drwxr-xr-x 5 root root 0 Jan 30 09:36 cpuidle
+> 
+> /sys/devices/system/cpu/cpu0/cpufreq:
+> total 0
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 affected_cpus
+> -r-------- 1 root root 4096 Jan 30 09:36 cpuinfo_cur_freq
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 cpuinfo_max_freq
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 cpuinfo_min_freq
+> drwxr-xr-x 2 root root    0 Jan 30 09:36 ondemand
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 scaling_available_frequencies
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 scaling_available_governors
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 scaling_cur_freq
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 scaling_driver
+> -rw-r--r-- 1 root root 4096 Jan 30 09:36 scaling_governor
+> -rw-r--r-- 1 root root 4096 Jan 30 09:36 scaling_max_freq
+> -rw-r--r-- 1 root root 4096 Jan 30 09:36 scaling_min_freq
+> 
+> /sys/devices/system/cpu/cpu0/cpufreq/ondemand:
+> total 0
+> -rw-r--r-- 1 root root    0 Jan 30 09:36 ignore_nice_load
+> -rw-r--r-- 1 root root 4096 Jan 30 09:36 powersave_bias
+> -rw-r--r-- 1 root root 4096 Jan 30 09:36 sampling_rate
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 sampling_rate_max
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 sampling_rate_min
+> -rw-r--r-- 1 root root 4096 Jan 30 09:36 up_threshold
+> 
+> /sys/devices/system/cpu/cpu0/cpuidle:
+> total 0
+> drwxr-xr-x 2 root root 0 Jan 30 09:36 state0
+> drwxr-xr-x 2 root root 0 Jan 30 09:36 state1
+> drwxr-xr-x 2 root root 0 Jan 30 09:36 state2
+> 
+> /sys/devices/system/cpu/cpu0/cpuidle/state0:
+> total 0
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 latency
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 name
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 power
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 time
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 usage
+> 
+> /sys/devices/system/cpu/cpu0/cpuidle/state1:
+> total 0
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 latency
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 name
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 power
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 time
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 usage
+> 
+> /sys/devices/system/cpu/cpu0/cpuidle/state2:
+> total 0
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 latency
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 name
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 power
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 time
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 usage
+> 
+> /sys/devices/system/cpu/cpuidle:
+> total 0
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 current_driver
+> -r--r--r-- 1 root root 4096 Jan 30 09:36 current_governor_ro
+> 
+> -- 
+> MfG/Sincerely
+> 
+> Toralf Förster
+> pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+> 
