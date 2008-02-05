@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYBENry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYBENsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbYBENry (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 08:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYBENrn
+	id S1754984AbYBENsV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 08:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYBENsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 08:47:43 -0500
-Received: from stinky.trash.net ([213.144.137.162]:58147 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYBENrm (ORCPT
+	Tue, 5 Feb 2008 08:48:05 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50141 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYBENsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 08:47:42 -0500
-Message-ID: <47A868D6.8060907@trash.net>
-Date: Tue, 05 Feb 2008 14:47:02 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Tue, 5 Feb 2008 08:48:03 -0500
+Date: Tue, 05 Feb 2008 22:38:39 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Nadia.Derbey@bull.net
+Subject: Re: [RFC][PATCH v2 7/7] Do not recompute msgmni anymore if explicitely set by user
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-mm@kvack.org, containers@lists.linux-foundation.org,
+       matthltc@us.ibm.com
+In-Reply-To: <20080131135357.082657000@bull.net>
+References: <20080131134018.273154000@bull.net> <20080131135357.082657000@bull.net>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080205222005.67FE.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-CC: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       cups-bugs <cups-bugs@easysw.com>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>
-Subject: Re: cups slow on linux-2.6.24
-References: <Pine.LNX.4.64.0802050913560.6704@boston.corp.fedex.com> <Pine.LNX.4.64.0802050909220.32232@blackhole.kfki.hu>
-In-Reply-To: <Pine.LNX.4.64.0802050909220.32232@blackhole.kfki.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jozsef Kadlecsik wrote:
-> On Tue, 5 Feb 2008, Jeff Chua wrote:
+Thanks Nadia-san.
+
+I tested this patch set on my box. It works well.
+I have only one comment.
+
+
+> ---
+>  ipc/ipc_sysctl.c |   43 +++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 41 insertions(+), 2 deletions(-)
 > 
->> On Feb 5, 2008 4:17 AM, Jozsef Kadlecsik <kadlec@blackhole.kfki.hu> wrote:
->>
->>> Actively closed connections are not handled properly, i.e. the initiator of
->>> the active close should not be taken into account. So could you give a try
->>> to the patch below? Does it just suppress the 'invalid packed ignored' and
->>> all other kernel messages or both suppresses them and produces normal
->>> printing speed?
->> Amazing! You fixed it. No more 'invalid packed ignored', and speed back to
->> normal (continues after approx. 20 seconds of pausing after 503 prints).
-> 
-> Great! Thank you for the testing!
+> Index: linux-2.6.24/ipc/ipc_sysctl.c
+> ===================================================================
+> --- linux-2.6.24.orig/ipc/ipc_sysctl.c	2008-01-29 16:55:04.000000000 +0100
+> +++ linux-2.6.24/ipc/ipc_sysctl.c	2008-01-31 13:13:14.000000000 +0100
+> @@ -34,6 +34,24 @@ static int proc_ipc_dointvec(ctl_table *
+>  	return proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+>  }
+>  
+> +static int proc_ipc_callback_dointvec(ctl_table *table, int write,
+> +	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	size_t lenp_bef = *lenp;
+> +	int rc;
+> +
+> +	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
+> +
+> +	if (write && !rc && lenp_bef == *lenp)
+> +		/*
+> +		 * Tunable has successfully been changed from userland:
+> +		 * disable its automatic recomputing.
+> +		 */
+> +		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+> +
+> +	return rc;
+> +}
+> +
 
 
-Thanks for figuring this out.
+Hmmm. I suppose this may be side effect which user does not wish.
 
->> I used the latest git, and have to modify your patch slightly to make it work
->> (changing "conntrack" to "ct").
-> 
-> Patrick, I suppose you need a patch against the latest git, don't you?
+I would like to recommend there should be a switch which can turn on/off
+automatic recomputing.
+If user would like to change this value, it should be turned off.
+Otherwise, his requrest will be rejected with some messages.
+
+Probably, user can understand easier than this side effect.
+
+Bye.
+
+-- 
+Yasunori Goto 
 
 
-Yes, please. I'll take you first patch for -stable though if you
-send me a Signed-off-by: line.
