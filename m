@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbYBET1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbYBET1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759829AbYBET1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:27:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbYBET1U
+	id S1760272AbYBET1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbYBET1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:27:20 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48067 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755637AbYBET1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:27:19 -0500
-Date: Tue, 5 Feb 2008 21:02:11 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Glenn Griffin <ggriffin.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205200211.GA26150@one.firstfloor.org>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Feb 2008 14:27:34 -0500
+Received: from mail.microway.com ([64.80.227.22]:40917 "EHLO microway.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759938AbYBET1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:27:32 -0500
+X-Greylist: delayed 1500 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 14:27:32 EST
+From: Rick Warner <rick@microway.com>
+Organization: Microway, Inc.
+To: linux-kernel@vger.kernel.org
+Subject: serial port regression caused by "Char: tty_ioctl, use wait_event_interruptible_timeout" patch
+Date: Tue, 5 Feb 2008 14:02:26 -0500
+User-Agent: KMail/1.9.7
+Message-Id: <200802051402.26816.rick@microway.com>
+X-Sanitizer: Advosys mail filter
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 10:29:28AM -0800, Glenn Griffin wrote:
-> > Syncookies are discouraged these days. They disable too many
-> > valuable TCP features (window scaling, SACK) and even without them
-> > the kernel is usually strong enough to defend against syn floods
-> > and systems have much more memory than they used to be.
-> >
-> > So I don't think it makes much sense to add more code to it, sorry.
-> 
-> As you say the kernel is usually strong enough to defend against syn flood
-> attacks, but what about the situations where it isn't?  As valuable as the TCP
-> features are I would give them up if it means I'm able to connect to my sshd
-> port when I otherwise would be unable to.  While increased synq sizes, better
-> dropping algorithms, and minisocks are a great way to mitigate the attacks and
-> in most cases are enough, there are situations where syncookies are nice.
+Hello all,
 
-Have you seen such a case in practice with a modern kernel? 
+My company uses a proprietary hardware monitoring solution that utilizes 
+communication over the serial port.  A RS232-RS485 converter is plugged into 
+the serial port of the master of a cluster, and cat5 cables are daisy chained 
+between the cards to handle out of band hardware monitoring.  The cards 
+themselves speak RS485.  We have been using the same software to read the 
+data from the serial port since the 2.4 kernel days.   As of 2.6.23, the 
+software no longer works.
 
-They also cause problems unfortunately; e.g. there is no real flow control for connections
-anymore in the non DOS case.
+I narrowed down the problem doing a binary search on git snapshots between .22 
+and .23, and found the breakage between git6 and git7.  Further isolating it 
+found the patch mentioned in the subject to be the cause.  I reversed the 
+patch in the .23 source and it now works properly.
 
-> Regardless, I would say as long as ipv4 has syncookie support it will
-> accurately be viewed as a deficiency of ipv6 if it lacks support.  So perhaps
-> the discussion should be we whether all the other defenses are enough to
-> warrant the removal of syncookie support from ipv4.  That topic may bring in
-> more opinions.
+Should the code be reverted back as I did, or is there something I should 
+change in our userspace code that reads from the serial port to correct it 
+instead?
 
-That is essentially what I and Alan were discussing.
-> 
-> > Besides you should really move it to the ipv6 module, right now the code
-> > would be always compiled in even for ipv4 only kernels.
-> 
-> That is correct.  I will gladly move it into it's own section within net/ipv6/.
-> Do you have any problem using the same CONFIG and sysctl variables as the ipv4
-> implementation?
+Thanks,
+Rick
 
-No.
-
--Andi
+-- 
+Richard Warner
+Lead Systems Integrator
+Microway, Inc
+(508)732-5517
