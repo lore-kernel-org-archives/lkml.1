@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbYBEPmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbYBEPmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbYBEPmI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYBEPj3
+	id S1758326AbYBEPmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 10:42:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbYBEPjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:39:29 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:38787 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbYBEPjR (ORCPT
+	Tue, 5 Feb 2008 10:39:32 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:25399 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbYBEPjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Feb 2008 10:39:17 -0500
-Message-Id: <20080205153912.155035312@de.ibm.com>
+Message-Id: <20080205153915.270174246@de.ibm.com>
 References: <20080205153835.337897404@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 05 Feb 2008 16:38:41 +0100
+Date: Tue, 05 Feb 2008 16:38:50 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+Cc: Stefan Weinhuber <wein@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 06/18] Fix linker script.
-Content-Disposition: inline; filename=006-ld-script.diff
+Subject: [patch 15/18] dasd: fix panic caused by alias device offline
+Content-Disposition: inline; filename=015-dasd-panic.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Stefan Weinhuber <wein@de.ibm.com>
 
-Fixes this warning:
-vmlinux: warning: allocated section `.text' not in segment
+When an alias device is set offline while it is in use this may
+result in a panic in the cleanup part of the dasd_block_tasklet.
+The problem here is that there may exist some ccw requests that were
+originally created for the alias device and transferred to the base
+device when the alias was set offline. When these request are
+cleaned up later, the discipline pointer in the alias device may not
+be valid anymore. To fix this use the base device discipline to find
+the cleanup function.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/vmlinux.lds.S |    2 +-
+ drivers/s390/block/dasd.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: quilt-2.6/arch/s390/kernel/vmlinux.lds.S
+Index: quilt-2.6/drivers/s390/block/dasd.c
 ===================================================================
---- quilt-2.6.orig/arch/s390/kernel/vmlinux.lds.S
-+++ quilt-2.6/arch/s390/kernel/vmlinux.lds.S
-@@ -35,7 +35,7 @@ SECTIONS
- 		KPROBES_TEXT
- 		*(.fixup)
- 		*(.gnu.warning)
--	} = 0x0700
-+	} :text = 0x0700
+--- quilt-2.6.orig/drivers/s390/block/dasd.c
++++ quilt-2.6/drivers/s390/block/dasd.c
+@@ -1706,7 +1706,7 @@ static void __dasd_cleanup_cqr(struct da
  
- 	_etext = .;		/* End of text section */
- 
+ 	req = (struct request *) cqr->callback_data;
+ 	dasd_profile_end(cqr->block, cqr, req);
+-	status = cqr->memdev->discipline->free_cp(cqr, req);
++	status = cqr->block->base->discipline->free_cp(cqr, req);
+ 	if (status <= 0)
+ 		error = status ? status : -EIO;
+ 	dasd_end_request(req, error);
 
 -- 
 blue skies,
