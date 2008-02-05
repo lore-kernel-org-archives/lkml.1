@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYBEOSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYBEOUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbYBEOSv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 09:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYBEOSn
+	id S1755246AbYBEOUA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 09:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbYBEOTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 09:18:43 -0500
-Received: from mail.ku-gbr.de ([81.3.11.18]:38987 "EHLO ku-gbr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751563AbYBEOSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 09:18:43 -0500
-Date: Tue, 5 Feb 2008 15:18:41 +0100
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch 1/1] Nikon D80 usb-storage quirk needs modified, new FW
-Message-ID: <20080205141841.GA6791@anita>
-Mail-Followup-To: Xavier Bestel <xavier.bestel@free.fr>,
-	linux-kernel@vger.kernel.org
-References: <20080205124343.GB6638@anita> <1202218008.23816.9.camel@skunk.anacadf.mentorg.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202218008.23816.9.camel@skunk.anacadf.mentorg.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 5 Feb 2008 09:19:48 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:60913 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752010AbYBEOTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 09:19:47 -0500
+Date: Tue, 5 Feb 2008 23:19:14 +0900
+To: cweiss@gmail.com
+Cc: dougg@torque.net, alan@lxorguk.ukuu.org.uk, michaelc@cs.wisc.edu,
+       vst@vlnb.net, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nab@linux-iscsi.org, James.Bottomley@hansenpartnership.com,
+       scst-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <165ac690802041807r147531d8s6bb5f3a1f254bcbb@mail.gmail.com>
+References: <20080204224314.113afe7b@core>
+	<47A74BAA.6080201@torque.net>
+	<165ac690802041807r147531d8s6bb5f3a1f254bcbb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080205231909I.tomof@acm.org>
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 2008-02-05 14:26 +0100 schrieb Xavier Bestel:
+On Mon, 4 Feb 2008 20:07:01 -0600
+"Chris Weiss" <cweiss@gmail.com> wrote:
 
-> > +UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
+> On Feb 4, 2008 11:30 AM, Douglas Gilbert <dougg@torque.net> wrote:
+> > Alan Cox wrote:
+> > >> better. So for example, I personally suspect that ATA-over-ethernet is way
+> > >> better than some crazy SCSI-over-TCP crap, but I'm biased for simple and
+> > >> low-level, and against those crazy SCSI people to begin with.
+> > >
+> > > Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
+> > > would probably trash iSCSI for latency if nothing else.
+> >
+> > And a variant that doesn't do ATA or IP:
+> > http://www.fcoe.com/
+> >
+> 
+> however, and interestingly enough, the open-fcoe software target
+> depends on scst (for now anyway)
 
-> Maybe you should leave them both here.
+STGT also supports software FCoE target driver though it's still
+experimental stuff.
 
-I suppose the device is checked against a range between
-bcdDeviceMin -> bcdDeviceMax to take care of the possibility new
-revisions does not need the quirk anymore but all older and bcdDeviceMax
-but I found the piece of code not yet. Lets see...
+http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12705.html
 
-Konsti
-
--- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+It works in user space like STGT's iSCSI (and iSER) target driver
+(i.e. no kernel/user space interaction).
