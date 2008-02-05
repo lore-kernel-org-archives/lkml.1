@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbYBEAca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbYBEAdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbYBEAca (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 19:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757503AbYBEAcU
+	id S1757620AbYBEAdI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 19:33:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758663AbYBEAcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 19:32:20 -0500
-Received: from web31808.mail.mud.yahoo.com ([68.142.207.71]:30016 "HELO
-	web31808.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756935AbYBEAcT (ORCPT
+	Mon, 4 Feb 2008 19:32:52 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59056 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758095AbYBEAcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 19:32:19 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=hpESCeePOZiHwUC9xpKhMVLfL9+N86YxtMa2nD31/PCMllJgH6DLzJkZDGLV0WSzcX9gnadL+5UmMO+i4Trb/YiRzKGHjzEYz0Uo2WpQL1MTkM2n1bwHDU6DwaBgi7AkmK/5eA21dxRIHPEcohmEWH7Qh7KKMWPjSKM2/m2KHAA=;
-X-YMail-OSG: Y108eJ4VM1nJeLDYSl7Ep50D83ZRzMfIkoh8vJrjW1CUzMTw3_gnkwjdyBm.DO4ogWcVIg--
-X-Mailer: YahooMailWebService/0.7.162
-Date: Mon, 4 Feb 2008 16:32:18 -0800 (PST)
-From: Luben Tuikov <ltuikov@yahoo.com>
-Reply-To: ltuikov@yahoo.com
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-To: linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
-In-Reply-To: <1202074856.3318.111.camel@localhost.localdomain>
+	Mon, 4 Feb 2008 19:32:51 -0500
+Date: Mon, 4 Feb 2008 16:32:50 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: willy@linux.intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [git pull] SLUB updates for 2.6.25
+In-Reply-To: <200802051105.12194.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0802041629290.5057@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802041206190.3241@schroedinger.engr.sgi.com>
+ <200802051010.49372.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0802041542570.4774@schroedinger.engr.sgi.com>
+ <200802051105.12194.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <50030.21278.qm@web31808.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Sun, 2/3/08, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Tue, 5 Feb 2008, Nick Piggin wrote:
 
-> The enclosure misc device is really just a library providing
-> sysfs
-> support for physical enclosure devices and their
-> components.
+> Ok. But the approach is just not so good. If you _really_ need something
+> like that and it is a win over the regular non-atomic unlock, then you
+> just have to implement it as a generic locking / atomic operation and
+> allow all architectures to implement the optimal (and correct) memory
+> barriers.
 
-Who is the target audience/user of those facilities?
-a) The kernel itself needing to read/write SES pages?
-b) A user space application using sysfs to read/write
-   SES pages?
-
-At the moment SES device management is done via
-an application (user-space) and a user-space library
-used by the application and /dev/sgX to send SCSI
-commands to the SES device.
-
-One could have a very good argument to not bloat
-the kernel with this but leave it to a user-space
-application and a library to do all this and
-communicate with the SES device via the kernel's /dev/sgX.
-
-   Luben
+Assuming this really gives a benefit on several benchmarks then we need 
+to think about how to do this some more. Its a rather strange form of 
+locking.
+ 
+Basically you lock the page with a single atomic operation that sets 
+PageLocked and retrieves the page flags. Then we shovel the page state 
+around a couple of functions in a register and finally store the page 
+state back which at the same time unlocks the page. So two memory 
+references with one of them being atomic with none in between. We have 
+nothing that can do something like that right now.
 
