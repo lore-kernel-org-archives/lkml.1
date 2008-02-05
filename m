@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYBETAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759750AbYBETAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbYBETAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbYBES77
+	id S1759750AbYBETAn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbYBETAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:59:59 -0500
-Received: from ag-out-0708.google.com ([72.14.246.240]:4857 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759356AbYBES75 (ORCPT
+	Tue, 5 Feb 2008 14:00:08 -0500
+Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:45235 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754006AbYBETAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:59:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ABDp1S7ntTS/6b8t02TOXSQ2sIp2qUz4qDIIu4YktLTs22N/v0hZZykKRTC5g0ImRtMoba/NeqVpDAkUg5Tz+x8ykufzRlaZcVHYbDy2CPie7npP+Mc1V1DWF8xAt+jYoLuqnYsT+1Dr/MS+m8ckQFFxFqDVJeB+aFUH0fOP7ZE=
-Message-ID: <8bd0f97a0802051059kb108412x7285ebbf82342d48@mail.gmail.com>
-Date: Tue, 5 Feb 2008 13:59:52 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] [Blackfin] char driver for Blackfin on-chip OTP memory
-Cc: "Bryan Wu" <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
-       "Mike Frysinger" <michael.frysinger@analog.com>
-In-Reply-To: <47A058B3.6000009@gmail.com>
+	Tue, 5 Feb 2008 14:00:06 -0500
+Message-ID: <47A8B233.2040503@vlnb.net>
+Date: Tue, 05 Feb 2008 22:00:03 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	<1201639331.3069.58.camel@localhost.localdomain>	<47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>	<1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>	<1202144767.3096.38.camel@localhost.localdomain>	<47A7488B.4080000@vlnb.net>	<1202145901.3096.49.camel@localhost.localdomain>	<alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>	<1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1201689401-2892-1-git-send-email-bryan.wu@analog.com>
-	 <47A058B3.6000009@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 6:00 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 01/30/2008 11:36 AM, Bryan Wu wrote:
-> > +
-> > +     ret = cdev_add(&bfin_otp_cdev, bfin_otp_dev_node, 1);
-> > +     if (ret) {
-> > +             unregister_chrdev_region(bfin_otp_dev_node, 1);
-> > +             printk(KERN_ERR PFX "unable to register char device\n");
-> > +             return ret;
-> > +     }
-> > +
-> > +     bfin_otp_class = class_create(THIS_MODULE, "otp");
-> > +     device_create(bfin_otp_class, NULL, bfin_otp_dev_node, "otp");
->
-> Anyway, wouldn't be easier/better to use misc.c functionality here
-> (misc_register() et al.)?
+Linus Torvalds wrote:
+> So just going by what has happened in the past, I'd assume that iSCSI 
+> would eventually turn into "connecting/authentication in user space" with 
+> "data transfers in kernel space".
 
-thanks, ive converted this now ... Bryan can post an updated patch :)
-http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?action=browse&path=/trunk/drivers/char/bfin-otp.c&r1=4224&r2=4223
--mike
+This is exactly how iSCSI-SCST (iSCSI target driver for SCST) is 
+implemented, credits to IET and Ardis target developers.
+
+Vlad
