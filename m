@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYBEQS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbYBEQUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbYBEQS1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYBEQST
+	id S1754431AbYBEQUr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:20:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbYBEQUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:18:19 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50868 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751837AbYBEQSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:18:18 -0500
-Date: Tue, 5 Feb 2008 17:18:10 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Abel Bernabeu <abel.bernabeu@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [regression] Re: brk randomization breaks columns
-Message-ID: <20080205161810.GF24331@elf.ucw.cz>
-References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz> <20080205110632.GB3758@elf.ucw.cz> <Pine.LNX.4.64.0802051216340.30955@jikos.suse.cz> <20080205125426.GA27724@elte.hu> <20080205130546.GF30691@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205130546.GF30691@devserv.devel.redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 5 Feb 2008 11:20:37 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39086 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751154AbYBEQUg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:20:36 -0500
+Date: Tue, 5 Feb 2008 16:14:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080205161453.151e23e0@core>
+In-Reply-To: <20080205164837.GC23145@one.firstfloor.org>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com>
+	<20080205155558.GA23145@one.firstfloor.org>
+	<20080205154213.059ac6e8@core>
+	<20080205163912.GB23145@one.firstfloor.org>
+	<20080205160301.7b2369ee@core>
+	<20080205164837.GC23145@one.firstfloor.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-02-05 08:05:46, Jakub Jelinek wrote:
-> On Tue, Feb 05, 2008 at 01:54:26PM +0100, Ingo Molnar wrote:
-> > * Jiri Kosina <jkosina@suse.cz> wrote:
-> > 
-> > > On Tue, 5 Feb 2008, Pavel Machek wrote:
-> > > 
-> > > > > Actually, this clearly shows that either prehistoric libc.so.5 or the 
-> > > > > program itself are broken.
-> > > > I believe it shows clear regression in latest 2.6.25 kernel.
-> > > 
-> > > I am still not completely sure. It might be a regression, but it also 
-> > > might just trigger the bug in ancient version in libc.so.5 which might 
-> > > be fixed in some later version [...]
-> > 
-> > which too is a regression ...
-> > 
-> > really, lets add a sysctl for this, and a .config option that either 
-> > disables or enables it. Then we will default to disabled. (but users can 
-> > enable it - and distros can build their kernels with this .config option 
-> > enabled)
+> What kind of LISTEN ports? And does it matter if they're DoS'ed?
+
+I guess that depends on the opinion of the owner
+
+- Push based mobile services
+- Email delivery
+- VoIP
+- Management ports
+- Peer to peer data transfer
+- Instant messaging direct user/user connections
+
+Some of that can also be hardened using IP filter rules
+
+> > Is the other stuff enough - good question, and can be measured easily
+> > enough on a little dlink router or similar.
 > 
-> I don't think kernel should care about programs which are buggy and make invalid
-> assumptions, and that's the case here.  I remember we have been
+> My guess would be that it is.
 
-Those "invalid assumptions" crept into documentation. Everybody knew
-heap starts at the end of bss in 1995.
-
-> 5 years ago when brk randomization has been added to Red Hat kernels.  There was
-> one or two broken programs which made assumptions on what brk(0) is supposed
-> to return at program startup, everything else was ok.
-
-That's not the problem. Problem is that programs assume
-brk(0x12345678) allocates space between end of bss and 0x12345678;
-which is no longer the case.
-
-And actually even
-http://opengroup.org/onlinepubs/007908775/xsh/brk.html only talks
-about "ammount of space"... implying begging of that space is well
-known.
-
-								Pavel
-PS: It would be nice to fix linux man pages to say that it brk() moves
-end of the heap, only, and that any usage of brk() is invalid w/o
-doing brk(0) before.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan
