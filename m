@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbYBESIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYBESI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758687AbYBESIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbYBESIH
+	id S1756750AbYBESI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbYBESIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:08:07 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:52826
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758019AbYBESIF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:08:05 -0500
-Date: Tue, 5 Feb 2008 19:08:02 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-Message-ID: <20080205180802.GE7441@v2.random>
-References: <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com> <20080205052525.GD7441@v2.random> <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com>
+	Tue, 5 Feb 2008 13:08:32 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:52669 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758638AbYBESIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:08:31 -0500
+Message-ID: <47A8A60B.7080000@garzik.org>
+Date: Tue, 05 Feb 2008 13:08:11 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com>
+To: Olivier Galibert <galibert@pobox.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Christie <michaelc@cs.wisc.edu>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+References: <47A73C86.3060604@vlnb.net> <1202144767.3096.38.camel@localhost.localdomain> <47A7488B.4080000@vlnb.net> <1202145901.3096.49.camel@localhost.localdomain> <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org> <1202151989.11265.576.camel@haakon2.linux-iscsi.org> <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org> <20080204210121.GF18682@fieldses.org> <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org> <47A7986B.1070206@garzik.org> <20080205130517.GA35763@dspnet.fr.eu.org>
+In-Reply-To: <20080205130517.GA35763@dspnet.fr.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 10:11:24PM -0800, Christoph Lameter wrote:
-> Zero problems only if you find having a single callout for every page 
-> acceptable. So the invalidate_range in your patch is only working 
+Olivier Galibert wrote:
+> On Mon, Feb 04, 2008 at 05:57:47PM -0500, Jeff Garzik wrote:
+>> iSCSI and NBD were passe ideas at birth.  :)
+>>
+>> Networked block devices are attractive because the concepts and 
+>> implementation are more simple than networked filesystems... but usually 
+>> you want to run some sort of filesystem on top.  At that point you might 
+>> as well run NFS or [gfs|ocfs|flavor-of-the-week], and ditch your 
+>> networked block device (and associated complexity).
+> 
+> Call me a sysadmin, but I find easier to plug in and keep in place an
+> ethernet cable than these parallel scsi cables from hell.  Every
+> server has at least two ethernet ports by default, with rarely any
+> surprises at the kernel level.  Adding ethernet cards is inexpensive,
+> and you pretty much never hear of compatibility problems between
+> cards.
+> 
+> So ethernet as a connection medium is really nice compared to scsi.
+> Too bad iscsi is demented and ATAoE/NBD inexistant.  Maybe external
+> SAS will be nice, but I don't see it getting to the level of
+> universality of ethernet any time soon.  And it won't get the same
+> amount of user-level compatibility testing in any case.
 
-invalidate_pages is only a further optimization that was
-strightforward in some places where the page isn't freed but only the
-pte modified.
+Indeed, at the end of the day iSCSI is a bloated cabling standard.  :)
 
-> sometimes. And even if it works then it has to be used on 2M range. Seems 
-> to be a bit fragile and needlessly complex.
+It has its uses, but I don't see it as ever coming close to replacing 
+direct-to-network (perhaps backed with local cachefs) filesystems... 
+which is how all the hype comes across to me.
 
-The patch as a whole isn't fragile nor complex. Pretending to use
-invalidate_pages anywhere would be complex (and in turn more fragile
-than my current patch, complexity brings fragility).
+Cheap "Lintel" boxes everybody is familiar with _are_ the storage 
+appliances.  Until mass-produced ATA and SCSI devices start shipping 
+with ethernet connectors, anyway.
 
-Overall you can only argue against performance issues (my patch is
-simpler for GRU/KVM, and it sure isn't fragile, quite the opposite,
-given I never allow a coherency-loss between two threads that will
-read/write to two different physical pages for the same virtual
-adddress in remap_file_pages).
+	Jeff
 
-In performance terms with your patch before GRU can run follow_page it
-has to take a mm-wide global mutex where each thread in all cpus will
-have to take it. That will trash on >4-way when the tlb misses start
-to occour. There's nothing like that in my patch. Your approach will
-micro-optimize certain large pte-mangling calls, or do_exit, but those
-aren't interesting paths nor for GRU nor for KVM. You're optimizing for
-the slow path, and making the fast path slower.
 
-> "conversion of some page in pages"? A proposal to defer the freeing of the 
-> pages until after the pte_unlock?
 
-There can be many tricks to optimize page in pages, but again munmap
-and do_exit aren't the interesting path to optimzie, nor for GRU nor
-for KVM so it doesn't matter right now.
