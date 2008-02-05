@@ -1,118 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbYBETJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759857AbYBETKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759924AbYBETJI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:09:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbYBETIv
+	id S1759857AbYBETKS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYBETJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:08:51 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:45606 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756574AbYBETIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:08:50 -0500
-Message-ID: <47A8B43D.5070601@garzik.org>
-Date: Tue, 05 Feb 2008 14:08:45 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 5 Feb 2008 14:09:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40994 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753119AbYBETJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:09:56 -0500
+Date: Tue, 5 Feb 2008 11:09:24 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE updates part #4
+In-Reply-To: <200802022035.02326.bzolnier@gmail.com>
+Message-ID: <alpine.LFD.1.00.0802051059330.3110@woody.linux-foundation.org>
+References: <200802022035.02326.bzolnier@gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: netdev@vger.kernel.org, michael.pyne@kdemail.net, AAbdulla@nvidia.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
- (regression in 2.6.23)
-References: <200802050746.m157ktY9010399@imap1.linux-foundation.org>	<47A8A90B.6010602@garzik.org> <20080205105909.fd8c6dbe.akpm@linux-foundation.org>
-In-Reply-To: <20080205105909.fd8c6dbe.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------030708030606090702080804"
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030708030606090702080804
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Andrew Morton wrote:
-> On Tue, 05 Feb 2008 13:20:59 -0500 Jeff Garzik <jeff@garzik.org> wrote:
+
+On Sat, 2 Feb 2008, Bartlomiej Zolnierkiewicz wrote:
 > 
->>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->> NAK - this fixes one set of users, and breaks a working set of users.
->>
->> Need to add DMI check for the specific motherboard (dmi_check_system), 
->> and flip flag according to success/failure of that check.
-> 
-> OK :)  I added the above to the changelog for next time.
-> 
-> You guys can hide, but this patch isn't going away!
+> * next part of IDE probing code re-organization saga
+>   (that would be me)
 
-In the original thread, I even posted a 
-fill-in-the-blanks-with-the-motherboard-name patch.  I'll attach it again...
+This seems to cause very irritating and bogus messages for me:
 
-	Jeff
+	Probing IDE interface ide0...
+	Probing IDE interface ide1...
+	ide2: I/O resource 0x0-0x7 not free.
+	ide2: ports already in use, skipping probe
+	ide3: I/O resource 0x0-0x7 not free.
+	ide3: ports already in use, skipping probe
+	ide4: I/O resource 0x0-0x7 not free.
+	ide4: ports already in use, skipping probe
+	ide5: I/O resource 0x0-0x7 not free.
+	ide5: ports already in use, skipping probe
+	ide6: I/O resource 0x0-0x7 not free.
+	ide6: ports already in use, skipping probe
+	ide7: I/O resource 0x0-0x7 not free.
+	ide7: ports already in use, skipping probe
+	ide8: I/O resource 0x0-0x7 not free.
+	ide8: ports already in use, skipping probe
+	ide9: I/O resource 0x0-0x7 not free.
+	ide9: ports already in use, skipping probe
 
+and that's just totally bogus. It shouldn't even request that region, 
+since it's not been allocated!
 
+So that "ide_device_add_all()" is missing some checks. Should it check the 
+probe[] array like ideprobe_init() used to, or what?
 
-
---------------030708030606090702080804
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 3634223..eab85fa 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -147,6 +147,7 @@
- #include <linux/init.h>
- #include <linux/if_vlan.h>
- #include <linux/dma-mapping.h>
-+#include <linux/dmi.h>
- 
- #include <asm/irq.h>
- #include <asm/io.h>
-@@ -4992,6 +4993,26 @@ static int nv_close(struct net_device *dev)
- 	return 0;
- }
- 
-+static int nv_reversed_macaddr(void)
-+{
-+	static const struct dmi_system_id sysids[] = {
-+		{
-+			.ident = "",
-+			.matches = {
-+				DMI_MATCH(DMI_SYS_VENDOR, ""),
-+				DMI_MATCH(DMI_PRODUCT_NAME, ""),
-+			},
-+		},
-+
-+		{ }	/* terminate list */
-+	};
-+
-+	if (dmi_check_system(sysids))
-+		return 1;
-+	
-+	return 0;
-+}
-+
- static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
- {
- 	struct net_device *dev;
-@@ -5187,8 +5208,9 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
- 
- 	/* check the workaround bit for correct mac address order */
- 	txreg = readl(base + NvRegTransmitPoll);
--	if ((txreg & NVREG_TRANSMITPOLL_MAC_ADDR_REV) ||
--	    (id->driver_data & DEV_HAS_CORRECT_MACADDR)) {
-+	if (((txreg & NVREG_TRANSMITPOLL_MAC_ADDR_REV) ||
-+	    (id->driver_data & DEV_HAS_CORRECT_MACADDR))) &&
-+	    (!nv_reversed_macaddr())) {
- 		/* mac address is already in correct order */
- 		dev->dev_addr[0] = (np->orig_mac[0] >>  0) & 0xff;
- 		dev->dev_addr[1] = (np->orig_mac[0] >>  8) & 0xff;
-
---------------030708030606090702080804--
+		Linus
