@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbYBEWIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbYBEWKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762036AbYBEWIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760096AbYBEWIM
+	id S1761935AbYBEWKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbYBEWK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:08:12 -0500
-Received: from 1wt.eu ([62.212.114.60]:1744 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759941AbYBEWIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:08:10 -0500
-Date: Tue, 5 Feb 2008 22:20:52 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205212051.GN8953@1wt.eu>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205200211.GA26150@one.firstfloor.org> <20080205203911.GA9891@2ka.mipt.ru> <20080205212017.5db50114@core> <20080205215216.GB24275@2ka.mipt.ru>
+	Tue, 5 Feb 2008 17:10:27 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:40942 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759409AbYBEWKZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 17:10:25 -0500
+Message-Id: <47A896FB.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Tue, 05 Feb 2008 15:03:55 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <dwalker@mvista.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Max Krasnyanskiy" <maxk@qualcomm.com>,
+       "LKML" <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: CPU hotplug and IRQ affinity with 2.6.24-rt1
+References: <47A7A131.8040800@qualcomm.com>
+ <20080205025144.GA31774@dwalker1.mvista.com>
+ <47A7A784.BA47.005A.0@novell.com>
+ <20080205165936.GA18613@dwalker1.mvista.com>
+ <47A863BE.BA47.005A.0@novell.com>
+ <20080205215805.GD18613@dwalker1.mvista.com>
+In-Reply-To: <20080205215805.GD18613@dwalker1.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080205215216.GB24275@2ka.mipt.ru>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 12:52:17AM +0300, Evgeniy Polyakov wrote:
-> Hi Alan.
+>>> On Tue, Feb 5, 2008 at  4:58 PM, in message
+<20080205215805.GD18613@dwalker1.mvista.com>, Daniel Walker
+<dwalker@dwalker1.mvista.com> wrote: 
+> On Tue, Feb 05, 2008 at 11:25:18AM -0700, Gregory Haskins wrote:
+>> @@ -6241,7 +6242,7 @@ static void rq_attach_root(struct rq *rq, struct 
+> root_domain *rd)
+>>                 cpu_clear(rq->cpu, old_rd->online);
+>> 
+>>                 if (atomic_dec_and_test(&old_rd->refcount))
+>> -                       kfree(old_rd);
+>> +                       reap = old_rd;
 > 
-> On Tue, Feb 05, 2008 at 09:20:17PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > > Most (if not all) distributions have them enabled and window growing
-> > > works just fine. Actually I do not see any reason why connection
-> > > establishment handshake should prevent any run-time operations at all,
-> > > even if it was setup during handshake.
-> > 
-> > Syncookies are only triggered if the system is under a load where it
-> > would begin to lose connections otherwise. So they merely turn a DoS into
-> > a working if slightly slower setup (and > 64K windows don't matter for
-> > most normal users, especially on mobile devices).
-> 
-> SACK is actually a good idea for mobile devices, so preventing
-> syncookies from not getting into account some options (btw, does it work
-> with timestamps and PAWS?) is not a solution.
+> Unrelated to the in atomic issue, I was wondering if this if statement
+> isn't true can the old_rd memory get leaked, or is it cleaned up
+> someplace else?
 
-All TCP options negociated during session setup are lost. In fact, some
-bits (3) are still reserved for the best known value of the MSS, but
-that's all. The principle of SYN cookies is that the server does not
-create any session upon the SYN, but builds a sequence number constitued
-from a hash and the values it absolutely needs to know when the client
-validates the session with an ACK.
+Each RQ always has a reference to one root-domain and is thus represented by the rd->refcount.  When the last RQ drops its reference to a particular instance, we free the structure.  So this is the only place where we clean up, but it should also be the only place we need to (unless I am misunderstanding you?)
 
-I've seen some firewalls acting as SYN gateways which send the options
-from the server to the client in the first ACK packet from the server.
-This is normally not allowed, but it seems to work with some TCP stacks
-(at least for the MSS). One solution would be to extend TCP to officially
-support this behaviour and to optionally use it along with SYN cookies,
-but there will always be old clients not compatible with the extension.
+Note that there is one exception: the default root-domain is never freed, which is why we initialize it with a refcount = 1.  So it is theoretically possible to have this particular root-domain dangling with no RQs associated with it, but that is by design. 
 
 Regards,
-Willy
+-Greg
 
