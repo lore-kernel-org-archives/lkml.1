@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYBESji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbYBESk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758691AbYBESji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:39:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYBESj2
+	id S1759207AbYBESk2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYBESkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:39:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58729 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753230AbYBESj1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:39:27 -0500
-Message-ID: <47A8AD40.7010007@zytor.com>
-Date: Tue, 05 Feb 2008 10:38:56 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 5 Feb 2008 13:40:19 -0500
+Received: from mx.mccann.com.mk ([217.16.69.3]:35537 "EHLO on.net.mk"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756350AbYBESkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:40:17 -0500
+X-Greylist: delayed 3604 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 13:40:17 EST
+From: =?utf-8?b?0JTQsNC80ZjQsNC9INCT0LXQvtGA0LPQuNC10LLRgdC60Lg=?= 
+	<penguinista@mail.net.mk>
+Organization: =?utf-8?b?0KHQu9C+0LHQvtC00LXQvSDRgdC+0YTRgtCy0LXRgA==?=
+ =?utf-8?b?INCc0LDQutC10LTQvtC90LjRmNCw?=
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: PCIE ASPM support hangs my laptop pretty often
+Date: Tue, 5 Feb 2008 18:40:04 +0100
+User-Agent: KMail/1.9.7
+Cc: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       michael.pyne@kdemail.net, AAbdulla@nvidia.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
- (regression in 2.6.23)
-References: <200802050746.m157ktY9010399@imap1.linux-foundation.org> <47A8A90B.6010602@garzik.org>
-In-Reply-To: <47A8A90B.6010602@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802051840.05237.penguinista@mail.net.mk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> 
-> NAK - this fixes one set of users, and breaks a working set of users.
-> 
-> Need to add DMI check for the specific motherboard (dmi_check_system), 
-> and flip flag according to success/failure of that check.
-> 
+I've patched my kernel with the PCIe ASPM and after setting
+echo powersave > /sys/module/pcie_aspm/parameters/policy
 
-Either that, or detect the Gigabyte prefix used as a suffix, since they 
-seem to be the source of this particular f*ckup.
+I started to experience random hangs of my laptop.
+Hardware info:
+Thinkpad x60s 1704-5UG
+also tested on a firends X60s 1702-F6U
 
-	-hpa
+Kernel is 2.6.24 + these patches:
+ tuxonice 3.0-rc5
+ thinkpad_acpi v0.19-20080107
+ tp_smapi 0.36
+
+
+-- 
+Damjan Georgievski
