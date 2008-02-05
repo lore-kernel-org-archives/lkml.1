@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYBEQWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYBEQWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbYBEQWe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757615AbYBEQWP
+	id S1755134AbYBEQWs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbYBEQWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:22:15 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:6547 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757590AbYBEQWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:22:13 -0500
-Date: Tue, 5 Feb 2008 08:22:10 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-driver@qlogic.com, Seokmann Ju <seokmann.ju@qlogic.com>
-Subject: Re: 2.6.24 regression w/ QLA2300
-Message-ID: <20080205162210.GH19882@plap3.qlogic.org>
-References: <47A88736.6090706@hp.com> <20080205160246.GF19882@plap3.qlogic.org> <20080205161501.GG19882@plap3.qlogic.org>
+	Tue, 5 Feb 2008 11:22:19 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:44378 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755594AbYBEQWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:22:16 -0500
+From: Jim Meyering <jim@meyering.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] lib/inflate.c: Handle failed malloc.
+Date: Tue, 05 Feb 2008 17:22:14 +0100
+Message-ID: <87lk5z8jbd.fsf@rho.meyering.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205161501.GG19882@plap3.qlogic.org>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 05 Feb 2008 16:22:12.0256 (UTC) FILETIME=[4348A200:01C86813]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008, Andrew Vasquez wrote:
 
-> > Could you load the (default 2.6.24) driver with
-> > ql2xextended_error_logging modules parameter set:
-> > 
-> > 	# insmod qla2xxx ql2xextended_error_logging=1
-> > 
-> > and send the resultant kernel logs?
-> 
-> Could you tray the patch referenced here:
-> 
-> qla2xxx: Correct issue where incorrect init-fw mailbox command was used on non-NPIV capable ISPs.
-> http://article.gmane.org/gmane.linux.scsi/38240
+* lib/inflate.c (inflate_dynamic): Don't deref NULL upon failed malloc.
 
+Signed-off-by: Jim Meyering <meyering@redhat.com>
+---
+diff --git a/lib/inflate.c b/lib/inflate.c
+index 845f91d..9762294 100644
+--- a/lib/inflate.c
++++ b/lib/inflate.c
+@@ -811,6 +811,9 @@ DEBG("<dyn");
+   ll = malloc(sizeof(*ll) * (286+30));  /* literal/length and distance code lengths */
+ #endif
 
-BTW:  the regression in question is not present in vanilla 2.6.24.
-Instead it was introduced early on in the 2.6.25 merge-window.  Linus'
-tree currently has the patch referenced above as well.
-
++  if (ll == NULL)
++    return 1;
++
+   /* make local bit buffer */
+   b = bb;
+   k = bk;
 --
-av
+1.5.4.19.gd3dfd
