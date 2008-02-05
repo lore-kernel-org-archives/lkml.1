@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYBEE7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYBEFFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbYBEE7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 23:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYBEE7d
+	id S1753926AbYBEFFY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 00:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYBEFFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 23:59:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51355 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbYBEE7c (ORCPT
+	Tue, 5 Feb 2008 00:05:11 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:32821 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750805AbYBEFFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 23:59:32 -0500
-Date: Mon, 4 Feb 2008 20:57:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SH/Dreamcast - fix regressions, whitespace and memory
-	leaks in Maple Bus driver
-Message-ID: <20080205045759.GA19282@kroah.com>
-References: <1202068847.6262.7.camel@localhost.localdomain> <20080204052900.GB7585@kroah.com> <1202113675.6489.6.camel@localhost.localdomain> <20080204161437.GA20739@kroah.com> <1202164657.7046.5.camel@localhost.localdomain>
+	Tue, 5 Feb 2008 00:05:09 -0500
+X-Sasl-enc: 3PRmfmkCL5dNVsOMQa5UESVGtNrPpUVZ4sQEf/+Wwnch 1202187908
+Date: Tue, 5 Feb 2008 03:05:04 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Roland Dreier <rdreier@cisco.com>, len.brown@intel.com,
+       ibm-acpi-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test if (level
+	& TP_EC_FAN_FULLSPEED)
+Message-ID: <20080205050504.GB30670@khazad-dum.debian.net>
+References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202164657.7046.5.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <47A79EC8.6060700@tiscali.nl>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 10:37:37PM +0000, Adrian McMenamin wrote:
+On Tue, 05 Feb 2008, Roel Kluin wrote:
+> Roland Dreier wrote:
+> >  >                 /* safety net should the EC not support AUTO
+> >  >                  * or FULLSPEED mode bits and just ignore them */
+> >  >                 if (level & TP_EC_FAN_FULLSPEED)
+> >  >                         level |= 7;     /* safety min speed 7 */
+> >  >                 else if (level & TP_EC_FAN_FULLSPEED)
+> >  >                         level |= 4;     /* safety min speed 4 */
+> >  > 
+> >  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
+> >  > this be replaced by
+> > 
+> > Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
+> > (based on the comment).
 > 
-> On Mon, 2008-02-04 at 08:14 -0800, Greg KH wrote:
-> > On Mon, Feb 04, 2008 at 08:27:55AM +0000, Adrian McMenamin wrote:
-> > > 
-> > > On Sun, 2008-02-03 at 21:29 -0800, Greg KH wrote:
-> > > > On Sun, Feb 03, 2008 at 08:00:47PM +0000, Adrian McMenamin wrote:
-> > > > > From: Adrian McMenamin
-> > > > > 
-> > > > > This patch fixes the regression noted here:
-> > > > > http://lkml.org/lkml/2008/1/26/189 as well as whitespace issues in the
-> > > > > previous commit of this driver and the memory leaks noted here:
-> > > > > http://lkml.org/lkml/2008/2/2/143 (as well as one or two other minor
-> > > > > cleanups).
-> > > > 
-> > > > Which portion of the patch fixes the kobject WARN_ON()?
-> > > 
-> > > 
-> > > 
-> > > +	if (mdev->registered == 0) {
-> > > +		retval = device_register(&mdev->dev);
-> > > +		if (retval) {
-> > > +			printk(KERN_INFO
-> > > +			"Maple bus: Attempt to register device"
-> > > +			" (%x, %x) failed.\n",
-> > > +			mdev->port, mdev->unit);
-> > > +			maple_free_dev(mdev);
-> > > +			mdev = NULL;
-> > > +			return;
-> > > +		}
-> > > +		mdev->registered = 1;
-> > > +	}
-> > >  }
-> > > 
-> > > 
-> > > Specifically the check on mdev->registered
-> > 
-> > So the code path could cause devices to be registered more than once?
-> > That seems broken, as no other bus that I know of needs such a check :(
-> > 
-> > Is there a way to fix the root problem here, instead of this type of
-> > change?
-> > 
+> Thanks Roland, for your info
 > 
-> The hardware is very flaky. If I add in delays to the bus start, it will
-> detect the devices, but it's not brilliant. Registering an empty device
-> got round that problem, at the price of testing for the earlier
-> registration.
+> based on the comments in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad,
+> I think this should be modified like below:
+> 
+> ACPI: thinkpad-acpi: add a safety net for TPEC fan control mode
+> The Linux ThinkPad community is not positive that all ThinkPads that do
+> HFSP EC fan control do implement full-speed and auto modes, some of the
+> earlier ones supporting HFSP might not.
+> 
+> If the EC ignores the AUTO or FULL-SPEED bits, it will pay attention to the
+> lower three bits that set the fan level. And as thinkpad-acpi was leaving
+> these set to zero, it would stop(!) the fan, which is Not A Good Thing.
+> So, as a safety net, we now make sure to also set the fan level part of the
+> HFSP register to speed 7 for full-speed, and a minimum of speed 4 for auto
+> mode.
+> --
+> second TP_EC_FAN_FULLSPEED should be P_EC_FAN_AUTO
+> 
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+> index cf56647..3c323fe 100644
+> --- a/drivers/misc/thinkpad_acpi.c
+> +++ b/drivers/misc/thinkpad_acpi.c
+> @@ -4138,7 +4138,7 @@ static int fan_set_level(int level)
+>  		 * or FULLSPEED mode bits and just ignore them */
+>  		if (level & TP_EC_FAN_FULLSPEED)
+>  			level |= 7;	/* safety min speed 7 */
+> -		else if (level & TP_EC_FAN_FULLSPEED)
+> +		else if (level & TP_EC_FAN_AUTO)
+>  			level |= 4;	/* safety min speed 4 */
+>  
+>  		if (!acpi_ec_write(fan_status_offset, level))
 
-That sounds like you are just papering over the problem.  Just delay
-and let the hardware settle down if needed :)
+ACK.  This needs to be sent to stable as well.  I think both 2.6.22 and
+2.6.23 need this patch.
 
-thanks,
-
-greg k-h
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
