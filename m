@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbYBEIyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYBEJIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbYBEIyr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 03:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbYBEIyf
+	id S1757233AbYBEJIE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 04:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbYBEJHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 03:54:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:7016 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755703AbYBEIyd (ORCPT
+	Tue, 5 Feb 2008 04:07:51 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49543 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755862AbYBEJHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 03:54:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=mN0aAYyS66lujrzFAwnbWRjtsfBzQBwUnMUVnmKqF2Goy6HtCpJf6zHDIdlE7q01fX1ftkUuqHO/QSgyoRZ1mvfNEJjFf5M/yxXDO3z3v0K8ih6MjHVZs4J5kzIWMUq6zFDeZxdClXVJkUWdlqbwU8NFkNf8r0b6YCRGDW4jrNE=
-Message-ID: <47A82443.9000601@gmail.com>
-Date: Tue, 05 Feb 2008 09:54:27 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 5 Feb 2008 04:07:49 -0500
+Date: Tue, 5 Feb 2008 14:37:42 +0530
+From: Chirag Jog <chirag@linux.vnet.ibm.com>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Sripathi Kodi <sripathik@in.ibm.com>, paulus@samba.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] [POWERPC] Use a sensible default for clock_getres() in
+	the vdso.
+Message-ID: <20080205090742.GA11087@linux.vnet.ibm.com>
+Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Mail-Followup-To: Tony Breeds <tony@bakeyournoodle.com>,
+	Sripathi Kodi <sripathik@in.ibm.com>, paulus@samba.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	john stultz <johnstul@us.ibm.com>
+References: <200801271932.59823.sripathik@in.ibm.com> <20080205051648.GX6887@bakeyournoodle.com>
 MIME-Version: 1.0
-To: Oliver Pinter <oliver.pntr@gmail.com>
-CC: "John W. Linville" <linville@tuxdriver.com>,
-       Bruno Randolf <bruno@thinktube.com>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ath5k-devel@lists.ath5k.org
-Subject: Re: [Wireless, ath5k] 2.6.24-git13 9135f1901ee6449dfe338adf6e40e9c2025b8150
-References: <6101e8c40802040600q804e40cs97d0031920e58d9d@mail.gmail.com>	 <47A774AB.5060008@gmail.com>	 <6101e8c40802041334o20b2b391la5b0a5f557ee67c5@mail.gmail.com> <6101e8c40802041340g749b1e03k70fda7fdb21452d7@mail.gmail.com>
-In-Reply-To: <6101e8c40802041340g749b1e03k70fda7fdb21452d7@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080205051648.GX6887@bakeyournoodle.com>
+Organization: IBM LTC
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04/2008 10:40 PM, Oliver Pinter wrote:
-> On 2/4/08, Oliver Pinter <oliver.pntr@gmail.com> wrote:
->> On 2/4/08, Jiri Slaby <jirislaby@gmail.com> wrote:
->>> On 02/04/2008 03:00 PM, Oliver Pinter (Pintér Olivér) wrote:
->>>> [  413.118874] wpa_supplicant[4388]: segfault at 30 ip 080697ca sp
->>>> bfc9cab0 error 4 in wpa_supplicant[8048000+4c000]
->>> Seems like wpa_supplicant is broken. Is this a regression?
->> yes, but with madwifi is all ok
+* Tony Breeds <tony@bakeyournoodle.com> [2008-02-05 16:16:48]:
 
-And this... madwifi goes through ported bsd net80211. So which latest git you 
-tried worked for you when this is a regression, please?
+> On Sun, Jan 27, 2008 at 07:32:59PM +0530, Sripathi Kodi wrote:
+> > Hi Paul,
+> > 
+> > On PPC, I see a disparity between clock_getres implementations in the
+> > vdso and syscall. I am using a IBM Openpower hardware and 2.6.24 kernel
+> > with CONFIG_HIGH_RES_TIMERS=y. 
+> > 
+> > clock_getres call for CLOCK_REALTIME returns 1 millisecond. However,
+> > when I edit arch/powerpc/kernel/vdso*/gettimeofday.S to force it to use 
+> > sys_clock_getres, I get 1 nanosecond resolution. The code in vdso seems
+> > to be returning some pre-defined (incorrect) variables.
+> > 
+> > Could you please let me know the reason for this? Is it something that
+> > should be fixed in vdso?
+> 
+> Can you try the attached patch and see it if works for you?
+I tried this patch.
+It seems to solve the reported problem and give a 1ns resolution.
+Thanks.
+ 
+
+-- 
+Cheers,
+Chirag Jog
+
