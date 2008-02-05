@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYBEQC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbYBEQDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbYBEQC7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYBEQCt
+	id S1758288AbYBEQDe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYBEQDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:02:49 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:2765 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbYBEQCs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:02:48 -0500
-Date: Tue, 5 Feb 2008 08:02:46 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-driver@qlogic.com
-Subject: Re: 2.6.24 regression w/ QLA2300
-Message-ID: <20080205160246.GF19882@plap3.qlogic.org>
-References: <47A88736.6090706@hp.com>
+	Tue, 5 Feb 2008 11:03:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44172 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752162AbYBEQDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:03:24 -0500
+Date: Tue, 5 Feb 2008 17:02:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Abel Bernabeu <abel.bernabeu@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: brk randomization breaks columns
+Message-ID: <20080205160214.GD24331@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47A88736.6090706@hp.com>
-Organization: QLogic Corporation
+In-Reply-To: <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 05 Feb 2008 16:02:47.0942 (UTC) FILETIME=[8D4C6A60:01C86810]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
+Hi!
 
-> commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
-> Merge: 50d9a12... 23c3e29...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Fri Jan 25 17:19:08 2008 -0800
+> Still, it will probably not fix your particular program crashes, just 
+> because it will always assume that brk starts immediately after the end of 
+> the bss, which is plain wrong and has never been assured. Could you please 
+> check whether there is any compat-* package available for you 
+> distribution, that upgrades libc.so.5 to any fixed version?
+
+I got libc.so.5 as a binary from some Slackware-based system, IIRC,
+and I can't find any relevant compat-* packages :-(.
+
+> From: Jiri Kosina <jkosina@suse.cz>
 > 
->     Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
+> brk: check the lower bound properly
 > 
->     * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6: (200 commits)
+> There is a check in sys_brk(), that tries to make sure that we do not 
+> underflow the area that is dedicated to brk heap.
 > 
-> I believe a regression was introduced. I'm running on a 4-way IA64,
-> with straight 2.6.24 and 2 dual-port cards:
+> The check is however wrong, as it assumes that brk area starts immediately 
+> after the end of the code (+bss), which is wrong for example in 
+> environments with randomized brk start. The proper way is to check whether 
+> the address is not below the start_brk address.
 > 
-> 40:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> 40:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> c0:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> c0:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
-> 
-> the adapters failed initialization. In particular, I narrowed it down
-> to failing the qla2x00_mbox_command call within qla2x00_init_firmware
-> function. I went and removed the qla2x00-related parts of this (large-ish)
-> merge, and the 4 ports initialized just fine.
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-Could you load the (default 2.6.24) driver with
-ql2xextended_error_logging modules parameter set:
+ACK.
 
-	# insmod qla2xxx ql2xextended_error_logging=1
 
-and send the resultant kernel logs?
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 8295577..1c3b48f 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -241,7 +241,7 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
+>  
+>  	down_write(&mm->mmap_sem);
+>  
+> -	if (brk < mm->end_code)
+> +	if (brk < mm->start_brk)
+>  		goto out;
+>  
+>  	/*
 
-> Specifically, reverting the "patch" below enabled the devices to initialize properly.
-> 
-> If need be, I'm certainly willing to help narrow down to the specific part in
-> this patch...
-
-That's a rather large patch... :(   Any chance you could git-bisect?
-Also, could you send your .config file you are using?
-
-Thanks,
-Andrew Vasquez
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
