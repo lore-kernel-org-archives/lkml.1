@@ -1,109 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762343AbYBEWHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbYBEWIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762343AbYBEWHO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761311AbYBEWG6
+	id S1762036AbYBEWIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760096AbYBEWIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:06:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59323 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761451AbYBEWG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:06:57 -0500
-Date: Tue, 5 Feb 2008 14:04:45 -0800
-From: Greg KH <greg@kroah.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       linux-kernel@vger.kernel.org, r31dmaeu@pc0312b.rz.unibw-muenchen.de,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [stable] OOM-killer invoked but why ?
-Message-ID: <20080205220445.GA6889@kroah.com>
-References: <47A1C4B1.8020607@pc0312a.rz.unibw-muenchen.de> <20080205020737.cec97816.akpm@linux-foundation.org> <20080205110303.GA8288@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	Tue, 5 Feb 2008 17:08:12 -0500
+Received: from 1wt.eu ([62.212.114.60]:1744 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759941AbYBEWIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 17:08:10 -0500
+Date: Tue, 5 Feb 2008 22:20:52 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080205212051.GN8953@1wt.eu>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205200211.GA26150@one.firstfloor.org> <20080205203911.GA9891@2ka.mipt.ru> <20080205212017.5db50114@core> <20080205215216.GB24275@2ka.mipt.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205110303.GA8288@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080205215216.GB24275@2ka.mipt.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 04:33:03PM +0530, Dhaval Giani wrote:
-> On Tue, Feb 05, 2008 at 02:07:37AM -0800, Andrew Morton wrote:
-> > On Thu, 31 Jan 2008 13:53:05 +0100 Claude Frantz <r31dmaeu@pc0312b.rz.unibw-muenchen.de> wrote:
-> > 
-> > > Hello !
-> > > 
-> > > I'm faced to a problem where the OOM-killer is invoked but I cannot find
-> > > the reason why. The machine is rather powerfull, the load is very moderate,
-> > > the disk swap space is nearly unused. The only strange observation which
-> > > appears to me is the slow but progressive decreasing of kbbuffers during
-> > > many hours.
-> > > 
-> > > Can you help me to diagnose the problem and to find a good solution ?
-> > > 
-> > > ...
-> > >
-> > > Jan 28 03:50:49 toaster kernel: 177466 pages slab
-> > > Jan 28 03:50:49 toaster kernel: 1915 pages pagetables
-> > > Jan 28 03:50:49 toaster kernel: Out of memory: kill process 10859 (amavisd) score 36218 or a child
-> > > Jan 28 03:50:49 toaster kernel: Killed process 19146 (amavisd)
-> > 
-> > slab.  Maybe you've been bitten by the quicklist leak.  If you're able to
-> > patch your kernel then please try this fix:
-> > 
-> > commit 96990a4ae979df9e235d01097d6175759331e88c
-> > Author: Christoph Lameter <clameter@sgi.com>
-> > Date:   Mon Jan 14 00:55:14 2008 -0800
-> > 
-> >     quicklists: Only consider memory that can be used with GFP_KERNEL
-> >     
-> >     Quicklists calculates the size of the quicklists based on the number of
-> >     free pages.  This must be the number of free pages that can be allocated
-> >     with GFP_KERNEL.  node_page_state() includes the pages in ZONE_HIGHMEM and
-> >     ZONE_MOVABLE which may lead the quicklists to become too large causing OOM.
-> >     
-> >     Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> >     Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > 
-> > diff --git a/mm/quicklist.c b/mm/quicklist.c
-> > index ae8189c..3f703f7 100644
-> > --- a/mm/quicklist.c
-> > +++ b/mm/quicklist.c
-> > @@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
-> >  static unsigned long max_pages(unsigned long min_pages)
-> >  {
-> >  	unsigned long node_free_pages, max;
-> > +	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
-> > +
-> > +	node_free_pages =
-> > +#ifdef CONFIG_ZONE_DMA
-> > +		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
-> > +#endif
-> > +#ifdef CONFIG_ZONE_DMA32
-> > +		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
-> > +#endif
-> > +		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
-> > 
-> > -	node_free_pages = node_page_state(numa_node_id(),
-> > -			NR_FREE_PAGES);
-> >  	max = node_free_pages / FRACTION_OF_NODE_MEM;
-> >  	return max(max, min_pages);
-> >  }
-> > 
-> > 
-> > I note that this didn't have the stable@kernel.org cc.  Christoph, did we
-> > deliberately decide not to backport?
-> > 
+On Wed, Feb 06, 2008 at 12:52:17AM +0300, Evgeniy Polyakov wrote:
+> Hi Alan.
 > 
-> According to
-> http://archive.netbsd.se/?ml=linux-stable-commits&a=2008-01&m=6134301 ,
-> its been added to the stable tree. I remember asking Greg to add it.
+> On Tue, Feb 05, 2008 at 09:20:17PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > > Most (if not all) distributions have them enabled and window growing
+> > > works just fine. Actually I do not see any reason why connection
+> > > establishment handshake should prevent any run-time operations at all,
+> > > even if it was setup during handshake.
+> > 
+> > Syncookies are only triggered if the system is under a load where it
+> > would begin to lose connections otherwise. So they merely turn a DoS into
+> > a working if slightly slower setup (and > 64K windows don't matter for
+> > most normal users, especially on mobile devices).
+> 
+> SACK is actually a good idea for mobile devices, so preventing
+> syncookies from not getting into account some options (btw, does it work
+> with timestamps and PAWS?) is not a solution.
 
-And then Christoph told me to remove it...
+All TCP options negociated during session setup are lost. In fact, some
+bits (3) are still reserved for the best known value of the MSS, but
+that's all. The principle of SYN cookies is that the server does not
+create any session upon the SYN, but builds a sequence number constitued
+from a hash and the values it absolutely needs to know when the client
+validates the session with an ACK.
 
-thanks,
+I've seen some firewalls acting as SYN gateways which send the options
+from the server to the client in the first ACK packet from the server.
+This is normally not allowed, but it seems to work with some TCP stacks
+(at least for the MSS). One solution would be to extend TCP to officially
+support this behaviour and to optionally use it along with SYN cookies,
+but there will always be old clients not compatible with the extension.
 
-greg k-h
+Regards,
+Willy
+
