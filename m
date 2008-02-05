@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYBESSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbYBESTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbYBESSm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759123AbYBESS0
+	id S1759341AbYBESTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbYBESTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:18:26 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36861 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759116AbYBESSZ (ORCPT
+	Tue, 5 Feb 2008 13:19:01 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50274 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755389AbYBESTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:18:25 -0500
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20080205180557.GC29502@shadowen.org>
-References: <20080128202840.974253868@sgi.com>
-	 <20080128202923.609249585@sgi.com>  <20080205180557.GC29502@shadowen.org>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 19:17:52 +0100
-Message-Id: <1202235473.19243.25.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 13:19:00 -0500
+Date: Tue, 5 Feb 2008 10:18:11 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Vladislav Bolkhovitin <vst@vlnb.net>, Vu Pham <vuhuong@mellanox.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+In-Reply-To: <e2e108260802050825u68ef2ee9m6e085acb6b474fe@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0802051016240.9374@woody.linux-foundation.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>  <1201639331.3069.58.camel@localhost.localdomain>  <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>  <e2e108260802040553j2f3bf8c2n9fae132e000990f7@mail.gmail.com>
+ <e2e108260802050825u68ef2ee9m6e085acb6b474fe@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-02-05 at 18:05 +0000, Andy Whitcroft wrote:
 
-> > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
-> > +		rcu_read_lock();
-> > +		hlist_for_each_entry_safe_rcu(mn, n, t,
-> > +					  &mm->mmu_notifier.head, hlist) {
-> > +			if (mn->ops->release)
-> > +				mn->ops->release(mn, mm);
+On Tue, 5 Feb 2008, Bart Van Assche wrote:
 > 
-> Does this ->release actually release the 'nm' and its associated hlist?
-> I see in this thread that this ordering is deemed "use after free" which
-> implies so.
-> 
-> If it does that seems wrong.  This is an RCU hlist, therefore the list
-> integrity must be maintained through the next grace period in case there
-> are parallell readers using the element, in particular its forward
-> pointer for traversal.
+> Results that I did not expect:
+> * A block transfer size of 1 MB is not enough to measure the maximal
+> throughput. The maximal throughput is only reached at much higher
+> block sizes (about 10 MB for SCST + SRP and about 100 MB for STGT +
+> iSER).
 
-That is not quite so, list elements must be preserved, not the list
-order.
+Block transfer sizes over about 64kB are totally irrelevant for 99% of all 
+people.
 
-> 
-> > +			hlist_del(&mn->hlist);
-> 
-> For this to be updating the list, you must have some form of "write-side"
-> exclusion as these primatives are not "parallel write safe".  It would
-> be helpful for this routine to state what that write side exclusion is.
+Don't even bother testing anything more. Yes, bigger transfers happen, but 
+a lot of common loads have *smaller* transfers than 64kB.
 
-Yeah, has been noticed, read on in the thread :-)
+So benchmarks that try to find "theoretical throughput" by just making big 
+transfers should just be banned. They give numbers, yes, but the numbers 
+are pointless.
 
-> I am not sure it makes sense to add a _safe_rcu variant.  As I understand
-> things an _safe variant is used where we are going to remove the current
-> list element in the middle of a list walk.  However the key feature of an
-> RCU data structure is that it will always be in a "safe" state until any
-> parallel readers have completed.  For an hlist this means that the removed
-> entry and its forward link must remain valid for as long as there may be
-> a parallel reader traversing this list, ie. until the next grace period.
-> If this link is valid for the parallel reader, then it must be valid for
-> us, and if so it feels that hlist_for_each_entry_rcu should be sufficient
-> to cope in the face of entries being unlinked as we traverse the list.
-
-It does make sense, hlist_del_rcu() maintains the fwd reference, but it
-does unlink it from the list proper. As long as there is a write side
-exclusion around the actual removal as you noted.
-
-rcu_read_lock();
-hlist_for_each_entry_safe_rcu(tpos, pos, n, head, member) {
-
-	if (foo) {
-		spin_lock(write_lock);
-		hlist_del_rcu(tpos);
-		spin_unlock(write_unlock);
-	}
-}
-rcu_read_unlock();
-
-is a safe construct in that the list itself stays a proper list, and
-even items that might be caught in the to-be-deleted entries will have a
-fwd way out.
-
+			Linus
