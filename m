@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYBER1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYBEReF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbYBER1n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 12:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYBER1d
+	id S1756005AbYBEReF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 12:34:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYBERdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 12:27:33 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56443 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbYBER1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 12:27:32 -0500
-Date: Tue, 5 Feb 2008 18:27:31 +0100
-From: Jan Kara <jack@suse.cz>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
-Message-ID: <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
-References: <20080131161417.GA29679@unused.rdu.redhat.com>
+	Tue, 5 Feb 2008 12:33:55 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36980 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752778AbYBERdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 12:33:54 -0500
+Date: Tue, 5 Feb 2008 18:33:58 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Jiri Kosina <jkosina@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Abel Bernabeu <abel.bernabeu@gmail.com>
+Subject: Re: brk randomization breaks columns
+Message-ID: <20080205173358.GG24331@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz> <Pine.LNX.4.64.0802051243240.542@blonde.site> <20080205070001.7bc8058f@laptopd505.fenrus.org> <20080205154648.GA24331@elf.ucw.cz> <20080205085841.51713a5d@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080131161417.GA29679@unused.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080205085841.51713a5d@laptopd505.fenrus.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On Tue 2008-02-05 08:58:41, Arjan van de Ven wrote:
+> On Tue, 5 Feb 2008 16:46:48 +0100
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > Hi!
+> > 
+> > > > In my usual dither, I'm rather hoping Arjan will have a clear
+> > > > answer.
+> > > 
+> > > 
+> > > setarch works. If the apps come in source form they need fixing
+> > > anyway (since I'd not be surprised of current gcc reorders
+> > > variables), if not.. we only have 2 cases, the other case was the
+> > > build process of emacs (which got fixed 5 years ago).
+> > 
+> > uemacs ... broken with randomization
+> > colums, sss ... local programs, broken with randomization
+> > procinfo ... broken, randomization makes it die sooner.
+> > mikmod ... broken with randomization
+> > bsdsed ... broken with randomization
+> > ...
+> > Should I test few more?
+> 
+> ok throw that idea out of the window then
+> 
+> the combo of a config option + sysctl sounds the right way forward then ;(
+> 
+> Unless there's a way we can make sys_brk() detect this kind of behavior somehow...
+> we could track per process if brk(0) was called, and if not, do something fancy to work around stuff?
 
-  Sorry for replying a bit late but I'm currently falling behind in
-maling-list reading...
+That behaviour is indeed easy to detect. If someone does sys_brk()
+with value lower than heap_start, it means it is old binary (but I'd
+call that a hack).
 
-> The way jbd tries to determine if there is enough space left on the journal in
-> order to start a new transaction is looking at the space left in the journal and
-> the space needed for the committing transaction, which is 1/4 of the journal +
-> the number of t_outstanding_credits for that transaction.  In this case its
-> assumed that t_outstanding_credits accurately represents the number of credits
-  Yes.
-
-> waiting to be written to the journal, but this sometimes isn't the case.  The
-> transaction has two counters for buffers, t_outstanding_credits which is used in
-> conjunction with handles that are added to the transaction, and t_nr_buffers
-> which is only incremented/decremented when buffers are added/removed from the
-> transaction and are actually destined to be journaled.  Normally these two
-  t_nr_buffers actually represents number of buffers on BJ_Metadata list
-and nobody uses it (except for the assertion in
-__journal_temp_unlink_buffer()). t_outstanding_credits is supposed to be *the*
-counter making sure we don't write more than we have credits for.
-
-> counters are the same, however there are cases where the committing transaction
-> can have buffers moved to the next running transaction, for example any buffers
-> on the committing transactions t_reserved list would be moved to the next
-> (running) transaction, and if it had been dirtied in the process it would
-> immediately make it onto the t_updates list, which would increment t_nr_buffers
-  You probably mean t_buffers list here...
-> but not t_outstanding_credits.  So you get into this situation where
-  But which moving and dirtying do you mean? The caller which dirties
-the buffer must make sure that he has acquired enough credits for the
-transaction where the buffer ends up... So if there were not enough
-buffers in the running transaction where we refiled the buffer it is a
-bug in the caller which dirties the buffer.
-
-> t_nr_buffers (the actual number of buffers that are on the transaction) is
-> greater than the number of buffers accounted for via t_outstanding_credits.
-> This presents a problem since as we loop through writting buffers to the
-> journal, we decrement t_outstanding_credits, and if t_nr_buffers is more than
-> t_outstanding_credits then we end up with a negative number for
-> t_outstanding_credits, which means we start saying we need less than 1/4 of the
-> journal for our committing transaction and allow more transactions than we can
-> handle to start, and then bam we fail because journal_next_log_block doesn't
-> have enough free blocks in order to handle the request.  This has been tested
-> and fixes the issue (which could not be reproduced by me but several other
-> people could get it to reproduce using postmark), and although I couldn't
-> reproduce the assertion, I could very easily reproduce the situation where
-> t_outstanding_credits was < than t_nr_buffers.
-  I suppose you see the assertion J_ASSERT(journal->j_free > 1); to
-fail, right? I don't see how your patch could help avoid that assertion.
-You've just removed accounting of t_outstanding_credits which has no
-impact on the real number of free blocks in the journal stored in
-j_free. Anyway, if you can reproduce t_outstanding_credits <
-t_nr_buffers, then there's something fishy. Are you able to reproduce it
-also with a current kernel?
-  Thanks for looking into the problem :)
-
-									Honza
+But... older binaries call sys_personality(). Maybe it is cleaner not
+to base check on that?
+									Pavel
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
