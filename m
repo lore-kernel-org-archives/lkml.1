@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYBEFZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbYBEFca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbYBEFZi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 00:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYBEFZ3
+	id S1754563AbYBEFca (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 00:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYBEFcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 00:25:29 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57342
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751278AbYBEFZ2 (ORCPT
+	Tue, 5 Feb 2008 00:32:20 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:54134 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbYBEFcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 00:25:28 -0500
-Date: Tue, 5 Feb 2008 06:25:25 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-Message-ID: <20080205052525.GD7441@v2.random>
-References: <20080131045750.855008281@sgi.com> <20080131171806.GN7185@v2.random> <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com> <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com>
+	Tue, 5 Feb 2008 00:32:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=x1zxXFMeqiMbmx3wqn+ZrHtULPBumhRC/x8F9k59fFwZc5Xt3BmPw02jbkGijuFxMp9v7glG/mvX8Ax2qFk17h85bnSwbUbl3I4E45hI3I/T2uXRPCd1Rq/s5lS0XnhDYeoPtq7AbXENG7jx9qEHLzCzMhm0mBsQNqT3LTwaX5o=
+Message-ID: <47A7F4DB.3070406@gmail.com>
+Date: Tue, 05 Feb 2008 12:32:11 +0700
+From: Igor M Podlesny <for.poige+linux@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071205 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: > You may find that you need to update your lvm userspace tools.
+References: <43d009740802022335y21c3f93ep4e444bef71338045@mail.gmail.com>	<20080202235103.20dd9768.akpm@linux-foundation.org>	<47A71040.5000300@gmail.com> <20080204052709.12f4e0d3.akpm@linux-foundation.org>
+In-Reply-To: <20080204052709.12f4e0d3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 11:09:01AM -0800, Christoph Lameter wrote:
-> On Sun, 3 Feb 2008, Andrea Arcangeli wrote:
+On 2008-02-04 20:27, Andrew Morton wrote:
+> On Mon, 04 Feb 2008 20:16:48 +0700 Igor M Podlesny <for.poige+linux@gmail.com> wrote:
+[...]
+>>    Now I can say that both 2.6.24-mm1 and 2.6.24-git11 do NOT "see" any
+>> of mine LVM-2 disks. pvscan, for e.g., finds nothing at all.
 > 
-> > > Right but that pin requires taking a refcount which we cannot do.
-> > 
-> > GRU can use my patch without the pin. XPMEM obviously can't use my
-> > patch as my invalidate_page[s] are under the PT lock (a feature to fit
-> > GRU/KVM in the simplest way), this is why an incremental patch adding
-> > invalidate_range_start/end would be required to support XPMEM too.
-> 
-> Doesnt the kernel in some situations release the page before releasing the 
-> pte lock? Then there will be an external pte pointing to a page that may 
-> now have a different use. Its really bad if that pte does allow writes.
+> You may find that you need to update your lvm userspace tools.
 
-Sure the kernel does that most of the time, which is for example why I
-had to use invalidate_page instead of invalidate_pages inside
-zap_pte_range. Zero problems with that (this is also the exact reason
-why I mentioned the tlb flushing code would need changes to convert
-some page in pages).
+	You're right; I've updated my initrd with fresh lvm
+userspace-counterpart and now the problem has been fixed. Sorry for
+groundless alert.
+
+	Thanks!
+
+-- 
+End of message. Next message?
