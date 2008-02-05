@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbYBETNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbYBETN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760140AbYBETNn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbYBETNa
+	id S1760252AbYBETN5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbYBETNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:13:30 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:44116 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753221AbYBETN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:13:28 -0500
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <47A8B210.8040202@vlnb.net>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net>  <47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>	<47A751C5.60600@vlnb.net>
-	 <1202149322.3096.66.camel@localhost.localdomain>
-	 <47A75B8A.3020503@vlnb.net>
-	 <1202151293.3096.80.camel@localhost.localdomain>
-	 <47A8B210.8040202@vlnb.net>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 13:13:22 -0600
-Message-Id: <1202238802.3133.71.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Tue, 5 Feb 2008 14:13:34 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:47696 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755757AbYBETNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:13:31 -0500
+Message-ID: <47A8B558.7060605@garzik.org>
+Date: Tue, 05 Feb 2008 14:13:28 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ayaz Abdulla <aabdulla@nvidia.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       michael.pyne@kdemail.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
+ (regression in 2.6.23)
+References: <200802050746.m157ktY9010399@imap1.linux-foundation.org>	<47A8A90B.6010602@garzik.org> <20080205105909.fd8c6dbe.akpm@linux-foundation.org> <47A74C7E.8080101@nvidia.com>
+In-Reply-To: <47A74C7E.8080101@nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 21:59 +0300, Vladislav Bolkhovitin wrote:
-> >>Hmm, how can one write to an mmaped page and don't touch it?
-> > 
-> > I meant from user space ... the writes are done inside the kernel.
+Ayaz Abdulla wrote:
+> Andrew Morton wrote:
+>> On Tue, 05 Feb 2008 13:20:59 -0500 Jeff Garzik <jeff@garzik.org> wrote:
+>>
+>>
+>>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>>
+>>> NAK - this fixes one set of users, and breaks a working set of users.
+>>>
+>>> Need to add DMI check for the specific motherboard 
+>>> (dmi_check_system), and flip flag according to success/failure of 
+>>> that check.
+>>
+>>
+>> OK :)  I added the above to the changelog for next time.
+>>
+>> You guys can hide, but this patch isn't going away!
 > 
-> Sure, the mmap() approach agreed to be unpractical, but could you 
-> elaborate more on this anyway, please? I'm just curious. Do you think 
-> about implementing a new syscall, which would put pages with data in the 
-> mmap'ed area?
-
-No, it has to do with the way invalidation occurs.  When you mmap a
-region from a device or file, the kernel places page translations for
-that region into your vm_area.  The regions themselves aren't backed
-until faulted.  For write (i.e. incoming command to target) you specify
-the write flag and send the area off to receive the data.  The gather,
-expecting the pages to be overwritten, backs them with pages marked
-dirty but doesn't fault in the contents (unless it already exists in the
-page cache).  The kernel writes the data to the pages and the dirty
-pages go back to the user.  msync() flushes them to the device.
-
-The disadvantage of all this is that the handle for the I/O if you will
-is a virtual address in a user process that doesn't actually care to see
-the data. non-x86 architectures will do flushes/invalidates on this
-address space as the I/O occurs.
+> I believe Michael determined that a newer BIOS fixes this issue.
 
 
-> > However, as Linus has pointed out, this discussion is getting a bit off
-> > topic. 
-> 
-> No, that isn't off topic. We've just proved that there is no good way to 
-> implement zero-copy cached I/O for STGT. I see the only practical way 
-> for that, proposed by FUJITA Tomonori some time ago: duplicating Linux 
-> page cache in the user space. But will you like it?
+That's a solution that makes vendors happy... but we still have to deal 
+with it in Linux.  There are plenty of the old broken BIOS still out in 
+the field...
 
-Well, there's no real evidence that zero copy or lack of it is a problem
-yet.
-
-James
+	Jeff
 
 
