@@ -1,36 +1,40 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755498AbYBEMUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755548AbYBEMVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbYBEMUk (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 5 Feb 2008 07:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYBEMUV
+	id S1755548AbYBEMVn (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 5 Feb 2008 07:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYBEMVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:20:21 -0500
-Received: from n7a.bullet.ukl.yahoo.com ([217.146.183.155]:42998 "HELO
-	n7a.bullet.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752431AbYBEMUT (ORCPT
+	Tue, 5 Feb 2008 07:21:34 -0500
+Received: from n6.bullet.ukl.yahoo.com ([217.146.182.183]:31250 "HELO
+	n6.bullet.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751924AbYBEMVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:20:19 -0500
+	Tue, 5 Feb 2008 07:21:33 -0500
 X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 506585.25756.bm@omp509.mail.sp1.yahoo.com
+X-Yahoo-Newman-Id: 170458.10575.bm@omp406.mail.sp1.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=a79G92SaQtKcPZIHn32A7a+Ju8hQPWQyWurbiBKvensexJy09JXG1+29rirUSL+LJ8TK6S1H+aNGYSMwa+Y2kfd6yUOKerMTseRn1ql0JK7zjozyi/oEsE4SuUXI6RHGUakHjsNL0+OFtgca+KQFdm2FDpL4CV6NW/JHbOp7vSc=;
-X-YMail-OSG: cyfLs4UVM1nTM8PDUlBc4pZMSI8sB2I7JavAQxZepod1raNTDOIbUDfjEEXOe0d86xGmrTToCujXdQQSHfkHsG5Nug--
-Date: Tue, 5 Feb 2008 04:20:17 -0800 (PST)
+  b=j9y95eFSUhV3OlMSmifOaq1oYWhrMGp+uzfEszLbb/0lxOVjaXLY5vYJyW7KxEv1BtkXstCcHPinDMa+SNwSbZ2T2YqTSJknaCIfTOChlBp39Bfgcat32/nMYk6TwlvrJqcOH8vEibMvB9LgBrjPpKJN0IviUxt9q4WRgivABXU=;
+X-YMail-OSG: ugQY2yAVM1lCZ7DTAZwCU1YWie5H3eILev2m5gE_WoNKlFBLU5iF6Af1RExftUA6npRfwYiMwrsVQ4IleNUDUD9P9Q--
+Date: Tue, 5 Feb 2008 04:15:51 -0800 (PST)
 From: am kara <kara_am@yahoo.com>
 Subject: kara_am
 To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <310692.64199.qm@web45915.mail.sp1.yahoo.com>
+Message-ID: <944151.61055.qm@web45908.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there any suggestion to improve IPsec subsystem of
-the kernel?
+I have a suggestion for the documentation of the
+kernel. Placing a comment about the function of each
+file and folder inside the kernel.
+
+This comment maybe short but saves a lot of time of a
+code reviewer.  
 
 
       ____________________________________________________________________________________
