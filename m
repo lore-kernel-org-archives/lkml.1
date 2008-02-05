@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762126AbYBEWMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbYBEWMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762126AbYBEWMV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760533AbYBEWMO
+	id S1762450AbYBEWMi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:12:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762212AbYBEWMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:12:14 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50742 "EHLO relay.sgi.com"
+	Tue, 5 Feb 2008 17:12:25 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:50758 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760065AbYBEWMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:12:12 -0500
-Date: Tue, 5 Feb 2008 14:12:11 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Jackson <pj@sgi.com>, David Rientjes <rientjes@google.com>,
-       Mel Gorman <mel@csn.ul.ie>, torvalds@linux-foundation.org,
-       Eric Whitney <eric.whitney@hp.com>
-Subject: Re: [2.6.24 regression][BUGFIX] numactl --interleave=all doesn't
- works on memoryless node.
-In-Reply-To: <1202248652.5332.51.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0802051406500.14665@schroedinger.engr.sgi.com>
-References: <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com> 
- <1202149243.5028.61.camel@localhost>  <20080205163406.270B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <1202248652.5332.51.camel@localhost>
+	id S1762198AbYBEWMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 17:12:23 -0500
+Date: Tue, 5 Feb 2008 16:12:22 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080205221221.GP17211@sgi.com>
+References: <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com> <20080205052525.GD7441@v2.random> <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com> <20080205180802.GE7441@v2.random> <Pine.LNX.4.64.0802051013440.11705@schroedinger.engr.sgi.com> <20080205205519.GF7441@v2.random> <Pine.LNX.4.64.0802051400200.14665@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802051400200.14665@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008, Lee Schermerhorn wrote:
+On Tue, Feb 05, 2008 at 02:06:23PM -0800, Christoph Lameter wrote:
+> On Tue, 5 Feb 2008, Andrea Arcangeli wrote:
+> 
+> > On Tue, Feb 05, 2008 at 10:17:41AM -0800, Christoph Lameter wrote:
+> > > The other approach will not have any remote ptes at that point. Why would 
+> > > there be a coherency issue?
+> > 
+> > It never happens that two threads writes to two different physical
+> > pages by working on the same process virtual address. This is an issue
+> > only for KVM which is probably ok with it but certainly you can't
+> > consider the dependency on the page-pin less fragile or less complex
+> > than my PT lock approach.
+> 
+> You can avoid the page-pin and the pt lock completely by zapping the 
+> mappings at _start and then holding off new references until _end.
 
-> mbind(2), on the other hand, just masks off any nodes in the 
-> nodemask that are not included in the caller's mems_allowed.
+XPMEM is doing this by putting our equivalent structure of the mm into a
+recalling state which will cause all future faulters to back off, it then
+marks any currently active faults in the range as invalid (we have a very
+small number of possible concurrent faulters for a different reason),
+proceeds to start remote shoot-downs, waits for those shoot-downs to
+complete, then returns from the _begin callout with the mm-equiv still in
+the recalling state.  Additional recalls may occur, but no new faults can.
+The _end callout reduces the number of active recalls until there are
+none left at which point the faulters are allowed to proceed again.
 
-Ok so we temporarily adopt these semantics for set_mempolicy.
-
-> 1) modify contextualize_policy to just remove the non-allowed
->    nodes, as is currently done in-line for mbind().  This
->    guarantees that the resulting mask includes only nodes with
->    memory.
-
-Right make ssense. we already contextualize for cpusets.
-
-> Index: Linux/mm/mempolicy.c
-> ===================================================================
-> --- Linux.orig/mm/mempolicy.c	2008-02-05 11:25:17.000000000 -0500
-> +++ Linux/mm/mempolicy.c	2008-02-05 16:03:11.000000000 -0500
-> @@ -131,7 +131,7 @@ static int mpol_check_policy(int mode, n
->  			return -EINVAL;
->  		break;
->  	}
-> - 	return nodes_subset(*nodes, node_states[N_HIGH_MEMORY]) ? 0 : -EINVAL;
-> + 	return 0;
->  }
-
-Hmmm... That is a pretty drastic change.
-
-> @@ -188,8 +188,6 @@ static struct mempolicy *mpol_new(int mo
->  	switch (mode) {
->  	case MPOL_INTERLEAVE:
->  		policy->v.nodes = *nodes;
-> -		nodes_and(policy->v.nodes, policy->v.nodes,
-> -					node_states[N_HIGH_MEMORY]);
->  		if (nodes_weight(policy->v.nodes) == 0) {
->  			kmem_cache_free(policy_cache, policy);
->  			return ERR_PTR(-EINVAL);
-
-Do we really need to remove these lines if we change set_mempolicy?
-
-> @@ -426,9 +424,13 @@ static int contextualize_policy(int mode
->  	if (!nodes)
->  		return 0;
->  
-> +	/*
-> +	 * Restrict the nodes to the allowed nodes in the cpuset.
-> +	 * This is guaranteed to be a subset of nodes with memory.
-> +	 */
->  	cpuset_update_task_memory_state();
-> -	if (!cpuset_nodes_subset_current_mems_allowed(*nodes))
-> -		return -EINVAL;
-> +	nodes_and(*nodes, *nodes, cpuset_current_mems_allowed);
-> +
->  	return mpol_check_policy(mode, nodes);
->  }
->  
-
-Ditto?
-
-> @@ -797,7 +799,7 @@ static long do_mbind(unsigned long start
->  	if (end == start)
->  		return 0;
->  
-> -	if (mpol_check_policy(mode, nmask))
-> +	if (contextualize_policy(mode, nmask))
->  		return -EINVAL;
->  
->  	new = mpol_new(mode, nmask);
-> @@ -915,10 +917,6 @@ asmlinkage long sys_mbind(unsigned long 
->  	err = get_nodes(&nodes, nmask, maxnode);
->  	if (err)
->  		return err;
-> -#ifdef CONFIG_CPUSETS
-> -	/* Restrict the nodes to the allowed nodes in the cpuset */
-> -	nodes_and(nodes, nodes, current->mems_allowed);
-> -#endif
-
-Would just removing #ifdef CONFIG_CPUSETS work? mems_allowed falls back to 
-node_possible_map.... Shouldnt that be node_online_map?
-
+Thanks,
+Robin
