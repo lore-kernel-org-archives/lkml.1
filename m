@@ -1,159 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbYBEGcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbYBEGep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbYBEGcw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 01:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYBEGco
+	id S1754552AbYBEGep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 01:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYBEGei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 01:32:44 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:48303 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbYBEGcn (ORCPT
+	Tue, 5 Feb 2008 01:34:38 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41213 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbYBEGeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 01:32:43 -0500
-Message-ID: <47A802FF.3090807@linux.vnet.ibm.com>
-Date: Tue, 05 Feb 2008 12:02:31 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [BUG] 2.6.24-git6 soft lockup detected while running libhugetlbfs
-References: <47A01C30.7020309@linux.vnet.ibm.com> <20080130165947.GA6336@elte.hu> <47A0AE4E.5090400@linux.vnet.ibm.com> <20080201143302.GC26232@elte.hu>
-In-Reply-To: <20080201143302.GC26232@elte.hu>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Feb 2008 01:34:37 -0500
+Date: Mon, 4 Feb 2008 22:34:30 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Igor M Podlesny <for.poige+linux@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: NVIDIA's Linux x86 Display Driver fresh driver isn't compatible
+ anymore
+Message-ID: <20080204223430.415161e9@laptopd505.fenrus.org>
+In-Reply-To: <47A80218.3040304@gmail.com>
+References: <43d009740802022335y21c3f93ep4e444bef71338045@mail.gmail.com>
+	<20080202235103.20dd9768.akpm@linux-foundation.org>
+	<47A71040.5000300@gmail.com>
+	<20080204052709.12f4e0d3.akpm@linux-foundation.org>
+	<47A7F4DB.3070406@gmail.com>
+	<47A80218.3040304@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
->> The CONFIG_NO_HZ is not set and the system seems not be truly locked 
->> up ,btw wc -l of the softlockup messages is around 108 times, while 
->> running the libhugetlbfs only and this is reproducible with the 
->> 2.6.24-git7 also.
-> 
-> Peter just fixed a handful of bugs in this area - does the patch below 
-> help?
-> 
-> 	Ingo
-> 
-> ------------------>
-> Subject: debug: softlockup looping fix
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> Rafael J. Wysocki reported weird, multi-seconds delays during
-> suspend/resume and bisected it back to:
-> 
->   commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
->   Author: Ingo Molnar <mingo@elte.hu>
->   Date:   Fri Jan 25 21:08:02 2008 +0100
-> 
->       softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
-> 
-> fix it:
-> 
->  - restore the old wakeup mechanism
->  - fix break usage in do_each_thread() { } while_each_thread().
->  - fix the hotplug switch stmt, a fall-through case was broken.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/softlockup.c |   30 ++++++++++++++++++++----------
->  1 file changed, 20 insertions(+), 10 deletions(-)
-> 
-> Index: linux/kernel/softlockup.c
-> ===================================================================
-> --- linux.orig/kernel/softlockup.c
-> +++ linux/kernel/softlockup.c
-> @@ -101,6 +101,10 @@ void softlockup_tick(void)
-> 
->  	now = get_timestamp(this_cpu);
-> 
-> +	/* Wake up the high-prio watchdog task every second: */
-> +	if (now > (touch_timestamp + 1))
-> +		wake_up_process(per_cpu(watchdog_task, this_cpu));
-> +
->  	/* Warn about unreasonable delays: */
->  	if (now <= (touch_timestamp + softlockup_thresh))
->  		return;
-> @@ -191,11 +195,11 @@ static void check_hung_uninterruptible_t
->  	read_lock(&tasklist_lock);
->  	do_each_thread(g, t) {
->  		if (!--max_count)
-> -			break;
-> +			goto unlock;
->  		if (t->state & TASK_UNINTERRUPTIBLE)
->  			check_hung_task(t, now);
->  	} while_each_thread(g, t);
-> -
-> + unlock:
->  	read_unlock(&tasklist_lock);
->  }
-> 
-> @@ -218,14 +222,19 @@ static int watchdog(void *__bind_cpu)
->  	 * debug-printout triggers in softlockup_tick().
->  	 */
->  	while (!kthread_should_stop()) {
-> +		set_current_state(TASK_INTERRUPTIBLE);
->  		touch_softlockup_watchdog();
-> -		msleep_interruptible(10000);
-> +		schedule();
-> +
-> +		if (kthread_should_stop())
-> +			break;
-> 
->  		if (this_cpu != check_cpu)
->  			continue;
-> 
->  		if (sysctl_hung_task_timeout_secs)
->  			check_hung_uninterruptible_tasks(this_cpu);
-> +
->  	}
-> 
->  	return 0;
-> @@ -259,13 +268,6 @@ cpu_callback(struct notifier_block *nfb,
->  		wake_up_process(per_cpu(watchdog_task, hotcpu));
->  		break;
->  #ifdef CONFIG_HOTPLUG_CPU
-> -	case CPU_UP_CANCELED:
-> -	case CPU_UP_CANCELED_FROZEN:
-> -		if (!per_cpu(watchdog_task, hotcpu))
-> -			break;
-> -		/* Unbind so it can run.  Fall thru. */
-> -		kthread_bind(per_cpu(watchdog_task, hotcpu),
-> -			     any_online_cpu(cpu_online_map));
->  	case CPU_DOWN_PREPARE:
->  	case CPU_DOWN_PREPARE_FROZEN:
->  		if (hotcpu == check_cpu) {
-> @@ -275,6 +277,14 @@ cpu_callback(struct notifier_block *nfb,
->  			check_cpu = any_online_cpu(temp_cpu_online_map);
->  		}
->  		break;
-> +
-> +	case CPU_UP_CANCELED:
-> +	case CPU_UP_CANCELED_FROZEN:
-> +		if (!per_cpu(watchdog_task, hotcpu))
-> +			break;
-> +		/* Unbind so it can run.  Fall thru. */
-> +		kthread_bind(per_cpu(watchdog_task, hotcpu),
-> +			     any_online_cpu(cpu_online_map));
->  	case CPU_DEAD:
->  	case CPU_DEAD_FROZEN:
->  		p = per_cpu(watchdog_task, hotcpu);
-Hi Ingo,
+On Tue, 05 Feb 2008 13:28:40 +0700
+Igor M Podlesny <for.poige+linux@gmail.com> wrote:
 
-Thanks for the patch. The softlockup is not always reproducible, I tried six rounds without the patch to reproduce
-the softlockup but was not able to. This is not seen after the 2.6.24-git8 and above, hope because of peters patch 
-is already there in in the git(s).
+> On 2008-02-05 12:32, Igor M Podlesny wrote:
+> > On 2008-02-04 20:27, Andrew Morton wrote:
+> >> On Mon, 04 Feb 2008 20:16:48 +0700 Igor M Podlesny
+> >> <for.poige+linux@gmail.com> wrote:
+> > [...]
+> >>>    Now I can say that both 2.6.24-mm1 and 2.6.24-git11 do NOT
+> >>> "see" any of mine LVM-2 disks. pvscan, for e.g., finds nothing at
+> >>> all.
+> >> 
+> >> You may find that you need to update your lvm userspace tools.
+> > 
+> > 	You're right; I've updated my initrd with fresh lvm
+> > userspace-counterpart and now the problem has been fixed. Sorry for
+> > groundless alert.
+> > 
+> > 	Thanks!
+> 
+> 	But as russian proverb says, trouble never comes alone. :-)
+> NVIDIA's fresh driver isn't compatible anymore:
+> 
+> 	1) To have compiled it I had to replace global_flush_tlb()
+> call with __flush_tlb_all() and still guessing was it(?) a correct
+> replacment at all :-)
+
+it is not; 
+> 
+> 	2) When loading it emits such messages:
+> 
+> 		nvidia: Unknown symbol change_page_attr
+> 		nvidia: Unknown symbol init_mm
+> 
+> 	Can it be quick and easy solved?
+
+best asked at one of the nvidia forums, not on lkml...
+they need to adjust a few API calls, it's not hard work but they need
+to do that (their driver isn't open source)
+
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
