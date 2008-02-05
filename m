@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYBEEKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYBEEPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbYBEEKA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 23:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYBEEJv
+	id S1754675AbYBEEPo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 23:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYBEEPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 23:09:51 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:56981 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbYBEEJu (ORCPT
+	Mon, 4 Feb 2008 23:15:36 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:43737 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbYBEEPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 23:09:50 -0500
-Message-ID: <47A7E13D.6060709@qualcomm.com>
-Date: Mon, 04 Feb 2008 20:08:29 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
+	Mon, 4 Feb 2008 23:15:35 -0500
+Message-ID: <47A7E282.1080902@linux.vnet.ibm.com>
+Date: Tue, 05 Feb 2008 09:43:54 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       srostedt@redhat.com, ghaskins@novell.com
-Subject: Re: Integrating cpusets and cpu isolation [was Re: [CPUISOL] CPU
- isolation extensions]
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	<1201511305.6149.30.camel@lappy>	<20080128085910.7d38e9f5.pj@sgi.com>	<479E20DA.2080403@qualcomm.com>	<20080128130637.60db148e.pj@sgi.com>	<47A21C53.2010502@qualcomm.com>	<20080202001612.98354ff2.pj@sgi.com>	<47A557E3.4080206@qualcomm.com>	<20080203015315.6053d3dd.pj@sgi.com>	<47A6AABD.7080006@qualcomm.com>	<20080204045429.7738c25c.pj@sgi.com>	<47A79D73.7080402@qualcomm.com> <20080204204650.1385ae3e.pj@sgi.com>
-In-Reply-To: <20080204204650.1385ae3e.pj@sgi.com>
+To: Jeff Davis <linux@j-davis.com>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] badness() dramatically overcounts memory
+References: <1202182480.24634.22.camel@dogma.ljc.laika.com>
+In-Reply-To: <1202182480.24634.22.camel@dogma.ljc.laika.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Paul Jackson wrote:
-> Max K wrote:
->>>     And for another thing, we already declare externs in cpumask.h for
->>>     the other, more widely used, cpu_*_map variables cpu_possible_map,
->>>     cpu_online_map, and cpu_present_map.
->> Well, to address #2 and #3 isolated map will need to be exported as well.
->> Those other maps do not really have much to do with the scheduler code.
->> That's why I think either kernel/cpumask.c or kernel/cpu.c is a better place for them.
+Jeff Davis wrote:
+> In oom_kill.c, one of the badness calculations is wildly inaccurate. If
+> memory is shared among child processes, that same memory will be counted
+> for each child, effectively multiplying the memory penalty by N, where N
+> is the number of children.
 > 
-> Well, if you have need it to be exported for #2 or #3, then that's ok
-> by me - export it.
+> This makes it almost certain that the parent will always be chosen as
+> the victim of the OOM killer (assuming any substantial amount memory
+> shared among the children), even if the parent and children are well
+> behaved and have a reasonable and unchanging VM size.
 > 
-> I'm unaware of any kernel/cpumask.c.  If you meant lib/cpumask.c, then
-> I'd prefer you not put it there, as lib/cpumask.c just contains the
-> implementation details of the abstract data type cpumask_t, not any of
-> its uses.  If you mean kernel/cpuset.c, then that's not a good choice
-> either, as that just contains the implementation details of the cpuset
-> subsystem.  You should usually define such things in one of the files
-> using it, and unless there is clearly a -better- place to move the
-> definition, it's usually better to just leave it where it is.
+> Usually this does not actually alleviate the memory pressure because the
+> truly bad process is completely unrelated; and the OOM killer must later
+> kill the truly bad process.
+> 
+> This trivial patch corrects the calculation so that it does not count a
+> child's shared memory against the parent.
+> 
 
-I was thinking of creating the new file kernel/cpumask.c. But it probably does not make sense 
-just for the masks. I'm now thinking kernel/cpu.c is the best place for it. It contains all 
-the cpu hotplug logic that deals with those maps at the very top it has stuff like
+Hi, Jeff,
 
-/* Serializes the updates to cpu_online_map, cpu_present_map */
-static DEFINE_MUTEX(cpu_add_remove_lock);
+1. grep on the kernel source tells me that shared_vm is incremented only in
+   vm_stat_account(), which is a NO-OP if CONFIG_PROC_FS is not defined.
+2. How have you tested these patches? One way to do it would be to use the
+   memory controller and set a small limit on the control group. A memory
+   intensive application will soon see an OOM.
 
-So it seems to make sense to keep the maps in there.
+I do need to look at OOM kill sanity, my colleagues using the memory controller
+have reported wrong actions taken by the OOM killer, but I am yet to analyze them.
 
-Max
+The interesting thing is the use of total_vm and not the RSS which is used as
+the basis by the OOM killer. I need to read/understand the code a bit more.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
