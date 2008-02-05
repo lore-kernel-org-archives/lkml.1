@@ -1,114 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYBEMc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbYBEMdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbYBEMc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 07:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYBEMcr
+	id S1755880AbYBEMdo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 07:33:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbYBEMdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:32:47 -0500
-Received: from ns.firmix.at ([62.141.48.66]:4382 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbYBEMcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:32:45 -0500
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-From: Bernd Petrovitsch <bernd@firmix.at>
+	Tue, 5 Feb 2008 07:33:35 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35034 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752138AbYBEMde (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 07:33:34 -0500
+Date: Tue, 5 Feb 2008 12:27:41 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: David Newall <davidn@davidnewall.com>
-Cc: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <courier.47A845EF.0000444D@hawking.rebel.net.au>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       David Newall <davidn@davidnewall.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080205122741.24b8a392@core>
+In-Reply-To: <courier.47A84ADB.000047C1@hawking.rebel.net.au>
 References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
-	 <47A5D895.20300@davidnewall.com> <1202205358.9770.18.camel@tara.firmix.at>
-	 <courier.47A845EF.0000444D@hawking.rebel.net.au>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Tue, 05 Feb 2008 13:32:37 +0100
-Message-Id: <1202214757.9770.57.camel@tara.firmix.at>
+	<20080202123710.42df1aa0@weinigel.se>
+	<20080202191930.GA19826@kroah.com>
+	<47A5D9CD.5070001@davidnewall.com>
+	<84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
+	<47A5E67D.9040804@davidnewall.com>
+	<1202058820.15090.60.camel@violet>
+	<courier.47A84ADB.000047C1@hawking.rebel.net.au>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.328 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.328 required=5
-X-Spam-Score: -2.328 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Die, 2008-02-05 at 21:48 +1030, David Newall wrote:
-> Bernd Petrovitsch writes: 
-> > On Mon, 2008-02-04 at 01:37 +1030, David Newall wrote:
-> > [...]
-> >> disadvantage Linux with respect to many classes of devices, for example
-> >> GSM transceivers when used in those parts of the world^ where regulatory
-> >> requirements prohibit modification of power or frequency settings, which
-> >> effectively prohibits open-source driver.
+> It is precisely the fact that it is a loadable module, and does not form 
+> part of the kernel, that removes the requirement to distribute it under GPL. 
 
-BTW the (trivial?) solution for the hardware manufacturer: People must
-use/download some signed binary blurb which actually configures the
-limits of the configurable values.
+That would be your own personal strange opinion.
 
-> > Are you sure that that is not only (the results of) propaganda of
-> > (certain) proprietary companies?
-> 
-> well, yes. 
->
-> > Usually the *user* (at home, wherever) sets "illegal" values. So it's
-> > the users responsibility and the manufacturer, importer or sellers don't
-> > care (if only that can't prevent other "illegal" actions like "beating
-> > some to death with $WLAN_ROUTER").
-> 
-> Or, as is the case perhaps almost everywhere, governments prohibit devices 
+Having actually spent time with lawyers on the subject the question that
+matters for the GPL is the line between a derivative work and a
+non-derivative work. The former the GPL covers - the latter it does not.
+That is totally independent of the technical implementation of the
+loading and combining of the code.
 
-There are rumors/stories that even the FCC in .us doesn't go after
-producers/vendors/sellers of devices which may be operated beyond
-governmental requirements. With exactly my comparison BTW.
-Does the FCC forbid the *operating* or the *distribution*?
+There is even at least one case where the lawyers on both sides of a
+dispute have concurred that something is derivative because it was closely
+dependant on a backend that it communicated with by pipes and was useless
+without that backend and clearly built solely to use it.
 
-> that can operate outside of local requirements. 
+Mechanism is not important, whether you are doing RPC calls, dynamic
+linking or static linking isn't part of the creative process.
 
-At least in .at it is not forbidden to import and/or sell devices which
-*can* be operated outside some local law requirements. If *you*
-configure it wrong, *you* have violated the law/rules and it is thus in
-*your* responsibility.
+The only exception to the derivative work question is usual system calls.
+I don't think anyone expects those to create a derivative work anyway but
+just in case the law gets a bit carried away the COPYING file for the
+kernel explicitly covers this to ensure there is certainty about running
+totally seperate proprietary applications on the Linux kernel.
 
-The first reason is that there are European Union laws which basically
-override the local Austrian laws - but we can ignore that as it is a
-European Union thing.
-
-One (non-technical) reason is that even those requirements change over
-time.
-
-Another reason is that e.g. setting the transmit power on some common
-WLAN devices to the minimal possible values (which the hardware allows)
-doesn't imply staying within legal bounds: I can have a (common of the
-shelf!) high-quality antenna and not-so-bad cabling and than I'm beyond
-the officially allowed maximum transmit power.
-
-A third (non-technical) reason is that I (as a pure private
-person/organization) may have some explicit governmental exception of
-the governmental limits (for whatever reason).
-
-I concur that there might be governments which forbid
-importing/selling/distributing devices where legal usage is absolutely
-not possible.
-But historically at least in .at, these devices were simply marked "for
-export only". "Problem" solved.
-
-> > Or do you get a gun manufacturer before court just because someone
-> > committed a crime with a its gun?
-> 
-> Let's not confuse the issue.
-
-It's IMHO precisely the issue (at least with my understanding of law
-stuff): Which action is illegal and who is responsible for it.
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+Alan
