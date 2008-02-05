@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbYBESAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYBESFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbYBESAg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYBESA1
+	id S1756241AbYBESFY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYBESFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:00:27 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48732 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252AbYBESA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:00:26 -0500
-Subject: Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to
-	change an ID
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Pierre Peiffer <pierre.peiffer@bull.net>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <47A83194.8060808@cs.columbia.edu>
-References: <20080129160229.612172683@bull.net>
-	 <20080129162000.454857358@bull.net>
-	 <20080129210656.GB1990@martell.zuzino.mipt.ru>	<47A18E47.5050206@bull.net>
-	 <47A19AC2.7040709@sw.ru> <47A1B78C.7050405@bull.net>
-	 <47A83194.8060808@cs.columbia.edu>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 10:00:25 -0800
-Message-Id: <1202234426.10699.209.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 13:05:12 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60904 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751756AbYBESFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:05:11 -0500
+Date: Tue, 5 Feb 2008 19:05:19 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Abel Bernabeu <abel.bernabeu@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: brk randomization breaks columns
+Message-ID: <20080205180519.GA1525@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 04:51 -0500, Oren Laadan wrote:
-> That said, I suggest the following method instead (this is the method
-> we use in Zap to determine the desired resource identifier when a new
-> resource is allocated; I recall that we had discussed it in the past,
-> perhaps the mini-summit in september ?):
-> 
-> 1) The process/thread tells the kernel that it wishes to pre-determine
-> the resource identifier of a subsequent call (this can be done via a
-> new syscall, or by writing to /proc/self/...).
-> 
-> 2) Each system call that allocates a resource and assigns an
-> identifier
-> is modified to check this per-thread field first; if it is set then
-> it will attempt to allocate that particular value (if already taken,
-> return an error, eg. EBUSY). Otherwise it will proceed as it is today.
+Hi!
 
-You forgot to attach the patch to your mail. ;)
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 8295577..1c3b48f 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -241,7 +241,7 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
+>  
+>  	down_write(&mm->mmap_sem);
+>  
+> -	if (brk < mm->end_code)
+> +	if (brk < mm->start_brk)
+>  		goto out;
+>  
+>  	/*
 
--- Dave
+Sorry, I now tested the patch. It looked good to my untrained eyes,
+but upon testing it on columns:
 
+...
+personality(PER_LINUX)                  = 4194304
+geteuid()                               = 1000
+getuid()                                = 1000
+getgid()                                = 1002
+getegid()                               = 1002
+brk(0x8054098)                          = 0x922d000
+--- SIGSEGV (Segmentation fault) @ 0 (0) ---
+
+...it should have said -EINVAL or something like that.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
