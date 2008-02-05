@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbYBEXbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763282AbYBEXbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762637AbYBEXbT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 18:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbYBEXbJ
+	id S1763282AbYBEXbx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762412AbYBEXbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 18:31:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39269 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbYBEXbI (ORCPT
+	Tue, 5 Feb 2008 18:31:43 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34958 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758651AbYBEXbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 18:31:08 -0500
-Date: Tue, 5 Feb 2008 15:29:16 -0800
-From: Greg KH <greg@kroah.com>
+	Tue, 5 Feb 2008 18:31:42 -0500
+Date: Tue, 5 Feb 2008 23:25:50 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: David Newall <davidn@davidnewall.com>
-Cc: Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+Cc: Diego Zuccato <diego@otello.alma.unibo.it>,
+       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080205232916.GA9040@kroah.com>
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <20080203124849.0226560f@weinigel.se> <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com> <47A5F418.6030104@weinigel.se> <20080203231530.GB15692@kroah.com> <courier.47A8EDDC.0000785F@hawking.rebel.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <courier.47A8EDDC.0000785F@hawking.rebel.net.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-ID: <20080205232550.5d3d22ff@core>
+In-Reply-To: <courier.47A8F072.000079E4@hawking.rebel.net.au>
+References: <20080125180232.GA4613@kroah.com>
+	<20080202123710.42df1aa0@weinigel.se>
+	<20080202191930.GA19826@kroah.com>
+	<47A5D895.20300@davidnewall.com>
+	<47A6E742.80408@otello.alma.unibo.it>
+	<courier.47A8F072.000079E4@hawking.rebel.net.au>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 09:44:36AM +1030, David Newall wrote:
-> A kernel module is akin to a process.  It uses services of the kernel 
-> without being part of the kernel.
+> "Of course", because in many parts of the world, a device who's manufacturer 
+> fails to take reasonable steps to prevent it from being used outside 
+> regulatory limits is illegal.  Providing source code not only is a failure 
+> to take those reasonable steps, but is quite the opposite.  It may even be 
+> viewed as encouraging users to use it inappropriately.
 
-No Linux does not work like this at all.
+To my knowledge there is no caselaw on this for software, nor is it
+clearly so simple - many vendors do provide source, many vendors provide
+windows drivers where any end user can click to specify their country and
+can lie trivially. Many users retrofit US firmware to non US devices and
+its trivial to do. Its a hard problem - if I get on the train I can
+change regulatory domain and wireless regulations mid trip. I'm not even
+sure at what point the wireless rules are deemed to change between the UK
+and France either - there isn't any caselaw for that ;)
 
-Like Alan said, you really need to brush up on your basic IP law, as
-well as some basic technical issues regarding how the Linux kernel
-works before trying to make statements like this.
+Some (particularly US) companies choose to take a conservative view based
+on their pessimistic reading of the intent of the US regulator plus the
+ability of the regulator to do a lot of damage to their business.
 
-Also see the various issues surrounding "loadable modules" and Samba,
-and how they have successfully enforced the "linking" and other type
-issues that are being discussed here (shims, "GPL condoms", etc.) with
-regards to the GPLv2 and derivative works.
+The notion they are illegal is a real unknown and the market seems split
+on views of this.
 
-good luck,
-
-greg k-h
+Alan
