@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYBEPAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYBEPCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbYBEPAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYBEPA3
+	id S1754103AbYBEPCY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 10:02:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYBEPCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:00:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36684 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYBEPA3 (ORCPT
+	Tue, 5 Feb 2008 10:02:08 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37337 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750897AbYBEPCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 10:00:29 -0500
-Date: Tue, 5 Feb 2008 07:00:01 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Abel Bernabeu <abel.bernabeu@gmail.com>
-Subject: Re: brk randomization breaks columns
-Message-ID: <20080205070001.7bc8058f@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0802051243240.542@blonde.site>
-References: <20080204122837.GA1647@elf.ucw.cz>
-	<Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
-	<Pine.LNX.4.64.0802051243240.542@blonde.site>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Tue, 5 Feb 2008 10:02:06 -0500
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ltuikov@yahoo.com
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <150265.33450.qm@web31808.mail.mud.yahoo.com>
+References: <150265.33450.qm@web31808.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 09:01:56 -0600
+Message-Id: <1202223716.3133.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-02-04 at 21:35 -0800, Luben Tuikov wrote:
+> > > I guess the same could be said for STGT and SCST,
+> > right?
+> > 
+> > You mean both of their kernel pieces are modular? 
+> > That's correct.
 > 
-> But I was myself surprised by your randomize_brk patch: like the
-> buggy program, I'd imagined that data immediately followed by bss
-> immediately followed by brk was an invariant (whereas I never
-> supposed the position of the code had anything to do with it).
-> Just my ignorance, but not surprising if it's shared by others.
-
-the surprise also will be when gcc reorders your .data section for optimization,
-and the variable you think is last.. no longer isn't.
-
+> No, you know very well what I mean.
 > 
-> So, I didn't really expect the randomize_brk patch to get this far,
-> thought it would hit trouble earlier.  What to do now?  On the one
-> hand Pavel rightly regards this as a regression, on the other hand
-> we've had programs which make bad assumptions about their address
-> space layout before, and have not always deferred to them.
+> By the same logic you're preaching to include your
+> solution part of the kernel, you can also apply to
+> SCST.
+
+Ah, but it's not ... the current patch is merely exporting an interface.
+The debate in STGT vs SCST is not whether to export an interface but
+where to draw the line.
+
+You could also argue in the same vein that sd is redundant because a
+filesystem could talk directly to the device via /dev/sgX (in fact OSD
+based filesystems already do this).  The argument is true, but misses
+the bigger picture that the interfaces exported by sd are more portable
+(apply to non-SCSI block devices) and easier to use.
+
+> > > Yes, for which the transport layer, implements the
+> > > scsi device node for the SES device.  It doesn't
+> > really
+> > > matter if the SCSI commands sent to the SES device go
+> > > over SGPIO or FC or SAS or Bluetooth or I2C, etc, the
+> > > transport layer can implement that and present the
+> > > /dev/sgX node.
+> > 
+> > But it does matter if the enclosure device doesn't
+> > speak SCSI.
 > 
-> If such cases are few (can we be sure of that yet?), is it going
+> Enclosure management isn't as simple as you're
+> portraying it here.  The enclosure management
+> device speaks either SES or SAF-TE.  The transport
+> protocol to access it could be SGPIO or I2C or...
 
-it's for sure only few; this is the second known case is 5 years
-that made this dicey assumption (RHEL/Fedora ship with this for 5 years or so now)
-Various "secure" distros ship with brk detached as well (albeit via other methods)
-for even longer.
+Look, just read the spec; SGPIO is a bus for driving enclosures ... it
+doesn't require SES or SAF-TE or even any SCSI protocol.
 
-> to be good enough to rely on adding the ELF note to disable their
-> randomization?
-
-sadly elfnotes are a sparse commodity.
+> >  SGPIO
+> > isn't a SCSI protocol ... it's a general purpose
+> > serial bus protocol.
+> > It's pretty simple and register based, but it might (or
+> > might not) be
+> > accessible via a SCSI bridge.
 > 
-> In my usual dither, I'm rather hoping Arjan will have a clear answer.
+> I see.  You've just discovered SGPIO -- good for you.
+> 
+> At any rate, I told you already that what is needed
+> is not what you've provided but a _device node_
+> exported by the kernel, either a processor or
+> enclosure type.
+
+Wrong ... we don't export non-SCSI devices as SCSI (with the single and
+rather annoying exception of ATA via SAT).
+
+James
 
 
-setarch works. If the apps come in source form they need fixing anyway (since I'd not be
-surprised of current gcc reorders variables), if not.. we only have 2 cases,
-the other case was the build process of emacs (which got fixed 5 years ago).
-My personal guess is, if there's nothing more than "columns", lets swallow it.
-If more show up, we need to rethink it. I somehow doubt more real apps will show
-up given how widespread and long this patch was deployed... but turning of randomization
-already exists via various methods, both global and per process.
