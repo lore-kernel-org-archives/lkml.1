@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYBECnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYBECrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbYBECnx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 21:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYBECno
+	id S1756122AbYBECrK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 21:47:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYBECq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 21:43:44 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:35088 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbYBECno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 21:43:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IkyRKKVbZbGCzkYgWoo4QMl+zbKKOZcTN7LE4HvWKnJ1JQYmn+X8YfVGhp9Q71RvRhME+ntt/qbu25jV+itZ+grpBrAdQlFZwDqcq1BBTXVCKtUjF126eGsMUJL2qYjEUsT6Tx9AFpYdajsAeSqECfVJzan6qC6djD2jF69S/pA=
-Subject: [PATCH] x86: fix sparse warnings in powernow-k8.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 18:43:42 -0800
-Message-Id: <1202179422.6452.13.camel@brick>
+	Mon, 4 Feb 2008 21:46:56 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:54172 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751465AbYBECqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 21:46:55 -0500
+Date: Mon, 4 Feb 2008 20:46:50 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       srostedt@redhat.com, ghaskins@novell.com
+Subject: Re: Integrating cpusets and cpu isolation [was Re: [CPUISOL] CPU
+ isolation extensions]
+Message-Id: <20080204204650.1385ae3e.pj@sgi.com>
+In-Reply-To: <47A79D73.7080402@qualcomm.com>
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
+	<1201511305.6149.30.camel@lappy>
+	<20080128085910.7d38e9f5.pj@sgi.com>
+	<479E20DA.2080403@qualcomm.com>
+	<20080128130637.60db148e.pj@sgi.com>
+	<47A21C53.2010502@qualcomm.com>
+	<20080202001612.98354ff2.pj@sgi.com>
+	<47A557E3.4080206@qualcomm.com>
+	<20080203015315.6053d3dd.pj@sgi.com>
+	<47A6AABD.7080006@qualcomm.com>
+	<20080204045429.7738c25c.pj@sgi.com>
+	<47A79D73.7080402@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sparse errors from include/linux/cpuidle.h currently are hiding these:
+Max K wrote:
+> >     And for another thing, we already declare externs in cpumask.h for
+> >     the other, more widely used, cpu_*_map variables cpu_possible_map,
+> >     cpu_online_map, and cpu_present_map.
+> Well, to address #2 and #3 isolated map will need to be exported as well.
+> Those other maps do not really have much to do with the scheduler code.
+> That's why I think either kernel/cpumask.c or kernel/cpu.c is a better place for them.
 
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c:830:7: warning: symbol 'hi' shadows an earlier one
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c:824:6: originally declared here
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c:830:15: warning: symbol 'lo' shadows an earlier one
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c:824:14: originally declared here
+Well, if you have need it to be exported for #2 or #3, then that's ok
+by me - export it.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+I'm unaware of any kernel/cpumask.c.  If you meant lib/cpumask.c, then
+I'd prefer you not put it there, as lib/cpumask.c just contains the
+implementation details of the abstract data type cpumask_t, not any of
+its uses.  If you mean kernel/cpuset.c, then that's not a good choice
+either, as that just contains the implementation details of the cpuset
+subsystem.  You should usually define such things in one of the files
+using it, and unless there is clearly a -better- place to move the
+definition, it's usually better to just leave it where it is.
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-index a052273..5affe91 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -827,7 +827,6 @@ static int fill_powernow_table_pstate(struct powernow_k8_data *data, struct cpuf
- 
- 	for (i = 0; i < data->acpi_data.state_count; i++) {
- 		u32 index;
--		u32 hi = 0, lo = 0;
- 
- 		index = data->acpi_data.states[i].control & HW_PSTATE_MASK;
- 		if (index > data->max_hw_pstate) {
 -- 
-1.5.4.rc5.1138.g2602
-
-
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
