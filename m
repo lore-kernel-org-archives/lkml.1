@@ -1,132 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760602AbYBEUve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761478AbYBEUv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760602AbYBEUve (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760839AbYBEUvK
+	id S1761478AbYBEUv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760583AbYBEUvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:51:10 -0500
-Received: from smtp1.stealer.net ([88.198.224.204]:37007 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760813AbYBEUvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:51:09 -0500
-X-Greylist: delayed 1243 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 15:51:08 EST
-From: Sven Wegener <sven.wegener@stealer.net>
-To: rpurdie@rpsys.net
-Cc: kris@krisk.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] leds: Add support for power LED on WRAP systems
-Date: Tue,  5 Feb 2008 21:51:02 +0100
-Message-Id: <1202244662-5556-1-git-send-email-sven.wegener@stealer.net>
-X-Mailer: git-send-email 1.5.4
+	Tue, 5 Feb 2008 15:51:49 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59753 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760738AbYBEUvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 15:51:47 -0500
+Date: Tue, 5 Feb 2008 14:51:41 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Lee.Schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
+       andi@firstfloor.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, clameter@sgi.com, mel@csn.ul.ie
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+Message-Id: <20080205145141.ae658c12.pj@sgi.com>
+In-Reply-To: <alpine.DEB.0.9999.0802051146300.5854@chino.kir.corp.google.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080202090914.GA27723@one.firstfloor.org>
+	<20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<1202149243.5028.61.camel@localhost>
+	<20080205041755.3411b5cc.pj@sgi.com>
+	<alpine.DEB.0.9999.0802051146300.5854@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WRAP systems have an additional LED. The power LED is normally lit after boot
-and doesn't serve any other purpose besides showing that the system is powered
-on. Nevertheless, its state is controllable and we can attach a trigger to it.
+David wrote:
+> The more alarming result of these remaps is in the MPOL_BIND case, as 
+> we've talked about before.  The language in set_mempolicy(2):
 
-Cc: Kristian Kielhofner <kris@krisk.org>
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- drivers/leds/leds-wrap.c |   41 +++++++++++++++++++++++++++++++++++------
- 1 files changed, 35 insertions(+), 6 deletions(-)
+You're diving into the middle of a rather involved discussion
+we had on the other various patches proposed to extend the
+interaction of mempolicy's with cpusets and hotplug.
 
-diff --git a/drivers/leds/leds-wrap.c b/drivers/leds/leds-wrap.c
-index 27fb2d8..0ccb483 100644
---- a/drivers/leds/leds-wrap.c
-+++ b/drivers/leds/leds-wrap.c
-@@ -19,11 +19,21 @@
- #include <linux/scx200_gpio.h>
- 
- #define DRVNAME "wrap-led"
-+#define WRAP_POWER_LED_GPIO	2
- #define WRAP_ERROR_LED_GPIO	3
- #define	WRAP_EXTRA_LED_GPIO	18
- 
- static struct platform_device *pdev;
- 
-+static void wrap_power_led_set(struct led_classdev *led_cdev,
-+		enum led_brightness value)
-+{
-+	if (value)
-+		scx200_gpio_set_low(WRAP_POWER_LED_GPIO);
-+	else
-+		scx200_gpio_set_high(WRAP_POWER_LED_GPIO);
-+}
-+
- static void wrap_error_led_set(struct led_classdev *led_cdev,
- 		enum led_brightness value)
- {
-@@ -42,6 +52,11 @@ static void wrap_extra_led_set(struct led_classdev *led_cdev,
- 		scx200_gpio_set_high(WRAP_EXTRA_LED_GPIO);
- }
- 
-+static struct led_classdev wrap_power_led = {
-+	.name		= "wrap:power",
-+	.brightness_set	= wrap_power_led_set,
-+};
-+
- static struct led_classdev wrap_error_led = {
- 	.name		= "wrap:error",
- 	.brightness_set	= wrap_error_led_set,
-@@ -56,6 +71,7 @@ static struct led_classdev wrap_extra_led = {
- static int wrap_led_suspend(struct platform_device *dev,
- 		pm_message_t state)
- {
-+	led_classdev_suspend(&wrap_power_led);
- 	led_classdev_suspend(&wrap_error_led);
- 	led_classdev_suspend(&wrap_extra_led);
- 	return 0;
-@@ -63,6 +79,7 @@ static int wrap_led_suspend(struct platform_device *dev,
- 
- static int wrap_led_resume(struct platform_device *dev)
- {
-+	led_classdev_resume(&wrap_power_led);
- 	led_classdev_resume(&wrap_error_led);
- 	led_classdev_resume(&wrap_extra_led);
- 	return 0;
-@@ -76,17 +93,30 @@ static int wrap_led_probe(struct platform_device *pdev)
- {
- 	int ret;
- 
-+	ret = led_classdev_register(&pdev->dev, &wrap_power_led);
-+	if (ret < 0)
-+		goto out;
- 	ret = led_classdev_register(&pdev->dev, &wrap_error_led);
--	if (ret == 0) {
--		ret = led_classdev_register(&pdev->dev, &wrap_extra_led);
--		if (ret < 0)
--			led_classdev_unregister(&wrap_error_led);
--	}
-+	if (ret < 0)
-+		goto outpower;
-+	ret = led_classdev_register(&pdev->dev, &wrap_extra_led);
-+	if (ret < 0)
-+		goto outerror;
-+
-+	return 0;
-+
-+outerror:
-+	led_classdev_unregister(&wrap_error_led);
-+outpower:
-+	led_classdev_unregister(&wrap_power_led);
-+out:
-+
- 	return ret;
- }
- 
- static int wrap_led_remove(struct platform_device *pdev)
- {
-+	led_classdev_unregister(&wrap_power_led);
- 	led_classdev_unregister(&wrap_error_led);
- 	led_classdev_unregister(&wrap_extra_led);
- 	return 0;
-@@ -139,4 +169,3 @@ module_exit(wrap_led_exit);
- MODULE_AUTHOR("Kristian Kielhofner <kris@krisk.org>");
- MODULE_DESCRIPTION("PCEngines WRAP LED driver");
- MODULE_LICENSE("GPL");
--
+I choose not to hijack this current thread with my rebuttal,
+which you've seen before, of your points here.
+
 -- 
-1.5.4
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
