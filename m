@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761430AbYBEVxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbYBEVzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761430AbYBEVxR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbYBEVw6
+	id S1759814AbYBEVzV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbYBEVzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:52:58 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53804 "EHLO 2ka.mipt.ru"
+	Tue, 5 Feb 2008 16:55:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53254 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758176AbYBEVw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:52:57 -0500
-Date: Wed, 6 Feb 2008 00:52:17 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+	id S1757256AbYBEVzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 16:55:07 -0500
+Date: Tue, 5 Feb 2008 22:54:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205215216.GB24275@2ka.mipt.ru>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205200211.GA26150@one.firstfloor.org> <20080205203911.GA9891@2ka.mipt.ru> <20080205212017.5db50114@core>
-Mime-Version: 1.0
+Subject: Re: [git pull] x86 updates
+Message-ID: <20080205215454.GA20724@elte.hu>
+References: <20080204161219.GA8092@elte.hu> <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org> <20080205192236.GA26426@uranus.ravnborg.org> <20080205210508.GA14708@elte.hu> <20080205211710.GA27589@uranus.ravnborg.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205212017.5db50114@core>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080205211710.GA27589@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-On Tue, Feb 05, 2008 at 09:20:17PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > Most (if not all) distributions have them enabled and window growing
-> > works just fine. Actually I do not see any reason why connection
-> > establishment handshake should prevent any run-time operations at all,
-> > even if it was setup during handshake.
-> 
-> Syncookies are only triggered if the system is under a load where it
-> would begin to lose connections otherwise. So they merely turn a DoS into
-> a working if slightly slower setup (and > 64K windows don't matter for
-> most normal users, especially on mobile devices).
+> > btw., what's the practical consequence of getting these section 
+> > flags wrong - for example writable data can end up in executable 
+> > section accidentally and be marked readonly by RODATA? Or can 
+> > anything more serious happen? (they cannot get into any of the 
+> > discarded sections, we filter for them explicitly in the linker 
+> > scripts)
+>
+> I have not investigated this. My attention were due to section 
+> mismatch warnings pointing to section names I could not find in the 
+> code. When I did an objdump of vmlinux the funny section names were 
+> gone so I expected ld had recognized them and merged them somehow - 
+> but I did not look closer as my focus was to get rid of them anyway.
 
-SACK is actually a good idea for mobile devices, so preventing
-syncookies from not getting into account some options (btw, does it work
-with timestamps and PAWS?) is not a solution.
+ah, indeed. if we have the same section name but different attributes 
+then i guess gas/ld resolves the conflict by auto-generating these 
+.1/.2, etc. artificial sections. They dont show up in the vmlinux 
+because they went through the linker scripts that merges them into a 
+single output section. But modpost picks up those pre-merge names.
 
--- 
-	Evgeniy Polyakov
+> I also did a quick skimming of info ld - but no luck.
+
+Peter pointed me to "info gas", which has a "Sections and Relocation" 
+chapter.
+
+	Ingo
