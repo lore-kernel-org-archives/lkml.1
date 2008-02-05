@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYBEO0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbYBEOgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYBEO0x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 09:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYBEO0m
+	id S1754200AbYBEOgD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 09:36:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYBEOfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 09:26:42 -0500
-Received: from serenity.mcc.ac.uk ([130.88.200.93]:54751 "EHLO
-	serenity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbYBEO0m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 09:26:42 -0500
-Message-ID: <47A87236.4000204@gentoo.org>
-Date: Tue, 05 Feb 2008 14:27:02 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
+	Tue, 5 Feb 2008 09:35:53 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48683 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbYBEOfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 09:35:52 -0500
+Date: Tue, 5 Feb 2008 14:31:50 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't works on memoryless node.
+Message-ID: <20080205143149.GA4207@csn.ul.ie>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080202090914.GA27723@one.firstfloor.org> <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1202149243.5028.61.camel@localhost>
 MIME-Version: 1.0
-To: lists@ku-gbr.de
-CC: Xavier Bestel <xavier.bestel@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch 1/1] Nikon D80 usb-storage quirk needs modified, new FW
-References: <20080205124343.GB6638@anita> <1202218008.23816.9.camel@skunk.anacadf.mentorg.com> <20080205141841.GA6791@anita>
-In-Reply-To: <20080205141841.GA6791@anita>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1202149243.5028.61.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Konstantin Kletschke wrote:
-> Am 2008-02-05 14:26 +0100 schrieb Xavier Bestel:
+On (04/02/08 13:20), Lee Schermerhorn didst pronounce:
+> > > When the kernel behaviour changes and breaks user space then the kernel
+> > > is usually wrong. Cc'ed Lee S. who maintains the kernel code now.
 > 
->>> +UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
+> The memoryless nodes patch series changed a lot of things, so just
+> reverting this one area [mpol_check_policy()] probably won't restore the
+> prior behavior.  A fully populated node mask is not necessarily a proper
+> subset of node_online_map().  And contextualize_policy() also requires
+> the mask to be a subset of mems_allowed which also defaults to nodes
+> with memory.
 > 
->> Maybe you should leave them both here.
+> I don't know how Mel Gorman's "two zonelist" series, which is still
+> awaiting a window into the -mm tree, affects this behavior.  Those
+> patches will certainly be affected by whatever we decide here.
 > 
-> I suppose the device is checked against a range between
-> bcdDeviceMin -> bcdDeviceMax to take care of the possibility new
-> revisions does not need the quirk anymore but all older and bcdDeviceMax
-> but I found the piece of code not yet. Lets see...
 
-You're correct, the patch is fine in that respect. However
-it is whitespace-corrupted and hence will not apply. You should also 
-submit it directly to the usb-storage maintainer with the linux-usb (and 
-maybe the usb-storage) list on CC.
+I doubt they'd make a difference to this particular problem.
 
-Daniel
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
