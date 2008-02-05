@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbYBEULo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbYBEUNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760656AbYBEULo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYBEULe
+	id S1760712AbYBEUNS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbYBEUNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:11:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38487 "EHLO
+	Tue, 5 Feb 2008 15:13:10 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38523 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756186AbYBEULd (ORCPT
+	with ESMTP id S1754585AbYBEUNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:11:33 -0500
-Message-ID: <47A8C2D8.3020603@zytor.com>
-Date: Tue, 05 Feb 2008 12:11:04 -0800
+	Tue, 5 Feb 2008 15:13:09 -0500
+Message-ID: <47A8C336.1010107@zytor.com>
+Date: Tue, 05 Feb 2008 12:12:38 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       michael.pyne@kdemail.net, AAbdulla@nvidia.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
- (regression in 2.6.23)
-References: <200802050746.m157ktY9010399@imap1.linux-foundation.org> <47A8A90B.6010602@garzik.org> <47A8AD40.7010007@zytor.com> <47A8ADF9.7060507@garzik.org>
-In-Reply-To: <47A8ADF9.7060507@garzik.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] x86 updates
+References: <20080204161219.GA8092@elte.hu> <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+Linus Torvalds wrote:
 > 
-> Indeed, that would work too...  though we would need to put out a call 
-> for Gigabyte testers during 2.6.25-rc.
+> Ingo, Thomas,
+>  should we not do this?
 > 
-> It is an entirely reasonable scenario for NVIDIA to deploy a fix to 
-> Gigabyte, which would then return us to the same scenario we have today: 
->  some work and some don't.
+> Otherwise, it seems we generate a section that isn't allocated?
 > 
-> That's my main reason for leaning more conservative here.
+> I think toolchain should add the right flags automatically for sections 
+> that start with ".[ro]data" and ".text", but not for the kernel-specific 
+> ".init.*" sections.
 > 
+> 		Linus
+> 
+> ---
+>  arch/x86/kernel/head_64.S |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+> index 4f283ad..d16d7b8 100644
+> --- a/arch/x86/kernel/head_64.S
+> +++ b/arch/x86/kernel/head_64.S
+> @@ -251,7 +251,7 @@ ENTRY(secondary_startup_64)
+>  
+>  	/* SMP bootup changes these two */
+>  #ifndef CONFIG_HOTPLUG_CPU
+> -	.pushsection .init.data
+> +	.pushsection .init.data,"aw"
+>  #endif
+>  	.align	8
+>  	.globl	initial_code
 
-If they deploy a fix, then the Gigabyte prefix will show up as a prefix, 
-rather than a suffix - no problem.  That's actually the reason to deploy 
-that solution rather than relying on DMI.
+I definitely think we should add flags where applicable.
 
 	-hpa
