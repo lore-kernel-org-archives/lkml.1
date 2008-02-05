@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYBEAdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbYBEAlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYBEAdZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 19:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbYBEAcz
+	id S1758017AbYBEAlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 19:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbYBEAlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 19:32:55 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:51400 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757503AbYBEAcw (ORCPT
+	Mon, 4 Feb 2008 19:41:09 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53417 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755281AbYBEAlH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 19:32:52 -0500
-Message-ID: <47A7AEA1.1090602@qualcomm.com>
-Date: Mon, 04 Feb 2008 16:32:33 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: CPU isolation and workqueues [was Re: [CPUISOL] CPU isolation extensions]
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	 <1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com>	 <20080128163450.GC12598@goodmis.org> <479E2305.3040408@qualcomm.com>	 <Pine.LNX.4.58.0801281358070.10419@gandalf.stny.rr.com> <1201551730.28547.54.camel@lappy>
-In-Reply-To: <1201551730.28547.54.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Feb 2008 19:41:07 -0500
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ltuikov@yahoo.com
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <50030.21278.qm@web31808.mail.mud.yahoo.com>
+References: <50030.21278.qm@web31808.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 18:41:05 -0600
+Message-Id: <1202172065.3096.154.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Peter Zijlstra wrote:
-> On Mon, 2008-01-28 at 14:00 -0500, Steven Rostedt wrote:
->> On Mon, 28 Jan 2008, Max Krasnyanskiy wrote:
->>>>>   [PATCH] [CPUISOL] Support for workqueue isolation
->>>> The thing about workqueues is that they should only be woken on a CPU if
->>>> something on that CPU accessed them. IOW, the workqueue on a CPU handles
->>>> work that was called by something on that CPU. Which means that
->>>> something that high prio task did triggered a workqueue to do some work.
->>>> But this can also be triggered by interrupts, so by keeping interrupts
->>>> off the CPU no workqueue should be activated.
->>> No no no. That's what I though too ;-). The problem is that things like NFS and friends
->>> expect _all_ their workqueue threads to report back when they do certain things like
->>> flushing buffers and stuff. The reason I added this is because my machines were getting
->>> stuck because CPU0 was waiting for CPU1 to run NFS work queue threads even though no IRQs
->>> or other things are running on it.
->> This sounds more like we should fix NFS than add this for all workqueues.
->> Again, we want workqueues to run on the behalf of whatever is running on
->> that CPU, including those tasks that are running on an isolcpu.
+On Mon, 2008-02-04 at 16:32 -0800, Luben Tuikov wrote:
+> --- On Sun, 2/3/08, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> agreed, by looking at my top output (and not the nfs code) it looks like
-> it just spawns a configurable number of active kernel threads which are
-> not cpu bound by in any way. I think just removing the isolated cpus
-> from their runnable mask should take care of them.
+> > The enclosure misc device is really just a library providing
+> > sysfs
+> > support for physical enclosure devices and their
+> > components.
+> 
+> Who is the target audience/user of those facilities?
+> a) The kernel itself needing to read/write SES pages?
 
-Peter, Steven,
+That depends on the enclosure integration, but right at the moment, it
+doesn't
 
-I think I convinced you guys last time but I did not have a convincing example. So here is some
-more info on why workqueues need to be aware of isolated cpus.
+> b) A user space application using sysfs to read/write
+>    SES pages?
 
-Here is how a work queue gets flushed.
- 
-static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
-{
-        int active;
+Not an application so much as a user.  The idea of sysfs is to allow
+users to get and set the information in addition to applications.
 
-        if (cwq->thread == current) {
-                /*
-                 * Probably keventd trying to flush its own queue. So simply run
-                 * it by hand rather than deadlocking.
-                 */
-                run_workqueue(cwq);
-                active = 1;
-        } else {
-                struct wq_barrier barr;
+> At the moment SES device management is done via
+> an application (user-space) and a user-space library
+> used by the application and /dev/sgX to send SCSI
+> commands to the SES device.
 
-                active = 0;
-                spin_lock_irq(&cwq->lock);
-                if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
-                        insert_wq_barrier(cwq, &barr, 1);
-                        active = 1;
-                }
-                spin_unlock_irq(&cwq->lock);
+I must have missed that when I was looking for implementations; what's
+the URL?
 
-                if (active)
-                        wait_for_completion(&barr.done);
-        }
+But, if we have non-scsi enclosures to integrate, that makes it harder
+for a user application because it has to know all the implementations.
+A sysfs framework on the other hand is a universal known thing for the
+user applications.
 
-        return active;
-}
+> One could have a very good argument to not bloat
+> the kernel with this but leave it to a user-space
+> application and a library to do all this and
+> communicate with the SES device via the kernel's /dev/sgX.
 
-void fastcall flush_workqueue(struct workqueue_struct *wq)
-{
-        const cpumask_t *cpu_map = wq_cpu_map(wq);
-        int cpu;
+The same thing goes for other esoteric SCSI infrastructure pieces like
+cd changers.  On the whole, given that ATA is asking for enclosure
+management in kernel, it makes sense to consolidate the infrastructure
+and a ses ULD is a very good test bed.
 
-        might_sleep();
-        lock_acquire(&wq->lockdep_map, 0, 0, 0, 2, _THIS_IP_);
-        lock_release(&wq->lockdep_map, 1, _THIS_IP_);
-        for_each_cpu_mask(cpu, *cpu_map)
-                flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
-}
+James
 
-In other words it schedules some work on each cpu and expects workqueue thread to run and 
-trigger the completion. This is what I meant that _all_ threads are expected to report 
-back even if there is nothing running on that CPU.
 
-So my patch simply makes sure that isolated CPUs are ignored (if work queue isolation is enabled)
-that work queue threads are not started on isolated in the CPUs that are isolated.
-
-Max
