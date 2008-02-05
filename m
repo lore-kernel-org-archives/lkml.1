@@ -1,124 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYBEK6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYBELDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbYBEK6i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 05:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756564AbYBEK62
+	id S1757554AbYBELDb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 06:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbYBELDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 05:58:28 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:25334 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756559AbYBEK61 (ORCPT
+	Tue, 5 Feb 2008 06:03:24 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:42650 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756573AbYBELDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 05:58:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Kl2O/dBD4/qnG6R0LqO42HI4aPwjPPrOhxk18JxRF/qee1H0DVefWeFGNd8SUM1Rwk5R1vAxEi+Bdz4gNzP2VGbgtQhTNZ537DBw2anYxdsIpDj7kYX31KX+8IhEECWwqY4NVSsWdZW/iNwm1KrXRYGG41bvBIZKwb4UBypz1ng=
-Message-ID: <47A8414D.7080200@gmail.com>
-Date: Tue, 05 Feb 2008 11:58:21 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 5 Feb 2008 06:03:23 -0500
+Date: Tue, 5 Feb 2008 16:33:03 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: r31dmaeu@pc0312b.rz.unibw-muenchen.de, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, stable@kernel.org
+Subject: Re: OOM-killer invoked but why ?
+Message-ID: <20080205110303.GA8288@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <47A1C4B1.8020607@pc0312a.rz.unibw-muenchen.de> <20080205020737.cec97816.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: ohyama_sec@ariel-networks.com
-CC: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [QUESTION] I have a question about making device driver
-References: <20080205093900.D0BF6948006@ns.ariel-networks.com>
-In-Reply-To: <20080205093900.D0BF6948006@ns.ariel-networks.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205020737.cec97816.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05/2008 10:39 AM, ohyama_sec@ariel-networks.com wrote:
->>> --- check program ---
->>> #include <linux/types.h>
->>> #include <asm/io.h>
->>> #include <stdio.h>
->> A userspace program? I thought this was about kernel device drivers.
+On Tue, Feb 05, 2008 at 02:07:37AM -0800, Andrew Morton wrote:
+> On Thu, 31 Jan 2008 13:53:05 +0100 Claude Frantz <r31dmaeu@pc0312b.rz.unibw-muenchen.de> wrote:
+> 
+> > Hello !
+> > 
+> > I'm faced to a problem where the OOM-killer is invoked but I cannot find
+> > the reason why. The machine is rather powerfull, the load is very moderate,
+> > the disk swap space is nearly unused. The only strange observation which
+> > appears to me is the slow but progressive decreasing of kbbuffers during
+> > many hours.
+> > 
+> > Can you help me to diagnose the problem and to find a good solution ?
+> > 
+> > ...
+> >
+> > Jan 28 03:50:49 toaster kernel: 177466 pages slab
+> > Jan 28 03:50:49 toaster kernel: 1915 pages pagetables
+> > Jan 28 03:50:49 toaster kernel: Out of memory: kill process 10859 (amavisd) score 36218 or a child
+> > Jan 28 03:50:49 toaster kernel: Killed process 19146 (amavisd)
+> 
+> slab.  Maybe you've been bitten by the quicklist leak.  If you're able to
+> patch your kernel then please try this fix:
+> 
+> commit 96990a4ae979df9e235d01097d6175759331e88c
+> Author: Christoph Lameter <clameter@sgi.com>
+> Date:   Mon Jan 14 00:55:14 2008 -0800
+> 
+>     quicklists: Only consider memory that can be used with GFP_KERNEL
+>     
+>     Quicklists calculates the size of the quicklists based on the number of
+>     free pages.  This must be the number of free pages that can be allocated
+>     with GFP_KERNEL.  node_page_state() includes the pages in ZONE_HIGHMEM and
+>     ZONE_MOVABLE which may lead the quicklists to become too large causing OOM.
+>     
+>     Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>     Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> diff --git a/mm/quicklist.c b/mm/quicklist.c
+> index ae8189c..3f703f7 100644
+> --- a/mm/quicklist.c
+> +++ b/mm/quicklist.c
+> @@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
+>  static unsigned long max_pages(unsigned long min_pages)
+>  {
+>  	unsigned long node_free_pages, max;
+> +	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
+> +
+> +	node_free_pages =
+> +#ifdef CONFIG_ZONE_DMA
+> +		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
+> +#endif
+> +#ifdef CONFIG_ZONE_DMA32
+> +		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
+> +#endif
+> +		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
+> 
+> -	node_free_pages = node_page_state(numa_node_id(),
+> -			NR_FREE_PAGES);
+>  	max = node_free_pages / FRACTION_OF_NODE_MEM;
+>  	return max(max, min_pages);
+>  }
 > 
 > 
-> Yes, It is a userspace program to see what I can write parallel port device controller or not.
+> I note that this didn't have the stable@kernel.org cc.  Christoph, did we
+> deliberately decide not to backport?
 > 
-> And, I'm sorry , I should not have explained my device driver in text, but should have written source code.
-> So that, the following is source code of the device driver. It works only to obtain I/O resource (I/O address and IRQ).
-> 
-> 
->>> int main(void){
->>>    int base = 0x378;
->>>    char read, write;
->>>
->>>    ioperm(base, 1, 1);
 
-if (ioperm(...)) {
-	perror("ioperm");
-	return 1;
-}
+According to
+http://archive.netbsd.se/?ml=linux-stable-commits&a=2008-01&m=6134301 ,
+its been added to the stable tree. I remember asking Greg to add it.
 
-and retest.
-
->>>
->>>    write = 0xa;
->>>    outb(write, base);
->>>    read = inb(base);
->>>    if((read & 0xf) == write){
-[...]
-> 
-> --- kernel module (device driver) ---
-> 
-[...]
-> 
-> #define SHORT_NR_PORTS	8	
-> 
-> static int major = 0;	
-> 
-> unsigned long short_base = 0x378;
-> 
-> volatile int short_irq = 7;
-> static struct cdev *obj_cdev;
-> 
-> MODULE_AUTHOR ("hiroyasu ohyama");
-> MODULE_LICENSE("GPL2");
-> 
-> struct file_operations my_fops = {
-> 	.owner	 = THIS_MODULE,
-> };
-> 
-> irqreturn_t short_sh_interrupt(int irq, void *dev_id, struct pt_regs *regs)
-> {
-> 	printk(KERN_INFO "interrupt\n");
-> 
-> 	return 0;
-> }
-> 
-> int short_init(void)
-> {
-> 	int result;
-> 	int err;
-> 	int dev_num;
-> 	dev_t dev;
-> 
-> 	if (! request_region(short_base, SHORT_NR_PORTS, "hiro_test")) {
-> 		printk(KERN_INFO "can't get I/O port address 0x%lx\n",
-> 				short_base);
-> 		return -ENODEV;
-> 	}
-> 
-> 	alloc_chrdev_region(&dev, 0, 1, "hiro_test");
-
-why do you register chrdev?
-
-> 	major = MAJOR(dev);
-> 	
-> 	dev_num = MKDEV(major, 0);
-> 
-> 	obj_cdev = cdev_alloc();
-> 	cdev_init(obj_cdev, &my_fops);
-> 	obj_cdev->owner = THIS_MODULE;
-> 	obj_cdev->ops = &my_fops;
-> 	err = cdev_add(obj_cdev, dev_num, 1);
-> 	if(err){
-> 		printk(KERN_INFO "err_num : %d", err);	
-> 	}
-> 
+Thanks
+-- 
+regards,
+Dhaval
