@@ -1,109 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932262AbYBEWnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762951AbYBEWpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932262AbYBEWnK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762715AbYBEWmm
+	id S1762951AbYBEWpr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:45:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760473AbYBEWpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:42:42 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:44751 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761163AbYBEWmi (ORCPT
+	Tue, 5 Feb 2008 17:45:21 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:22550 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761512AbYBEWpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:42:38 -0500
-Date: Tue, 5 Feb 2008 14:41:50 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [7/12] GBPAGES: Add an option to disable direct mapping
- gbpages and a global variable
-Message-Id: <20080205144150.32ab1069.randy.dunlap@oracle.com>
-In-Reply-To: <20080201095320.4BC5B1B416F@basil.firstfloor.org>
-References: <200802011053.107168490@suse.de>
-	<20080201095320.4BC5B1B416F@basil.firstfloor.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 5 Feb 2008 17:45:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=SeBzvmQKFSXJOd0mudg59ePoYR+L7sxikaof9J1JuW8b6CckoHwboSZP+3uY71FeR
+	rKkOjhB/6uxJz4tKOq6iA==
+Date: Tue, 5 Feb 2008 14:44:33 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Paul Jackson <pj@sgi.com>, kosaki.motohiro@jp.fujitsu.com,
+       andi@firstfloor.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, clameter@sgi.com, mel@csn.ul.ie
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+In-Reply-To: <1202249070.5332.58.camel@localhost>
+Message-ID: <alpine.DEB.1.00.0802051437050.9587@chino.kir.corp.google.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>  <20080202090914.GA27723@one.firstfloor.org>  <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>  <1202149243.5028.61.camel@localhost> <20080205041755.3411b5cc.pj@sgi.com> 
+ <alpine.DEB.0.9999.0802051146300.5854@chino.kir.corp.google.com>  <20080205145141.ae658c12.pj@sgi.com>  <alpine.DEB.1.00.0802051259090.26206@chino.kir.corp.google.com>  <20080205153326.5c820dbc.pj@sgi.com> <1202249070.5332.58.camel@localhost>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  1 Feb 2008 10:53:20 +0100 (CET) Andi Kleen wrote:
+On Tue, 5 Feb 2008, Lee Schermerhorn wrote:
 
+> The patch I just posted doesn't depend on the numactl changes and seems
+> quite minimal to me.  I think it cleans up the differences between
+> set_mempolicy() and mbind(), as well.  However, some may take exception
+> to the change in behavior--silently ignoring dis-allowed nodes in
+> set_mempolicy().
 > 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  Documentation/x86_64/boot-options.txt |    5 +++++
->  arch/x86/mm/init_64.c                 |   16 ++++++++++++++++
->  include/asm-x86/pgtable_64.h          |    7 +++++++
->  3 files changed, 28 insertions(+)
-> 
-> Index: linux/arch/x86/mm/init_64.c
-> ===================================================================
-> --- linux.orig/arch/x86/mm/init_64.c
-> +++ linux/arch/x86/mm/init_64.c
-> @@ -53,6 +53,22 @@ static unsigned long dma_reserve __initd
->  
->  DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
->  
-> +enum gbopt direct_gbpages __meminitdata = GBP_DEFAULT;
-> +
-> +static int __init parse_direct_gbpages(char *arg)
-> +{
-> +	if (!strcmp(arg, "off")) {
-> +		direct_gbpages = GBP_OFF;
-> +		return 0;
-> +	}
-> +	if (!strcmp(arg, "on")) {
-> +		direct_gbpages = GBP_ON;
-> +		return 0;
-> +	}
-> +	return -1;
-> +}
-> +early_param("direct_gbpages", parse_direct_gbpages);
-> +
->  /*
->   * NOTE: pagetable_init alloc all the fixmap pagetables contiguous on the
->   * physical space so we can cache the place of the first one and move
-> Index: linux/include/asm-x86/pgtable_64.h
-> ===================================================================
-> --- linux.orig/include/asm-x86/pgtable_64.h
-> +++ linux/include/asm-x86/pgtable_64.h
-> @@ -239,6 +239,13 @@ static inline int pud_large(pud_t pte)
->  
->  #define update_mmu_cache(vma,address,pte) do { } while (0)
->  
-> +enum gbopt {
-> +	GBP_OFF = -1,
-> +	GBP_DEFAULT,
-> +	GBP_ON
-> +};
-> +extern enum gbopt direct_gbpages;
-> +
->  /* Encode and de-code a swap entry */
->  #define __swp_type(x)			(((x).val >> 1) & 0x3f)
->  #define __swp_offset(x)			((x).val >> 8)
-> Index: linux/Documentation/x86_64/boot-options.txt
-> ===================================================================
-> --- linux.orig/Documentation/x86_64/boot-options.txt
-> +++ linux/Documentation/x86_64/boot-options.txt
-> @@ -307,3 +307,8 @@ Debugging
->  			stuck (default)
->  
->  Miscellaneous
-> +
-> +	direct_gbpages=off|on
-> +		off: Do not use GB pages for kernel direct mapping.
-> +		on: Use GB pages if hardware supports it, but some heuristic
-> +		would turn them off.
 
-s/would/could/  ?
+If the intent of the set_mempolicy() call is going to be preserved in the 
+struct mempolicy with Paul's change, then we're going to allow disallowed 
+nodes anyway.  So the only nodemask errors that we should return are ones 
+that are empty; nodemasks that include offlined nodes should be allowed to 
+support node hotplug.  Likewise, memoryless nodes should still be saved as 
+the intent of the syscall.
 
----
-~Randy
+The change to save the intent or silently ignore disallowed nodes would 
+also require applications to issue a successive get_mempolicy() call to 
+know what their current mempolicy is, since it will be able to change with 
+a cpusets change or node hotplug event.  There is no longer this assurance 
+that if set_mempolicy() returns without an error that the memory policy is 
+effected.  But in the presence of subsystems such as cpusets that allow 
+those mempolicies to change from beneath the application, there is no way 
+around that: the nodemask that the mempolicy acts on can dynamically 
+change at any time.
+
+So I don't see any problem with silently ignoring disallowed nodes and 
+encourage it so that the kernel accomodates the intent of the mempolicy in 
+the future if and when it can be effected.
+
+		David
