@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbYBEAqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbYBEBPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbYBEAqc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 19:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbYBEAqX
+	id S1757975AbYBEBPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 20:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbYBEBPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 19:46:23 -0500
-Received: from waste.org ([66.93.16.53]:57753 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756643AbYBEAqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 19:46:22 -0500
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>
-In-Reply-To: <alpine.LFD.1.00.0802041620110.3237@woody.linux-foundation.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain> <47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core>
-	 <1202170060.17934.142.camel@cinder.waste.org>
-	 <alpine.LFD.1.00.0802041620110.3237@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 04 Feb 2008 18:45:14 -0600
-Message-Id: <1202172314.17934.161.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Feb 2008 20:15:09 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59953 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753774AbYBEBPH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 20:15:07 -0500
+Date: Mon, 4 Feb 2008 17:15:05 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: willy@linux.intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [git pull] SLUB updates for 2.6.25
+In-Reply-To: <200802051142.20413.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0802041700170.5438@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802041206190.3241@schroedinger.engr.sgi.com>
+ <200802051105.12194.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0802041629290.5057@schroedinger.engr.sgi.com>
+ <200802051142.20413.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 5 Feb 2008, Nick Piggin wrote:
 
-On Mon, 2008-02-04 at 16:24 -0800, Linus Torvalds wrote:
-> 
-> On Mon, 4 Feb 2008, Matt Mackall wrote:
-> > 
-> > But ATAoE is boring because it's not IP. Which means no routing,
-> > firewalls, tunnels, congestion control, etc.
-> 
-> The thing is, that's often an advantage. Not just for performance.
-> 
-> > NBD and iSCSI (for all its hideous growths) can take advantage of these
-> > things.
-> 
-> .. and all this could equally well be done by a simple bridging protocol 
-> (completely independently of any AoE code).
-> 
-> The thing is, iSCSI does things at the wrong level. It *forces* people to 
-> use the complex protocols, when it's a known that a lot of people don't 
-> want it. 
+> Anyway, not saying the operations are useless, but they should be
+> made available to core kernel and implemented per-arch. (if they are
+> found to be useful)
 
-I frankly think NBD is at a pretty comfortable level. It's internally
-very simple (and hardware-agnostic). And moderately easy to do in
-silicon.
+The problem is to establish the usefulness. These measures may bring 1-2% 
+in a pretty unstable operation mode assuming that the system is doing 
+repetitive work. The micro optimizations seem to be often drowned out 
+by small other changes to the system.
 
-But I'm not going to defend iSCSI. I worked on the first implementation
-(what became the Cisco iSCSI driver) and I have no love for iSCSI at
-all. It should have been (and started out as) a nearly trivial
-encapsulation of SCSI over TCP much like ATA over Ethernet but quickly
-lost the plot when committees got ahold of it.
+There is the danger that a gain is seen that is not due to the patch but 
+due to other changes coming about because code is moved since patches 
+change execution paths.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Plus they may be only possible on a specific architecture. I know that our 
+IA64 hardware has special measures ensuring certain behavior of atomic ops 
+etc, I guess Intel has similar tricks up their sleeve. At 8p there are 
+likely increasing problems with lock starvation where your ticketlock 
+helps. That is why I thought we better defer the stuff until there is some 
+more evidence that these are useful.
+
+I got particularly nervous about these changes after I saw small 
+performance drops due to the __unlock patch on the dual quad. That should 
+have been a consistent gain.
+
 
