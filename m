@@ -1,62 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYBEEV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYBEEiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbYBEEV6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 23:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYBEEVu
+	id S1754799AbYBEEiE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 23:38:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYBEEhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 23:21:50 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:57514 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbYBEEVu (ORCPT
+	Mon, 4 Feb 2008 23:37:52 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50429 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752566AbYBEEhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 23:21:50 -0500
-Message-ID: <47A7E450.50509@qualcomm.com>
-Date: Mon, 04 Feb 2008 20:21:36 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@dwalker1.mvista.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: CPU hotplug and IRQ affinity with 2.6.24-rt1
-References: <47A7A131.8040800@qualcomm.com> <20080205025144.GA31774@dwalker1.mvista.com>
-In-Reply-To: <20080205025144.GA31774@dwalker1.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Feb 2008 23:37:50 -0500
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ltuikov@yahoo.com
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <845307.83869.qm@web31813.mail.mud.yahoo.com>
+References: <845307.83869.qm@web31813.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 22:37:43 -0600
+Message-Id: <1202186263.3096.183.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Daniel Walker wrote:
-> On Mon, Feb 04, 2008 at 03:35:13PM -0800, Max Krasnyanskiy wrote:
->> This is just an FYI. As part of the "Isolated CPU extensions" thread Daniel suggest for me
->> to check out latest RT kernels. So I did or at least tried to and immediately spotted a couple
->> of issues.
->>
->> The machine I'm running it on is:
->> 	HP xw9300, Dual Opteron, NUMA
->>
->> It looks like with -rt kernel IRQ affinity masks are ignored on that 
->> system. ie I write 1 to lets say /proc/irq/23/smp_affinity but the 
->> interrupts keep coming to CPU1. Vanilla 2.6.24 does not have that issue.
+On Mon, 2008-02-04 at 19:28 -0800, Luben Tuikov wrote:
+> --- On Mon, 2/4/08, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > On Mon, 2008-02-04 at 18:01 -0800, Luben Tuikov wrote:
+> > > --- On Mon, 2/4/08, James Bottomley
+> > <James.Bottomley@HansenPartnership.com> wrote:
+> > > > > > The enclosure misc device is really
+> > just a
+> > > > library providing
+> > > > > > sysfs
+> > > > > > support for physical enclosure devices
+> > and their
+> > > > > > components.
+> > > > > 
+> > > > > Who is the target audience/user of those
+> > facilities?
+> > > > > a) The kernel itself needing to read/write
+> > SES pages?
+> > > > 
+> > > > That depends on the enclosure integration, but
+> > right at the
+> > > > moment, it
+> > > > doesn't
+> > > 
+> > > Yes, I didn't suspect so.
+> > > 
+> > > > 
+> > > > > b) A user space application using sysfs to
+> > read/write
+> > > > >    SES pages?
+> > > > 
+> > > > Not an application so much as a user.  The idea
+> > of sysfs is
+> > > > to allow
+> > > > users to get and set the information in addition
+> > to
+> > > > applications.
+> > > 
+> > > Exactly the same argument stands for a user-space
+> > > application with a user-space library.
+> > > 
+> > > This is the classical case of where it is better to
+> > > do this in user-space as opposed to the kernel.
+> > > 
+> > > The kernel provides capability to access the SES
+> > > device.  The user space application and library
+> > > provide interpretation and control.  Thus if the
+> > > enclosure were upgraded, one doesn't need to
+> > > upgrade their kernel in order to utilize the new
+> > > capabilities of the SES device.  Plus upgrading
+> > > a user-space application is a lot easier than
+> > > the kernel (and no reboot necessary).
+> > 
+> > The implementation is modular, so it's remove and
+> > insert ...
 > 
-> I tried this, and it works according to /proc/interrupts .. Are you
-> looking at the interrupt threads affinity ?
-Nope. I'm looking at the /proc/interrupts. ie The interrupt count keeps incrementing for cpu1 even
-though affinity mask is set to 1.
+> I guess the same could be said for STGT and SCST, right?
 
-IRQ thread affinity was btw set to 3 which is probably wrong.
-To clarify, by default after reboot:
-	- IRQ affinity set 3, IRQ thread affinity set to 3
-	- User writes 1 into /proc/irq/N/smp_affinity
-	- IRQ affinity is now set to 1, IRQ thread affinity is still set to 3
+You mean both of their kernel pieces are modular?  That's correct.
 
-It'd still work I guess but does not seem right. Ideally IRQ thread affinity should have change as well.
-We could of course just have some user-space tool that adjusts both.
+> LOL, no seriously, this is unnecessary kernel bloat,
+> or rather at the wrong place (see below).
+> 
+> > 
+> > > Consider another thing: vendors would really like
+> > > unprecedented access to the SES device in the
+> > enclosure
+> > > so as your ses/enclosure code keeps state it would
+> > > get out of sync when vendor user-space enclosure
+> > > applications access (and modify) the SES device's
+> > > pages.
+> > 
+> > The state model doesn't assume nothing else will alter
+> > the state.
+> 
+> But it would be trivial exercise to show that an
+> inconsistent state can be had by modifying pages
+> of the SES device directly from userspace bypassing
+> your implementation.
 
-Looks like Greg already replied to the cpu hotplug issue. For me it did not oops. Just got stuck probably
-because it could not move an IRQ due to broken IRQ affinity logic.
+I don't think so ... if you actually look at the code, you'll see it
+doesn't really have persistent state for the enclosure.
 
-Max
+> > > You can test this yourself: submit a patch
+> > > that removes SES /dev/sgX support; advertise your
+> > > ses/class solution and watch the fun.
+> > > 
+> > > > > At the moment SES device management is done
+> > via
+> > > > > an application (user-space) and a user-space
+> > library
+> > > > > used by the application and /dev/sgX to send
+> > SCSI
+> > > > > commands to the SES device.
+> > > > 
+> > > > I must have missed that when I was looking for
+> > > > implementations; what's
+> > > > the URL?
+> > > 
+> > > I'm not aware of any GPLed ones.  That doesn't
+> > > necessarily mean that the best course of action is
+> > > to bloat the kernel.  You can move your ses/enclosure
+> > > stuff to a user space application library
+> > > and thus start a GPLed one.
+> > 
+> > Certainly ... patches welcome.
+> 
+> I've non at the moment, plus I don't think you'd be
+> the point of contact for a user-space SES library.
+> Unless of course you've already started something up
+> on sourceforge.
+> 
+> Really, such an effort already exists: it is called
+> sg_ses(8).
+> 
+> > 
+> > > > But, if we have non-scsi enclosures to integrate,
+> > that
+> > > > makes it harder
+> > > > for a user application because it has to know all
+> > the
+> > > > implementations.
+> > > 
+> > > So does the kernel.  And as I pointed out above, it
+> > > is a lot easier to upgrade a user-space application
+> > and
+> > > library than it is to upgrade a new kernel and having
+> > > to reboot the computer to run the new kernel.
+> > 
+> > No, think again ... it's easy for SES based enclosures
+> > because they have
+> > a SCSI transport.  We have no transport for SGPIO based
+> > enclosures nor
+> > for any of the other more esoteric ones.
+> 
+> Yes, for which the transport layer, implements the
+> scsi device node for the SES device.  It doesn't really
+> matter if the SCSI commands sent to the SES device go
+> over SGPIO or FC or SAS or Bluetooth or I2C, etc, the
+> transport layer can implement that and present the
+> /dev/sgX node.
+
+But it does matter if the enclosure device doesn't speak SCSI.  SGPIO
+isn't a SCSI protocol ... it's a general purpose serial bus protocol.
+It's pretty simple and register based, but it might (or might not) be
+accessible via a SCSI bridge.
+
+> Case in point: the protocol FW running on the ASIC
+> provides this capability so really the LLDD would
+> only see a the pure SCSI SES or processor device and
+> register that with the kernel.  At which point no new
+> kernel bloat is required.
+> 
+> Your code doesn't quite do that at the moment as it
+> actually goes further in to read and present SES pages.
+> Ideally it would simply provide capability for transport
+> layers to register a SCSI device of type SES, or processor.
+
+Yes, it provides a glue between the enclosure services and the SES
+protocol.
+
+> Architecturally, the LLDD/transport layer would register
+> the SGPIO device on one end with the SGPIO layer and on
+> the other end as a SCSI SES/processpr device.  After that
+> sg_ses(8) or sglib, fits the bill for user space applications.
+
+That's possible, but none of these layers exist yet ... although I think
+(assuming I can find a SGPIO enclosure) that SGPIO might be next.
+
+> > That's not to say it can't be done, but it does
+> > mean that it can't be
+> > completely userspace.
+> 
+> See previous paragraph.
+> 
+> > 
+> > > > A sysfs framework on the other hand is a
+> > universal known
+> > > > thing for the
+> > > > user applications.
+> > > 
+> > > So would a user-space ses library, a la libses.so.
+> > > 
+> > > > > One could have a very good argument to not
+> > bloat
+> > > > > the kernel with this but leave it to a
+> > user-space
+> > > > > application and a library to do all this and
+> > > > > communicate with the SES device via the
+> > kernel's
+> > > > /dev/sgX.
+> > > > 
+> > > > The same thing goes for other esoteric SCSI
+> > infrastructure
+> > > > pieces like
+> > > > cd changers.  On the whole, given that ATA is
+> > asking for
+> > > > enclosure
+> > > > management in kernel, it makes sense to
+> > consolidate the
+> > > > infrastructure
+> > > > and a ses ULD is a very good test bed.
+> > > 
+> > > What is wrong with exporting the SES device as
+> > /dev/sgX
+> > > and having a user-space application and library to
+> > > do all this?
+> > 
+> > How do you transport the enclosure commands over /dev/sgX? 
+> > Only SES has
+> > SCSI command encapsulation ... the rest won't even be
+> > SCSI targets ...
+> 
+> What is the protocol of those "rest" that you talk about?
+
+At the moment it looks to be SES, SGPIO and AHCI.
+
+> At any rate, this capability lies in the kernel providing
+> a _device node_ -- not quite what your patch is doing.
+
+So your idea is to provide a separate interface per enclosure in kernel?
+Sure ... like I said patches welcome.  I just did a common in-kernel
+interface that abstracts common enclosure services.
+
+James
+
+
