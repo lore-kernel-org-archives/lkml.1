@@ -1,80 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYBESYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYBES1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbYBESYs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYBESYh
+	id S1757511AbYBES1H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYBES0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:24:37 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:47151 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344AbYBESYg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:24:36 -0500
-Date: Tue, 5 Feb 2008 20:24:41 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: aic7xxx build failure
-Message-ID: <20080205182441.GF505@cs181133002.pp.htv.fi>
-References: <20080205174024.GE505@cs181133002.pp.htv.fi> <1202235484.3133.49.camel@localhost.localdomain>
+	Tue, 5 Feb 2008 13:26:55 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47150 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751234AbYBES0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:26:54 -0500
+Date: Tue, 5 Feb 2008 19:27:12 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: [linux-pm] Re: Small pm documentation cleanups
+Message-ID: <20080205182712.GA9483@elf.ucw.cz>
+References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl> <47A7F581.8060300@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <1202235484.3133.49.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <47A7F581.8060300@nigel.suspend2.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 12:18:04PM -0600, James Bottomley wrote:
-> 
-> On Tue, 2008-02-05 at 19:40 +0200, Adrian Bunk wrote:
-> > Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
-> > compilation:
-> > 
-> > <--  snip  -->
-> > 
-> > $ make O=../out/x86-full
-> > ...
-> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
-> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
-> >   CC      drivers/scsi/aic7xxx/aic79xx_core.o
-> > gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
-> > gcc: no input files
-> > make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
-> 
-> Could you run this with V=1 to get us a verbose output of what the exact
-> files gcc is failing on are?
+Hi!
 
-make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi
-make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi/aacraid
-(cat /dev/null; ) > drivers/scsi/aacraid/modules.order
-make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi/aic7xxx
-  cat /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx/aic79xx_seq.h_shipped > drivers/scsi/aic7xxx/aic79xx_seq.h
-  cat /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx/aic79xx_reg.h_shipped > drivers/scsi/aic7xxx/aic79xx_reg.h
-  gcc -Wp,-MD,drivers/scsi/aic7xxx/.aic79xx_core.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux-gnu/4.2.3/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include -include include/linux/autoconf.h -I/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx -Idrivers/scsi/aic7xxx -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=athlon -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-x86/mach-generic -Iinclude/asm-x86/mach-generic -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-x86/mach-default -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -I/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi -Idrivers/scsi  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(aic79xx_core)"  -D"KBUILD_MODNAME=KBUILD_STR(aic79xx)" -c -o drivers/scsi/aic7xxx/aic79xx_core.o drivers/scsi/aic7xxx/aic79xx_core.c
-gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
-gcc: no input files
-make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
-make[3]: *** [drivers/scsi/aic7xxx] Error 2
-make[2]: *** [drivers/scsi] Error 2
-make[1]: *** [drivers] Error 2
-make: *** [sub-make] Error 2
+>> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+>>> Small documentation fixes/additions that accumulated in my tree.
+>>>
+>>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+>>
+>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>
+...
+>>> 0
+>>>   	acpi_sleep=	[HW,ACPI] Sleep options
+>>> -			Format: { s3_bios, s3_mode }
+>>> -			See Documentation/power/video.txt
+>>> +			Format: { s3_bios, s3_mode, s3_beep }
+>>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
+>>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
+>>> +			kernel's real-mode entry point is called.
+>
+> s/kernel's/the kernel's/
+
+Thanks for comments, I applied them.
+
+Small documentation fixes/additions that accumulated in my tree.
+
+Len, please pick this up, thanks.
+									Pavel
 
 
-> Thanks,
-> 
-> James
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-cu
-Adrian
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index cf38689..e2fb127 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -147,8 +147,10 @@ and is between 256 and 4096 characters. 
+ 			default: 0
+ 
+ 	acpi_sleep=	[HW,ACPI] Sleep options
+-			Format: { s3_bios, s3_mode }
+-			See Documentation/power/video.txt
++			Format: { s3_bios, s3_mode, s3_beep }
++			See Documentation/power/video.txt for s3_bios and s3_mode.
++			s3_beep is for debugging; it beeps on PC speaker as soon as
++			the kernel's real-mode entry point is called.
+ 
+ 	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+ 			Format: { level | edge | high | low }
+diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+index aea7e92..9d60ab7 100644
+--- a/Documentation/power/swsusp.txt
++++ b/Documentation/power/swsusp.txt
+@@ -386,6 +386,11 @@ before suspending; then remount them aft
+ There is a work-around for this problem.  For more information, see
+ Documentation/usb/persist.txt.
+ 
++Q: Can I suspend-to-disk using a swap partition under LVM?
++
++A: No. You can suspend successfully, but you'll not be able to
++resume. uswsusp should be able to work with LVM. See suspend.sf.net.
++
+ Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
+ compiled with the similar configuration files. Anyway I found that
+ suspend to disk (and resume) is much slower on 2.6.16 compared to
+diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
+index fd1c4ba..058d0be 100644
+--- a/drivers/acpi/hardware/hwsleep.c
++++ b/drivers/acpi/hardware/hwsleep.c
+@@ -286,13 +286,13 @@ acpi_status asmlinkage acpi_enter_sleep_
+ 	}
+ 
+ 	/*
++	 * 1) Disable/Clear all GPEs
+ 	 * 2) Enable all wakeup GPEs
+ 	 */
+ 	status = acpi_hw_disable_all_gpes();
+ 	if (ACPI_FAILURE(status)) {
+ 		return_ACPI_STATUS(status);
+ 	}
+-
+ 	acpi_gbl_system_awake_and_running = FALSE;
+ 
+ 	status = acpi_hw_enable_all_wakeup_gpes();
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index 485de13..c9a733f 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -170,7 +170,7 @@ static int acpi_pm_enter(suspend_state_t
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(acpi_state);
+ 
+-	/* ACPI 3.0 specs (P62) says that it's the responsabilty
++	/* ACPI 3.0 specs (P62) says that it's the responsibility
+ 	 * of the OSPM to clear the status bit [ implying that the
+ 	 * POWER_BUTTON event should not reach userspace ]
+ 	 */
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index ef9b802..78bb205 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -74,14 +74,14 @@ config PM_TRACE_RTC
+ 	RTC across reboots, so that you can debug a machine that just hangs
+ 	during suspend (or more commonly, during resume).
+ 
+-	To use this debugging feature you should attempt to suspend the machine,
+-	then reboot it, then run
++	To use this debugging feature you should attempt to suspend the
++	machine, reboot it and then run
+ 
+ 		dmesg -s 1000000 | grep 'hash matches'
+ 
+ 	CAUTION: this option will cause your machine's real-time clock to be
+ 	set to an invalid time after a resume.
+ 
+ config PM_SLEEP_SMP
+ 	bool
+ 	depends on SMP
+@@ -123,7 +129,10 @@ config HIBERNATION
+ 	  called "hibernation" in user interfaces.  STD checkpoints the
+ 	  system and powers it off; and restores that checkpoint on reboot.
+ 
+-	  You can suspend your machine with 'echo disk > /sys/power/state'.
++	  You can suspend your machine with 'echo disk > /sys/power/state' 
++	  after placing resume=/dev/swappartition on the kernel command line
++	  in your bootloader's configuration file.
++
+ 	  Alternatively, you can use the additional userland tools available
+ 	  from <http://suspend.sf.net>.
+ 
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
