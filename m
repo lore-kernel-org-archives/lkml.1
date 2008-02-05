@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbYBEW55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbYBEXCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763223AbYBEW55 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758166AbYBEW5s
+	id S1761271AbYBEXCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYBEXCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:57:48 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:59439 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755637AbYBEW5r (ORCPT
+	Tue, 5 Feb 2008 18:02:47 -0500
+Received: from ns1.siteground137.com ([67.15.250.10]:46447 "EHLO
+	serv01.siteground137.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbYBEXCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:57:47 -0500
-Date: Tue, 5 Feb 2008 23:57:46 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: ath5k failure with 2.6.24-git14
-Message-ID: <20080205225746.GA4532@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 5 Feb 2008 18:02:46 -0500
+X-Greylist: delayed 70080 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 18:02:46 EST
+Subject: Re: [PATCH] badness() dramatically overcounts memory
+From: Jeff Davis <linux@j-davis.com>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <47A7E282.1080902@linux.vnet.ibm.com>
+References: <1202182480.24634.22.camel@dogma.ljc.laika.com>
+	 <47A7E282.1080902@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 15:02:41 -0800
+Message-Id: <1202252561.24634.64.camel@dogma.ljc.laika.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground137.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - j-davis.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-02-05 at 09:43 +0530, Balbir Singh wrote:
+> 1. grep on the kernel source tells me that shared_vm is incremented only in
+>    vm_stat_account(), which is a NO-OP if CONFIG_PROC_FS is not defined.
 
-I tried the current git (9ef9dc69d4167276c04590d67ee55de8380bc1ad) and
-got the following error message from ath5k:
+I see, thanks for pointing that out. Is there another way do you think?
+Would the penalty be to high to enable vm_stat_account when
+CONFIG_PROC_FS is not defined?
 
-ath5k_pci 0000:02:00.0: registered as 'phy0'
-ath5k phy0: failed to resume the MAC Chip
-ath5k_pci: probe of 0000:02:00.0 failed with error -5
+Or perhaps my patch would only have an effect when CONFIG_PROC_FS is set
+(which is default)?
 
-Here is the lspci -vnn output:
+> 2. How have you tested these patches? One way to do it would be to use the
+>    memory controller and set a small limit on the control group. A memory
+>    intensive application will soon see an OOM.
 
-02:00.0 Ethernet controller [0200]: Atheros Communications, Inc.
-AR5006EG 802.11 b/g Wireless PCI Express Adapter [168c:001c] (rev 01)
-	Subsystem: Apple Computer Inc. Unknown device [106b:0086]
-	Flags: fast devsel, IRQ 17
-	Memory at 90100000 (64-bit, non-prefetchable) [disabled]
-	[size=64K]
-	Capabilities: [40] Power Management version 2
-	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit-
-	Queue=0/0 Enable-
-	Capabilities: [60] Express Legacy Endpoint, MSI 00
-	Capabilities: [90] MSI-X: Enable- Mask- TabSize=1
-	Capabilities: [100] Advanced Error Reporting <?>
-	Capabilities: [140] Virtual Channel <?>
-	Kernel modules: ath5k
+I have done a quick test a while back when I first wrote the patch. I
+will test more thoroughly now.
 
-The same device works with madwifi:
+> The interesting thing is the use of total_vm and not the RSS which is used as
+> the basis by the OOM killer. I need to read/understand the code a bit more.
 
-ath_rate_sample: 1.2 (svn r3339)
-MadWifi: ath_attach: Switching per-packet transmit power control off
-wifi0: 11a rates: 6Mbps 9Mbps 12Mbps 18Mbps 24Mbps 36Mbps 48Mbps 54Mbps
-wifi0: 11b rates: 1Mbps 2Mbps 5.5Mbps 11Mbps
-wifi0: 11g rates: 1Mbps 2Mbps 5.5Mbps 11Mbps 6Mbps 9Mbps 12Mbps 18Mbps
-24Mbps 36Mbps 48Mbps 54Mbps
-wifi0: turboG rates: 6Mbps 12Mbps 18Mbps 24Mbps 36Mbps 48Mbps 54Mbps
-wifi0: H/W encryption support: WEP AES AES_CCM TKIP
-wifi0: ath_announce: Use hw queue 1 for WME_AC_BE traffic
-wifi0: ath_announce: Use hw queue 0 for WME_AC_BK traffic
-wifi0: ath_announce: Use hw queue 2 for WME_AC_VI traffic
-wifi0: ath_announce: Use hw queue 3 for WME_AC_VO traffic
-wifi0: ath_announce: Use hw queue 8 for CAB traffic
-wifi0: ath_announce: Use hw queue 9 for beacons
-ath_pci: wifi0: Atheros 5424/2424: mem=0x90100000, irq=17
+RSS makes more sense to me as well.
 
-I can also set the interface up and use iwlist ath0 scan.
+To me, it makes no sense to count shared memory, because killing a
+process doesn't free the shared memory.
 
 Regards,
-Tino
+	Jeff Davis
+
