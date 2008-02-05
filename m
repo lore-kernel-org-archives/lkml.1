@@ -1,48 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbYBEPsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759884AbYBEPsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbYBEPsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYBEPr6
+	id S1759884AbYBEPsn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 10:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYBEPse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:47:58 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51245 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751969AbYBEPr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 10:47:57 -0500
-Date: Tue, 5 Feb 2008 15:42:13 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205154213.059ac6e8@core>
-In-Reply-To: <20080205155558.GA23145@one.firstfloor.org>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com>
-	<20080205155558.GA23145@one.firstfloor.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 10:48:34 -0500
+Received: from styx.suse.cz ([82.119.242.94]:38281 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751399AbYBEPsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 10:48:32 -0500
+Date: Tue, 5 Feb 2008 16:48:31 +0100
+From: Jan Kara <jack@suse.cz>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/6] udf: convert udf_stamp_to_time to return struct
+	timespec
+Message-ID: <20080205154831.GH25464@duck.suse.cz>
+References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-4-git-send-email-marcin.slusarz@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202063771-18172-4-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Syncookies are discouraged these days. They disable too many 
-> valuable TCP features (window scaling, SACK) and even without them 
-> the kernel is usually strong enough to defend against syn floods
-> and systems have much more memory than they used to be.
 
-Somewhat untrue. Network speeds have risen dramatically, the number of
-appliances running Linux that are not PC class means memory has fallen
-not risen and CPU has been pretty level.
+  Uh, oh. I guess you somehow mangled the ordering of patches. In this
+patch you revert what you've done in the previous patch. Otherwise I agree
+with the idea of the change...
 
-> So I don't think it makes much sense to add more code to it, sorry.
+								Honza
 
-I think it makes a lot of sense - providing it defaults off for the PC
-world where as you say its use is limited.
 
-Alan
+On Sun 03-02-08 19:36:08, marcin.slusarz@gmail.com wrote:
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Jan Kara <jack@suse.cz>
+> ---
+>  fs/udf/inode.c   |   49 ++++++++++++++++++++++++++-----------------------
+>  fs/udf/super.c   |    9 ++-------
+>  fs/udf/udfdecl.h |    4 ++--
+>  fs/udf/udftime.c |   17 +++++++----------
+>  4 files changed, 37 insertions(+), 42 deletions(-)
+> 
+> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+> index 2578677..252efe0 100644
+> --- a/fs/udf/inode.c
+> +++ b/fs/udf/inode.c
+> @@ -1151,20 +1151,6 @@ static void __udf_read_inode(struct inode *inode)
+>  	brelse(bh);
+>  }
+>  
+> -static void udf_fill_inode_time(struct timespec *tspec,
+> -				const timestamp *tstamp,
+> -				struct udf_sb_info *sbi)
+> -{
+> -	time_t convtime;
+> -	long convtime_usec;
+> -	if (udf_stamp_to_time(&convtime, &convtime_usec,
+> -				lets_to_cpu(*tstamp))) {
+> -		tspec->tv_sec = convtime;
+> -		tspec->tv_nsec = convtime_usec * 1000;
+> -	} else
+> -		*tspec = sbi->s_record_time;
+> -}
+> -
+
+>  static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+>  {
+>  	struct fileEntry *fe;
+> @@ -1256,10 +1242,17 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+>  		inode->i_blocks = le64_to_cpu(fe->logicalBlocksRecorded) <<
+>  			(inode->i_sb->s_blocksize_bits - 9);
+>  
+> -		udf_fill_inode_time(&inode->i_atime, &fe->accessTime, sbi);
+> -		udf_fill_inode_time(&inode->i_mtime, &fe->modificationTime,
+> -				    sbi);
+> -		udf_fill_inode_time(&inode->i_ctime, &fe->attrTime, sbi);
+> +		if (!udf_stamp_to_time(&inode->i_atime,
+> +					lets_to_cpu(fe->accessTime)))
+> +			inode->i_atime = sbi->s_record_time;
+> +
+> +		if (!udf_stamp_to_time(&inode->i_mtime,
+> +					lets_to_cpu(fe->modificationTime)))
+> +			inode->i_mtime = sbi->s_record_time;
+> +
+> +		if (!udf_stamp_to_time(&inode->i_ctime,
+> +					lets_to_cpu(fe->attrTime)))
+> +			inode->i_ctime = sbi->s_record_time;
+>  
+>  		iinfo->i_unique = le64_to_cpu(fe->uniqueID);
+>  		iinfo->i_lenEAttr = le32_to_cpu(fe->lengthExtendedAttr);
+> @@ -1269,11 +1262,21 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+>  		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
+>  		    (inode->i_sb->s_blocksize_bits - 9);
+>  
+> -		udf_fill_inode_time(&inode->i_atime, &efe->accessTime, sbi);
+> -		udf_fill_inode_time(&inode->i_mtime, &efe->modificationTime,
+> -				    sbi);
+> -		udf_fill_inode_time(&iinfo->i_crtime, &efe->createTime, sbi);
+> -		udf_fill_inode_time(&inode->i_ctime, &efe->attrTime, sbi);
+> +		if (!udf_stamp_to_time(&inode->i_atime,
+> +					lets_to_cpu(efe->accessTime)))
+> +			inode->i_atime = sbi->s_record_time;
+> +
+> +		if (!udf_stamp_to_time(&inode->i_mtime,
+> +					lets_to_cpu(efe->modificationTime)))
+> +			inode->i_mtime = sbi->s_record_time;
+> +
+> +		if (!udf_stamp_to_time(&iinfo->i_crtime,
+> +					lets_to_cpu(efe->createTime)))
+> +			iinfo->i_crtime = sbi->s_record_time;
+> +
+> +		if (!udf_stamp_to_time(&inode->i_ctime,
+> +					lets_to_cpu(efe->attrTime)))
+> +			inode->i_ctime = sbi->s_record_time;
+>  
+>  		iinfo->i_unique = le64_to_cpu(efe->uniqueID);
+>  		iinfo->i_lenEAttr = le32_to_cpu(efe->lengthExtendedAttr);
+> diff --git a/fs/udf/super.c b/fs/udf/super.c
+> index 0dcee12..9f565a9 100644
+> --- a/fs/udf/super.c
+> +++ b/fs/udf/super.c
+> @@ -909,24 +909,19 @@ static int udf_find_fileset(struct super_block *sb,
+>  static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
+>  {
+>  	struct primaryVolDesc *pvoldesc;
+> -	time_t recording;
+> -	long recording_usec;
+>  	struct ustr instr;
+>  	struct ustr outstr;
+>  
+>  	pvoldesc = (struct primaryVolDesc *)bh->b_data;
+>  
+> -	if (udf_stamp_to_time(&recording, &recording_usec,
+> +	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
+>  			      lets_to_cpu(pvoldesc->recordingDateAndTime))) {
+>  		kernel_timestamp ts;
+>  		ts = lets_to_cpu(pvoldesc->recordingDateAndTime);
+> -		udf_debug("recording time %ld/%ld, %04u/%02u/%02u"
+> +		udf_debug("recording time %04u/%02u/%02u"
+>  			  " %02u:%02u (%x)\n",
+> -			  recording, recording_usec,
+>  			  ts.year, ts.month, ts.day, ts.hour,
+>  			  ts.minute, ts.typeAndTimezone);
+> -		UDF_SB(sb)->s_record_time.tv_sec = recording;
+> -		UDF_SB(sb)->s_record_time.tv_nsec = recording_usec * 1000;
+>  	}
+>  
+>  	if (!udf_build_ustr(&instr, pvoldesc->volIdent, 32))
+> diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+> index 375be1b..508be85 100644
+> --- a/fs/udf/udfdecl.h
+> +++ b/fs/udf/udfdecl.h
+> @@ -204,7 +204,7 @@ extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
+>  extern uint16_t udf_crc(const uint8_t *, uint32_t, uint16_t);
+>  
+>  /* udftime.c */
+> -extern time_t *udf_stamp_to_time(time_t *, long *, kernel_timestamp);
+> -extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *, struct timespec);
+> +extern struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src);
+> +extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec src);
+>  
+>  #endif				/* __UDF_DECL_H */
+> diff --git a/fs/udf/udftime.c b/fs/udf/udftime.c
+> index ce59573..12fae6c 100644
+> --- a/fs/udf/udftime.c
+> +++ b/fs/udf/udftime.c
+> @@ -85,7 +85,7 @@ extern struct timezone sys_tz;
+>  #define SECS_PER_HOUR	(60 * 60)
+>  #define SECS_PER_DAY	(SECS_PER_HOUR * 24)
+>  
+> -time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
+> +struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
+>  {
+>  	int yday;
+>  	uint8_t type = src.typeAndTimezone >> 12;
+> @@ -97,23 +97,20 @@ time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
+>  		offset = (offset >> 4);
+>  		if (offset == -2047) /* unspecified offset */
+>  			offset = 0;
+> -	} else {
+> +	} else
+>  		offset = 0;
+> -	}
+>  
+>  	if ((src.year < EPOCH_YEAR) ||
+>  	    (src.year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
+> -		*dest = -1;
+> -		*dest_usec = -1;
+>  		return NULL;
+>  	}
+> -	*dest = year_seconds[src.year - EPOCH_YEAR];
+> -	*dest -= offset * 60;
+> +	dest->tv_sec = year_seconds[src.year - EPOCH_YEAR];
+> +	dest->tv_sec -= offset * 60;
+>  
+>  	yday = ((__mon_yday[__isleap(src.year)][src.month - 1]) + src.day - 1);
+> -	*dest += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
+> -	*dest_usec = src.centiseconds * 10000 +
+> -			src.hundredsOfMicroseconds * 100 + src.microseconds;
+> +	dest->tv_sec += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
+> +	dest->tv_nsec = 1000 * (src.centiseconds * 10000 +
+> +			src.hundredsOfMicroseconds * 100 + src.microseconds);
+>  	return dest;
+>  }
+>  
+> -- 
+> 1.5.3.7
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
