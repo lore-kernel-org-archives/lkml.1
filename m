@@ -1,66 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbYBEPXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYBEP0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbYBEPXl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYBEPXe
+	id S1754429AbYBEP0h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 10:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYBEP03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:23:34 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:13364 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbYBEPXd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 10:23:33 -0500
-Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
-	works on memoryless node.
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
-       David Rientjes <rientjes@google.com>
-In-Reply-To: <20080205143149.GA4207@csn.ul.ie>
-References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080202090914.GA27723@one.firstfloor.org>
-	 <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <1202149243.5028.61.camel@localhost>  <20080205143149.GA4207@csn.ul.ie>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 05 Feb 2008 10:23:37 -0500
-Message-Id: <1202225017.5332.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 5 Feb 2008 10:26:29 -0500
+Received: from mailsrv1.zmi.at ([212.69.162.198]:43145 "EHLO mailsrv1.zmi.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751400AbYBEP02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 10:26:28 -0500
+From: Michael Monnerie <michael.monnerie@it-management.at>
+Organization: it-management http://it-management.at
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: netatalk slow after system upgrade (possibly kernel problem?)
+Date: Tue, 5 Feb 2008 16:26:19 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netatalk-admins@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <200801251255.48105@zmi.at> <20080126220051.d753266b.akpm@linux-foundation.org>
+In-Reply-To: <20080126220051.d753266b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1427539.7ROr4xtGff";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200802051626.25030@zmi.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 14:31 +0000, Mel Gorman wrote:
-> On (04/02/08 13:20), Lee Schermerhorn didst pronounce:
-> > > > When the kernel behaviour changes and breaks user space then the kernel
-> > > > is usually wrong. Cc'ed Lee S. who maintains the kernel code now.
-> > 
-> > The memoryless nodes patch series changed a lot of things, so just
-> > reverting this one area [mpol_check_policy()] probably won't restore the
-> > prior behavior.  A fully populated node mask is not necessarily a proper
-> > subset of node_online_map().  And contextualize_policy() also requires
-> > the mask to be a subset of mems_allowed which also defaults to nodes
-> > with memory.
-> > 
-> > I don't know how Mel Gorman's "two zonelist" series, which is still
-> > awaiting a window into the -mm tree, affects this behavior.  Those
-> > patches will certainly be affected by whatever we decide here.
-> > 
-> 
-> I doubt they'd make a difference to this particular problem.
+--nextPart1427539.7ROr4xtGff
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I didn't really think so, but I wanted to give you a heads up regarding
-this, as I think it will affect your patches.  I'm hoping we'll see them
-in -mm soon after the .25 merge window closes.  If you get there before
-a fix to this issue, so much the better, IMO :-).
+(I let full quote here for reference, my text is on the bottom)
 
-Lee
+On Sonntag, 27. Januar 2008 Andrew Morton wrote:
+> (cc netdev)
+>
+> > On Fri, 25 Jan 2008 12:55:42 +0100 Michael Monnerie
+> > <michael.monnerie@it-management.at> wrote: Dear lists,
+> >
+> > I've been spending a LOT of time trying to find out where's the
+> > problem, but can't find it and therefore seek urgent help now. We
+> > have the following system:
+> >
+> > Server with VMware server
+> > -> VM running a webserver and netatalk
+> > -> 2 other VMs not related
+> >
+> > The VM with netatalk was SUSE 10.0 with kernel 2.6.13-15.15-smp
+> > (from SUSE), and things were pretty fun and quick. Then we upgraded
+> > to SUSE 10.2 and now 10.3, where everything EXCEPT netatalk runs
+> > perfect. Since this upgrade, Apple clients (MacOS X) now do READ
+> > very very slowly (about 512KB/s over the gigabit LAN), while
+> > writing to the server still is normal (>20MB/s). I've even retried
+> > with the newest kernel 2.6.23.13, tried different
+> > /proc/sys/net/ipv4/tcp_congestion_control (cubic, reno, bic, etc.)
+> > and nothing helps. I've then tried to install Samba and found that
+> > we have similar problems reading with it from MacOS clients. Now
+> > I'm pretty sure it should be something with the linux kernel, but I
+> > don't understand what.
+> >
+> > Here are the wireshark dumps in pcap format:
+> > http://zmi.at/x/atalk-write-fast.pcap
+> > -> you can see writing to the server (192.168.120.9) is normal and
+> > fast
+> >
+> > http://zmi.at/x/atalk-read-slow.pcap
+> > -> reading is horribly slow. Lots of "unknown", because of netatalk
+> > or what?
+> >
+> > http://zmi.at/x/unknown-atalk.pcap
+> > -> another dump while reading, you see "unknown" reads. I'm not
+> > sure if it's just wireshark not understanding the packets or
+> > netatalk.
+> >
+> > And trying with samba:
+> > http://zmi.at/x/smb-read-slow.pcap
+> > http://zmi.at/x/smb-write-quick.pcap
+> > you can see that it's also slow.
+> >
+> > Now why did it work with the old 2.6.13 kernel? I still have that
+> > old VM, and when I start it, it is always perfectly fast. Only
+> > newer versions are slow. Can somebody give me a hint please?
+>
+> It would be interesting if this could be repeated on bare hardware,
+> so we can eliminate the possibility that it is some weird interaction
+> with vmware.
 
+I tested now on the same machine, outside of VMware: It is blazing fast,=20
+just as it should be - kernel release 2.6.18.8-0.5-ZMI, where -ZMI=20
+means I compiled the kernel myself. Still, it runs quick within the VM=20
+with kernel 2.6.13-15.15-smp from SUSE 10.0, but slow with more recent=20
+kernels (I couldn't test every combination of course).=20
 
-> 
+I tried but cannot compile 2.6.13 within SUSE 10.3, it gives lots of=20
+errors because libs changed.
 
+It would be very nice to find the source of the problem. I uploaded the=20
+kernel config options files onto my server for reference, HTH:
+
+VMware with SUSE 10.0 and fast netatalk/samba:
+http://zmi.at/x/config2.6.13-15.15.txt
+
+VMware host, outside of VMware, also fast:
+http://zmi.at/x/config2.6.18.8-host.txt
+
+VMware with SUSE 10.2 and kernel 2.6.22-9-ZMI, slow:
+http://zmi.at/x/config2.6.22.9-slow.txt
+
+VMware with SUSE 10.3 and kernel 2.6.23.13-ZMI, slow:
+http://zmi.at/x/config2.6.23.13-slow.txt
+
+The problem seems to be somewhere between the kernel and VMware, but I=20
+do not know what to do.
+
+mfg zmi
+=2D-=20
+// Michael Monnerie, Ing.BSc    -----      http://it-management.at
+// Tel: 0676/846 914 666                      .network.your.ideas.
+// PGP Key:         "curl -s http://zmi.at/zmi.asc | gpg --import"
+// Fingerprint: AC19 F9D5 36ED CD8A EF38  500E CE14 91F7 1C12 09B4
+// Keyserver: www.keyserver.net                   Key-ID: 1C1209B4
+
+--nextPart1427539.7ROr4xtGff
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+
+iD8DBQBHqIAhzhSR9xwSCbQRAg4PAKC+0MrUHFSHBsmdDb7CsbqyfD7shACdHgNv
+XjOdxUEO3qU+Nmxg4aXXNwc=
+=hCIl
+-----END PGP SIGNATURE-----
+
+--nextPart1427539.7ROr4xtGff--
