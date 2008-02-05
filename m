@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbYBET1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYBET3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760272AbYBET1m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759723AbYBET1e
+	id S1759541AbYBET3b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbYBET3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:27:34 -0500
-Received: from mail.microway.com ([64.80.227.22]:40917 "EHLO microway.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759938AbYBET1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:27:32 -0500
-X-Greylist: delayed 1500 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 14:27:32 EST
-From: Rick Warner <rick@microway.com>
-Organization: Microway, Inc.
-To: linux-kernel@vger.kernel.org
-Subject: serial port regression caused by "Char: tty_ioctl, use wait_event_interruptible_timeout" patch
-Date: Tue, 5 Feb 2008 14:02:26 -0500
-User-Agent: KMail/1.9.7
-Message-Id: <200802051402.26816.rick@microway.com>
-X-Sanitizer: Advosys mail filter
+	Tue, 5 Feb 2008 14:29:23 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:52668 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbYBET3W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:29:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=nHsZ8RDhlQiYUQnEfOFpoUjSAJsKva3WqAObrkKor4D/P/Cg3Trky1WSx1paB6EPXXzQ8XTTPNvOBOIcC794DCbhAOA790sMQByVXprgKLLHyD3yIm59TPwnBbMIaL2uge0IeWCWhNtG8Vt2iymY297y4E+Czg4oCMnA152WoP0=
+Date: Tue, 5 Feb 2008 20:21:58 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/6] udf: convert udf_stamp_to_time and
+	udf_time_to_stamp to use timestamps
+Message-ID: <20080205192153.GB6332@joi>
+References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-5-git-send-email-marcin.slusarz@gmail.com> <20080205155956.GI25464@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080205155956.GI25464@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Tue, Feb 05, 2008 at 04:59:56PM +0100, Jan Kara wrote:
+> On Sun 03-02-08 19:36:09, marcin.slusarz@gmail.com wrote:
+> > kernel_timestamp type was almost unused - only callers of udf_stamp_to_time
+> > and udf_time_to_stamp used it, so let these functions handle endianness
+> > internally and don't clutter code with conversions
+>   OK, but please also rename the functions to something like
+> udf_disk_stamp_to_time() and udf_time_to_disk_stamp() so that the name
+> suggests that it internally handles endianess...
+Ok, should I redo this patch or create separate patch on top of it?
 
-My company uses a proprietary hardware monitoring solution that utilizes 
-communication over the serial port.  A RS232-RS485 converter is plugged into 
-the serial port of the master of a cluster, and cat5 cables are daisy chained 
-between the cards to handle out of band hardware monitoring.  The cards 
-themselves speak RS485.  We have been using the same software to read the 
-data from the serial port since the 2.4 kernel days.   As of 2.6.23, the 
-software no longer works.
-
-I narrowed down the problem doing a binary search on git snapshots between .22 
-and .23, and found the breakage between git6 and git7.  Further isolating it 
-found the patch mentioned in the subject to be the cause.  I reversed the 
-patch in the .23 source and it now works properly.
-
-Should the code be reverted back as I did, or is there something I should 
-change in our userspace code that reads from the serial port to correct it 
-instead?
-
-Thanks,
-Rick
-
--- 
-Richard Warner
-Lead Systems Integrator
-Microway, Inc
-(508)732-5517
+Marcin
