@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbYBEIip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbYBEIyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbYBEIip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 03:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbYBEIif
+	id S1757172AbYBEIyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 03:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbYBEIyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 03:38:35 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:35462 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755517AbYBEIie (ORCPT
+	Tue, 5 Feb 2008 03:54:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:7016 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755703AbYBEIyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 03:38:34 -0500
+	Tue, 5 Feb 2008 03:54:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jqChyTdIiyDMw378iAT78xk1O3AZriB6NeT2XV6QEd+MYY1pchA3tlZv7hVKVy9JjmIrKXAIf905q5toy6xEdm1sm7Pu3NNhcPPmBgxXwY4xBak+iyJ9Cj9kz87UxyyILd9j05bFOs0JMnZSDOpEdvMKJ7r1sN4sya9f4UQbUhQ=
-Message-ID: <e2e108260802050038v6648495ap13cf799727c00cfc@mail.gmail.com>
-Date: Tue, 5 Feb 2008 09:38:32 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Mike Christie" <michaelc@cs.wisc.edu>
-In-Reply-To: <47A7986B.1070206@garzik.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=mN0aAYyS66lujrzFAwnbWRjtsfBzQBwUnMUVnmKqF2Goy6HtCpJf6zHDIdlE7q01fX1ftkUuqHO/QSgyoRZ1mvfNEJjFf5M/yxXDO3z3v0K8ih6MjHVZs4J5kzIWMUq6zFDeZxdClXVJkUWdlqbwU8NFkNf8r0b6YCRGDW4jrNE=
+Message-ID: <47A82443.9000601@gmail.com>
+Date: Tue, 05 Feb 2008 09:54:27 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47A05CBD.5050803@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204210121.GF18682@fieldses.org>
-	 <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
-	 <47A7986B.1070206@garzik.org>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       Bruno Randolf <bruno@thinktube.com>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ath5k-devel@lists.ath5k.org
+Subject: Re: [Wireless, ath5k] 2.6.24-git13 9135f1901ee6449dfe338adf6e40e9c2025b8150
+References: <6101e8c40802040600q804e40cs97d0031920e58d9d@mail.gmail.com>	 <47A774AB.5060008@gmail.com>	 <6101e8c40802041334o20b2b391la5b0a5f557ee67c5@mail.gmail.com> <6101e8c40802041340g749b1e03k70fda7fdb21452d7@mail.gmail.com>
+In-Reply-To: <6101e8c40802041340g749b1e03k70fda7fdb21452d7@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 4, 2008 11:57 PM, Jeff Garzik <jeff@garzik.org> wrote:
+On 02/04/2008 10:40 PM, Oliver Pinter wrote:
+> On 2/4/08, Oliver Pinter <oliver.pntr@gmail.com> wrote:
+>> On 2/4/08, Jiri Slaby <jirislaby@gmail.com> wrote:
+>>> On 02/04/2008 03:00 PM, Oliver Pinter (Pintér Olivér) wrote:
+>>>> [  413.118874] wpa_supplicant[4388]: segfault at 30 ip 080697ca sp
+>>>> bfc9cab0 error 4 in wpa_supplicant[8048000+4c000]
+>>> Seems like wpa_supplicant is broken. Is this a regression?
+>> yes, but with madwifi is all ok
 
-> Networked block devices are attractive because the concepts and
-> implementation are more simple than networked filesystems... but usually
-> you want to run some sort of filesystem on top.  At that point you might
-> as well run NFS or [gfs|ocfs|flavor-of-the-week], and ditch your
-> networked block device (and associated complexity).
-
-Running a filesystem on top of iSCSI results in better performance
-than NFS, especially if the NFS client conforms to the NFS standard
-(=synchronous writes).
-By searching the web search for the keywords NFS, iSCSI and
-performance I found the following (6 years old) document:
-http://www.technomagesinc.com/papers/ip_paper.html. A quote from the
-conclusion:
-    Our results, generated by running some of industry standard benchmarks,
-    show that iSCSI significantly outperforms NFS for situations when
-    performing streaming, database like accesses and small file transactions.
-
-Bart Van Assche.
+And this... madwifi goes through ported bsd net80211. So which latest git you 
+tried worked for you when this is a regression, please?
