@@ -1,106 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762759AbYBEVlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbYBEVl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762759AbYBEVlD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:41:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761842AbYBEViK
+	id S1762817AbYBEVl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761855AbYBEViN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:38:10 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:36273 "EHLO
+	Tue, 5 Feb 2008 16:38:13 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36276 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759381AbYBEVh5 (ORCPT
+	with ESMTP id S1761719AbYBEViG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:37:57 -0500
-Message-Id: <20080205213655.828035390@szeredi.hu>
+	Tue, 5 Feb 2008 16:38:06 -0500
+Message-Id: <20080205213708.153950797@szeredi.hu>
 References: <20080205213616.343721693@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 05 Feb 2008 22:36:17 +0100
+Date: Tue, 05 Feb 2008 22:36:25 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 01/10] unprivileged mounts: add user mounts to the kernel
-Content-Disposition: inline; filename=unprivileged-mounts-add-user-mounts-to-the-kernel.patch
+Subject: [patch 09/10] unprivileged mounts: propagation: inherit owner from parent
+Content-Disposition: inline; filename=unprivileged-mounts-propagation-inherit-owner-from-parent.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-This patchset adds support for keeping mount ownership information in the
-kernel, and allow unprivileged mount(2) and umount(2) in certain cases.
+On mount propagation, let the owner of the clone be inherited from the
+parent into which it has been propagated.
 
-The mount owner has the following privileges:
+If the parent has the "nosuid" flag, set this flag for the child as
+well.  This is needed for the suid-less namespace (use case #2 in the
+first patch header), where all mounts are owned by the user and have
+the nosuid flag set.  In this case the propagated mount needs to have
+nosuid, otherwise a suid executable may be misused by the user.
 
-  - unmount the owned mount
-  - create a submount under the owned mount
-
-The sysadmin can set the owner explicitly on mount and remount.  When an
-unprivileged user creates a mount, then the owner is automatically set to the
-user.
-
-The following use cases are envisioned:
-
-1) Private namespace, with selected mounts owned by user.  E.g.
-   /home/$USER is a good candidate for allowing unpriv mounts and unmounts
-   within.
-
-2) Private namespace, with all mounts owned by user and having the "nosuid"
-   flag.  User can mount and umount anywhere within the namespace, but suid
-   programs will not work.
-
-3) Global namespace, with a designated directory, which is a mount owned by
-   the user.  E.g.  /mnt/users/$USER is set up so that it is bind mounted onto
-   itself, and set to be owned by $USER.  The user can add/remove mounts only
-   under this directory.
-
-The following extra security measures are taken for unprivileged mounts:
-
- - usermounts are limited by a sysctl tunable
- - force "nosuid,nodev" mount options on the created mount
-
-This series increases the size of vmlinux by about 1.5k on x86_64.
-
-For testing unprivileged mounts (and for other purposes) simple
-mount/umount utilities are available from:
-
-  http://www.kernel.org/pub/linux/kernel/people/mszeredi/mmount/
-
-A preliminary patch for util-linux-ng to add the same functionality to
-mount(8) and umount(8) is available here:
-
-  http://lkml.org/lkml/2008/1/16/103
-
-
-This patch:
-
-A new mount flag, MS_SETUSER is used to make a mount owned by a user.  If this
-flag is specified, then the owner will be set to the current fsuid and the
-mount will be marked with the MNT_USER flag.  On remount don't preserve
-previous owner, and treat MS_SETUSER as for a new mount.  The MS_SETUSER flag
-is ignored on mount move.
-
-The MNT_USER flag is not copied on any kind of mount cloning: namespace
-creation, binding or propagation.  For bind mounts the cloned mount(s) are set
-to MNT_USER depending on the MS_SETUSER mount flag.  In all the other cases
-MNT_USER is always cleared.
-
-For MNT_USER mounts a "user=UID" option is added to /proc/PID/mounts.  This is
-compatible with how mount ownership is stored in /etc/mtab.
-
-The rationale for using MS_SETUSER and MNT_USER, to distinguish "user"
-mounts from "non-user" or "legacy" mounts are follows:
-
-  a) Mount(2) and umount(2) on legacy mounts always need CAP_SYS_ADMIN
-     capability.  As opposed to user mounts, which will only require,
-     that the mount owner matches the current fsuid.  So a process
-     with fsuid=0 should not be able to mount/umount legacy mounts
-     without the CAP_SYS_ADMIN capability.
-
-  b) Legacy userspace programs may set fsuid to nonzero before calling
-     mount(2).  In such an unlikely case, this patchset would cause
-     an unintended side effect of making the mount owned by the fsuid.
-
-  c) For legacy mounts, no "user=UID" option should be shown in
-     /proc/mounts for backwards compatibility.
+Similar treatment is not needed for "nodev", because devices can't be
+abused this way: the user is not able to gain privileges to devices by
+rearranging the mount namespace.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
@@ -108,161 +44,203 @@ Acked-by: Serge Hallyn <serue@us.ibm.com>
 
 Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/namespace.c	2008-02-04 23:47:47.000000000 +0100
-+++ linux/fs/namespace.c	2008-02-04 23:47:50.000000000 +0100
-@@ -511,6 +511,13 @@ static struct vfsmount *skip_mnt_tree(st
- 	return p;
+--- linux.orig/fs/namespace.c	2008-02-04 23:48:02.000000000 +0100
++++ linux/fs/namespace.c	2008-02-04 23:48:08.000000000 +0100
+@@ -540,10 +540,10 @@ static int reserve_user_mount(void)
+ 	return err;
  }
  
-+static void set_mnt_user(struct vfsmount *mnt)
-+{
-+	WARN_ON(mnt->mnt_flags & MNT_USER);
-+	mnt->mnt_uid = current->fsuid;
-+	mnt->mnt_flags |= MNT_USER;
-+}
-+
+-static void __set_mnt_user(struct vfsmount *mnt)
++static void __set_mnt_user(struct vfsmount *mnt, uid_t owner)
+ {
+ 	WARN_ON(mnt->mnt_flags & MNT_USER);
+-	mnt->mnt_uid = current->fsuid;
++	mnt->mnt_uid = owner;
+ 	mnt->mnt_flags |= MNT_USER;
+ 
+ 	if (!capable(CAP_SETUID))
+@@ -554,7 +554,7 @@ static void __set_mnt_user(struct vfsmou
+ 
+ static void set_mnt_user(struct vfsmount *mnt)
+ {
+-	__set_mnt_user(mnt);
++	__set_mnt_user(mnt, current->fsuid);
+ 	spin_lock(&vfsmount_lock);
+ 	nr_user_mounts++;
+ 	spin_unlock(&vfsmount_lock);
+@@ -570,7 +570,7 @@ static void clear_mnt_user(struct vfsmou
+ }
+ 
  static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
- 					int flag)
+-					int flag)
++					int flag, uid_t owner)
  {
-@@ -525,6 +532,11 @@ static struct vfsmount *clone_mnt(struct
- 		mnt->mnt_mountpoint = mnt->mnt_root;
- 		mnt->mnt_parent = mnt;
- 
-+		/* don't copy the MNT_USER flag */
-+		mnt->mnt_flags &= ~MNT_USER;
-+		if (flag & CL_SETUSER)
-+			set_mnt_user(mnt);
+ 	struct super_block *sb = old->mnt_sb;
+ 	struct vfsmount *mnt;
+@@ -594,7 +594,10 @@ static struct vfsmount *clone_mnt(struct
+ 	/* don't copy the MNT_USER flag */
+ 	mnt->mnt_flags &= ~MNT_USER;
+ 	if (flag & CL_SETUSER)
+-		__set_mnt_user(mnt);
++		__set_mnt_user(mnt, owner);
 +
- 		if (flag & CL_SLAVE) {
- 			list_add(&mnt->mnt_slave, &old->mnt_slave_list);
- 			mnt->mnt_master = old;
-@@ -712,6 +724,8 @@ static void show_mnt_opts(struct seq_fil
- 		if (mnt->mnt_flags & fs_infop->flag)
- 			seq_puts(m, fs_infop->str);
- 	}
-+	if (mnt->mnt_flags & MNT_USER)
-+		seq_printf(m, ",user=%i", mnt->mnt_uid);
++	if (flag & CL_NOSUID)
++		mnt->mnt_flags |= MNT_NOSUID;
+ 
+ 	if (flag & CL_SLAVE) {
+ 		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+@@ -1205,7 +1208,7 @@ static int lives_below_in_same_fs(struct
  }
  
- static void show_type(struct seq_file *m, struct super_block *sb)
-@@ -1320,8 +1334,9 @@ static int do_change_type(struct nameida
- /*
-  * do loopback mount.
-  */
--static int do_loopback(struct nameidata *nd, char *old_name, int recurse)
-+static int do_loopback(struct nameidata *nd, char *old_name, int flags)
+ struct vfsmount *copy_tree(struct vfsmount *mnt, struct dentry *dentry,
+-					int flag)
++					int flag, uid_t owner)
  {
-+	int clone_fl;
+ 	struct vfsmount *res, *p, *q, *r, *s;
+ 	struct nameidata nd;
+@@ -1213,7 +1216,7 @@ struct vfsmount *copy_tree(struct vfsmou
+ 	if (!(flag & CL_COPY_ALL) && IS_MNT_UNBINDABLE(mnt))
+ 		return ERR_PTR(-EPERM);
+ 
+-	res = q = clone_mnt(mnt, dentry, flag);
++	res = q = clone_mnt(mnt, dentry, flag, owner);
+ 	if (IS_ERR(q))
+ 		goto error;
+ 	q->mnt_mountpoint = mnt->mnt_mountpoint;
+@@ -1235,7 +1238,7 @@ struct vfsmount *copy_tree(struct vfsmou
+ 			p = s;
+ 			nd.path.mnt = q;
+ 			nd.path.dentry = p->mnt_mountpoint;
+-			q = clone_mnt(p, p->mnt_root, flag);
++			q = clone_mnt(p, p->mnt_root, flag, owner);
+ 			if (IS_ERR(q))
+ 				goto error;
+ 			spin_lock(&vfsmount_lock);
+@@ -1260,7 +1263,7 @@ struct vfsmount *collect_mounts(struct v
+ {
+ 	struct vfsmount *tree;
+ 	down_read(&namespace_sem);
+-	tree = copy_tree(mnt, dentry, CL_COPY_ALL | CL_PRIVATE);
++	tree = copy_tree(mnt, dentry, CL_COPY_ALL | CL_PRIVATE, 0);
+ 	up_read(&namespace_sem);
+ 	return tree;
+ }
+@@ -1431,7 +1434,8 @@ static int do_change_type(struct nameida
+  */
+ static int do_loopback(struct nameidata *nd, char *old_name, int flags)
+ {
+-	int clone_fl;
++	int clone_fl = 0;
++	uid_t owner = 0;
  	struct nameidata old_nd;
  	struct vfsmount *mnt = NULL;
- 	int err = mount_is_safe(nd);
-@@ -1341,11 +1356,12 @@ static int do_loopback(struct nameidata 
+ 	int err;
+@@ -1452,11 +1456,17 @@ static int do_loopback(struct nameidata 
  	if (!check_mnt(nd->path.mnt) || !check_mnt(old_nd.path.mnt))
  		goto out;
  
-+	clone_fl = (flags & MS_SETUSER) ? CL_SETUSER : 0;
- 	err = -ENOMEM;
--	if (recurse)
--		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, 0);
-+	if (flags & MS_REC)
-+		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
- 	else
--		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, 0);
-+		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
- 
- 	if (!mnt)
- 		goto out;
-@@ -1407,8 +1423,11 @@ static int do_remount(struct nameidata *
- 		err = change_mount_flags(nd->path.mnt, flags);
- 	else
- 		err = do_remount_sb(sb, flags, data, 0);
--	if (!err)
-+	if (!err) {
- 		nd->path.mnt->mnt_flags = mnt_flags;
-+		if (flags & MS_SETUSER)
-+			set_mnt_user(nd->path.mnt);
+-	clone_fl = (flags & MS_SETUSER) ? CL_SETUSER : 0;
++	if (flags & MS_SETUSER) {
++		clone_fl |= CL_SETUSER;
++		owner = current->fsuid;
 +	}
- 	up_write(&sb->s_umount);
- 	if (!err)
- 		security_sb_post_remount(nd->path.mnt, flags, data);
-@@ -1517,10 +1536,13 @@ static int do_new_mount(struct nameidata
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
--	mnt = do_kern_mount(type, flags, name, data);
-+	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
- 	if (IS_ERR(mnt))
- 		return PTR_ERR(mnt);
- 
-+	if (flags & MS_SETUSER)
-+		set_mnt_user(mnt);
 +
+ 	if (flags & MS_REC)
+-		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
++		mnt = copy_tree(old_nd.path.mnt, old_nd.path.dentry, clone_fl,
++				owner);
+ 	else
+-		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, clone_fl);
++		mnt = clone_mnt(old_nd.path.mnt, old_nd.path.dentry, clone_fl,
++				owner);
+ 
+ 	err = PTR_ERR(mnt);
+ 	if (IS_ERR(mnt))
+@@ -1680,7 +1690,7 @@ static int do_new_mount(struct nameidata
+ 	}
+ 
+ 	if (flags & MS_SETUSER)
+-		__set_mnt_user(mnt);
++		__set_mnt_user(mnt, current->fsuid);
+ 
  	return do_add_mount(mnt, nd, mnt_flags, NULL);
- }
  
-@@ -1552,7 +1574,8 @@ int do_add_mount(struct vfsmount *newmnt
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
+@@ -2076,7 +2086,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	down_write(&namespace_sem);
+ 	/* First pass: copy the tree topology */
+ 	new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
+-					CL_COPY_ALL | CL_EXPIRE);
++					CL_COPY_ALL | CL_EXPIRE, 0);
+ 	if (IS_ERR(new_ns->root)) {
+ 		up_write(&namespace_sem);
+ 		kfree(new_ns);
+Index: linux/fs/pnode.c
+===================================================================
+--- linux.orig/fs/pnode.c	2008-02-04 23:47:56.000000000 +0100
++++ linux/fs/pnode.c	2008-02-04 23:48:08.000000000 +0100
+@@ -216,15 +216,28 @@ int propagate_mnt(struct vfsmount *dest_
  
--	newmnt->mnt_flags = mnt_flags;
-+	/* MNT_USER was set earlier */
-+	newmnt->mnt_flags |= mnt_flags;
- 	if ((err = graft_tree(newmnt, nd)))
- 		goto unlock;
+ 	for (m = propagation_next(dest_mnt, dest_mnt); m;
+ 			m = propagation_next(m, dest_mnt)) {
+-		int type;
++		int clflags;
++		uid_t owner = 0;
+ 		struct vfsmount *source;
  
-@@ -1874,7 +1897,7 @@ long do_mount(char *dev_name, char *dir_
- 		retval = do_remount(&nd, flags & ~MS_REMOUNT, mnt_flags,
- 				    data_page);
- 	else if (flags & MS_BIND)
--		retval = do_loopback(&nd, dev_name, flags & MS_REC);
-+		retval = do_loopback(&nd, dev_name, flags);
- 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
- 		retval = do_change_type(&nd, flags);
- 	else if (flags & MS_MOVE)
+ 		if (IS_MNT_NEW(m))
+ 			continue;
+ 
+-		source =  get_source(m, prev_dest_mnt, prev_src_mnt, &type);
++		source =  get_source(m, prev_dest_mnt, prev_src_mnt, &clflags);
+ 
+-		child = copy_tree(source, source->mnt_root, type);
++		if (m->mnt_flags & MNT_USER) {
++			clflags |= CL_SETUSER;
++			owner = m->mnt_uid;
++
++			/*
++			 * If propagating into a user mount which doesn't
++			 * allow suid, then make sure, the child(ren) won't
++			 * allow suid either
++			 */
++			if (m->mnt_flags & MNT_NOSUID)
++				clflags |= CL_NOSUID;
++		}
++		child = copy_tree(source, source->mnt_root, clflags, owner);
+ 		if (IS_ERR(child)) {
+ 			ret = PTR_ERR(child);
+ 			list_splice(tree_list, tmp_list.prev);
 Index: linux/fs/pnode.h
 ===================================================================
---- linux.orig/fs/pnode.h	2008-02-04 23:47:47.000000000 +0100
-+++ linux/fs/pnode.h	2008-02-04 23:47:50.000000000 +0100
-@@ -23,6 +23,7 @@
- #define CL_MAKE_SHARED 		0x08
+--- linux.orig/fs/pnode.h	2008-02-04 23:47:50.000000000 +0100
++++ linux/fs/pnode.h	2008-02-04 23:48:08.000000000 +0100
+@@ -24,6 +24,7 @@
  #define CL_PROPAGATION 		0x10
  #define CL_PRIVATE 		0x20
-+#define CL_SETUSER		0x40
+ #define CL_SETUSER		0x40
++#define CL_NOSUID		0x80
  
  static inline void set_mnt_shared(struct vfsmount *mnt)
  {
+@@ -36,6 +37,7 @@ int propagate_mnt(struct vfsmount *, str
+ 		struct list_head *);
+ int propagate_umount(struct list_head *);
+ int propagate_mount_busy(struct vfsmount *, int);
++struct vfsmount *copy_tree(struct vfsmount *, struct dentry *, int, uid_t);
+ int get_peer_group_id(struct vfsmount *);
+ int get_master_id(struct vfsmount *);
+ #endif /* _LINUX_PNODE_H */
 Index: linux/include/linux/fs.h
 ===================================================================
---- linux.orig/include/linux/fs.h	2008-02-04 23:47:47.000000000 +0100
-+++ linux/include/linux/fs.h	2008-02-04 23:47:50.000000000 +0100
-@@ -125,6 +125,7 @@ extern int dir_notify_enable;
- #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
- #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
- #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
-+#define MS_SETUSER	(1<<24) /* set mnt_uid to current user */
- #define MS_ACTIVE	(1<<30)
- #define MS_NOUSER	(1<<31)
- 
-Index: linux/include/linux/mount.h
-===================================================================
---- linux.orig/include/linux/mount.h	2008-02-04 23:47:47.000000000 +0100
-+++ linux/include/linux/mount.h	2008-02-04 23:47:50.000000000 +0100
-@@ -33,6 +33,7 @@ struct mnt_namespace;
- 
- #define MNT_SHRINKABLE	0x100
- #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
-+#define MNT_USER	0x400
- 
- #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
- #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
-@@ -70,6 +71,8 @@ struct vfsmount {
- 	 * are held, and all mnt_writer[]s on this mount have 0 as their ->count
- 	 */
- 	atomic_t __mnt_writers;
-+
-+	uid_t mnt_uid;			/* owner of the mount */
- };
- 
- static inline struct vfsmount *mntget(struct vfsmount *mnt)
+--- linux.orig/include/linux/fs.h	2008-02-04 23:48:04.000000000 +0100
++++ linux/include/linux/fs.h	2008-02-04 23:48:08.000000000 +0100
+@@ -1500,7 +1500,6 @@ extern int may_umount(struct vfsmount *)
+ extern void umount_tree(struct vfsmount *, int, struct list_head *);
+ extern void release_mounts(struct list_head *);
+ extern long do_mount(char *, char *, char *, unsigned long, void *);
+-extern struct vfsmount *copy_tree(struct vfsmount *, struct dentry *, int);
+ extern void mnt_set_mountpoint(struct vfsmount *, struct dentry *,
+ 				  struct vfsmount *);
+ extern struct vfsmount *collect_mounts(struct vfsmount *, struct dentry *);
 
 --
