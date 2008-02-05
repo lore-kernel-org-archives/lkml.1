@@ -1,106 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYBETV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbYBETWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758728AbYBETV4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYBETVr
+	id S1759971AbYBETWW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759247AbYBETV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:21:47 -0500
-Received: from [212.12.190.177] ([212.12.190.177]:36421 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751451AbYBETVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:21:46 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-Date: Tue, 5 Feb 2008 22:20:33 +0300
-User-Agent: KMail/1.5
-Cc: Chris Mason <chris.mason@oracle.com>, Andreas Dilger <adilger@sun.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200801242336.00340.a1426z@gawab.com> <200802051007.44139.a1426z@gawab.com> <20080205150705.GC25464@duck.suse.cz>
-In-Reply-To: <20080205150705.GC25464@duck.suse.cz>
+	Tue, 5 Feb 2008 14:21:58 -0500
+Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:53497 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758694AbYBETV4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:21:56 -0500
+Message-ID: <47A8B757.10101@vlnb.net>
+Date: Tue, 05 Feb 2008 22:21:59 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeff Garzik <jeff@garzik.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mike Christie <michaelc@cs.wisc.edu>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	<1201639331.3069.58.camel@localhost.localdomain>	<47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>	<1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>	<1202144767.3096.38.camel@localhost.localdomain>	<47A7488B.4080000@vlnb.net>	<1202145901.3096.49.camel@localhost.localdomain>	<alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>	<1202151989.11265.576.camel@haakon2.linux-iscsi.org>	<alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>	<20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org> <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
+In-Reply-To: <47A8B510.8000807@garzik.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802052220.33135.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> On Tue 05-02-08 10:07:44, Al Boldi wrote:
-> > Jan Kara wrote:
-> > > On Sat 02-02-08 00:26:00, Al Boldi wrote:
-> > > > Chris Mason wrote:
-> > > > > Al, could you please compare the write throughput from vmstat for
-> > > > > the data=ordered vs data=writeback runs?  I would guess the
-> > > > > data=ordered one has a lower overall write throughput.
-> > > >
-> > > > That's what I would have guessed, but it's actually going up 4x fold
-> > > > for mysql from 559mb to 2135mb, while the db-size ends up at 549mb.
-> > >
-> > >   So you say we write 4-times as much data in ordered mode as in
-> > > writeback mode. Hmm, probably possible because we force all the dirty
-> > > data to disk when committing a transation in ordered mode (and don't
-> > > do this in writeback mode). So if the workload repeatedly dirties the
-> > > whole DB, we are going to write the whole DB several times in ordered
-> > > mode but in writeback mode we just keep the data in memory all the
-> > > time. But this is what you ask for if you mount in ordered mode so I
-> > > wouldn't consider it a bug.
-> >
-> > Ok, maybe not a bug, but a bit inefficient.  Check out this workload:
-> >
-> > sync;
-> >
-> > while :; do
-> >   dd < /dev/full > /mnt/sda2/x.dmp bs=1M count=20
-> >   rm -f /mnt/sda2/x.dmp
-> >   usleep 10000
-> > done
-:
-:
-> > Do you think these 12mb redundant writeouts could be buffered?
->
->   No, I don't think so. At least when I run it, number of blocks written
-> out varies which confirms that these 12mb are just data blocks which
-> happen to be in the file when transaction commits (which is every 5
-> seconds).
+Jeff Garzik wrote:
+>>> iSCSI is way, way too complicated. 
+>>
+>> I fully agree. From one side, all that complexity is unavoidable for 
+>> case of multiple connections per session, but for the regular case of 
+>> one connection per session it must be a lot simpler.
+> 
+> Actually, think about those multiple connections...  we already had to 
+> implement fast-failover (and load bal) SCSI multi-pathing at a higher 
+> level.  IMO that portion of the protocol is redundant:   You need the 
+> same capability elsewhere in the OS _anyway_, if you are to support 
+> multi-pathing.
 
-Just a thought, but maybe double-buffering can help?
+I'm thinking about MC/S as about a way to improve performance using 
+several physical links. There's no other way, except MC/S, to keep 
+commands processing order in that case. So, it's really valuable 
+property of iSCSI, although with a limited application.
 
-> And to satisfy journaling gurantees in ordered mode you must
-> write them so you really have no choice...
-
-Making this RFC rather useful.
-
-What we need now is an implementation, which should be easy.
-
-Maybe something on these lines:
-
-<< in ext3_ordered_write_end >>
-  if (current->soft_sync & 1)
-    return ext3_writeback_write_end;
-
-<< in ext3_ordered_writepage >>
-  if (current->soft_sync & 2)
-    return ext3_writeback_writepage;
-
-<< in ext3_sync_file >>
-  if (current->soft_sync & 4)
-    return ret;
-
-<< in ext3_file_write >>
-  if (current->soft_sync & 8)
-    return ret;
-
-As you can see soft_sync is masked and bits are ordered by importance.
-
-It would be neat if somebody interested could cook-up a patch.
-
-
-Thanks!
-
---
-Al
-
+Vlad
