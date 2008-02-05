@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbYBEAHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbYBEAIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbYBEAHi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 19:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757352AbYBEAH2
+	id S1758809AbYBEAIV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 19:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbYBEAIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 19:07:28 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38348 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758064AbYBEAH1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 19:07:27 -0500
-Date: Tue, 5 Feb 2008 00:06:39 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: yi.y.yang@intel.com, greg@kroah.com, rdunlap@xenotime.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-mm1: module params broken
-In-Reply-To: <20080204150638.512f46ea.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0802042357470.4513@blonde.site>
-References: <20080203171634.58ab668b.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0802042140250.8210@blonde.site> <20080204150638.512f46ea.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Feb 2008 19:08:14 -0500
+Received: from gate.crashing.org ([63.228.1.57]:45278 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757352AbYBEAIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 19:08:13 -0500
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080201210656.174030@gmx.net>
+References: <20080201184254.174020@gmx.net>
+	 <20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net>
+	 <20080201202518.GJ18688@csn.ul.ie>  <20080201210656.174030@gmx.net>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 11:07:51 +1100
+Message-Id: <1202170071.7079.22.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008, Andrew Morton wrote:
-> 
-> Takashi found a bug in it:
 
-Bless him.
+On Fri, 2008-02-01 at 22:06 +0100, Gerhard Pircher wrote:
+> > Could you try booting with 16MB less memory using mem=?
+> I started the kernel with 512MB RAM (mem=496) and 1.5GB (mem=1520).
+> The
+> kernel oopes in both cases with a "Unable to handle kernel paging
+> request
+> for data address 0xbffff000", followed by a "Oops: kernel access of
+> bad
+> area, sig 11" message. The end of the stack trace shows the
+> start_here()
+> function.
+> I'm not a PowerPC expert, but if 0xbffff000 is a virtual address, then
+> it would be in the user program address space, right? If it is a
+> physical
+> address, then it is somewhere in the unallocated PCI address space
 
-> --- a/lib/vsprintf.c~add-new-string-functions-strict_strto-and-convert-kernel-params-to-use-them-fix-2
-> +++ a/lib/vsprintf.c
-> @@ -234,7 +234,7 @@ int strict_strto##type(const char *cp, u
->  		if (ret != 0)						\
->  			*res = -(*res);					\
->  	} else								\
-> -		ret = strict_strtou##type(cp+1, base, res);		\
-> +		ret = strict_strtou##type(cp, base, res);		\
->  									\
->  	return ret;							\
->  }									\
-> _
-> 
-> and I was very bad and didn't immediately prepare and upload the fix and
-> hence probably wasted a lot of your time, for which I apologise.  In my
-> defense, it was 4:00AM Sunday and I had lost eye control by then.
+Have you tried DEBUG_PAGEALLOC ? It might fault earlier which might give
+us better informations. Also, a stactrace from the oops might be useful,
+along with a copy of your device-tree.
 
-Please don't even begin to think of apologizing to me:
-that's so much the wrong way round it's embarrassing.
+Ben.
 
-It's scary to think of how much of your time gets wasted
-on knocking these -mms into some kind of shape that's
-then ready for the rest of us to start attacking them.
 
-> Does that fix fix it?  If not: patch overboard.
-
-Reprieve!  Indeed that precisely fixes it: numerous
-modules now working again with that fix.  Thanks a lot.
-
-Hugh
