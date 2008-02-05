@@ -1,161 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYBEFeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYBEFfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYBEFeG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 00:34:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYBEFdz
+	id S1756181AbYBEFfl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 00:35:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYBEFfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 00:33:55 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:41877 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbYBEFdy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 00:33:54 -0500
-Message-ID: <47A7F53C.8090606@in.ibm.com>
-Date: Tue, 05 Feb 2008 11:03:48 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
+	Tue, 5 Feb 2008 00:35:33 -0500
+Received: from crca.org.au ([67.207.131.56]:48133 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbYBEFfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 00:35:32 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <47A7F581.8060300@nigel.suspend2.net>
+Date: Tue, 05 Feb 2008 16:34:57 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>, bwalle@suse.de
-CC: linux-kernel <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org
-Subject: Re: [mm] Crashkernel memory reservation fails with 2.6.24-rc8-mm1
-References: <47A7391F.2020408@in.ibm.com> <20080204183810.GE16021@redhat.com> <20080204193524.GA11104@suse.de>
-In-Reply-To: <20080204193524.GA11104@suse.de>
-Content-Type: multipart/mixed;
- boundary="------------040902040104010200030102"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Re: Small pm documentation cleanups
+References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl>
+In-Reply-To: <200802050224.51039.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040902040104010200030102
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi.
 
-Bernhard Walle wrote:
-> * Vivek Goyal <vgoyal@redhat.com> [2008-02-04 19:38]:
->   
->> Bernahard, any idea who is the competitor here?
->>     
-> Hm ..., can you boot the kernel without crashkernel= and provide the
-> /proc/iomem?
->   
-Attached is the /proc/iomem output with and without crashkernel
-parameter.
+Rafael J. Wysocki wrote:
+> Len, please pick this up, thanks.
+> 
+> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+>> Small documentation fixes/additions that accumulated in my tree.
+>>
+>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index cf38689..3be3328 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -147,8 +147,10 @@ and is between 256 and 4096 characters. 
+>>  			default: 0
+>>  
+>>  	acpi_sleep=	[HW,ACPI] Sleep options
+>> -			Format: { s3_bios, s3_mode }
+>> -			See Documentation/power/video.txt
+>> +			Format: { s3_bios, s3_mode, s3_beep }
+>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
+>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
+>> +			kernel's real-mode entry point is called.
 
-Adding debug gives this extra information.
+s/kernel's/the kernel's/
 
-hm, page 02a9d000 reserved twice.
-crashkernel reservation failed - memory is in use
+>>  
+>>  	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+>>  			Format: { level | edge | high | low }
+>> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+>> index aea7e92..d3e5e4e 100644
+>> --- a/Documentation/power/swsusp.txt
+>> +++ b/Documentation/power/swsusp.txt
+>> @@ -386,6 +386,11 @@ before suspending; then remount them aft
+>>  There is a work-around for this problem.  For more information, see
+>>  Documentation/usb/persist.txt.
+>>  
+>> +Q: Can I suspend-to-disk using a swap partition under LVM?
+>> +
+>> +A: No. You can suspend successfully, but you'll not be able to
+>> +resume. uswsusp should be able to work with LVM, see suspend.sf.net.
 
-Will try to add more debug statements.
+s/LVM, see/LVM. See/
 
-Thanks
--Sachin
+>> +
+>>  Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
+>>  compiled with the similar configuration files. Anyway I found that
+>>  suspend to disk (and resume) is much slower on 2.6.16 compared to
+>> diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
+>> index fd1c4ba..058d0be 100644
+>> --- a/drivers/acpi/hardware/hwsleep.c
+>> +++ b/drivers/acpi/hardware/hwsleep.c
+>> @@ -286,13 +286,13 @@ acpi_status asmlinkage acpi_enter_sleep_
+>>  	}
+>>  
+>>  	/*
+>> +	 * 1) Disable/Clear all GPEs
+>>  	 * 2) Enable all wakeup GPEs
+>>  	 */
+>>  	status = acpi_hw_disable_all_gpes();
+>>  	if (ACPI_FAILURE(status)) {
+>>  		return_ACPI_STATUS(status);
+>>  	}
+>> -
+>>  	acpi_gbl_system_awake_and_running = FALSE;
+>>  
+>>  	status = acpi_hw_enable_all_wakeup_gpes();
+>> diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+>> index 485de13..56e09cf 100644
+>> --- a/drivers/acpi/sleep/main.c
+>> +++ b/drivers/acpi/sleep/main.c
+>> @@ -170,7 +170,7 @@ static int acpi_pm_enter(suspend_state_t
+>>  	/* Reprogram control registers and execute _BFS */
+>>  	acpi_leave_sleep_state_prep(acpi_state);
+>>  
+>> -	/* ACPI 3.0 specs (P62) says that it's the responsabilty
+>> +	/* ACPI 3.0 specs (P62) says that it's the responsibilty
 
+s/responsibilty/responsibility/
 
+>>  	 * of the OSPM to clear the status bit [ implying that the
+>>  	 * POWER_BUTTON event should not reach userspace ]
+>>  	 */
+>> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+>> index ef9b802..b275ffb 100644
+>> --- a/kernel/power/Kconfig
+>> +++ b/kernel/power/Kconfig
+>> @@ -74,14 +74,14 @@ config PM_TRACE_RTC
+>>  	RTC across reboots, so that you can debug a machine that just hangs
+>>  	during suspend (or more commonly, during resume).
+>>  
+>> -	To use this debugging feature you should attempt to suspend the machine,
+>> -	then reboot it, then run
+>> +	To use this debugging feature you should attempt to suspend the
+>> +	machine, then reboot it, then run
 
---------------040902040104010200030102
-Content-Type: text/plain;
- name="iomem_with_crashkernel"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="iomem_with_crashkernel"
+More readable would be "machine, reboot it and then run"
 
-00000000-0009dbff : System RAM
-0009dc00-0009ffff : reserved
-000e0000-000fffff : reserved
-00100000-c7fcadff : System RAM
-  00200000-004780d6 : Kernel code
-  004780d7-0059e867 : Kernel data
-  008a2000-009969ab : Kernel bss
-c7fcae00-c7fcf7ff : ACPI Tables
-c7fcf800-c7ffffff : reserved
-c8000000-c9ffffff : PCI Bus #07
-  c9ff0000-c9ffffff : 0000:07:00.0
-    c9ff0000-c9ffffff : tg3
-ca000000-cbbfffff : PCI Bus #06
-  cbbf0000-cbbfffff : 0000:06:00.0
-    cbbf0000-cbbfffff : tg3
-cbc00000-cdafffff : PCI Bus #02
-  cbc00000-cbffffff : PCI Bus #04
-  cc000000-cdafffff : PCI Bus #03
-cdb00000-cfffffff : PCI Bus #02
-  cdb00000-cdefffff : PCI Bus #04
-  cdfff000-cdffffff : 0000:02:00.2
-    cdfff000-cdfff027 : shpchp
-  ce000000-cfffffff : PCI Bus #03
-    cfffc000-cfffdfff : 0000:03:07.1
-      cfffc000-cfffcfff : aic79xx
-    cfffe000-cfffffff : 0000:03:07.0
-      cfffe000-cfffefff : aic79xx
-d0000000-ddffffff : PCI Bus #01
-  d0000000-d7ffffff : 0000:01:06.0
-de000000-dfffffff : PCI Bus #01
-  dfff0000-dfffffff : 0000:01:06.0
-e0000000-efffffff : PCI MMCONFIG 0
-f0000000-f00003ff : 0000:00:1d.7
-  f0000000-f00003ff : ehci_hcd
-f0000400-f00007ff : 0000:00:1f.1
-fec00000-fec00fff : IOAPIC 0
-fec80000-fec80fff : IOAPIC 1
-fed20800-fed208ff : pnp 00:0e
-fed30800-fed308ff : pnp 00:0e
-fee00000-fee00fff : Local APIC
-ff000000-ff000fff : 0000:00:00.0
-  ff000000-ff000fff : pnp 00:0e
-fff00000-ffffffff : pnp 00:0e
-100000000-237ffffff : System RAM
+>>  
+>>  		dmesg -s 1000000 | grep 'hash matches'
+>>  
+>>  	CAUTION: this option will cause your machine's real-time clock to be
+>>  	set to an invalid time after a resume.
+>>  
+>>  config PM_SLEEP_SMP
+>>  	bool
+>>  	depends on SMP
+>> @@ -123,7 +129,8 @@ config HIBERNATION
+>>  	  called "hibernation" in user interfaces.  STD checkpoints the
+>>  	  system and powers it off; and restores that checkpoint on reboot.
+>>  
+>> -	  You can suspend your machine with 'echo disk > /sys/power/state'.
+>> +	  You can suspend your machine with 'echo disk > /sys/power/state' 
+>> +	  after placing resume=/dev/swappartition on kernel command line.
 
---------------040902040104010200030102
-Content-Type: text/plain;
- name="iomem_without_crashkernel"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="iomem_without_crashkernel"
+s/on kernel/on the kernel/
 
-00000000-0009dbff : System RAM
-0009dc00-0009ffff : reserved
-000e0000-000fffff : reserved
-00100000-c7fcadff : System RAM
-  00200000-004780d6 : Kernel code
-  004780d7-0059e867 : Kernel data
-  008a2000-009969ab : Kernel bss
-c7fcae00-c7fcf7ff : ACPI Tables
-c7fcf800-c7ffffff : reserved
-c8000000-c9ffffff : PCI Bus #07
-  c9ff0000-c9ffffff : 0000:07:00.0
-    c9ff0000-c9ffffff : tg3
-ca000000-cbbfffff : PCI Bus #06
-  cbbf0000-cbbfffff : 0000:06:00.0
-    cbbf0000-cbbfffff : tg3
-cbc00000-cdafffff : PCI Bus #02
-  cbc00000-cbffffff : PCI Bus #04
-  cc000000-cdafffff : PCI Bus #03
-cdb00000-cfffffff : PCI Bus #02
-  cdb00000-cdefffff : PCI Bus #04
-  cdfff000-cdffffff : 0000:02:00.2
-    cdfff000-cdfff027 : shpchp
-  ce000000-cfffffff : PCI Bus #03
-    cfffc000-cfffdfff : 0000:03:07.1
-      cfffc000-cfffcfff : aic79xx
-    cfffe000-cfffffff : 0000:03:07.0
-      cfffe000-cfffefff : aic79xx
-d0000000-ddffffff : PCI Bus #01
-  d0000000-d7ffffff : 0000:01:06.0
-de000000-dfffffff : PCI Bus #01
-  dfff0000-dfffffff : 0000:01:06.0
-e0000000-efffffff : PCI MMCONFIG 0
-f0000000-f00003ff : 0000:00:1d.7
-  f0000000-f00003ff : ehci_hcd
-f0000400-f00007ff : 0000:00:1f.1
-fec00000-fec00fff : IOAPIC 0
-fec80000-fec80fff : IOAPIC 1
-fed20800-fed208ff : pnp 00:0e
-fed30800-fed308ff : pnp 00:0e
-fee00000-fee00fff : Local APIC
-ff000000-ff000fff : 0000:00:00.0
-  ff000000-ff000fff : pnp 00:0e
-fff00000-ffffffff : pnp 00:0e
-100000000-237ffffff : System RAM
+Maybe add "in your bootloader's configuration file"?
 
---------------040902040104010200030102--
+>>  	  Alternatively, you can use the additional userland tools available
+>>  	  from <http://suspend.sf.net>.
+>>  
+>> diff --git a/kernel/power/main.c b/kernel/power/main.c
+>> index 6a6d5eb..d3df5af 100644
+>> --- a/kernel/power/main.c
+>> +++ b/kernel/power/main.c
+>> @@ -223,6 +226,7 @@ void __attribute__ ((weak)) arch_suspend
+>>   *	@state:		state to enter
+>>   *
+>>   *	This function should be called after devices have been suspended.
+>> + *	May not sleep.
+>>   */
+>>  static int suspend_enter(suspend_state_t state)
+>>  {
+>> @@ -250,6 +255,8 @@ static int suspend_enter(suspend_state_t
+>>   *	suspend_devices_and_enter - suspend devices and enter the desired system
+>>   *				    sleep state.
+>>   *	@state:		  state to enter
+>> + *
+>> + *	Needs to be called from process context and may sleep.
+>>   */
+>>  int suspend_devices_and_enter(suspend_state_t state)
+>>  {
+>> @@ -341,6 +349,8 @@ static inline int valid_state(suspend_st
+>>   *	happen when we wake up.
+>>   *	Then, do the setup for suspend, enter the state, and cleaup (after
+>>   *	we've woken up).
+>> + *
+>> + *	Needs to be called from process context, and may sleep.
+>>   */
+>>  static int enter_state(suspend_state_t state)
+>>  {
+>>
+> 
+> 
+> 
+
+Regards,
+
+Nigel
