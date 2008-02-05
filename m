@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbYBESTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbYBESTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759341AbYBESTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbYBESTB
+	id S1759378AbYBESTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYBESTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:19:01 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50274 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755389AbYBESTA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:19:00 -0500
-Date: Tue, 5 Feb 2008 10:18:11 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Vladislav Bolkhovitin <vst@vlnb.net>, Vu Pham <vuhuong@mellanox.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-In-Reply-To: <e2e108260802050825u68ef2ee9m6e085acb6b474fe@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0802051016240.9374@woody.linux-foundation.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>  <1201639331.3069.58.camel@localhost.localdomain>  <47A05CBD.5050803@vlnb.net> <47A7049A.9000105@vlnb.net>  <e2e108260802040553j2f3bf8c2n9fae132e000990f7@mail.gmail.com>
- <e2e108260802050825u68ef2ee9m6e085acb6b474fe@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 5 Feb 2008 13:19:31 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:44415 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753792AbYBESTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:19:30 -0500
+Date: Tue, 5 Feb 2008 10:19:29 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+In-Reply-To: <20080205180557.GC29502@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0802051017520.11705@schroedinger.engr.sgi.com>
+References: <20080128202840.974253868@sgi.com> <20080128202923.609249585@sgi.com>
+ <20080205180557.GC29502@shadowen.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 5 Feb 2008, Andy Whitcroft wrote:
 
-
-On Tue, 5 Feb 2008, Bart Van Assche wrote:
+> > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
+> > +		rcu_read_lock();
+> > +		hlist_for_each_entry_safe_rcu(mn, n, t,
+> > +					  &mm->mmu_notifier.head, hlist) {
+> > +			if (mn->ops->release)
+> > +				mn->ops->release(mn, mm);
 > 
-> Results that I did not expect:
-> * A block transfer size of 1 MB is not enough to measure the maximal
-> throughput. The maximal throughput is only reached at much higher
-> block sizes (about 10 MB for SCST + SRP and about 100 MB for STGT +
-> iSER).
+> Does this ->release actually release the 'nm' and its associated hlist?
+> I see in this thread that this ordering is deemed "use after free" which
+> implies so.
 
-Block transfer sizes over about 64kB are totally irrelevant for 99% of all 
-people.
+Right that was fixed in a later release and discussed extensively later. 
+See V5.
 
-Don't even bother testing anything more. Yes, bigger transfers happen, but 
-a lot of common loads have *smaller* transfers than 64kB.
+> I am not sure it makes sense to add a _safe_rcu variant.  As I understand
+> things an _safe variant is used where we are going to remove the current
 
-So benchmarks that try to find "theoretical throughput" by just making big 
-transfers should just be banned. They give numbers, yes, but the numbers 
-are pointless.
+It was dropped in V5.
 
-			Linus
