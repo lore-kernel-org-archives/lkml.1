@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbYBESPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbYBESRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbYBESPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbYBESPe
+	id S1757864AbYBESRv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYBESRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:15:34 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42000 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752353AbYBESPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:15:34 -0500
-Date: Tue, 5 Feb 2008 10:15:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
-       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
- sound card
-In-Reply-To: <200802050003.32591.bjorn.helgaas@hp.com>
-Message-ID: <alpine.LFD.1.00.0802051013110.9374@woody.linux-foundation.org>
-References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802041341.37313.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802041300170.3034@hp.linux-foundation.org> <200802050003.32591.bjorn.helgaas@hp.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 5 Feb 2008 13:17:43 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:55276 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752318AbYBESRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:17:42 -0500
+Date: Tue, 5 Feb 2008 10:17:41 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+In-Reply-To: <20080205180802.GE7441@v2.random>
+Message-ID: <Pine.LNX.4.64.0802051013440.11705@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801311207540.25477@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0801311508080.23624@schroedinger.engr.sgi.com>
+ <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com>
+ <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com>
+ <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com>
+ <20080205052525.GD7441@v2.random> <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com>
+ <20080205180802.GE7441@v2.random>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 5 Feb 2008, Andrea Arcangeli wrote:
 
+> given I never allow a coherency-loss between two threads that will
+> read/write to two different physical pages for the same virtual
+> adddress in remap_file_pages).
 
-On Tue, 5 Feb 2008, Bjorn Helgaas wrote:
-> > 
-> >  - PnP/ACPI resource allocation *after* it, but before driver loading 
-> >    (which wll cause new resources to be allocated). This could be 
-> >    fs_initcall, or whatever (that's what things like "acpi_event_init" 
-> >    already do).
+The other approach will not have any remote ptes at that point. Why would 
+there be a coherency issue?
+ 
+> In performance terms with your patch before GRU can run follow_page it
+> has to take a mm-wide global mutex where each thread in all cpus will
+> have to take it. That will trash on >4-way when the tlb misses start
+
+No. It only has to lock the affected range. Remote page faults can occur 
+while another part of the address space is being invalidated. The 
+complexity of locking is up to the user of the mmu notifier. A simple 
+implementation is satisfactory for the GRU right now. Should it become a 
+problem then the lock granularity can be refined without changing the API.
+
+> > "conversion of some page in pages"? A proposal to defer the freeing of the 
+> > pages until after the pte_unlock?
 > 
-> If we put the PNP system driver here, we can easily do a quirk that
-> ignores PNP resources that overlap PCI resources.
+> There can be many tricks to optimize page in pages, but again munmap
+> and do_exit aren't the interesting path to optimzie, nor for GRU nor
+> for KVM so it doesn't matter right now.
 
-No, you don't need any quirks: you just do an "insert_resource()" and 
-ignore the error return. If the (bogus) PnP resource clashes with the 
-(correct) hardware PCI resource, the insert will simply fail. No quirks 
-needed.
-
->						  But it's kind of
-> ugly to have the ACPI PCI root driver early and other PNP drivers
-> later because they're basically similar animals.
-
-No they are not.
-
-If one does just device enumeration, and the other does resource 
-registrations, then they ARE NOT similar animals at all. Don't claim that 
-they are.
-
-			Linus
+Still not sure what we are talking about here.
+ 
