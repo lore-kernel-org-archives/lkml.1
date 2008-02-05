@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYBET6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbYBEUAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYBET6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYBET6A
+	id S1759424AbYBEUAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbYBEUA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:58:00 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33675 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbYBET57 (ORCPT
+	Tue, 5 Feb 2008 15:00:28 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:4131 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756074AbYBEUA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:57:59 -0500
-Date: Tue, 5 Feb 2008 20:57:58 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-In-Reply-To: <20080205155558.GA23145@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0802052056120.16441@fbirervta.pbzchgretzou.qr>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com>
- <20080205155558.GA23145@one.firstfloor.org>
+	Tue, 5 Feb 2008 15:00:26 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=ca4oeFCGEk4ydT8Ut13yeGmBBBa2BPTldsjUOhLBzLkArsQIbWllq1EDJKLftbijV
+	67FzZZoHwGMlZdVNc3mFA==
+Date: Tue, 5 Feb 2008 11:56:57 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, kosaki.motohiro@jp.fujitsu.com,
+       andi@firstfloor.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, clameter@sgi.com, mel@csn.ul.ie
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+In-Reply-To: <20080205041755.3411b5cc.pj@sgi.com>
+Message-ID: <alpine.DEB.0.9999.0802051146300.5854@chino.kir.corp.google.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080202090914.GA27723@one.firstfloor.org> <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1202149243.5028.61.camel@localhost> <20080205041755.3411b5cc.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 5 Feb 2008, Paul Jackson wrote:
 
-On Feb 5 2008 16:55, Andi Kleen wrote:
->On Mon, Feb 04, 2008 at 03:01:01PM -0800, Glenn Griffin wrote:
->> Add IPv6 support to TCP SYN cookies.  This is written and tested against
->> 2.6.24, and applies cleanly to linus' current HEAD (d2fc0b).  Unfortunately
->> linus' HEAD breaks my sky2 card at the moment, so I'm unable to test against
->> that.  I see no reason why it would be affected though.  Comments/suggestions
->> are welcome.
->
->Syncookies are discouraged these days. They disable too many 
->valuable TCP features (window scaling, SACK) and even without them 
->the kernel is usually strong enough to defend against syn floods
->and systems have much more memory than they used to be.
->
->So I don't think it makes much sense to add more code to it, sorry.
+> But that discussion touched on some other long standing deficiencies
+> in the way that I had originally glued cpusets and memory policies
+> together.  The current mechanism doesn't handle changing cpusets very
+> well, especially if the number of nodes in the cpuset increases.
+> 
 
-Distributions should then probably deactivate it by default.
-SUSE 10.3 for example still has it enabled on default installs.
+That's because of the nodemask remaps that are done for the various 
+mempolicy cases when rebinding the policy.  I agree we cannot change that 
+implementation now even though it is undocumented.
+
+The more alarming result of these remaps is in the MPOL_BIND case, as 
+we've talked about before.  The language in set_mempolicy(2):
+
+	The MPOL_BIND policy is a strict policy that restricts memory
+	allocation to the nodes specified in nodemask. There won't be
+	allocations on other nodes.
+
+makes it pretty clear that allocations will not be done on other nodes not 
+provided in the set_mempolicy() nodemask if the task is not swapped out.  
+
+But the current implementation allows that if the task is either moved to 
+a different cpuset or its cpuset's mems change.  For example, consider a 
+task that is allowed nodes 1-3 by its cpuset and asks for a MPOL_BIND 
+mempolicy of node 2.  If that cpuset's mems change to 4-6, the mempolicy 
+is now effectively a bind on node 5.
+
+> The next two steps I need to take are:
+>  1) propose this patch, with careful explanation (it's easy to lose
+>     one's bearings in the mappings and remappings of node numberings)
+>     to a wider audience, such as linux-mm or linux-kernel, and
+
+Thanks.
+
+>  2) carefully test this, especially on each code path I touched in
+>     mm/mempolicy.c, where the changes were delicate, to ensure I
+>     didn't break any existing code.
+> 
+> There were also some other, smaller patches proposed, by myself and
+> others.  I was preferring to address a wider set of the long standing
+> issues in this area, but the others above mostly preferred the smaller
+> patches.  This needs to be discussed in a wider forum, and a concensus
+> reached.
+> 
+
+I think if these MPOL_* flags that you're proposing are made as generic as 
+possible for all possible mempolicies (current and future), it would be 
+the optimal change.  It would prevent us from having to add new flags for 
+corner-cases in the future and would allow us to keep the flag set as 
+small as possible.  My suggestion of MPOL_F_STATIC_NODEMASK goes a long 
+way to solve these issues both for MPOL_INTERLEAVE (in conjunction with 
+storing the set_mempolicy() intent) and the MPOL_BIND discrepency I 
+mentioned above.
+
+		David
