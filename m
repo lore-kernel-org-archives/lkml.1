@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754686AbYBEMU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755498AbYBEMUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbYBEMU1 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 5 Feb 2008 07:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYBEMUN
+	id S1755498AbYBEMUk (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 5 Feb 2008 07:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYBEMUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:20:13 -0500
-Received: from n8.bullet.re3.yahoo.com ([68.142.237.93]:42914 "HELO
-	n8.bullet.re3.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750861AbYBEMUM (ORCPT
+	Tue, 5 Feb 2008 07:20:21 -0500
+Received: from n7a.bullet.ukl.yahoo.com ([217.146.183.155]:42998 "HELO
+	n7a.bullet.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752431AbYBEMUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:20:12 -0500
+	Tue, 5 Feb 2008 07:20:19 -0500
 X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 664660.54870.bm@omp204.mail.sp1.yahoo.com
+X-Yahoo-Newman-Id: 506585.25756.bm@omp509.mail.sp1.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=3+1nT0/Bz44jTRl0tzrJ0MIzCVMwTQ6Leu6SCrK1k8KkXTE1JXt9VxEQuNBS9N6RysOkNjP5JAICPkXzkwvmAN9lItsBHmWgQ9vAsQh4wkn4YEgjA7Hklswb78lpU0WVIp/zntLTl1QUlhWHmFoNekAM3QOUzHclUvGWU6E8EnI=;
-X-YMail-OSG: hmY6ksQVM1mzZkktY_oqGSpjUPsqajcT.K44zYVC2BX3.nEUzlRLhhamMvo8PAxe34jbjW0O9kpD7L5d.Rqw7LKn0g--
-Date: Tue, 5 Feb 2008 04:20:11 -0800 (PST)
+  b=a79G92SaQtKcPZIHn32A7a+Ju8hQPWQyWurbiBKvensexJy09JXG1+29rirUSL+LJ8TK6S1H+aNGYSMwa+Y2kfd6yUOKerMTseRn1ql0JK7zjozyi/oEsE4SuUXI6RHGUakHjsNL0+OFtgca+KQFdm2FDpL4CV6NW/JHbOp7vSc=;
+X-YMail-OSG: cyfLs4UVM1nTM8PDUlBc4pZMSI8sB2I7JavAQxZepod1raNTDOIbUDfjEEXOe0d86xGmrTToCujXdQQSHfkHsG5Nug--
+Date: Tue, 5 Feb 2008 04:20:17 -0800 (PST)
 From: am kara <kara_am@yahoo.com>
 Subject: kara_am
 To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <468064.66558.qm@web45908.mail.sp1.yahoo.com>
+Message-ID: <310692.64199.qm@web45915.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
