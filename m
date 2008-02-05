@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYBES3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYBESbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbYBES3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYBES3d
+	id S1758020AbYBESbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYBESbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:29:33 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:26739 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754324AbYBES3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:29:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=htsa+o3jtVZ+Cc6azZUo+iiNi8jjhLUC2OuEKqVPV0J2n8VLkIehzKEcTwe9hxdasoNIFEh/XgvIMf0uplt32gDvMhF+FQHUYDnktBgggVUAnA7TbOhhTumRm0eVpRZNOnBsdL3/b/KrBdm0G93z81/5DAXdxJoCdfQvMn/hnSM=
-Message-ID: <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com>
-Date: Tue, 5 Feb 2008 10:29:28 -0800
-From: "Glenn Griffin" <ggriffin.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080205155558.GA23145@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com>
-	 <20080205155558.GA23145@one.firstfloor.org>
+	Tue, 5 Feb 2008 13:31:09 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46009 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750911AbYBESbI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:31:08 -0500
+Subject: Re: aic7xxx build failure
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080205182441.GF505@cs181133002.pp.htv.fi>
+References: <20080205174024.GE505@cs181133002.pp.htv.fi>
+	 <1202235484.3133.49.camel@localhost.localdomain>
+	 <20080205182441.GF505@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 05 Feb 2008 12:30:56 -0600
+Message-Id: <1202236256.3133.52.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Syncookies are discouraged these days. They disable too many
-> valuable TCP features (window scaling, SACK) and even without them
-> the kernel is usually strong enough to defend against syn floods
-> and systems have much more memory than they used to be.
->
-> So I don't think it makes much sense to add more code to it, sorry.
 
-As you say the kernel is usually strong enough to defend against syn flood
-attacks, but what about the situations where it isn't?  As valuable as the TCP
-features are I would give them up if it means I'm able to connect to my sshd
-port when I otherwise would be unable to.  While increased synq sizes, better
-dropping algorithms, and minisocks are a great way to mitigate the attacks and
-in most cases are enough, there are situations where syncookies are nice.
+On Tue, 2008-02-05 at 20:24 +0200, Adrian Bunk wrote:
+> On Tue, Feb 05, 2008 at 12:18:04PM -0600, James Bottomley wrote:
+> > 
+> > On Tue, 2008-02-05 at 19:40 +0200, Adrian Bunk wrote:
+> > > Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
+> > > compilation:
+> > > 
+> > > <--  snip  -->
+> > > 
+> > > $ make O=../out/x86-full
+> > > ...
+> > >   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
+> > >   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
+> > >   CC      drivers/scsi/aic7xxx/aic79xx_core.o
+> > > gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
+> > > gcc: no input files
+> > > make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
+> > 
+> > Could you run this with V=1 to get us a verbose output of what the exact
+> > files gcc is failing on are?
+> 
+> make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi
+> make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi/aacraid
+> (cat /dev/null; ) > drivers/scsi/aacraid/modules.order
+> make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi/aic7xxx
+>   cat /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx/aic79xx_seq.h_shipped > drivers/scsi/aic7xxx/aic79xx_seq.h
+>   cat /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx/aic79xx_reg.h_shipped > drivers/scsi/aic7xxx/aic79xx_reg.h
+>   gcc -Wp,-MD,drivers/scsi/aic7xxx/.aic79xx_core.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux-gnu/4.2.3/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include -include include/linux/autoconf.h -I/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx -Idrivers/scsi/aic7xxx -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=athlon -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-x86/mach-generic -Iinclude/asm-x86/mach-generic -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-x86/mach-default -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -I/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi -Idrivers/scsi  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(aic79xx_core)"  -D"KBUILD_MODNAME=KBUILD_STR(aic79xx)" -c -o drivers/scsi/aic7xxx/aic79xx_core.o drivers/scsi/aic7xxx/aic79xx_core.c
+> gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
+> gcc: no input files
+> make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
+> make[3]: *** [drivers/scsi/aic7xxx] Error 2
+> make[2]: *** [drivers/scsi] Error 2
+> make[1]: *** [drivers] Error 2
+> make: *** [sub-make] Error 2
 
-Regardless, I would say as long as ipv4 has syncookie support it will
-accurately be viewed as a deficiency of ipv6 if it lacks support.  So perhaps
-the discussion should be we whether all the other defenses are enough to
-warrant the removal of syncookie support from ipv4.  That topic may bring in
-more opinions.
+Do I assume from this that you have different source and object
+directories?  There shouldn't be a failure if this is building
+in /home/bunk/linux/kernel-2.6/git/linux-2.6/ because the source file
+should be there.
 
-> Besides you should really move it to the ipv6 module, right now the code
-> would be always compiled in even for ipv4 only kernels.
+James
 
-That is correct.  I will gladly move it into it's own section within net/ipv6/.
-Do you have any problem using the same CONFIG and sysctl variables as the ipv4
-implementation?
 
-Thanks
-
---Glenn
