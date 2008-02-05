@@ -1,67 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762227AbYBEXLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762654AbYBEXMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762227AbYBEXLO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 18:11:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbYBEXK7
+	id S1762654AbYBEXMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757861AbYBEXMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 18:10:59 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43849 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756182AbYBEXK6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 18:10:58 -0500
-Date: Tue, 5 Feb 2008 15:10:52 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v5
-In-Reply-To: <20080205222657.GG7441@v2.random>
-Message-ID: <Pine.LNX.4.64.0802051504450.16261@schroedinger.engr.sgi.com>
-References: <20080201120955.GX7185@v2.random>
- <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com>
- <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com>
- <20080205052525.GD7441@v2.random> <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com>
- <20080205180802.GE7441@v2.random> <Pine.LNX.4.64.0802051013440.11705@schroedinger.engr.sgi.com>
- <20080205205519.GF7441@v2.random> <Pine.LNX.4.64.0802051400200.14665@schroedinger.engr.sgi.com>
- <20080205222657.GG7441@v2.random>
+	Tue, 5 Feb 2008 18:12:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33765 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756298AbYBEXMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 18:12:32 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH for review] ACPI: Create /sys/firmware/acpi/interrupts/ counters
+Date: Tue, 5 Feb 2008 18:12:09 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200802050230.10873.lenb@kernel.org> <20080205221805.GC6950@suse.de>
+In-Reply-To: <20080205221805.GC6950@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802051812.09228.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008, Andrea Arcangeli wrote:
-
-> > You can avoid the page-pin and the pt lock completely by zapping the 
-> > mappings at _start and then holding off new references until _end.
+On Tuesday 05 February 2008 17:18, Greg KH wrote:
+> On Tue, Feb 05, 2008 at 02:30:10AM -0500, Len Brown wrote:
+> > # cat /sys/firmware/acpi/interrupts/summary
+> > pm_timer     0
+> > glbl_lock    0
+> > power_btn    0
+> > sleep_btn    0
+> > rtc          0
+> > gpe00    0
+...
+> > gpe1F    0
+> > gpe_hi    0
+> > gpe_total   63
+> > acpi_irq    63
 > 
-> "holding off new references until _end" = per-range mutex less scalar
-> and more expensive than the PT lock that has to be taken anyway.
+> Eeek!  Why?  What's wrong with individual files here?
 
-You can of course setup a 2M granularity lock to get the same granularity 
-as the pte lock. That would even work for the cases where you have to page 
-pin now.
+My expectation is that this is a shell interface for debugging,
+not an API for programs.  ala /proc/interrupts.
 
-> > Maybe that is true for KVM but certainly not true for the GRU. The GRU is 
-> > designed to manage several petabytes of memory that may be mapped by a 
-> > series of Linux instances. If a process only maps a small chunk of 4 
-> > Gigabytes then we already have to deal with 1 mio callbacks.
+if we have 40 individual files, each with a number in it,
+it is less convenient to cat the file and paste the results
+into an email or bug report and have the receiver easily
+see what what count goes with what file -- or is there
+a version of cat that prints the file name before
+the contents of each file?
+
+I've seen 
+more * | cat
+but one has to wonder why an interface would be built
+to make something so simple not be simple.
+
+> What's to ensure 
+> that you aren't going to overflow your buffer?
+
+Good question.  What's to ensure we don't overflow it
+when I print any other random string?
+Who allocates it and how big is it?
+
+> There's a reason we 
+> don't have the seq file interface for sysfs, to prevent this very kind
+> of thing...
+
+If sysfs can't handle it, I suppose I could instead
+print the needed information to the console....
+
+> > +	/*
+> > +	 * General Purpose Events
+> > +	 */
+> > +	for (i = 0; i < number_of_gpes; i++) {
+> > +		count += sprintf(buf + count, "gpe%02X %4d\n",
+> > +			i, acpi_gpe_counters[i]);
+> > +	}
 > 
-> KVM is also going to map a lot of stuff, but mapping involves mmap,
-> munmap/mremap/mprotect not. The size of mmap is irrelevant in both
-> approaches. optimizing do_exit by making the tlb-miss runtime slower
-> doesn't sound great to me and that's your patch does if you force GRU
-> to use it.
+> Nope, no error checking, fun chance of blowing the memory buffer :(
 
-The size of the mmap is relevant if you have to perform callbacks on 
-every mapped page that involved take mmu specific locks. That seems to be 
-the case with this approach.
+you're right, there is rumour of a future machine
+with more than 32 GPEs...
 
-Optimizing do_exit by taking a single lock to zap all external references 
-instead of 1 mio callbacks somehow leads to slowdown?
+> Please change the interface to not do this.
+> 
+> Oh, and for every new sysfs file, you need a Documentation/ABI/
+> addition, please also add that.
 
+ok.
+
+thanks,
+-Len
