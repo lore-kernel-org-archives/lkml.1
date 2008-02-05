@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbYBEWf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbYBEWio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762733AbYBEWf6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762183AbYBEWfo
+	id S1761770AbYBEWio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759501AbYBEWii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:35:44 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:29443 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760259AbYBEWfm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:35:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RGcbjc3NMegeoAuq5Uq7AGRmZNRl2NJzK7N0JpamtYdbx3/AqO+knbhXVoRiNLsCR/ak6Mi7dLKJ45h4MBzRAbSBNB0OpfQvxeB4MSDJoJSjYE2/n4WKm5aRj8XdckoyxVYv5L3KYgc+6Ao4OUSJWv8a3dydj4Co2NF9HqMwjiA=
-Message-ID: <6101e8c40802051435ibcbc83et4d07875c447b970b@mail.gmail.com>
-Date: Tue, 5 Feb 2008 23:35:40 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: [2.6.24 REGRESSION] BUG: Soft lockup - with VFS
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, "James Morris" <jmorris@namei.org>,
-       linux-usb@vger.kernel.org
-In-Reply-To: <6101e8c40802051429r2942f8a7g5aa28b147603b669@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6101e8c40801280031v1a860e90gfb3992ae5db37047@mail.gmail.com>
-	 <20080204213911.1bcbaf66.akpm@linux-foundation.org>
-	 <1202219216.27371.24.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080205104028.190192b1.akpm@linux-foundation.org>
-	 <6101e8c40802051115v12d3c02br24873ef1014dbea9@mail.gmail.com>
-	 <6101e8c40802051321l13268239m913fd90f56891054@mail.gmail.com>
-	 <6101e8c40802051348w2250e593x54f777bb771bd903@mail.gmail.com>
-	 <20080205140506.c6354490.akpm@linux-foundation.org>
-	 <20080205141944.773140a1.zaitcev@redhat.com>
-	 <6101e8c40802051429r2942f8a7g5aa28b147603b669@mail.gmail.com>
+	Tue, 5 Feb 2008 17:38:38 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36055 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757044AbYBEWih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 17:38:37 -0500
+Date: Wed, 6 Feb 2008 09:38:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, FUJITA Tomonori <tomof@acm.org>
+Subject: Ordering of commits and breaking bisecting
+Message-Id: <20080206093817.60091256.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__6_Feb_2008_09_38_17_+1100_qcvXW_Dt3wt6/Law"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/usr/data/source/git/linux-2.6/drivers/block/ub.c: In function 'ub_end_rq':
-/usr/data/source/git/linux-2.6/drivers/block/ub.c:819: error: implicit
-declaration of function 'end_that_request_first'
-/usr/data/source/git/linux-2.6/drivers/block/ub.c:820: error: implicit
-declaration of function 'end_that_request_last'
-make[7]: *** [drivers/block/ub.o] Error 1
-make[6]: *** [drivers/block] Error 2
-make[5]: *** [drivers] Error 2
-make[5]: *** Waiting for unfinished jobs....
+--Signature=_Wed__6_Feb_2008_09_38_17_+1100_qcvXW_Dt3wt6/Law
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-On 2/5/08, Oliver Pinter <oliver.pntr@gmail.com> wrote:
-> i reverted this commit 7d699bafe258ebd8f9b4ec182c554200b369a504 , and
-> now compile ...
->
-> On 2/5/08, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> > On Tue, 5 Feb 2008 14:05:06 -0800, Andrew Morton
-> <akpm@linux-foundation.org>
-> > wrote:
-> >
-> > > Looks like you deadlocked in ub_request_fn().  I assume that you were
-> > using
-> > > ub.c in 2.6.23 and that it worked OK?  If so, we broke it, possibly via
-> > > changes to the core block layer.
-> > >
-> > > I think ub.c is basically abandoned in favour of usb-storage.  If so,
-> > > perhaps we should remove or disble ub.c?
-> >
-> > Actually I think it may be an argument for keeping ub, if ub exposes
-> > a bug in the __blk_end_request. I'll look at the head of the thread
-> > and see if Mr. Pinter has hit anything related to Mr. Ueda's work.
-> >
-> > -- Pete
-> >
->
->
-> --
-> Thanks,
-> Oliver
->
+Can we be a bit more careful with the ordering of commits, please?
+Commit d22a6966b8029913fac37d078ab2403898d94c63 (iommu sg merging: add
+accessors for segment_boundary_mask in device_dma_parameters())
+introduces the dma_get_seg_boundary accessor which is used in the
+*preceding* commits fb3475e9b6bfa666107512fbd6006c26014f04b8 (for
+powerpc), and 1b39b077789955c8389488d53d075518fdcd582e and
+fde9a1094ddf2892188a8a0eccda527de47cba8e (for x86).
 
+Thus we have another set of commits that will break bisection.  This one
+was easily avoidable.
 
--- 
-Thanks,
-Oliver
+A little more care is needed.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__6_Feb_2008_09_38_17_+1100_qcvXW_Dt3wt6/Law
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHqOVfTgG2atn1QN8RApnhAJ9JDaqyzpZRgFr9CWlH6iW3iHVznQCeOnQq
+L8OdujKvKg7ZcdXImyxeJL0=
+=shtE
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__6_Feb_2008_09_38_17_+1100_qcvXW_Dt3wt6/Law--
