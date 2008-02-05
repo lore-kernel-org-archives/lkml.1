@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYBENjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbYBENra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYBENjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 08:39:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYBENit
+	id S1752689AbYBENra (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 08:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYBENrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 08:38:49 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:55959 "EHLO mo11.iij4u.or.jp"
+	Tue, 5 Feb 2008 08:47:20 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:33375 "EHLO zombie.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753867AbYBENis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 08:38:48 -0500
-Date: Tue, 5 Feb 2008 22:38:00 +0900
-To: matteo@rmnet.it
-Cc: torvalds@linux-foundation.org, mpm@selenic.com, michaelc@cs.wisc.edu,
-       vst@vlnb.net, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nab@linux-iscsi.org, James.Bottomley@HansenPartnership.com,
-       scst-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       fujita.tomonori@lab.ntt.co.jp, alan@lxorguk.ukuu.org.uk
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <C3CDA7EE.5784%matteo@rmnet.it>
-References: <alpine.LFD.1.00.0802041620110.3237@woody.linux-foundation.org>
-	<C3CDA7EE.5784%matteo@rmnet.it>
+	id S1751058AbYBENrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 08:47:19 -0500
+Subject: Re: [2.6.24 REGRESSION] BUG: Soft lockup - with VFS
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "\"Oliver Pinter" =?ISO-8859-1?Q?=28Pint=E9r_Oliv=E9r=29=22?= 
+	<oliver.pntr@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, James Morris <jmorris@namei.org>
+In-Reply-To: <20080204213911.1bcbaf66.akpm@linux-foundation.org>
+References: <6101e8c40801280031v1a860e90gfb3992ae5db37047@mail.gmail.com>
+	 <20080204213911.1bcbaf66.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Organization: National Security Agency
+Date: Tue, 05 Feb 2008 08:46:56 -0500
+Message-Id: <1202219216.27371.24.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080205223607E.tomof@acm.org>
-X-Dispatcher: imput version 20040704(IM147)
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 05:43:10 +0100
-Matteo Tescione <matteo@rmnet.it> wrote:
 
-> Hi all,
-> And sorry for intrusion, i am not a developer but i work everyday with iscsi
-> and i found it fantastic.
-> Altough Aoe, Fcoe and so on could be better, we have to look in real world
-> implementations what is needed *now*, and if we look at vmware world,
-> virtual iron, microsoft clustering etc, the answer is iSCSI.
-> And now, SCST is the best open-source iSCSI target. So, from an end-user
-> point of view, what are the really problems to not integrate scst in the
-> mainstream kernel?
+On Mon, 2008-02-04 at 21:39 -0800, Andrew Morton wrote:
+> On Mon, 28 Jan 2008 09:31:43 +0100 "Oliver Pinter (Pintér Olivér)"  <oliver.pntr@gmail.com> wrote:
+> 
+> > hi all!
+> > 
+> > in the 2.6.24 become i some soft lockups with usb-phone, when i pluged
+> > in the mobile, then the vfs-layer crashed. am afternoon can i the
+> > .config send, and i bisected the kernel, when i have time.
+> > 
+> > pictures from crash:
+> > http://students.zipernowsky.hu/~oliverp/kernel/regression_2624/
+> 
+> It looks like selinux's file_has_perm() is doing spin_lock() on an
+> uninitialised (or already locked) spinlock.
 
-Currently, the best open-source iSCSI target implemenation in Linux is
-Nicholas's LIO, I guess.
+The trace looks bogus to me - I don't see how file_has_perm() could have
+been called there, and file_has_perm() doesn't directly take any spin
+locks.
+
+-- 
+Stephen Smalley
+National Security Agency
+
