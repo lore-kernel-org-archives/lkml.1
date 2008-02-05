@@ -1,129 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYBEFzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYBEGI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYBEFzn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 00:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYBEFzf
+	id S1754526AbYBEGI7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 01:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYBEGIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 00:55:35 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37217 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753002AbYBEFzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 00:55:35 -0500
-From: Sripathi Kodi <sripathik@in.ibm.com>
+	Tue, 5 Feb 2008 01:08:50 -0500
+Received: from ozlabs.org ([203.10.76.45]:47632 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752467AbYBEGIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 01:08:50 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] RUSAGE_THREAD
-Date: Tue, 5 Feb 2008 11:25:50 +0530
-User-Agent: KMail/1.9.4
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       mtk.manpages@gmail.com, torvalds@linux-foundation.org,
-       vinay@linux.vnet.ibm.com, drpeper@redhat.com
+Subject: Re: [PATCH] Whine about suspicious return values from module's ->init() hook
+Date: Tue, 5 Feb 2008 17:08:37 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+References: <20080204154215.GA26618@localhost.sw.ru> <200802051443.31783.rusty@rustcorp.com.au> <20080204195318.bf653285.akpm@linux-foundation.org>
+In-Reply-To: <20080204195318.bf653285.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802051125.50423.sripathik@in.ibm.com>
+Message-Id: <200802051708.37349.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Tuesday 05 February 2008 14:53:18 Andrew Morton wrote:
+> On Tue, 5 Feb 2008 14:43:31 +1100 Rusty Russell <rusty@rustcorp.com.au> 
+wrote:
+> > On Tuesday 05 February 2008 02:42:15 Alexey Dobriyan wrote:
+> > > One head-scratching session could be noticeably shorter with this
+> > > patch...
+> > >
+> > > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+> >
+> > If we want to prevent > 0 returns, let's just BUG_ON().
+>
+> That risks killing previously-working setups.  WARN_ON is sufficient.
 
-This adds the RUSAGE_THREAD option for the getrusage system call.
-This is essentially Roland's patch from http://lkml.org/lkml/2008/1/18/589, 
-but the line about RUSAGE_LWP line has been removed, as suggested
-by Ulrich and Christoph.
+I disagree.  WARN_ON is useful for developers, but they can handle BUG_ON, 
+too.
 
-Thanks,
-Sripathi.
+If we were in freeze, I'd say WARN_ON.
 
-This adds the RUSAGE_THREAD option for the getrusage system call.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
-Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
----
- include/linux/resource.h |    1 +
- kernel/sys.c             |   31 ++++++++++++++++++++++---------
- 2 files changed, 23 insertions(+), 9 deletions(-)
-
-diff -uprN linux-2.6.24_org/include/linux/resource.h linux-2.6.24/include/linux/resource.h
---- linux-2.6.24_org/include/linux/resource.h	2008-02-05 10:13:04.000000000 +0530
-+++ linux-2.6.24/include/linux/resource.h	2008-02-05 10:14:59.000000000 +0530
-@@ -19,6 +19,7 @@ struct task_struct;
- #define	RUSAGE_SELF	0
- #define	RUSAGE_CHILDREN	(-1)
- #define RUSAGE_BOTH	(-2)		/* sys_wait4() uses this */
-+#define	RUSAGE_THREAD	1		/* only the calling thread */
- 
- struct	rusage {
- 	struct timeval ru_utime;	/* user time used */
-diff -uprN linux-2.6.24_org/kernel/sys.c linux-2.6.24/kernel/sys.c
---- linux-2.6.24_org/kernel/sys.c	2008-02-05 10:13:02.000000000 +0530
-+++ linux-2.6.24/kernel/sys.c	2008-02-05 10:13:21.000000000 +0530
-@@ -1554,6 +1554,19 @@ out:
-  *
-  */
- 
-+static void accumulate_thread_rusage(struct task_struct *t, struct rusage *r,
-+				     cputime_t *utimep, cputime_t *stimep)
-+{
-+	*utimep = cputime_add(*utimep, t->utime);
-+	*stimep = cputime_add(*stimep, t->stime);
-+	r->ru_nvcsw += t->nvcsw;
-+	r->ru_nivcsw += t->nivcsw;
-+	r->ru_minflt += t->min_flt;
-+	r->ru_majflt += t->maj_flt;
-+	r->ru_inblock += task_io_get_inblock(t);
-+	r->ru_oublock += task_io_get_oublock(t);
-+}
-+
- static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- {
- 	struct task_struct *t;
-@@ -1563,6 +1576,11 @@ static void k_getrusage(struct task_stru
- 	memset((char *) r, 0, sizeof *r);
- 	utime = stime = cputime_zero;
- 
-+	if (who == RUSAGE_THREAD) {
-+		accumulate_thread_rusage(p, r, &utime, &stime);
-+		goto out;
-+	}
-+
- 	rcu_read_lock();
- 	if (!lock_task_sighand(p, &flags)) {
- 		rcu_read_unlock();
-@@ -1595,14 +1613,7 @@ static void k_getrusage(struct task_stru
- 			r->ru_oublock += p->signal->oublock;
- 			t = p;
- 			do {
--				utime = cputime_add(utime, t->utime);
--				stime = cputime_add(stime, t->stime);
--				r->ru_nvcsw += t->nvcsw;
--				r->ru_nivcsw += t->nivcsw;
--				r->ru_minflt += t->min_flt;
--				r->ru_majflt += t->maj_flt;
--				r->ru_inblock += task_io_get_inblock(t);
--				r->ru_oublock += task_io_get_oublock(t);
-+				accumulate_thread_rusage(t, r, &utime, &stime);
- 				t = next_thread(t);
- 			} while (t != p);
- 			break;
-@@ -1614,6 +1625,7 @@ static void k_getrusage(struct task_stru
- 	unlock_task_sighand(p, &flags);
- 	rcu_read_unlock();
- 
-+out:
- 	cputime_to_timeval(utime, &r->ru_utime);
- 	cputime_to_timeval(stime, &r->ru_stime);
- }
-@@ -1627,7 +1639,8 @@ int getrusage(struct task_struct *p, int
- 
- asmlinkage long sys_getrusage(int who, struct rusage __user *ru)
- {
--	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN)
-+	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
-+	    who != RUSAGE_THREAD)
- 		return -EINVAL;
- 	return getrusage(current, who, ru);
- }
+Even better, audit them all, then BUG_ON.  Alexey?
+Rusty.
