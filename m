@@ -1,149 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbYBEB6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYBECBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757981AbYBEB6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 20:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYBEB6I
+	id S1758124AbYBECBw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 21:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYBECBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 20:58:08 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:47042 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754747AbYBEB6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 20:58:07 -0500
-Date: Tue, 5 Feb 2008 02:57:43 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Pavel Machek <pavel@ucw.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Abel Bernabeu <abel.bernabeu@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: brk randomization breaks columns
-In-Reply-To: <20080204122837.GA1647@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz>
-References: <20080204122837.GA1647@elf.ucw.cz>
+	Mon, 4 Feb 2008 21:01:42 -0500
+Received: from web31811.mail.mud.yahoo.com ([68.142.207.74]:33283 "HELO
+	web31811.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753261AbYBECBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 21:01:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=ecDDIGo5oZ4pW0ov/oF/6xQgYFtYqI/mdd4ZI1pN+yg/Iaf8qMVExa1w2uzx3To5/Y7FMCLOV6IxY+/2DjMnVJEjPwsgVf79gFU2nSu1gu7lUjiGWx+8DFEYcMQGvkrhFDCa66SirfEsSKa3i/w67QDdsbHzhf6p/m7oR3Abf9I=;
+X-YMail-OSG: exxh3W4VM1kQbJyVJ9cwgNkgfNNQkHblAY8FmZDS.Sgcv3ftjePTchFCowIOODo1BETkww--
+X-Mailer: YahooMailWebService/0.7.162
+Date: Mon, 4 Feb 2008 18:01:36 -0800 (PST)
+From: Luben Tuikov <ltuikov@yahoo.com>
+Reply-To: ltuikov@yahoo.com
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <1202172065.3096.154.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <922945.25870.qm@web31811.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ some CCs added ]
+--- On Mon, 2/4/08, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > The enclosure misc device is really just a
+> library providing
+> > > sysfs
+> > > support for physical enclosure devices and their
+> > > components.
+> > 
+> > Who is the target audience/user of those facilities?
+> > a) The kernel itself needing to read/write SES pages?
+> 
+> That depends on the enclosure integration, but right at the
+> moment, it
+> doesn't
 
-On Mon, 4 Feb 2008, Pavel Machek wrote:
+Yes, I didn't suspect so.
 
-> pavel@amd:~$ strace columns-bin
-> execve("/usr/local/bin/columns-bin", ["columns-bin"], [/* 31 vars */])
-> = 0
-> old_mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS,
-> -1, 0) = 0xb7f78000
-> mprotect(0xb7f79000, 21406, PROT_READ|PROT_WRITE|PROT_EXEC) = 0
-> mprotect(0x8048000, 31345, PROT_READ|PROT_WRITE|PROT_EXEC) = 0
-> stat("/etc/ld.so.cache", {st_mode=S_IFREG|0644, st_size=106939, ...})
-> = 0
-> open("/etc/ld.so.cache", O_RDONLY)      = 3
-> old_mmap(NULL, 106939, PROT_READ, MAP_SHARED, 3, 0) = 0xb7f5d000
-> close(3)                                = 0
-> stat("/etc/ld.so.preload", 0xbf87f348)  = -1 ENOENT (No such file or
-> directory)
-> open("/home/pavel/lib/libc.so.5", O_RDONLY) = -1 ENOENT (No such file
-> or directory)
-> open("/lib/libc.so.5", O_RDONLY)        = 3
-> read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\240\32"...,
-> 4096) = 4096
-> old_mmap(NULL, 786432, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-> 0xb7e9d000
-> old_mmap(0xb7e9d000, 552787, PROT_READ|PROT_EXEC,
-> MAP_PRIVATE|MAP_FIXED, 3, 0) = 0xb7e9d000
-> old_mmap(0xb7f24000, 21848, PROT_READ|PROT_WRITE,
-> MAP_PRIVATE|MAP_FIXED, 3, 0x86000) = 0xb7f24000
-> old_mmap(0xb7f2a000, 204908, PROT_READ|PROT_WRITE,
-> MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xb7f2a000
-> close(3)                                = 0
-> mprotect(0xb7e9d000, 552787, PROT_READ|PROT_WRITE|PROT_EXEC) = 0
-> munmap(0xb7f5d000, 106939)              = 0
-> mprotect(0x8048000, 31345, PROT_READ|PROT_EXEC) = 0
-> mprotect(0xb7e9d000, 552787, PROT_READ|PROT_EXEC) = 0
-> mprotect(0xb7f79000, 21406, PROT_READ|PROT_EXEC) = 0
-> personality(PER_LINUX)                  = 4194304
-> geteuid()                               = 1000
-> getuid()                                = 1000
-> getgid()                                = 1002
-> getegid()                               = 1002
-> brk(0x8054098)                          = 0x8054098
-> brk(0x8055000)                          = 0x8055000
-> --- SIGSEGV (Segmentation fault) @ 0 (0) ---
-> +++ killed by SIGSEGV (core dumped) +++
-> Process 1517 detached
-> pavel@amd:~$
-> columns die due to
-> Feb  4 12:29:32 amd kernel: columns-bin[4535]: segfault at 8052000 ip b7f08a9a sp bfb79628 error 6 in
-> libc.so.5.4.33[b7e99000+87000]
-> Just before death, 
-> root@amd:~# cat /proc/4537/maps
-> 08048000-08050000 r-xp 00000000 08:04 246209 /usr/local/bin/columns-bin
-> 08050000-08051000 rwxp 00007000 08:04 246209 /usr/local/bin/columns-bin
-> 08051000-08052000 rwxp 08051000 00:00 0
-> b7f00000-b7f87000 r-xp 00000000 08:04 373330     /lib/libc.so.5.4.33
-> b7f87000-b7f8d000 rwxp 00086000 08:04 373330     /lib/libc.so.5.4.33
-> b7f8d000-b7fc0000 rwxp b7f8d000 00:00 0
-> b7fdb000-b7fdc000 rwxp b7fdb000 00:00 0
-> b7fdc000-b7fe2000 r-xp 00000000 08:04 373339 /lib/ld-linux.so.1.9.11
-> b7fe2000-b7fe3000 rwxp 00005000 08:04 373339 /lib/ld-linux.so.1.9.11
-> bface000-bfae3000 rwxp bffeb000 00:00 0          [stack]
-> ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-> root@amd:~#
+> 
+> > b) A user space application using sysfs to read/write
+> >    SES pages?
+> 
+> Not an application so much as a user.  The idea of sysfs is
+> to allow
+> users to get and set the information in addition to
+> applications.
 
-Actually, this clearly shows that either prehistoric libc.so.5 or the 
-program itself are broken. 
+Exactly the same argument stands for a user-space
+application with a user-space library.
 
-- as you can easily see by repeated invocation of your program, the 
-  arguments to brk() are always the same, no matter to what offset the brk 
-  start gets randomized.
+This is the classical case of where it is better to
+do this in user-space as opposed to the kernel.
 
-- i.e. the arguments passed to brk() strace shows clearly indicate that 
-  the binary (or library) is assuming that brk starts in the very next
-  page after code+bss (i.e. at the page following 0x08052000). That is wrong. 
-  The program then accessess unmapped memory, which causes segfault.
+The kernel provides capability to access the SES
+device.  The user space application and library
+provide interpretation and control.  Thus if the
+enclosure were upgraded, one doesn't need to
+upgrade their kernel in order to utilize the new
+capabilities of the SES device.  Plus upgrading
+a user-space application is a lot easier than
+the kernel (and no reboot necessary).
 
-> ...which is strange. Columns asked for brk, but kernel assigned it no
-> heap. No wonder columns are crashing.
+Consider another thing: vendors would really like
+unprecedented access to the SES device in the enclosure
+so as your ses/enclosure code keeps state it would
+get out of sync when vendor user-space enclosure
+applications access (and modify) the SES device's
+pages.
 
-Now, you are right that the return value from brk() is bogus in these 
-cases. The patch below should make it behave, as you can easily check with 
-strace, right? Does anyone have any comments regarding this patch please?
+You can test this yourself: submit a patch
+that removes SES /dev/sgX support; advertise your
+ses/class solution and watch the fun.
 
-Still, it will probably not fix your particular program crashes, just 
-because it will always assume that brk starts immediately after the end of 
-the bss, which is plain wrong and has never been assured. Could you please 
-check whether there is any compat-* package available for you 
-distribution, that upgrades libc.so.5 to any fixed version?
+> > At the moment SES device management is done via
+> > an application (user-space) and a user-space library
+> > used by the application and /dev/sgX to send SCSI
+> > commands to the SES device.
+> 
+> I must have missed that when I was looking for
+> implementations; what's
+> the URL?
 
-Thanks.
+I'm not aware of any GPLed ones.  That doesn't
+necessarily mean that the best course of action is
+to bloat the kernel.  You can move your ses/enclosure
+stuff to a user space application library
+and thus start a GPLed one.
 
+> But, if we have non-scsi enclosures to integrate, that
+> makes it harder
+> for a user application because it has to know all the
+> implementations.
 
-From: Jiri Kosina <jkosina@suse.cz>
+So does the kernel.  And as I pointed out above, it
+is a lot easier to upgrade a user-space application and
+library than it is to upgrade a new kernel and having
+to reboot the computer to run the new kernel.
 
-brk: check the lower bound properly
+> A sysfs framework on the other hand is a universal known
+> thing for the
+> user applications.
 
-There is a check in sys_brk(), that tries to make sure that we do not 
-underflow the area that is dedicated to brk heap.
+So would a user-space ses library, a la libses.so.
 
-The check is however wrong, as it assumes that brk area starts immediately 
-after the end of the code (+bss), which is wrong for example in 
-environments with randomized brk start. The proper way is to check whether 
-the address is not below the start_brk address.
+> > One could have a very good argument to not bloat
+> > the kernel with this but leave it to a user-space
+> > application and a library to do all this and
+> > communicate with the SES device via the kernel's
+> /dev/sgX.
+> 
+> The same thing goes for other esoteric SCSI infrastructure
+> pieces like
+> cd changers.  On the whole, given that ATA is asking for
+> enclosure
+> management in kernel, it makes sense to consolidate the
+> infrastructure
+> and a ses ULD is a very good test bed.
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+What is wrong with exporting the SES device as /dev/sgX
+and having a user-space application and library to
+do all this?
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 8295577..1c3b48f 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -241,7 +241,7 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
- 
- 	down_write(&mm->mmap_sem);
- 
--	if (brk < mm->end_code)
-+	if (brk < mm->start_brk)
- 		goto out;
- 
- 	/*
+    Luben
+
