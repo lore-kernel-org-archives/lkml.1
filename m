@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbYBEVPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbYBEVQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760536AbYBEVPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbYBEVO6
+	id S1761009AbYBEVQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbYBEVQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:14:58 -0500
-Received: from smtp1.cc.lut.fi ([157.24.2.30]:50612 "EHLO smtp1.cc.lut.fi"
+	Tue, 5 Feb 2008 16:16:29 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:55975 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755515AbYBEVO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:14:57 -0500
-Date: Tue, 5 Feb 2008 23:14:52 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86 mmiotrace: fix relay-buffer-full flag for SMP
-Message-ID: <20080205231452.16cc2f88@daedalus.pq.iki.fi>
-In-Reply-To: <47A8CA97.30008@cosmosbay.com>
-References: <20080127185238.4bcac54b@daedalus.pq.iki.fi>
-	<1201660102.8837.9.camel@brick>
-	<1201660453.8837.13.camel@brick>
-	<20080130200827.322c4f7d@daedalus.pq.iki.fi>
-	<20080131150746.GB11996@elte.hu>
-	<20080131180253.6c007852@daedalus.pq.iki.fi>
-	<20080131081507.5edcde10@laptopd505.fenrus.org>
-	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
-	<20080203070321.GA8293@elte.hu>
-	<20080205222807.7b35ef2b@daedalus.pq.iki.fi>
-	<20080205223046.668309be@daedalus.pq.iki.fi>
-	<47A8CA97.30008@cosmosbay.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1751288AbYBEVQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 16:16:28 -0500
+Date: Tue, 5 Feb 2008 22:16:08 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Felipe Balbi <felipebalbi@users.sourceforge.net>, tiwai@suse.de
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: T61P sound issue
+In-Reply-To: <31e679430802051304l7c1d68d8r153c753a5b96087a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802052207330.30873@twin.jikos.cz>
+References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com> 
+ <20080204194038.d8851b8d.akpm@linux-foundation.org>  <20080205113633.GI27738@hjernemadsen.org>
+  <20080205102219.83fe459d.akpm@linux-foundation.org>
+ <31e679430802051304l7c1d68d8r153c753a5b96087a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 21:44:07 +0100
-Eric Dumazet <dada1@cosmosbay.com> wrote:
+[ added Takashi ]
 
-> Pekka Paalanen a écrit :
-> > diff --git a/arch/x86/kernel/mmiotrace/mmio-mod.c b/arch/x86/kernel/mmiotrace/mmio-mod.c
-> > index 82ae920..f492b65 100644
-> > --- a/arch/x86/kernel/mmiotrace/mmio-mod.c
-> > +++ b/arch/x86/kernel/mmiotrace/mmio-mod.c
-> > @@ -47,9 +48,13 @@ struct trap_reason {
-> >  	int active_traces;
-> >  };
-> >  
-> > +/* Accessed per-cpu. */
-> >  static struct trap_reason pf_reason[NR_CPUS];
-> >  static struct mm_io_header_rw cpu_trace[NR_CPUS];
-> >  
-> > +/* Access to this is not per-cpu. */
-> > +static atomic_t dropped[NR_CPUS];
-> > +
-> 
-> Please dont introduce NR_CPUS new arrays, since people are working hard to zap 
-> them from kernel.
-> 
-> You probably can use a per_cpu variable ?
+On Tue, 5 Feb 2008, Felipe Balbi wrote:
 
-Yes, it would probably be more appropriate to use DEFINE_PER_CPU()
-for 'pf_reason' and 'cpu_trace', but I wasn't sure since the examples
-of DEFINE_PER_CPU I saw always had integers or pointers, not
-whole structs. Is it okay for whole structs?
+> > > > > Could anyone make T61P's ICH8 sound controller to work properly?
+> Good that there's a lot of people using T61p, it's a good machine.
+> I'll upgrade my BIOS and try again the crappy sound.
 
-'dropped' on the other hand is not accessed in per-cpu style, any cpu
-may access any element. DEFINE_PER_CPU is not valid here, is it?
+I have just bought X61s, and it seems to have the very same soundcard as 
+your T61p does:
 
-Thanks for the note, I knew I should fix that at some point.
+00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 03)
+        Subsystem: Lenovo Lenovo Thinkpad T61
+        Flags: bus master, fast devsel, latency 0, IRQ 17
+        Memory at fe220000 (64-bit, non-prefetchable) [size=16K]
+        Capabilities: [50] Power Management version 2
+        Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+        Capabilities: [70] Express Unknown type IRQ 0
+        Capabilities: [100] Virtual Channel
+        Capabilities: [130] Unknown (5)
+
+The sound also doesn't work with 2.6.24 (tried modprobing the 
+snd-hda-intel with 'model=thinkpad', didn't make any difference). The 
+mixer settings seem to be correct, but there is no sound.
+
+Two strange things in alsamixer:
+
+- it is possible to change volume of the "PCM" toggle, but it is missing 
+  the possibility to mute/unmute (the box with "MM"/"OO" simply isn't 
+  there)
+
+- the "Headphone" toggle has "OO" as it is unmuted, but there is no 
+  possibility to change its volume, the volume box is completely missing
+
+Takashi, if you need any other information which would help resolving 
+this, please let me know.
+
+Thanks,
 
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+Jiri Kosina
