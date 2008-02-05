@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbYBERLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYBERLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758375AbYBERLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 12:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYBERKj
+	id S1758606AbYBERLh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 12:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYBERL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 12:10:39 -0500
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:34013 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754254AbYBERKg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 12:10:36 -0500
-Date: Tue, 5 Feb 2008 09:10:05 -0800
-From: Robin Lee Powell <rlpowell@digitalkingdom.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Monthly md check == hung machine; how do I debug?
-Message-ID: <20080205171005.GA9284@digitalkingdom.org>
-References: <20080203212155.GF12173@digitalkingdom.org> <200802042140.55521.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802042140.55521.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 5 Feb 2008 12:11:28 -0500
+Received: from mosix1.rmnet.it ([82.145.99.230]:48496 "EHLO garbage.rmnet.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752442AbYBERL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 12:11:27 -0500
+User-Agent: Microsoft-Entourage/11.3.6.070618
+Date: Tue, 05 Feb 2008 18:09:15 +0100
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux
+ kernel
+From: Matteo Tescione <matteo@rmnet.it>
+To: FUJITA Tomonori <tomof@acm.org>, <mangoo@wpkg.org>
+CC: <vst@vlnb.net>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <James.Bottomley@HansenPartnership.com>,
+       <scst-devel@lists.sourceforge.net>, <akpm@linux-foundation.org>,
+       <torvalds@linux-foundation.org>, <fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <C3CE56CB.57D4%matteo@rmnet.it>
+Thread-Topic: [Scst-devel] Integration of SCST in the mainstream Linux
+ kernel
+Thread-Index: AchoGdXFFA2p6NQNEdyg7QAZ4zZdpQ==
+In-Reply-To: <20080205223740L.tomof@acm.org>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-RMnet-garbage-MailScanner: Found to be clean
+X-RMnet-garbage-MailScanner-SpamCheck: non spam,
+	SpamAssassin (punteggio=-1.799, necessario 4.5, autolearn=not spam,
+	ALL_TRUSTED -1.80, BAYES_50 0.00)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 09:40:55PM +1100, Nick Piggin wrote:
-> On Monday 04 February 2008 08:21, Robin Lee Powell wrote:
-> > I've got a machine with a 4 disk SATA raid10 configuration using
-> > md. The entire disk is loop-AES encrypted, but that shouldn't
-> > matter here.
-> >
-> > Once a month, Debian runs:
-> >
-> >     /usr/share/mdadm/checkarray --cron --all --quiet
-> >
-> > and the machine hangs within 30 minutes of that starting.
-> >
-> > It seems that I can avoid the hang by not having "mdadm
-> > --monitor" running, but I'm not certain if that's the case or if
-> > I've just been lucky this go-round.
-> >
-> > I'm on kernel 2.6.23.1, my own compile thereof, x86_64, AMD
-> > Athlon(tm) 64 Processor 3700+.
-> >
-> > I've looked through all the 2.6.23 and 2.6.24 Changelogs, and I
-> > can't find anything that looks relevant.
-> >
-> > So, how can I (help you all) debug this?
+On 5-02-2008 14:38, "FUJITA Tomonori" <tomof@acm.org> wrote:
+
+> On Tue, 05 Feb 2008 08:14:01 +0100
+> Tomasz Chmielewski <mangoo@wpkg.org> wrote:
 > 
-> Do you have a serial console? Does it respond to pings?
+>> James Bottomley schrieb:
+>> 
+>>> These are both features being independently worked on, are they not?
+>>> Even if they weren't, the combination of the size of SCST in kernel plus
+>>> the problem of having to find a migration path for the current STGT
+>>> users still looks to me to involve the greater amount of work.
+>> 
+>> I don't want to be mean, but does anyone actually use STGT in
+>> production? Seriously?
+>> 
+>> In the latest development version of STGT, it's only possible to stop
+>> the tgtd target daemon using KILL / 9 signal - which also means all
+>> iSCSI initiator connections are corrupted when tgtd target daemon is
+>> started again (kernel upgrade, target daemon upgrade, server reboot etc.).
+> 
+> I don't know what "iSCSI initiator connections are corrupted"
+> mean. But if you reboot a server, how can an iSCSI target
+> implementation keep iSCSI tcp connections?
+> 
+> 
+>> Imagine you have to reboot all your NFS clients when you reboot your NFS
+>> server. Not only that - your data is probably corrupted, or at least the
+>> filesystem deserves checking...
 
-No and yes.
+Don't know if matters, but in my setup (iscsi on top of drbd+heartbeat)
+rebooting the primary server doesn't affect my iscsi traffic, SCST correctly
+manages stop/crash, by sending unit attention to clients on reconnect.
+Drbd+heartbeat correctly manages those things too.
+Still from an end-user POV, i was able to reboot/survive a crash only with
+SCST, IETD still has reconnect problems and STGT are even worst.
 
-> Can you try to get sysrq+T traces, and sysrq+P traces, and post
-> them?
+Regards,
+--matteo
 
-I played with those after you suggested it, but without serial
-console had no way to capture them.
 
-I was able to solve the problem, however, like so:
-
-132c133
-< # CONFIG_PREEMPT_NONE is not set
----
-> CONFIG_PREEMPT_NONE=y
-134,135c135,136
-< CONFIG_PREEMPT=y
-< CONFIG_PREEMPT_BKL=y
----
-> # CONFIG_PREEMPT is not set
-> # CONFIG_PREEMPT_BKL is not set
-
--Robin
-
--- 
-Lojban Reason #17: http://en.wikipedia.org/wiki/Buffalo_buffalo
-Proud Supporter of the Singularity Institute - http://singinst.org/
-http://www.digitalkingdom.org/~rlpowell/ *** http://www.lojban.org/
