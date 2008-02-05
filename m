@@ -1,107 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYBELDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYBELEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757554AbYBELDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 06:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbYBELDY
+	id S1758020AbYBELEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 06:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbYBELE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 06:03:24 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:42650 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756573AbYBELDX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 06:03:23 -0500
-Date: Tue, 5 Feb 2008 16:33:03 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: r31dmaeu@pc0312b.rz.unibw-muenchen.de, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, stable@kernel.org
-Subject: Re: OOM-killer invoked but why ?
-Message-ID: <20080205110303.GA8288@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <47A1C4B1.8020607@pc0312a.rz.unibw-muenchen.de> <20080205020737.cec97816.akpm@linux-foundation.org>
+	Tue, 5 Feb 2008 06:04:28 -0500
+Received: from bgerelbas01.asiapac.hp.net ([15.219.201.134]:51259 "EHLO
+	bgerelbas01.asiapac.hp.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756652AbYBELE0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 06:04:26 -0500
+X-Greylist: delayed 1791 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 06:04:25 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205020737.cec97816.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/7] blk_end_request: full I/O completion handler
+Date: Tue, 5 Feb 2008 16:04:00 +0530
+Message-ID: <77334B9413C72244AE1B51ADD4868D700AF902CF@BGEEXC02.asiapacific.cpqcorp.net>
+In-Reply-To: <20070903074549.GJ4253@kernel.dk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/7] blk_end_request: full I/O completion handler
+Thread-Index: Acft/0NzUQ+Xn8bARvqMC1Sl2rVYLR540hSA
+From: "S, Chandrakala (STSD)" <chandrakala.s@hp.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>,
+       "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       <linux-ide@vger.kernel.org>,
+       "Miller, Mike (OS Dev)" <mike.miller@hp.com>,
+       <grant.likely@secretlab.ca>, <dm-devel@redhat.com>,
+       <j-nomura@ce.jp.nec.com>
+X-OriginalArrivalTime: 05 Feb 2008 10:34:00.0798 (UTC) FILETIME=[9F011FE0:01C867E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 02:07:37AM -0800, Andrew Morton wrote:
-> On Thu, 31 Jan 2008 13:53:05 +0100 Claude Frantz <r31dmaeu@pc0312b.rz.unibw-muenchen.de> wrote:
-> 
-> > Hello !
-> > 
-> > I'm faced to a problem where the OOM-killer is invoked but I cannot find
-> > the reason why. The machine is rather powerfull, the load is very moderate,
-> > the disk swap space is nearly unused. The only strange observation which
-> > appears to me is the slow but progressive decreasing of kbbuffers during
-> > many hours.
-> > 
-> > Can you help me to diagnose the problem and to find a good solution ?
-> > 
-> > ...
-> >
-> > Jan 28 03:50:49 toaster kernel: 177466 pages slab
-> > Jan 28 03:50:49 toaster kernel: 1915 pages pagetables
-> > Jan 28 03:50:49 toaster kernel: Out of memory: kill process 10859 (amavisd) score 36218 or a child
-> > Jan 28 03:50:49 toaster kernel: Killed process 19146 (amavisd)
-> 
-> slab.  Maybe you've been bitten by the quicklist leak.  If you're able to
-> patch your kernel then please try this fix:
-> 
-> commit 96990a4ae979df9e235d01097d6175759331e88c
-> Author: Christoph Lameter <clameter@sgi.com>
-> Date:   Mon Jan 14 00:55:14 2008 -0800
-> 
->     quicklists: Only consider memory that can be used with GFP_KERNEL
->     
->     Quicklists calculates the size of the quicklists based on the number of
->     free pages.  This must be the number of free pages that can be allocated
->     with GFP_KERNEL.  node_page_state() includes the pages in ZONE_HIGHMEM and
->     ZONE_MOVABLE which may lead the quicklists to become too large causing OOM.
->     
->     Signed-off-by: Christoph Lameter <clameter@sgi.com>
->     Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> diff --git a/mm/quicklist.c b/mm/quicklist.c
-> index ae8189c..3f703f7 100644
-> --- a/mm/quicklist.c
-> +++ b/mm/quicklist.c
-> @@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
->  static unsigned long max_pages(unsigned long min_pages)
->  {
->  	unsigned long node_free_pages, max;
-> +	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
-> +
-> +	node_free_pages =
-> +#ifdef CONFIG_ZONE_DMA
-> +		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
-> +#endif
-> +#ifdef CONFIG_ZONE_DMA32
-> +		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
-> +#endif
-> +		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
-> 
-> -	node_free_pages = node_page_state(numa_node_id(),
-> -			NR_FREE_PAGES);
->  	max = node_free_pages / FRACTION_OF_NODE_MEM;
->  	return max(max, min_pages);
->  }
-> 
-> 
-> I note that this didn't have the stable@kernel.org cc.  Christoph, did we
-> deliberately decide not to backport?
-> 
+Hello,
 
-According to
-http://archive.netbsd.se/?ml=linux-stable-commits&a=2008-01&m=6134301 ,
-its been added to the stable tree. I remember asking Greg to add it.
+We would like to know in which kernel version these patches are
+available.  
+ 
+Thanks,
+Chandrakala
 
-Thanks
--- 
-regards,
-Dhaval
+-----Original Message-----
+From: linux-scsi-owner@vger.kernel.org
+[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Jens Axboe
+Sent: Monday, September 03, 2007 1:16 PM
+To: Kiyoshi Ueda
+Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org;
+linux-ide@vger.kernel.org; Miller, Mike (OS Dev);
+grant.likely@secretlab.ca; dm-devel@redhat.com; j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 0/7] blk_end_request: full I/O completion handler
+
+On Fri, Aug 31 2007, Kiyoshi Ueda wrote:
+> Hello,
+> 
+> This set of patches changes request completion interface between 
+> device drivers and block layer to 1 step procedure from current 2 step
+
+> procedures using end_that_request_{first/chunk} and 
+> end_that_request_last().
+> 
+> This change allows request-based multipath to hook in before 
+> completing each chunk of request, check errors for it and retry it 
+> using another path if error is detected.
+> 
+> Summaries of each patch are below:
+>   1/7: add new request completion interface, blk_end_request()
+>   2/7: add some macros to get the size of request in bytes
+>   3/7: convert normal drivers to use blk_end_request()
+>   4/7: convert odd drivers like cciss/cpqarray/xsysace to use
+>        blk_end_request()
+>   5/7: convert ide-cd (cdrom_newpc_intr) to use blk_end_request()
+>   6/7: remove/unexport no longer needed end_that_request_*
+>   7/7: change rq->end_io to cover request completion as a whole
+> 
+> I have tested the patch on two machines, ia64+QLA1280+QLA2200 and 
+> x86_64+SATA+IDE-CDROM.
+> I can't test other device drivers for which I don't have hardware.
+> So testing help and any comments would be very much appreciated.
+> 
+> The interface change causes code modifications of *ALL DEVICE DRIVERS*
+
+> which are using end_that_request_{first/chunk/last} to complete
+request.
+> But it should not affect the behavior.
+> 
+> Please review and apply if no problem.
+> This patch-set should be applied on top of 2.6.23-rc3-mm1.
+> 
+> 
+> BACKGROUND
+> ==========
+> The patch is necessary to allow device stacking at request level, that
+
+> is request-based device-mapper multipath.
+> Currently, device-mapper is implemented as a stacking block device at 
+> BIO level.  OTOH, request-based DM will stack at request level to 
+> allow better multipathing decision.
+> To allow device stacking at request level, the completion procedure 
+> need to provide a hook for it.
+> For example, dm-multipath has to check errors and retry with other 
+> paths if necessary before returning the I/O result to upper layer.
+> struct request has 'end_io' hook currently.  But it's called at the 
+> very late stage of completion handling where the I/O result is already
+
+> returned to the upper layer.
+> So we need something here.
+> 
+> The first approach to hook in completion of each chunk of request was 
+> adding a new rq->end_io_first() hook and calling it on the top of 
+> __end_that_request_first().
+>   - http://marc.theaimsgroup.com/?l=linux-scsi&m=115520444515914&w=2
+>   - http://marc.theaimsgroup.com/?l=linux-kernel&m=116656637425880&w=2
+> However, Jens pointed out that redesigning rq->end_io() as a full 
+> completion handler would be better:
+> 
+> On Thu, 21 Dec 2006 08:49:47 +0100, Jens Axboe <jens.axboe@oracle.com>
+wrote:
+> > Ok, I see what you are getting at. The current ->end_io() is called 
+> > when the request has fully completed, you want notification for each
+
+> > chunk potentially completed.
+> > 
+> > I think a better design here would be to use ->end_io() as the full 
+> > completion handler, similar to how bio->bi_end_io() works. A request
+
+> > originating from __make_request() would set something ala:
+> .....
+> > instead of calling the functions manually. That would allow you to 
+> > get notification right at the beginning and do what you need, 
+> > without adding a special hook for this.
+> 
+> I thought his comment was reasonable.
+> So I modified the patches based on his suggestion.
+> 
+> 
+> WHAT IS CHANGED
+> ===============
+> The change is basically illustlated by the following pseudo code:
+> 
+> [Before]
+>   if (end_that_request_{first/chunk} succeeds) { <-- completes bios
+>      <do something driver specific>
+>      end_that_request_last() <-- calls end_io()
+>      <the request is free from the driver>
+>   } else {
+>      <the request was incomplete, retry for leftover or ignoring>
+>   }
+> 
+> [After]
+>   if (blk_end_request() succeeds) { <-- calls end_io(), completes bios
+>      <the request is free from the driver>
+>   } else {
+>      <the request was incomplete, retry for leftover or ignoring>
+>   }
+> 
+> 
+> In detail, request completion procedures are changed like below.
+> 
+> [Before]
+>   o 2 steps completion using end_that_request_{first/chunk}
+>     and end_that_request_last().
+>   o Device drivers have ownership of a request until they
+>     call end_that_request_last().
+>   o rq->end_io() is called at the last stage of
+>     end_that_request_last() for some block layer codes need
+>     specific request handling when completing it.
+> 
+> [After]
+>   o 1 step completion using blk_end_request().
+>     (end_that_request_* are no longer used from device drivers.)
+>   o Device drivers give over ownership of a request
+>     when calling blk_end_request().
+>     If it returns 0, the request is completed.
+>     If it returns 1, the request isn't completed and
+>     the ownership is returned to the device driver again.
+>   o rq->end_io() is called at the top of blk_end_request() to
+>     allow to hook all parts of request completion.
+>     Existing users of rq->end_io() must be changed to do
+>     all parts of request completion.
+> 
+> 
+> EXAMPLE CODE
+> ============
+> Request-based Device-mapper multipath patch-set is attached as 
+> appendix, although it still needs some work and isn't ready for
+review.
+> It checks error of a request and retries the request using other paths
+
+> if error is detected, before completing bios in the request.
+> (See clone_end_request() in appendix#1.)
+
+This looks good, thanks for following up on this! I've replied with
+comments on changes for the core bits, the interface I quite agree with.
+So if you fix up the things I ask for, I'll merge this up.
+
+--
+Jens Axboe
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org More majordomo info
+at  http://vger.kernel.org/majordomo-info.html
