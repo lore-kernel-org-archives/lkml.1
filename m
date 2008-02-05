@@ -1,209 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbYBEVjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbYBEVja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762156AbYBEVjH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:39:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbYBEVhr
+	id S1760854AbYBEVja (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761652AbYBEVhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:37:47 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38768 "EHLO
+	Tue, 5 Feb 2008 16:37:51 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38769 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761576AbYBEVho (ORCPT
+	with ESMTP id S1761596AbYBEVhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:37:44 -0500
-Message-Id: <20080205213706.641671363@szeredi.hu>
+	Tue, 5 Feb 2008 16:37:46 -0500
+Message-Id: <20080205213700.846767264@szeredi.hu>
 References: <20080205213616.343721693@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 05 Feb 2008 22:36:24 +0100
+Date: Tue, 05 Feb 2008 22:36:20 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 08/10] unprivileged mounts: make fuse safe
-Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-fuse-mounts.patch
+Subject: [patch 04/10] unprivileged mounts: account user mounts
+Content-Disposition: inline; filename=unprivileged-mounts-account-user-mounts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Don't require the "user_id=" and "group_id=" options for unprivileged mounts,
-but if they are present, verify them for sanity.
+Add sysctl variables for accounting and limiting the number of user
+mounts.
 
-Disallow the "allow_other" option for unprivileged mounts.
+The maximum number of user mounts is set to 1024 by default.  This
+won't in itself enable user mounts, setting a mount to be owned by a
+user is first needed.
 
-Document new way of enabling unprivileged mounts for fuse.
-
-Document problems with unprivileged mounts.
+[akpm]
+ - don't use enumerated sysctls
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
 
-Index: linux/fs/fuse/inode.c
+Index: linux/Documentation/filesystems/proc.txt
 ===================================================================
---- linux.orig/fs/fuse/inode.c	2008-02-04 23:47:46.000000000 +0100
-+++ linux/fs/fuse/inode.c	2008-02-04 23:48:06.000000000 +0100
-@@ -359,6 +359,19 @@ static int parse_fuse_opt(char *opt, str
- 	d->max_read = ~0;
- 	d->blksize = FUSE_DEFAULT_BLKSIZE;
+--- linux.orig/Documentation/filesystems/proc.txt	2008-02-04 23:47:47.000000000 +0100
++++ linux/Documentation/filesystems/proc.txt	2008-02-04 23:47:58.000000000 +0100
+@@ -1052,6 +1052,15 @@ reaches aio-max-nr then io_setup will fa
+ raising aio-max-nr does not result in the pre-allocation or re-sizing
+ of any kernel data structures.
  
++nr_user_mounts and max_user_mounts
++----------------------------------
++
++These represent the number of "user" mounts and the maximum number of
++"user" mounts respectively.  User mounts may be created by
++unprivileged users.  User mounts may also be created with sysadmin
++privileges on behalf of a user, in which case nr_user_mounts may
++exceed max_user_mounts.
++
+ 2.2 /proc/sys/fs/binfmt_misc - Miscellaneous binary formats
+ -----------------------------------------------------------
+ 
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2008-02-04 23:47:56.000000000 +0100
++++ linux/fs/namespace.c	2008-02-04 23:47:58.000000000 +0100
+@@ -46,6 +46,9 @@ static struct list_head *mount_hashtable
+ static struct kmem_cache *mnt_cache __read_mostly;
+ static struct rw_semaphore namespace_sem;
+ 
++int nr_user_mounts;
++int max_user_mounts = 1024;
++
+ /* /sys/fs */
+ struct kobject *fs_kobj;
+ EXPORT_SYMBOL_GPL(fs_kobj);
+@@ -511,21 +514,70 @@ static struct vfsmount *skip_mnt_tree(st
+ 	return p;
+ }
+ 
+-static void set_mnt_user(struct vfsmount *mnt)
++static void dec_nr_user_mounts(void)
++{
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts--;
++	spin_unlock(&vfsmount_lock);
++}
++
++static int reserve_user_mount(void)
++{
++	int err = 0;
++
++	spin_lock(&vfsmount_lock);
 +	/*
-+	 * For unprivileged mounts use current uid/gid.  Still allow
-+	 * "user_id" and "group_id" options for compatibility, but
-+	 * only if they match these values.
++	 * EMFILE was error returned by mount(2) in the old days, when
++	 * the mount count was limited.  Reuse this error value to
++	 * mean, that the maximum number of user mounts has been
++	 * exceeded.
 +	 */
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		d->user_id = current->uid;
-+		d->user_id_present = 1;
-+		d->group_id = current->gid;
-+		d->group_id_present = 1;
++	if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
++		err = -EMFILE;
++	else
++		nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
++	return err;
++}
 +
++static void __set_mnt_user(struct vfsmount *mnt)
+ {
+ 	WARN_ON(mnt->mnt_flags & MNT_USER);
+ 	mnt->mnt_uid = current->fsuid;
+ 	mnt->mnt_flags |= MNT_USER;
+ }
+ 
++static void set_mnt_user(struct vfsmount *mnt)
++{
++	__set_mnt_user(mnt);
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
++}
++
++static void clear_mnt_user(struct vfsmount *mnt)
++{
++	if (mnt->mnt_flags & MNT_USER) {
++		mnt->mnt_uid = 0;
++		mnt->mnt_flags &= ~MNT_USER;
++		dec_nr_user_mounts();
 +	}
++}
 +
- 	while ((p = strsep(&opt, ",")) != NULL) {
- 		int token;
- 		int value;
-@@ -387,6 +400,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_USER_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->user_id_present && d->user_id != value)
-+				return 0;
- 			d->user_id = value;
- 			d->user_id_present = 1;
- 			break;
-@@ -394,6 +409,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_GROUP_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->group_id_present && d->group_id != value)
-+				return 0;
- 			d->group_id = value;
- 			d->group_id_present = 1;
- 			break;
-@@ -603,6 +620,10 @@ static int fuse_fill_super(struct super_
- 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
- 		return -EINVAL;
+ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+ 					int flag)
+ {
+ 	struct super_block *sb = old->mnt_sb;
+-	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
++	struct vfsmount *mnt;
  
-+	/* This is a privileged option */
-+	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
-+		return -EPERM;
++	if (flag & CL_SETUSER) {
++		int err = reserve_user_mount();
++		if (err)
++			return ERR_PTR(err);
++	}
++	mnt = alloc_vfsmnt(old->mnt_devname);
+ 	if (!mnt)
+-		return ERR_PTR(-ENOMEM);
++		goto alloc_failed;
+ 
+ 	mnt->mnt_flags = old->mnt_flags;
+ 	atomic_inc(&sb->s_active);
+@@ -537,7 +589,7 @@ static struct vfsmount *clone_mnt(struct
+ 	/* don't copy the MNT_USER flag */
+ 	mnt->mnt_flags &= ~MNT_USER;
+ 	if (flag & CL_SETUSER)
+-		set_mnt_user(mnt);
++		__set_mnt_user(mnt);
+ 
+ 	if (flag & CL_SLAVE) {
+ 		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+@@ -562,6 +614,11 @@ static struct vfsmount *clone_mnt(struct
+ 		spin_unlock(&vfsmount_lock);
+ 	}
+ 	return mnt;
 +
- 	if (is_bdev) {
- #ifdef CONFIG_BLOCK
- 		if (!sb_set_blocksize(sb, d.blksize))
-Index: linux/Documentation/filesystems/fuse.txt
++ alloc_failed:
++	if (flag & CL_SETUSER)
++		dec_nr_user_mounts();
++	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static inline void __mntput(struct vfsmount *mnt)
+@@ -577,6 +634,7 @@ static inline void __mntput(struct vfsmo
+ 	 */
+ 	WARN_ON(atomic_read(&mnt->__mnt_writers));
+ 	dput(mnt->mnt_root);
++	clear_mnt_user(mnt);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+ }
+@@ -1446,6 +1504,7 @@ static int do_remount(struct nameidata *
+ 	else
+ 		err = do_remount_sb(sb, flags, data, 0);
+ 	if (!err) {
++		clear_mnt_user(nd->path.mnt);
+ 		nd->path.mnt->mnt_flags = mnt_flags;
+ 		if (flags & MS_SETUSER)
+ 			set_mnt_user(nd->path.mnt);
+Index: linux/include/linux/fs.h
 ===================================================================
---- linux.orig/Documentation/filesystems/fuse.txt	2008-01-24 23:58:37.000000000 +0100
-+++ linux/Documentation/filesystems/fuse.txt	2008-02-05 19:34:24.000000000 +0100
-@@ -215,11 +215,87 @@ the filesystem.  There are several ways 
-   - Abort filesystem through the FUSE control filesystem.  Most
-     powerful method, always works.
+--- linux.orig/include/linux/fs.h	2008-02-04 23:47:50.000000000 +0100
++++ linux/include/linux/fs.h	2008-02-04 23:47:58.000000000 +0100
+@@ -50,6 +50,9 @@ extern struct inodes_stat_t inodes_stat;
  
--How do non-privileged mounts work?
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+Unprivileged fuse mounts
-+~~~~~~~~~~~~~~~~~~~~~~~~
+ extern int leases_enable, lease_break_time;
  
--Since the mount() system call is a privileged operation, a helper
--program (fusermount) is needed, which is installed setuid root.
-+Possible problems with unprivileged fuse mounts
-+-----------------------------------------------
++extern int nr_user_mounts;
++extern int max_user_mounts;
 +
-+FUSE was designed from the beginning to be safe for unprivileged
-+users.  This has also been verified in practice over many years, with
-+some distributions enabling unprivileged FUSE mounts by default.
-+
-+However, there are cases when unprivileged mounting a fuse filesystem
-+may be problematic, particularly for multi-user systems with untrusted
-+users.  So here are few words of warning:
-+
-+Due to the design of the process freezer, a hanging (due to network
-+problems, etc) or malicious filesystem may prevent suspending to ram
-+or hibernation to succeed.  This is not actually unique to FUSE, as
-+any hanging network filesystem will have the same affect.
-+
-+It is not always possible to use kill(2) (not even with SIGKILL) to
-+terminate a process using a FUSE filesystem (see section "Interrupting
-+filesystem operations" above).  As a special case of the above,
-+killing a self-deadlocked FUSE process is not possible, and even
-+killall5 will not terminate it.
-+
-+If the above could pose a threat to the system, it is recommended,
-+that unprivileged fuse mounts are not enabled.
-+
-+Ways of enabling user mounts
-+----------------------------
-+
-+Now there are two different ways of allowing unprivileged fuse mounts:
-+
-+ 1) new way: unprivileged mount syscall
-+
-+ 2) old way: suid-root fusermount utility
-+
-+Unprivileged mount syscall
-+--------------------------
-+
-+To enable this do
-+
-+  echo 1 > /proc/sys/fs/types/fuse/usermount_safe
-+
-+or add this line to /etc/sysctl.conf:
-+
-+  fs.types.fuse.usermount_safe = 1
-+
-+More information can be found in Documentation/filesystems/proc.txt
-+under the /proc/sys/fs/types/ heading.  Also see description of
-+nr_user_mounts and max_user_mounts under /proc/sys/fs.
-+
-+This doesn't in itself allow users to create mounts, first root needs
-+to create a mount owned by the user, under which the user can create
-+submounts.
-+
-+For example to enable submounts under /home/xyz/mnt do:
-+
-+  mount --bind -ouser=xyz /home/xyz/mnt /home/xyz/mnt
-+
-+or add this line to /etc/fstab:
-+
-+  /home/xyz/mnt  /home/xyz/mnt  none  bind,user=xyz  0 0
-+
-+And finally, make sure, that the user has read and write permissions
-+on /dev/fuse (installing fuse should have already taken care of this):
-+
-+  chmod 0666 /dev/fuse
-+
-+or create a file under /etc/udev/rules.d/ containing:
-+
-+  KERNEL=="fuse", MODE="0666"
-+
-+After this, mounting fuse filesystems under ~xyz/mnt should work, even
-+if fusermount is not installed setuid-root.
-+
-+Suid-root fusermount utility
-+----------------------------
-+
-+[Some of the details described here apply to the new, unprivileged
-+mount system call as well].
- 
- The implication of providing non-privileged mounts is that the mount
- owner must not be able to use this capability to compromise the
-@@ -235,7 +311,7 @@ system.  Obvious requirements arising fr
-     other users' or the super user's processes
- 
- How are requirements fulfilled?
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+- - - - - - - - - - - - - - - -
- 
-  A) The mount owner could gain elevated privileges by either:
- 
-@@ -300,7 +376,7 @@ How are requirements fulfilled?
- 	filesystem, since SIGSTOP can be used to get a similar effect.
- 
- I think these limitations are unacceptable?
--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+- - - - - - - - - - - - - - - - - - - - - -
- 
- If a sysadmin trusts the users enough, or can ensure through other
- measures, that system processes will never enter non-privileged
+ #ifdef CONFIG_DNOTIFY
+ extern int dir_notify_enable;
+ #endif
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c	2008-02-04 23:47:47.000000000 +0100
++++ linux/kernel/sysctl.c	2008-02-04 23:47:58.000000000 +0100
+@@ -1302,6 +1302,22 @@ static struct ctl_table fs_table[] = {
+ #endif	
+ #endif
+ 	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "nr_user_mounts",
++		.data		= &nr_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "max_user_mounts",
++		.data		= &max_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
+ 		.ctl_name	= KERN_SETUID_DUMPABLE,
+ 		.procname	= "suid_dumpable",
+ 		.data		= &suid_dumpable,
 
 --
