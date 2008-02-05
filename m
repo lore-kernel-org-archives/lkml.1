@@ -1,94 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYBESW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbYBESYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbYBESW6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbYBESWp
+	id S1757841AbYBESYs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYBESYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:22:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55866 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754920AbYBESWn (ORCPT
+	Tue, 5 Feb 2008 13:24:37 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:47151 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752344AbYBESYg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:22:43 -0500
-Date: Tue, 5 Feb 2008 10:22:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-Cc: Felipe Balbi <felipebalbi@users.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: T61P sound issue
-Message-Id: <20080205102219.83fe459d.akpm@linux-foundation.org>
-In-Reply-To: <20080205113633.GI27738@hjernemadsen.org>
-References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com>
-	<20080204194038.d8851b8d.akpm@linux-foundation.org>
-	<20080205113633.GI27738@hjernemadsen.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 13:24:36 -0500
+Date: Tue, 5 Feb 2008 20:24:41 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: aic7xxx build failure
+Message-ID: <20080205182441.GF505@cs181133002.pp.htv.fi>
+References: <20080205174024.GE505@cs181133002.pp.htv.fi> <1202235484.3133.49.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1202235484.3133.49.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 12:36:33 +0100 "Klaus S. Madsen" <ksm@hjernemadsen.org> wrote:
-
-> On Mon, Feb 04, 2008 at 19:40:38 -0800, Andrew Morton wrote:
-> > On Sun, 27 Jan 2008 08:49:29 -0500 "Felipe Balbi" <felipebalbi@users.sourceforge.net> wrote:
-> > 
-> > If a bug report fell in a forest, would ...
-> > 
-> > > Hi all,
-> > > 
-> > > Could anyone make T61P's ICH8 sound controller to work properly?
-> > 
-> > ooh, a fellow t61p owner.  How's suspend and resume working?
-> I'm also a T61p owner, and for me suspend is working. I'm using Linux
-> 2.6.24 (32 bit version) and the newest driver from NVidia (yes, I know I
-> should be using the opensource driver, but it didn't work when I got my
-> laptop).
-
-32-bit kernel?  hm.
-
-I use the xorg X11 driver.  It's slow but that's OK.
-
-> I haven't got hibernation working yet, but I haven't yet tried without
-> the NVidia module loaded (and as suspend works, hibernation isn't that
-> important for me).
-
-suspend-to-disk works for me but suspend-to-ram fails in various different
-ways depending on which kernel I'm running.
-
-> > > Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 03)
-> > > 
-> > > Running linux-2.6.24 stable. If there's a know bug, I could try to dig
-> > > more on it and get more info.
-> > 
-> > It works for me.  http://userweb.kernel.org/~akpm/config-t61p.txt
-> Sound also works for me. Config at http://hogthrob.42.dk/config-t61p.txt
+On Tue, Feb 05, 2008 at 12:18:04PM -0600, James Bottomley wrote:
 > 
-> > > Call Trace:
-> > >  <IRQ>  [<ffffffff80263b5f>] __report_bad_irq+0x30/0x72
-> > >  [<ffffffff80263dcb>] note_interrupt+0x22a/0x26b
-> > >  [<ffffffff8026463a>] handle_fasteoi_irq+0xa9/0xd0
-> > >  [<ffffffff8020e6cf>] do_IRQ+0x6c/0xd5
-> > >  [<ffffffff8020c411>] ret_from_intr+0x0/0xa
-> > >  [<ffffffff8021c1a4>] lapic_next_event+0x0/0xa
-> > >  [<ffffffff8023a692>] __do_softirq+0x5a/0xce
-> > >  [<ffffffff8024f060>] tick_program_event+0x31/0x4d
-> > >  [<ffffffff8020d08c>] call_softirq+0x1c/0x28
-> > >  [<ffffffff8020e4e0>] do_softirq+0x2c/0x7d
-> > >  [<ffffffff8023a5f3>] irq_exit+0x3f/0x84
-> > >  [<ffffffff8021c55c>] smp_apic_timer_interrupt+0x3f/0x53
-> > >  [<ffffffff8020cb36>] apic_timer_interrupt+0x66/0x70
-> > >  <EOI> 
-> > > handlers:
-> > > [<ffffffff803fa647>] (usb_hcd_irq+0x0/0x52)
-> > > Disabling IRQ #19
-> > > 
+> On Tue, 2008-02-05 at 19:40 +0200, Adrian Bunk wrote:
+> > Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
+> > compilation:
 > > 
-> > (everyone gets this btw - some weird bluetooth-vs-usb thing which we don't
-> > know how to fix).
-> This is actually fixed by upgrading to the newest version of the BIOS.
-> I'm currently running version 7LETA7WW (2.07), and haven't seen the
-> problem since I upgraded.
+> > <--  snip  -->
+> > 
+> > $ make O=../out/x86-full
+> > ...
+> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
+> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
+> >   CC      drivers/scsi/aic7xxx/aic79xx_core.o
+> > gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
+> > gcc: no input files
+> > make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
+> 
+> Could you run this with V=1 to get us a verbose output of what the exact
+> files gcc is failing on are?
 
-Interesting.  Maybe that'll change suspend-to-ram behaviour as well.
+make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi
+make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi/aacraid
+(cat /dev/null; ) > drivers/scsi/aacraid/modules.order
+make -f /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/Makefile.build obj=drivers/scsi/aic7xxx
+  cat /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx/aic79xx_seq.h_shipped > drivers/scsi/aic7xxx/aic79xx_seq.h
+  cat /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx/aic79xx_reg.h_shipped > drivers/scsi/aic7xxx/aic79xx_reg.h
+  gcc -Wp,-MD,drivers/scsi/aic7xxx/.aic79xx_core.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux-gnu/4.2.3/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include -include include/linux/autoconf.h -I/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/aic7xxx -Idrivers/scsi/aic7xxx -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=athlon -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-x86/mach-generic -Iinclude/asm-x86/mach-generic -I/home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-x86/mach-default -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -I/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi -Idrivers/scsi  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(aic79xx_core)"  -D"KBUILD_MODNAME=KBUILD_STR(aic79xx)" -c -o drivers/scsi/aic7xxx/aic79xx_core.o drivers/scsi/aic7xxx/aic79xx_core.c
+gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
+gcc: no input files
+make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
+make[3]: *** [drivers/scsi/aic7xxx] Error 2
+make[2]: *** [drivers/scsi] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
+
+
+> Thanks,
+> 
+> James
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
