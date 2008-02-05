@@ -1,61 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbYBEFxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYBEFzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbYBEFxh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 00:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYBEFx3
+	id S1756073AbYBEFzn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 00:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYBEFzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 00:53:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57667 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752496AbYBEFx2 (ORCPT
+	Tue, 5 Feb 2008 00:55:35 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37217 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753002AbYBEFzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 00:53:28 -0500
-Date: Mon, 4 Feb 2008 21:53:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Igor M Podlesny <for.poige+linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: > You may find that you need to update your lvm userspace
- tools.
-Message-Id: <20080204215304.8b909402.akpm@linux-foundation.org>
-In-Reply-To: <47A7F4DB.3070406@gmail.com>
-References: <43d009740802022335y21c3f93ep4e444bef71338045@mail.gmail.com>
-	<20080202235103.20dd9768.akpm@linux-foundation.org>
-	<47A71040.5000300@gmail.com>
-	<20080204052709.12f4e0d3.akpm@linux-foundation.org>
-	<47A7F4DB.3070406@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 Feb 2008 00:55:35 -0500
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] RUSAGE_THREAD
+Date: Tue, 5 Feb 2008 11:25:50 +0530
+User-Agent: KMail/1.9.4
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       mtk.manpages@gmail.com, torvalds@linux-foundation.org,
+       vinay@linux.vnet.ibm.com, drpeper@redhat.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802051125.50423.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 12:32:11 +0700 Igor M Podlesny <for.poige+linux@gmail.com> wrote:
+Hi Andrew,
 
-> On 2008-02-04 20:27, Andrew Morton wrote:
-> > On Mon, 04 Feb 2008 20:16:48 +0700 Igor M Podlesny <for.poige+linux@gmail.com> wrote:
-> [...]
-> >>    Now I can say that both 2.6.24-mm1 and 2.6.24-git11 do NOT "see" any
-> >> of mine LVM-2 disks. pvscan, for e.g., finds nothing at all.
-> > 
-> > You may find that you need to update your lvm userspace tools.
-> 
-> 	You're right; I've updated my initrd with fresh lvm
-> userspace-counterpart and now the problem has been fixed. Sorry for
-> groundless alert.
-> 
+This adds the RUSAGE_THREAD option for the getrusage system call.
+This is essentially Roland's patch from http://lkml.org/lkml/2008/1/18/589, 
+but the line about RUSAGE_LWP line has been removed, as suggested
+by Ulrich and Christoph.
 
-No, breakage of a userspace interface is considered a serious regression.
+Thanks,
+Sripathi.
 
-If this was deliberate and utterly unavoidable, well, that's bad but sometimes
-these things happen.  We do prefer to go through elaborate notification
-processes to minimise the disruption, which afaik did not happen here.
+This adds the RUSAGE_THREAD option for the getrusage system call.
 
-If, however, the breakage was was unintentional then we should find the
-cause and fix it asap, and backport the fix into 2.6.24.1.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
+---
+ include/linux/resource.h |    1 +
+ kernel/sys.c             |   31 ++++++++++++++++++++++---------
+ 2 files changed, 23 insertions(+), 9 deletions(-)
 
-Please tell us what version of the userspace tools you were previously runnning.
-
-Could someone in dm-devel land please get involved?
+diff -uprN linux-2.6.24_org/include/linux/resource.h linux-2.6.24/include/linux/resource.h
+--- linux-2.6.24_org/include/linux/resource.h	2008-02-05 10:13:04.000000000 +0530
++++ linux-2.6.24/include/linux/resource.h	2008-02-05 10:14:59.000000000 +0530
+@@ -19,6 +19,7 @@ struct task_struct;
+ #define	RUSAGE_SELF	0
+ #define	RUSAGE_CHILDREN	(-1)
+ #define RUSAGE_BOTH	(-2)		/* sys_wait4() uses this */
++#define	RUSAGE_THREAD	1		/* only the calling thread */
+ 
+ struct	rusage {
+ 	struct timeval ru_utime;	/* user time used */
+diff -uprN linux-2.6.24_org/kernel/sys.c linux-2.6.24/kernel/sys.c
+--- linux-2.6.24_org/kernel/sys.c	2008-02-05 10:13:02.000000000 +0530
++++ linux-2.6.24/kernel/sys.c	2008-02-05 10:13:21.000000000 +0530
+@@ -1554,6 +1554,19 @@ out:
+  *
+  */
+ 
++static void accumulate_thread_rusage(struct task_struct *t, struct rusage *r,
++				     cputime_t *utimep, cputime_t *stimep)
++{
++	*utimep = cputime_add(*utimep, t->utime);
++	*stimep = cputime_add(*stimep, t->stime);
++	r->ru_nvcsw += t->nvcsw;
++	r->ru_nivcsw += t->nivcsw;
++	r->ru_minflt += t->min_flt;
++	r->ru_majflt += t->maj_flt;
++	r->ru_inblock += task_io_get_inblock(t);
++	r->ru_oublock += task_io_get_oublock(t);
++}
++
+ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ {
+ 	struct task_struct *t;
+@@ -1563,6 +1576,11 @@ static void k_getrusage(struct task_stru
+ 	memset((char *) r, 0, sizeof *r);
+ 	utime = stime = cputime_zero;
+ 
++	if (who == RUSAGE_THREAD) {
++		accumulate_thread_rusage(p, r, &utime, &stime);
++		goto out;
++	}
++
+ 	rcu_read_lock();
+ 	if (!lock_task_sighand(p, &flags)) {
+ 		rcu_read_unlock();
+@@ -1595,14 +1613,7 @@ static void k_getrusage(struct task_stru
+ 			r->ru_oublock += p->signal->oublock;
+ 			t = p;
+ 			do {
+-				utime = cputime_add(utime, t->utime);
+-				stime = cputime_add(stime, t->stime);
+-				r->ru_nvcsw += t->nvcsw;
+-				r->ru_nivcsw += t->nivcsw;
+-				r->ru_minflt += t->min_flt;
+-				r->ru_majflt += t->maj_flt;
+-				r->ru_inblock += task_io_get_inblock(t);
+-				r->ru_oublock += task_io_get_oublock(t);
++				accumulate_thread_rusage(t, r, &utime, &stime);
+ 				t = next_thread(t);
+ 			} while (t != p);
+ 			break;
+@@ -1614,6 +1625,7 @@ static void k_getrusage(struct task_stru
+ 	unlock_task_sighand(p, &flags);
+ 	rcu_read_unlock();
+ 
++out:
+ 	cputime_to_timeval(utime, &r->ru_utime);
+ 	cputime_to_timeval(stime, &r->ru_stime);
+ }
+@@ -1627,7 +1639,8 @@ int getrusage(struct task_struct *p, int
+ 
+ asmlinkage long sys_getrusage(int who, struct rusage __user *ru)
+ {
+-	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN)
++	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
++	    who != RUSAGE_THREAD)
+ 		return -EINVAL;
+ 	return getrusage(current, who, ru);
+ }
