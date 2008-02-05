@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYBELdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbYBELjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbYBELdk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 06:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbYBELdU
+	id S1752445AbYBELjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 06:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYBELjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 06:33:20 -0500
-Received: from zm1.veloxia.com ([213.149.227.2]:48415 "HELO zm1.veloxia.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750895AbYBELdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 06:33:19 -0500
-Message-ID: <47A84979.5080004@hvsistemas.es>
-Date: Tue, 05 Feb 2008 12:33:13 +0100
-From: Javier Herrero <jherrero@hvsistemas.es>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Vojtech Pavlik <vojtech@suse.cz>
-CC: Bryan Wu <bryan.wu@analog.com>, Will Newton <will.newton@gmail.com>,
-       dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
+	Tue, 5 Feb 2008 06:39:11 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34223 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYBELjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 06:39:09 -0500
+References: <20080125180232.GA4613@kroah.com>
+            <20080202123710.42df1aa0@weinigel.se>
+            <20080202191930.GA19826@kroah.com>
+            <47A5D9CD.5070001@davidnewall.com>
+            <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
+            <47A5E67D.9040804@davidnewall.com>
+            <1202058820.15090.60.camel@violet>
+In-Reply-To: <1202058820.15090.60.camel@violet>
+From: David Newall <davidn@davidnewall.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: David Newall <davidn@davidnewall.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1 try#2] [INPUT] keypad driver: Added support for	OpenCores
- Keyboard Controller
-References: <1201686610-31458-1-git-send-email-bryan.wu@analog.com> <87a5b0800801300353l196b39bekad6af6ccdbd49d5b@mail.gmail.com> <1201713502.8345.1.camel@roc-laptop> <20080205104242.GA11437@suse.cz> <47A845F7.8030102@hvsistemas.es> <20080205112242.GA5398@suse.cz>
-In-Reply-To: <20080205112242.GA5398@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Date: Tue, 05 Feb 2008 22:09:07 +1030
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Message-ID: <courier.47A84ADB.000047C1@hawking.rebel.net.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vojtech Pavlik escribió:
-> On Tue, Feb 05, 2008 at 12:18:15PM +0100, Javier Herrero wrote:
->> Dear Vojtech,
->>
->> I think that a 1:1 mapping between linux keycodes and what keyboard sends 
->> is right, because the scan code to key code conversion is already 
->> programmed and done inside the FPGA code.
->
-> And the FPGA code changes with different keyboards attached?
->
-The original OpenCores keyboard controller is a 6 rows x 12 cols 
-keyboard controller that can be customized for other row/col sizes 
-modifiying Constants.vhd VHDL file, in which also the translation table 
-is defined, and for different key disposition schemes both the number of 
-rows and cols can be changed. We are currently using this controller 
-with a 4x4 key matrix, and with a different key mapping values, so I 
-thought that it would be preferable to have the driver mapping fixed to 
-1:1 and do the mapping in the VHDL, since in most cases the keyboard 
-using this controller would be different to the default keyboard defined 
-in the original Contants.vhd VHDL file.
+Marcel Holtmann writes:
+> if a new drivers is originally written for Linux, then you are breaking
+> the GPL.
 
-Regards,
+Completely wrong.  However if the driver is distributed as built-in, then it 
+would need to be licensed under GPL.  This means that a driver can be 
+written and distributed as a module under any licence, proprietary or 
+otherwise, presumably with the restriction that it may NOT be built-in. 
 
-Javier
+> You driver was meant to be
+> running as Linux kernel module and thus it is derivative work.
 
->> Best regards,
->>
->> Javier
->>
->> Vojtech Pavlik escribió:
->>> On Thu, Jan 31, 2008 at 01:18:22AM +0800, Bryan Wu wrote:
->>>
->>>> +static irqreturn_t opencores_kbd_isr(int irq, void *dev_id)
->>>> +{
->>>> +	unsigned char c;
->>>> +	struct platform_device *pdev = dev_id;
->>>> +	struct opencores_kbd *opencores_kbd = platform_get_drvdata(pdev);
->>>> +	struct input_dev *input = opencores_kbd->input;
->>>> +
->>>> +	c = readb(opencores_kbd->addr_res->start);
->>>> +	input_report_key(input, c & 0x7f, c & 0x80 ? 0 : 1);
->>>> +	input_sync(input);
->>>> +
->>>> +	return IRQ_HANDLED;
->>>> +}
->>>  This looks utterly wrong: It assumes 1:1 mapping between Linux keycodes
->>> and what the keyboard sends, which I can't believe is the case.
->>>
->> -- 
->> ------------------------------------------------------------------------
->> Javier Herrero                            EMAIL: jherrero@hvsistemas.com
->> HV Sistemas S.L.                          PHONE:         +34 949 336 806
->> Los Charcones, 17A                        FAX:           +34 949 336 792
->> 19170 El Casar - Guadalajara - Spain      WEB: http://www.hvsistemas.com 
->
+It is precisely the fact that it is a loadable module, and does not form 
+part of the kernel, that removes the requirement to distribute it under GPL. 
 
--- 
-------------------------------------------------------------------------
-Javier Herrero                            EMAIL: jherrero@hvsistemas.com
-HV Sistemas S.L.                          PHONE:         +34 949 336 806
-Los Charcones, 17A                        FAX:           +34 949 336 792
-19170 El Casar - Guadalajara - Spain      WEB: http://www.hvsistemas.com 
 
+> What are you arguing here. It makes no difference if it is technical or
+> not. The EXPORT_SYMBOL_GPL gives you a clear hint that when using this
+> symbol, you have to obey to the GPL.
+
+And that "hint" is a lie.
