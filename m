@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYBEUIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbYBEULo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbYBEUIc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYBEUIX
+	id S1760656AbYBEULo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYBEULe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:08:23 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:35815 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756186AbYBEUIW (ORCPT
+	Tue, 5 Feb 2008 15:11:34 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38487 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756186AbYBEULd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:08:22 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=L9Rugig3BtwrxHofmliZwD5E9Ip4ZsJEcIzQsCWwVEK9VvJuIUcQkT3sB28fUhXxX
-	BTSAZfxFvjQ/YMnj27+Lw==
-Date: Tue, 5 Feb 2008 12:06:50 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
-       mel@csn.ul.ie, kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
- works on memoryless node.
-In-Reply-To: <20080205131517.1189104f.pj@sgi.com>
-Message-ID: <alpine.DEB.0.9999.0802051159310.5854@chino.kir.corp.google.com>
-References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080202090914.GA27723@one.firstfloor.org> <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1202149243.5028.61.camel@localhost> <20080205143149.GA4207@csn.ul.ie> <1202225017.5332.1.camel@localhost>
- <Pine.LNX.4.64.0802051011400.11705@schroedinger.engr.sgi.com> <1202236056.5332.17.camel@localhost> <Pine.LNX.4.64.0802051050300.12425@schroedinger.engr.sgi.com> <20080205131517.1189104f.pj@sgi.com>
+	Tue, 5 Feb 2008 15:11:33 -0500
+Message-ID: <47A8C2D8.3020603@zytor.com>
+Date: Tue, 05 Feb 2008 12:11:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       michael.pyne@kdemail.net, AAbdulla@nvidia.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
+ (regression in 2.6.23)
+References: <200802050746.m157ktY9010399@imap1.linux-foundation.org> <47A8A90B.6010602@garzik.org> <47A8AD40.7010007@zytor.com> <47A8ADF9.7060507@garzik.org>
+In-Reply-To: <47A8ADF9.7060507@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008, Paul Jackson wrote:
-
-> Since any of those future patches only add optional modes
-> with new flags, while preserving current behaviour if you
-> don't use one of the new flags, therefore the current behavior
-> has to work as best it can.
+Jeff Garzik wrote:
+> 
+> Indeed, that would work too...  though we would need to put out a call 
+> for Gigabyte testers during 2.6.25-rc.
+> 
+> It is an entirely reasonable scenario for NVIDIA to deploy a fix to 
+> Gigabyte, which would then return us to the same scenario we have today: 
+>  some work and some don't.
+> 
+> That's my main reason for leaning more conservative here.
 > 
 
-There's a subtlety to this issue that allows it to be fixed and easily 
-extended for two upcoming changes:
+If they deploy a fix, then the Gigabyte prefix will show up as a prefix, 
+rather than a suffix - no problem.  That's actually the reason to deploy 
+that solution rather than relying on DMI.
 
- - Paul Jackson's mempolicy and cpuset interactions change that will
-   probably allow set_mempolicy() callers to specify with a MPOL_*
-   flag whether they are referring to "dynamic" or "static" nodemasks[*],
-   and
-
- - node hotplug (both add and remove) that will change the state of a
-   node with an identical id.
-
-Paul, with his patch, will need to preserve the "intent" of the mempolicy 
-as the nodemask that was passed by the user and attempt on all successive 
-rebinds to accomodate that intent as much as possible.
-
-So at the time of rebind it is quite simple to intersect the set of system 
-nodes that have memory with the intent of the mempolicy to yield the 
-effected nodemask.  This nodemask is saved in the mempolicy (pol->v.nodes 
-in this case for interleave) and only steps through the set of nodes that 
-can allow interleaved allocations.
-
-When the available nodes changes, either by cpuset change or node hotplug, 
-the rebind is quite simple when the intent is preserved.  So we're going 
-to need an additional nodemask_t added to struct mempolicy that saves this 
-intent and modify contextualize_policy() to allow it.  This will basically 
-make any set_mempolicy() call succeed even if the application does not 
-have access to any of the mempolicy nodes because it is possible that they 
-will become accessible in the future.  In that case the mempolicy is 
-effectively MPOL_DEFAULT until the desired nodes become available and it 
-is effected.
-
-		David
+	-hpa
