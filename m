@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYBEUTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbYBEUT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760803AbYBEUTR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbYBEUSx
+	id S1760866AbYBEUT4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759033AbYBEUTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:18:53 -0500
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:52615
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759427AbYBEUSw (ORCPT
+	Tue, 5 Feb 2008 15:19:47 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45156 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759038AbYBEUTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:18:52 -0500
-Message-ID: <47A8C4AB.3030301@microgate.com>
-Date: Tue, 05 Feb 2008 14:18:51 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Rick Warner <rick@microway.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: serial port regression caused by "Char: tty_ioctl, use wait_event_interruptible_timeout"
- patch
-References: <200802051402.26816.rick@microway.com>
-In-Reply-To: <200802051402.26816.rick@microway.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 5 Feb 2008 15:19:46 -0500
+Date: Tue, 5 Feb 2008 12:19:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: arjan@linux.intel.com, tglx@linutronix.de, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-mm1
+Message-Id: <20080205121914.e3986172.akpm@linux-foundation.org>
+In-Reply-To: <3289.1202240894@turing-police.cc.vt.edu>
+References: <20080203171634.58ab668b.akpm@linux-foundation.org>
+	<10779.1202230436@turing-police.cc.vt.edu>
+	<47A89664.8020407@linux.intel.com>
+	<3289.1202240894@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Warner wrote:
-> I narrowed down the problem doing a binary search on git snapshots between .22 
-> and .23, and found the breakage between git6 and git7.  Further isolating it 
-> found the patch mentioned in the subject to be the cause.  I reversed the 
-> patch in the .23 source and it now works properly.
+On Tue, 05 Feb 2008 14:48:14 -0500
+Valdis.Kletnieks@vt.edu wrote:
+
+> On Tue, 05 Feb 2008 09:01:24 PST, Arjan van de Ven said:
+> > Valdis.Kletnieks@vt.edu wrote:
+> > > On Sun, 03 Feb 2008 17:16:34 PST, Andrew Morton said:
+> > >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24/2.6.24-mm1/
+> > > 
+> > > Builds, boots, mostly seems to run for limited testing.
+> > > 
+> > > One note - the following commit(s) (and related CPA reworking) broke the NVidia
+> > > binary driver (which is OK, I can fix *that* part).  But can somebody explain
+> > > if this should have seen a trip through the -mm tree before it hit mainstream?
+> > > I didn't see these in 24-rc8-mm1:
+> > 
+> > well that depends on which -mm you tried; I'm sure the mm kernel of the day had it for a while.
 > 
-> Should the code be reverted back as I did, or is there something I should 
-> change in our userspace code that reads from the serial port to correct it 
-> instead?
+> I looked around on www.kernel.org, and I found this directory:
+> 
+> http://www.kernel.org/pub/linux/kernel/people/akpm/mm/ but the most recent is:
+> 
+> broken-out-2007-11-20-01-45.tar.bz2      20-Nov-2007 09:45  3.4M
 
-Instead of reverting the patch can you try modifying
-this part of the patch:
-
-+	if (wait_event_interruptible_timeout(tty->write_wait,
-+			!tty->driver->chars_in_buffer(tty), timeout))
-+		return;
-
-by changing it to:
-
-+	if (wait_event_interruptible_timeout(tty->write_wait,
-+			!tty->driver->chars_in_buffer(tty), timeout) < 0)
-+		return;
-
-It looks like the patch changed the behavior of
-tty_wait_until_sent by not calling the driver
-specific wait_until_sent if a timeout occurs.
-
--- 
-Paul Fulghum
-Microgate Systems, Ltd.
+http://userweb.kernel.org/~akpm/mmotm/ contains the latest -mm tree.  Updated
+more-than-daily when it's changing.
