@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYBEOKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbYBEOPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYBEOKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 09:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYBEOKI
+	id S1754160AbYBEOPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 09:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYBEOP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 09:10:08 -0500
-Received: from hempcity.net ([81.171.100.190]:36302 "EHLO hempcity.net"
+	Tue, 5 Feb 2008 09:15:26 -0500
+Received: from smtp2b.orange.fr ([80.12.242.144]:61997 "EHLO smtp2b.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbYBEOKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 09:10:06 -0500
-Message-ID: <59776.81.171.100.191.1202220590.squirrel@webmail.coolzero.info>
-In-Reply-To: <20080205140216.GD12009@ruf099.fkie.fgan.de>
-References: <20080205100423.GA12009@ruf099.fkie.fgan.de>
-    <38602.81.171.100.191.1202213194.squirrel@webmail.coolzero.info>
-    <20080205140216.GD12009@ruf099.fkie.fgan.de>
-Date: Tue, 5 Feb 2008 15:09:50 +0100 (CET)
-Subject: Re: OOM killer on idle machine
-From: "Jim van Wel" <jim@coolzero.info>
-To: "Michael Bussmann" <bus@mb-net.net>
+	id S1751716AbYBEOPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 09:15:25 -0500
+X-ME-UUID: 20080205132651974.EDCF970000A5@mwinf2b22.orange.fr
+Subject: Re: [Patch 1/1] Nikon D80 usb-storage quirk needs modified, new FW
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Konstantin Kletschke <lists@ku-gbr.de>
 Cc: linux-kernel@vger.kernel.org
-Reply-To: jim@coolzero.info
-User-Agent: SquirrelMail/1.4.8-4.0.1.el4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+In-Reply-To: <20080205124343.GB6638@anita>
+References: <20080205124343.GB6638@anita>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 14:26:48 +0100
+Message-Id: <1202218008.23816.9.camel@skunk.anacadf.mentorg.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Funny,
+On Tue, 2008-02-05 at 13:43 +0100, Konstantin Kletschke wrote:
+> Nikon did update their FW for the Nikon D80 and usb-storage got
+> unusable:
+[...]
+> I relized the unusal_devs.h needs to be adapted to 
+> reflect new FW Version, then it works fine again:
+> 
+> --- linux-2.6.23/drivers/usb/storage/unusual_devs.h_orig        2008-02-05 13:33:55.010623616 +0100
+> +++ linux-2.6.23/drivers/usb/storage/unusual_devs.h     2008-02-05 13:32:22.926623601 +0100
+> @@ -342,7 +342,7 @@
+>                 US_FL_FIX_CAPACITY),
+> 
+>  /* Reported by Emil Larsson <emil@swip.net> */
+> -UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0101,
+> +UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0110,
+>                 "NIKON",
+>                 "NIKON DSC D80",
+>                 US_SC_DEVICE, US_PR_DEVICE, NULL,
+> 
+> 
+> What I wonder is, why are there other examples only reflecting the
+> newest Firmware, are older ones also catched?
 
-I also got 32bits kernels running, and moving to 64bits because that's
-more stable what we tested here...
+Maybe you should leave them both here.
 
-Greetings,
-Jim.
+	Xav
 
-> Hi Jim,
->
-> On 2008-02-05 13:06:34 +0100, Jim van Wel wrote:
->
->> http://lkml.org/lkml/2007/11/6/44
->
-> Oops, I didn't expect the problem to be 3 months old.  Next time I'll
-> browse the archives more thoroughly.
->
->> Got same issue, but somewhat different hardware. I'm really wondering,
->> are
->> you using a 64bits kernel or a 32bit?
->
-> It's a 32-bit kernel.  Hmm, there are two similar systems at a customer's
-> site with a 64-bit kernel that don't seem to be affected by this bug.
-> Another system with a 32-bit kernel is still running, but it only has 2 GB
-> RAM in it.  Interesting...
->
-> Cheers,
-> MB
->
-> --
-> Michael Bussmann <bus@mb-net.net>
-> BOFH excuse #232:
->
-> Ionization from the air-conditioning
->
 
