@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbYBETCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbYBETE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbYBETCp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbYBETCP
+	id S1758949AbYBETE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYBETEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:02:15 -0500
-Received: from mail-relay-02.mailcluster.net ([77.221.130.214]:56417 "EHLO
-	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756123AbYBETCN (ORCPT
+	Tue, 5 Feb 2008 14:04:21 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60657 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752688AbYBETEU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:02:13 -0500
-Message-ID: <47A8B2B8.2020108@vlnb.net>
-Date: Tue, 05 Feb 2008 22:02:16 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Tue, 5 Feb 2008 14:04:20 -0500
+Date: Tue, 5 Feb 2008 11:04:18 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Mel Gorman <mel@csn.ul.ie>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Paul Jackson <pj@sgi.com>, David Rientjes <rientjes@google.com>
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+ works on memoryless node.
+In-Reply-To: <1202236056.5332.17.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0802051050300.12425@schroedinger.engr.sgi.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com> 
+ <20080202090914.GA27723@one.firstfloor.org>  <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+  <1202149243.5028.61.camel@localhost>  <20080205143149.GA4207@csn.ul.ie> 
+ <1202225017.5332.1.camel@localhost>  <Pine.LNX.4.64.0802051011400.11705@schroedinger.engr.sgi.com>
+ <1202236056.5332.17.camel@localhost>
 MIME-Version: 1.0
-To: Erez Zilber <erezz@Voltaire.COM>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@hansenpartnership.com, scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com> <47A89889.9060701@Voltaire.COM>
-In-Reply-To: <47A89889.9060701@Voltaire.COM>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Erez Zilber wrote:
-> Bart Van Assche wrote:
-> 
->>As you probably know there is a trend in enterprise computing towards
->>networked storage. This is illustrated by the emergence during the
->>past few years of standards like SRP (SCSI RDMA Protocol), iSCSI
->>(Internet SCSI) and iSER (iSCSI Extensions for RDMA). Two different
->>pieces of software are necessary to make networked storage possible:
->>initiator software and target software. As far as I know there exist
->>three different SCSI target implementations for Linux:
->>- The iSCSI Enterprise Target Daemon (IETD,
->>http://iscsitarget.sourceforge.net/);
->>- The Linux SCSI Target Framework (STGT, http://stgt.berlios.de/);
->>- The Generic SCSI Target Middle Level for Linux project (SCST,
->>http://scst.sourceforge.net/).
->>Since I was wondering which SCSI target software would be best suited
->>for an InfiniBand network, I started evaluating the STGT and SCST SCSI
->>target implementations. Apparently the performance difference between
->>STGT and SCST is small on 100 Mbit/s and 1 Gbit/s Ethernet networks,
->>but the SCST target software outperforms the STGT software on an
->>InfiniBand network. See also the following thread for the details:
->>http://sourceforge.net/mailarchive/forum.php?thread_name=e2e108260801170127w2937b2afg9bef324efa945e43%40mail.gmail.com&forum_name=scst-devel.
->>
->>  
-> 
-> Sorry for the late response (but better late than never).
-> 
-> One may claim that STGT should have lower performance than SCST because
-> its data path is from userspace. However, your results show that for
-> non-IB transports, they both show the same numbers. Furthermore, with IB
-> there shouldn't be any additional difference between the 2 targets
-> because data transfer from userspace is as efficient as data transfer
-> from kernel space.
+On Tue, 5 Feb 2008, Lee Schermerhorn wrote:
 
-And now consider if one target has zero-copy cached I/O. How much that 
-will improve its performance?
+> Christoph:  you are free to ignore any part of this discussion that you
+> wish...
 
-> The only explanation that I see is that fine tuning for iSCSI & iSER is
-> required. As was already mentioned in this thread, with SDR you can get
-> ~900 MB/sec with iSER (on STGT).
-> 
-> Erez
+Had the impression that we are ignoring Kosaki's fix to the problem. Can 
+we fix up his patch to address the immediate issue?
+
