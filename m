@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbYBESrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbYBESr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759590AbYBESrp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYBESrc
+	id S1759724AbYBESr6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbYBESrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:47:32 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42065 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756599AbYBESrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:47:31 -0500
-Date: Tue, 5 Feb 2008 19:47:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: aic7xxx build failure
-Message-ID: <20080205184735.GA26270@uranus.ravnborg.org>
-References: <20080205174024.GE505@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205174024.GE505@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 5 Feb 2008 13:47:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47433 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757597AbYBESrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 13:47:35 -0500
+Date: Tue, 5 Feb 2008 10:47:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] x86 updates
+In-Reply-To: <20080204161219.GA8092@elte.hu>
+Message-ID: <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org>
+References: <20080204161219.GA8092@elte.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 07:40:24PM +0200, Adrian Bunk wrote:
-> Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
-> compilation:
-> 
-> <--  snip  -->
-> 
-> $ make O=../out/x86-full
-> ...
->   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
->   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
->   CC      drivers/scsi/aic7xxx/aic79xx_core.o
-> gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
-> gcc: no input files
-> make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Next "make" run brings the same failure in 
-> drivers/scsi/aic7xxx/aic7xxx_core.c.
-> 
-> With the third "make" it works.
-> 
-> It might compile for people with SMP systems using -j?
 
-I can reproduce it and will fix it.
 
-	Sam
+Ingo, Thomas,
+ should we not do this?
+
+Otherwise, it seems we generate a section that isn't allocated?
+
+I think toolchain should add the right flags automatically for sections 
+that start with ".[ro]data" and ".text", but not for the kernel-specific 
+".init.*" sections.
+
+		Linus
+
+---
+ arch/x86/kernel/head_64.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 4f283ad..d16d7b8 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -251,7 +251,7 @@ ENTRY(secondary_startup_64)
+ 
+ 	/* SMP bootup changes these two */
+ #ifndef CONFIG_HOTPLUG_CPU
+-	.pushsection .init.data
++	.pushsection .init.data,"aw"
+ #endif
+ 	.align	8
+ 	.globl	initial_code
