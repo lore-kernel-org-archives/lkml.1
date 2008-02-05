@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbYBEUDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbYBEUGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbYBEUDe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbYBEUDP
+	id S1760502AbYBEUGa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760333AbYBEUGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:03:15 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:45074 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759855AbYBEUDM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:03:12 -0500
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Newall <davidn@davidnewall.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <courier.47A84ADB.000047C1@hawking.rebel.net.au>
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
-	 <47A5D9CD.5070001@davidnewall.com>
-	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-	 <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet>
-	 <courier.47A84ADB.000047C1@hawking.rebel.net.au>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 21:03:38 +0100
-Message-Id: <1202241819.15090.133.camel@violet>
+	Tue, 5 Feb 2008 15:06:19 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60345 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760331AbYBEUGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 15:06:18 -0500
+Date: Tue, 5 Feb 2008 21:06:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: aic7xxx build failure
+Message-ID: <20080205200623.GA26798@uranus.ravnborg.org>
+References: <20080205174024.GE505@cs181133002.pp.htv.fi> <20080205184735.GA26270@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205184735.GA26270@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-> > if a new drivers is originally written for Linux, then you are breaking
-> > the GPL.
+On Tue, Feb 05, 2008 at 07:47:35PM +0100, Sam Ravnborg wrote:
+> On Tue, Feb 05, 2008 at 07:40:24PM +0200, Adrian Bunk wrote:
+> > Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
+> > compilation:
+> > 
+> > <--  snip  -->
+> > 
+> > $ make O=../out/x86-full
+> > ...
+> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
+> >   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
+> >   CC      drivers/scsi/aic7xxx/aic79xx_core.o
+> > gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
+> > gcc: no input files
+> > make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Next "make" run brings the same failure in 
+> > drivers/scsi/aic7xxx/aic7xxx_core.c.
+> > 
+> > With the third "make" it works.
+> > 
+> > It might compile for people with SMP systems using -j?
 > 
-> Completely wrong.  However if the driver is distributed as built-in, then it 
-> would need to be licensed under GPL.  This means that a driver can be 
-> written and distributed as a module under any licence, proprietary or 
-> otherwise, presumably with the restriction that it may NOT be built-in. 
+> I can reproduce it and will fix it.
+Seems I was sidetracked by some wrong assumptions.
+Could you please test this fix.
 
-how to do you wanna write a new original Linux driver (modular or
-built-in) without creating derivative work. This is not possible and due
-to the fact that it is derivative work the driver becomes automatically
-licensed under GPL. This is not a gray area.
+Works for me but this time I will do more testing....
 
-The gray area that exists if you have code that was written for some
-other operating system and licensed under some proprietary license in
-the first place. And now that code is used in conjunction with a glue
-layer to make it loadable as kernel module.
+	Sam
 
-> > You driver was meant to be
-> > running as Linux kernel module and thus it is derivative work.
-> 
-> It is precisely the fact that it is a loadable module, and does not form 
-> part of the kernel, that removes the requirement to distribute it under GPL. 
-
-That is such a nonsense. Stop distributing FUD and start talking to a
-lawyer. You are clearly under some weird impression what the GPL means
-and what it implies.
-
-> > What are you arguing here. It makes no difference if it is technical or
-> > not. The EXPORT_SYMBOL_GPL gives you a clear hint that when using this
-> > symbol, you have to obey to the GPL.
-> 
-> And that "hint" is a lie.
-
-If the developers say that this symbol can only be used in GPL code (and
-with EXPORT_SYMBOL_GPL it is quite clear) then you have to obey to that
-license or don't use this symbol at all.
-
-If you use that symbol inside non-GPL (meaning you link at runtime) then
-you are in violation of the GPL license. We can't make it much clearer.
-
-Regards
-
-Marcel
-
+diff --git a/drivers/scsi/aic7xxx/Makefile b/drivers/scsi/aic7xxx/Makefile
+index 4c54954..6aa49e7 100644
+--- a/drivers/scsi/aic7xxx/Makefile
++++ b/drivers/scsi/aic7xxx/Makefile
+@@ -44,8 +44,8 @@ clean-files += aic79xx_seq.h aic79xx_reg.h aic79xx_reg_print.c
+ 
+ # Dependencies for generated files need to be listed explicitly
+ 
+-$(addprefix $(src)/,$(aic7xxx-y:.o=.c)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
+-$(addprefix $(src)/,$(aic79xx-y:.o=.c)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
++$(addprefix $(src)/,$(aic7xxx-y)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
++$(addprefix $(src)/,$(aic79xx-y)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
+ 
+ aic7xxx-gen-$(CONFIG_AIC7XXX_BUILD_FIRMWARE)	:= $(obj)/aic7xxx_reg.h
+ aic7xxx-gen-$(CONFIG_AIC7XXX_REG_PRETTY_PRINT)	+= $(obj)/aic7xxx_reg_print.c
 
