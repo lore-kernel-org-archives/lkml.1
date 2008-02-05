@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbYBEUS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYBEUTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbYBEUS6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:18:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYBEUSu
+	id S1760803AbYBEUTR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbYBEUSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:18:50 -0500
-Received: from 1wt.eu ([62.212.114.60]:1733 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbYBEUSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:18:49 -0500
-Date: Tue, 5 Feb 2008 20:31:56 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: dann frazier <dannf@hp.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] 2.4: [SCSI] aacraid: Fix security hole
-Message-ID: <20080205193155.GA25898@1wt.eu>
-References: <20080205103327.GB1792@ldl.fc.hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205103327.GB1792@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.11
+	Tue, 5 Feb 2008 15:18:53 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:52615
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759427AbYBEUSw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 15:18:52 -0500
+Message-ID: <47A8C4AB.3030301@microgate.com>
+Date: Tue, 05 Feb 2008 14:18:51 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Rick Warner <rick@microway.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: serial port regression caused by "Char: tty_ioctl, use wait_event_interruptible_timeout"
+ patch
+References: <200802051402.26816.rick@microway.com>
+In-Reply-To: <200802051402.26816.rick@microway.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dann,
-
-On Tue, Feb 05, 2008 at 03:33:28AM -0700, dann frazier wrote:
-> This is a 2.4 backport of a linux-2.6 change by Alan Cox.
-> (commit 60395bb60e0b5e4e0808ac8eb07a92f6c9cdea1f)
+Rick Warner wrote:
+> I narrowed down the problem doing a binary search on git snapshots between .22 
+> and .23, and found the breakage between git6 and git7.  Further isolating it 
+> found the patch mentioned in the subject to be the cause.  I reversed the 
+> patch in the .23 source and it now works properly.
 > 
-> It has been build-tested only (I don't have the hardware).
-> CVE-2007-4308 was assigned for this issue.
-> 
-> Commit log from 2.6 follows.
-> 
->   On the SCSI layer ioctl path there is no implicit permissions check for
->   ioctls (and indeed other drivers implement unprivileged ioctls). aacraid
->   however allows all sorts of very admin only things to be done so should
->   check.
+> Should the code be reverted back as I did, or is there something I should 
+> change in our userspace code that reads from the serial port to correct it 
+> instead?
 
-OK, makes sense. I did not notice that one in 2.6, eventhough Alan clearly
-stated a security hole in the subject.
+Instead of reverting the patch can you try modifying
+this part of the patch:
 
-I'm applying it now, thanks!
++	if (wait_event_interruptible_timeout(tty->write_wait,
++			!tty->driver->chars_in_buffer(tty), timeout))
++		return;
 
-Willy
+by changing it to:
 
++	if (wait_event_interruptible_timeout(tty->write_wait,
++			!tty->driver->chars_in_buffer(tty), timeout) < 0)
++		return;
+
+It looks like the patch changed the behavior of
+tty_wait_until_sent by not calling the driver
+specific wait_until_sent if a timeout occurs.
+
+-- 
+Paul Fulghum
+Microgate Systems, Ltd.
