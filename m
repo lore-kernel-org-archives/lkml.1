@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbYBEVvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbYBEVv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbYBEVvK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYBEVuz
+	id S1762033AbYBEVv1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761375AbYBEVvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:50:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51349 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759513AbYBEVuy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:50:54 -0500
-Date: Tue, 5 Feb 2008 13:50:30 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch] x86: add code to dump the (kernel) page tables for
- visual inspection
-Message-ID: <20080205135030.30ea97a9@laptopd505.fenrus.org>
-In-Reply-To: <47A8CB3C.1090101@cosmosbay.com>
-References: <20080204222641.4488e6a7@laptopd505.fenrus.org>
-	<47A8CB3C.1090101@cosmosbay.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Tue, 5 Feb 2008 16:51:05 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53798 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761297AbYBEVvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 16:51:03 -0500
+Date: Wed, 6 Feb 2008 00:50:27 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080205215027.GA24275@2ka.mipt.ru>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205200211.GA26150@one.firstfloor.org> <20080205203911.GA9891@2ka.mipt.ru> <20080205205345.GA20920@basil.nowhere.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205205345.GA20920@basil.nowhere.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 21:46:52 +0100
-Eric Dumazet <dada1@cosmosbay.com> wrote:
-
-> Arjan van de Ven a écrit :
-> > Subject: x86: add code to dump the (kernel) page tables for visual
-> > inspection by kernel developers From: Arjan van de Ven
-> > <arjan@linux.intel.com>
-> > 
-> > This patch adds code to the kernel to have an (optional)
-> > /proc/kernel_page_tables debug file that basically dumps the kernel
-> > pagetables; this allows us kernel developers to verify that nothing
-> > fishy is going on and that the various mappings are set up
-> > correctly. This was quite useful in finding various
-> > change_page_attr() bugs, and is very likely to be useful in the
-> > future as well.
-> > 
+On Tue, Feb 05, 2008 at 09:53:45PM +0100, Andi Kleen (andi@firstfloor.org) wrote:
+> > How does syncookies prevent windows from growing?
 > 
-> Seems nice Arjan, but could we also add NUMA information ?
+> Syncookies do not allow window scaling so you can't have any windows >64k
+
+Then you meant not windows change, but the fact, that option is ignored
+as long as sack enable one?
+
+> > Most (if not all) distributions have them enabled and window growing
+> > works just fine. Actually I do not see any reason why connection
+> > establishment handshake should prevent any run-time operations at all,
+> > even if it was setup during handshake.
 > 
+> TCP only uses options negotiated during the hand shake and syncookies
+> is incapable to do this.
 
+What about fixing the implementation, so that it could get into account
+different options too?
 
-ok maybe I'm missing something, but the kernel VA space currently
-is totally not numa dependent in any shape or form... 
-so can you explain what kind of information you're looking for?
-(I guess I just don't really understand your request; can you expand a bit on it?)
-
+> -Andi
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Evgeniy Polyakov
