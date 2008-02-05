@@ -1,142 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYBEP0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYBEP3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbYBEP0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 10:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYBEP03
+	id S1754784AbYBEP3d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 10:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYBEP30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 10:26:29 -0500
-Received: from mailsrv1.zmi.at ([212.69.162.198]:43145 "EHLO mailsrv1.zmi.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbYBEP02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 10:26:28 -0500
-From: Michael Monnerie <michael.monnerie@it-management.at>
-Organization: it-management http://it-management.at
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: netatalk slow after system upgrade (possibly kernel problem?)
-Date: Tue, 5 Feb 2008 16:26:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netatalk-admins@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <200801251255.48105@zmi.at> <20080126220051.d753266b.akpm@linux-foundation.org>
-In-Reply-To: <20080126220051.d753266b.akpm@linux-foundation.org>
+	Tue, 5 Feb 2008 10:29:26 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53479 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751589AbYBEP3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 10:29:25 -0500
+Date: Tue, 5 Feb 2008 16:29:23 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/10] udf: fix udf_build_ustr
+Message-ID: <20080205152923.GE25464@duck.suse.cz>
+References: <1201727040-6769-1-git-send-email-marcin.slusarz@gmail.com> <1201727040-6769-3-git-send-email-marcin.slusarz@gmail.com> <20080131104532.GB1461@duck.suse.cz> <20080131195730.GB6222@joi> <20080204193107.GN3426@duck.suse.cz> <20080204212733.GA12562@joi>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1427539.7ROr4xtGff";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802051626.25030@zmi.at>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080204212733.GA12562@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1427539.7ROr4xtGff
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon 04-02-08 22:27:39, Marcin Slusarz wrote:
+> On Mon, Feb 04, 2008 at 08:31:07PM +0100, Jan Kara wrote:
+> > On Thu 31-01-08 20:57:47, Marcin Slusarz wrote:
+> > > On Thu, Jan 31, 2008 at 11:45:32AM +0100, Jan Kara wrote:
+> > > > On Wed 30-01-08 22:03:52, marcin.slusarz@gmail.com wrote:
+> > > > > udf_build_ustr was completely broken when
+> > > > > size >= UDF_NAME_LEN - 1 or size < 2
+> > > > > 
+> > > > > nobody noticed because all callers set size
+> > > > > to acceptable values (constants)
+> > > > > 
+> > > > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > > > Cc: Jan Kara <jack@suse.cz>
+> > > > > ---
+> > > > >  fs/udf/unicode.c |   12 ++++++------
+> > > > >  1 files changed, 6 insertions(+), 6 deletions(-)
+> > > > > 
+> > > > > diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+> > > > > index f969617..f4e54e5 100644
+> > > > > --- a/fs/udf/unicode.c
+> > > > > +++ b/fs/udf/unicode.c
+> > > > > @@ -47,16 +47,16 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
+> > > > >   */
+> > > > >  int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+> > > > >  {
+> > > > > -	int usesize;
+> > > > > +	u8 usesize;
+> > > >   What is the purpose for this? Why not just leave int there? Arithmetics
+> > > > is usually best done in ints if that's possible...
+> > > I made it to stress that length of string fits in one byte.
+> > > (struct ustr->u_len is uint8_t)
+> >   I see. I don't think this is really worthwhile, please keep int there.
+> > 
+> > > > > -	if ((!dest) || (!ptr) || (!size))
+> > > > > +	if (!dest || !ptr || size < 2)
+> > > > >  		return -1;
+> > > > >  
+> > > > > -	memset(dest, 0, sizeof(struct ustr));
+> > > > > -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
+> > > > > +	usesize = min_t(size_t, size - 2, sizeof(dest->u_name));
+> > > > >  	dest->u_cmpID = ptr[0];
+> > > > > -	dest->u_len = ptr[size - 1];
+> > > > > -	memcpy(dest->u_name, ptr + 1, usesize - 1);
+> > > > > +	dest->u_len = usesize;
+> > > > > +	memcpy(dest->u_name, ptr + 1, usesize);
+> > > > > +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
+> > > >   Hmm, after parsing what the standard says (ugh), I don't think the code is
+> > > > wrong (at least I think you made it incorrect). The caller of
+> > > > udf_char_to_ustr() specifies length of the field (not length of the
+> > > > string). Now, in the last character of the field is stored the number of
+> > > > characters in the string and in the first character of the field is stored
+> > > > encoding of the string. So the original code seems correct.
+> > > You are right. I broke length calculation.
+> > > 
+> > > But observe that:
+> > > - when size == 1:
+> > > 	dest->u_len = ptr[1 - 1], but at ptr[0] there's cmpID,
+> > > 	so we create string with wrong length
+> >   Yes, but that never happens. This function should always be used for
+> > fixed-length strings whose maximum length is defined in the standard so if
+> > someone calls it with size == 1, it is a bug. So you can just do
+> > BUG_ON(size < 2).
+> > 
+> > > - when size > 1 and size < UDF_NAME_LEN:
+> > > 	we set u_len correctly, but memcpy copies one needless byte
+> > > - when size == UDF_NAME_LEN - 1:
+> > > 	memcpy overwrites u_len - with correct value, but...
+> >   Yes, you're right.
+> > 
+> > > - when size >= UDF_NAME_LEN:
+> > > 	we copy UDF_NAME_LEN - 1 bytes, but dest->u_name is array
+> > > 	of UDF_NAME_LEN - 2 bytes, so we are overwriting u_len with
+> > > 	character from input string
+> >   Again, this should not happen because UDF_NAME_LEN is large enough but
+> > you are right it's better to clean this.
+> > 
+> > > So if I didn't mess up someting, correct change would look like this:
+> > > ---
+> > > udf: fix udf_build_ustr
+> > > 
+> > > udf_build_ustr was broken when
+> > > size >= UDF_NAME_LEN or size < 2
+> > > 
+> > > nobody noticed because all callers set size
+> > > to acceptable values (constants whitin range)
+> > > 
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > Cc: Jan Kara <jack@suse.cz>
+> > > ---
+> > >  fs/udf/unicode.c |   13 +++++++------
+> > >  1 files changed, 7 insertions(+), 6 deletions(-)
+> > > 
+> > > diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+> > > index 335fc56..83ae9fc 100644
+> > > --- a/fs/udf/unicode.c
+> > > +++ b/fs/udf/unicode.c
+> > > @@ -47,16 +47,17 @@ static int udf_char_to_ustr(struct ustr *dest, const uint8_t *src, int strlen)
+> > >   */
+> > >  int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+> > >  {
+> > > -	int usesize;
+> > > +	u8 usesize;
+> >   Just use int here..
+> Ok
+>  
+> > >  
+> > > -	if ((!dest) || (!ptr) || (!size))
+> > > +	if (!dest || !ptr || size < 2)
+> > >  		return -1;
+> > >  
+> > > -	memset(dest, 0, sizeof(struct ustr));
+> > > -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
+> > > +	usesize = min_t(size_t, ptr[size - 1], sizeof(dest->u_name));
+> > > +	usesize = min_t(size_t, usesize, size - 2);
+> >   And here use just min() in both cases so that it's easier to read.
+> I used min_t because gcc and sparse warned about different types.
+>  
+> > >  	dest->u_cmpID = ptr[0];
+> > > -	dest->u_len = ptr[size - 1];
+> > > -	memcpy(dest->u_name, ptr + 1, usesize - 1);
+> > > +	dest->u_len = usesize;
+> > > +	memcpy(dest->u_name, ptr + 1, usesize);
+> > > +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
+> > >  
+> > >  	return 0;
+> > >  }
+> >   Otherwise it looks fine. Thanks for the cleanups.
+> 
+> Updated patch:
+> ---
+> udf: fix udf_build_ustr
+> 
+> udf_build_ustr was broken:
+> 
+> - size == 1:
+>     dest->u_len = ptr[1 - 1], but at ptr[0] there's cmpID,
+>     so we created string with wrong length
+>     it should not happen, so we BUG() it
+> - size > 1 and size < UDF_NAME_LEN:
+>     we set u_len correctly, but memcpy copied one needless byte
+> - size == UDF_NAME_LEN - 1:
+>     memcpy overwrited u_len - with correct value, but...
+> - size >= UDF_NAME_LEN:
+>     we copied UDF_NAME_LEN - 1 bytes, but dest->u_name is array
+>     of UDF_NAME_LEN - 2 bytes, so we were overwriting u_len with
+>     character from input string
+> 
+> nobody noticed because all callers set size
+> to acceptable values (constants whitin range)
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Jan Kara <jack@suse.cz>
+> ---
+>  fs/udf/unicode.c |   12 +++++++-----
+>  1 files changed, 7 insertions(+), 5 deletions(-)
+> 
+> diff --git a/fs/udf/unicode.c b/fs/udf/unicode.c
+> index 335fc56..442d38a 100644
+> --- a/fs/udf/unicode.c
+> +++ b/fs/udf/unicode.c
+> @@ -49,14 +49,16 @@ int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+>  {
+>  	int usesize;
+>  
+> -	if ((!dest) || (!ptr) || (!size))
+> +	if (!dest || !ptr || !size)
+>  		return -1;
+> +	BUG_ON(size < 2);
+>  
+> -	memset(dest, 0, sizeof(struct ustr));
+> -	usesize = (size > UDF_NAME_LEN) ? UDF_NAME_LEN : size;
+> +	usesize = min_t(size_t, ptr[size - 1], sizeof(dest->u_name));
+> +	usesize = min(usesize, size - 2);
+>  	dest->u_cmpID = ptr[0];
+> -	dest->u_len = ptr[size - 1];
+> -	memcpy(dest->u_name, ptr + 1, usesize - 1);
+> +	dest->u_len = usesize;
+> +	memcpy(dest->u_name, ptr + 1, usesize);
+> +	memset(dest->u_name + usesize, 0, sizeof(dest->u_name) - usesize);
+>  
+>  	return 0;
+>  }
+  OK, fine, thanks. Acked-by: Jan Kara <jack@suse.cz>
 
-(I let full quote here for reference, my text is on the bottom)
+									Honza
 
-On Sonntag, 27. Januar 2008 Andrew Morton wrote:
-> (cc netdev)
->
-> > On Fri, 25 Jan 2008 12:55:42 +0100 Michael Monnerie
-> > <michael.monnerie@it-management.at> wrote: Dear lists,
-> >
-> > I've been spending a LOT of time trying to find out where's the
-> > problem, but can't find it and therefore seek urgent help now. We
-> > have the following system:
-> >
-> > Server with VMware server
-> > -> VM running a webserver and netatalk
-> > -> 2 other VMs not related
-> >
-> > The VM with netatalk was SUSE 10.0 with kernel 2.6.13-15.15-smp
-> > (from SUSE), and things were pretty fun and quick. Then we upgraded
-> > to SUSE 10.2 and now 10.3, where everything EXCEPT netatalk runs
-> > perfect. Since this upgrade, Apple clients (MacOS X) now do READ
-> > very very slowly (about 512KB/s over the gigabit LAN), while
-> > writing to the server still is normal (>20MB/s). I've even retried
-> > with the newest kernel 2.6.23.13, tried different
-> > /proc/sys/net/ipv4/tcp_congestion_control (cubic, reno, bic, etc.)
-> > and nothing helps. I've then tried to install Samba and found that
-> > we have similar problems reading with it from MacOS clients. Now
-> > I'm pretty sure it should be something with the linux kernel, but I
-> > don't understand what.
-> >
-> > Here are the wireshark dumps in pcap format:
-> > http://zmi.at/x/atalk-write-fast.pcap
-> > -> you can see writing to the server (192.168.120.9) is normal and
-> > fast
-> >
-> > http://zmi.at/x/atalk-read-slow.pcap
-> > -> reading is horribly slow. Lots of "unknown", because of netatalk
-> > or what?
-> >
-> > http://zmi.at/x/unknown-atalk.pcap
-> > -> another dump while reading, you see "unknown" reads. I'm not
-> > sure if it's just wireshark not understanding the packets or
-> > netatalk.
-> >
-> > And trying with samba:
-> > http://zmi.at/x/smb-read-slow.pcap
-> > http://zmi.at/x/smb-write-quick.pcap
-> > you can see that it's also slow.
-> >
-> > Now why did it work with the old 2.6.13 kernel? I still have that
-> > old VM, and when I start it, it is always perfectly fast. Only
-> > newer versions are slow. Can somebody give me a hint please?
->
-> It would be interesting if this could be repeated on bare hardware,
-> so we can eliminate the possibility that it is some weird interaction
-> with vmware.
-
-I tested now on the same machine, outside of VMware: It is blazing fast,=20
-just as it should be - kernel release 2.6.18.8-0.5-ZMI, where -ZMI=20
-means I compiled the kernel myself. Still, it runs quick within the VM=20
-with kernel 2.6.13-15.15-smp from SUSE 10.0, but slow with more recent=20
-kernels (I couldn't test every combination of course).=20
-
-I tried but cannot compile 2.6.13 within SUSE 10.3, it gives lots of=20
-errors because libs changed.
-
-It would be very nice to find the source of the problem. I uploaded the=20
-kernel config options files onto my server for reference, HTH:
-
-VMware with SUSE 10.0 and fast netatalk/samba:
-http://zmi.at/x/config2.6.13-15.15.txt
-
-VMware host, outside of VMware, also fast:
-http://zmi.at/x/config2.6.18.8-host.txt
-
-VMware with SUSE 10.2 and kernel 2.6.22-9-ZMI, slow:
-http://zmi.at/x/config2.6.22.9-slow.txt
-
-VMware with SUSE 10.3 and kernel 2.6.23.13-ZMI, slow:
-http://zmi.at/x/config2.6.23.13-slow.txt
-
-The problem seems to be somewhere between the kernel and VMware, but I=20
-do not know what to do.
-
-mfg zmi
-=2D-=20
-// Michael Monnerie, Ing.BSc    -----      http://it-management.at
-// Tel: 0676/846 914 666                      .network.your.ideas.
-// PGP Key:         "curl -s http://zmi.at/zmi.asc | gpg --import"
-// Fingerprint: AC19 F9D5 36ED CD8A EF38  500E CE14 91F7 1C12 09B4
-// Keyserver: www.keyserver.net                   Key-ID: 1C1209B4
-
---nextPart1427539.7ROr4xtGff
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQBHqIAhzhSR9xwSCbQRAg4PAKC+0MrUHFSHBsmdDb7CsbqyfD7shACdHgNv
-XjOdxUEO3qU+Nmxg4aXXNwc=
-=hCIl
------END PGP SIGNATURE-----
-
---nextPart1427539.7ROr4xtGff--
+PS: I'm working on getting access to kernel.org so that I can run UDF git
+tree there so we try merging these patches with the new git when I set that
+up :).
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
