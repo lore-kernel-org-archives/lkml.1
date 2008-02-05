@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYBECrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYBECvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbYBECrK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 21:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYBECq4
+	id S1756067AbYBECvu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 21:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYBECvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 21:46:56 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:54172 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751465AbYBECqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 21:46:55 -0500
-Date: Mon, 4 Feb 2008 20:46:50 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       srostedt@redhat.com, ghaskins@novell.com
-Subject: Re: Integrating cpusets and cpu isolation [was Re: [CPUISOL] CPU
- isolation extensions]
-Message-Id: <20080204204650.1385ae3e.pj@sgi.com>
-In-Reply-To: <47A79D73.7080402@qualcomm.com>
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-	<1201511305.6149.30.camel@lappy>
-	<20080128085910.7d38e9f5.pj@sgi.com>
-	<479E20DA.2080403@qualcomm.com>
-	<20080128130637.60db148e.pj@sgi.com>
-	<47A21C53.2010502@qualcomm.com>
-	<20080202001612.98354ff2.pj@sgi.com>
-	<47A557E3.4080206@qualcomm.com>
-	<20080203015315.6053d3dd.pj@sgi.com>
-	<47A6AABD.7080006@qualcomm.com>
-	<20080204045429.7738c25c.pj@sgi.com>
-	<47A79D73.7080402@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Mon, 4 Feb 2008 21:51:43 -0500
+Received: from hs-out-0708.google.com ([64.233.178.251]:29429 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750884AbYBECvm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 21:51:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=AMbuha70OvSyMoQcUmk87HQFqnsWzHiLITPzn/JRiBqn0PBdxybY0zdyUVCsR39DssD1tLLMY6TKipMvmfxWgYR0lgYgoPOROrRGaTVidrOcWT8nhcK6cvmSF2gwmUnab3GMkVqzmhxCdc0e4nQVUKpqhP7qhSqYT+6ic2x6M6A=
+Subject: [PATCH] x86: dubious one-bit signed bitfield in cpuidle.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 04 Feb 2008 18:51:35 -0800
+Message-Id: <1202179895.6452.15.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max K wrote:
-> >     And for another thing, we already declare externs in cpumask.h for
-> >     the other, more widely used, cpu_*_map variables cpu_possible_map,
-> >     cpu_online_map, and cpu_present_map.
-> Well, to address #2 and #3 isolated map will need to be exported as well.
-> Those other maps do not really have much to do with the scheduler code.
-> That's why I think either kernel/cpumask.c or kernel/cpu.c is a better place for them.
+This is a minimal, stupid, fix, move to unsigned bitfield.  These errors
+are hiding sparse warnings in any file that includes it....below is a
+sample.
 
-Well, if you have need it to be exported for #2 or #3, then that's ok
-by me - export it.
+  CHECK   arch/x86/kernel/acpi/cstate.c
+include/linux/cpuidle.h:82:17: error: dubious one-bit signed bitfield
+  CHECK   arch/x86/kernel/acpi/processor.c
+include/linux/cpuidle.h:82:17: error: dubious one-bit signed bitfield
+  CHECK   arch/x86/kernel/cpu/cpufreq/powernow-k7.c
+include/linux/cpuidle.h:82:17: error: dubious one-bit signed bitfield
+  CHECK   arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+include/linux/cpuidle.h:82:17: error: dubious one-bit signed bitfield
+  CHECK   arch/x86/kernel/cpu/cpufreq/longhaul.c
+include/linux/cpuidle.h:82:17: error: dubious one-bit signed bitfield
+  CHECK   arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+include/linux/cpuidle.h:82:17: error: dubious one-bit signed bitfield
 
-I'm unaware of any kernel/cpumask.c.  If you meant lib/cpumask.c, then
-I'd prefer you not put it there, as lib/cpumask.c just contains the
-implementation details of the abstract data type cpumask_t, not any of
-its uses.  If you mean kernel/cpuset.c, then that's not a good choice
-either, as that just contains the implementation details of the cpuset
-subsystem.  You should usually define such things in one of the files
-using it, and unless there is clearly a -better- place to move the
-definition, it's usually better to just leave it where it is.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/linux/cpuidle.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index c4e0016..b0fd85a 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -79,7 +79,7 @@ struct cpuidle_state_kobj {
+ };
+ 
+ struct cpuidle_device {
+-	int			enabled:1;
++	unsigned int		enabled:1;
+ 	unsigned int		cpu;
+ 
+ 	int			last_residency;
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+1.5.4.rc5.1138.g2602
+
+
+
