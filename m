@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYBEQds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbYBEQee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYBEQds (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:33:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYBEQdk
+	id S1758279AbYBEQee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYBEQeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:33:40 -0500
-Received: from liberdade.minaslivre.org ([72.232.18.203]:43749 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbYBEQdj (ORCPT
+	Tue, 5 Feb 2008 11:34:24 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:22673 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753137AbYBEQeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 11:33:39 -0500
-X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 11:33:39 EST
-Date: Tue, 5 Feb 2008 14:13:36 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
-To: dwmw2@infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] power_supply: Remove capacity_level from list of sysfs
-	attributes
-Message-ID: <20080205161327.GA8628@vespa.holoscopio.com>
+	Tue, 5 Feb 2008 11:34:23 -0500
+Message-ID: <47A88FDF.6090102@hp.com>
+Date: Tue, 05 Feb 2008 11:33:35 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-driver@qlogic.com, Seokmann Ju <seokmann.ju@qlogic.com>
+Subject: Re: 2.6.24 regression w/ QLA2300
+References: <47A88736.6090706@hp.com> <20080205160246.GF19882@plap3.qlogic.org> <20080205161501.GG19882@plap3.qlogic.org>
+In-Reply-To: <20080205161501.GG19882@plap3.qlogic.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- drivers/power/power_supply_sysfs.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Andrew Vasquez wrote:
+> On Tue, 05 Feb 2008, Andrew Vasquez wrote:
+> 
+>> On Tue, 05 Feb 2008, Alan D. Brunelle wrote:
+>>
+>>> commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
+>>> Merge: 50d9a12... 23c3e29...
+>>> Author: Linus Torvalds <torvalds@linux-foundation.org>
+>>> Date:   Fri Jan 25 17:19:08 2008 -0800
+>>>
+>>>     Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
+>>>
+>>>     * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6: (200 commits)
+>>>
+>>> I believe a regression was introduced. I'm running on a 4-way IA64,
+>>> with straight 2.6.24 and 2 dual-port cards:
+>>>
+>>> 40:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>>> 40:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>>> c0:01.0 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>>> c0:01.1 Fibre Channel: QLogic Corp. QLA2312 Fibre Channel Adapter (rev 03)
+>>>
+>>> the adapters failed initialization. In particular, I narrowed it down
+>>> to failing the qla2x00_mbox_command call within qla2x00_init_firmware
+>>> function. I went and removed the qla2x00-related parts of this (large-ish)
+>>> merge, and the 4 ports initialized just fine.
+>> Could you load the (default 2.6.24) driver with
+>> ql2xextended_error_logging modules parameter set:
+>>
+>> 	# insmod qla2xxx ql2xextended_error_logging=1
+>>
+>> and send the resultant kernel logs?
+> 
+> Could you tray the patch referenced here:
+> 
+> qla2xxx: Correct issue where incorrect init-fw mailbox command was used on non-NPIV capable ISPs.
+> http://article.gmane.org/gmane.linux.scsi/38240
+> 
+> Thanks, av
 
-diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-index d482484..13399d1 100644
---- a/drivers/power/power_supply_sysfs.c
-+++ b/drivers/power/power_supply_sysfs.c
-@@ -106,7 +106,6 @@ static struct device_attribute power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(energy_now),
- 	POWER_SUPPLY_ATTR(energy_avg),
- 	POWER_SUPPLY_ATTR(capacity),
--	POWER_SUPPLY_ATTR(capacity_level),
- 	POWER_SUPPLY_ATTR(temp),
- 	POWER_SUPPLY_ATTR(temp_ambient),
- 	POWER_SUPPLY_ATTR(time_to_empty_now),
--- 
-1.5.4
+The referenced patch worked fine Andrew, thanks much! 
+
+Alan
