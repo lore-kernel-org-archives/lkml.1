@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbYBEXCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760897AbYBEXKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761271AbYBEXCy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 18:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYBEXCr
+	id S1760897AbYBEXKR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 18:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbYBEXKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 18:02:47 -0500
-Received: from ns1.siteground137.com ([67.15.250.10]:46447 "EHLO
-	serv01.siteground137.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbYBEXCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 18:02:46 -0500
-X-Greylist: delayed 70080 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 18:02:46 EST
-Subject: Re: [PATCH] badness() dramatically overcounts memory
-From: Jeff Davis <linux@j-davis.com>
-To: balbir@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <47A7E282.1080902@linux.vnet.ibm.com>
-References: <1202182480.24634.22.camel@dogma.ljc.laika.com>
-	 <47A7E282.1080902@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 15:02:41 -0800
-Message-Id: <1202252561.24634.64.camel@dogma.ljc.laika.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground137.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - j-davis.com
+	Tue, 5 Feb 2008 18:10:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56798 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755152AbYBEXKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 18:10:00 -0500
+Date: Tue, 5 Feb 2008 23:59:31 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: ipw3945-devel@lists.sourceforge.net, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org, yi.zhu@intel.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ipw3945: not only it periodically dies, it also BUG()s
+Message-ID: <20080205225931.GA1031@elf.ucw.cz>
+References: <20080205214441.GA1518@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205214441.GA1518@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 09:43 +0530, Balbir Singh wrote:
-> 1. grep on the kernel source tells me that shared_vm is incremented only in
->    vm_stat_account(), which is a NO-OP if CONFIG_PROC_FS is not defined.
+On Tue 2008-02-05 22:44:41, Pavel Machek wrote:
+> Hi!
+> 
+> Under not-even-high load, it periodically restarts:
+> 
+> Feb  5 21:08:50 amd kernel: iwl3945: Microcode SW error detected.
+> Restarting 0x82000008.
+> Feb  5 21:08:52 amd kernel: iwl3945: Can't stop Rx DMA.
+> Feb  5 21:12:51 amd kernel: iwl3945: Microcode SW error detected.
+> Restarting 0x82000008.
+> Feb  5 21:12:53 amd kernel: iwl3945: Can't stop Rx DMA.
+> Feb  5 21:21:44 amd kernel: iwl3945: Microcode SW error detected.
+> Restarting 0x82000008.
+> Feb  5 21:21:46 amd kernel: iwl3945: Can't stop Rx DMA.
+> Feb  5 21:27:32 amd kernel: iwl3945: Microcode SW error detected.
+> Restarting 0x82000008.
+> Feb  5 21:27:34 amd kernel: iwl3945: Can't stop Rx DMA.
+> Feb  5 21:41:29 amd -- MARK --
+> Feb  5 22:01:29 amd -- MARK --
+> Feb  5 22:09:11 amd kernel: iwl3945: Microcode SW error detected.
+> Restarting 0x82000008.
+> Feb  5 22:09:12 amd kernel: iwl3945: Can't stop Rx DMA.
+> 
 
-I see, thanks for pointing that out. Is there another way do you think?
-Would the penalty be to high to enable vm_stat_account when
-CONFIG_PROC_FS is not defined?
+Now it decided to be original:
 
-Or perhaps my patch would only have an effect when CONFIG_PROC_FS is set
-(which is default)?
+Feb  5 23:55:39 amd kernel: ACPI: EC: missing write data confirmation,
+don't expect it any longer.
+Feb  5 23:57:37 amd kernel: iwl3945: Microcode SW error detected.
+Restarting 0x82000008.
+Feb  5 23:57:37 amd kernel: iwl3945: TODO:  Implement Tx ABORT
+REQUIRED!!!
+Feb  5 23:57:39 amd kernel: iwl3945: Can't stop Rx DMA.
 
-> 2. How have you tested these patches? One way to do it would be to use the
->    memory controller and set a small limit on the control group. A memory
->    intensive application will soon see an OOM.
+									Pavel
 
-I have done a quick test a while back when I first wrote the patch. I
-will test more thoroughly now.
-
-> The interesting thing is the use of total_vm and not the RSS which is used as
-> the basis by the OOM killer. I need to read/understand the code a bit more.
-
-RSS makes more sense to me as well.
-
-To me, it makes no sense to count shared memory, because killing a
-process doesn't free the shared memory.
-
-Regards,
-	Jeff Davis
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
