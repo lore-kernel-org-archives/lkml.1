@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYBEGuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYBEGw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbYBEGuy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 01:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYBEGuq
+	id S1754855AbYBEGw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 01:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYBEGww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 01:50:46 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55664 "EHLO mx2.suse.de"
+	Tue, 5 Feb 2008 01:52:52 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:36917 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbYBEGup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 01:50:45 -0500
-Date: Mon, 4 Feb 2008 22:45:47 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: greg@kroah.com, markus.rechberger@amd.com,
-       "Matt_Domsch@dell.com" <Matt_Domsch@dell.com>,
-       Jos?? Luis Tall??n <jltallon@adv-solutions.net>,
-       "Douglas_Warzecha@dell.com" <Douglas_Warzecha@dell.com>,
-       "Abhay_Salunke@dell.com" <Abhay_Salunke@dell.com>,
-       linux-kernel@vger.kernel.org,
-       Michael E Brown <Michael_E_Brown@dell.com>
-Subject: Re: FW: 2.6.24 breaks BIOS updates on all Dell machines
-Message-ID: <20080205064547.GA20384@suse.de>
-References: <20080129184129.GA23681@kroah.com> <xJSmDwPr.1201644922.4322840.khali@gcu-squad.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <xJSmDwPr.1201644922.4322840.khali@gcu-squad.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1751268AbYBEGwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 01:52:51 -0500
+Date: Tue, 5 Feb 2008 07:52:28 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <avictor.za@gmail.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] at91_mci: minor cleanup
+Message-ID: <20080205075228.424634e2@poseidon.drzeus.cx>
+In-Reply-To: <47A0A9BC.7090705@atmel.com>
+References: <200801151444.21140.marc.pignat@hevs.ch>
+	<47A0A9BC.7090705@atmel.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-7192-1202194369-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 11:15:22PM +0100, Jean Delvare wrote:
-> >So, I'm all for reverting this patch.
-> >
-> >And then, feel free to revisit the problem by proposing something that
-> >doesn't break existing users of the interface.
-> 
-> I'm a bit confused. It seems to me that the "class devices" are named
-> differently in recent kernels. The i2c-dev class devices were originally
-> showing as i2c-%d in their parent device directories (causing the
-> collision), and now show as i2c-dev:i2c-%d. This suggests that the
-> collision the patch above was trying to solve is in fact already fixed
-> (by prefixing the device name with the class name). The good news is
-> that it would mean that we can just revert the patch in question...
-> 
-> But quite frankly I'm not really sure, the class devices look different
-> on every kernel I looked at, depending on the version and whether
-> CONFIG_SYSFS_DEPRECATED is set or not.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-THe naming is different depending on that sysfs variable, yes.  But it
-should be consistant other than that.  If not, please let me know.
+--=_hera.drzeus.cx-7192-1202194369-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-And yes, we did have to add the ":" a while ago to handle the namespace
-collisions we were having.
+On Wed, 30 Jan 2008 17:45:48 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-thanks,
+> From: Marc Pignat <marc.pignat@hevs.ch>
+>=20
+> MMC_POWER_ON is a noop, no need to set the power pin again.
+>=20
+> Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
 
-greg k-h
+Perhaps also a WARN_ON() or something in the default case to catch bad invo=
+kations?
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-7192-1202194369-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEARECAAYFAkeoB6wACgkQ7b8eESbyJLipmQCgrQ0gXZAiJGauvvgruVQZjgoR
+Y1sAoJCgkcG28JSNpuDoUs94Axt6rNm7
+=G9pf
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-7192-1202194369-0001-2--
