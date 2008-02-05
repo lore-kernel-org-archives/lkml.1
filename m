@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYBEGOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYBEGRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYBEGOL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 01:14:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYBEGN5
+	id S1754048AbYBEGRv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 01:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbYBEGRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 01:13:57 -0500
-Received: from mail.kapp-coburg.de ([217.24.55.52]:51175 "EHLO
-	mail.kapp-coburg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbYBEGN4 (ORCPT
+	Tue, 5 Feb 2008 01:17:43 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:61526 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbYBEGRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 01:13:56 -0500
-X-Greylist: delayed 1657 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 01:13:56 EST
-Message-ID: <47A7F828.1010303@niles.de>
-Date: Tue, 05 Feb 2008 06:46:16 +0100
-From: "Mader, Alexander (N-MSR)" <Alexander.Mader@niles.de>
-Organization: NILES Werkzeugmaschinen GmbH
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	Tue, 5 Feb 2008 01:17:43 -0500
+To: Gregor Radtke <mail@g-radtke.name>
+Cc: linux-kernel@vger.kernel.org, Tim Kunschke <beatmeistah@web.de>
+Subject: Re: pata_cs5536 hangs on boot with hdd attached
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <1202158828.6229.22.camel@desktop.ein-elch.local>
+Date: Tue, 05 Feb 2008 01:16:13 -0500
+In-Reply-To: <1202158828.6229.22.camel@desktop.ein-elch.local> (Gregor Radtke's message of "Mon\, 04 Feb 2008 22\:00\:28 +0100")
+Message-ID: <yq163x47wsy.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Unable to access PCMCIA with O2 Micro OZ711MP1/MS1
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>>>>> "Gregor" == Gregor Radtke <mail@g-radtke.name> writes:
 
-after contacting linux-pcmcia and some search I am approaching lkml.
+Gregor,
 
-There seems to be a problem accessing PCMCIA cards with O2 Micro 
-OZ711MP1/MS1 Controller.
+Gregor> I tested with various kernel releases before 2.6.24 (and
+Gregor> -rcX), up to 2.6.23.12. Both libata and the old ATA subsystem
+Gregor> do work, libata with cs5535.
 
-On a Fujitsu Siemens Celsius H240 a 2.6.22-3-amd64 kernel from Debian 
-testing is in use. PCMCIA utilities for Linux 2.6 version 014-4 are 
-installed. I could supply the output of lspci and lshal.
+pata_cs5535 won't drive a 5536 -- they're completely different beasts.
+So you haven't been testing what you think you're testing...
 
-When I insert a CardBus adapter, for instance a CNET CNF401 fast 
-ethernet, everything works fine and the adapter becomes available to the 
-system -- in this example the NIC with working LAN access. The lspci and 
-lshal output then reflects the new hardware.
+Try booting your pata_cs5536 kernel with libata.dma=0
 
-When I insert a PCMCIA adapter, for instance a 3com 3CCE589EC, a 3com 
-3C589C or an compact flash adapter, almost nothing happens: In the case 
-of the 3com I just get (dmesg):
+I also suggest you try a kernel with pata_amd compiled in instead of
+pata_cs5536.  Slight timings aside there shouldn't be any functional
+difference between the way the two drivers configure things.  But let
+us know how that goes.  And include the diff of the relevant portion
+of the boot logs.
 
-	pccard: PCMCIA card inserted into slot 0
+Finally - which drive is it?
 
-In the case of the compact flash adapter at the first insert dmesg gives:
-
-pccard: PCMCIA card inserted into slot 0
-cs: memory probe 0x0c0000-0x0fffff: excluding 0xc0000-0xfffff
-cs: memory probe 0x60000000-0x60ffffff: excluding 0x60000000-0x60ffffff
-cs: memory probe 0x88000000-0x8fffffff: excluding 0x88000000-0x8fffffff
-cs: memory probe 0xa0000000-0xa0ffffff: excluding 0xa0000000-0xa0ffffff
-cs: memory probe 0xf0300000-0xf03fffff: excluding 0xf0300000-0xf03fffff
-
-Later on dmesg just issues "pccard: PCMCIA card inserted into slot 0" 
-when the same card is inserted no matter how often.
-
-In the PCMCIA cases the lshal output doesn't change, but in the lspci 
-output the original line changes from:
-
-	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+
-	PostWrite+                                  ^^^^^^
-
-to:
-
-	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset- 16bInt+
-	PostWrite+                                  ^^^^^^
-
-In the case of the compact flash adapters neither "modprobe ide_cs" nor 
-"modprobe pata_pcmcia" yield anything -- not even in dmesg.
-
-As I do not want to access a SmartCard I did not try the o2scr driver 
-from gna.org/projects/o2scr.
-
-If I could supply more data I would like to do so on your request.
-
-Best regards, Alexander.
-
+-- 
+Martin K. Petersen	Oracle Linux Engineering
