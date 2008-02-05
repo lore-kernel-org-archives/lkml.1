@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbYBES1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYBES3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbYBES1o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 13:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYBES1f
+	id S1758223AbYBES3m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 13:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYBES3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 13:27:35 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:2313 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbYBES1e (ORCPT
+	Tue, 5 Feb 2008 13:29:33 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:26739 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754324AbYBES3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 13:27:34 -0500
-Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
-	works on memoryless node.
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Jackson <pj@sgi.com>, David Rientjes <rientjes@google.com>
-In-Reply-To: <Pine.LNX.4.64.0802051011400.11705@schroedinger.engr.sgi.com>
-References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080202090914.GA27723@one.firstfloor.org>
-	 <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <1202149243.5028.61.camel@localhost>  <20080205143149.GA4207@csn.ul.ie>
-	 <1202225017.5332.1.camel@localhost>
-	 <Pine.LNX.4.64.0802051011400.11705@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 05 Feb 2008 13:27:35 -0500
-Message-Id: <1202236056.5332.17.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 5 Feb 2008 13:29:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=htsa+o3jtVZ+Cc6azZUo+iiNi8jjhLUC2OuEKqVPV0J2n8VLkIehzKEcTwe9hxdasoNIFEh/XgvIMf0uplt32gDvMhF+FQHUYDnktBgggVUAnA7TbOhhTumRm0eVpRZNOnBsdL3/b/KrBdm0G93z81/5DAXdxJoCdfQvMn/hnSM=
+Message-ID: <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com>
+Date: Tue, 5 Feb 2008 10:29:28 -0800
+From: "Glenn Griffin" <ggriffin.kernel@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080205155558.GA23145@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com>
+	 <20080205155558.GA23145@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 10:12 -0800, Christoph Lameter wrote:
-> Could we focus on the problem instead of discussion of new patches under 
-> development? 
+> Syncookies are discouraged these days. They disable too many
+> valuable TCP features (window scaling, SACK) and even without them
+> the kernel is usually strong enough to defend against syn floods
+> and systems have much more memory than they used to be.
+>
+> So I don't think it makes much sense to add more code to it, sorry.
 
-Christoph:  you are free to ignore any part of this discussion that you
-wish...
+As you say the kernel is usually strong enough to defend against syn flood
+attacks, but what about the situations where it isn't?  As valuable as the TCP
+features are I would give them up if it means I'm able to connect to my sshd
+port when I otherwise would be unable to.  While increased synq sizes, better
+dropping algorithms, and minisocks are a great way to mitigate the attacks and
+in most cases are enough, there are situations where syncookies are nice.
 
-> Can we confirm that what Kosaki sees is a bug?
+Regardless, I would say as long as ipv4 has syncookie support it will
+accurately be viewed as a deficiency of ipv6 if it lacks support.  So perhaps
+the discussion should be we whether all the other defenses are enough to
+warrant the removal of syncookie support from ipv4.  That topic may bring in
+more opinions.
 
-by definition, right?  we broke user space.  
+> Besides you should really move it to the ipv6 module, right now the code
+> would be always compiled in even for ipv4 only kernels.
 
-Lee
+That is correct.  I will gladly move it into it's own section within net/ipv6/.
+Do you have any problem using the same CONFIG and sysctl variables as the ipv4
+implementation?
 
+Thanks
+
+--Glenn
