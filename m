@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760525AbYBEVXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYBEVYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760525AbYBEVXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 16:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbYBEVXn
+	id S1758976AbYBEVYc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 16:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758866AbYBEVYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 16:23:43 -0500
-Received: from kallisti.us ([67.59.168.233]:51539 "EHLO kallisti.us"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755585AbYBEVXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 16:23:42 -0500
-From: Ross Vandegrift <ross@kallisti.us>
-Date: Tue, 5 Feb 2008 16:23:35 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080205212335.GA11287@kallisti.us>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205192559.GA10573@kallisti.us> <20080205201106.GB26150@one.firstfloor.org>
+	Tue, 5 Feb 2008 16:24:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36799 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757606AbYBEVYX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 16:24:23 -0500
+Message-ID: <47A8D3CF.2080608@zytor.com>
+Date: Tue, 05 Feb 2008 13:23:27 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205201106.GB26150@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] x86 updates
+References: <20080204161219.GA8092@elte.hu> <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org> <20080205192236.GA26426@uranus.ravnborg.org> <20080205210508.GA14708@elte.hu> <47A8D088.7050209@zytor.com> <20080205211854.GB27589@uranus.ravnborg.org>
+In-Reply-To: <20080205211854.GB27589@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 09:11:06PM +0100, Andi Kleen wrote:
-> > The problem is that any reasonably recent PC can generate enough
-> > forged SYN packets to overwhelm reasonable SYN queues on a much more
-> > powerful server.
+Sam Ravnborg wrote:
+>>
+>> Technically we should also specify @progbits or @nobits on sections, 
+>> however, I think @progbits is the default.
 > 
-> Have you actually seen this with a recent kernel in the wild or are
-> you just talking theoretically?
+> I have on my todo list to do so. But I wanted to investigate a bit
+> more since I do not yet fully understand the difference.
 > 
-> Linux uses some heuristics to manage the syn queue that should
-> still ensure reasonable service even without cookies under attack.
-> Also SYN-RECV sockets are stored in a special data structure optimized
-> to use minimal resources.
+> And we have to use %progbits and %nobits as ARM uses '"' to indicate
+> comments.
 > 
-> It is far from the classical head drop method that was so vunerable
-> to syn flooding.
 
-I work at a hosting company and we see these kinds of issues in the
-real world fairly frequently.  I would guess maybe a monthly basis.
-The servers where we have seen this are typically running RHEL 4 or 5
-kernels, so I can't really speak to how recent the kernel is in this
-specific term.
+The difference is quite simple:
 
-If I can find a box that we could temporary get a kernel.org kernel
-on, I'll see if I can get a real comparison together.  We have
-collected a few of the more effective attack tools that have been left
-on compromised systems, so it wouldn't be too difficult to get some
-numbers.
+	a		- this section occupies address space
+	w		- this section is writable
+	x		- this section is executable
+	progbits	- this section has data in the file
 
--- 
-Ross Vandegrift
-ross@kallisti.us
+In contrast, a nobits section is implicitly zero-filled.
 
-"The good Christian should beware of mathematicians, and all those who
-make empty prophecies. The danger already exists that the mathematicians
-have made a covenant with the devil to darken the spirit and to confine
-man in the bonds of Hell."
-	--St. Augustine, De Genesi ad Litteram, Book II, xviii, 37
+By default:
+
+.bss 	is (aw,nobits).
+.data 	is (aw,progbits).
+.rodata	is (a,progbits).
+.text	is (ax,progbits).
+
+Since .bss is nobits, it doesn't occupy any space in the executable, and 
+is zero-filled by the loader.
+
+	-hpa
+
+
