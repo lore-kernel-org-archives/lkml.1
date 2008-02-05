@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbYBEUza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761922AbYBEUzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760771AbYBEUza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbYBEUzX
+	id S1761922AbYBEUzn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761503AbYBEUze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:55:23 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:56894
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755231AbYBEUzW (ORCPT
+	Tue, 5 Feb 2008 15:55:34 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41426
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761482AbYBEUzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:55:22 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24 says "serial8250: too much work for irq4" a lot.
-Date: Tue, 5 Feb 2008 14:55:10 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+	Tue, 5 Feb 2008 15:55:32 -0500
+Date: Tue, 5 Feb 2008 21:55:19 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v5
+Message-ID: <20080205205519.GF7441@v2.random>
+References: <20080131234101.GS7185@v2.random> <Pine.LNX.4.64.0801311738570.24297@schroedinger.engr.sgi.com> <20080201120955.GX7185@v2.random> <Pine.LNX.4.64.0802011118060.18163@schroedinger.engr.sgi.com> <20080203021704.GC7185@v2.random> <Pine.LNX.4.64.0802041106370.9656@schroedinger.engr.sgi.com> <20080205052525.GD7441@v2.random> <Pine.LNX.4.64.0802042206200.6739@schroedinger.engr.sgi.com> <20080205180802.GE7441@v2.random> <Pine.LNX.4.64.0802051013440.11705@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802051455.10831.rob@landley.net>
+In-Reply-To: <Pine.LNX.4.64.0802051013440.11705@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When running a 2.6.24 kernel built for x86-64 under qemu via serial console, 
-doing CPU-intensive things that also produce a lot of output (such as 
-compiling software) tends to produce the error message in the title.
+On Tue, Feb 05, 2008 at 10:17:41AM -0800, Christoph Lameter wrote:
+> The other approach will not have any remote ptes at that point. Why would 
+> there be a coherency issue?
 
-Anybody have a clue why?  It doesn't seem to cause an actual problem, but it's 
-kind of annoying.
+It never happens that two threads writes to two different physical
+pages by working on the same process virtual address. This is an issue
+only for KVM which is probably ok with it but certainly you can't
+consider the dependency on the page-pin less fragile or less complex
+than my PT lock approach.
 
-(If it's a qemu issue, I can go bother them.  It's possible that qemu isn't 
-delivering interrupts as often as it expects, since that's limited by the 
-granularity of the host timer; I know the clock in qemu can run a bit slow 
-because it only gets clock interrupts when the host system isn't too busy to 
-schedule the emulator.  But this doesn't usually cause a problem.  I _think_ 
-the message is just a "this should never happen" type warning, which is 
-happening to me.  But I break stuff. :)
+> No. It only has to lock the affected range. Remote page faults can occur 
+> while another part of the address space is being invalidated. The 
+> complexity of locking is up to the user of the mmu notifier. A simple 
+> implementation is satisfactory for the GRU right now. Should it become a 
+> problem then the lock granularity can be refined without changing the API.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+That will make the follow_page fast path even slower if it has to
+lookup a rbtree or a list of locked ranges. Still not comparable to
+the PT lock that 1) it's zero cost and 2) it'll provide an even more
+granular scalability.
+
+> Still not sure what we are talking about here.
+
+The apps using GRU/KVM never trigger large
+munmap/mremap/do_exit. You're optimizing for the irrelevant workload,
+by requiring unnecessary new locking in the GRU fast path.
