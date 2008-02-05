@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbYBEUQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbYBEURU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbYBEUQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757861AbYBEUQr
+	id S1760684AbYBEURU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYBEURK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:16:47 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1467 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757680AbYBEUQq convert rfc822-to-8bit (ORCPT
+	Tue, 5 Feb 2008 15:17:10 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:1540 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756845AbYBEURI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:16:46 -0500
-Date: Tue, 5 Feb 2008 21:16:42 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <gregkh@suse.de>
-Cc: markus.rechberger@amd.com, "Matt_Domsch@dell.com" <Matt_Domsch@dell.com>,
-       Jos?? Luis Tall??n <jltallon@adv-solutions.net>,
-       "Douglas_Warzecha@dell.com" <Douglas_Warzecha@dell.com>,
-       "Abhay_Salunke@dell.com" <Abhay_Salunke@dell.com>,
-       linux-kernel@vger.kernel.org,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
-Message-ID: <20080205211642.2c49e3d0@hyperion.delvare>
-In-Reply-To: <20080205064547.GA20384@suse.de>
-References: <20080129184129.GA23681@kroah.com>
-	<xJSmDwPr.1201644922.4322840.khali@gcu-squad.org>
-	<20080205064547.GA20384@suse.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Feb 2008 15:17:08 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
+Date: Tue, 5 Feb 2008 13:12:46 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802050003.32591.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802051013110.9374@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802051013110.9374@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802051312.47074.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 22:45:47 -0800, Greg KH wrote:
-> On Tue, Jan 29, 2008 at 11:15:22PM +0100, Jean Delvare wrote:
-> > I'm a bit confused. It seems to me that the "class devices" are named
-> > differently in recent kernels. The i2c-dev class devices were originally
-> > showing as i2c-%d in their parent device directories (causing the
-> > collision), and now show as i2c-dev:i2c-%d. This suggests that the
-> > collision the patch above was trying to solve is in fact already fixed
-> > (by prefixing the device name with the class name). The good news is
-> > that it would mean that we can just revert the patch in question...
+On Tuesday 05 February 2008 11:15:12 am Linus Torvalds wrote:
+> 
+> On Tue, 5 Feb 2008, Bjorn Helgaas wrote:
+> > > 
+> > >  - PnP/ACPI resource allocation *after* it, but before driver loading 
+> > >    (which wll cause new resources to be allocated). This could be 
+> > >    fs_initcall, or whatever (that's what things like "acpi_event_init" 
+> > >    already do).
 > > 
-> > But quite frankly I'm not really sure, the class devices look different
-> > on every kernel I looked at, depending on the version and whether
-> > CONFIG_SYSFS_DEPRECATED is set or not.
+> > If we put the PNP system driver here, we can easily do a quirk that
+> > ignores PNP resources that overlap PCI resources.
 > 
-> THe naming is different depending on that sysfs variable, yes.  But it
-> should be consistant other than that.  If not, please let me know.
+> No, you don't need any quirks: you just do an "insert_resource()" and 
+> ignore the error return. If the (bogus) PnP resource clashes with the 
+> (correct) hardware PCI resource, the insert will simply fail. No quirks 
+> needed.
 > 
-> And yes, we did have to add the ":" a while ago to handle the namespace
-> collisions we were having.
+> >						  But it's kind of
+> > ugly to have the ACPI PCI root driver early and other PNP drivers
+> > later because they're basically similar animals.
+> 
+> No they are not.
+> 
+> If one does just device enumeration, and the other does resource 
+> registrations, then they ARE NOT similar animals at all. Don't claim that 
+> they are.
 
-OK, I am officially confused now.
+Whoa, easy :-)  I just meant they're similar in that we discover PCI
+root bridges and other PNP devices by traversing the ACPI namespace,
+so unless we make special arrangements, we bind drivers to them at
+roughly the same time.
 
-This is 2.6.24, CONFIG_SYSFS_DEPRECATED=y:
+I'll play with your insert_resource() idea and see if I can figure
+something out.
 
-# ls -l /sys/class/i2c-adapter/i2c-0
-total 0
-lrwxrwxrwx 1 root root    0 fév  5 18:07 device -> ../../../devices/pci0000:00/0000:00:01.0/0000:01:00.0
-lrwxrwxrwx 1 root root    0 fév  5 18:17 i2c-dev:i2c-0 -> ../../../class/i2c-dev/i2c-0
--r--r--r-- 1 root root 4096 fév  5 18:07 name
-drwxr-xr-x 2 root root    0 fév  5 18:17 power
-lrwxrwxrwx 1 root root    0 fév  5 18:07 subsystem -> ../../../class/i2c-adapter
--rw-r--r-- 1 root root 4096 fév  5  2008 uevent
-
-2.6.24 rebuilt without CONFIG_SYSFS_DEPRECATED:
-
-# ls -l /sys/class/i2c-adapter/i2c-0/
-total 0
-lrwxrwxrwx 1 root root    0 fév  5 18:42 device -> ../../../../../../devices/pci0000:00/0000:00:01.0/0000:01:00.0
-drwxr-xr-x 3 root root    0 fév  5 18:42 i2c-0
--r--r--r-- 1 root root 4096 fév  5 18:31 name
-drwxr-xr-x 2 root root    0 fév  5 18:42 power
-lrwxrwxrwx 1 root root    0 fév  5 18:31 subsystem -> ../../../../../../class/i2c-adapter
--rw-r--r-- 1 root root 4096 fév  5  2008 uevent
-
-The latter corresponds to what older kernels had ("i2c-0"). This means
-that enabling CONFIG_SYSFS_DEPRECATED causes the i2c-dev class device
-names to change. Isn't it supposed to be exactly the other way around,
-i.e. enabling CONFIG_SYSFS_DEPRECATED should preserve the names as they
-were in older kernels?
-
-If the "$class:" prefix was added to prevent collisions (and this
-sounds like a good idea), then why wasn't it added in the regular case
-(CONFIG_SYSFS_DEPRECATED=n) as well?
-
-Someone please clarify the situation.
-
-Thanks,
--- 
-Jean Delvare
+Bjorn
