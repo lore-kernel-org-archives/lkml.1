@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbYBERDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbYBERFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758158AbYBERDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 12:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYBERDH
+	id S1757409AbYBERFu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 12:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYBERFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 12:03:07 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44428 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753344AbYBERDF (ORCPT
+	Tue, 5 Feb 2008 12:05:43 -0500
+Received: from mga10.intel.com ([192.55.52.92]:12132 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753546AbYBERFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 12:03:05 -0500
-Date: Tue, 5 Feb 2008 08:59:36 -0800
-From: Daniel Walker <dwalker@dwalker1.mvista.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org, Max Krasnyanskiy <maxk@qualcomm.com>
-Subject: Re: CPU hotplug and IRQ affinity with 2.6.24-rt1
-Message-ID: <20080205165936.GA18613@dwalker1.mvista.com>
-References: <47A7A131.8040800@qualcomm.com> <20080205025144.GA31774@dwalker1.mvista.com> <47A7A784.BA47.005A.0@novell.com>
+	Tue, 5 Feb 2008 12:05:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,308,1199692800"; 
+   d="scan'208";a="296012950"
+Message-ID: <47A89664.8020407@linux.intel.com>
+Date: Tue, 05 Feb 2008 09:01:24 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A7A784.BA47.005A.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-mm1
+References: <20080203171634.58ab668b.akpm@linux-foundation.org> <10779.1202230436@turing-police.cc.vt.edu>
+In-Reply-To: <10779.1202230436@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 10:02:12PM -0700, Gregory Haskins wrote:
-> >>> On Mon, Feb 4, 2008 at  9:51 PM, in message
-> <20080205025144.GA31774@dwalker1.mvista.com>, Daniel Walker
-> <dwalker@dwalker1.mvista.com> wrote: 
-> > I get the following when I tried it,
-> > 
-> > BUG: sleeping function called from invalid context bash(5126) at
-> > kernel/rtmutex.c:638
-> > in_atomic():1 [00000001], irqs_disabled():1
+Valdis.Kletnieks@vt.edu wrote:
+> On Sun, 03 Feb 2008 17:16:34 PST, Andrew Morton said:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24/2.6.24-mm1/
 > 
-> Hi Daniel,
->   Can you try this patch and let me know if it fixes your problem?
+> Builds, boots, mostly seems to run for limited testing.
 > 
-> -----------------------
-> 
-> use rcu for root-domain kfree
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index e6ad493..77e86c1 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -339,6 +339,7 @@ struct root_domain {
->         atomic_t refcount;
->         cpumask_t span;
->         cpumask_t online;
-> +       struct rcu_head rcu;
-> 
->         /*
->          * The "RT overload" flag: it gets set if a CPU has more than
-> @@ -6222,6 +6223,12 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
->         return 1;
->  }
-> 
-> +/* rcu callback to free a root-domain */
-> +static void rq_free_root(struct rcu_head *rcu)
-> +{
-> +       kfree(container_of(rcu, struct root_domain, rcu));
-> +}
-> +
+> One note - the following commit(s) (and related CPA reworking) broke the NVidia
+> binary driver (which is OK, I can fix *that* part).  But can somebody explain
+> if this should have seen a trip through the -mm tree before it hit mainstream?
+> I didn't see these in 24-rc8-mm1:
 
-I looked at the code a bit, and I'm not sure you need this complexity..
-Once you have replace the old_rq, there is no reason it needs to
-protection of the run queue spinlock .. So you could just move the kfree
-down below the spin_unlock_irqrestore() ..
-
-Daniel
+well that depends on which -mm you tried; I'm sure the mm kernel of the day had it for a while.
+I don't think it's a realistic expectation to delay every bugfix and arch patch until Andrew
+gets around to releasing an -mm, not do I see the point of that, what would have been different?
