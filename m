@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYBEQAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYBEQAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbYBEQAh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 11:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYBEQAA
+	id S1758201AbYBEQAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 11:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbYBEQAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 11:00:00 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:26116 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751903AbYBEP77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 11:00:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54326 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751635AbYBEP77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Feb 2008 10:59:59 -0500
-Message-ID: <47A887F4.70801@mellanox.co.il>
-Date: Tue, 05 Feb 2008 17:59:48 +0200
-Reply-To: tziporet@dev.mellanox.co.il
-Organization: Mellanox Technologies
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+Date: Tue, 5 Feb 2008 16:59:59 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       Jiri Kosina <jkosina@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Abel Bernabeu <abel.bernabeu@gmail.com>
+Subject: Re: brk randomization breaks columns
+Message-ID: <20080205155959.GC24331@elf.ucw.cz>
+References: <20080204122837.GA1647@elf.ucw.cz> <Pine.LNX.4.64.0802050242440.30873@twin.jikos.cz> <Pine.LNX.4.64.0802051243240.542@blonde.site> <20080205070001.7bc8058f@laptopd505.fenrus.org> <20080205154648.GA24331@elf.ucw.cz> <20080205154953.GA26829@elte.hu>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] [GIT PULL] please pull infiniband.git
-References: <adamyqgf1nz.fsf@cisco.com>
-In-Reply-To: <adamyqgf1nz.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Tziporet Koren <tziporet@dev.mellanox.co.il>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205154953.GA26829@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Linus, please pull from
->
->     master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
->
-> This tree is also available from kernel.org mirrors at:
->
->     git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
->
-> This will get a second batch of InfiniBand/RDMA batches.  In addition
-> to the usual motley crew of changes, this pull includes a new driver
-> for NetEffect RNICs in drivers/infiniband/hw/nes.  The code could use
-> some further cleaning, but I don't think it's worth holding off on the
-> merge.
->
-> David Dillow (1):
->       IB/srp: Retry stale connections
->
-> Eli Cohen (2):
->       IB/mthca: Remove checks for srq->first_free < 0
->       IB/ib_mthca: Pre-link receive WQEs in Tavor mode
->
-> Glenn Streiff (1):
->       RDMA/nes: Add a driver for NetEffect RNICs
->
-> Hoang-Nam Nguyen (1):
->       IB/ehca: Add PMA support
->
-> Jack Morgenstein (2):
->       IB/mthca: Don't read reserved fields in mthca_QUERY_ADAPTER()
->       mlx4_core: Don't read reserved fields in mlx4_QUERY_ADAPTER()
->
-> Joachim Fenkes (2):
->       IB/ehca: Prevent sending UD packets to QP0
->       IB/ehca: Update sma_attr also in case of disruptive config change
->
-> Olaf Kirch (1):
->       IB/mthca: Return proper error codes from mthca_fmr_alloc()
->
-> Or Gerlitz (3):
->       IPoIB: Handle bonding failover race for connected neighbours too
->       IPoIB: Remove a misleading debug print
->       IB/fmr_pool: Allocate page list for pool FMRs only when caching enabled
->
-> Roland Dreier (4):
->       mlx4_core: Fix more section mismatches
->       IB/mthca: Fix and simplify page size calculation in mthca_reg_phys_mr()
->       IB/mlx4: Actually print out the driver version
->       IB: Avoid marking __devinitdata as const
->
-> Sean Hefty (1):
->       IB/cm: Add interim support for routed paths
->
->
->   
+On Tue 2008-02-05 16:49:53, Ingo Molnar wrote:
+> 
+> * Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > Hi!
+> > 
+> > > > In my usual dither, I'm rather hoping Arjan will have a clear answer.
+> > > 
+> > > 
+> > > setarch works. If the apps come in source form they need fixing anyway (since I'd not be
+> > > surprised of current gcc reorders variables), if not.. we only have 2 cases,
+> > > the other case was the build process of emacs (which got fixed 5
+> > > years ago).
+> > 
+> > uemacs ... broken with randomization
+> > colums, sss ... local programs, broken with randomization
+> > procinfo ... broken, randomization makes it die sooner.
+> > mikmod ... broken with randomization
+> > bsdsed ... broken with randomization
+> > ...
+> > Should I test few more?
+> 
+> just a quick debug question: do they all work if you start them via 
+> setarch?
 
-Does this means ConnectX WQE BB and stateless offload will not be in for 
-2.6.25?
+I was actually toggling randomization with 
 
-Tziporet
+echo 0|1 > /proc/sys/kernel/randomize_va_space
 
+. Yes, setarch i386 -R /usr/local/bin/uemacs (etc) fixes them, too.
+	
+What about this?
+
+Heap randomization breaks /lib/libc.so.5.4.33, make it possible to
+randomize normal stuff but leave the heap alone.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 18ed6dd..4b099ea 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1077,7 +1077,7 @@ #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGE
+ 	current->mm->start_stack = bprm->p;
+ 
+ #ifdef arch_randomize_brk
+-	if (current->flags & PF_RANDOMIZE)
++	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1))
+ 		current->mm->brk = current->mm->start_brk =
+ 			arch_randomize_brk(current->mm);
+ #endif
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
