@@ -1,97 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbYBEWku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932262AbYBEWnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbYBEWku (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760421AbYBEWkn
+	id S932262AbYBEWnK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:43:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762715AbYBEWmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:40:43 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46769 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759814AbYBEWkm (ORCPT
+	Tue, 5 Feb 2008 17:42:42 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:44751 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761163AbYBEWmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:40:42 -0500
-Date: Tue, 5 Feb 2008 14:37:36 -0800
-From: Greg KH <greg@kroah.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       r31dmaeu@pc0312b.rz.unibw-muenchen.de, stable@kernel.org
-Subject: Re: [stable] OOM-killer invoked but why ?
-Message-ID: <20080205223736.GA7404@kroah.com>
-References: <47A1C4B1.8020607@pc0312a.rz.unibw-muenchen.de> <20080205020737.cec97816.akpm@linux-foundation.org> <20080205110303.GA8288@linux.vnet.ibm.com> <20080205220445.GA6889@kroah.com> <Pine.LNX.4.64.0802051412370.14665@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802051412370.14665@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 5 Feb 2008 17:42:38 -0500
+Date: Tue, 5 Feb 2008 14:41:50 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andi Kleen <ak@suse.de>
+Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [7/12] GBPAGES: Add an option to disable direct mapping
+ gbpages and a global variable
+Message-Id: <20080205144150.32ab1069.randy.dunlap@oracle.com>
+In-Reply-To: <20080201095320.4BC5B1B416F@basil.firstfloor.org>
+References: <200802011053.107168490@suse.de>
+	<20080201095320.4BC5B1B416F@basil.firstfloor.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 02:13:12PM -0800, Christoph Lameter wrote:
-> On Tue, 5 Feb 2008, Greg KH wrote:
+On Fri,  1 Feb 2008 10:53:20 +0100 (CET) Andi Kleen wrote:
+
 > 
-> > > > commit 96990a4ae979df9e235d01097d6175759331e88c
-> > > > Author: Christoph Lameter <clameter@sgi.com>
-> > > > Date:   Mon Jan 14 00:55:14 2008 -0800
-> > > > 
-> > > >     quicklists: Only consider memory that can be used with GFP_KERNEL
-> > > >     
-> > > >     Quicklists calculates the size of the quicklists based on the number of
-> > > >     free pages.  This must be the number of free pages that can be allocated
-> > > >     with GFP_KERNEL.  node_page_state() includes the pages in ZONE_HIGHMEM and
-> > > >     ZONE_MOVABLE which may lead the quicklists to become too large causing OOM.
-> > > >     
-> > > >     Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> > > >     Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > > > 
-> > > > diff --git a/mm/quicklist.c b/mm/quicklist.c
-> > > > index ae8189c..3f703f7 100644
-> > > > --- a/mm/quicklist.c
-> > > > +++ b/mm/quicklist.c
-> > > > @@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quicklist)[CONFIG_NR_QUICK];
-> > > >  static unsigned long max_pages(unsigned long min_pages)
-> > > >  {
-> > > >  	unsigned long node_free_pages, max;
-> > > > +	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
-> > > > +
-> > > > +	node_free_pages =
-> > > > +#ifdef CONFIG_ZONE_DMA
-> > > > +		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
-> > > > +#endif
-> > > > +#ifdef CONFIG_ZONE_DMA32
-> > > > +		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
-> > > > +#endif
-> > > > +		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
-> > > > 
-> > > > -	node_free_pages = node_page_state(numa_node_id(),
-> > > > -			NR_FREE_PAGES);
-> > > >  	max = node_free_pages / FRACTION_OF_NODE_MEM;
-> > > >  	return max(max, min_pages);
-> > > >  }
-> > > > 
-> > > > 
-> > > > I note that this didn't have the stable@kernel.org cc.  Christoph, did we
-> > > > deliberately decide not to backport?
-> > > > 
-> > > 
-> > > According to
-> > > http://archive.netbsd.se/?ml=linux-stable-commits&a=2008-01&m=6134301 ,
-> > > its been added to the stable tree. I remember asking Greg to add it.
-> > 
-> > And then Christoph told me to remove it...
+> Signed-off-by: Andi Kleen <ak@suse.de>
 > 
-> No I asked you to add this patch and remove the earlier patch that 
-> tinkered around with tlb flushing.
+> ---
+>  Documentation/x86_64/boot-options.txt |    5 +++++
+>  arch/x86/mm/init_64.c                 |   16 ++++++++++++++++
+>  include/asm-x86/pgtable_64.h          |    7 +++++++
+>  3 files changed, 28 insertions(+)
+> 
+> Index: linux/arch/x86/mm/init_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/mm/init_64.c
+> +++ linux/arch/x86/mm/init_64.c
+> @@ -53,6 +53,22 @@ static unsigned long dma_reserve __initd
+>  
+>  DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+>  
+> +enum gbopt direct_gbpages __meminitdata = GBP_DEFAULT;
+> +
+> +static int __init parse_direct_gbpages(char *arg)
+> +{
+> +	if (!strcmp(arg, "off")) {
+> +		direct_gbpages = GBP_OFF;
+> +		return 0;
+> +	}
+> +	if (!strcmp(arg, "on")) {
+> +		direct_gbpages = GBP_ON;
+> +		return 0;
+> +	}
+> +	return -1;
+> +}
+> +early_param("direct_gbpages", parse_direct_gbpages);
+> +
+>  /*
+>   * NOTE: pagetable_init alloc all the fixmap pagetables contiguous on the
+>   * physical space so we can cache the place of the first one and move
+> Index: linux/include/asm-x86/pgtable_64.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/pgtable_64.h
+> +++ linux/include/asm-x86/pgtable_64.h
+> @@ -239,6 +239,13 @@ static inline int pud_large(pud_t pte)
+>  
+>  #define update_mmu_cache(vma,address,pte) do { } while (0)
+>  
+> +enum gbopt {
+> +	GBP_OFF = -1,
+> +	GBP_DEFAULT,
+> +	GBP_ON
+> +};
+> +extern enum gbopt direct_gbpages;
+> +
+>  /* Encode and de-code a swap entry */
+>  #define __swp_type(x)			(((x).val >> 1) & 0x3f)
+>  #define __swp_offset(x)			((x).val >> 8)
+> Index: linux/Documentation/x86_64/boot-options.txt
+> ===================================================================
+> --- linux.orig/Documentation/x86_64/boot-options.txt
+> +++ linux/Documentation/x86_64/boot-options.txt
+> @@ -307,3 +307,8 @@ Debugging
+>  			stuck (default)
+>  
+>  Miscellaneous
+> +
+> +	direct_gbpages=off|on
+> +		off: Do not use GB pages for kernel direct mapping.
+> +		on: Use GB pages if hardware supports it, but some heuristic
+> +		would turn them off.
 
-Argh, I'm too confused...
+s/would/could/  ?
 
-As long as everyone is happy with what is currently queued up for
-.22-stable and .23-stable, I'll just shut up now and get on releasing
-them :)
-
-thanks,
-
-greg k-h
+---
+~Randy
