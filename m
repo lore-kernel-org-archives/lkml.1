@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbYBEM3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbYBEMcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753444AbYBEM3y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 07:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYBEM3q
+	id S1754280AbYBEMcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 07:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYBEMcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:29:46 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:45485 "EHLO smpt.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751837AbYBEM3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:29:45 -0500
-Message-ID: <47A856AF.5010202@gandalf.sssup.it>
-Date: Tue, 05 Feb 2008 13:29:35 +0100
-From: michael <trimarchi@gandalf.sssup.it>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 5 Feb 2008 07:32:11 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:36810 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbYBEMcJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 07:32:09 -0500
+Message-ID: <47A856E1.4040703@linux.vnet.ibm.com>
+Date: Tue, 05 Feb 2008 18:00:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-References: <20080129224316.GA23155@gandalf.sssup.it>	<479FB2D7.4020804@gandalf.sssup.it>	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	<47A051A7.7030004@gandalf.sssup.it>	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>	<47A09723.7020000@gandalf.sssup.it>	<20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>	<47A12A2E.5040309@gandalf.sssup.it>	<20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>	<47A76106.3000103@gandalf.sssup.it> <20080204212523.07a6da9e@siona>
-In-Reply-To: <20080204212523.07a6da9e@siona>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, tglx@linutronix.de,
+       apw@shadowen.org, randy.dunlap@oracle.com, linux-mm@kvack.org
+Subject: Re: [BUG] regression from 2.6.24-rc8-mm1 and 2.6.24-mm1 kernel panic
+ while bootup
+References: <47A81BC9.5060600@linux.vnet.ibm.com> <20080205002544.264a9484.akpm@linux-foundation.org>
+In-Reply-To: <20080205002544.264a9484.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-
-> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-> index cb70cc5..f310a80 100644
-> --- a/drivers/serial/atmel_serial.c
-> +++ b/drivers/serial/atmel_serial.c
-> @@ -552,7 +552,7 @@ static irqreturn_t atmel_interrupt(int irq, void *dev_id)
->  		atmel_handle_transmit(port, pending);
->  	} while (pass_counter++ < ATMEL_ISR_PASS_LIMIT);
->  
-> -	return IRQ_HANDLED;
-> +	return pass_counter ? IRQ_HANDLED : IRQ_NONE;
->  }
->  
->  /*
+Andrew Morton wrote:
+> On Tue, 05 Feb 2008 13:48:17 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 >
->   
-Just one question:
-Receiving with hardware handshake works without PDC?
+[snip]
 
-Regards Michael
+> argh, I'd forgotten about that.  You bisected it down to a clearly-innocent
+> patch and none of the mm developers appeared interested.
+> 
+> Oh well, it'll probably be in mainline tomorrow.  That should get it
+> fixed.
 
+We've tracked this down to a problem where the nodeid might be invalid. Kamalesh
+is investigating problem. We suspect we are doing a kmalloc_node with an invalid
+nodeid.
+
+We see
+
+cpu with no node 2, num_online_nodes 1
+cpu with no node 3, num_online_nodes 1
+
+in the bootlog. Kamalesh verified that the problem exists with both slub and slab.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
