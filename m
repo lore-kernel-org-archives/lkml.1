@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762332AbYBEWEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbYBEWEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762332AbYBEWEe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 17:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762030AbYBEWEU
+	id S1762554AbYBEWEv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 17:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762191AbYBEWE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 17:04:20 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44276 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761973AbYBEWET (ORCPT
+	Tue, 5 Feb 2008 17:04:28 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:3775 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762182AbYBEWE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 17:04:19 -0500
-Message-ID: <47A8DD49.10209@zytor.com>
-Date: Tue, 05 Feb 2008 14:03:53 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] x86 updates
-References: <20080204161219.GA8092@elte.hu> <alpine.LFD.1.00.0802051043550.9374@woody.linux-foundation.org> <20080205192236.GA26426@uranus.ravnborg.org> <20080205210508.GA14708@elte.hu> <20080205211710.GA27589@uranus.ravnborg.org> <20080205215454.GA20724@elte.hu>
-In-Reply-To: <20080205215454.GA20724@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 5 Feb 2008 17:04:26 -0500
+Subject: Re: [2.6.24-rc8-mm1][regression?] numactl --interleave=all doesn't
+	works on memoryless node.
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: David Rientjes <rientjes@google.com>, kosaki.motohiro@jp.fujitsu.com,
+       andi@firstfloor.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, clameter@sgi.com, mel@csn.ul.ie
+In-Reply-To: <20080205153326.5c820dbc.pj@sgi.com>
+References: <20080202165054.F491.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080202090914.GA27723@one.firstfloor.org>
+	 <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1202149243.5028.61.camel@localhost> <20080205041755.3411b5cc.pj@sgi.com>
+	 <alpine.DEB.0.9999.0802051146300.5854@chino.kir.corp.google.com>
+	 <20080205145141.ae658c12.pj@sgi.com>
+	 <alpine.DEB.1.00.0802051259090.26206@chino.kir.corp.google.com>
+	 <20080205153326.5c820dbc.pj@sgi.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 05 Feb 2008 17:04:30 -0500
+Message-Id: <1202249070.5332.58.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Tue, 2008-02-05 at 15:33 -0600, Paul Jackson wrote:
+> David wrote:
+> > It would be disappointing to see a lot of work done to fix
 > 
->> I also did a quick skimming of info ld - but no luck.
+> The suggested patch of KOSAKI Motohiro didn't look like a lot of work to me.
 > 
-> Peter pointed me to "info gas", which has a "Sections and Relocation" 
-> chapter.
+> I continue to prefer not to hijack this thread for that other discussion.
+> Just presenting your position and calling it "simple" is misleading.
+> The discussion so far has involved over a hundred messages over months,
+> and certainly your position, nor mine for that matter, obtained concensus.
+> 
+> How does the patch of KOSAKI Motohiro, earlier in this thread, look to you?
 > 
 
-Also see the ".section" directive under pseudo-ops (in the gas doc.)
+Paul,
 
-	-hpa
+It wasn't clear to me whether Kosaki-san's patch required a modified
+numactl/libnuma or not.   I think so, because that patch doesn't change
+the error return in contextualize_policy() and in mpol_check_policy().
+My modified numactl/libnuma avoids this by only passing in allowed mems
+fetch via get_mempolicy() with the new MEMS_ALLOWED flags.
+
+The patch I just posted doesn't depend on the numactl changes and seems
+quite minimal to me.  I think it cleans up the differences between
+set_mempolicy() and mbind(), as well.  However, some may take exception
+to the change in behavior--silently ignoring dis-allowed nodes in
+set_mempolicy().
+
+Also, your cpuset/mempolicy work will probably need to undo the
+unconditional masking in contextualize_policy() and/or save the original
+node mask somewhere...
+
+Lee
+
