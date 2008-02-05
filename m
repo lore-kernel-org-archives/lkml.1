@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbYBEUw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbYBEUxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbYBEUw1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 15:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760688AbYBEUwK
+	id S1760919AbYBEUxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 15:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbYBEUxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 15:52:10 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:59933 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758923AbYBEUwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 15:52:08 -0500
-Date: Tue, 5 Feb 2008 22:52:13 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: aic7xxx build failure
-Message-ID: <20080205205213.GH505@cs181133002.pp.htv.fi>
-References: <20080205174024.GE505@cs181133002.pp.htv.fi> <20080205184735.GA26270@uranus.ravnborg.org> <20080205200623.GA26798@uranus.ravnborg.org>
+	Tue, 5 Feb 2008 15:53:22 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:42794
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbYBEUxV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 15:53:21 -0500
+Message-ID: <47A8CCC0.8020703@microgate.com>
+Date: Tue, 05 Feb 2008 14:53:20 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080205200623.GA26798@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Rick Warner <rick@microway.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: serial port regression caused by "Char: tty_ioctl, use wait_event_interruptible_timeout"
+ patch
+References: <200802051402.26816.rick@microway.com> <47A8C4AB.3030301@microgate.com>
+In-Reply-To: <47A8C4AB.3030301@microgate.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 09:06:23PM +0100, Sam Ravnborg wrote:
-> On Tue, Feb 05, 2008 at 07:47:35PM +0100, Sam Ravnborg wrote:
-> > On Tue, Feb 05, 2008 at 07:40:24PM +0200, Adrian Bunk wrote:
-> > > Commit 8891fec65ac5b5a74b50c705e31b66c92c3eddeb broke aic7xxx 
-> > > compilation:
-> > > 
-> > > <--  snip  -->
-> > > 
-> > > $ make O=../out/x86-full
-> > > ...
-> > >   SHIPPED drivers/scsi/aic7xxx/aic79xx_seq.h
-> > >   SHIPPED drivers/scsi/aic7xxx/aic79xx_reg.h
-> > >   CC      drivers/scsi/aic7xxx/aic79xx_core.o
-> > > gcc: drivers/scsi/aic7xxx/aic79xx_core.c: No such file or directory
-> > > gcc: no input files
-> > > make[4]: *** [drivers/scsi/aic7xxx/aic79xx_core.o] Error 1
-> > > 
-> > > <--  snip  -->
-> > > 
-> > > Next "make" run brings the same failure in 
-> > > drivers/scsi/aic7xxx/aic7xxx_core.c.
-> > > 
-> > > With the third "make" it works.
-> > > 
-> > > It might compile for people with SMP systems using -j?
-> > 
-> > I can reproduce it and will fix it.
-> Seems I was sidetracked by some wrong assumptions.
-> Could you please test this fix.
+Paul Fulghum wrote:
+> Instead of reverting the patch can you try modifying
+> this part of the patch:
 > 
-> Works for me but this time I will do more testing....
-
-Thanks, works fine for me.
-
-> 	Sam
+> +	if (wait_event_interruptible_timeout(tty->write_wait,
+> +			!tty->driver->chars_in_buffer(tty), timeout))
+> +		return;
 > 
-> diff --git a/drivers/scsi/aic7xxx/Makefile b/drivers/scsi/aic7xxx/Makefile
-> index 4c54954..6aa49e7 100644
-> --- a/drivers/scsi/aic7xxx/Makefile
-> +++ b/drivers/scsi/aic7xxx/Makefile
-> @@ -44,8 +44,8 @@ clean-files += aic79xx_seq.h aic79xx_reg.h aic79xx_reg_print.c
->  
->  # Dependencies for generated files need to be listed explicitly
->  
-> -$(addprefix $(src)/,$(aic7xxx-y:.o=.c)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
-> -$(addprefix $(src)/,$(aic79xx-y:.o=.c)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
-> +$(addprefix $(src)/,$(aic7xxx-y)): $(obj)/aic7xxx_seq.h $(obj)/aic7xxx_reg.h
-> +$(addprefix $(src)/,$(aic79xx-y)): $(obj)/aic79xx_seq.h $(obj)/aic79xx_reg.h
->  
->  aic7xxx-gen-$(CONFIG_AIC7XXX_BUILD_FIRMWARE)	:= $(obj)/aic7xxx_reg.h
->  aic7xxx-gen-$(CONFIG_AIC7XXX_REG_PRETTY_PRINT)	+= $(obj)/aic7xxx_reg_print.c
+> by changing it to:
+> 
+> +	if (wait_event_interruptible_timeout(tty->write_wait,
+> +			!tty->driver->chars_in_buffer(tty), timeout) < 0)
+> +		return;
+> 
+> It looks like the patch changed the behavior of
+> tty_wait_until_sent by not calling the driver
+> specific wait_until_sent if a timeout occurs.
 
-cu
-Adrian
+I mispoke, the patch changed the behavior by not
+calling the driver specific wait_until_sent if
+the condition is true.
+
+Original behavior:
+call driver->wait_until_sent() on
+timeout or true condition
+(skip for signal)
+
+Patch behavior:
+call driver->wait_until_sent() only
+on timeout (rc == 0)
+(skip for signal or true)
+
+By modifying the patch as described above,
+the original behavior is restored.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Paul Fulghum
+Microgate Systems, Ltd.
