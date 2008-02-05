@@ -1,57 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYBETIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYBETIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbYBETIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758476AbYBETIA
+	id S1760110AbYBETIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbYBETIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:08:00 -0500
-Received: from mga02.intel.com ([134.134.136.20]:32803 "EHLO mga02.intel.com"
+	Tue, 5 Feb 2008 14:08:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47206 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYBETH6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:07:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,308,1199692800"; 
-   d="scan'208";a="335363610"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1760027AbYBETIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:08:23 -0500
+From: Josef Bacik <jbacik@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
+Date: Tue, 5 Feb 2008 13:59:05 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mingming Cao <cmm@us.ibm.com>
+References: <20080131161417.GA29679@unused.rdu.redhat.com> <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Tue, 5 Feb 2008 11:05:03 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC8130DD@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC78C75A@orsmsx424.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Thread-Index: Achj6MJxBSJCZx/gQf+KkNIfkM+UVgATq2qQAPx+iIA=
-References: <20080130180623.GA24881@elte.hu> <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com> <47A0CD4B.5040706@sgi.com> <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com> <20080130194616.GA19426@elte.hu> <1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com> <20080130200221.GA28073@elte.hu> <1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com> <20080130205915.GA4562@elte.hu> <1FE6DD409037234FAB833C420AA843EC78C219@orsmsx424.amr.corp.intel.com> <20080131090642.GA5688@elte.hu> <1FE6DD409037234FAB833C420AA843EC78C75A@orsmsx424.amr.corp.intel.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Mike Travis" <travis@sgi.com>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       <linux-ia64@vger.kernel.org>, <sparclinux@vger.kernel.org>
-X-OriginalArrivalTime: 05 Feb 2008 19:05:28.0793 (UTC) FILETIME=[12798C90:01C8682A]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802051359.05758.jbacik@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Applied that patch and UP kernel built ok, and then crashed in the
-> same place with the memset() to a user-looking address from kmem_cache_alloc()
+On Tuesday 05 February 2008 12:27:31 pm Jan Kara wrote:
+>   Hello,
 >
-> So the percpu changes are innocent ... something else since 2.6.24 is
-> to blame.  Only 5749 commits :-)  I'll start bisecting.
+>   Sorry for replying a bit late but I'm currently falling behind in
+> maling-list reading...
+>
+> > The way jbd tries to determine if there is enough space left on the
+> > journal in order to start a new transaction is looking at the space left
+> > in the journal and the space needed for the committing transaction, which
+> > is 1/4 of the journal + the number of t_outstanding_credits for that
+> > transaction.  In this case its assumed that t_outstanding_credits
+> > accurately represents the number of credits
+>
+>   Yes.
+>
+> > waiting to be written to the journal, but this sometimes isn't the case. 
+> > The transaction has two counters for buffers, t_outstanding_credits which
+> > is used in conjunction with handles that are added to the transaction,
+> > and t_nr_buffers which is only incremented/decremented when buffers are
+> > added/removed from the transaction and are actually destined to be
+> > journaled.  Normally these two
+>
+>   t_nr_buffers actually represents number of buffers on BJ_Metadata list
+> and nobody uses it (except for the assertion in
+> __journal_temp_unlink_buffer()). t_outstanding_credits is supposed to be
+> *the* counter making sure we don't write more than we have credits for.
+>
+> > counters are the same, however there are cases where the committing
+> > transaction can have buffers moved to the next running transaction, for
+> > example any buffers on the committing transactions t_reserved list would
+> > be moved to the next (running) transaction, and if it had been dirtied in
+> > the process it would immediately make it onto the t_updates list, which
+> > would increment t_nr_buffers
+>
+>   You probably mean t_buffers list here...
+>
+> > but not t_outstanding_credits.  So you get into this situation where
+>
+>   But which moving and dirtying do you mean? The caller which dirties
+> the buffer must make sure that he has acquired enough credits for the
+> transaction where the buffer ends up... So if there were not enough
+> buffers in the running transaction where we refiled the buffer it is a
+> bug in the caller which dirties the buffer.
+>
 
-The bisection narrowed in on an innocent patch in ipv4 space.  Meanwhile
-the rush of patches continues.  When I retested yesterday when Linus
-HEAD was 8af03e782... the CONFIG_SMP=n kernel worked perfectly.  So
-maybe it was fixed?  Or maybe the bug depends on the relative
-location of various bits of code/data and as the kernel grows and
-shrinks with incoming changes the problem comes and goes :-(
+You know now that you say that I feel like an idiot, you are right the only way 
+for something to actually end up on that list was if somebody dirtied it and if 
+they did it would have had to been accounted for at some point on the running 
+transaction.
 
--Tony
+> > t_nr_buffers (the actual number of buffers that are on the transaction)
+> > is greater than the number of buffers accounted for via
+> > t_outstanding_credits. This presents a problem since as we loop through
+> > writting buffers to the journal, we decrement t_outstanding_credits, and
+> > if t_nr_buffers is more than t_outstanding_credits then we end up with a
+> > negative number for
+> > t_outstanding_credits, which means we start saying we need less than 1/4
+> > of the journal for our committing transaction and allow more transactions
+> > than we can handle to start, and then bam we fail because
+> > journal_next_log_block doesn't have enough free blocks in order to handle
+> > the request.  This has been tested and fixes the issue (which could not
+> > be reproduced by me but several other people could get it to reproduce
+> > using postmark), and although I couldn't reproduce the assertion, I could
+> > very easily reproduce the situation where t_outstanding_credits was <
+> > than t_nr_buffers.
+>
+>   I suppose you see the assertion J_ASSERT(journal->j_free > 1); to
+> fail, right? I don't see how your patch could help avoid that assertion.
+> You've just removed accounting of t_outstanding_credits which has no
+> impact on the real number of free blocks in the journal stored in
+> j_free. Anyway, if you can reproduce t_outstanding_credits <
+> t_nr_buffers, then there's something fishy. Are you able to reproduce it
+> also with a current kernel?
+>   Thanks for looking into the problem :)
+>
+
+Well my patch helped avoid the assertion because t_outstanding_credits was going 
+negative therefore we were letting transactions start when we shouldn't be, and 
+eventually we would end up with too much of the journal in use and we'd assert.  
+Course I can't reproduce where t_outstanding_credits < t_nr_buffers upstream 
+(again I feel like an idiot, should have tested that first).  Thanks for 
+looking at this Jan.
+
+Mingming, would you mind pulling this patch out of the patch queue please since 
+its wrong?  Thanks much,
+
+Josef
