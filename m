@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYBEMJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYBEMMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbYBEMJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 07:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYBEMJG
+	id S1754202AbYBEMMP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 07:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYBEMMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:09:06 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:65170 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751423AbYBEMJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:09:04 -0500
-Date: Tue, 5 Feb 2008 13:08:44 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] kbuild: Fix instrumentation removal breakage on avr32
-Message-ID: <20080205130844.435e8cb3@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080205120334.GA23560@uranus.ravnborg.org>
-References: <20080203211042.GF2648@uranus.ravnborg.org>
-	<20080204124448.3633e937@dhcp-252-066.norway.atmel.com>
-	<20080204194626.GA16664@uranus.ravnborg.org>
-	<20080205121126.7ccdce8f@dhcp-252-066.norway.atmel.com>
-	<20080205120334.GA23560@uranus.ravnborg.org>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Tue, 5 Feb 2008 07:12:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58512 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751639AbYBEML7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 07:11:59 -0500
+Date: Tue, 5 Feb 2008 12:11:52 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Igor M Podlesny <for.poige+linux@gmail.com>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: > You may find that you need to update your lvm userspace tools.
+Message-ID: <20080205121152.GA609@agk.fab.redhat.com>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Igor M Podlesny <for.poige+linux@gmail.com>,
+	linux-kernel@vger.kernel.org, dm-devel@redhat.com
+References: <43d009740802022335y21c3f93ep4e444bef71338045@mail.gmail.com> <20080202235103.20dd9768.akpm@linux-foundation.org> <47A71040.5000300@gmail.com> <20080204052709.12f4e0d3.akpm@linux-foundation.org> <47A7F4DB.3070406@gmail.com> <20080204215304.8b909402.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080204215304.8b909402.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 13:03:34 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Mon, Feb 04, 2008 at 09:53:04PM -0800, Andrew Morton wrote:
+> Could someone in dm-devel land please get involved?
 
-> On Tue, Feb 05, 2008 at 12:11:26PM +0100, Haavard Skinnemoen wrote:
-> > On Mon, 4 Feb 2008 20:46:26 +0100
-> > Sam Ravnborg <sam@ravnborg.org> wrote:
-> > 
-> > > Sorry for not catching this.
-> > > I just blow away my git tree at kernel.org to avoid getting it
-> > > merged with the bug but Linus was too quick for me so he already
-> > > merged kbuild.git and applied this patch afterwards.
-> > 
-> > Ok, the result looks good. Thanks.
-> > 
-> > Bisecting on avr32 will be a nightmare though, but not only because of
-> > this patch...
-> 
-> This problem had not required a cross-tool chain - so no excuses but..
-> I recal I once had an AVR32 toolchain but I lost it when I got my new dev box.
-> 
-> Any pointer to a recent AVR32 toolchain I can use for test builds.
+Vague reports like this are sadly a regular occurrence, and they usually
+happen when people don't update their initrd after updating their
+kernel.  As well as the obvious problems from incompatible modules, some
+versions of distros are worse than others, as they foolishly hard-code
+device numbers, and a new kernel happens to assign device numbers in a
+different sequence breaking everything.  Another cause is when the
+distro lets the boot script run too early without waiting for the kernel
+to discover all the devices necessary.  Or sometimes kernel/module
+changes mean it no longer sees the devices at all.
 
-http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4118
-
-or if you want to use buildroot:
-
-http://www.atmel.no/buildroot/
-
-Haavard
+Alasdair
+-- 
+agk@redhat.com
