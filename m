@@ -1,79 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbYBEBRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbYBEBS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758639AbYBEBRp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Feb 2008 20:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758404AbYBEBPu
+	id S1758539AbYBEBS0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Feb 2008 20:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758404AbYBEBSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Feb 2008 20:15:50 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:46552 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758269AbYBEBPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Feb 2008 20:15:48 -0500
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: Pardus / KDE
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH] per-process securebits
-Date: Tue, 5 Feb 2008 03:15:59 +0200
-User-Agent: KMail/1.9.8
-Cc: "Andrew G. Morgan" <morgan@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-References: <47A2D439.9050704@kernel.org> <47A6661D.7020305@kernel.org> <20080204164524.GC20130@sergelap.ibm.com>
-In-Reply-To: <20080204164524.GC20130@sergelap.ibm.com>
+	Mon, 4 Feb 2008 20:18:04 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:45068 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757764AbYBEBSA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Feb 2008 20:18:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
+        b=jX0PxRPFtXw1QnlW1urzDI2PfMwBcl+EjS6zw13OlayYR0D8cs6KiyIyZmP8I94AmWTpfKpIK+6xRE2wuSgWkD9vZOiZxx4Hm1RERN2Z2gfDIEzz/9Otxvfs4FxoC+P6PC3gzZiHkZxK0ClFf+47q/oUKLf8dtxJK5lOlmuyGqE=
+Date: Tue, 5 Feb 2008 09:17:57 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+cc: Patrick McHardy <kaber@trash.net>, lkml <linux-kernel@vger.kernel.org>,
+       Krzysztof Piotr Oledzki <ole@ans.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: cups slow on linux-2.6.24
+Message-ID: <Pine.LNX.4.64.0802050913560.6704@boston.corp.fedex.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802050315.59476.ismail@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Monday 04 February 2008 around 18:45:24 Serge E. Hallyn wrote:
-> Quoting Andrew G. Morgan (morgan@kernel.org):
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> >
-> > Ismail D??nmez wrote:
-> > | What I meant to ask was what does "per-process securebits" brings as
-> >
-> > extra.
-> >
-> > It allows you to create a legacy free process tree. For example, a
-> > chroot, or container (which Serge can obviously explain in more detail),
->
-> (Just to give my thoughts on securebits and containers)
->
-> A container is a set of processes which has its own private namespaces
-> for all or most resources - for instance it sees only processes in its
-> own pid namespace, and its first process, which is sees as pid 1, is
-> known as some other pid, maybe 3459, to the rest of the system.
->
-> We tend to talk about 'system containers' versus 'application
-> containers'.  A system container would be like a vserver or openvz
-> instance, something which looks like a separate machine.  I was
-> going to say I don't imagine per-process securebits being useful
-> there, but actually since a system container doesn't need to do any
-> hardware setup it actually might be a much easier start for a full
-> SECURE_NOROOT distro than a real machine.  Heck, on a real machine init
-> and a few legacy deamons could run in the init namespace, while users
-> log in and apache etc run in a SECURE_NOROOT container.
->
-> But I especially like the thought of for instance postfix running in a
-> carefully crafted application container (with its own virtual network
-> card and limited file tree and no visibility of other processes) with
-> SECURE_NOROOT on.
 
-This is really interesting security wise, will be nice to see how it can be 
-implemented in real life.
 
-Thanks for the explanation and the implementation ;-)
+On Feb 5, 2008 4:17 AM, Jozsef Kadlecsik <kadlec@blackhole.kfki.hu> wrote:
 
-Regards,
-ismail
+> Actively closed connections are not handled properly, i.e. the initiator 
+> of the active close should not be taken into account. So could you give 
+> a try to the patch below? Does it just suppress the 'invalid packed 
+> ignored' and all other kernel messages or both suppresses them and 
+> produces normal printing speed?
 
--- 
-Never learn by your mistakes, if you do you may never dare to try again.
+Jozsef,
+
+Amazing! You fixed it. No more 'invalid packed ignored', and speed back to 
+normal (continues after approx. 20 seconds of pausing after 503 prints).
+
+I used the latest git, and have to modify your patch slightly to make it 
+work (changing "conntrack" to "ct").
+
+
+Thank you for fixing this.
+
+Jeff
+
+
+Here's your patch modified so it'll apply to the latest git.
+
+--- a/net/netfilter/nf_conntrack_proto_tcp.c.org	2008-02-05 08:29:39 +0800
++++ a/net/netfilter/nf_conntrack_proto_tcp.c	2008-02-05 08:28:05 +0800
+@@ -125,7 +125,7 @@
+   * CLOSE_WAIT:	ACK seen (after FIN)
+   * LAST_ACK:	FIN seen (after FIN)
+   * TIME_WAIT:	last ACK seen
+- * CLOSE:	closed connection
++ * CLOSE:	closed connection (RST)
+   *
+   * LISTEN state is not used.
+   *
+@@ -824,9 +824,23 @@
+  	case TCP_CONNTRACK_SYN_SENT:
+  		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+  			break;
+-		if ((ct->proto.tcp.seen[!dir].flags & IP_CT_TCP_FLAG_CLOSE_INIT)
+-		    || (ct->proto.tcp.last_dir == dir
+-		        && ct->proto.tcp.last_index == TCP_RST_SET)) {
++		/* RFC 1122: "When a connection is closed actively,
++		 * it MUST linger in TIME-WAIT state for a time 2xMSL
++		 * (Maximum Segment Lifetime). However, it MAY accept
++		 * a new SYN from the remote TCP to reopen the connection
++		 * directly from TIME-WAIT state, if..."
++		 * We ignore the conditions because we are in the
++		 * TIME-WAIT state anyway.
++		 *
++		 * Handle aborted connections: we and the server
++		 * think there is an existing connection but the client
++		 * aborts it and starts a new one.
++		 */
++		if (((ct->proto.tcp.seen[dir].flags
++		      | ct->proto.tcp.seen[!dir].flags)
++		     & IP_CT_TCP_FLAG_CLOSE_INIT)
++ 		    || (ct->proto.tcp.last_dir == dir
++ 		        && ct->proto.tcp.last_index == TCP_RST_SET)) {
+  			/* Attempt to reopen a closed/aborted connection.
+  			 * Delete this connection and look up again. */
+  			write_unlock_bh(&tcp_lock);
+@@ -838,15 +852,23 @@
+  	case TCP_CONNTRACK_IGNORE:
+  		/* Ignored packets:
+  		 *
++		 * Our connection entry may be out of sync, so ignore
++		 * packets which may signal the real connection between
++		 * the client and the server.
++		 *
+  		 * a) SYN in ORIGINAL
+  		 * b) SYN/ACK in REPLY
+  		 * c) ACK in reply direction after initial SYN in original.
++		 *
++		 * If the ignored packet is invalid, the receiver will send 
++		 * a RST we'll catch below.
+  		 */
+  		if (index == TCP_SYNACK_SET
+  		    && ct->proto.tcp.last_index == TCP_SYN_SET
+  		    && ct->proto.tcp.last_dir != dir
+  		    && ntohl(th->ack_seq) == ct->proto.tcp.last_end) {
+  			/* This SYN/ACK acknowledges a SYN that we earlier
++			/* b) This SYN/ACK acknowledges a SYN that we earlier
+  			 * ignored as invalid. This means that the client and
+  			 * the server are both in sync, while the firewall is
+  			 * not. We kill this session and block the SYN/ACK so
+@@ -924,8 +946,7 @@
+
+  	ct->proto.tcp.state = new_state;
+  	if (old_state != new_state
+-	    && (new_state == TCP_CONNTRACK_FIN_WAIT
+-		|| new_state == TCP_CONNTRACK_CLOSE))
++	    && new_state == TCP_CONNTRACK_FIN_WAIT)
+  		ct->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
+  	timeout = ct->proto.tcp.retrans >= nf_ct_tcp_max_retrans
+  		  && tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
