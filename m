@@ -1,117 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYBETIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbYBETJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbYBETIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 14:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbYBETIZ
+	id S1759924AbYBETJI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 14:09:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbYBETIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 14:08:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47206 "EHLO mx1.redhat.com"
+	Tue, 5 Feb 2008 14:08:51 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45606 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760027AbYBETIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 14:08:23 -0500
-From: Josef Bacik <jbacik@redhat.com>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
-Date: Tue, 5 Feb 2008 13:59:05 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mingming Cao <cmm@us.ibm.com>
-References: <20080131161417.GA29679@unused.rdu.redhat.com> <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
+	id S1756574AbYBETIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 14:08:50 -0500
+Message-ID: <47A8B43D.5070601@garzik.org>
+Date: Tue, 05 Feb 2008 14:08:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802051359.05758.jbacik@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: netdev@vger.kernel.org, michael.pyne@kdemail.net, AAbdulla@nvidia.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/4] forcedeth: fix MAC address detection on network card
+ (regression in 2.6.23)
+References: <200802050746.m157ktY9010399@imap1.linux-foundation.org>	<47A8A90B.6010602@garzik.org> <20080205105909.fd8c6dbe.akpm@linux-foundation.org>
+In-Reply-To: <20080205105909.fd8c6dbe.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------030708030606090702080804"
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 February 2008 12:27:31 pm Jan Kara wrote:
->   Hello,
->
->   Sorry for replying a bit late but I'm currently falling behind in
-> maling-list reading...
->
-> > The way jbd tries to determine if there is enough space left on the
-> > journal in order to start a new transaction is looking at the space left
-> > in the journal and the space needed for the committing transaction, which
-> > is 1/4 of the journal + the number of t_outstanding_credits for that
-> > transaction.  In this case its assumed that t_outstanding_credits
-> > accurately represents the number of credits
->
->   Yes.
->
-> > waiting to be written to the journal, but this sometimes isn't the case. 
-> > The transaction has two counters for buffers, t_outstanding_credits which
-> > is used in conjunction with handles that are added to the transaction,
-> > and t_nr_buffers which is only incremented/decremented when buffers are
-> > added/removed from the transaction and are actually destined to be
-> > journaled.  Normally these two
->
->   t_nr_buffers actually represents number of buffers on BJ_Metadata list
-> and nobody uses it (except for the assertion in
-> __journal_temp_unlink_buffer()). t_outstanding_credits is supposed to be
-> *the* counter making sure we don't write more than we have credits for.
->
-> > counters are the same, however there are cases where the committing
-> > transaction can have buffers moved to the next running transaction, for
-> > example any buffers on the committing transactions t_reserved list would
-> > be moved to the next (running) transaction, and if it had been dirtied in
-> > the process it would immediately make it onto the t_updates list, which
-> > would increment t_nr_buffers
->
->   You probably mean t_buffers list here...
->
-> > but not t_outstanding_credits.  So you get into this situation where
->
->   But which moving and dirtying do you mean? The caller which dirties
-> the buffer must make sure that he has acquired enough credits for the
-> transaction where the buffer ends up... So if there were not enough
-> buffers in the running transaction where we refiled the buffer it is a
-> bug in the caller which dirties the buffer.
->
+This is a multi-part message in MIME format.
+--------------030708030606090702080804
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-You know now that you say that I feel like an idiot, you are right the only way 
-for something to actually end up on that list was if somebody dirtied it and if 
-they did it would have had to been accounted for at some point on the running 
-transaction.
+Andrew Morton wrote:
+> On Tue, 05 Feb 2008 13:20:59 -0500 Jeff Garzik <jeff@garzik.org> wrote:
+> 
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>> NAK - this fixes one set of users, and breaks a working set of users.
+>>
+>> Need to add DMI check for the specific motherboard (dmi_check_system), 
+>> and flip flag according to success/failure of that check.
+> 
+> OK :)  I added the above to the changelog for next time.
+> 
+> You guys can hide, but this patch isn't going away!
 
-> > t_nr_buffers (the actual number of buffers that are on the transaction)
-> > is greater than the number of buffers accounted for via
-> > t_outstanding_credits. This presents a problem since as we loop through
-> > writting buffers to the journal, we decrement t_outstanding_credits, and
-> > if t_nr_buffers is more than t_outstanding_credits then we end up with a
-> > negative number for
-> > t_outstanding_credits, which means we start saying we need less than 1/4
-> > of the journal for our committing transaction and allow more transactions
-> > than we can handle to start, and then bam we fail because
-> > journal_next_log_block doesn't have enough free blocks in order to handle
-> > the request.  This has been tested and fixes the issue (which could not
-> > be reproduced by me but several other people could get it to reproduce
-> > using postmark), and although I couldn't reproduce the assertion, I could
-> > very easily reproduce the situation where t_outstanding_credits was <
-> > than t_nr_buffers.
->
->   I suppose you see the assertion J_ASSERT(journal->j_free > 1); to
-> fail, right? I don't see how your patch could help avoid that assertion.
-> You've just removed accounting of t_outstanding_credits which has no
-> impact on the real number of free blocks in the journal stored in
-> j_free. Anyway, if you can reproduce t_outstanding_credits <
-> t_nr_buffers, then there's something fishy. Are you able to reproduce it
-> also with a current kernel?
->   Thanks for looking into the problem :)
->
+In the original thread, I even posted a 
+fill-in-the-blanks-with-the-motherboard-name patch.  I'll attach it again...
 
-Well my patch helped avoid the assertion because t_outstanding_credits was going 
-negative therefore we were letting transactions start when we shouldn't be, and 
-eventually we would end up with too much of the journal in use and we'd assert.  
-Course I can't reproduce where t_outstanding_credits < t_nr_buffers upstream 
-(again I feel like an idiot, should have tested that first).  Thanks for 
-looking at this Jan.
+	Jeff
 
-Mingming, would you mind pulling this patch out of the patch queue please since 
-its wrong?  Thanks much,
 
-Josef
+
+
+--------------030708030606090702080804
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
+
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index 3634223..eab85fa 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -147,6 +147,7 @@
+ #include <linux/init.h>
+ #include <linux/if_vlan.h>
+ #include <linux/dma-mapping.h>
++#include <linux/dmi.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/io.h>
+@@ -4992,6 +4993,26 @@ static int nv_close(struct net_device *dev)
+ 	return 0;
+ }
+ 
++static int nv_reversed_macaddr(void)
++{
++	static const struct dmi_system_id sysids[] = {
++		{
++			.ident = "",
++			.matches = {
++				DMI_MATCH(DMI_SYS_VENDOR, ""),
++				DMI_MATCH(DMI_PRODUCT_NAME, ""),
++			},
++		},
++
++		{ }	/* terminate list */
++	};
++
++	if (dmi_check_system(sysids))
++		return 1;
++	
++	return 0;
++}
++
+ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
+ {
+ 	struct net_device *dev;
+@@ -5187,8 +5208,9 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
+ 
+ 	/* check the workaround bit for correct mac address order */
+ 	txreg = readl(base + NvRegTransmitPoll);
+-	if ((txreg & NVREG_TRANSMITPOLL_MAC_ADDR_REV) ||
+-	    (id->driver_data & DEV_HAS_CORRECT_MACADDR)) {
++	if (((txreg & NVREG_TRANSMITPOLL_MAC_ADDR_REV) ||
++	    (id->driver_data & DEV_HAS_CORRECT_MACADDR))) &&
++	    (!nv_reversed_macaddr())) {
+ 		/* mac address is already in correct order */
+ 		dev->dev_addr[0] = (np->orig_mac[0] >>  0) & 0xff;
+ 		dev->dev_addr[1] = (np->orig_mac[0] >>  8) & 0xff;
+
+--------------030708030606090702080804--
