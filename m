@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYBFSFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbYBFSGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbYBFSFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 13:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYBFSFV
+	id S1757651AbYBFSGA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 13:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYBFSFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 13:05:21 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:52132 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750900AbYBFSFU (ORCPT
+	Wed, 6 Feb 2008 13:05:50 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:35526 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752336AbYBFSFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 13:05:20 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.25] cxgb3: Handle ARP completions that mark neighbors stale.
-Date: Wed, 06 Feb 2008 12:05:19 -0600
-To: jeff@garzik.org, divy@chelsio.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Message-Id: <20080206180519.4680.34741.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Wed, 6 Feb 2008 13:05:49 -0500
+Message-ID: <47A9F6BE.1010800@qualcomm.com>
+Date: Wed, 06 Feb 2008 10:04:46 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: RT scheduler config, suggestions and questions
+References: <47A8F328.5070107@qualcomm.com>	 <1202279815.19243.34.camel@lappy> <1202297381.19243.48.camel@lappy>
+In-Reply-To: <1202297381.19243.48.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Zijlstra wrote:
+> On Wed, 2008-02-06 at 07:36 +0100, Peter Zijlstra wrote:
+> 
+>>> btw I can see "watchdog" being very useful to catch hard-RT tasks that exceed the deadline.
+>>> But's it gotta be per thread.
+>> It is.
+>>
+>>> Single setting per user is not enough. Unless a use has a single RT task.
+>> ?
+> 
+> Ah, its starting to make sense, you want it configurable per thread, not
+> process wide. Yes, I see how that is useful, just no idea how to expose
+> that to user-space atm.
+Yes. That's what I meant. I don't think overall per process setting is that useful.
+Per thread though would be useful.
 
-cxgb3: Handle ARP completions that mark neighbors stale.
+How to expose that to the user-space ? The best option in my opinion is to extend
+struct sched_param. That way both sched_setparam() and pthread_attr_setschedparam() 
+can be used to set new attributes and it's backwards compatible.
+Something like:
 
-When ARP completes due to a request rather than a reply the neighbor is
-marked NUD_STALE instead of reachable (see arp_process()).  The handler
-for the resulting netevent needs to check also for NUD_STALE.
+struct sched_param {
+	...
+	unsigned int sched_rt_limit;
+	unsigned int sched_rt_...;
+};
 
-Failure to use the arp entry can cause RDMA connection failures.
-
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
-
- drivers/net/cxgb3/l2t.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/cxgb3/l2t.c b/drivers/net/cxgb3/l2t.c
-index d660af7..d80bbdb 100644
---- a/drivers/net/cxgb3/l2t.c
-+++ b/drivers/net/cxgb3/l2t.c
-@@ -404,7 +404,7 @@ found:
- 			if (neigh->nud_state & NUD_FAILED) {
- 				arpq = e->arpq_head;
- 				e->arpq_head = e->arpq_tail = NULL;
--			} else if (neigh_is_connected(neigh))
-+			} else if (neigh->nud_state & (NUD_CONNECTED|NUD_STALE))
- 				setup_l2e_send_pending(dev, NULL, e);
- 		} else {
- 			e->state = neigh_is_connected(neigh) ?
+Max
