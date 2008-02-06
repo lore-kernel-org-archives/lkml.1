@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYBFRqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYBFRqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbYBFRqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbYBFRpq
+	id S1757920AbYBFRqa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbYBFRps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:45:46 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:44521 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756638AbYBFRpo (ORCPT
+	Wed, 6 Feb 2008 12:45:48 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37168 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756664AbYBFRpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 Feb 2008 12:45:44 -0500
-Date: Wed, 6 Feb 2008 12:44:48 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Miklos Szeredi <miklos@szeredi.hu>
-Subject: [PATCH 5/5] UML - Fix mm_context memory leak 
-Message-ID: <20080206174448.GA7851@c2.user-mode-linux.org>
+Subject: Re: [PATCH][drivers/scsi/u14-34f.c] duplicate test
+	'SCpnt->sc_data_direction == DMA_FROM_DEVICE'
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: ballabio_dario@emc.com, linux-scsi@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <47A7937C.7040701@tiscali.nl>
+References: <47A7937C.7040701@tiscali.nl>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 11:45:39 -0600
+Message-Id: <1202319939.3112.89.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Spotted by Miklos ]
 
-Fix a memory leak in init_new_context.  The struct page ** buffer
-allocated for install_special_mapping was never recorded, and thus
-leaked when the mm_struct was freed.  Fix it by saving the pointer in
-mm_context_t and freeing it in arch_exit_mmap.
+On Mon, 2008-02-04 at 23:36 +0100, Roel Kluin wrote:
+> It should be like this I guess? this patch was not yet tested, please
+> confirm.
+> --
+> Note the duplicate test 'SCpnt->sc_data_direction == DMA_FROM_DEVICE'
+> 
+> from Documentation/DMA-API.txt:
+> DMA_TO_DEVICE         = PCI_DMA_TODEVICE      data is going from the
+>                                               memory to the device
+> DMA_FROM_DEVICE       = PCI_DMA_FROMDEVICE    data is coming from
+>                                               the device to the
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/drivers/scsi/u14-34f.c b/drivers/scsi/u14-34f.c
+> index 662c004..1e704f9 100644
+> --- a/drivers/scsi/u14-34f.c
+> +++ b/drivers/scsi/u14-34f.c
+> @@ -1208,15 +1208,15 @@ static void scsi_to_dev_dir(unsigned int i, unsigned int j) {
+>        };
+>  
+>     struct mscp *cpp;
+>     struct scsi_cmnd *SCpnt;
+>  
+>     cpp = &HD(j)->cp[i]; SCpnt = cpp->SCpnt;
+>  
+> -   if (SCpnt->sc_data_direction == DMA_FROM_DEVICE) {
+> +   if (SCpnt->sc_data_direction == DMA_TO_DEVICE) {
+>        cpp->xdir = DTD_IN;
+>        return;
+>        }
+>     else if (SCpnt->sc_data_direction == DMA_FROM_DEVICE) {
+>        cpp->xdir = DTD_OUT;
+>        return;
+>        }
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>
----
- arch/um/include/um_mmu.h  |    1 +
- arch/um/kernel/skas/mmu.c |    5 +++++
- 2 files changed, 6 insertions(+)
+Well spotted, this is definitely a huge bug in the driver.
 
-Index: linux-2.6-git/arch/um/include/um_mmu.h
-===================================================================
---- linux-2.6-git.orig/arch/um/include/um_mmu.h	2008-02-06 12:15:05.000000000 -0500
-+++ linux-2.6-git/arch/um/include/um_mmu.h	2008-02-06 12:24:08.000000000 -0500
-@@ -13,6 +13,7 @@
- typedef struct mm_context {
- 	struct mm_id id;
- 	struct uml_ldt ldt;
-+	struct page **stub_pages;
- } mm_context_t;
- 
- extern void __switch_mm(struct mm_id * mm_idp);
-Index: linux-2.6-git/arch/um/kernel/skas/mmu.c
-===================================================================
---- linux-2.6-git.orig/arch/um/kernel/skas/mmu.c	2008-02-06 12:15:05.000000000 -0500
-+++ linux-2.6-git/arch/um/kernel/skas/mmu.c	2008-02-06 12:24:31.000000000 -0500
-@@ -91,6 +91,8 @@ int init_new_context(struct task_struct 
- 		goto out_free;
- 	}
- 
-+	to_mm->stub_pages = NULL;
-+
- 	return 0;
- 
-  out_free:
-@@ -126,6 +128,7 @@ void arch_dup_mmap(struct mm_struct *old
- 
- 	pages[0] = virt_to_page(&__syscall_stub_start);
- 	pages[1] = virt_to_page(mm->context.id.stack);
-+	mm->context.stub_pages = pages;
- 
- 	/* dup_mmap already holds mmap_sem */
- 	err = install_special_mapping(mm, STUB_START, STUB_END - STUB_START,
-@@ -147,6 +150,8 @@ void arch_exit_mmap(struct mm_struct *mm
- {
- 	pte_t *pte;
- 
-+	if (mm->context.stub_pages != NULL)
-+		kfree(mm->context.stub_pages);
- 	pte = virt_to_pte(mm, STUB_CODE);
- 	if (pte != NULL)
- 		pte_clear(mm, STUB_CODE, pte);
+However, I think on closer examination that DTD_IN actually means
+transfer from device to host, so DMA_FROM_DEVICE is correct for that
+case.  It should be DMA_TO_DEVICE in the else if() piece.
+
+Could you correct and resend the patch and I'll apply it.
+
+Thanks,
+
+James
+
+
