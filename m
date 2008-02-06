@@ -1,402 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762872AbYBFAOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbYBFAP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762872AbYBFAOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 19:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759635AbYBFAOA
+	id S1761416AbYBFAP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 19:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760091AbYBFAPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 19:14:00 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54655 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759026AbYBFAN6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 19:13:58 -0500
-Date: Tue, 5 Feb 2008 16:12:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: sam@ravnborg.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, kristen.c.accardi@intel.com
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-Message-Id: <20080205161218.70af0ff9.akpm@linux-foundation.org>
-In-Reply-To: <1202084211.3318.129.camel@localhost.localdomain>
-References: <1202074856.3318.111.camel@localhost.localdomain>
-	<20080203220348.GH2648@uranus.ravnborg.org>
-	<1202084211.3318.129.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 19:15:15 -0500
+Received: from styx.suse.cz ([82.119.242.94]:54825 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759971AbYBFAPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 19:15:13 -0500
+Date: Wed, 6 Feb 2008 01:15:12 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Marcel Holtmann <marcel@holtmann.org>, David Sterba <dsterba@suse.cz>,
+       linux-kernel@vger.kernel.org, Ben Martel <benm@symmetric.co.nz>,
+       stephen@symmetric.co.nz
+Subject: Re: [PATCH][v4] ipwireless: driver for 3G PC Card
+In-Reply-To: <alpine.LFD.1.00.0802051600330.2967@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0802060110540.30955@jikos.suse.cz>
+References: <20080201153707.GA24859@ds.suse.cz>  <Pine.LNX.4.64.0802051114390.30955@jikos.suse.cz>
+ <1202255212.15090.180.camel@violet> <alpine.LFD.1.00.0802051600330.2967@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 03 Feb 2008 18:16:51 -0600
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Tue, 5 Feb 2008, Linus Torvalds wrote:
 
-> 
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date: Sun, 3 Feb 2008 15:40:56 -0600
-> Subject: [SCSI] enclosure: add support for enclosure services
-> 
-> The enclosure misc device is really just a library providing sysfs
-> support for physical enclosure devices and their components.
-> 
+> And especially with wireless, I think the impact for any future changes 
+> are about the wireless infrastructure, not PCMCIA. There's little reason 
+> to believe that we'll ever make any big PCMCIA overhauls exctly because 
+> PCMCIA is so dead. So I'd happily merge it, but I would be even happier 
+> if I got ack's from the wireless people or if it was simply merged that 
+> way too.
 
-Thanks for sending it out for review.
+Unfortunately the device has quite confusing name (and the driver of 
+course follows). It has 'wireless' in its name, but it has literally 
+nothing to do with "wireless" networking, as long as 802.11<anything> is 
+involved.
 
-> +struct enclosure_device *enclosure_find(struct device *dev)
-> +{
-> +	struct enclosure_device *edev = NULL;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_for_each_entry(edev, &container_list, node) {
-> +		if (edev->cdev.dev == dev) {
-> +			mutex_unlock(&container_list_lock);
-> +			return edev;
-> +		}
-> +	}
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_find);
+It is in fact a PCMCIA card, that acts as a GPRS/EDGE/UMTS modem. So its 
+This has been already discussed, please see 
+http://www.ussg.iu.edu/hypermail/linux/kernel/0711.3/2198.html
 
-This looks a little odd.  We don't take a ref on the object after looking
-it up, so what prevents some other thread of control from freeing or
-otherwise altering the returned object while the caller is playing with it?
+Thanks,
 
-> +/**
-> + * enclosure_for_each_device - calls a function for each enclosure
-> + * @fn:		the function to call
-> + * @data:	the data to pass to each call
-> + *
-> + * Loops over all the enclosures calling the function.
-> + *
-> + * Note, this function uses a mutex which will be held across calls to
-> + * @fn, so it must have user context, and @fn should not sleep or
-
-Probably "non atomic context" would be more accurate.
-
-fn() actually _can_ sleep.
-
-> + * otherwise cause the mutex to be held for indefinite periods
-> + */
-> +int enclosure_for_each_device(int (*fn)(struct enclosure_device *, void *),
-> +			      void *data)
-> +{
-> +	int error = 0;
-> +	struct enclosure_device *edev;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_for_each_entry(edev, &container_list, node) {
-> +		error = fn(edev, data);
-> +		if (error)
-> +			break;
-> +	}
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	return error;
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_for_each_device);
-> +
-> +/**
-> + * enclosure_register - register device as an enclosure
-> + *
-> + * @dev:	device containing the enclosure
-> + * @components:	number of components in the enclosure
-> + *
-> + * This sets up the device for being an enclosure.  Note that @dev does
-> + * not have to be a dedicated enclosure device.  It may be some other type
-> + * of device that additionally responds to enclosure services
-> + */
-> +struct enclosure_device *
-> +enclosure_register(struct device *dev, const char *name, int components,
-> +		   struct enclosure_component_callbacks *cb)
-> +{
-> +	struct enclosure_device *edev =
-> +		kzalloc(sizeof(struct enclosure_device) +
-> +			sizeof(struct enclosure_component)*components,
-> +			GFP_KERNEL);
-> +	int err, i;
-> +
-> +	if (!edev)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	if (!cb) {
-> +		kfree(edev);
-> +		return ERR_PTR(-EINVAL);
-> +	}
-
-It would be less fuss if this were to test cb before doing the kzalloc().
-
-Can cb==NULL actually and legitimately happen?
-
-> +	edev->components = components;
-> +
-> +	edev->cdev.class = &enclosure_class;
-> +	edev->cdev.dev = get_device(dev);
-> +	edev->cb = cb;
-> +	snprintf(edev->cdev.class_id, BUS_ID_SIZE, "%s", name);
-> +	err = class_device_register(&edev->cdev);
-> +	if (err)
-> +		goto err;
-> +
-> +	for (i = 0; i < components; i++)
-> +		edev->component[i].number = -1;
-> +
-> +	mutex_lock(&container_list_lock);
-> +	list_add_tail(&edev->node, &container_list);
-> +	mutex_unlock(&container_list_lock);
-> +
-> +	return edev;
-> +
-> + err:
-> +	put_device(edev->cdev.dev);
-> +	kfree(edev);
-> +	return ERR_PTR(err);
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_register);
-> +
-> +static struct enclosure_component_callbacks enclosure_null_callbacks;
-> +
-> +/**
-> + * enclosure_unregister - remove an enclosure
-> + *
-> + * @edev:	the registered enclosure to remove;
-> + */
-> +void enclosure_unregister(struct enclosure_device *edev)
-> +{
-> +	int i;
-> +
-> +	if (!edev)
-> +		return;
-
-Is this legal?
-
-> +	mutex_lock(&container_list_lock);
-> +	list_del(&edev->node);
-> +	mutex_unlock(&container_list_lock);
-
-See, right now, someone who found this enclosure_device via
-enclosure_find() could still be playing with it?
-
-> +	for (i = 0; i < edev->components; i++)
-> +		if (edev->component[i].number != -1)
-> +			class_device_unregister(&edev->component[i].cdev);
-> +
-> +	/* prevent any callbacks into service user */
-> +	edev->cb = &enclosure_null_callbacks;
-> +	class_device_unregister(&edev->cdev);
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_unregister);
-> +
-> +/**
-> + * enclosure_component_register - add a particular component to an enclosure
-> + * @edev:	the enclosure to add the component
-> + * @num:	the device number
-> + * @type:	the type of component being added
-> + * @name:	an optional name to appear in sysfs (leave NULL if none)
-> + *
-> + * Registers the component.  The name is optional for enclosures that
-> + * give their components a unique name.  If not, leave the field NULL
-> + * and a name will be assigned.
-> + *
-> + * Returns a pointer to the enclosure component or an error.
-> + */
-> +struct enclosure_component *
-> +enclosure_component_register(struct enclosure_device *edev,
-> +			     unsigned int number,
-> +			     enum enclosure_component_type type,
-> +			     const char *name)
-> +{
-> +	struct enclosure_component *ecomp;
-> +	struct class_device *cdev;
-> +	int err;
-> +
-> +	if (!edev || number >= edev->components)
-> +		return ERR_PTR(-EINVAL);
-
-Is !edev possible and legitimate?
-
-> +	ecomp = &edev->component[number];
-> +
-> +	if (ecomp->number != -1)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	ecomp->type = type;
-> +	ecomp->number = number;
-> +	cdev = &ecomp->cdev;
-> +	cdev->parent = class_device_get(&edev->cdev);
-> +	cdev->class = &enclosure_component_class;
-> +	if (name)
-> +		snprintf(cdev->class_id, BUS_ID_SIZE, "%s", name);
-> +	else
-> +		snprintf(cdev->class_id, BUS_ID_SIZE, "%d", number);
-
-%u :)
-
-> +
-> +	err = class_device_register(cdev);
-> +	if (err)
-> +		ERR_PTR(err);
-> +
-> +	return ecomp;
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_component_register);
-> +
-> +/**
-> + * enclosure_add_device - add a device as being part of an enclosure
-> + * @edev:	the enclosure device being added to.
-> + * @num:	the number of the component
-> + * @dev:	the device being added
-> + *
-> + * Declares a real device to reside in slot (or identifier) @num of an
-> + * enclosure.  This will cause the relevant sysfs links to appear.
-> + * This function may also be used to change a device associated with
-> + * an enclosure without having to call enclosure_remove_device() in
-> + * between.
-> + *
-> + * Returns zero on success or an error.
-> + */
-> +int enclosure_add_device(struct enclosure_device *edev, int component,
-> +			 struct device *dev)
-> +{
-> +	struct class_device *cdev;
-> +
-> +	if (!edev || component >= edev->components)
-> +		return -EINVAL;
-> +
-> +	cdev = &edev->component[component].cdev;
-> +
-> +	class_device_del(cdev);
-> +	if (cdev->dev)
-> +		put_device(cdev->dev);
-> +	cdev->dev = get_device(dev);
-> +	return class_device_add(cdev);
-> +}
-> +EXPORT_SYMBOL_GPL(enclosure_add_device);
-> +
-> +/*
-> + * sysfs pieces below
-> + */
-> +
-> +static ssize_t enclosure_show_components(struct class_device *cdev, char *buf)
-> +{
-> +	struct enclosure_device *edev = to_enclosure_device(cdev);
-> +
-> +	return snprintf(buf, 40, "%d\n", edev->components);
-> +}
-
-"40"?
-
-> +static struct class_device_attribute enclosure_attrs[] = {
-> +	__ATTR(components, S_IRUGO, enclosure_show_components, NULL),
-> +	__ATTR_NULL
-> +};
-> +
-> +static struct class enclosure_class = {
-> +	.name			= "enclosure",
-> +	.owner			= THIS_MODULE,
-> +	.release		= enclosure_release,
-> +	.class_dev_attrs	= enclosure_attrs,
-> +};
-> +
-> +static char *enclosure_status [] = {
-> +	[ENCLOSURE_STATUS_UNSUPPORTED] = "unsupported",
-> +	[ENCLOSURE_STATUS_OK] = "OK",
-> +	[ENCLOSURE_STATUS_CRITICAL] = "critical",
-> +	[ENCLOSURE_STATUS_NON_CRITICAL] = "non-critical",
-> +	[ENCLOSURE_STATUS_UNRECOVERABLE] = "unrecoverable",
-> +	[ENCLOSURE_STATUS_NOT_INSTALLED] = "not installed",
-> +	[ENCLOSURE_STATUS_UNKNOWN] = "unknown",
-> +	[ENCLOSURE_STATUS_UNAVAILABLE] = "unavailable",
-> +};
-> +
-> +static char *enclosure_type [] = {
-> +	[ENCLOSURE_COMPONENT_DEVICE] = "device",
-> +	[ENCLOSURE_COMPONENT_ARRAY_DEVICE] = "array device",
-> +};
-
-One could play with const here, if sufficiently keen.
-
-> +static ssize_t set_component_fault(struct class_device *cdev, const char *buf,
-> +				   size_t count)
-> +{
-> +	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
-> +	struct enclosure_component *ecomp = to_enclosure_component(cdev);
-> +	int val = simple_strtoul(buf, NULL, 0);
-
-hrm, we do this conversion about 1e99 times in the kernel and we have to go
-and pass three args where only one was needed. katoi()?
-
-> +	if (edev->cb->set_fault)
-> +		edev->cb->set_fault(edev, ecomp, val);
-> +	return count;
-> +}
-> +
-> +static ssize_t get_component_status(struct class_device *cdev, char *buf)
-> +{
-> +	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
-> +	struct enclosure_component *ecomp = to_enclosure_component(cdev);
-> +
-> +	if (edev->cb->get_status)
-> +		edev->cb->get_status(edev, ecomp);
-> +	return snprintf(buf, 40, "%s\n", enclosure_status[ecomp->status]);
-> +}
-> +
-> +static ssize_t set_component_status(struct class_device *cdev, const char *buf,
-> +				   size_t count)
-> +{
-> +	struct enclosure_device *edev = to_enclosure_device(cdev->parent);
-> +	struct enclosure_component *ecomp = to_enclosure_component(cdev);
-> +	int i;
-> +
-> +	for (i = 0; enclosure_status[i]; i++) {
-> +		if (strncmp(buf, enclosure_status[i],
-> +			    strlen(enclosure_status[i])) == 0 &&
-> +		    buf[strlen(enclosure_status[i])] == '\n')
-> +			break;
-> +	}
-
-So if an application does
-
-	write(fd, "foo", 3)
-
-it won't work?  Thye have to do
-
-	write(fd, "foo\n", 4)
-
-?
-
-
-> +	if (enclosure_status[i] && edev->cb->set_status) {
-> +		edev->cb->set_status(edev, ecomp, i);
-> +		return count;
-> +	} else
-> +		return -EINVAL;
-> +}
-> +
->
-> ...
->
-> +#define to_enclosure_device(x) container_of((x), struct enclosure_device, cdev)
-> +#define to_enclosure_component(x) container_of((x), struct enclosure_component, cdev)
-
-These could be C functions...
-
-> +struct enclosure_device *
-> +enclosure_register(struct device *, const char *, int,
-> +		   struct enclosure_component_callbacks *);
-> +void enclosure_unregister(struct enclosure_device *);
-> +struct enclosure_component *
-> +enclosure_component_register(struct enclosure_device *, unsigned int,
-> +				 enum enclosure_component_type, const char *);
-> +int enclosure_add_device(struct enclosure_device *enclosure, int component,
-> +			 struct device *dev);
-> +int enclosure_remove_device(struct enclosure_device *enclosure, int component);
-> +struct enclosure_device *enclosure_find(struct device *dev);
-> +int enclosure_for_each_device(int (*fn)(struct enclosure_device *, void *),
-> +			      void *data);
-> +
-> +#endif /* _LINUX_ENCLOSURE_H_ */
-
-Nice looking driver.
+-- 
+Jiri Kosina
+SUSE Labs
