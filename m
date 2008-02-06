@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbYBFBvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763406AbYBFBxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761110AbYBFBvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760863AbYBFBvc
+	id S1763406AbYBFBxo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 20:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759772AbYBFBxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:51:32 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44190 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760813AbYBFBvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:51:31 -0500
-Message-ID: <47A9129A.7050706@zytor.com>
-Date: Tue, 05 Feb 2008 17:51:22 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 5 Feb 2008 20:53:35 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56994 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759699AbYBFBxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 20:53:34 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH for review] ACPI: Create /sys/firmware/acpi/interrupts/ counters
+Date: Tue, 5 Feb 2008 20:53:06 -0500
+User-Agent: KMail/1.9.5
+Cc: Greg KH <gregkh@suse.de>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200802050230.10873.lenb@kernel.org> <200802051812.09228.lenb@kernel.org> <200802051744.36371.bjorn.helgaas@hp.com>
+In-Reply-To: <200802051744.36371.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl> <47A90F23.80009@zytor.com> <200802060242.15097.rjw@sisk.pl>
-In-Reply-To: <200802060242.15097.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802052053.06427.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
->> The asm() for making beeps really need to be moved to a function and 
->> cleaned up (redone in C using inb()/outb()) if they are to be retained 
->> at all.
+On Tuesday 05 February 2008 19:44, Bjorn Helgaas wrote:
+> On Tuesday 05 February 2008 04:12:09 pm Len Brown wrote:
+> > is there
+> > a version of cat that prints the file name before
+> > the contents of each file?
 > 
-> Yes, they are.  For some people they're the only tool to debug broken resume.
+> I use "grep . *" for this sort of thing.
 
-That's fine, but they should get cleaned up.
+good tip, bjorn, thanks!
 
-/me is tempted to provide a version which can send messages in Morse Code ;)
-
-	-hpa
+/sys/devices/system/cpu/cpu0/cpufreq # grep . *
+affected_cpus:0
+cpuinfo_cur_freq:1596000
+cpuinfo_max_freq:2660000
+cpuinfo_min_freq:1596000
+scaling_available_frequencies:2660000 2128000 1596000
+scaling_available_governors:conservative ondemand userspace powersave performance
+scaling_cur_freq:1596000
+scaling_driver:centrino
+scaling_governor:ondemand
+scaling_max_freq:2660000
+scaling_min_freq:1596000
