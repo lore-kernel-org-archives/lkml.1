@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765615AbYBGAG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbYBGAHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765615AbYBGAG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764400AbYBFX5I
+	id S932386AbYBGAHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764491AbYBFX5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:57:08 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60629 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:57:12 -0500
+Received: from mail.suse.de ([195.135.220.2]:45905 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762069AbYBFX5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:57:06 -0500
-Date: Wed, 6 Feb 2008 15:52:38 -0800
+	id S1764792AbYBFX5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:57:10 -0500
+Date: Wed, 6 Feb 2008 15:52:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,15 +19,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Timo Teras <timo.teras@iki.fi>, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 27/73] IPV4: ip_gre: set mac_header correctly in receive
-	path
-Message-ID: <20080206235238.GB13121@suse.de>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 28/73] CASSINI: Fix endianness bug.
+Message-ID: <20080206235240.GC13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv4-ip_gre-set-mac_header-correctly-in-receive-path.patch"
+Content-Disposition: inline; filename="cassini_1.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,33 +36,109 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Timo Teras <timo.teras@iki.fi>
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-[IPV4] ip_gre: set mac_header correctly in receive path
+[ Upstream commit: e5e025401f6e926c1d9dc3f3f2813cf98a2d8708 ]
 
-[ Upstream commit: 1d0691674764098304ae4c63c715f5883b4d3784 ]
+Here's proposed fix for RX checksum handling in cassini; it affects
+little-endian working with half-duplex gigabit, but obviously needs
+testing on big-endian too.
 
-mac_header update in ipgre_recv() was incorrectly changed to
-skb_reset_mac_header() when it was introduced.
+The problem is, we need to convert checksum to fixed-endian *before*
+correcting for (unstripped) FCS.  On big-endian it won't matter
+(conversion is no-op), on little-endian it will, but only if FCS is
+not stripped by hardware; i.e. in half-duplex gigabit mode when
+->crc_size is set.
 
-Signed-off-by: Timo Teras <timo.teras@iki.fi>
+cassini.c part is that fix, cassini.h one consists of trivial
+endianness annotations.  With that applied the sucker is endian-clean,
+according to sparse.
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/ip_gre.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/cassini.c |    8 +++++---
+ drivers/net/cassini.h |   18 +++++++++---------
+ 2 files changed, 14 insertions(+), 12 deletions(-)
 
---- a/net/ipv4/ip_gre.c
-+++ b/net/ipv4/ip_gre.c
-@@ -613,7 +613,7 @@ static int ipgre_rcv(struct sk_buff *skb
- 				offset += 4;
- 		}
+--- a/drivers/net/cassini.c
++++ b/drivers/net/cassini.c
+@@ -1979,6 +1979,7 @@ static int cas_rx_process_pkt(struct cas
+ 	struct cas_page *page;
+ 	struct sk_buff *skb;
+ 	void *addr, *crcaddr;
++	__sum16 csum;
+ 	char *p;
  
--		skb_reset_mac_header(skb);
-+		skb->mac_header = skb->network_header;
- 		__pskb_pull(skb, offset);
- 		skb_reset_network_header(skb);
- 		skb_postpull_rcsum(skb, skb_transport_header(skb), offset);
+ 	hlen = CAS_VAL(RX_COMP2_HDR_SIZE, words[1]);
+@@ -2158,14 +2159,15 @@ end_copy_pkt:
+ 		skb_put(skb, alloclen);
+ 	}
+ 
+-	i = CAS_VAL(RX_COMP4_TCP_CSUM, words[3]);
++	csum = (__force __sum16)htons(CAS_VAL(RX_COMP4_TCP_CSUM, words[3]));
+ 	if (cp->crc_size) {
+ 		/* checksum includes FCS. strip it out. */
+-		i = csum_fold(csum_partial(crcaddr, cp->crc_size, i));
++		csum = csum_fold(csum_partial(crcaddr, cp->crc_size,
++					      csum_unfold(csum)));
+ 		if (addr)
+ 			cas_page_unmap(addr);
+ 	}
+-	skb->csum = ntohs(i ^ 0xffff);
++	skb->csum = csum_unfold(~csum);
+ 	skb->ip_summed = CHECKSUM_COMPLETE;
+ 	skb->protocol = eth_type_trans(skb, cp->dev);
+ 	return len;
+--- a/drivers/net/cassini.h
++++ b/drivers/net/cassini.h
+@@ -4122,8 +4122,8 @@ cas_saturn_patch_t cas_saturn_patch[] = 
+ 							     inserted into
+ 							     outgoing frame. */
+ struct cas_tx_desc {
+-	u64     control;
+-	u64     buffer;
++	__le64     control;
++	__le64     buffer;
+ };
+ 
+ /* descriptor ring for free buffers contains page-sized buffers. the index
+@@ -4131,8 +4131,8 @@ struct cas_tx_desc {
+  * the completion ring.
+  */
+ struct cas_rx_desc {
+-	u64     index;
+-	u64     buffer;
++	__le64     index;
++	__le64     buffer;
+ };
+ 
+ /* received packets are put on the completion ring. */
+@@ -4210,10 +4210,10 @@ struct cas_rx_desc {
+ #define RX_INDEX_RELEASE                  0x0000000000002000ULL
+ 
+ struct cas_rx_comp {
+-	u64     word1;
+-	u64     word2;
+-	u64     word3;
+-	u64     word4;
++	__le64     word1;
++	__le64     word2;
++	__le64     word3;
++	__le64     word4;
+ };
+ 
+ enum link_state {
+@@ -4252,7 +4252,7 @@ struct cas_init_block {
+ 	struct cas_rx_comp rxcs[N_RX_COMP_RINGS][INIT_BLOCK_RX_COMP];
+ 	struct cas_rx_desc rxds[N_RX_DESC_RINGS][INIT_BLOCK_RX_DESC];
+ 	struct cas_tx_desc txds[N_TX_RINGS][INIT_BLOCK_TX];
+-	u64 tx_compwb;
++	__le64 tx_compwb;
+ };
+ 
+ /* tiny buffers to deal with target abort issue. we allocate a bit
 
 -- 
