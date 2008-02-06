@@ -1,42 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbYBFKyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYBFLGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbYBFKyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 05:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761072AbYBFKx5
+	id S1754807AbYBFLGU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 06:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYBFLGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 05:53:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:16788 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758811AbYBFKxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 05:53:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=xE50NIobU5ivQ68zA49InIXwEud7GYrmiBcL1K5L1HenAds4kALufEEDV6LJ/TGAabj0MUuaUcF43VyeAsDeBQ3ybP5uXsGZTkhMb23x/T3EPsNcEFuAT7HPtPb5NC3StwW/MWZy+NSgqdMIigQRgkyeLdLotq4j9LMHlnH9sYo=
-Message-ID: <47A991BE.9030705@gmail.com>
-Date: Wed, 06 Feb 2008 11:53:50 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 6 Feb 2008 06:06:07 -0500
+Received: from styx.suse.cz ([82.119.242.94]:54581 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751055AbYBFLGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 06:06:06 -0500
+Date: Wed, 6 Feb 2008 12:06:02 +0100
+From: Jan Kara <jack@suse.cz>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mingming Cao <cmm@us.ibm.com>
+Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
+Message-ID: <20080206110602.GB12547@duck.suse.cz>
+References: <20080131161417.GA29679@unused.rdu.redhat.com> <20080205172731.GD29130@atrey.karlin.mff.cuni.cz> <200802051359.05758.jbacik@redhat.com>
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-CC: Tino Keitel <tino.keitel@gmx.de>, linux-kernel@vger.kernel.org,
-       ath5k-devel@lists.ath5k.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [RFT 1/1] single_chip test
-References: <20080206014131.9d489a34.akpm@linux-foundation.org>	<1202294560-7313-1-git-send-email-jirislaby@gmail.com> <jezluetl7d.fsf@sykes.suse.de>
-In-Reply-To: <jezluetl7d.fsf@sykes.suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802051359.05758.jbacik@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/06/2008 11:48 AM, Andreas Schwab wrote:
->> +	ah->ah_single_chip = !!(srev >= AR5K_SREV_VER_AR2424 &&
->                            ^^
+On Tue 05-02-08 13:59:05, Josef Bacik wrote:
+> On Tuesday 05 February 2008 12:27:31 pm Jan Kara wrote:
+> >   Hello,
+> >
+> >   Sorry for replying a bit late but I'm currently falling behind in
+> > maling-list reading...
+> >
+> > > The way jbd tries to determine if there is enough space left on the
+> > > journal in order to start a new transaction is looking at the space left
+> > > in the journal and the space needed for the committing transaction, which
+> > > is 1/4 of the journal + the number of t_outstanding_credits for that
+> > > transaction.  In this case its assumed that t_outstanding_credits
+> > > accurately represents the number of credits
+> >
+> >   Yes.
+> >
+> > > waiting to be written to the journal, but this sometimes isn't the case. 
+> > > The transaction has two counters for buffers, t_outstanding_credits which
+> > > is used in conjunction with handles that are added to the transaction,
+> > > and t_nr_buffers which is only incremented/decremented when buffers are
+> > > added/removed from the transaction and are actually destined to be
+> > > journaled.  Normally these two
+> >
+> >   t_nr_buffers actually represents number of buffers on BJ_Metadata list
+> > and nobody uses it (except for the assertion in
+> > __journal_temp_unlink_buffer()). t_outstanding_credits is supposed to be
+> > *the* counter making sure we don't write more than we have credits for.
+> >
+> > > counters are the same, however there are cases where the committing
+> > > transaction can have buffers moved to the next running transaction, for
+> > > example any buffers on the committing transactions t_reserved list would
+> > > be moved to the next (running) transaction, and if it had been dirtied in
+> > > the process it would immediately make it onto the t_updates list, which
+> > > would increment t_nr_buffers
+> >
+> >   You probably mean t_buffers list here...
+> >
+> > > but not t_outstanding_credits.  So you get into this situation where
+> >
+> >   But which moving and dirtying do you mean? The caller which dirties
+> > the buffer must make sure that he has acquired enough credits for the
+> > transaction where the buffer ends up... So if there were not enough
+> > buffers in the running transaction where we refiled the buffer it is a
+> > bug in the caller which dirties the buffer.
+> >
 > 
-> This is useless.
+> You know now that you say that I feel like an idiot, you are right the only way 
+> for something to actually end up on that list was if somebody dirtied it and if 
+> they did it would have had to been accounted for at some point on the running 
+> transaction.
+  Never mind :) I also made several mistakes before I learned how JBD
+works...
 
-Amended locally, thanks.
+> > > t_nr_buffers (the actual number of buffers that are on the transaction)
+> > > is greater than the number of buffers accounted for via
+> > > t_outstanding_credits. This presents a problem since as we loop through
+> > > writting buffers to the journal, we decrement t_outstanding_credits, and
+> > > if t_nr_buffers is more than t_outstanding_credits then we end up with a
+> > > negative number for
+> > > t_outstanding_credits, which means we start saying we need less than 1/4
+> > > of the journal for our committing transaction and allow more transactions
+> > > than we can handle to start, and then bam we fail because
+> > > journal_next_log_block doesn't have enough free blocks in order to handle
+> > > the request.  This has been tested and fixes the issue (which could not
+> > > be reproduced by me but several other people could get it to reproduce
+> > > using postmark), and although I couldn't reproduce the assertion, I could
+> > > very easily reproduce the situation where t_outstanding_credits was <
+> > > than t_nr_buffers.
+> >
+> >   I suppose you see the assertion J_ASSERT(journal->j_free > 1); to
+> > fail, right? I don't see how your patch could help avoid that assertion.
+> > You've just removed accounting of t_outstanding_credits which has no
+> > impact on the real number of free blocks in the journal stored in
+> > j_free. Anyway, if you can reproduce t_outstanding_credits <
+> > t_nr_buffers, then there's something fishy. Are you able to reproduce it
+> > also with a current kernel?
+> >   Thanks for looking into the problem :)
+> >
+> 
+> Well my patch helped avoid the assertion because t_outstanding_credits was going 
+> negative therefore we were letting transactions start when we shouldn't be, and 
+> eventually we would end up with too much of the journal in use and we'd assert.  
+> Course I can't reproduce where t_outstanding_credits < t_nr_buffers upstream 
+> (again I feel like an idiot, should have tested that first).  Thanks for 
+> looking at this Jan.
+  Glad to hear we don't have a bug there :) Anyway, assertion that
+t_outstanding_credits doesn't go below zero would be a useful assertion to
+add...
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
