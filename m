@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762008AbYBFVHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYBFVIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762008AbYBFVHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760697AbYBFVHP
+	id S1761370AbYBFVIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbYBFVIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:07:15 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:54925 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760174AbYBFVHN (ORCPT
+	Wed, 6 Feb 2008 16:08:39 -0500
+Received: from ik-out-1112.google.com ([66.249.90.176]:22204 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757854AbYBFVIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:07:13 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 6 Feb 2008 22:07:04 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 10/9] firewire: fw-sbp2: preemptively block sdev
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de>
-Message-ID: <tkrat.3d2f6d8bded119b6@s5r6.in-berlin.de>
-References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de>
+	Wed, 6 Feb 2008 16:08:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=L8rnrIRdgkuLfb6pyP3tUIQCeUIPUXVYSS2m5IJULKLdsReHUcTHpsY5uRQzSAKKwZuQ8bbMc+JX8jbxIC/1HG252PY2YpVGIKqSjNTxrpSLETXusCrT+hqKUWdEX9cQLlbJhuN8wgWDkOvgcXlSv4GUASFhP9jLoGv198DltO0=
+Message-ID: <e9c3a7c20802061308q56cf7d25paae75aed9bde4035@mail.gmail.com>
+Date: Wed, 6 Feb 2008 14:08:35 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Subject: Re: [RFC v2 2/5] dmaengine: Add slave DMA interface
+Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       "Shannon Nelson" <shannon.nelson@intel.com>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>
+In-Reply-To: <20080130132651.7320d301@dhcp-252-066.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+	 <200801292330.05874.david-b@pacbell.net>
+	 <20080130102706.15c88346@dhcp-252-066.norway.atmel.com>
+	 <200801300252.50344.david-b@pacbell.net>
+	 <20080130132651.7320d301@dhcp-252-066.norway.atmel.com>
+X-Google-Sender-Auth: 098179bd276dd25e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since "fw-sbp2: fix I/O errors during reconnect", a Scsi_Host will be
-blocked as soon as a command failed due to bus generation change.  Now
-we also block it when fw-core signalled a bus reset via sbp2_update.
-This will avoid some command failures and retries (but not all because
-commands are injected from tasklet context while sbp2_update runs from
-workqueue thread context).
+On Jan 30, 2008 5:26 AM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+[..]
+> Right. I'll add a "unsigned int engine_type" field so that engine
+> drivers can go ahead and extend the standard dma_device structure.
+> Maybe we should add a "void *platform_data" field to the dma_slave
+> struct as well so that platforms can pass arbitrary platform-specific
+> information to the DMA controller driver?
+>
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-sbp2.c |    1 +
- 1 file changed, 1 insertion(+)
+I think we can get away with not adding an engine_type field:
+1/ For a given platform there will usually only be one driver active.
+For example I have an architecture (IOP) specific dma_copy_to_user
+implementation that can safely assume it is talking to the iop-adma
+driver since ioat_dma and others are precluded by the Kconfig.
+2/ If there was a situation where two dma drivers were active in a
+system you could tell them apart by comparing the function pointers,
+i.e. dma_device1->device_prep_dma_memcpy !=
+dma_device2->device_prep_dma_memcpy.
 
-Index: linux/drivers/firewire/fw-sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/fw-sbp2.c
-+++ linux/drivers/firewire/fw-sbp2.c
-@@ -1135,6 +1135,7 @@ static void sbp2_update(struct fw_unit *
- 	 * Iteration over tgt->lu_list is therefore safe here.
- 	 */
- 	list_for_each_entry(lu, &tgt->lu_list, link) {
-+		sbp2_conditionally_block(lu);
- 		lu->retries = 0;
- 		sbp2_queue_work(lu, 0);
- 	}
-
--- 
-Stefan Richter
--=====-==--- --=- --==-
-http://arcgraph.de/sr/
-
+--
+Dan
