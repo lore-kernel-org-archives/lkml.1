@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYBFPYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbYBFPZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbYBFPYK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 10:24:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYBFPX5
+	id S1754918AbYBFPZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 10:25:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYBFPZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 10:23:57 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59426 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751718AbYBFPX5 (ORCPT
+	Wed, 6 Feb 2008 10:25:51 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:16097 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbYBFPZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 10:23:57 -0500
-Date: Wed, 6 Feb 2008 10:23:56 -0500
-To: Marc Donner <donner@dbd-breitband.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: dma error on boot with cf card
-Message-ID: <20080206152356.GC26257@csclub.uwaterloo.ca>
-References: <200802051852.29592.donner@dbd-breitband.de> <20080205185628.GF26259@csclub.uwaterloo.ca> <200802060954.53802.donner@dbd-breitband.de>
+	Wed, 6 Feb 2008 10:25:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Pri/NpwDa08NDkU7/0lGX86z48MzsuyzU1K5CJF5rskksTZWG1pg/B6Z+v0evFiz3W10FrrOWxblUTv19+DfSXHaFV/vAmfEcDD0PJ5oAWDC+vpFIS20tuZuqDJnDMJerFqs5WHU/5RYncirC3LnzRX2VJ3qxWgH1nqz7wXLQPI=
+Message-ID: <47A9D14C.8000002@gmail.com>
+Date: Wed, 06 Feb 2008 10:25:00 -0500
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
+Reply-To: gregory.haskins@gmail.com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802060954.53802.donner@dbd-breitband.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Pavel Machek <pavel@ucw.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: any cpu hotplug changes in 2.6.24-current-git?
+References: <20080206125807.GB26817@elf.ucw.cz>
+In-Reply-To: <20080206125807.GB26817@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 09:54:53AM +0100, Marc Donner wrote:
-> and how do i disable dma? it is the installer image, and no hdparm is 
-> availible. and the ide=nodma boot parameter seems not to work. 
+Pavel Machek wrote:
+> Hi!
+> 
+> Are there any recent changes in cpu hotplug? I have suspend (random)
+> problems, nosmp seems to fix it, and last messages in the "it hangs"
+> case are from cpu hotplug...
+> 									Pavel
 
-ide=nodma works for me on 2.6.18.  I think on newer kernels you need
-hda=nodma which is nice since you can control it per device rather than
-globally.
+Hi Pavel,
+   Can you send along your cpuinfo?
 
---
-Len Sorensen
+-Greg
