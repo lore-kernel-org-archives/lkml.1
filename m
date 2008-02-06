@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbYBFITy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbYBFIYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761012AbYBFITy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 03:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYBFITp
+	id S1760646AbYBFIYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 03:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbYBFIYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 03:19:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37068 "EHLO
+	Wed, 6 Feb 2008 03:24:12 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58603 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751187AbYBFITo (ORCPT
+	by vger.kernel.org with ESMTP id S1756723AbYBFIYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 03:19:44 -0500
-Date: Wed, 6 Feb 2008 00:19:48 -0800
+	Wed, 6 Feb 2008 03:24:11 -0500
+Date: Wed, 6 Feb 2008 00:24:20 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: SLUB: Support for statistics to help analyze allocator behavior
-Message-Id: <20080206001948.6f749aa8.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
+To: Holger Schurig <hs4233@mail.mn-solutions.de>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: OOPS in sysctl.c
+Message-Id: <20080206002420.91124dab.akpm@linux-foundation.org>
+In-Reply-To: <200802051224.56413.hs4233@mail.mn-solutions.de>
+References: <200802050845.58691.hs4233@mail.mn-solutions.de>
+	<200802051224.56413.hs4233@mail.mn-solutions.de>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,63 +28,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 22:20:04 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
+On Tue, 5 Feb 2008 12:24:56 +0100 Holger Schurig <hs4233@mail.mn-solutions.de> wrote:
 
-> The statistics provided here allow the monitoring of allocator behavior
-> at the cost of some (minimal) loss of performance. Counters are placed in
-> SLUB's per cpu data structure that is already written to by other code.
+> > I have an embedded target (PXA255 based) where I have a nice
+> > running kernel 2.6.15. Today I'm trying to get 2.6.24 running
+> > on it.
+> 
 
-Seems sane.
+Backtrace:
+[<c0038bbc>] (sysctl_head_next+0x0/0x64) from [<c00a4b80>] (proc_sys_readdir+0x360/0x394)
+ r4:00000000
+[<c00a4820>] (proc_sys_readdir+0x0/0x394) from [<c007c860>] (vfs_readdir+0x70/0x98)
+[<c007c7f0>] (vfs_readdir+0x0/0x98) from [<c007cdf0>] (sys_getdents64+0x6c/0xc0)
+[<c007cd84>] (sys_getdents64+0x0/0xc0) from [<c0023e60>] (ret_fast_syscall+0x0/0x2c)
 
-> The per cpu structure may be extended by the statistics to be more than
-> one cacheline which will increase the cache footprint of SLUB.
->
-> That is why there is a compile option to enable/disable the inclusion of
-> the statistics module. 
+> Whatever the problem is, sysfs works now flawlessly even after
+> a suspend/resume with v2.6.24-7284-g9ef9dc6.
 
-The compile-time optionality is really sad.  But no obvious solution
-suggests itself.
-
-> @@ -1357,17 +1366,22 @@ static struct page *get_partial(struct k
->  static void unfreeze_slab(struct kmem_cache *s, struct page *page, int tail)
->  {
->  	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
-> +	struct kmem_cache_cpu *c = get_cpu_slab(s, smp_processor_id());
-
-So we're never running preemptibly here.
-
->  	ClearSlabFrozen(page);
->  	if (page->inuse) {
->  
-> -		if (page->freelist != page->end)
-> +		if (page->freelist != page->end) {
->  			add_partial(n, page, tail);
-> -		else if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
-> +			stat(c, tail ? DEACTIVATE_TO_TAIL : DEACTIVATE_TO_HEAD);
-> +		} else {
-> +			stat(c, DEACTIVATE_FULL);
-> +			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
->  			add_full(n, page);
-
-missing a tab
-
-> +#ifdef CONFIG_SLUB_STATS
-> +
-> +#define STAT_ATTR(si, text) 					\
-> +static ssize_t text##_show(struct kmem_cache *s, char *buf)	\
-> +{								\
-> +	unsigned long sum  = 0;					\
-> +	int cpu;						\
-> +								\
-> +	for_each_online_cpu(cpu)				\
-> +		sum += get_cpu_slab(s, cpu)->stat[si];		\
-
-maybe cache the get_cpu_slab() result in a local?
-
-> +	return sprintf(buf, "%lu\n", sum);			\
-> +}								\
-> +SLAB_ATTR_RO(text);						\
-
-this is pretty broken after cpu hot-unplug, isn't it?
-
-
+erp.  We'd really like to know what we did to fix it, and then get that
+fix back into 2.6.24.x.  
