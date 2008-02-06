@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765192AbYBGAEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765316AbYBGAFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765192AbYBGAEt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763802AbYBFX4r
+	id S1765316AbYBGAFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:05:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764343AbYBFX4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:56:47 -0500
-Received: from ns.suse.de ([195.135.220.2]:45820 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:56:52 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45840 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764265AbYBFX4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:56:45 -0500
-Date: Wed, 6 Feb 2008 15:52:10 -0800
+	id S1764747AbYBFX4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:56:50 -0500
+Date: Wed, 6 Feb 2008 15:52:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <dada1@cosmosbay.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 22/73] ATM: Check IP header validity in mpc_send_packet
-Message-ID: <20080206235210.GW13121@suse.de>
+Subject: [patch 23/73] IPV4 ROUTE: ip_rt_dump() is unecessary slow
+Message-ID: <20080206235212.GX13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="atm-check-ip-header-validity-in-mpc_send_packet.patch"
+Content-Disposition: inline; filename="ipv4-route-ip_rt_dump-is-unecessary-slow.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,43 +36,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Eric Dumazet <dada1@cosmosbay.com>
 
-[ATM]: Check IP header validity in mpc_send_packet
+[IPV4] ROUTE: ip_rt_dump() is unecessary slow
 
-[ Upstream commit: 1c9b7aa1eb40ab708ef3242f74b9a61487623168 ]
+[ Upstream commit: d8c9283089287341c85a0a69de32c2287a990e71 ]
 
-Al went through the ip_fast_csum callers and found this piece of code
-that did not validate the IP header.  While root crashing the machine
-by sending bogus packets through raw or AF_PACKET sockets isn't that
-serious, it is still nice to react gracefully.
+I noticed "ip route list cache x.y.z.t" can be *very* slow.
 
-This patch ensures that the skb has enough data for an IP header and
-that the header length field is valid.
+While strace-ing -T it I also noticed that first part of route cache
+is fetched quite fast :
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202
+GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3772 <0.000047>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\234\0\0\0\30\0\2\0\254i\
+202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3736 <0.000042>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\204\0\0\0\30\0\2\0\254i\
+202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3740 <0.000055>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\234\0\0\0\30\0\2\0\254i\
+202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3712 <0.000043>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\204\0\0\0\30\0\2\0\254i\
+202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3732 <0.000053>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202
+GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3708 <0.000052>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202
+GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3680 <0.000041>
+
+while the part at the end of the table is more expensive:
+
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\204\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3656 <0.003857>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\204\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3772 <0.003891>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3712 <0.003765>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3700 <0.003879>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3676 <0.003797>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"p\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\2\0\2\0"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3724 <0.003856>
+recvmsg(3, {msg_name(12)={sa_family=AF_NETLINK, pid=0, groups=00000000}, msg_iov(1)=[{"\234\0\0\0\30\0\2\0\254i\202GXm\0\0\2  \0\376\0\0\1\0\2"..., 16384}], msg_controllen=0, msg_flags=0}, 0) = 3736 <0.003848>
+
+The following patch corrects this performance/latency problem,
+removing quadratic behavior.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/atm/mpc.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ net/ipv4/route.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/net/atm/mpc.c
-+++ b/net/atm/mpc.c
-@@ -542,6 +542,13 @@ static int mpc_send_packet(struct sk_buf
- 	if (eth->h_proto != htons(ETH_P_IP))
- 		goto non_ip; /* Multi-Protocol Over ATM :-) */
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -2648,11 +2648,10 @@ int ip_rt_dump(struct sk_buff *skb,  str
+ 	int idx, s_idx;
  
-+	/* Weed out funny packets (e.g., AF_PACKET or raw). */
-+	if (skb->len < ETH_HLEN + sizeof(struct iphdr))
-+		goto non_ip;
-+	skb_set_network_header(skb, ETH_HLEN);
-+	if (skb->len < ETH_HLEN + ip_hdr(skb)->ihl * 4 || ip_hdr(skb)->ihl < 5)
-+		goto non_ip;
-+
- 	while (i < mpc->number_of_mps_macs) {
- 		if (!compare_ether_addr(eth->h_dest, (mpc->mps_macs + i*ETH_ALEN)))
- 			if ( send_via_shortcut(skb, mpc) == 0 )           /* try shortcut */
+ 	s_h = cb->args[0];
++	if (s_h < 0)
++		s_h = 0;
+ 	s_idx = idx = cb->args[1];
+-	for (h = 0; h <= rt_hash_mask; h++) {
+-		if (h < s_h) continue;
+-		if (h > s_h)
+-			s_idx = 0;
++	for (h = s_h; h <= rt_hash_mask; h++) {
+ 		rcu_read_lock_bh();
+ 		for (rt = rcu_dereference(rt_hash_table[h].chain), idx = 0; rt;
+ 		     rt = rcu_dereference(rt->u.dst.rt_next), idx++) {
+@@ -2669,6 +2668,7 @@ int ip_rt_dump(struct sk_buff *skb,  str
+ 			dst_release(xchg(&skb->dst, NULL));
+ 		}
+ 		rcu_read_unlock_bh();
++		s_idx = 0;
+ 	}
+ 
+ done:
 
 -- 
