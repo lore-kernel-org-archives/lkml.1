@@ -1,103 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763312AbYBFAtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761853AbYBFAvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763312AbYBFAtE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 19:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761165AbYBFAsw
+	id S1761853AbYBFAvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 19:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYBFAvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 19:48:52 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:38232 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761102AbYBFAsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 19:48:51 -0500
-X-YMail-OSG: w4EYxG8VM1naPI1JdmlOrqwNkr2N6rDnsvDjqJtVumI.KRrG_vczdjk.T9V7fSoloIMQ0lvahg--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Julian Satran <Julian_Satran@il.ibm.com>
-In-Reply-To: <47A8B29B.8050406@vlnb.net>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 16:48:22 -0800
-Message-Id: <1202258902.2220.102.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Tue, 5 Feb 2008 19:51:12 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:39969 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750820AbYBFAvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 19:51:11 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: jeff@garzik.org
+Subject: [patch] usb net: asix does not really need 10/100mbit
+Date: Tue, 5 Feb 2008 19:47:42 -0500
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802051947.43247.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 22:01 +0300, Vladislav Bolkhovitin wrote:
-> Jeff Garzik wrote:
-> > Alan Cox wrote:
-> > 
-> >>>better. So for example, I personally suspect that ATA-over-ethernet is way 
-> >>>better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
-> >>>low-level, and against those crazy SCSI people to begin with.
-> >>
-> >>Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
-> >>would probably trash iSCSI for latency if nothing else.
-> > 
-> > 
-> > AoE is truly a thing of beauty.  It has a two/three page RFC (say no more!).
-> > 
-> > But quite so...  AoE is limited to MTU size, which really hurts.  Can't 
-> > really do tagged queueing, etc.
-> > 
-> > 
-> > iSCSI is way, way too complicated. 
-> 
-> I fully agree. From one side, all that complexity is unavoidable for 
-> case of multiple connections per session, but for the regular case of 
-> one connection per session it must be a lot simpler.
-> 
-> And now think about iSER, which brings iSCSI on the whole new complexity 
-> level ;)
+The asix usb driver currently depends on NET_ETHERNET which means you cannot
+enable this driver if you only have 1000mbit enabled in your kernel.  Since
+there is no real dependency between the NET_ETHERNET portion and the asix
+driver, simply drop it.
 
-Actually, the iSER protocol wire protocol itself is quite simple,
-because it builds on iSCSI and IPS fundamentals, and because traditional
-iSCSI's recovery logic for CRC failures (and hence alot of
-acknowledgement sequence PDUs that go missing, etc) and the RDMA Capable
-Protocol (RCaP).
-
-The logic that iSER collectively disables is known as within-connection
-and within-command recovery (negotiated as ErrorRecoveryLevel=1 on the
-wire), RFC-5046 requires that the iSCSI layer that iSER is being enabled
-to disable CRC32C checksums and any associated timeouts for ERL=1.
-
-Also, have a look at Appendix A. in the iSER spec.
-
-      A.1. iWARP Message Format for iSER Hello Message ...............73
-      A.2. iWARP Message Format for iSER HelloReply Message ..........74
-      A.3. iWARP Message Format for SCSI Read Command PDU ............75
-      A.4. iWARP Message Format for SCSI Read Data ...................76
-      A.5. iWARP Message Format for SCSI Write Command PDU ...........77
-      A.6. iWARP Message Format for RDMA Read Request ................78
-      A.7. iWARP Message Format for Solicited SCSI Write Data ........79
-      A.8. iWARP Message Format for SCSI Response PDU ................80
-
-This is about as 1/2 as many traditional iSCSI PDUs, that iSER
-encapulates.
-
---nab
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
+index a12c9c4..0604f3f 100644
+--- a/drivers/net/usb/Kconfig
++++ b/drivers/net/usb/Kconfig
+@@ -129,7 +129,7 @@ config USB_USBNET
+ 
+ config USB_NET_AX8817X
+ 	tristate "ASIX AX88xxx Based USB 2.0 Ethernet Adapters"
+-	depends on USB_USBNET && NET_ETHERNET
++	depends on USB_USBNET
+ 	select CRC32
+ 	default y
+ 	help
