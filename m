@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbYBFEAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbYBFEAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbYBFEAL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 23:00:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757256AbYBFD7y
+	id S1760105AbYBFEAw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 23:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbYBFEAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 22:59:54 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55335
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757157AbYBFD7x (ORCPT
+	Tue, 5 Feb 2008 23:00:43 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:61658 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757575AbYBFEAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 22:59:53 -0500
-Date: Tue, 05 Feb 2008 20:00:22 -0800 (PST)
-Message-Id: <20080205.200022.79543549.davem@davemloft.net>
-To: horms@verge.net.au
-Cc: sven.wegener@stealer.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ipvs: Make wrr "no available servers" error message
- rate-limited
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080206021909.GA32678@verge.net.au>
-References: <1202243421-2774-1-git-send-email-sven.wegener@stealer.net>
-	<20080206021909.GA32678@verge.net.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 5 Feb 2008 23:00:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=d4Ivy0MPQhK5jdXLwKwzXG89oGCMLt0Jc33MWUiQS2F+bsTpiPHTrEXNZLrP46UKLw+sgYh7s/p67TpJcnAoJ2taMtEq6X5TmsLj++VQD6GvhUk4E9zOpcGuzl2vnKujBYtW6la4dsA79EwgZsQIvtWLb3VaDwNyKluiHs/DBbw=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: hasan@digitalpath.net
+Subject: Re: Access MSR functions in userspace?
+Date: Wed, 6 Feb 2008 06:00:35 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
+Cc: linux-kernel@vger.kernel.org
+References: <3278.65.164.104.9.1202268587.squirrel@webmail.digitalpath.net>
+In-Reply-To: <3278.65.164.104.9.1202268587.squirrel@webmail.digitalpath.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802060600.35498.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Simon Horman <horms@verge.net.au>
-Date: Wed, 6 Feb 2008 11:19:09 +0900
+On Wednesday, 6 February 2008 05:29:47 Hasan Rashid wrote:
+> Is there a way to use RDMSR and WRMSR in userspace? I only need to write
+> to one register, writing a module with a userspace piece to handle that
+> seems like an over kill.
+> 
+> TIA!
 
-> On Tue, Feb 05, 2008 at 09:30:21PM +0100, Sven Wegener wrote:
-> > No available servers is more an error message than something informational. It
-> > should also be rate-limited, else we're going to flood our logs on a busy
-> > director, if all real servers are out of order with a weight of zero.
-> > 
-> > Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
-> 
-> Hi Sven,
-> 
-> this looks good to me.
-> 
-> Acked-by: Simon Horman <horms@verge.net.au>
 
-Applied, thanks.
+Fortunately linux have /dev/cpu/*/msr
+Take  look at $LINUX_SOURCES/arch/x86/kernel/msr.c to learn how to use it.
+
+Best regards,
+	Maxim Levitsky
