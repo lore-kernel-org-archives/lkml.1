@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbYBFCGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763943AbYBFCHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763745AbYBFCGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 21:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759635AbYBFCGk
+	id S1763943AbYBFCHI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 21:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763586AbYBFCGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 21:06:40 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:50340 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759029AbYBFCGk (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 21:06:40 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH mm] stop c_p_a corrupting the pds
-In-Reply-To: Your message of "Tue, 05 Feb 2008 22:27:21 GMT."
-             <Pine.LNX.4.64.0802052226140.11822@blonde.site>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.64.0802052218190.11822@blonde.site>
-            <Pine.LNX.4.64.0802052226140.11822@blonde.site>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1202263535_3253P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 05 Feb 2008 21:05:35 -0500
-Message-ID: <26590.1202263535@turing-police.cc.vt.edu>
+	Tue, 5 Feb 2008 21:06:47 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:8699 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763546AbYBFCGq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 21:06:46 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=LrrZHn4oVFI/vHLQapTYhf+SJCJrL7n0xkXSRhOIYly4InQPsA+BvqpGZ6TA6kL8A
+	p5hioJMLp4VEbMbpu8y9g==
+Date: Tue, 5 Feb 2008 18:05:46 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Jeff Davis <linux@j-davis.com>, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrea Arcangeli <andrea@qumranet.com>
+Subject: Re: [PATCH] badness() dramatically overcounts memory
+In-Reply-To: <20080206105041.2717.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.00.0802051802460.18339@chino.kir.corp.google.com>
+References: <1202252561.24634.64.camel@dogma.ljc.laika.com> <alpine.DEB.1.00.0802051507460.18347@chino.kir.corp.google.com> <20080206105041.2717.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1202263535_3253P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 6 Feb 2008, KOSAKI Motohiro wrote:
 
-On Tue, 05 Feb 2008 22:27:21 GMT, Hugh Dickins said:
-> When change_page_attr splits a large page on x86_32 (without PAE), it is
-> currently corrupting every process's page directory: fix that by removing
-> the thinko which passes down a physical instead of a virtual address -
-> this version of the patch being the hotfix for 2.6.24-mm1.
+> > Andrea Arcangeli has patches pending which change this to the RSS.  
+> > Specifically:
+> > 
+> > 	http://marc.info/?l=linux-mm&m=119977937126925
 > 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> I agreed with you that RSS is better :)
+> 
+> 
+> 
+> but..
+> on many node numa, per zone rss is more better..
+> 
 
-<snark>
-I *knew* there was a reason we should have had this patch series in -mm for a while.
-</snark>
+It depends on how your applications are taking advantage of NUMA 
+optimizations.  If they're constrained by mempolicies to a subset of nodes 
+then the badness scoring isn't even used: the task that triggered the OOM 
+condition is the one that is automatically killed.
 
-:)
+At this point, I think you're going to need to present an actual case 
+study where Andrea's patch isn't sufficient for selecting the appropriate 
+task on large NUMA machines.
 
---==_Exmh_1202263535_3253P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHqRXvcC3lWbTT17ARAitGAKCmRR7pkMfJ3Txpcx2bzGqO4Ux8+gCfWTCL
-RaoFS4dfanoetkoqdB3QqWo=
-=eg+5
------END PGP SIGNATURE-----
-
---==_Exmh_1202263535_3253P--
+		David
