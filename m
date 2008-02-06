@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYBFWf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760616AbYBFWfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759690AbYBFWf1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYBFWfU
+	id S1760616AbYBFWfw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbYBFWfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:35:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42959 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756934AbYBFWfT (ORCPT
+	Wed, 6 Feb 2008 17:35:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39265 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757448AbYBFWfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:35:19 -0500
-Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
-	(bisected)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <200802062318.28172.rjw@sisk.pl>
-References: <200802010237.59320.rjw@sisk.pl>
-	 <200802062250.07758.rjw@sisk.pl> <1202335261.6274.11.camel@lappy>
-	 <200802062318.28172.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 23:34:27 +0100
-Message-Id: <1202337267.6274.15.camel@lappy>
+	Wed, 6 Feb 2008 17:35:42 -0500
+Date: Wed, 6 Feb 2008 14:34:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
+Message-Id: <20080206143457.03e8741d.akpm@linux-foundation.org>
+In-Reply-To: <47AA3126.8090102@redhat.com>
+References: <47AA3126.8090102@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 06 Feb 2008 16:13:58 -0600
+Eric Sandeen <sandeen@redhat.com> wrote:
 
-On Wed, 2008-02-06 at 23:18 +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
-> > 
-> > On Wed, 2008-02-06 at 22:50 +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
-> > 
-> > > > Well, that whole queue.
-> > > 
-> > > It doesn't compile for me.
-> > 
-> > I did solve some compile issues since posting, Ingo should have the
-> > compiling version in sched-devel soonish (don't know if he pushed it
-> > already).
+> do_mount() uses a whopping 616 bytes of stack on x86_64 in 
+> 2.6.24-mm1, largely thanks to gcc inlining the various helper 
+> functions.
+
+hm, sizeof(nameidata)=136 and I can see about three of them on the stack. 
+Must have missed something.
+
+> noinlining these can slim it down a lot; on my box this patch
+> gets it down to 168, which is mostly the struct nameidata nd;
+> left on the stack.
 > 
-> Can you point me to the cleaned up version, please?
-
-http://programming.kicks-ass.net/kernel-patches/sched-rt-group/
-
-on top of sched-devel.
-
-> > > > Your test program just failed to obtain realtime scheduling
-> > > 
-> > > Well, it shouldn't.  The expected result is to obtain realtime scheduling
-> > > or we will break existing setups.
-> > 
-> > Thats a case of wrong expectations in my book. You enabled group
-> > scheduling and hence behaviour changes.
+> These functions are called only as do_mount() helpers;
+> none of them should be in any path that would see a performance
+> benefit from inlining...
 > 
-> So, I'd have to unset FAIR_GROUP_SCHED to obtain the previous behavior?
 
-With the mainline stuff, with the new stuff just ensure
-CONFIG_RT_GROUP_SCHED=n.
+Does the patch actually help?  I mean, if a() calls b() and both use N
+bytes of locals, our worst-case stack usage remains ~2N whether or not b()
+was inlined in a()?  In fact, uninlining makes things a little worse due to
+callframe stuff.
 
-> > There is just nothing much one can do about it, if you don't assign bandwidth
-> > to a group, it won't be able to run anything. Better to refuse to run, than to sit
-> > idle, right? 
-> 
-> As a general rule, probably yes.
-> 
-> > But I appreciate the situation, therefore I made the whole rt-group
-> > scheduling a separate .config option (which defaults to n)
-> 
-> Which is introduced by the new patches, isn't it?
+> -static int do_change_type(struct nameidata *nd, int flag)
+> +static noinline int do_change_type(struct nameidata *nd, int flag)
 
-Yes.
+There's no way for the reader to work out why this is here, so I do think
+it should be commented somewhere.
 
