@@ -1,107 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbYBFDWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYBFDXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761353AbYBFDWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 22:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbYBFDWM
+	id S1762213AbYBFDXI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 22:23:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYBFDWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 22:22:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57719 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750943AbYBFDWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 22:22:11 -0500
-Date: Tue, 5 Feb 2008 19:22:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Pull request: DMA pool updates
-Message-Id: <20080205192226.79ba9982.akpm@linux-foundation.org>
-In-Reply-To: <20080206025247.GA7705@parisc-linux.org>
-References: <20080206025247.GA7705@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 5 Feb 2008 22:22:55 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:49036 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750943AbYBFDWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 22:22:54 -0500
+From: akepner@sgi.com
+Date: Tue, 5 Feb 2008 19:21:28 -0800
+To: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3 v2] dma/doc: document dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080206032128.GO9904@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 19:52:47 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
 
-> Could I ask you to pull the DMA Pool changes detailed below?
-> 
-> All the patches have been posted to linux-kernel before, and various
-> comments (and acks) have been taken into account.  (see
-> http://thread.gmane.org/gmane.linux.kernel/609943)
-> 
-> It's a fairly nice performance improvement, so would be good to get in.
-> It's survived a few hours of *mumble* high-stress database benchmark,
-> so I have high confidence in its stability.
-> 
-> The following changes since commit 21511abd0a248a3f225d3b611cfabb93124605a7:
->   Linus Torvalds (1):
->         Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git dmapool
+Document the new dma_{un}map_{single|sg}_attrs() functions.
 
-Looks OK to me - I think I reviewed these a while back?  We really should
-have had this tree in -mm for general tyre-kicking.
+Signed-off-by: Arthur Kepner <akepner@sgi.com>
 
+---
 
-What's with the #ifdef CONFIG_SLAB stuff in the dmapool code?  Are we just
-overloading a convenient Kconfig label here, or is it required for some
-reason?  Why not CONFIG_SLUB_DEBUG too?
+ DMA-API.txt        |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ DMA-attributes.txt |   29 +++++++++++++++++++++++
+ 2 files changed, 94 insertions(+)
 
-
-For the future:
-
-This code:
-
-+struct dma_pool *dma_pool_create(const char *name, struct device *dev,
-+				 size_t size, size_t align, size_t boundary)
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index b939ebb..4c471fc 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -395,6 +395,71 @@ Notes:  You must do this:
+ 
+ See also dma_map_single().
+ 
++dma_addr_t 
++dma_map_single_attrs(struct device *dev, void *cpu_addr, size_t size, 
++		     enum dma_data_direction dir, 
++		     struct dma_attrs* attrs)
++
++void 
++dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
++		       size_t size, enum dma_data_direction dir,
++		       struct dma_attrs* attrs)
++
++int 
++dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
++		 int nents, enum dma_data_direction dir, 
++		 struct dma_attrs *attrs)
++
++void 
++dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl, 
++		   int nents, enum dma_data_direction dir,
++		   struct dma_attrs *attrs)
++
++The four functions above are just like the counterpart functions 
++without the _attrs suffixes, except that they pass an optional 
++struct dma_attrs*. 
++
++struct dma_attrs encapsulates a set of "dma attributes". For the 
++definition of struct dma_attrs see linux/dma-attrs.h. 
++
++The interpretation of dma attributes is architecture-specific, and 
++each attribute should be documented in Documentation/DMA-attributes.txt. 
++
++If struct dma_attrs* is NULL, the semantics of each of these 
++functions is identical to those of the corresponding function 
++without the _attrs suffix. As a result dma_map_single_attrs() 
++can generally replace dma_map_single(), etc.
++
++As an example of the use of the *_attrs functions, here's how 
++you could pass an attribute DMA_ATTR_FOO when mapping memory 
++for DMA:
++
++#include <linux/dma-attrs.h>
++/* DMA_ATTR_FOO should be defined in linux/dma-attrs.h and 
++ * documented in Documentation/DMA-attributes.txt */
++...
++
++	DECLARE_DMA_ATTRS(attrs);
++	dma_set_attr(&attrs, DMA_ATTR_FOO);
++	....
++	n = dma_map_sg_attrs(dev, sg, nents, DMA_TO_DEVICE, &attr);
++	....
++
++Architectures that care about DMA_ATTR_FOO would check for its 
++presence in their implementations of the mapping and unmapping 
++routines, e.g.:
++
++void whizco_dma_map_sg_attrs(struct device *dev, dma_addr_t dma_addr, 
++			     size_t size, enum dma_data_direction dir, 
++			     struct dma_attrs* attrs)
 +{
-+	struct dma_pool *retval;
-+	size_t allocation;
++	....
++	int foo =  dma_get_attr(attrs, DMA_ATTR_FOO);
++	....
++	if (foo) 
++		/* twizzle the frobnozzle */
++	....
 +
-+	if (align == 0) {
-+		align = 1;
-+	} else if (align & (align - 1)) {
-+		return NULL;
-+	}
+ 
+ Part II - Advanced dma_ usage
+ -----------------------------
+diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+index e69de29..36baea5 100644
+--- a/Documentation/DMA-attributes.txt
++++ b/Documentation/DMA-attributes.txt
+@@ -0,0 +1,29 @@
++			DMA attributes
++			==============
 +
-+	if (size == 0) {
-+		return NULL;
-+	} else if (size < 4) {
-+		size = 4;
-+	}
++This document describes the semantics of the DMA attributes that are 
++defined in linux/dma-attrs.h. 
 +
-+	if ((size % align) != 0)
-+		size = ALIGN(size, align);
 +
-+	allocation = max_t(size_t, size, PAGE_SIZE);
++DMA_ATTR_SYNC_ON_WRITE
++----------------------
 +
-+	if (!boundary) {
-+		boundary = allocation;
-+	} else if ((boundary < size) || (boundary & (boundary - 1))) {
-+		return NULL;
-+	}
-
-could do with some relief from its brace fetish and some education about
-is_power_of_2().  And the `if ((size % align) != 0)' can just go away,
-which will save code and is likely faster.
-
-It's a separate thing I guess, but I don't see any reason why
-dma_pool_alloc() _has_ to use GFP_ATOMIC.  Looks like it can do the
-allocation outside spin_lock_irqsave() and use mem_flags instead.  If that
-has __GFP_WAIT then we're in much better shape.
-
-I wish all this code wouldn't do
-
-	struct dma_page *page;
-
-because one very much expects a local variable called "page" to be of type
-`struct page *'.  
-
++DMA_ATTR_SYNC_ON_WRITE is used on the IA64_SGI_SN2 architecture.
++It provides a mechanism for devices to explicitly order their DMA 
++writes.
++
++On IA64_SGI_SN2 machines, DMA may be reordered within the NUMA 
++interconnect. Allowing reordering improves performance, but in some 
++situations it may be necessary to ensure that one DMA write is 
++complete before another is visible. For example, if the device does 
++a DMA write to indicate that data is available in memory, DMA of the 
++"completion indication" can race with DMA of data.
++
++When a memory region is mapped with the DMA_ATTR_SYNC_ON_WRITE attribute, 
++a write to that region causes all in-flight DMA to be flushed to memory. 
++Any pending DMA will complete and be visible in memory before the write 
++to the region with the DMA_ATTR_SYNC_ON_WRITE attribute becomes visible. 
++
++(For more information, see the document titled "SGI Altix Architecture 
++Considerations for Linux Device Drivers" at http://techpubs.sgi.com/.)
++
