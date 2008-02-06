@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761434AbYBFCpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbYBFCw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761434AbYBFCpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 21:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbYBFCpl
+	id S1760785AbYBFCw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 21:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbYBFCwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 21:45:41 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41887 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbYBFCpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 21:45:40 -0500
-Date: Tue, 5 Feb 2008 18:43:49 -0800
-From: Greg KH <gregkh@suse.de>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for review] ACPI: Create /sys/firmware/acpi/interrupts/
-	counters
-Message-ID: <20080206024349.GA10883@suse.de>
-References: <200802050230.10873.lenb@kernel.org> <200802051812.09228.lenb@kernel.org> <20080205231842.GB8740@suse.de> <200802052058.50663.lenb@kernel.org>
+	Tue, 5 Feb 2008 21:52:49 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:58526 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753344AbYBFCws (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 21:52:48 -0500
+Date: Tue, 5 Feb 2008 19:52:47 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Pull request: DMA pool updates
+Message-ID: <20080206025247.GA7705@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802052058.50663.lenb@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 08:58:50PM -0500, Len Brown wrote:
-> On Tuesday 05 February 2008 18:18, Greg KH wrote:
-> > On Tue, Feb 05, 2008 at 06:12:09PM -0500, Len Brown wrote:
-> > > On Tuesday 05 February 2008 17:18, Greg KH wrote:
-> > > > On Tue, Feb 05, 2008 at 02:30:10AM -0500, Len Brown wrote:
-> > > > > # cat /sys/firmware/acpi/interrupts/summary
-> > > > > pm_timer     0
-> > > > > glbl_lock    0
-> > > > > power_btn    0
-> > > > > sleep_btn    0
-> > > > > rtc          0
-> > > > > gpe00    0
-> > > ...
-> > > > > gpe1F    0
-> > > > > gpe_hi    0
-> > > > > gpe_total   63
-> > > > > acpi_irq    63
-> > > > 
-> > > > Eeek!  Why?  What's wrong with individual files here?
-> > > 
-> > > My expectation is that this is a shell interface for debugging,
-> > > not an API for programs.  ala /proc/interrupts.
-> > 
-> > Great, then use debugfs for it.  Please, don't put debug stuff like this
-> > in sysfs, that's not what it is there for.  You can do whatever you want
-> > in debugfs :)
-> 
-> Can you point to a model of good behaviour that I can copy?
+Hi Linus,
 
-Any user of the debugfs api you could copy for this.
+Could I ask you to pull the DMA Pool changes detailed below?
 
-> note that I want this information to be available on every system,
-> just like /proc/interrupts is.
+All the patches have been posted to linux-kernel before, and various
+comments (and acks) have been taken into account.  (see
+http://thread.gmane.org/gmane.linux.kernel/609943)
 
-Ah, then /proc perhaps?
+It's a fairly nice performance improvement, so would be good to get in.
+It's survived a few hours of *mumble* high-stress database benchmark,
+so I have high confidence in its stability.
 
-> /proc/ has seqfile support, is there a reason I shouldn't use it?
-> I'd banned additional files from /proc/acpi for a long time
-> since the directory layout was ill-conceived.  But maybe I
-> should re-consider the headlong rush to use sysfs?
+The following changes since commit 21511abd0a248a3f225d3b611cfabb93124605a7:
+  Linus Torvalds (1):
+        Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
 
-One of the main problems of /proc was that the files were not
-documented, or that the format would change between versions, or that
-they were different on different arches.
+are available in the git repository at:
 
-For something like this, yes, maybe you do need to use proc.  It can
-handle almost infinite length files, and just make sure you document it
-well.
+  git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git dmapool
 
-But I would just stick with debugfs, all distros enable it when
-shipping, you just have to ask them to mount it by hand usually:
-	mount -t debugfs none /sys/kernel/debug/
+Matthew Wilcox (7):
+      Move dmapool.c to mm/ directory
+      dmapool: Fix style problems
+      Avoid taking waitqueue lock in dmapool
+      dmapool: Validate parameters to dma_pool_create
+      dmapool: Tidy up includes and add comments
+      Change dmapool free block management
+      pool: Improve memory usage for devices which can't cross boundaries
 
-Either way, I wouldn't recommend sysfs for this.
+ drivers/base/Makefile  |    2 +-
+ drivers/base/dmapool.c |  481 ----------------------------------------------
+ mm/Makefile            |    1 +
+ mm/dmapool.c           |  500 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 502 insertions(+), 482 deletions(-)
+ delete mode 100644 drivers/base/dmapool.c
+ create mode 100644 mm/dmapool.c
 
-thanks,
-
-greg k-h
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
