@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYBFRTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbYBFRVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYBFRTV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYBFRTK
+	id S1756049AbYBFRVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYBFRVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:19:10 -0500
-Received: from mga11.intel.com ([192.55.52.93]:19403 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752779AbYBFRTI convert rfc822-to-8bit (ORCPT
+	Wed, 6 Feb 2008 12:21:04 -0500
+Received: from qmta05.westchester.pa.mail.comcast.net ([76.96.62.48]:55927
+	"EHLO QMTA05.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752842AbYBFRVC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:19:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,313,1199692800"; 
-   d="scan'208";a="514288063"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: ipw3945: not only it periodically dies, it also BUG()s
-Date: Wed, 6 Feb 2008 09:13:34 -0800
-Message-ID: <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <20080206143218.GA16188@elf.ucw.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: ipw3945: not only it periodically dies, it also BUG()s
-Thread-Index: AchozWuMaZw4iKUQRQC7JPMNB4+UBgAFeKAA
-References: <20080205214441.GA1518@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982BB1@orsmsx416.amr.corp.intel.com> <20080206143218.GA16188@elf.ucw.cz>
-From: "Chatre, Reinette" <reinette.chatre@intel.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: <ipw3945-devel@lists.sourceforge.net>, <linux-wireless@vger.kernel.org>,
-       "Zhu, Yi" <yi.zhu@intel.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 06 Feb 2008 17:13:35.0820 (UTC) FILETIME=[9BA4E8C0:01C868E3]
+	Wed, 6 Feb 2008 12:21:02 -0500
+X-Authority-Analysis: v=1.0 c=1 a=1nSz6Ew-AAAA:8 a=V2R780MibZq09H6Q6nIA:9
+ a=u9zz375IJi8iEfPZyfIA:7 a=3zB11BuSq5KeDg0O24OpFWHHLhMA:4 a=uv1ck3d6JtEA:10
+Subject: Re: 2.6.24-git15 Keyboard Issue?
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
+References: <1202302978.9058.13.camel@popeye>
+	 <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>
+	 <1202305740.9058.22.camel@popeye>
+	 <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 11:24:26 -0600
+Message-Id: <1202318666.6406.13.camel@popeye>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 06, 2008 6:32 AM, Pavel Machek wrote:
+Jiri - 
 
-> On Tue 2008-02-05 18:20:58, Chatre, Reinette wrote:
->> On Tuesday, February 05, 2008 1:45 PM, Pavel Machek  wrote:
->> 
->>> 
->>> ...I've reported this before, with full debugging. Not sure if
->>> anything happened.
->> 
->> Could you please point me to where you have reported it before?
+I have several hours of running aith nohpet and X's affinity set to 2
+instead of 3 and so far everything is running flawlessly.
+
+Even though Mark Hounschell pointed me at this old Suse issue 
+
+(https://bugzilla.novell.com/show_bug.cgi?id=223561)
+
+which has the same suggestion (taskset) as you made, for me this was
+something new starting with 2.6.24-git15 - maybe something made a timing
+issue fall a little closer to the edge.  
+
+Would you like me to try and further isolate things for you here by
+either running with just nohpet OR just the taskset to change X's
+affinity?
+
+Once again thank you for your prompt (and effective) support on this
+issue.
+
+Chris
+
+
+
+
+On Wed, 2008-02-06 at 14:54 +0100, Jiri Kosina wrote:
+> On Wed, 6 Feb 2008, Chris Holvenstot wrote:
 > 
-> From pavel@ucw.cz Wed Oct 31 01:52:02 2007
-> From: Pavel Machek <pavel@ucw.cz>
-> To: linux-wireless@vger.kernel.org,
->        kernel list <linux-kernel@vger.kernel.org>,
->        ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
-> Subject: iwl3945 in 2.6.24-rc1 dies under load
-> X-Warning: Reading this can be dangerous to your mental health.
+> > On this system I am using a PS2 Keyboard - and let me stress that it is 
+> > only occasionaly that it happens - I have had 2.6.24-git15 up for about 
+> > 2 hours now and have only seen it about a dozen times. I also note one 
+> > other thing - although my system is lightly loaded - at this time of day 
+> > I am pretty much just using email on an AMD 64 X2 4600+ with 2 gigs of 
+> > of memory - I have noticed several times that I will be typing away and 
+> > nothing is appearing on the screen - and a few seconds later - boom - 
+> > there it all is.
 > 
-> ...and thread that resulted.
-
-Could you please create a new bug in our bug tracking system
-(www.bughost.org) to enable us to track this problem? Please include the
-relevant information from the thread as well as the information you
-doscovered recently.
-
-Thank you very much
-
-Reinette
+> It could be some timing problem. Does this happen also in console, or 
+> only when running X?
+> 
+> Could you please try to
+> 
+> - boot with 'nohpet' kernel parameter
+> - taskset -p 0x00000002 <pid_of_Xserver> if this is a multi-CPU/core 
+>   machine and you are experiencing the problems only in X
+> 
+> Thanks,
+> 
 
