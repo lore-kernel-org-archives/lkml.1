@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbYBFXBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbYBFXB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbYBFXBr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761682AbYBFXBd
+	id S1762764AbYBFXB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762170AbYBFXBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:01:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:13757 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761616AbYBFXBb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:01:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=chv4wInP8VgGdZyNssI5zyg52NCY6BZ2bofamn52XbRXkBEhPJkOIlMCbj4n82DACpCqOyKKBlBwG2Y03xefRVVLPqTS095zmjv+y+HaZjnya+QzGp9ykkyJ0pgA0+pJDezrGn2SPG752DnQ07kwndPd9UK/fKIUC5ML59ci2Fk=
-Message-ID: <6101e8c40802061501i31a6af25g54704109f06a8cba@mail.gmail.com>
-Date: Thu, 7 Feb 2008 00:01:30 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       stable-commits@vger.kernel.org
-Subject: Re: [2.6.22.y] {01**/17} - do_anonymous_page-race - series for stable kernel
-In-Reply-To: <6101e8c40802011733y69521724t9e02690419f55201@mail.gmail.com>
+	Wed, 6 Feb 2008 18:01:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35558 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761668AbYBFXBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:01:45 -0500
+Message-ID: <47AA3C4C.6080004@redhat.com>
+Date: Wed, 06 Feb 2008 17:01:32 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
+References: <47AA3126.8090102@redhat.com>	<20080206143457.03e8741d.akpm@linux-foundation.org> <20080206145439.4ef971f2@laptopd505.fenrus.org>
+In-Reply-To: <20080206145439.4ef971f2@laptopd505.fenrus.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6101e8c40802011733y69521724t9e02690419f55201@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----8<---
+Arjan van de Ven wrote:
+> On Wed, 6 Feb 2008 14:34:57 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+>> Does the patch actually help?  I mean, if a() calls b() and both use N
+>> bytes of locals, our worst-case stack usage remains ~2N whether or
+>> not b() was inlined in a()?  In fact, uninlining makes things a
+>> little worse due to callframe stuff.
+> 
+> it gets interesting at the three-way..
+> if a() calls b() and then calls c(), and they all use N,
+> the total usage is now 3N not 2N.
 
--- 
-Thanks,From: Andrea Arcangeli <andrea@suse.de>
-Subject: Race condition in userspace testcase
-References: 46948, LTC11574
+*nod*
 
+It'd be nice if it could be max of (a,b,c) though.  Or maybe compilers
+don't work that way.  :)
 
-Additional Comment #103 From Andrea Arcangeli 2004-10-15 19:41
-the last patch I attached is the safest I believe.
+> (although current gcc is already somewhat smarter about this, and 3N might actually be 2N for some cases)
 
-I'm not sure if a lock_unlock or lock_unlock is always guaranteed to happen
-after the I/O, and this makes sure no race can happen anymore.
+on x86, gcc 4.1.2, do_mount goes from 360 to 112 bytes w/ the patch I sent.
 
----
- fs/bio.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+with gcc 4.3, it goes from 364 to 104.
 
---- a/fs/bio.c	2007-07-08 19:32:17.000000000 -0400
-+++ b/fs/bio.c	2007-08-27 14:01:21.000000000 -0400
-@@ -1028,6 +1028,15 @@ void bio_endio(struct bio *bio, unsigned
- 	bio->bi_size -= bytes_done;
- 	bio->bi_sector += (bytes_done >> 9);
-
-+	if (bio_data_dir(bio) == READ)
-+		/*
-+		 * If the current cpu has written to the page by hand
-+		 * without dma, we must enforce ordering to be sure
-+		 * this written data will be visible before we expose
-+		 * the page contents to other cpus (for example with
-+		 * a set_pte).
-+		 */
-+		smp_wmb();
- 	if (bio->bi_end_io)
- 		bio->bi_end_io(bio, bytes_done, error);
- }
----8<---
-
---
-Oliver
+-ERic
