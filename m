@@ -1,85 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbYBFSqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYBFSrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756948AbYBFSqz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 13:46:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYBFSqr
+	id S1757968AbYBFSrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 13:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYBFSrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 13:46:47 -0500
-Received: from rn-out-0910.google.com ([64.233.170.186]:29460 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbYBFSqq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 13:46:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OYpRzQA71WEsojJbDPBWhxpe0O5gbo6VgJafpDnFbZ/vBQD95misc4GUeeglJdGcDrnFMbgJT2PIpVmpQz63zSJ2tYzO0+b8scnIL6dyVKRwC5vBzgoYvTfVtgzlbYp9JaqAg4s7CLrulOpbAsMuUu9BWHYCSLAD+w6lAVFzB5Q=
-Message-ID: <e9c3a7c20802061046r2d939947m97883c3fbef6e016@mail.gmail.com>
-Date: Wed, 6 Feb 2008 11:46:43 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [RFC v2 0/5] dmaengine: Slave DMA interface and example users
-Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       "Shannon Nelson" <shannon.nelson@intel.com>, kernel@avr32linux.org,
-       "Francis Moreau" <francis.moro@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       "Pierre Ossman" <drzeus-list@drzeus.cx>
-In-Reply-To: <20080204163200.550481a7@dhcp-252-066.norway.atmel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Feb 2008 13:47:19 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48073 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753033AbYBFSrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 13:47:17 -0500
+Subject: Re: [PATCH] jbd: fix assertion failure in journal_next_log_block
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Josef Bacik <jbacik@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802051359.05758.jbacik@redhat.com>
+References: <20080131161417.GA29679@unused.rdu.redhat.com>
+	 <20080205172731.GD29130@atrey.karlin.mff.cuni.cz>
+	 <200802051359.05758.jbacik@redhat.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 06 Feb 2008 10:47:17 -0800
+Message-Id: <1202323637.4112.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-	 <20080129215453.1e3758ab@siona>
-	 <200801292256.14553.david-b@pacbell.net>
-	 <20080130095641.39eaad13@dhcp-252-066.norway.atmel.com>
-	 <e9c3a7c20801300939w7b73f5a6ld73bde8c3fada569@mail.gmail.com>
-	 <20080204163200.550481a7@dhcp-252-066.norway.atmel.com>
-X-Google-Sender-Auth: e12a521ba5b09c0c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 4, 2008 8:32 AM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> On Wed, 30 Jan 2008 10:39:47 -0700
-> "Dan Williams" <dan.j.williams@intel.com> wrote:
->
-> > Agreed, the issue is how to do this without requiring an
-> > interrupt+callback sequence for each transaction or requiring the
-> > client to carry per transaction unmap-data.  For example NET_DMA never
-> > sees a dma_addr_t and assumes that all it needs to care about is the
-> > last transaction in a sequence.  Since it is alive for the duration of
-> > a transaction, we could put unmap data in dma_async_tx_descriptor
-> > along with an unmap function pointer since dma_unmap* routines have an
-> > equal number of parameters.  But I just got through making this
-> > structure smaller so maybe there is a better way.
->
-> I have to say I'm not crazy about the idea of adding more callbacks to
-> the descriptor...
->
-> The client must somehow know when the transfer is complete -- after
-> all, it has to call async_tx_ack() at some point. So additional
-> callbacks shouldn't be needed.
->
+On Tue, 2008-02-05 at 13:59 -0500, Josef Bacik wrote:
+> On Tuesday 05 February 2008 12:27:31 pm Jan Kara wrote:
+> >   Hello,
+> >
+> >   Sorry for replying a bit late but I'm currently falling behind in
+> > maling-list reading...
+> >
+> > > The way jbd tries to determine if there is enough space left on the
+> > > journal in order to start a new transaction is looking at the space left
+> > > in the journal and the space needed for the committing transaction, which
+> > > is 1/4 of the journal + the number of t_outstanding_credits for that
+> > > transaction.  In this case its assumed that t_outstanding_credits
+> > > accurately represents the number of credits
+> >
+> >   Yes.
+> >
+> > > waiting to be written to the journal, but this sometimes isn't the case. 
+> > > The transaction has two counters for buffers, t_outstanding_credits which
+> > > is used in conjunction with handles that are added to the transaction,
+> > > and t_nr_buffers which is only incremented/decremented when buffers are
+> > > added/removed from the transaction and are actually destined to be
+> > > journaled.  Normally these two
+> >
+> >   t_nr_buffers actually represents number of buffers on BJ_Metadata list
+> > and nobody uses it (except for the assertion in
+> > __journal_temp_unlink_buffer()). t_outstanding_credits is supposed to be
+> > *the* counter making sure we don't write more than we have credits for.
+> >
+> > > counters are the same, however there are cases where the committing
+> > > transaction can have buffers moved to the next running transaction, for
+> > > example any buffers on the committing transactions t_reserved list would
+> > > be moved to the next (running) transaction, and if it had been dirtied in
+> > > the process it would immediately make it onto the t_updates list, which
+> > > would increment t_nr_buffers
+> >
+> >   You probably mean t_buffers list here...
+> >
+> > > but not t_outstanding_credits.  So you get into this situation where
+> >
+> >   But which moving and dirtying do you mean? The caller which dirties
+> > the buffer must make sure that he has acquired enough credits for the
+> > transaction where the buffer ends up... So if there were not enough
+> > buffers in the running transaction where we refiled the buffer it is a
+> > bug in the caller which dirties the buffer.
+> >
+> 
+> You know now that you say that I feel like an idiot, you are right the only way 
+> for something to actually end up on that list was if somebody dirtied it and if 
+> they did it would have had to been accounted for at some point on the running 
+> transaction.
+> 
+> > > t_nr_buffers (the actual number of buffers that are on the transaction)
+> > > is greater than the number of buffers accounted for via
+> > > t_outstanding_credits. This presents a problem since as we loop through
+> > > writting buffers to the journal, we decrement t_outstanding_credits, and
+> > > if t_nr_buffers is more than t_outstanding_credits then we end up with a
+> > > negative number for
+> > > t_outstanding_credits, which means we start saying we need less than 1/4
+> > > of the journal for our committing transaction and allow more transactions
+> > > than we can handle to start, and then bam we fail because
+> > > journal_next_log_block doesn't have enough free blocks in order to handle
+> > > the request.  This has been tested and fixes the issue (which could not
+> > > be reproduced by me but several other people could get it to reproduce
+> > > using postmark), and although I couldn't reproduce the assertion, I could
+> > > very easily reproduce the situation where t_outstanding_credits was <
+> > > than t_nr_buffers.
+> >
+> >   I suppose you see the assertion J_ASSERT(journal->j_free > 1); to
+> > fail, right? I don't see how your patch could help avoid that assertion.
+> > You've just removed accounting of t_outstanding_credits which has no
+> > impact on the real number of free blocks in the journal stored in
+> > j_free. Anyway, if you can reproduce t_outstanding_credits <
+> > t_nr_buffers, then there's something fishy. Are you able to reproduce it
+> > also with a current kernel?
+> >   Thanks for looking into the problem :)
+> >
+> 
+> Well my patch helped avoid the assertion because t_outstanding_credits was going 
+> negative therefore we were letting transactions start when we shouldn't be, and 
+> eventually we would end up with too much of the journal in use and we'd assert.  
+> Course I can't reproduce where t_outstanding_credits < t_nr_buffers upstream 
+> (again I feel like an idiot, should have tested that first).  Thanks for 
+> looking at this Jan.
+> 
+> Mingming, would you mind pulling this patch out of the patch queue please since 
+> its wrong?  Thanks much,
+> 
 
-The 'ack' only signifies that the client is done with this descriptor,
-it tells the api "this descriptor can be freed/reused, no dependent
-operations will be submitted against it".  This can and does happen
-before the operation actually completes.
+Sure, done!
 
-[..]
+Mingming
 
-> This requires three additional fields in the dma_async_tx_descriptor
-> structure, but in many cases the driver needs these fields in its own
-> private descriptor wrapper anyway.
->
 
-I agree this should be moved up to the common descriptor.  The unmap
-routines are fairly symmetric, so it may not be that bad to also have
-an "unmap type" that the cleanup routines could key off of, one of the
-options being "do not unmap" for clients that know what they are
-doing.
-
---
-Dan
