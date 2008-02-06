@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932592AbYBGATR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964832AbYBGATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932592AbYBGATR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbYBFX66
+	id S964832AbYBGATn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764027AbYBFX7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:58:58 -0500
-Received: from ns2.suse.de ([195.135.220.15]:32894 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:59:06 -0500
+Received: from mx1.suse.de ([195.135.220.2]:46375 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932420AbYBFX6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:58:55 -0500
-Date: Wed, 6 Feb 2008 15:53:44 -0800
+	id S1759850AbYBFX7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:59:01 -0500
+Date: Wed, 6 Feb 2008 15:53:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,12 +21,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Dmitry Torokhov <dtor@mail.ru>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: [patch 50/73] Input: mousedev - implement proper locking
-Message-ID: <20080206235344.GY13121@suse.de>
+Subject: [patch 51/73] Input: joydev - implement proper locking
+Message-ID: <20080206235347.GZ13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-mousedev-implement-proper-locking.patch"
+Content-Disposition: inline; filename="input-joydev-implement-proper-locking.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,524 +37,173 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-patch 464b241575f3700e14492e34f26bcd1794280f55 in mainline.
+patch b126207ccdfe492fbc339c18d4898b1b5353fc6b in mainline.
 
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Cc: Al Viro <viro@ZenIV.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/mousedev.c |  742 +++++++++++++++++++++++++++++------------------
- 1 file changed, 470 insertions(+), 272 deletions(-)
+ drivers/input/joydev.c |  745 ++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 493 insertions(+), 252 deletions(-)
 
---- a/drivers/input/mousedev.c
-+++ b/drivers/input/mousedev.c
-@@ -61,9 +61,11 @@ struct mousedev {
- 	int open;
- 	int minor;
- 	char name[16];
-+	struct input_handle handle;
+--- a/drivers/input/joydev.c
++++ b/drivers/input/joydev.c
+@@ -43,6 +43,8 @@ struct joydev {
+ 	struct input_handle handle;
  	wait_queue_head_t wait;
  	struct list_head client_list;
--	struct input_handle handle;
 +	spinlock_t client_lock; /* protects client_list */
 +	struct mutex mutex;
  	struct device dev;
  
- 	struct list_head mixdev_node;
-@@ -113,108 +115,137 @@ static unsigned char mousedev_imex_seq[]
- static struct input_handler mousedev_handler;
+ 	struct js_corr corr[ABS_MAX + 1];
+@@ -61,31 +63,61 @@ struct joydev_client {
+ 	int head;
+ 	int tail;
+ 	int startup;
++	spinlock_t buffer_lock; /* protects access to buffer, head and tail */
+ 	struct fasync_struct *fasync;
+ 	struct joydev *joydev;
+ 	struct list_head node;
+ };
  
- static struct mousedev *mousedev_table[MOUSEDEV_MINORS];
-+static DEFINE_MUTEX(mousedev_table_mutex);
- static struct mousedev *mousedev_mix;
- static LIST_HEAD(mousedev_mix_list);
+ static struct joydev *joydev_table[JOYDEV_MINORS];
++static DEFINE_MUTEX(joydev_table_mutex);
  
-+static void mixdev_open_devices(void);
-+static void mixdev_close_devices(void);
-+
- #define fx(i)  (mousedev->old_x[(mousedev->pkt_count - (i)) & 03])
- #define fy(i)  (mousedev->old_y[(mousedev->pkt_count - (i)) & 03])
- 
--static void mousedev_touchpad_event(struct input_dev *dev, struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_touchpad_event(struct input_dev *dev,
-+				    struct mousedev *mousedev,
-+				    unsigned int code, int value)
+ static int joydev_correct(int value, struct js_corr *corr)
  {
- 	int size, tmp;
- 	enum { FRACTION_DENOM = 128 };
- 
- 	switch (code) {
--		case ABS_X:
--			fx(0) = value;
--			if (mousedev->touch && mousedev->pkt_count >= 2) {
--				size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
--				if (size == 0)
--					size = 256 * 2;
--				tmp = ((value - fx(2)) * (256 * FRACTION_DENOM)) / size;
--				tmp += mousedev->frac_dx;
--				mousedev->packet.dx = tmp / FRACTION_DENOM;
--				mousedev->frac_dx = tmp - mousedev->packet.dx * FRACTION_DENOM;
--			}
+ 	switch (corr->type) {
+-		case JS_CORR_NONE:
 -			break;
- 
--		case ABS_Y:
--			fy(0) = value;
--			if (mousedev->touch && mousedev->pkt_count >= 2) {
--				/* use X size to keep the same scale */
--				size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
--				if (size == 0)
--					size = 256 * 2;
--				tmp = -((value - fy(2)) * (256 * FRACTION_DENOM)) / size;
--				tmp += mousedev->frac_dy;
--				mousedev->packet.dy = tmp / FRACTION_DENOM;
--				mousedev->frac_dy = tmp - mousedev->packet.dy * FRACTION_DENOM;
--			}
+-		case JS_CORR_BROKEN:
+-			value = value > corr->coef[0] ? (value < corr->coef[1] ? 0 :
+-				((corr->coef[3] * (value - corr->coef[1])) >> 14)) :
+-				((corr->coef[2] * (value - corr->coef[0])) >> 14);
 -			break;
-+	case ABS_X:
-+		fx(0) = value;
-+		if (mousedev->touch && mousedev->pkt_count >= 2) {
-+			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
-+			if (size == 0)
-+				size = 256 * 2;
-+			tmp = ((value - fx(2)) * 256 * FRACTION_DENOM) / size;
-+			tmp += mousedev->frac_dx;
-+			mousedev->packet.dx = tmp / FRACTION_DENOM;
-+			mousedev->frac_dx =
-+				tmp - mousedev->packet.dx * FRACTION_DENOM;
-+		}
+-		default:
+-			return 0;
++
++	case JS_CORR_NONE:
 +		break;
 +
-+	case ABS_Y:
-+		fy(0) = value;
-+		if (mousedev->touch && mousedev->pkt_count >= 2) {
-+			/* use X size to keep the same scale */
-+			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
-+			if (size == 0)
-+				size = 256 * 2;
-+			tmp = -((value - fy(2)) * 256 * FRACTION_DENOM) / size;
-+			tmp += mousedev->frac_dy;
-+			mousedev->packet.dy = tmp / FRACTION_DENOM;
-+			mousedev->frac_dy = tmp -
-+				mousedev->packet.dy * FRACTION_DENOM;
-+		}
-+		break;
- 	}
- }
- 
--static void mousedev_abs_event(struct input_dev *dev, struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_abs_event(struct input_dev *dev, struct mousedev *mousedev,
-+				unsigned int code, int value)
- {
- 	int size;
- 
- 	switch (code) {
--		case ABS_X:
--			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
--			if (size == 0)
--				size = xres ? : 1;
--			if (value > dev->absmax[ABS_X])
--				value = dev->absmax[ABS_X];
--			if (value < dev->absmin[ABS_X])
--				value = dev->absmin[ABS_X];
--			mousedev->packet.x = ((value - dev->absmin[ABS_X]) * xres) / size;
--			mousedev->packet.abs_event = 1;
--			break;
- 
--		case ABS_Y:
--			size = dev->absmax[ABS_Y] - dev->absmin[ABS_Y];
--			if (size == 0)
--				size = yres ? : 1;
--			if (value > dev->absmax[ABS_Y])
--				value = dev->absmax[ABS_Y];
--			if (value < dev->absmin[ABS_Y])
--				value = dev->absmin[ABS_Y];
--			mousedev->packet.y = yres - ((value - dev->absmin[ABS_Y]) * yres) / size;
--			mousedev->packet.abs_event = 1;
--			break;
-+	case ABS_X:
-+		size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
-+		if (size == 0)
-+			size = xres ? : 1;
-+		if (value > dev->absmax[ABS_X])
-+			value = dev->absmax[ABS_X];
-+		if (value < dev->absmin[ABS_X])
-+			value = dev->absmin[ABS_X];
-+		mousedev->packet.x =
-+			((value - dev->absmin[ABS_X]) * xres) / size;
-+		mousedev->packet.abs_event = 1;
++	case JS_CORR_BROKEN:
++		value = value > corr->coef[0] ? (value < corr->coef[1] ? 0 :
++			((corr->coef[3] * (value - corr->coef[1])) >> 14)) :
++			((corr->coef[2] * (value - corr->coef[0])) >> 14);
 +		break;
 +
-+	case ABS_Y:
-+		size = dev->absmax[ABS_Y] - dev->absmin[ABS_Y];
-+		if (size == 0)
-+			size = yres ? : 1;
-+		if (value > dev->absmax[ABS_Y])
-+			value = dev->absmax[ABS_Y];
-+		if (value < dev->absmin[ABS_Y])
-+			value = dev->absmin[ABS_Y];
-+		mousedev->packet.y = yres -
-+			((value - dev->absmin[ABS_Y]) * yres) / size;
-+		mousedev->packet.abs_event = 1;
-+		break;
- 	}
- }
- 
--static void mousedev_rel_event(struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_rel_event(struct mousedev *mousedev,
-+				unsigned int code, int value)
- {
- 	switch (code) {
--		case REL_X:	mousedev->packet.dx += value; break;
--		case REL_Y:	mousedev->packet.dy -= value; break;
--		case REL_WHEEL:	mousedev->packet.dz -= value; break;
-+	case REL_X:
-+		mousedev->packet.dx += value;
-+		break;
-+
-+	case REL_Y:
-+		mousedev->packet.dy -= value;
-+		break;
-+
-+	case REL_WHEEL:
-+		mousedev->packet.dz -= value;
-+		break;
- 	}
- }
- 
--static void mousedev_key_event(struct mousedev *mousedev, unsigned int code, int value)
-+static void mousedev_key_event(struct mousedev *mousedev,
-+				unsigned int code, int value)
- {
- 	int index;
- 
- 	switch (code) {
--		case BTN_TOUCH:
--		case BTN_0:
--		case BTN_LEFT:		index = 0; break;
--		case BTN_STYLUS:
--		case BTN_1:
--		case BTN_RIGHT:		index = 1; break;
--		case BTN_2:
--		case BTN_FORWARD:
--		case BTN_STYLUS2:
--		case BTN_MIDDLE:	index = 2; break;
--		case BTN_3:
--		case BTN_BACK:
--		case BTN_SIDE:		index = 3; break;
--		case BTN_4:
--		case BTN_EXTRA:		index = 4; break;
--		default:		return;
-+
-+	case BTN_TOUCH:
-+	case BTN_0:
-+	case BTN_LEFT:		index = 0; break;
-+
-+	case BTN_STYLUS:
-+	case BTN_1:
-+	case BTN_RIGHT:		index = 1; break;
-+
-+	case BTN_2:
-+	case BTN_FORWARD:
-+	case BTN_STYLUS2:
-+	case BTN_MIDDLE:	index = 2; break;
-+
-+	case BTN_3:
-+	case BTN_BACK:
-+	case BTN_SIDE:		index = 3; break;
-+
-+	case BTN_4:
-+	case BTN_EXTRA:		index = 4; break;
-+
-+	default:		return;
++	default:
++		return 0;
  	}
  
- 	if (value) {
-@@ -226,19 +257,22 @@ static void mousedev_key_event(struct mo
- 	}
+ 	return value < -32767 ? -32767 : (value > 32767 ? 32767 : value);
  }
  
--static void mousedev_notify_readers(struct mousedev *mousedev, struct mousedev_hw_data *packet)
-+static void mousedev_notify_readers(struct mousedev *mousedev,
-+				    struct mousedev_hw_data *packet)
- {
- 	struct mousedev_client *client;
- 	struct mousedev_motion *p;
--	unsigned long flags;
-+	unsigned int new_head;
- 	int wake_readers = 0;
- 
--	list_for_each_entry(client, &mousedev->client_list, node) {
--		spin_lock_irqsave(&client->packet_lock, flags);
-+	list_for_each_entry_rcu(client, &mousedev->client_list, node) {
+-static void joydev_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
++static void joydev_pass_event(struct joydev_client *client,
++			      struct js_event *event)
++{
++	struct joydev *joydev = client->joydev;
 +
-+		/* Just acquire the lock, interrupts already disabled */
-+		spin_lock(&client->packet_lock);
- 
- 		p = &client->packets[client->head];
- 		if (client->ready && p->buttons != mousedev->packet.buttons) {
--			unsigned int new_head = (client->head + 1) % PACKET_QUEUE_LEN;
-+			new_head = (client->head + 1) % PACKET_QUEUE_LEN;
- 			if (new_head != client->tail) {
- 				p = &client->packets[client->head = new_head];
- 				memset(p, 0, sizeof(struct mousedev_motion));
-@@ -253,19 +287,22 @@ static void mousedev_notify_readers(stru
- 		}
- 
- 		client->pos_x += packet->dx;
--		client->pos_x = client->pos_x < 0 ? 0 : (client->pos_x >= xres ? xres : client->pos_x);
-+		client->pos_x = client->pos_x < 0 ?
-+			0 : (client->pos_x >= xres ? xres : client->pos_x);
- 		client->pos_y += packet->dy;
--		client->pos_y = client->pos_y < 0 ? 0 : (client->pos_y >= yres ? yres : client->pos_y);
-+		client->pos_y = client->pos_y < 0 ?
-+			0 : (client->pos_y >= yres ? yres : client->pos_y);
- 
- 		p->dx += packet->dx;
- 		p->dy += packet->dy;
- 		p->dz += packet->dz;
- 		p->buttons = mousedev->packet.buttons;
- 
--		if (p->dx || p->dy || p->dz || p->buttons != client->last_buttons)
-+		if (p->dx || p->dy || p->dz ||
-+		    p->buttons != client->last_buttons)
- 			client->ready = 1;
- 
--		spin_unlock_irqrestore(&client->packet_lock, flags);
-+		spin_unlock(&client->packet_lock);
- 
- 		if (client->ready) {
- 			kill_fasync(&client->fasync, SIGIO, POLL_IN);
-@@ -281,7 +318,8 @@ static void mousedev_touchpad_touch(stru
++	/*
++	 * IRQs already disabled, just acquire the lock
++	 */
++	spin_lock(&client->buffer_lock);
++
++	client->buffer[client->head] = *event;
++
++	if (client->startup == joydev->nabs + joydev->nkey) {
++		client->head++;
++		client->head &= JOYDEV_BUFFER_SIZE - 1;
++		if (client->tail == client->head)
++			client->startup = 0;
++	}
++
++	spin_unlock(&client->buffer_lock);
++
++	kill_fasync(&client->fasync, SIGIO, POLL_IN);
++}
++
++static void joydev_event(struct input_handle *handle,
++			 unsigned int type, unsigned int code, int value)
  {
- 	if (!value) {
- 		if (mousedev->touch &&
--		    time_before(jiffies, mousedev->touch + msecs_to_jiffies(tap_time))) {
-+		    time_before(jiffies,
-+				mousedev->touch + msecs_to_jiffies(tap_time))) {
- 			/*
- 			 * Toggle left button to emulate tap.
- 			 * We rely on the fact that mousedev_mix always has 0
-@@ -290,7 +328,8 @@ static void mousedev_touchpad_touch(stru
- 			set_bit(0, &mousedev->packet.buttons);
- 			set_bit(0, &mousedev_mix->packet.buttons);
- 			mousedev_notify_readers(mousedev, &mousedev_mix->packet);
--			mousedev_notify_readers(mousedev_mix, &mousedev_mix->packet);
-+			mousedev_notify_readers(mousedev_mix,
-+						&mousedev_mix->packet);
- 			clear_bit(0, &mousedev->packet.buttons);
- 			clear_bit(0, &mousedev_mix->packet.buttons);
- 		}
-@@ -302,54 +341,61 @@ static void mousedev_touchpad_touch(stru
- 		mousedev->touch = jiffies;
- }
- 
--static void mousedev_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
-+static void mousedev_event(struct input_handle *handle,
-+			   unsigned int type, unsigned int code, int value)
- {
- 	struct mousedev *mousedev = handle->private;
+ 	struct joydev *joydev = handle->private;
+ 	struct joydev_client *client;
+@@ -93,39 +125,32 @@ static void joydev_event(struct input_ha
  
  	switch (type) {
--		case EV_ABS:
--			/* Ignore joysticks */
--			if (test_bit(BTN_TRIGGER, handle->dev->keybit))
--				return;
- 
--			if (test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
--				mousedev_touchpad_event(handle->dev, mousedev, code, value);
-+	case EV_ABS:
-+		/* Ignore joysticks */
-+		if (test_bit(BTN_TRIGGER, handle->dev->keybit))
-+			return;
-+
-+		if (test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
-+			mousedev_touchpad_event(handle->dev,
-+						mousedev, code, value);
-+		else
-+			mousedev_abs_event(handle->dev, mousedev, code, value);
-+
-+		break;
-+
-+	case EV_REL:
-+		mousedev_rel_event(mousedev, code, value);
-+		break;
-+
-+	case EV_KEY:
-+		if (value != 2) {
-+			if (code == BTN_TOUCH &&
-+			    test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
-+				mousedev_touchpad_touch(mousedev, value);
- 			else
--				mousedev_abs_event(handle->dev, mousedev, code, value);
--
--			break;
--
--		case EV_REL:
--			mousedev_rel_event(mousedev, code, value);
--			break;
-+				mousedev_key_event(mousedev, code, value);
-+		}
-+		break;
  
 -		case EV_KEY:
--			if (value != 2) {
--				if (code == BTN_TOUCH && test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
--					mousedev_touchpad_touch(mousedev, value);
--				else
--					mousedev_key_event(mousedev, code, value);
-+	case EV_SYN:
-+		if (code == SYN_REPORT) {
-+			if (mousedev->touch) {
-+				mousedev->pkt_count++;
-+				/*
-+				 * Input system eats duplicate events,
-+				 * but we need all of them to do correct
-+				 * averaging so apply present one forward
-+				 */
-+				fx(0) = fx(1);
-+				fy(0) = fy(1);
- 			}
+-			if (code < BTN_MISC || value == 2)
+-				return;
+-			event.type = JS_EVENT_BUTTON;
+-			event.number = joydev->keymap[code - BTN_MISC];
+-			event.value = value;
 -			break;
 -
--		case EV_SYN:
--			if (code == SYN_REPORT) {
--				if (mousedev->touch) {
--					mousedev->pkt_count++;
--					/* Input system eats duplicate events, but we need all of them
--					 * to do correct averaging so apply present one forward
--					 */
--					fx(0) = fx(1);
--					fy(0) = fy(1);
--				}
- 
--				mousedev_notify_readers(mousedev, &mousedev->packet);
--				mousedev_notify_readers(mousedev_mix, &mousedev->packet);
-+			mousedev_notify_readers(mousedev, &mousedev->packet);
-+			mousedev_notify_readers(mousedev_mix, &mousedev->packet);
- 
--				mousedev->packet.dx = mousedev->packet.dy = mousedev->packet.dz = 0;
--				mousedev->packet.abs_event = 0;
--			}
+-		case EV_ABS:
+-			event.type = JS_EVENT_AXIS;
+-			event.number = joydev->absmap[code];
+-			event.value = joydev_correct(value, joydev->corr + event.number);
+-			if (event.value == joydev->abs[event.number])
+-				return;
+-			joydev->abs[event.number] = event.value;
 -			break;
-+			mousedev->packet.dx = mousedev->packet.dy =
-+				mousedev->packet.dz = 0;
-+			mousedev->packet.abs_event = 0;
-+		}
++	case EV_KEY:
++		if (code < BTN_MISC || value == 2)
++			return;
++		event.type = JS_EVENT_BUTTON;
++		event.number = joydev->keymap[code - BTN_MISC];
++		event.value = value;
 +		break;
+ 
+-		default:
++	case EV_ABS:
++		event.type = JS_EVENT_AXIS;
++		event.number = joydev->absmap[code];
++		event.value = joydev_correct(value,
++					&joydev->corr[event.number]);
++		if (event.value == joydev->abs[event.number])
+ 			return;
++		joydev->abs[event.number] = event.value;
++		break;
++
++	default:
++		return;
  	}
- }
  
-@@ -367,41 +413,45 @@ static void mousedev_free(struct device 
- {
- 	struct mousedev *mousedev = container_of(dev, struct mousedev, dev);
+ 	event.time = jiffies_to_msecs(jiffies);
  
--	mousedev_table[mousedev->minor] = NULL;
- 	kfree(mousedev);
- }
- 
--static int mixdev_add_device(struct mousedev *mousedev)
-+static int mousedev_open_device(struct mousedev *mousedev)
- {
--	int error;
+-	list_for_each_entry(client, &joydev->client_list, node) {
 -
--	if (mousedev_mix->open) {
--		error = input_open_device(&mousedev->handle);
--		if (error)
--			return error;
-+	int retval;
- 
--		mousedev->open++;
--		mousedev->mixdev_open = 1;
+-		memcpy(client->buffer + client->head, &event, sizeof(struct js_event));
+-
+-		if (client->startup == joydev->nabs + joydev->nkey)
+-			if (client->tail == (client->head = (client->head + 1) & (JOYDEV_BUFFER_SIZE - 1)))
+-				client->startup = 0;
+-
+-		kill_fasync(&client->fasync, SIGIO, POLL_IN);
 -	}
-+	retval = mutex_lock_interruptible(&mousedev->mutex);
-+	if (retval)
-+		return retval;
++	list_for_each_entry_rcu(client, &joydev->client_list, node)
++		joydev_pass_event(client, &event);
  
--	get_device(&mousedev->dev);
--	list_add_tail(&mousedev->mixdev_node, &mousedev_mix_list);
-+	if (mousedev->minor == MOUSEDEV_MIX)
-+		mixdev_open_devices();
-+	else if (!mousedev->exist)
-+		retval = -ENODEV;
-+	else if (!mousedev->open++)
-+		retval = input_open_device(&mousedev->handle);
- 
--	return 0;
-+	mutex_unlock(&mousedev->mutex);
-+	return retval;
+ 	wake_up_interruptible(&joydev->wait);
  }
- 
--static void mixdev_remove_device(struct mousedev *mousedev)
-+static void mousedev_close_device(struct mousedev *mousedev)
+@@ -144,23 +169,85 @@ static void joydev_free(struct device *d
  {
--	if (mousedev->mixdev_open) {
--		mousedev->mixdev_open = 0;
--		if (!--mousedev->open && mousedev->exist)
--			input_close_device(&mousedev->handle);
--	}
-+	mutex_lock(&mousedev->mutex);
+ 	struct joydev *joydev = container_of(dev, struct joydev, dev);
  
--	list_del_init(&mousedev->mixdev_node);
--	put_device(&mousedev->dev);
-+	if (mousedev->minor == MOUSEDEV_MIX)
-+		mixdev_close_devices();
-+	else if (mousedev->exist && !--mousedev->open)
-+		input_close_device(&mousedev->handle);
-+
-+	mutex_unlock(&mousedev->mutex);
+-	joydev_table[joydev->minor] = NULL;
+ 	kfree(joydev);
  }
  
-+/*
-+ * Open all available devices so they can all be multiplexed in one.
-+ * stream. Note that this function is called with mousedev_mix->mutex
-+ * held.
-+ */
- static void mixdev_open_devices(void)
- {
- 	struct mousedev *mousedev;
-@@ -411,16 +461,19 @@ static void mixdev_open_devices(void)
- 
- 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
- 		if (!mousedev->mixdev_open) {
--			if (!mousedev->open && mousedev->exist)
--				if (input_open_device(&mousedev->handle))
--					continue;
-+			if (mousedev_open_device(mousedev))
-+				continue;
- 
--			mousedev->open++;
- 			mousedev->mixdev_open = 1;
- 		}
- 	}
- }
- 
-+/*
-+ * Close all devices that were opened as part of multiplexed
-+ * device. Note that this function is called with mousedev_mix->mutex
-+ * held.
-+ */
- static void mixdev_close_devices(void)
- {
- 	struct mousedev *mousedev;
-@@ -431,33 +484,50 @@ static void mixdev_close_devices(void)
- 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
- 		if (mousedev->mixdev_open) {
- 			mousedev->mixdev_open = 0;
--			if (!--mousedev->open && mousedev->exist)
--				input_close_device(&mousedev->handle);
-+			mousedev_close_device(mousedev);
- 		}
- 	}
- }
- 
-+
-+static void mousedev_attach_client(struct mousedev *mousedev,
-+				   struct mousedev_client *client)
++static void joydev_attach_client(struct joydev *joydev,
++				 struct joydev_client *client)
 +{
-+	spin_lock(&mousedev->client_lock);
-+	list_add_tail_rcu(&client->node, &mousedev->client_list);
-+	spin_unlock(&mousedev->client_lock);
++	spin_lock(&joydev->client_lock);
++	list_add_tail_rcu(&client->node, &joydev->client_list);
++	spin_unlock(&joydev->client_lock);
 +	/*
 +	 * We don't use synchronize_rcu() here because read-side
 +	 * critical section is protected by a spinlock (dev->event_lock)
@@ -563,76 +212,111 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 +	synchronize_sched();
 +}
 +
-+static void mousedev_detach_client(struct mousedev *mousedev,
-+				   struct mousedev_client *client)
++static void joydev_detach_client(struct joydev *joydev,
++				 struct joydev_client *client)
 +{
-+	spin_lock(&mousedev->client_lock);
++	spin_lock(&joydev->client_lock);
 +	list_del_rcu(&client->node);
-+	spin_unlock(&mousedev->client_lock);
++	spin_unlock(&joydev->client_lock);
 +	synchronize_sched();
 +}
 +
- static int mousedev_release(struct inode *inode, struct file *file)
++static int joydev_open_device(struct joydev *joydev)
++{
++	int retval;
++
++	retval = mutex_lock_interruptible(&joydev->mutex);
++	if (retval)
++		return retval;
++
++	if (!joydev->exist)
++		retval = -ENODEV;
++	else if (!joydev->open++)
++		retval = input_open_device(&joydev->handle);
++
++	mutex_unlock(&joydev->mutex);
++	return retval;
++}
++
++static void joydev_close_device(struct joydev *joydev)
++{
++	mutex_lock(&joydev->mutex);
++
++	if (joydev->exist && !--joydev->open)
++		input_close_device(&joydev->handle);
++
++	mutex_unlock(&joydev->mutex);
++}
++
++/*
++ * Wake up users waiting for IO so they can disconnect from
++ * dead device.
++ */
++static void joydev_hangup(struct joydev *joydev)
++{
++	struct joydev_client *client;
++
++	spin_lock(&joydev->client_lock);
++	list_for_each_entry(client, &joydev->client_list, node)
++		kill_fasync(&client->fasync, SIGIO, POLL_HUP);
++	spin_unlock(&joydev->client_lock);
++
++	wake_up_interruptible(&joydev->wait);
++}
++
+ static int joydev_release(struct inode *inode, struct file *file)
  {
- 	struct mousedev_client *client = file->private_data;
- 	struct mousedev *mousedev = client->mousedev;
+ 	struct joydev_client *client = file->private_data;
+ 	struct joydev *joydev = client->joydev;
  
- 	mousedev_fasync(-1, file, 0);
+ 	joydev_fasync(-1, file, 0);
 -
 -	list_del(&client->node);
-+	mousedev_detach_client(mousedev, client);
++	joydev_detach_client(joydev, client);
  	kfree(client);
  
--	if (mousedev->minor == MOUSEDEV_MIX)
--		mixdev_close_devices();
--	else if (!--mousedev->open && mousedev->exist)
--		input_close_device(&mousedev->handle);
+-	if (!--joydev->open && joydev->exist)
+-		input_close_device(&joydev->handle);
 -
-+	mousedev_close_device(mousedev);
- 	put_device(&mousedev->dev);
++	joydev_close_device(joydev);
+ 	put_device(&joydev->dev);
  
  	return 0;
- }
- 
--
- static int mousedev_open(struct inode *inode, struct file *file)
- {
- 	struct mousedev_client *client;
-@@ -475,12 +545,17 @@ static int mousedev_open(struct inode *i
- 	if (i >= MOUSEDEV_MINORS)
+@@ -176,11 +263,16 @@ static int joydev_open(struct inode *ino
+ 	if (i >= JOYDEV_MINORS)
  		return -ENODEV;
  
-+	error = mutex_lock_interruptible(&mousedev_table_mutex);
++	error = mutex_lock_interruptible(&joydev_table_mutex);
 +	if (error)
 +		return error;
- 	mousedev = mousedev_table[i];
-+	if (mousedev)
-+		get_device(&mousedev->dev);
-+	mutex_unlock(&mousedev_table_mutex);
-+
- 	if (!mousedev)
- 		return -ENODEV;
+ 	joydev = joydev_table[i];
+-	if (!joydev || !joydev->exist)
+-		return -ENODEV;
++	if (joydev)
++		get_device(&joydev->dev);
++	mutex_unlock(&joydev_table_mutex);
  
--	get_device(&mousedev->dev);
--
- 	client = kzalloc(sizeof(struct mousedev_client), GFP_KERNEL);
+-	get_device(&joydev->dev);
++	if (!joydev)
++		return -ENODEV;
+ 
+ 	client = kzalloc(sizeof(struct joydev_client), GFP_KERNEL);
  	if (!client) {
- 		error = -ENOMEM;
-@@ -491,21 +566,17 @@ static int mousedev_open(struct inode *i
- 	client->pos_x = xres / 2;
- 	client->pos_y = yres / 2;
- 	client->mousedev = mousedev;
--	list_add_tail(&client->node, &mousedev->client_list);
-+	mousedev_attach_client(mousedev, client);
+@@ -188,37 +280,129 @@ static int joydev_open(struct inode *ino
+ 		goto err_put_joydev;
+ 	}
  
--	if (mousedev->minor == MOUSEDEV_MIX)
--		mixdev_open_devices();
--	else if (!mousedev->open++ && mousedev->exist) {
--		error = input_open_device(&mousedev->handle);
++	spin_lock_init(&client->buffer_lock);
+ 	client->joydev = joydev;
+-	list_add_tail(&client->node, &joydev->client_list);
++	joydev_attach_client(joydev, client);
+ 
+-	if (!joydev->open++ && joydev->exist) {
+-		error = input_open_device(&joydev->handle);
 -		if (error)
 -			goto err_free_client;
 -	}
-+	error = mousedev_open_device(mousedev);
++	error = joydev_open_device(joydev);
 +	if (error)
 +		goto err_free_client;
  
@@ -641,497 +325,752 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
  
   err_free_client:
 -	list_del(&client->node);
-+	mousedev_detach_client(mousedev, client);
++	joydev_detach_client(joydev, client);
  	kfree(client);
-  err_put_mousedev:
- 	put_device(&mousedev->dev);
-@@ -517,41 +588,41 @@ static inline int mousedev_limit_delta(i
- 	return delta > limit ? limit : (delta < -limit ? -limit : delta);
+  err_put_joydev:
+ 	put_device(&joydev->dev);
+ 	return error;
  }
  
--static void mousedev_packet(struct mousedev_client *client, signed char *ps2_data)
-+static void mousedev_packet(struct mousedev_client *client,
-+			    signed char *ps2_data)
+-static ssize_t joydev_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
++static int joydev_generate_startup_event(struct joydev_client *client,
++					 struct input_dev *input,
++					 struct js_event *event)
  {
--	struct mousedev_motion *p;
--	unsigned long flags;
--
--	spin_lock_irqsave(&client->packet_lock, flags);
--	p = &client->packets[client->tail];
-+	struct mousedev_motion *p = &client->packets[client->tail];
- 
--	ps2_data[0] = 0x08 | ((p->dx < 0) << 4) | ((p->dy < 0) << 5) | (p->buttons & 0x07);
-+	ps2_data[0] = 0x08 |
-+		((p->dx < 0) << 4) | ((p->dy < 0) << 5) | (p->buttons & 0x07);
- 	ps2_data[1] = mousedev_limit_delta(p->dx, 127);
- 	ps2_data[2] = mousedev_limit_delta(p->dy, 127);
- 	p->dx -= ps2_data[1];
- 	p->dy -= ps2_data[2];
- 
- 	switch (client->mode) {
--		case MOUSEDEV_EMUL_EXPS:
--			ps2_data[3] = mousedev_limit_delta(p->dz, 7);
--			p->dz -= ps2_data[3];
--			ps2_data[3] = (ps2_data[3] & 0x0f) | ((p->buttons & 0x18) << 1);
--			client->bufsiz = 4;
--			break;
--
--		case MOUSEDEV_EMUL_IMPS:
--			ps2_data[0] |= ((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
--			ps2_data[3] = mousedev_limit_delta(p->dz, 127);
--			p->dz -= ps2_data[3];
--			client->bufsiz = 4;
--			break;
--
--		case MOUSEDEV_EMUL_PS2:
--		default:
--			ps2_data[0] |= ((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
--			p->dz = 0;
--			client->bufsiz = 3;
--			break;
-+	case MOUSEDEV_EMUL_EXPS:
-+		ps2_data[3] = mousedev_limit_delta(p->dz, 7);
-+		p->dz -= ps2_data[3];
-+		ps2_data[3] = (ps2_data[3] & 0x0f) | ((p->buttons & 0x18) << 1);
-+		client->bufsiz = 4;
-+		break;
+-	return -EINVAL;
++	struct joydev *joydev = client->joydev;
++	int have_event;
 +
-+	case MOUSEDEV_EMUL_IMPS:
-+		ps2_data[0] |=
-+			((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
-+		ps2_data[3] = mousedev_limit_delta(p->dz, 127);
-+		p->dz -= ps2_data[3];
-+		client->bufsiz = 4;
-+		break;
++	spin_lock_irq(&client->buffer_lock);
 +
-+	case MOUSEDEV_EMUL_PS2:
-+	default:
-+		ps2_data[0] |=
-+			((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
-+		p->dz = 0;
-+		client->bufsiz = 3;
-+		break;
- 	}
- 
- 	if (!p->dx && !p->dy && !p->dz) {
-@@ -561,12 +632,56 @@ static void mousedev_packet(struct mouse
- 		} else
- 			client->tail = (client->tail + 1) % PACKET_QUEUE_LEN;
- 	}
--
--	spin_unlock_irqrestore(&client->packet_lock, flags);
- }
- 
-+static void mousedev_generate_response(struct mousedev_client *client,
-+					int command)
-+{
-+	client->ps2[0] = 0xfa; /* ACK */
++	have_event = client->startup < joydev->nabs + joydev->nkey;
 +
-+	switch (command) {
- 
--static ssize_t mousedev_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
-+	case 0xeb: /* Poll */
-+		mousedev_packet(client, &client->ps2[1]);
-+		client->bufsiz++; /* account for leading ACK */
-+		break;
++	if (have_event) {
 +
-+	case 0xf2: /* Get ID */
-+		switch (client->mode) {
-+		case MOUSEDEV_EMUL_PS2:
-+			client->ps2[1] = 0;
-+			break;
-+		case MOUSEDEV_EMUL_IMPS:
-+			client->ps2[1] = 3;
-+			break;
-+		case MOUSEDEV_EMUL_EXPS:
-+			client->ps2[1] = 4;
-+			break;
++		event->time = jiffies_to_msecs(jiffies);
++		if (client->startup < joydev->nkey) {
++			event->type = JS_EVENT_BUTTON | JS_EVENT_INIT;
++			event->number = client->startup;
++			event->value = !!test_bit(joydev->keypam[event->number],
++						  input->key);
++		} else {
++			event->type = JS_EVENT_AXIS | JS_EVENT_INIT;
++			event->number = client->startup - joydev->nkey;
++			event->value = joydev->abs[event->number];
 +		}
-+		client->bufsiz = 2;
-+		break;
-+
-+	case 0xe9: /* Get info */
-+		client->ps2[1] = 0x60; client->ps2[2] = 3; client->ps2[3] = 200;
-+		client->bufsiz = 4;
-+		break;
-+
-+	case 0xff: /* Reset */
-+		client->impsseq = client->imexseq = 0;
-+		client->mode = MOUSEDEV_EMUL_PS2;
-+		client->ps2[1] = 0xaa; client->ps2[2] = 0x00;
-+		client->bufsiz = 3;
-+		break;
-+
-+	default:
-+		client->bufsiz = 1;
-+		break;
++		client->startup++;
 +	}
-+	client->buffer = client->bufsiz;
++
++	spin_unlock_irq(&client->buffer_lock);
++
++	return have_event;
 +}
 +
-+static ssize_t mousedev_write(struct file *file, const char __user *buffer,
-+				size_t count, loff_t *ppos)
- {
- 	struct mousedev_client *client = file->private_data;
- 	unsigned char c;
-@@ -577,6 +692,8 @@ static ssize_t mousedev_write(struct fil
- 		if (get_user(c, buffer + i))
- 			return -EFAULT;
- 
-+		spin_lock_irq(&client->packet_lock);
++static int joydev_fetch_next_event(struct joydev_client *client,
++				   struct js_event *event)
++{
++	int have_event;
 +
- 		if (c == mousedev_imex_seq[client->imexseq]) {
- 			if (++client->imexseq == MOUSEDEV_SEQ_LEN) {
- 				client->imexseq = 0;
-@@ -593,68 +710,39 @@ static ssize_t mousedev_write(struct fil
- 		} else
- 			client->impsseq = 0;
- 
--		client->ps2[0] = 0xfa;
--
--		switch (c) {
--
--			case 0xeb: /* Poll */
--				mousedev_packet(client, &client->ps2[1]);
--				client->bufsiz++; /* account for leading ACK */
--				break;
--
--			case 0xf2: /* Get ID */
--				switch (client->mode) {
--					case MOUSEDEV_EMUL_PS2:  client->ps2[1] = 0; break;
--					case MOUSEDEV_EMUL_IMPS: client->ps2[1] = 3; break;
--					case MOUSEDEV_EMUL_EXPS: client->ps2[1] = 4; break;
--				}
--				client->bufsiz = 2;
--				break;
--
--			case 0xe9: /* Get info */
--				client->ps2[1] = 0x60; client->ps2[2] = 3; client->ps2[3] = 200;
--				client->bufsiz = 4;
--				break;
--
--			case 0xff: /* Reset */
--				client->impsseq = client->imexseq = 0;
--				client->mode = MOUSEDEV_EMUL_PS2;
--				client->ps2[1] = 0xaa; client->ps2[2] = 0x00;
--				client->bufsiz = 3;
--				break;
--
--			default:
--				client->bufsiz = 1;
--				break;
--		}
-+		mousedev_generate_response(client, c);
- 
--		client->buffer = client->bufsiz;
-+		spin_unlock_irq(&client->packet_lock);
- 	}
- 
- 	kill_fasync(&client->fasync, SIGIO, POLL_IN);
--
- 	wake_up_interruptible(&client->mousedev->wait);
- 
- 	return count;
++	spin_lock_irq(&client->buffer_lock);
++
++	have_event = client->head != client->tail;
++	if (have_event) {
++		*event = client->buffer[client->tail++];
++		client->tail &= JOYDEV_BUFFER_SIZE - 1;
++	}
++
++	spin_unlock_irq(&client->buffer_lock);
++
++	return have_event;
  }
  
--static ssize_t mousedev_read(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
-+static ssize_t mousedev_read(struct file *file, char __user *buffer,
-+			     size_t count, loff_t *ppos)
+-static ssize_t joydev_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
++/*
++ * Old joystick interface
++ */
++static ssize_t joydev_0x_read(struct joydev_client *client,
++			      struct input_dev *input,
++			      char __user *buf)
++{
++	struct joydev *joydev = client->joydev;
++	struct JS_DATA_TYPE data;
++	int i;
++
++	spin_lock_irq(&input->event_lock);
++
++	/*
++	 * Get device state
++	 */
++	for (data.buttons = i = 0; i < 32 && i < joydev->nkey; i++)
++		data.buttons |=
++			test_bit(joydev->keypam[i], input->key) ? (1 << i) : 0;
++	data.x = (joydev->abs[0] / 256 + 128) >> joydev->glue.JS_CORR.x;
++	data.y = (joydev->abs[1] / 256 + 128) >> joydev->glue.JS_CORR.y;
++
++	/*
++	 * Reset reader's event queue
++	 */
++	spin_lock(&client->buffer_lock);
++	client->startup = 0;
++	client->tail = client->head;
++	spin_unlock(&client->buffer_lock);
++
++	spin_unlock_irq(&input->event_lock);
++
++	if (copy_to_user(buf, &data, sizeof(struct JS_DATA_TYPE)))
++		return -EFAULT;
++
++	return sizeof(struct JS_DATA_TYPE);
++}
++
++static inline int joydev_data_pending(struct joydev_client *client)
++{
++	struct joydev *joydev = client->joydev;
++
++	return client->startup < joydev->nabs + joydev->nkey ||
++		client->head != client->tail;
++}
++
++static ssize_t joydev_read(struct file *file, char __user *buf,
++			   size_t count, loff_t *ppos)
  {
- 	struct mousedev_client *client = file->private_data;
-+	struct mousedev *mousedev = client->mousedev;
-+	signed char data[sizeof(client->ps2)];
- 	int retval = 0;
+ 	struct joydev_client *client = file->private_data;
+ 	struct joydev *joydev = client->joydev;
+ 	struct input_dev *input = joydev->handle.dev;
+-	int retval = 0;
++	struct js_event event;
++	int retval;
  
--	if (!client->ready && !client->buffer && (file->f_flags & O_NONBLOCK))
-+	if (!client->ready && !client->buffer && mousedev->exist &&
-+	    (file->f_flags & O_NONBLOCK))
+ 	if (!joydev->exist)
+ 		return -ENODEV;
+@@ -226,68 +410,35 @@ static ssize_t joydev_read(struct file *
+ 	if (count < sizeof(struct js_event))
+ 		return -EINVAL;
+ 
+-	if (count == sizeof(struct JS_DATA_TYPE)) {
+-
+-		struct JS_DATA_TYPE data;
+-		int i;
+-
+-		for (data.buttons = i = 0; i < 32 && i < joydev->nkey; i++)
+-			data.buttons |= test_bit(joydev->keypam[i], input->key) ? (1 << i) : 0;
+-		data.x = (joydev->abs[0] / 256 + 128) >> joydev->glue.JS_CORR.x;
+-		data.y = (joydev->abs[1] / 256 + 128) >> joydev->glue.JS_CORR.y;
+-
+-		if (copy_to_user(buf, &data, sizeof(struct JS_DATA_TYPE)))
+-			return -EFAULT;
+-
+-		client->startup = 0;
+-		client->tail = client->head;
+-
+-		return sizeof(struct JS_DATA_TYPE);
+-	}
++	if (count == sizeof(struct JS_DATA_TYPE))
++		return joydev_0x_read(client, input, buf);
+ 
+-	if (client->startup == joydev->nabs + joydev->nkey &&
+-	    client->head == client->tail && (file->f_flags & O_NONBLOCK))
++	if (!joydev_data_pending(client) && (file->f_flags & O_NONBLOCK))
  		return -EAGAIN;
  
--	retval = wait_event_interruptible(client->mousedev->wait,
--					  !client->mousedev->exist || client->ready || client->buffer);
--
-+	retval = wait_event_interruptible(mousedev->wait,
-+			!mousedev->exist || client->ready || client->buffer);
+ 	retval = wait_event_interruptible(joydev->wait,
+-					  !joydev->exist ||
+-					  client->startup < joydev->nabs + joydev->nkey ||
+-					  client->head != client->tail);
++			!joydev->exist || joydev_data_pending(client));
  	if (retval)
  		return retval;
  
--	if (!client->mousedev->exist)
-+	if (!mousedev->exist)
+ 	if (!joydev->exist)
  		return -ENODEV;
  
-+	spin_lock_irq(&client->packet_lock);
-+
- 	if (!client->buffer && client->ready) {
- 		mousedev_packet(client, client->ps2);
- 		client->buffer = client->bufsiz;
-@@ -663,9 +751,12 @@ static ssize_t mousedev_read(struct file
- 	if (count > client->buffer)
- 		count = client->buffer;
- 
-+	memcpy(data, client->ps2 + client->bufsiz - client->buffer, count);
- 	client->buffer -= count;
- 
--	if (copy_to_user(buffer, client->ps2 + client->bufsiz - client->buffer - count, count))
-+	spin_unlock_irq(&client->packet_lock);
-+
-+	if (copy_to_user(buffer, data, count))
- 		return -EFAULT;
- 
- 	return count;
-@@ -692,6 +783,60 @@ static const struct file_operations mous
- 	.fasync =	mousedev_fasync,
- };
- 
-+static int mousedev_install_chrdev(struct mousedev *mousedev)
-+{
-+	mousedev_table[mousedev->minor] = mousedev;
-+	return 0;
-+}
-+
-+static void mousedev_remove_chrdev(struct mousedev *mousedev)
-+{
-+	mutex_lock(&mousedev_table_mutex);
-+	mousedev_table[mousedev->minor] = NULL;
-+	mutex_unlock(&mousedev_table_mutex);
-+}
-+
-+/*
-+ * Mark device non-existent. This disables writes, ioctls and
-+ * prevents new users from opening the device. Already posted
-+ * blocking reads will stay, however new ones will fail.
-+ */
-+static void mousedev_mark_dead(struct mousedev *mousedev)
-+{
-+	mutex_lock(&mousedev->mutex);
-+	mousedev->exist = 0;
-+	mutex_unlock(&mousedev->mutex);
-+}
-+
-+/*
-+ * Wake up users waiting for IO so they can disconnect from
-+ * dead device.
-+ */
-+static void mousedev_hangup(struct mousedev *mousedev)
-+{
-+	struct mousedev_client *client;
-+
-+	spin_lock(&mousedev->client_lock);
-+	list_for_each_entry(client, &mousedev->client_list, node)
-+		kill_fasync(&client->fasync, SIGIO, POLL_HUP);
-+	spin_unlock(&mousedev->client_lock);
-+
-+	wake_up_interruptible(&mousedev->wait);
-+}
-+
-+static void mousedev_cleanup(struct mousedev *mousedev)
-+{
-+	struct input_handle *handle = &mousedev->handle;
-+
-+	mousedev_mark_dead(mousedev);
-+	mousedev_hangup(mousedev);
-+	mousedev_remove_chrdev(mousedev);
-+
-+	/* mousedev is marked dead so no one else accesses mousedev->open */
-+	if (mousedev->open)
-+		input_close_device(handle);
-+}
-+
- static struct mousedev *mousedev_create(struct input_dev *dev,
- 					struct input_handler *handler,
- 					int minor)
-@@ -707,6 +852,10 @@ static struct mousedev *mousedev_create(
- 
- 	INIT_LIST_HEAD(&mousedev->client_list);
- 	INIT_LIST_HEAD(&mousedev->mixdev_node);
-+	spin_lock_init(&mousedev->client_lock);
-+	mutex_init(&mousedev->mutex);
-+	lockdep_set_subclass(&mousedev->mutex,
-+			     minor == MOUSEDEV_MIX ? MOUSEDEV_MIX : 0);
- 	init_waitqueue_head(&mousedev->wait);
- 
- 	if (minor == MOUSEDEV_MIX)
-@@ -731,14 +880,27 @@ static struct mousedev *mousedev_create(
- 	mousedev->dev.release = mousedev_free;
- 	device_initialize(&mousedev->dev);
- 
--	mousedev_table[minor] = mousedev;
-+	if (minor != MOUSEDEV_MIX) {
-+		error = input_register_handle(&mousedev->handle);
-+		if (error)
-+			goto err_free_mousedev;
-+	}
-+
-+	error = mousedev_install_chrdev(mousedev);
-+	if (error)
-+		goto err_unregister_handle;
- 
- 	error = device_add(&mousedev->dev);
- 	if (error)
--		goto err_free_mousedev;
-+		goto err_cleanup_mousedev;
- 
- 	return mousedev;
- 
-+ err_cleanup_mousedev:
-+	mousedev_cleanup(mousedev);
-+ err_unregister_handle:
-+	if (minor != MOUSEDEV_MIX)
-+		input_unregister_handle(&mousedev->handle);
-  err_free_mousedev:
- 	put_device(&mousedev->dev);
-  err_out:
-@@ -747,29 +909,64 @@ static struct mousedev *mousedev_create(
- 
- static void mousedev_destroy(struct mousedev *mousedev)
- {
--	struct mousedev_client *client;
+-	while (client->startup < joydev->nabs + joydev->nkey && retval + sizeof(struct js_event) <= count) {
 -
- 	device_del(&mousedev->dev);
--	mousedev->exist = 0;
-+	mousedev_cleanup(mousedev);
-+	if (mousedev->minor != MOUSEDEV_MIX)
-+		input_unregister_handle(&mousedev->handle);
-+	put_device(&mousedev->dev);
-+}
+-		struct js_event event;
+-
+-		event.time = jiffies_to_msecs(jiffies);
+-
+-		if (client->startup < joydev->nkey) {
+-			event.type = JS_EVENT_BUTTON | JS_EVENT_INIT;
+-			event.number = client->startup;
+-			event.value = !!test_bit(joydev->keypam[event.number], input->key);
+-		} else {
+-			event.type = JS_EVENT_AXIS | JS_EVENT_INIT;
+-			event.number = client->startup - joydev->nkey;
+-			event.value = joydev->abs[event.number];
+-		}
++	while (retval + sizeof(struct js_event) <= count &&
++	       joydev_generate_startup_event(client, input, &event)) {
  
--	if (mousedev->open) {
--		input_close_device(&mousedev->handle);
--		list_for_each_entry(client, &mousedev->client_list, node)
--			kill_fasync(&client->fasync, SIGIO, POLL_HUP);
--		wake_up_interruptible(&mousedev->wait);
-+static int mixdev_add_device(struct mousedev *mousedev)
-+{
-+	int retval;
+ 		if (copy_to_user(buf + retval, &event, sizeof(struct js_event)))
+ 			return -EFAULT;
+ 
+-		client->startup++;
+ 		retval += sizeof(struct js_event);
+ 	}
+ 
+-	while (client->head != client->tail && retval + sizeof(struct js_event) <= count) {
++	while (retval + sizeof(struct js_event) <= count &&
++	       joydev_fetch_next_event(client, &event)) {
+ 
+-		if (copy_to_user(buf + retval, client->buffer + client->tail, sizeof(struct js_event)))
++		if (copy_to_user(buf + retval, &event, sizeof(struct js_event)))
+ 			return -EFAULT;
+ 
+-		client->tail = (client->tail + 1) & (JOYDEV_BUFFER_SIZE - 1);
+ 		retval += sizeof(struct js_event);
+ 	}
+ 
+@@ -301,126 +452,144 @@ static unsigned int joydev_poll(struct f
+ 	struct joydev *joydev = client->joydev;
+ 
+ 	poll_wait(file, &joydev->wait, wait);
+-	return ((client->head != client->tail || client->startup < joydev->nabs + joydev->nkey) ?
+-		(POLLIN | POLLRDNORM) : 0) | (joydev->exist ? 0 : (POLLHUP | POLLERR));
++	return (joydev_data_pending(client) ? (POLLIN | POLLRDNORM) : 0) |
++		(joydev->exist ?  0 : (POLLHUP | POLLERR));
+ }
+ 
+-static int joydev_ioctl_common(struct joydev *joydev, unsigned int cmd, void __user *argp)
++static int joydev_ioctl_common(struct joydev *joydev,
++				unsigned int cmd, void __user *argp)
+ {
+ 	struct input_dev *dev = joydev->handle.dev;
+ 	int i, j;
+ 
+ 	switch (cmd) {
+ 
+-		case JS_SET_CAL:
+-			return copy_from_user(&joydev->glue.JS_CORR, argp,
++	case JS_SET_CAL:
++		return copy_from_user(&joydev->glue.JS_CORR, argp,
+ 				sizeof(joydev->glue.JS_CORR)) ? -EFAULT : 0;
+ 
+-		case JS_GET_CAL:
+-			return copy_to_user(argp, &joydev->glue.JS_CORR,
++	case JS_GET_CAL:
++		return copy_to_user(argp, &joydev->glue.JS_CORR,
+ 				sizeof(joydev->glue.JS_CORR)) ? -EFAULT : 0;
+ 
+-		case JS_SET_TIMEOUT:
+-			return get_user(joydev->glue.JS_TIMEOUT, (s32 __user *) argp);
++	case JS_SET_TIMEOUT:
++		return get_user(joydev->glue.JS_TIMEOUT, (s32 __user *) argp);
+ 
+-		case JS_GET_TIMEOUT:
+-			return put_user(joydev->glue.JS_TIMEOUT, (s32 __user *) argp);
++	case JS_GET_TIMEOUT:
++		return put_user(joydev->glue.JS_TIMEOUT, (s32 __user *) argp);
+ 
+-		case JSIOCGVERSION:
+-			return put_user(JS_VERSION, (__u32 __user *) argp);
++	case JSIOCGVERSION:
++		return put_user(JS_VERSION, (__u32 __user *) argp);
+ 
+-		case JSIOCGAXES:
+-			return put_user(joydev->nabs, (__u8 __user *) argp);
+-
+-		case JSIOCGBUTTONS:
+-			return put_user(joydev->nkey, (__u8 __user *) argp);
+-
+-		case JSIOCSCORR:
+-			if (copy_from_user(joydev->corr, argp,
+-				      sizeof(joydev->corr[0]) * joydev->nabs))
+-			    return -EFAULT;
+-			for (i = 0; i < joydev->nabs; i++) {
+-				j = joydev->abspam[i];
+-			        joydev->abs[i] = joydev_correct(dev->abs[j], joydev->corr + i);
+-			}
+-			return 0;
+-
+-		case JSIOCGCORR:
+-			return copy_to_user(argp, joydev->corr,
+-						sizeof(joydev->corr[0]) * joydev->nabs) ? -EFAULT : 0;
++	case JSIOCGAXES:
++		return put_user(joydev->nabs, (__u8 __user *) argp);
 +
-+	retval = mutex_lock_interruptible(&mousedev_mix->mutex);
++	case JSIOCGBUTTONS:
++		return put_user(joydev->nkey, (__u8 __user *) argp);
++
++	case JSIOCSCORR:
++		if (copy_from_user(joydev->corr, argp,
++			      sizeof(joydev->corr[0]) * joydev->nabs))
++		    return -EFAULT;
++
++		for (i = 0; i < joydev->nabs; i++) {
++			j = joydev->abspam[i];
++			joydev->abs[i] = joydev_correct(dev->abs[j],
++							&joydev->corr[i]);
++		}
++		return 0;
+ 
+-		case JSIOCSAXMAP:
+-			if (copy_from_user(joydev->abspam, argp, sizeof(__u8) * (ABS_MAX + 1)))
+-				return -EFAULT;
+-			for (i = 0; i < joydev->nabs; i++) {
+-				if (joydev->abspam[i] > ABS_MAX)
+-					return -EINVAL;
+-				joydev->absmap[joydev->abspam[i]] = i;
+-			}
+-			return 0;
+-
+-		case JSIOCGAXMAP:
+-			return copy_to_user(argp, joydev->abspam,
+-						sizeof(__u8) * (ABS_MAX + 1)) ? -EFAULT : 0;
++	case JSIOCGCORR:
++		return copy_to_user(argp, joydev->corr,
++			sizeof(joydev->corr[0]) * joydev->nabs) ? -EFAULT : 0;
++
++	case JSIOCSAXMAP:
++		if (copy_from_user(joydev->abspam, argp,
++				   sizeof(__u8) * (ABS_MAX + 1)))
++			return -EFAULT;
++
++		for (i = 0; i < joydev->nabs; i++) {
++			if (joydev->abspam[i] > ABS_MAX)
++				return -EINVAL;
++			joydev->absmap[joydev->abspam[i]] = i;
++		}
++		return 0;
++
++	case JSIOCGAXMAP:
++		return copy_to_user(argp, joydev->abspam,
++			sizeof(__u8) * (ABS_MAX + 1)) ? -EFAULT : 0;
++
++	case JSIOCSBTNMAP:
++		if (copy_from_user(joydev->keypam, argp,
++				   sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)))
++			return -EFAULT;
++
++		for (i = 0; i < joydev->nkey; i++) {
++			if (joydev->keypam[i] > KEY_MAX ||
++			    joydev->keypam[i] < BTN_MISC)
++				return -EINVAL;
++			joydev->keymap[joydev->keypam[i] - BTN_MISC] = i;
++		}
+ 
+-		case JSIOCSBTNMAP:
+-			if (copy_from_user(joydev->keypam, argp, sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)))
++		return 0;
++
++	case JSIOCGBTNMAP:
++		return copy_to_user(argp, joydev->keypam,
++			sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)) ? -EFAULT : 0;
++
++	default:
++		if ((cmd & ~IOCSIZE_MASK) == JSIOCGNAME(0)) {
++			int len;
++			if (!dev->name)
++				return 0;
++			len = strlen(dev->name) + 1;
++			if (len > _IOC_SIZE(cmd))
++				len = _IOC_SIZE(cmd);
++			if (copy_to_user(argp, dev->name, len))
+ 				return -EFAULT;
+-			for (i = 0; i < joydev->nkey; i++) {
+-				if (joydev->keypam[i] > KEY_MAX || joydev->keypam[i] < BTN_MISC)
+-					return -EINVAL;
+-				joydev->keymap[joydev->keypam[i] - BTN_MISC] = i;
+-			}
+-			return 0;
+-
+-		case JSIOCGBTNMAP:
+-			return copy_to_user(argp, joydev->keypam,
+-						sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)) ? -EFAULT : 0;
+-
+-		default:
+-			if ((cmd & ~(_IOC_SIZEMASK << _IOC_SIZESHIFT)) == JSIOCGNAME(0)) {
+-				int len;
+-				if (!dev->name)
+-					return 0;
+-				len = strlen(dev->name) + 1;
+-				if (len > _IOC_SIZE(cmd))
+-					len = _IOC_SIZE(cmd);
+-				if (copy_to_user(argp, dev->name, len))
+-					return -EFAULT;
+-				return len;
+-			}
++			return len;
++		}
+ 	}
+ 	return -EINVAL;
+ }
+ 
+ #ifdef CONFIG_COMPAT
+-static long joydev_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++static long joydev_compat_ioctl(struct file *file,
++				unsigned int cmd, unsigned long arg)
+ {
+ 	struct joydev_client *client = file->private_data;
+ 	struct joydev *joydev = client->joydev;
+ 	void __user *argp = (void __user *)arg;
+ 	s32 tmp32;
+ 	struct JS_DATA_SAVE_TYPE_32 ds32;
+-	int err;
++	int retval;
+ 
+-	if (!joydev->exist)
+-		return -ENODEV;
++	retval = mutex_lock_interruptible(&joydev->mutex);
 +	if (retval)
 +		return retval;
 +
-+	if (mousedev_mix->open) {
-+		retval = mousedev_open_device(mousedev);
-+		if (retval)
-+			goto out;
++	if (!joydev->exist) {
++		retval = -ENODEV;
++		goto out;
++	}
 +
-+		mousedev->mixdev_open = 1;
- 	}
++	switch (cmd) {
  
-+	get_device(&mousedev->dev);
-+	list_add_tail(&mousedev->mixdev_node, &mousedev_mix_list);
+-	switch(cmd) {
+ 	case JS_SET_TIMELIMIT:
+-		err = get_user(tmp32, (s32 __user *) arg);
+-		if (err == 0)
++		retval = get_user(tmp32, (s32 __user *) arg);
++		if (retval == 0)
+ 			joydev->glue.JS_TIMELIMIT = tmp32;
+ 		break;
++
+ 	case JS_GET_TIMELIMIT:
+ 		tmp32 = joydev->glue.JS_TIMELIMIT;
+-		err = put_user(tmp32, (s32 __user *) arg);
++		retval = put_user(tmp32, (s32 __user *) arg);
+ 		break;
+ 
+ 	case JS_SET_ALL:
+-		err = copy_from_user(&ds32, argp,
+-				     sizeof(ds32)) ? -EFAULT : 0;
+-		if (err == 0) {
++		retval = copy_from_user(&ds32, argp,
++					sizeof(ds32)) ? -EFAULT : 0;
++		if (retval == 0) {
+ 			joydev->glue.JS_TIMEOUT    = ds32.JS_TIMEOUT;
+ 			joydev->glue.BUSY          = ds32.BUSY;
+ 			joydev->glue.JS_EXPIRETIME = ds32.JS_EXPIRETIME;
+@@ -438,55 +607,119 @@ static long joydev_compat_ioctl(struct f
+ 		ds32.JS_SAVE       = joydev->glue.JS_SAVE;
+ 		ds32.JS_CORR       = joydev->glue.JS_CORR;
+ 
+-		err = copy_to_user(argp, &ds32, sizeof(ds32)) ? -EFAULT : 0;
++		retval = copy_to_user(argp, &ds32, sizeof(ds32)) ? -EFAULT : 0;
+ 		break;
+ 
+ 	default:
+-		err = joydev_ioctl_common(joydev, cmd, argp);
++		retval = joydev_ioctl_common(joydev, cmd, argp);
++		break;
+ 	}
+-	return err;
 +
 + out:
-+	mutex_unlock(&mousedev_mix->mutex);
++	mutex_unlock(&joydev->mutex);
 +	return retval;
+ }
+ #endif /* CONFIG_COMPAT */
+ 
+-static int joydev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
++static long joydev_ioctl(struct file *file,
++			 unsigned int cmd, unsigned long arg)
+ {
+ 	struct joydev_client *client = file->private_data;
+ 	struct joydev *joydev = client->joydev;
+ 	void __user *argp = (void __user *)arg;
++	int retval;
+ 
+-	if (!joydev->exist)
+-		return -ENODEV;
++	retval = mutex_lock_interruptible(&joydev->mutex);
++	if (retval)
++		return retval;
++
++	if (!joydev->exist) {
++		retval = -ENODEV;
++		goto out;
++	}
++
++	switch (cmd) {
++
++	case JS_SET_TIMELIMIT:
++		retval = get_user(joydev->glue.JS_TIMELIMIT,
++				  (long __user *) arg);
++		break;
++
++	case JS_GET_TIMELIMIT:
++		retval = put_user(joydev->glue.JS_TIMELIMIT,
++				  (long __user *) arg);
++		break;
++
++	case JS_SET_ALL:
++		retval = copy_from_user(&joydev->glue, argp,
++					sizeof(joydev->glue)) ? -EFAULT: 0;
++		break;
+ 
+-	switch(cmd) {
+-		case JS_SET_TIMELIMIT:
+-			return get_user(joydev->glue.JS_TIMELIMIT, (long __user *) arg);
+-		case JS_GET_TIMELIMIT:
+-			return put_user(joydev->glue.JS_TIMELIMIT, (long __user *) arg);
+-		case JS_SET_ALL:
+-			return copy_from_user(&joydev->glue, argp,
+-						sizeof(joydev->glue)) ? -EFAULT : 0;
+-		case JS_GET_ALL:
+-			return copy_to_user(argp, &joydev->glue,
+-						sizeof(joydev->glue)) ? -EFAULT : 0;
+-		default:
+-			return joydev_ioctl_common(joydev, cmd, argp);
++	case JS_GET_ALL:
++		retval = copy_to_user(argp, &joydev->glue,
++				      sizeof(joydev->glue)) ? -EFAULT : 0;
++		break;
++
++	default:
++		retval = joydev_ioctl_common(joydev, cmd, argp);
++		break;
+ 	}
++ out:
++	mutex_unlock(&joydev->mutex);
++	return retval;
+ }
+ 
+ static const struct file_operations joydev_fops = {
+-	.owner =	THIS_MODULE,
+-	.read =		joydev_read,
+-	.write =	joydev_write,
+-	.poll =		joydev_poll,
+-	.open =		joydev_open,
+-	.release =	joydev_release,
+-	.ioctl =	joydev_ioctl,
++	.owner		= THIS_MODULE,
++	.read		= joydev_read,
++	.poll		= joydev_poll,
++	.open		= joydev_open,
++	.release	= joydev_release,
++	.unlocked_ioctl	= joydev_ioctl,
+ #ifdef CONFIG_COMPAT
+-	.compat_ioctl =	joydev_compat_ioctl,
++	.compat_ioctl	= joydev_compat_ioctl,
+ #endif
+-	.fasync =	joydev_fasync,
++	.fasync		= joydev_fasync,
+ };
+ 
++static int joydev_install_chrdev(struct joydev *joydev)
++{
++	joydev_table[joydev->minor] = joydev;
++	return 0;
 +}
 +
-+static void mixdev_remove_device(struct mousedev *mousedev)
++static void joydev_remove_chrdev(struct joydev *joydev)
 +{
-+	mutex_lock(&mousedev_mix->mutex);
++	mutex_lock(&joydev_table_mutex);
++	joydev_table[joydev->minor] = NULL;
++	mutex_unlock(&joydev_table_mutex);
++}
 +
-+	if (mousedev->mixdev_open) {
-+		mousedev->mixdev_open = 0;
-+		mousedev_close_device(mousedev);
-+	}
++/*
++ * Mark device non-existant. This disables writes, ioctls and
++ * prevents new users from opening the device. Already posted
++ * blocking reads will stay, however new ones will fail.
++ */
++static void joydev_mark_dead(struct joydev *joydev)
++{
++	mutex_lock(&joydev->mutex);
++	joydev->exist = 0;
++	mutex_unlock(&joydev->mutex);
++}
 +
-+	list_del_init(&mousedev->mixdev_node);
-+	mutex_unlock(&mousedev_mix->mutex);
++static void joydev_cleanup(struct joydev *joydev)
++{
++	struct input_handle *handle = &joydev->handle;
 +
- 	put_device(&mousedev->dev);
- }
- 
--static int mousedev_connect(struct input_handler *handler, struct input_dev *dev,
-+static int mousedev_connect(struct input_handler *handler,
-+			    struct input_dev *dev,
- 			    const struct input_device_id *id)
++	joydev_mark_dead(joydev);
++	joydev_hangup(joydev);
++	joydev_remove_chrdev(joydev);
++
++	/* joydev is marked dead so noone else accesses joydev->open */
++	if (joydev->open)
++		input_close_device(handle);
++}
++
+ static int joydev_connect(struct input_handler *handler, struct input_dev *dev,
+ 			  const struct input_device_id *id)
  {
- 	struct mousedev *mousedev;
- 	int minor;
+@@ -494,7 +727,10 @@ static int joydev_connect(struct input_h
+ 	int i, j, t, minor;
  	int error;
  
--	for (minor = 0; minor < MOUSEDEV_MINORS && mousedev_table[minor]; minor++);
-+	for (minor = 0; minor < MOUSEDEV_MINORS; minor++)
-+		if (!mousedev_table[minor])
+-	for (minor = 0; minor < JOYDEV_MINORS && joydev_table[minor]; minor++);
++	for (minor = 0; minor < JOYDEV_MINORS; minor++)
++		if (!joydev_table[minor])
 +			break;
 +
- 	if (minor == MOUSEDEV_MINORS) {
- 		printk(KERN_ERR "mousedev: no more free mousedev devices\n");
+ 	if (minor == JOYDEV_MINORS) {
+ 		printk(KERN_ERR "joydev: no more free joydev devices\n");
  		return -ENFILE;
-@@ -779,21 +976,13 @@ static int mousedev_connect(struct input
- 	if (IS_ERR(mousedev))
- 		return PTR_ERR(mousedev);
+@@ -505,15 +741,19 @@ static int joydev_connect(struct input_h
+ 		return -ENOMEM;
  
--	error = input_register_handle(&mousedev->handle);
--	if (error)
--		goto err_delete_mousedev;
+ 	INIT_LIST_HEAD(&joydev->client_list);
++	spin_lock_init(&joydev->client_lock);
++	mutex_init(&joydev->mutex);
+ 	init_waitqueue_head(&joydev->wait);
+ 
++	snprintf(joydev->name, sizeof(joydev->name), "js%d", minor);
++	joydev->exist = 1;
+ 	joydev->minor = minor;
++
+ 	joydev->exist = 1;
+ 	joydev->handle.dev = dev;
+ 	joydev->handle.name = joydev->name;
+ 	joydev->handle.handler = handler;
+ 	joydev->handle.private = joydev;
+-	snprintf(joydev->name, sizeof(joydev->name), "js%d", minor);
+ 
+ 	for (i = 0; i < ABS_MAX + 1; i++)
+ 		if (test_bit(i, dev->absbit)) {
+@@ -545,67 +785,65 @@ static int joydev_connect(struct input_h
+ 		}
+ 		joydev->corr[i].type = JS_CORR_BROKEN;
+ 		joydev->corr[i].prec = dev->absfuzz[j];
+-		joydev->corr[i].coef[0] = (dev->absmax[j] + dev->absmin[j]) / 2 - dev->absflat[j];
+-		joydev->corr[i].coef[1] = (dev->absmax[j] + dev->absmin[j]) / 2 + dev->absflat[j];
+-		if (!(t = ((dev->absmax[j] - dev->absmin[j]) / 2 - 2 * dev->absflat[j])))
+-			continue;
+-		joydev->corr[i].coef[2] = (1 << 29) / t;
+-		joydev->corr[i].coef[3] = (1 << 29) / t;
++		joydev->corr[i].coef[0] =
++			(dev->absmax[j] + dev->absmin[j]) / 2 - dev->absflat[j];
++		joydev->corr[i].coef[1] =
++			(dev->absmax[j] + dev->absmin[j]) / 2 + dev->absflat[j];
++
++		t = (dev->absmax[j] - dev->absmin[j]) / 2 - 2 * dev->absflat[j];
++		if (t) {
++			joydev->corr[i].coef[2] = (1 << 29) / t;
++			joydev->corr[i].coef[3] = (1 << 29) / t;
+ 
+-		joydev->abs[i] = joydev_correct(dev->abs[j], joydev->corr + i);
++			joydev->abs[i] = joydev_correct(dev->abs[j],
++							joydev->corr + i);
++		}
+ 	}
+ 
+-	snprintf(joydev->dev.bus_id, sizeof(joydev->dev.bus_id),
+-		 "js%d", minor);
++	strlcpy(joydev->dev.bus_id, joydev->name, sizeof(joydev->dev.bus_id));
++	joydev->dev.devt = MKDEV(INPUT_MAJOR, JOYDEV_MINOR_BASE + minor);
+ 	joydev->dev.class = &input_class;
+ 	joydev->dev.parent = &dev->dev;
+-	joydev->dev.devt = MKDEV(INPUT_MAJOR, JOYDEV_MINOR_BASE + minor);
+ 	joydev->dev.release = joydev_free;
+ 	device_initialize(&joydev->dev);
+ 
+-	joydev_table[minor] = joydev;
 -
- 	error = mixdev_add_device(mousedev);
--	if (error)
--		goto err_unregister_handle;
-+	if (error) {
-+		mousedev_destroy(mousedev);
-+		return error;
-+	}
+-	error = device_add(&joydev->dev);
++	error = input_register_handle(&joydev->handle);
+ 	if (error)
+ 		goto err_free_joydev;
+ 
+-	error = input_register_handle(&joydev->handle);
++	error = joydev_install_chrdev(joydev);
+ 	if (error)
+-		goto err_delete_joydev;
++		goto err_unregister_handle;
++
++	error = device_add(&joydev->dev);
++	if (error)
++		goto err_cleanup_joydev;
  
  	return 0;
+ 
+- err_delete_joydev:
+-	device_del(&joydev->dev);
++ err_cleanup_joydev:
++	joydev_cleanup(joydev);
++ err_unregister_handle:
++	input_unregister_handle(&joydev->handle);
+  err_free_joydev:
+ 	put_device(&joydev->dev);
+ 	return error;
+ }
+ 
 -
-- err_unregister_handle:
--	input_unregister_handle(&mousedev->handle);
-- err_delete_mousedev:
--	device_unregister(&mousedev->dev);
--	return error;
- }
+ static void joydev_disconnect(struct input_handle *handle)
+ {
+ 	struct joydev *joydev = handle->private;
+-	struct joydev_client *client;
  
- static void mousedev_disconnect(struct input_handle *handle)
-@@ -801,33 +990,42 @@ static void mousedev_disconnect(struct i
- 	struct mousedev *mousedev = handle->private;
- 
- 	mixdev_remove_device(mousedev);
 -	input_unregister_handle(handle);
- 	mousedev_destroy(mousedev);
+ 	device_del(&joydev->dev);
+-
+-	joydev->exist = 0;
+-
+-	if (joydev->open) {
+-		input_close_device(handle);
+-		list_for_each_entry(client, &joydev->client_list, node)
+-			kill_fasync(&client->fasync, SIGIO, POLL_HUP);
+-		wake_up_interruptible(&joydev->wait);
+-	}
+-
++	joydev_cleanup(joydev);
++	input_unregister_handle(handle);
+ 	put_device(&joydev->dev);
  }
  
- static const struct input_device_id mousedev_ids[] = {
+ static const struct input_device_id joydev_blacklist[] = {
  	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_RELBIT,
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT,
 +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT |
-+				INPUT_DEVICE_ID_MATCH_RELBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
- 		.keybit = { [LONG(BTN_LEFT)] = BIT(BTN_LEFT) },
- 		.relbit = { BIT(REL_X) | BIT(REL_Y) },
--	},	/* A mouse like device, at least one button, two relative axes */
-+	},	/* A mouse like device, at least one button,
-+		   two relative axes */
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_RELBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_RELBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
- 		.relbit = { BIT(REL_WHEEL) },
- 	},	/* A separate scrollwheel */
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT |
-+				INPUT_DEVICE_ID_MATCH_ABSBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
++				INPUT_DEVICE_ID_MATCH_KEYBIT,
+ 		.evbit = { BIT(EV_KEY) },
  		.keybit = { [LONG(BTN_TOUCH)] = BIT(BTN_TOUCH) },
- 		.absbit = { BIT(ABS_X) | BIT(ABS_Y) },
--	},	/* A tablet like device, at least touch detection, two absolute axes */
-+	},	/* A tablet like device, at least touch detection,
-+		   two absolute axes */
- 	{
--		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT |
-+				INPUT_DEVICE_ID_MATCH_ABSBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
- 		.keybit = { [LONG(BTN_TOOL_FINGER)] = BIT(BTN_TOOL_FINGER) },
--		.absbit = { BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE) | BIT(ABS_TOOL_WIDTH) },
-+		.absbit = { BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE) |
-+				BIT(ABS_TOOL_WIDTH) },
- 	},	/* A touchpad */
+ 	},	/* Avoid itouchpads, touchscreens and tablets */
+@@ -614,17 +852,20 @@ static const struct input_device_id joyd
  
- 	{ },	/* Terminating entry */
+ static const struct input_device_id joydev_ids[] = {
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_ABSBIT,
+ 		.evbit = { BIT(EV_ABS) },
+ 		.absbit = { BIT(ABS_X) },
+ 	},
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_ABSBIT,
+ 		.evbit = { BIT(EV_ABS) },
+ 		.absbit = { BIT(ABS_WHEEL) },
+ 	},
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_ABSBIT,
+ 		.evbit = { BIT(EV_ABS) },
+ 		.absbit = { BIT(ABS_THROTTLE) },
+ 	},
+@@ -634,14 +875,14 @@ static const struct input_device_id joyd
+ MODULE_DEVICE_TABLE(input, joydev_ids);
+ 
+ static struct input_handler joydev_handler = {
+-	.event =	joydev_event,
+-	.connect =	joydev_connect,
+-	.disconnect =	joydev_disconnect,
+-	.fops =		&joydev_fops,
+-	.minor =	JOYDEV_MINOR_BASE,
+-	.name =		"joydev",
+-	.id_table =	joydev_ids,
+-	.blacklist =	joydev_blacklist,
++	.event		= joydev_event,
++	.connect	= joydev_connect,
++	.disconnect	= joydev_disconnect,
++	.fops		= &joydev_fops,
++	.minor		= JOYDEV_MINOR_BASE,
++	.name		= "joydev",
++	.id_table	= joydev_ids,
++	.blacklist	= joydev_blacklist,
+ };
+ 
+ static int __init joydev_init(void)
 
 -- 
