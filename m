@@ -1,102 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765592AbYBGAYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbYBGAZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765592AbYBGAYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932498AbYBFX7h
+	id S1765713AbYBGAZL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932560AbYBFX7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:59:37 -0500
-Received: from ns1.suse.de ([195.135.220.2]:46510 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:59:41 -0500
+Received: from mx2.suse.de ([195.135.220.15]:33049 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932528AbYBFX7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:59:34 -0500
-Date: Wed, 6 Feb 2008 15:54:05 -0800
+	id S932551AbYBFX7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:59:39 -0500
+Date: Wed, 6 Feb 2008 15:54:08 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>,
-       Peter Staubach <staubach@redhat.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>, nfs@lists.sourceforge.net
-Subject: [patch 59/73] knfsd: Allow NFSv2/3 WRITE calls to succeed when
-	krb5i etc is used.
-Message-ID: <20080206235405.GH13121@suse.de>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Nick Piggin <npiggin@suse.de>
+Subject: [patch 60/73] vm audit: add VM_DONTEXPAND to mmap for drivers that
+	need it (CVE-2008-0007)
+Message-ID: <20080206235408.GI13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="knfsd-allow-nfsv2-3-write-calls-to-succeed-when-krb5i-etc-is-used.patch"
+Content-Disposition: inline; filename="vm-audit-add-vm_dontexpand-to-mmap-for-drivers-that-need-it.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: NeilBrown <neilb@suse.de>
+From: Nick Piggin <npiggin@suse.de>
 
-patch ba67a39efde8312e386c6f603054f8945433d91f in mainline.
+Drivers that register a ->fault handler, but do not range-check the
+offset argument, must set VM_DONTEXPAND in the vm_flags in order to
+prevent an expanding mremap from overflowing the resource.
 
-When RPCSEC/GSS and krb5i is used, requests are padded, typically to a multiple
-of 8 bytes.  This can make the request look slightly longer than it
-really is.
+I've audited the tree and attempted to fix these problems (usually by
+adding VM_DONTEXPAND where it is not obvious).
 
-As of
-
-	f34b95689d2ce001c "The NFSv2/NFSv3 server does not handle zero
-		length WRITE request correctly",
-
-the xdr decode routines for NFSv2 and NFSv3 reject requests that aren't
-the right length, so krb5i (for example) WRITE requests can get lost.
-
-This patch relaxes the appropriate test and enhances the related comment.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-Cc: Peter Staubach <staubach@redhat.com>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfsd/nfs3xdr.c |    5 ++++-
- fs/nfsd/nfsxdr.c  |    5 ++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ drivers/char/drm/drm_vm.c       |    2 ++
+ drivers/char/mspec.c            |    2 +-
+ fs/ncpfs/mmap.c                 |    4 ----
+ kernel/relay.c                  |    1 +
+ mm/mmap.c                       |    2 +-
+ sound/oss/via82cxxx_audio.c     |   14 ++++++--------
+ sound/usb/usx2y/usX2Yhwdep.c    |    2 +-
+ sound/usb/usx2y/usx2yhwdeppcm.c |    2 +-
+ 8 files changed, 13 insertions(+), 16 deletions(-)
 
---- a/fs/nfsd/nfs3xdr.c
-+++ b/fs/nfsd/nfs3xdr.c
-@@ -396,8 +396,11 @@ nfs3svc_decode_writeargs(struct svc_rqst
- 	 * Round the length of the data which was specified up to
- 	 * the next multiple of XDR units and then compare that
- 	 * against the length which was actually received.
-+	 * Note that when RPCSEC/GSS (for example) is used, the
-+	 * data buffer can be padded so dlen might be larger
-+	 * than required.  It must never be smaller.
- 	 */
--	if (dlen != XDR_QUADLEN(len)*4)
-+	if (dlen < XDR_QUADLEN(len)*4)
- 		return 0;
+--- a/drivers/char/drm/drm_vm.c
++++ b/drivers/char/drm/drm_vm.c
+@@ -506,6 +506,7 @@ static int drm_mmap_dma(struct file *fil
+ 	vma->vm_ops = &drm_vm_dma_ops;
  
- 	if (args->count > max_blocksize) {
---- a/fs/nfsd/nfsxdr.c
-+++ b/fs/nfsd/nfsxdr.c
-@@ -313,8 +313,11 @@ nfssvc_decode_writeargs(struct svc_rqst 
- 	 * Round the length of the data which was specified up to
- 	 * the next multiple of XDR units and then compare that
- 	 * against the length which was actually received.
-+	 * Note that when RPCSEC/GSS (for example) is used, the
-+	 * data buffer can be padded so dlen might be larger
-+	 * than required.  It must never be smaller.
- 	 */
--	if (dlen != XDR_QUADLEN(len)*4)
-+	if (dlen < XDR_QUADLEN(len)*4)
- 		return 0;
+ 	vma->vm_flags |= VM_RESERVED;	/* Don't swap */
++	vma->vm_flags |= VM_DONTEXPAND;
  
- 	rqstp->rq_vec[0].iov_base = (void*)p;
+ 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
+ 	drm_vm_open_locked(vma);
+@@ -655,6 +656,7 @@ static int drm_mmap_locked(struct file *
+ 		return -EINVAL;	/* This should never happen. */
+ 	}
+ 	vma->vm_flags |= VM_RESERVED;	/* Don't swap */
++	vma->vm_flags |= VM_DONTEXPAND;
+ 
+ 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
+ 	drm_vm_open_locked(vma);
+--- a/drivers/char/mspec.c
++++ b/drivers/char/mspec.c
+@@ -283,7 +283,7 @@ mspec_mmap(struct file *file, struct vm_
+ 	vdata->refcnt = ATOMIC_INIT(1);
+ 	vma->vm_private_data = vdata;
+ 
+-	vma->vm_flags |= (VM_IO | VM_RESERVED | VM_PFNMAP);
++	vma->vm_flags |= (VM_IO | VM_RESERVED | VM_PFNMAP | VM_DONTEXPAND);
+ 	if (vdata->type == MSPEC_FETCHOP || vdata->type == MSPEC_UNCACHED)
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	vma->vm_ops = &mspec_vm_ops;
+--- a/fs/ncpfs/mmap.c
++++ b/fs/ncpfs/mmap.c
+@@ -50,10 +50,6 @@ static int ncp_file_mmap_fault(struct vm
+ 	pos = vmf->pgoff << PAGE_SHIFT;
+ 
+ 	count = PAGE_SIZE;
+-	if ((unsigned long)vmf->virtual_address + PAGE_SIZE > area->vm_end) {
+-		WARN_ON(1); /* shouldn't happen? */
+-		count = area->vm_end - (unsigned long)vmf->virtual_address;
+-	}
+ 	/* what we can read in one go */
+ 	bufsize = NCP_SERVER(inode)->buffer_size;
+ 
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -92,6 +92,7 @@ static int relay_mmap_buf(struct rchan_b
+ 		return -EINVAL;
+ 
+ 	vma->vm_ops = &relay_file_mmap_ops;
++	vma->vm_flags |= VM_DONTEXPAND;
+ 	vma->vm_private_data = buf;
+ 	buf->chan->cb->buf_mapped(buf, filp);
+ 
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -2217,7 +2217,7 @@ int install_special_mapping(struct mm_st
+ 	vma->vm_start = addr;
+ 	vma->vm_end = addr + len;
+ 
+-	vma->vm_flags = vm_flags | mm->def_flags;
++	vma->vm_flags = vm_flags | mm->def_flags | VM_DONTEXPAND;
+ 	vma->vm_page_prot = protection_map[vma->vm_flags & 7];
+ 
+ 	vma->vm_ops = &special_mapping_vmops;
+--- a/sound/oss/via82cxxx_audio.c
++++ b/sound/oss/via82cxxx_audio.c
+@@ -2104,6 +2104,7 @@ static struct page * via_mm_nopage (stru
+ {
+ 	struct via_info *card = vma->vm_private_data;
+ 	struct via_channel *chan = &card->ch_out;
++	unsigned long max_bufs;
+ 	struct page *dmapage;
+ 	unsigned long pgoff;
+ 	int rd, wr;
+@@ -2127,14 +2128,11 @@ static struct page * via_mm_nopage (stru
+ 	rd = card->ch_in.is_mapped;
+ 	wr = card->ch_out.is_mapped;
+ 
+-#ifndef VIA_NDEBUG
+-	{
+-	unsigned long max_bufs = chan->frag_number;
+-	if (rd && wr) max_bufs *= 2;
+-	/* via_dsp_mmap() should ensure this */
+-	assert (pgoff < max_bufs);
+-	}
+-#endif
++	max_bufs = chan->frag_number;
++	if (rd && wr)
++		max_bufs *= 2;
++	if (pgoff >= max_bufs)
++		return NOPAGE_SIGBUS;
+ 
+ 	/* if full-duplex (read+write) and we have two sets of bufs,
+ 	 * then the playback buffers come first, sez soundcard.c */
+--- a/sound/usb/usx2y/usX2Yhwdep.c
++++ b/sound/usb/usx2y/usX2Yhwdep.c
+@@ -88,7 +88,7 @@ static int snd_us428ctls_mmap(struct snd
+ 		us428->us428ctls_sharedmem->CtlSnapShotLast = -2;
+ 	}
+ 	area->vm_ops = &us428ctls_vm_ops;
+-	area->vm_flags |= VM_RESERVED;
++	area->vm_flags |= VM_RESERVED | VM_DONTEXPAND;
+ 	area->vm_private_data = hw->private_data;
+ 	return 0;
+ }
+--- a/sound/usb/usx2y/usx2yhwdeppcm.c
++++ b/sound/usb/usx2y/usx2yhwdeppcm.c
+@@ -728,7 +728,7 @@ static int snd_usX2Y_hwdep_pcm_mmap(stru
+ 		return -ENODEV;
+ 	}
+ 	area->vm_ops = &snd_usX2Y_hwdep_pcm_vm_ops;
+-	area->vm_flags |= VM_RESERVED;
++	area->vm_flags |= VM_RESERVED | VM_DONTEXPAND;
+ 	area->vm_private_data = hw->private_data;
+ 	return 0;
+ }
 
 -- 
