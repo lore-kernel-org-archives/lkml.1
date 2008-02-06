@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759423AbYBFVFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbYBFVFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759423AbYBFVFJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:05:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760855AbYBFVEp
+	id S1759540AbYBFVFf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759823AbYBFVFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:04:45 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52837 "EHLO smtp5.pp.htv.fi"
+	Wed, 6 Feb 2008 16:05:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38304 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759827AbYBFVEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:04:43 -0500
-Date: Wed, 6 Feb 2008 23:04:52 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+	id S1759816AbYBFVFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 16:05:14 -0500
+Date: Wed, 6 Feb 2008 16:04:07 -0500
+From: Neil Horman <nhorman@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Neil Horman <nhorman@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>, tglx@linutronix.de,
+       mingo@redhat.com, kexec@lists.infradead.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080206210452.GB7198@cs181133002.pp.htv.fi>
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <20080203124849.0226560f@weinigel.se> <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com> <47A5F418.6030104@weinigel.se> <20080203231530.GB15692@kroah.com> <courier.47A8EDDC.0000785F@hawking.rebel.net.au> <47A8F27F.3060504@nortel.com>
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
+Message-ID: <20080206210407.GB25183@hmsendeavour.rdu.redhat.com>
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206194040.GA11886@redhat.com> <20080206201223.GA25183@hmsendeavour.rdu.redhat.com> <47AA16CA.6000003@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47A8F27F.3060504@nortel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <47AA16CA.6000003@zytor.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 05:34:23PM -0600, Chris Friesen wrote:
-> David Newall wrote:
->> That being said, a module can be written such that it only dynamically 
->> links with the kernel.  Ndiswrapper is an example of how this can be 
->> done: None of the drivers that work under ndiswrapper make any direct 
->> use of the kernel, not in any way, indeed a wrapper could be written 
->> for a different operating system.
->
-> The issue is all about "derivative works" in copyright law.
->
-> Ndiswrapper is in a good position because the closed-source drivers were  
-> originally written for another OS so it's pretty well impossible to  
-> argue that they are derived from linux.
->...
+On Wed, Feb 06, 2008 at 12:21:30PM -0800, H. Peter Anvin wrote:
+> Neil Horman wrote:
+> >Can an APIC accept an NMI while already handling an NMI?  I didn't think 
+> >they
+> >would interrupt one another, but rather, pend until such time as the 
+> >previous
+> >NMI was cleared
+> 
+> The CPU certainly won't (there is a hidden flag that's cleared on IRET 
+> which disables NMI; it's possible to re-enable NMI by executing a dummy 
+> IRET inside the NMI handler.)
+> 
+> 	-hpa
 
-IANAL, but when looking at the "But when you distribute the same 
-sections as part of a whole which is a work based on the Program, the 
-distribution of the whole must be on the terms of this License" of the 
-GPLv2 I would still consult a lawyer before e.g. selling a laptop with a 
-closed-source driver loaded through ndiswrapper.
+So that would be another solution I would expect.  Would you rather I
+investigate that, or is the proposed solution more reasonable?
 
-> Chris
+Neil
 
-cu
-Adrian
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
