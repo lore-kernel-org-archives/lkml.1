@@ -1,130 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761459AbYBFBYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbYBFB1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761459AbYBFBYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755765AbYBFBXv
+	id S932140AbYBFB1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 20:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYBFB1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:23:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55157 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753424AbYBFBXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:23:50 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
-Date: Wed, 6 Feb 2008 02:21:20 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <200802010237.59320.rjw@sisk.pl> <200802020040.05519.rjw@sisk.pl> <b647ffbd0802051346k563a44f7t42739515c130124b@mail.gmail.com>
-In-Reply-To: <b647ffbd0802051346k563a44f7t42739515c130124b@mail.gmail.com>
+	Tue, 5 Feb 2008 20:27:14 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:48234 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbYBFB1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 20:27:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Md5jfQHmuXDQKCpP0y4JYAoyp5Js8qzRsycWrKRulc1QIxaMwPk/iCpWT1Zd0X1yCXdIzIXRa3iCyJqO0VppUZfDgM9iyedpiAcwYbi1FdLWSFVP2ZfpnI4Nu8z8KZoWf7GqyLo7DFCBpm5EerlP1GI5vWierqxExyu8sZSY6Ds=
+Message-ID: <75b66ecd0802051727r6e3133dfxc8b263af085abf7@mail.gmail.com>
+Date: Tue, 5 Feb 2008 20:27:09 -0500
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: New RTC drivers don't provide the sysctl to set max user frequency
+Cc: vapier.adi@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <47A8E90D.4000008@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802060221.21824.rjw@sisk.pl>
+References: <47A8E90D.4000008@redhat.com>
+X-Google-Sender-Auth: 01e3d3c43cb570d5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 5 of February 2008, Dmitry Adamushko wrote:
-> Rafael, any progress with this issue? (a few questions below).
-> 
-> > >
-> > > Does this artsmessage thing also run with RT priority?
-> >
-> > Well, it's in a strange state (after it's broken).  From top:
-> >
-> > PR = -51
-> > NI = 0
-> > S = R
-> > %CPU = 0.0
-> > %MEM = 0.0
-> 
-> cat /proc/$PID/stat ; sleep 3; cat /proc/$PID/stat ?
-> cat /proc/sched_debug; sleep 3 ; cat /proc/sched_debug
+On Feb 5, 2008 5:54 PM, Chuck Ebbert <cebbert@redhat.com> wrote:
+> Is every application that uses /proc/sys/dev/rtc/max-user-freq
+> supposed to be updated to use the new /sys interface?
 
-Well, instead please find appended a test program that allows me to trigger
-the issue.
+IMHO the default should be increased to 1024 - the current default of
+64 dates back to the 486 era.  This would eliminate the need for a lot
+of apps to touch it at all.
 
-To reproduce it do:
+Unprivileged users have lots of other ways to generate more than 1024
+interrupts/second anyway.
 
-$ gcc -o break_scheduler break_scheduler.c
-$ su -
-[...]
-# chown root.root $PATH_TO_BINARY/break_scheduler
-# chmod u+s $PATH_TO_BINARY/break_scheduler
-^D
-$ ./break_scheduler
-
-It behaves normally if run directly by root and it also behaves normally if
-the execv() at the end is removed.
-
-Hope that helps to understand what the problem is.
-
-Thanks,
-Rafael
-
----
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/resource.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sched.h>
-
-#define EXECUTE "/bin/ls"
-
-void adjust_priority()
-{
-	int sched = sched_getscheduler(0);
-
-	if(sched == SCHED_FIFO || sched == SCHED_RR) {
-		puts(">> non-standard scheduling policy");
-	} else {
-		struct sched_param sp;
-		long int priority = (sched_get_priority_max(SCHED_FIFO) +
-			             sched_get_priority_min(SCHED_FIFO))/2;
-		
-		sp.sched_priority = priority;
-
-		if (sched_setscheduler(0, SCHED_FIFO, &sp) != -1) {
-			printf(">> running as realtime process now "
-				"(priority %ld)\n", priority);
-		} else {
-			/* can't set realtime priority */
-			puts(">> could not set realtime priority");
-		}
-	}
-}
-
-int main(int argc, char **argv)
-{
-	adjust_priority();
-
-	/* drop root privileges if running setuid root
-	   (due to realtime priority stuff) */
-	if (geteuid() != getuid()) {
-		seteuid(getuid());
-		if (geteuid() != getuid()) {
-			perror("setuid()");
-			return 2;
-		}
-	}
-
-	puts("OK");
-
-	if(argc == 0)
-		return 1;
-
-	argv[0] = EXECUTE;
-	execv(EXECUTE, argv);
-	perror(EXECUTE);
-
-	return 0;
-}
+Lee
