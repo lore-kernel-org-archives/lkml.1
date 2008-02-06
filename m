@@ -1,101 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbYBFC0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763646AbYBFC2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763586AbYBFC0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 21:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbYBFC0K
+	id S1763646AbYBFC2E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 21:28:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760222AbYBFC1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 21:26:10 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:51171 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756993AbYBFC0J (ORCPT
+	Tue, 5 Feb 2008 21:27:52 -0500
+Received: from mga03.intel.com ([143.182.124.21]:42778 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758895AbYBFC1u convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 21:26:09 -0500
-Date: Tue, 5 Feb 2008 21:25:17 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Felipe Balbi <felipebalbi@users.sourceforge.net>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Klaus S. Madsen" <ksm@hjernemadsen.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: T61P sound issue
-Message-ID: <20080206022517.GB27119@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jiri Kosina <jikos@jikos.cz>,
-	Felipe Balbi <felipebalbi@users.sourceforge.net>, tiwai@suse.de,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Klaus S. Madsen" <ksm@hjernemadsen.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com> <20080204194038.d8851b8d.akpm@linux-foundation.org> <20080205113633.GI27738@hjernemadsen.org> <20080205102219.83fe459d.akpm@linux-foundation.org> <31e679430802051304l7c1d68d8r153c753a5b96087a@mail.gmail.com> <Pine.LNX.4.64.0802052207330.30873@twin.jikos.cz>
+	Tue, 5 Feb 2008 21:27:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,309,1199692800"; 
+   d="scan'208";a="375680611"
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802052207330.30873@twin.jikos.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: ipw3945: not only it periodically dies, it also BUG()s
+Date: Tue, 5 Feb 2008 18:20:58 -0800
+Message-ID: <D936D925018D154694D8A362EEB0892003982BB1@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <20080205214441.GA1518@elf.ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ipw3945: not only it periodically dies, it also BUG()s
+Thread-Index: AchoQ4ufpKIEMzZYQY+VBr2bQj8ZWgAIyKAA
+References: <20080205214441.GA1518@elf.ucw.cz>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Pavel Machek" <pavel@ucw.cz>, <ipw3945-devel@lists.sourceforge.net>,
+       <linux-wireless@vger.kernel.org>, "Zhu, Yi" <yi.zhu@intel.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 Feb 2008 02:20:58.0761 (UTC) FILETIME=[E9263F90:01C86866]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 05, 2008 at 10:16:08PM +0100, Jiri Kosina wrote:
-> [ added Takashi ]
+On Tuesday, February 05, 2008 1:45 PM, Pavel Machek  wrote:
+
 > 
-> On Tue, 5 Feb 2008, Felipe Balbi wrote:
-> 
-> > > > > > Could anyone make T61P's ICH8 sound controller to work properly?
-> > Good that there's a lot of people using T61p, it's a good machine.
-> > I'll upgrade my BIOS and try again the crappy sound.
-> 
-> I have just bought X61s, and it seems to have the very same soundcard as 
-> your T61p does:
->
-> The sound also doesn't work with 2.6.24 (tried modprobing the 
-> snd-hda-intel with 'model=thinkpad', didn't make any difference). The 
-> mixer settings seem to be correct, but there is no sound.
-> 
+> ...I've reported this before, with full debugging. Not sure if
+> anything happened. 
 
-Hmm.. sound works just fine for me on my X61s (model #7668-CTO)
-running 2.6.24.  
+Could you please point me to where you have reported it before?
 
-I do have this private patch applied --- maybe it makes a difference
-for you?  I don't think it should make a difference, but....
+> Now, I got BUG() in iwl3945-base.c: 3824
 
-						- Ted
+Which driver and kernel are you using?
 
+Reinette
 
-commit c9001b03378048cad0f5c4f87dbb97fff1f80c51
-Author: Theodore Ts'o <tytso@mit.edu>
-Date:   Wed Jan 9 05:14:14 2008 -0500
-
-    hda_intel suspend latency: shorten codec read
-    
-    not sleeping for every codec read/write but doing a short udelay and
-    a conditional reschedule has cut suspend+resume latency by about 1
-    second on my T60.
-    
-    The patch also fixes the unexpected codec-connection errors that
-    happen more often in the new power-save mode:
-        http://lkml.org/lkml/2007/11/8/255
-        http://bugzilla.kernel.org/show_bug.cgi?id=9332
-    
-    This had been applied, and then reverted due to problems.  See commit
-    d238998fbfa49f30b02f0a5de5294ca53c58348c
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Acked-by: Takashi Iwai <tiwai@suse.de>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-index 3fa0f97..62b9fb3 100644
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -555,7 +555,8 @@ static unsigned int azx_rirb_get_response(struct hda_codec *codec)
- 		}
- 		if (!chip->rirb.cmds)
- 			return chip->rirb.res; /* the last value */
--		schedule_timeout_uninterruptible(1);
-+		udelay(10);
-+		cond_resched();
- 	} while (time_after_eq(timeout, jiffies));
- 
- 	if (chip->msi) {
