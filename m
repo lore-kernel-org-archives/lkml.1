@@ -1,49 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbYBFIYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbYBFI1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760646AbYBFIYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 03:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbYBFIYM
+	id S1760787AbYBFI1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 03:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbYBFI1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 03:24:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58603 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756723AbYBFIYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 03:24:11 -0500
-Date: Wed, 6 Feb 2008 00:24:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Holger Schurig <hs4233@mail.mn-solutions.de>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: OOPS in sysctl.c
-Message-Id: <20080206002420.91124dab.akpm@linux-foundation.org>
-In-Reply-To: <200802051224.56413.hs4233@mail.mn-solutions.de>
-References: <200802050845.58691.hs4233@mail.mn-solutions.de>
-	<200802051224.56413.hs4233@mail.mn-solutions.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 03:27:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58387 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754761AbYBFI1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 03:27:08 -0500
+Date: Wed, 6 Feb 2008 09:26:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] stop c_p_a corrupting the pds
+Message-ID: <20080206082635.GA13142@elte.hu>
+References: <Pine.LNX.4.64.0802052218190.11822@blonde.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802052218190.11822@blonde.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 12:24:56 +0100 Holger Schurig <hs4233@mail.mn-solutions.de> wrote:
 
-> > I have an embedded target (PXA255 based) where I have a nice
-> > running kernel 2.6.15. Today I'm trying to get 2.6.24 running
-> > on it.
+* Hugh Dickins <hugh@veritas.com> wrote:
+
+> When change_page_attr splits a large page on x86_32 (without PAE), it 
+> is currently corrupting every process's page directory: fix that by 
+> removing the thinko which passes down a physical instead of a virtual 
+> address.
 > 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-Backtrace:
-[<c0038bbc>] (sysctl_head_next+0x0/0x64) from [<c00a4b80>] (proc_sys_readdir+0x360/0x394)
- r4:00000000
-[<c00a4820>] (proc_sys_readdir+0x0/0x394) from [<c007c860>] (vfs_readdir+0x70/0x98)
-[<c007c7f0>] (vfs_readdir+0x0/0x98) from [<c007cdf0>] (sys_getdents64+0x6c/0xc0)
-[<c007cd84>] (sys_getdents64+0x0/0xc0) from [<c0023e60>] (ret_fast_syscall+0x0/0x2c)
+thanks Hugh!
 
-> Whatever the problem is, sysfs works now flawlessly even after
-> a suspend/resume with v2.6.24-7284-g9ef9dc6.
+  Acked-by: Ingo Molnar <mingo@elte.hu>
 
-erp.  We'd really like to know what we did to fix it, and then get that
-fix back into 2.6.24.x.  
+bug synopsis and preventive measures:
+
+>  	if (!SHARED_KERNEL_PMD) {
+>  		struct page *page;
+>  
+> -		address = __pa(address);
+>  		list_for_each_entry(page, &pgd_list, lru) {
+
+this line itself got inherited from old spaghetti code from 
+arch/i386/mm/pageattr.c:split_large_page(). That line was added 6 years 
+ago when pageattr.c was written. [see commit c8712aebd in historic-git]
+
+This line was not outright buggy in its original form, but it was an 
+inherently dangerous and sloppy construct: why does it transform an 
+"address" into a physical address like that? We _always_ use "address" 
+as a linear address, and some separate variable name for physical 
+addresses. This line was just waiting for a bug to be introduced: the 
+moment any virtual-address code is introduced _after_ this line, it can 
+easily pass visual inspection because the code "looks" correct.
+
+In all new cpa code we introduced explicit transformations like:
+
+        unsigned long phys_addr = __pa(address);
+
+but this 6 year old line slipped through and we moved it to a place 
+where it indeed caused the bug you triggered :-/
+
+Our bad and thanks for fixing it :)
+
+one reason why we didnt trigger the crash (sooner) in qa is because the 
+CPA self-tests run while there's essentially no user-space contexts - so 
+even though i do test 2G:2G !PAE kernels too, corruption of the 
+pagetables went unnoticed. (and the main risk and focus in cpa is on 
+kernel pagetables, not on user pagetables)
+
+So, to prevent such bugs in the future, i've just modified the cpa 
+self-test to run in a kthread and to be delayed by 30 seconds, that 
+places it right into the user-space bootup sequence.
+
+that triggered the following "bad pgd" crash right on the first boot 
+attempt:
+
+[   32.597881] CPA exercising pageattr
+[   32.601289] CPA mapping 4k 2048 large 254 gb 0 x 2302[80000000-bfc00000] mis0
+[   32.047209] pam_console_app[2908]: segfault at 8049956 ip 08049956 sp 7fef40]
+[   32.621678] mm/memory.c:115: bad pgd 3e59b163.
+[   32.621711] ------------[ cut here ]------------
+[   32.621713] kernel BUG at mm/mmap.c:2055!
+[   32.621715] invalid opcode: 0000 [#1] SMP
+[   32.621717]
+
+and with your fix applied it runs just fine.
+
+	Ingo
+
+------------------->
+Subject: x86: delay CPA self-test and repeat it
+From: Ingo Molnar <mingo@elte.hu>
+
+delay the CPA self-test so that any impact (corruption) of
+user-space pagetables can be triggered.
+
+this would have prevented the bug fixed by 8cb2a7c1e95e472b5
+at its source.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/pageattr-test.c |   38 ++++++++++++++++++++++++++++++++------
+ 1 file changed, 32 insertions(+), 6 deletions(-)
+
+Index: linux-x86.q/arch/x86/mm/pageattr-test.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/pageattr-test.c
++++ linux-x86.q/arch/x86/mm/pageattr-test.c
+@@ -5,6 +5,7 @@
+  * and compares page tables forwards and afterwards.
+  */
+ #include <linux/bootmem.h>
++#include <linux/kthread.h>
+ #include <linux/random.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+@@ -15,7 +16,7 @@
+ #include <asm/kdebug.h>
+ 
+ enum {
+-	NTEST			= 4000,
++	NTEST			= 400,
+ #ifdef CONFIG_X86_64
+ 	LPS			= (1 << PMD_SHIFT),
+ #elif defined(CONFIG_X86_PAE)
+@@ -31,7 +32,7 @@ struct split_state {
+ 	long min_exec, max_exec;
+ };
+ 
+-static __init int print_split(struct split_state *s)
++static int print_split(struct split_state *s)
+ {
+ 	long i, expected, missed = 0;
+ 	int printed = 0;
+@@ -96,11 +97,11 @@ static __init int print_split(struct spl
+ 	return err;
+ }
+ 
+-static unsigned long __initdata addr[NTEST];
+-static unsigned int __initdata len[NTEST];
++static unsigned long addr[NTEST];
++static unsigned int len[NTEST];
+ 
+ /* Change the global bit on random pages in the direct mapping */
+-static __init int exercise_pageattr(void)
++static int pageattr_test(void)
+ {
+ 	struct split_state sa, sb, sc;
+ 	unsigned long *bm;
+@@ -216,10 +217,35 @@ static __init int exercise_pageattr(void
+ 	if (failed) {
+ 		printk(KERN_ERR "CPA selftests NOT PASSED. Please report.\n");
+ 		WARN_ON(1);
++		return -EINVAL;
+ 	} else {
+ 		printk(KERN_INFO "CPA selftests PASSED\n");
+ 	}
+ 
+ 	return 0;
+ }
+-module_init(exercise_pageattr);
++
++static int do_pageattr_test(void *__unused)
++{
++	while (!kthread_should_stop()) {
++		schedule_timeout_interruptible(HZ*30);
++		if (pageattr_test() < 0)
++			break;
++	}
++	return 0;
++}
++
++static int start_pageattr_test(void)
++{
++	struct task_struct *p;
++
++	p = kthread_create(do_pageattr_test, NULL, "pageattr-test");
++	if (!IS_ERR(p))
++		wake_up_process(p);
++	else
++		WARN_ON(1);
++
++	return 0;
++}
++
++module_init(start_pageattr_test);
