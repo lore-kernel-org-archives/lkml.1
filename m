@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbYBFMUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763138AbYBFMXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762975AbYBFMUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 07:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762052AbYBFMUc
+	id S1763138AbYBFMXP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 07:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762330AbYBFMW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 07:20:32 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:52428 "EHLO smpt.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761744AbYBFMUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 07:20:31 -0500
-Message-ID: <47A9A5B5.3060800@gandalf.sssup.it>
-Date: Wed, 06 Feb 2008 13:19:01 +0100
-From: michael <trimarchi@gandalf.sssup.it>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 6 Feb 2008 07:22:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40293 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762174AbYBFMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 07:22:57 -0500
+Date: Wed, 6 Feb 2008 13:22:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [bug] networking broke, ssh: connect to port 22: Protocol error
+Message-ID: <20080206122248.GA5233@elte.hu>
+References: <20080206113829.GA14793@elte.hu> <20080206.034243.243568099.davem@davemloft.net>
 MIME-Version: 1.0
-To: Remy Bohmer <linux@bohmer.net>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-References: <20080129224316.GA23155@gandalf.sssup.it>	 <20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	 <47A051A7.7030004@gandalf.sssup.it>	 <20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>	 <47A09723.7020000@gandalf.sssup.it>	 <20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>	 <47A12A2E.5040309@gandalf.sssup.it>	 <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>	 <3efb10970801311136y12670f12x6e4fdd44de3677b9@mail.gmail.com>	 <20080204133925.73733f5f@dhcp-252-066.norway.atmel.com> <3efb10970802041144j6b4e6893j293819238b5b82e8@mail.gmail.com>
-In-Reply-To: <3efb10970802041144j6b4e6893j293819238b5b82e8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206.034243.243568099.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-the serial driver works fine. The problem seems to be related to the 
-tclib, when I use
-it as a clocksource. The numbers of overruns depends on the type of 
-files too.
-It is possible?
+* David Miller <davem@davemloft.net> wrote:
 
-Regards
-Michael
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Wed, 6 Feb 2008 12:38:29 +0100
+> 
+> > 
+> > randconfig qa on x86.git ran into the following new networking related 
+> > problem on latest -git: with the attached .config the testbox comes up 
+> > but cannot establish any TCP connections due to -ENOPROTO in 
+> > sys_connect().
+> 
+> Make sure you have the following fix in your tree.
+> 
+> It might be the cause.
+> 
+> commit 5d8c0aa9433b09387d9021358baef7939f9b32c4
+> Author: Pavel Emelyanov <xemul@openvz.org>
+> Date:   Tue Feb 5 03:14:44 2008 -0800
 
+this is already upstream. As i mentioned above i tested latest -git. 
+(HEAD 551e4fb2465b8)
 
+So no, it does not fix the problem. The config i sent is a rather 
+generic one, it should boot on most whitebox PCs. TCP connections will 
+fail immediately, all the time.
+
+(I reverted 5d8c0aa943 as well, that didnt solve the problem either.)
+
+	Ingo
