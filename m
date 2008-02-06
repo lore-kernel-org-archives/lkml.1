@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765404AbYBGAFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbYBGAGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765404AbYBGAFp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764770AbYBFX45
+	id S1765488AbYBGAGJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:06:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764780AbYBFX5C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:56:57 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60564 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:57:02 -0500
+Received: from ns.suse.de ([195.135.220.2]:45867 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764769AbYBFX4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:56:55 -0500
-Date: Wed, 6 Feb 2008 15:52:14 -0800
+	id S1762069AbYBFX47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:56:59 -0500
+Date: Wed, 6 Feb 2008 15:52:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Chas Williams <chas@cmf.nrl.navy.mil>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 24/73] ATM: delay irq setup until card is configured
-Message-ID: <20080206235214.GY13121@suse.de>
+Subject: [patch 25/73] IPSEC: Avoid undefined shift operation when testing
+	algorithm ID
+Message-ID: <20080206235232.GZ13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="atm-delay-irq-setup-until-card-is-configured.patch"
+Content-Disposition: inline; filename="ipsec-avoid-undefined-shift-operation-when-testing-algorithm-id.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,61 +37,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Chas Williams <chas@cmf.nrl.navy.mil>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[ATM]: [nicstar] delay irq setup until card is configured
+[IPSEC]: Avoid undefined shift operation when testing algorithm ID
 
-[ Upstream commit: 52961955aa180959158faeb9fd6b4f8a591450f5 ]
+[ Upstream commit: f398035f2dec0a6150833b0bc105057953594edb ]
 
-Signed-off-by: Chas Williams <chas@cmf.nrl.navy.mil>
+The aalgos/ealgos fields are only 32 bits wide.  However, af_key tries
+to test them with the expression 1 << id where id can be as large as
+253.  This produces different behaviour on different architectures.
+
+The following patch explicitly checks whether ID is greater than 31
+and fails the check if that's the case.
+
+We cannot easily extend the mask to be longer than 32 bits due to
+exposure to user-space.  Besides, this whole interface is obsolete
+anyway in favour of the xfrm_user interface which doesn't use this
+bit mask in templates (well not within the kernel anyway).
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/atm/nicstar.c |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+ net/key/af_key.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
---- a/drivers/atm/nicstar.c
-+++ b/drivers/atm/nicstar.c
-@@ -625,14 +625,6 @@ static int __devinit ns_init_card(int i,
-    if (mac[i] == NULL)
-       nicstar_init_eprom(card->membase);
+--- a/net/key/af_key.c
++++ b/net/key/af_key.c
+@@ -2780,12 +2780,22 @@ static struct sadb_msg *pfkey_get_base_m
  
--   if (request_irq(pcidev->irq, &ns_irq_handler, IRQF_DISABLED | IRQF_SHARED, "nicstar", card) != 0)
--   {
--      printk("nicstar%d: can't allocate IRQ %d.\n", i, pcidev->irq);
--      error = 9;
--      ns_init_card_error(card, error);
--      return error;
--   }
--
-    /* Set the VPI/VCI MSb mask to zero so we can receive OAM cells */
-    writel(0x00000000, card->membase + VPM);
-       
-@@ -858,8 +850,6 @@ static int __devinit ns_init_card(int i,
-       card->iovpool.count++;
-    }
- 
--   card->intcnt = 0;
--
-    /* Configure NICStAR */
-    if (card->rct_size == 4096)
-       ns_cfg_rctsize = NS_CFG_RCTSIZE_4096_ENTRIES;
-@@ -868,6 +858,15 @@ static int __devinit ns_init_card(int i,
- 
-    card->efbie = 1;
- 
-+   card->intcnt = 0;
-+   if (request_irq(pcidev->irq, &ns_irq_handler, IRQF_DISABLED | IRQF_SHARED, "nicstar", card) != 0)
-+   {
-+      printk("nicstar%d: can't allocate IRQ %d.\n", i, pcidev->irq);
-+      error = 9;
-+      ns_init_card_error(card, error);
-+      return error;
-+   }
+ static inline int aalg_tmpl_set(struct xfrm_tmpl *t, struct xfrm_algo_desc *d)
+ {
+-	return t->aalgos & (1 << d->desc.sadb_alg_id);
++	unsigned int id = d->desc.sadb_alg_id;
 +
-    /* Register device */
-    card->atmdev = atm_dev_register("nicstar", &atm_ops, -1, NULL);
-    if (card->atmdev == NULL)
++	if (id >= sizeof(t->aalgos) * 8)
++		return 0;
++
++	return (t->aalgos >> id) & 1;
+ }
+ 
+ static inline int ealg_tmpl_set(struct xfrm_tmpl *t, struct xfrm_algo_desc *d)
+ {
+-	return t->ealgos & (1 << d->desc.sadb_alg_id);
++	unsigned int id = d->desc.sadb_alg_id;
++
++	if (id >= sizeof(t->ealgos) * 8)
++		return 0;
++
++	return (t->ealgos >> id) & 1;
+ }
+ 
+ static int count_ah_combs(struct xfrm_tmpl *t)
 
 -- 
