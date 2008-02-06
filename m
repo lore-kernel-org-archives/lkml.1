@@ -1,86 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbYBFRr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbYBFRro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbYBFRr3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbYBFRqc
+	id S1759187AbYBFRro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbYBFRqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:46:32 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:44529 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757916AbYBFRqb (ORCPT
+	Wed, 6 Feb 2008 12:46:39 -0500
+Received: from matups.math.u-psud.fr ([129.175.50.4]:63265 "EHLO
+	matups.math.u-psud.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756502AbYBFRqh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:46:31 -0500
-Date: Wed, 6 Feb 2008 12:44:47 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Jim Meyering <meyering@redhat.com>
-Subject: [PATCH 3/5] UML - Improved error handling while locating temp dir
-Message-ID: <20080206174447.GA7861@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Feb 2008 12:46:37 -0500
+X-Greylist: delayed 1516 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Feb 2008 12:46:36 EST
+From: Duncan Sands <baldrick.bulk@free.fr>
+To: Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
+Date: Wed, 6 Feb 2008 18:20:53 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
+Cc: linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <47A9DD30.5040604@openvz.org>
+In-Reply-To: <47A9DD30.5040604@openvz.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200802061820.54870.baldrick.bulk@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jim Meyering <meyering@redhat.com>
+Hi,
 
-* arch/um/os-Linux/mem.c (make_tempfile): Don't deref NULL upon failed malloc.
+> The problem is that I couldn't find the maintainer for the code 
+> in drivers/usb/atm/.
 
-* arch/um/os-Linux/mem.c (make_tempfile): Handle NULL tempdir.
-Don't let a long tempdir (e.g., via TMPDIR) provoke heap corruption.
+that would be me (though since I haven't used this modem in years I would
+be more than happy to hand it off to someone else).
 
-[ jdike - formatting cleanups, deleted obsolete comment ]
+> Besides, I don't have a proper hardware to test this.
 
-Signed-off-by: Jim Meyering <meyering@redhat.com>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/os-Linux/mem.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+I will try to find where I put my old modem and test your patch this weekend.
 
-Index: linux-2.6-git/arch/um/os-Linux/mem.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/mem.c	2008-02-05 13:20:46.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/mem.c	2008-02-05 16:37:37.000000000 -0500
-@@ -162,11 +162,6 @@ found:
- 	goto out;
- }
- 
--/*
-- * This proc still used in tt-mode
-- * (file: kernel/tt/ptproxy/proxy.c, proc: start_debugger).
-- * So it isn't 'static' yet.
-- */
- static int __init make_tempfile(const char *template, char **out_tempname,
- 				int do_unlink)
- {
-@@ -175,10 +170,13 @@ static int __init make_tempfile(const ch
- 
- 	which_tmpdir();
- 	tempname = malloc(MAXPATHLEN);
--	if (!tempname)
--		goto out;
-+	if (tempname == NULL)
-+		return -1;
- 
- 	find_tempdir();
-+	if ((tempdir == NULL) || (strlen(tempdir) >= MAXPATHLEN))
-+		return -1;
-+
- 	if (template[0] != '/')
- 		strcpy(tempname, tempdir);
- 	else
-@@ -196,9 +194,8 @@ static int __init make_tempfile(const ch
- 	}
- 	if (out_tempname) {
- 		*out_tempname = tempname;
--	} else {
-+	} else
- 		free(tempname);
--	}
- 	return fd;
- out:
- 	free(tempname);
+> @@ -1014,11 +1015,7 @@ static int usbatm_do_heavy_init(void *arg)
+>  	struct usbatm_data *instance = arg;
+>  	int ret;
+>  
+> -	daemonize(instance->driver->driver_name);
+>  	allow_signal(SIGTERM);
+> -	instance->thread_pid = current->pid;
+> -
+> -	complete(&instance->thread_started);
+
+One reason the completion existed to make sure that the thread was not
+sent SIGTERM before the above call to allow_signal(SIGTERM).  So I think
+you have opened up a (tiny) race by deleting it.
+
+>  static int usbatm_heavy_init(struct usbatm_data *instance)
+>  {
+> -	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_FS | CLONE_FILES);
+> -
+> -	if (ret < 0) {
+> -		usb_err(instance, "%s: failed to create kernel_thread (%d)!\n", __func__, ret);
+
+Please don't delete this message.
+
+> -		return ret;
+> -	}
+> +	struct task_struct *t;
+>  
+> -	wait_for_completion(&instance->thread_started);
+> +	t = kthread_create(usbatm_do_heavy_init, instance,
+> +			instance->driver->driver_name);
+> +	if (IS_ERR(t))
+> +		return PTR_ERR(t);
+>  
+> +	instance->thread = t;
+> +	wake_up_process(t);
+
+Does the kthread API guarantee that the kthread is not running until you call
+wake_up_process?  Because if not then what is to stop the kthread finishing before
+this thread does "instance->thread = t", resulting in an attempt to send a signal
+to a dead process later on in disconnect?
+
+Otherwise it looks fine - thanks!
+
+By the way, the right thing to do is (I think) to replace the thread with a workqueue
+and have users of usbatm register a "shut_down" callback rather than using signals: the
+disconnect method would call shut_down rathering than trying to kill the thread.  That
+way all this mucking around with pids etc wouldn't be needed.  All users of usbatm would
+need to be modified.  I managed to convince myself once that they could all be fixed up
+in a fairly simple manner thanks to a few tricks and a completion or two, but I don't
+recall the details...
+
+Best wishes,
+
+Duncan.
