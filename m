@@ -1,312 +1,1243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYBFR4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbYBFR4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbYBFR4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbYBFR4J
+	id S1757920AbYBFR4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYBFR4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:56:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40232 "EHLO hera.kernel.org"
+	Wed, 6 Feb 2008 12:56:40 -0500
+Received: from mga03.intel.com ([143.182.124.21]:25404 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754787AbYBFR4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:56:05 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andrej Hocevar <and.hocevar@gmail.com>
-Subject: Re: kernel oops
-Date: Wed, 6 Feb 2008 12:55:48 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20080205125730.GA6552@stoa>
-In-Reply-To: <20080205125730.GA6552@stoa>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	id S1753033AbYBFR4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 12:56:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,313,1199692800"; 
+   d="scan'208";a="375935215"
+Subject: [GIT PULL resend] async_tx update for 2.6.25
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Shannon Nelson <shannon.nelson@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 10:43:42 -0700
+Message-Id: <1202319822.6116.8.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-7.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802061255.48396.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 February 2008 07:57, Andrej Hocevar wrote:
-> this has occured a couple of times. i was editing a unicode file with
-> vim in the console. after a reboot, i immediately tried to do just that
-> again and it crashed. it might have occured upon trying to select some
-> text with the mouse (gpm) or trying to delete characters from the file.
-> 
+[ last sent February 4th, full diff included ]
 
-This must be kmem pool corruption -- for it is springing up all over
-the place, including in calls to kmem_cache_alloc.
-One of the failures is somebody reading your battery status via ACPI.
+Linus, please pull from:
 
-Have you tried
-CONFIG_DEBUG_SLAB=y
-or
-the equivalent SLUB version if you're running with CONFIG_SLUB?
+        git://lost.foo-projects.org/~dwillia2/git/iop async-tx-for-linus
 
--Len
+to receive:
 
-> 1)
-> 
-> =======================================================================
-> 
-> Linux stoa 2.6.23.13newhome #3 Wed Jan 30 19:39:38 CET 2008 i686
-> GNU/Linux
-> 
-> Gnu C                  4.1.2
-> Gnu make               3.81
-> binutils               Binutils
-> util-linux             2.13.1
-> mount                  2.13
-> module-init-tools      3.3-pre2
-> e2fsprogs              1.40.3
-> pcmciautils            014
-> PPP                    2.4.4
-> Linux C Library        2.7
-> Dynamic linker (ldd)   2.7
-> Procps                 3.2.7
-> Net-tools              1.60
-> Console-tools          0.2.3
-> Sh-utils               5.97
-> udev                   114
-> wireless-tools         29
-> Modules Loaded         nf_conntrack_ipv4 xt_state xt_tcpudp
-> iptable_filter ip_tables x_tables nf_nat_ftp nf_nat nf_conntrack_ftp
-> nf_conntrack nfnetlink af_packet ppdev lp cpufreq_stats fuse sr_mod sbp2
-> snd_intel8x0 snd_ac97_codec irda ac97_bus snd_pcm_oss snd_mixer_oss
-> crc_ccitt parport_pc parport snd_pcm video output
-> rng_core snd_timer snd_page_alloc rtc 8250_pci 8250 serial_core evdev
-> sd_mod ide_cd cdrom ide_disk usb_storage usbhid scsi_mod ohci1394 piix
-> ieee1394 ide_core ehci_hcd uhci_hcd usbcore unix
-> 
-> =======================================================================
-> 
-> 2)
-> 
-> =======================================================================
-> 
-> Feb  5 13:25:37 stoa kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 00000014
-> Feb  5 13:25:37 stoa kernel:  printing eip:
-> Feb  5 13:25:37 stoa kernel: c01ebbca
-> Feb  5 13:25:37 stoa kernel: *pde = 00000000
-> Feb  5 13:25:37 stoa kernel: Oops: 0000 [#1]
-> Feb  5 13:25:37 stoa kernel: Modules linked in: ppdev lp cpufreq_stats fuse sr_mod sbp2 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm sd_mod 8250_pci irda 8250 serial_core rtc parport_pc parport crc_ccitt rng_core snd_timer snd_page_alloc video output evdev usb_storage scsi_mod usbhid ide_cd cdrom ide_disk ohci1394 ehci_hcd uhci_hcd piix ide_core ieee1394 usbcore unix
-> Feb  5 13:25:37 stoa kernel: CPU:    0
-> Feb  5 13:25:37 stoa kernel: EIP:    0060:[<c01ebbca>]    Not tainted VLI
-> Feb  5 13:25:37 stoa kernel: EFLAGS: 00010202   (2.6.23.13newhome #3)
-> Feb  5 13:25:37 stoa kernel: EIP is at acpi_ps_has_completed_scope+0xb/0x1d
-> Feb  5 13:25:37 stoa kernel: eax: 00000000   ebx: 00001001   ecx: 00000001   edx: 00000000
-> Feb  5 13:25:37 stoa kernel: esi: ed1e9800   edi: 00000000   ebp: ed1e9824   esp: ea647e04
-> Feb  5 13:25:37 stoa kernel: ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Feb  5 13:25:37 stoa kernel: Process hald (pid: 5453, ti=ea646000 task=ea514540 task.ti=ea646000)
-> Feb  5 13:25:37 stoa kernel: Stack: c01eb38f c01f0aef dfc49190 ed1e9400 c01ea3a7 c03fe1f0 00000287 c01f0a27 
-> Feb  5 13:25:37 stoa kernel:        ed1e9400 ed1e9800 c15a3d20 00000287 00000000 00000000 ed1e9400 ed1e9800 
-> Feb  5 13:25:37 stoa kernel:        00000000 dfc27090 c01ead50 dfc483a8 ed1e9824 dfc27030 c01deba1 00000000 
-> Feb  5 13:25:37 stoa kernel: Call Trace:
-> Feb  5 13:25:37 stoa kernel:  [<c01eb38f>] acpi_ps_parse_loop+0x3e/0x737
-> Feb  5 13:25:37 stoa kernel:  [<c01f0aef>] acpi_ut_acquire_mutex+0x31/0x7a
-> Feb  5 13:25:37 stoa kernel:  [<c01ea3a7>] acpi_ns_get_next_node+0x13/0x34
-> Feb  5 13:25:37 stoa kernel:  [<c01f0a27>] acpi_ut_release_mutex+0x5b/0x63
-> Feb  5 13:25:37 stoa kernel:  [<c01ead50>] acpi_ps_parse_aml+0x60/0x237
-> Feb  5 13:25:37 stoa kernel:  [<c01deba1>] acpi_ds_init_aml_walk+0xb4/0xfe
-> Feb  5 13:25:37 stoa kernel:  [<c01ebf7c>] acpi_ps_execute_method+0x11b/0x1bb
-> Feb  5 13:25:37 stoa kernel:  [<c01e9315>] acpi_ns_evaluate+0x99/0xf0
-> Feb  5 13:25:37 stoa kernel:  [<c01e8f81>] acpi_evaluate_object+0x124/0x1c7
-> Feb  5 13:25:37 stoa kernel:  [<c01f4848>] acpi_ac_seq_show+0x0/0x50
-> Feb  5 13:25:37 stoa kernel:  [<c01db1fc>] acpi_evaluate_integer+0x7b/0xae
-> Feb  5 13:25:37 stoa kernel:  [<c01f467e>] acpi_ac_get_state+0x26/0x61
-> Feb  5 13:25:37 stoa kernel:  [<c0146bde>] mmap_region+0x312/0x3ce
-> Feb  5 13:25:37 stoa kernel:  [<c01f485a>] acpi_ac_seq_show+0x12/0x50
-> Feb  5 13:25:37 stoa kernel:  [<c0166d9a>] seq_read+0xec/0x276
-> Feb  5 13:25:37 stoa kernel:  [<c0166cae>] seq_read+0x0/0x276
-> Feb  5 13:25:37 stoa kernel:  [<c0178d15>] proc_reg_read+0x35/0x46
-> Feb  5 13:25:37 stoa kernel:  [<c0178ce0>] proc_reg_read+0x0/0x46
-> Feb  5 13:25:37 stoa kernel:  [<c0153b51>] vfs_read+0x88/0x10a
-> Feb  5 13:25:37 stoa kernel:  [<c0153e71>] sys_read+0x41/0x67
-> Feb  5 13:25:37 stoa kernel:  [<c0103bee>] syscall_call+0x7/0xb
-> Feb  5 13:25:37 stoa kernel:  =======================
-> Feb  5 13:25:37 stoa kernel: Code: c0 25 2e c0 c1 e0 04 05 c0 1c 2e c0 c3 b8 70 23 2e c0 c3 b8 38 df 32 c0 c3 8b 40 1c 8b 40 10 c3 8b 50 1c b9 01 00 00 00 8b 40 04 <3b> 42 14 73 09 31 c9 83 7a 0c 00 0f 94 c1 0f b6 c1 c3 85 c0 53 
-> 
-> 
-> 
-> 
-> Feb  5 13:32:44 stoa kernel: BUG: unable to handle kernel paging request at virtual address 01000044
-> Feb  5 13:32:44 stoa kernel:  printing eip:
-> Feb  5 13:32:44 stoa kernel: c01501ef
-> Feb  5 13:32:44 stoa kernel: *pde = 00000000
-> Feb  5 13:32:44 stoa kernel: Oops: 0000 [#1]
-> Feb  5 13:32:44 stoa kernel: Modules linked in: ppdev lp cpufreq_stats fuse sr_mod sbp2 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss video sd_mod output rng_core irda parport_pc parport 8250_pci 8250 serial_core snd_pcm crc_ccitt snd_timer snd_page_alloc evdev rtc ide_disk ide_cd cdrom usb_storage usbhid scsi_mod ohci1394 piix ieee1394 ide_core ehci_hcd uhci_hcd usbcore unix
-> Feb  5 13:32:44 stoa kernel: CPU:    0
-> Feb  5 13:32:44 stoa kernel: EIP:    0060:[<c01501ef>]    Not tainted VLI
-> Feb  5 13:32:44 stoa kernel: EFLAGS: 00010006   (2.6.23.13newhome #3)
-> Feb  5 13:32:44 stoa kernel: EIP is at kmem_cache_alloc+0x40/0x7c
-> Feb  5 13:32:44 stoa kernel: eax: 00000000   ebx: 01000044   ecx: c0385c70   edx: c15c3a40
-> Feb  5 13:32:44 stoa kernel: esi: c0385c70   edi: 00000286   ebp: 00011200   esp: dfc5fd90
-> Feb  5 13:32:44 stoa kernel: ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-> Feb  5 13:32:44 stoa kernel: Process pdflush (pid: 189, ti=dfc5e000 task=dfc08540 task.ti=dfc5e000)
-> Feb  5 13:32:44 stoa kernel: Stack: c013bc77 eeb764d0 00000010 dfff51e0 00011210 ef070cc0 c013bc77 dfc8c6f0 
-> Feb  5 13:32:44 stoa kernel:        00000017 ee9a9a68 00000008 ee9a9b90 00000000 00000000 dfff50c0 ef070cc0 
-> Feb  5 13:32:44 stoa kernel:        c016e566 00000010 00000000 dfd00738 c15c8260 00000001 00000001 c016e5c9 
-> Feb  5 13:32:44 stoa kernel: Call Trace:
-> Feb  5 13:32:44 stoa kernel:  [<c013bc77>] mempool_alloc+0x28/0x9f
-> Feb  5 13:32:44 stoa kernel:  [<c013bc77>] mempool_alloc+0x28/0x9f
-> Feb  5 13:32:44 stoa kernel:  [<c016e566>] bio_alloc_bioset+0x9b/0xf3
-> Feb  5 13:32:44 stoa kernel:  [<c016e5c9>] bio_alloc+0xb/0x17
-> Feb  5 13:32:44 stoa kernel:  [<c016b9d0>] submit_bh+0x5e/0xd4
-> Feb  5 13:32:44 stoa kernel:  [<c016ccda>] __block_write_full_page+0x1ab/0x27e
-> Feb  5 13:32:44 stoa kernel:  [<c0104597>] common_interrupt+0x23/0x28
-> Feb  5 13:32:44 stoa kernel:  [<c017000f>] blkdev_get_block+0x0/0x33
-> Feb  5 13:32:44 stoa kernel:  [<c016ce7f>] block_write_full_page+0xd2/0xda
-> Feb  5 13:32:44 stoa kernel:  [<c017000f>] blkdev_get_block+0x0/0x33
-> Feb  5 13:32:44 stoa kernel:  [<c013db98>] __writepage+0x8/0x1f
-> Feb  5 13:32:44 stoa kernel:  [<c013e019>] write_cache_pages+0x165/0x280
-> Feb  5 13:32:44 stoa kernel:  [<c013db90>] __writepage+0x0/0x1f
-> Feb  5 13:32:44 stoa kernel:  [<c013e134>] generic_writepages+0x0/0x26
-> Feb  5 13:32:44 stoa kernel:  [<c013e153>] generic_writepages+0x1f/0x26
-> Feb  5 13:32:44 stoa kernel:  [<c013e17a>] do_writepages+0x20/0x30
-> Feb  5 13:32:44 stoa kernel:  [<c0168777>] __writeback_single_inode+0x16e/0x2d4
-> Feb  5 13:32:44 stoa kernel:  [<c02cc29f>] schedule_timeout+0x77/0x8b
-> Feb  5 13:32:44 stoa kernel:  [<c01156bb>] update_curr+0x10b/0x135
-> Feb  5 13:32:44 stoa kernel:  [<c0168b7f>] sync_sb_inodes+0x154/0x1e5
-> Feb  5 13:32:44 stoa kernel:  [<c0168d38>] writeback_inodes+0x42/0x69
-> Feb  5 13:32:44 stoa kernel:  [<c013e7ea>] pdflush+0x0/0x15e
-> Feb  5 13:32:44 stoa kernel:  [<c013e51c>] wb_kupdate+0x6e/0xd2
-> Feb  5 13:32:44 stoa kernel:  [<c013e8c4>] pdflush+0xda/0x15e
-> Feb  5 13:32:44 stoa kernel:  [<c02cbcca>] __sched_text_start+0x212/0x26f
-> Feb  5 13:32:44 stoa kernel:  [<c013e4ae>] wb_kupdate+0x0/0xd2
-> Feb  5 13:32:44 stoa kernel:  [<c01274d3>] kthread+0x36/0x5b
-> Feb  5 13:32:44 stoa kernel:  [<c012749d>] kthread+0x0/0x5b
-> Feb  5 13:32:44 stoa kernel:  [<c0104747>] kernel_thread_helper+0x7/0x10
-> Feb  5 13:32:44 stoa kernel:  =======================
-> Feb  5 13:32:44 stoa kernel: Code: 00 00 00 85 d2 74 06 83 7a 0c 00 75 17 89 54 24 04 83 c9 ff 89 ea 89 04 24 89 f0 e8 44 fb ff ff 89 c3 eb 0d 8b 5a 0c 0f b7 42 0a <8b> 04 83 89 42 0c 57 9d 89 e8 25 00 80 00 00 66 85 c0 74 1f 85 
-> Feb  5 13:32:44 stoa kernel: EIP: [<c01501ef>] kmem_cache_alloc+0x40/0x7c SS:ESP 0068:dfc5fd90
-> 
-> 
-> 
-> 
-> Feb  5 13:34:22 stoa kernel: BUG: unable to handle kernel paging request at virtual address 3175b800
-> Feb  5 13:34:22 stoa kernel:  printing eip:
-> Feb  5 13:34:22 stoa kernel: c0150a77
-> Feb  5 13:34:22 stoa kernel: *pde = 00000000
-> Feb  5 13:34:22 stoa kernel: Oops: 0000 [#2]
-> Feb  5 13:34:22 stoa kernel: Modules linked in: ppdev lp cpufreq_stats fuse sr_mod sbp2 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss video sd_mod output rng_core irda parport_pc parport 8250_pci 8250 serial_core snd_pcm crc_ccitt snd_timer snd_page_alloc evdev rtc ide_disk ide_cd cdrom usb_storage usbhid scsi_mod ohci1394 piix ieee1394 ide_core ehci_hcd uhci_hcd usbcore unix
-> Feb  5 13:34:22 stoa kernel: CPU:    0
-> Feb  5 13:34:22 stoa kernel: EIP:    0060:[<c0150a77>]    Tainted: G      D VLI
-> Feb  5 13:34:22 stoa kernel: EFLAGS: 00010006   (2.6.23.13newhome #3)
-> Feb  5 13:34:22 stoa kernel: EIP is at __kmalloc_track_caller+0x4a/0x88
-> Feb  5 13:34:22 stoa kernel: eax: 00000000   ebx: 3175b800   ecx: c0385be4   edx: c15c62e0
-> Feb  5 13:34:22 stoa kernel: esi: c0385be4   edi: 00000286   ebp: 000000d0   esp: e8f8bec0
-> Feb  5 13:34:22 stoa kernel: ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Feb  5 13:34:22 stoa kernel: Process modprobe (pid: 6174, ti=e8f8a000 task=ee68aa80 task.ti=e8f8a000)
-> Feb  5 13:34:22 stoa kernel: Stack: 00000003 c01319bd 000000d0 ee7bc800 ee7bca68 00000006 c0141624 c0131a40 
-> Feb  5 13:34:22 stoa kernel:        f3a3ace6 ee7bc834 ee7bc800 ee7bca68 f3ab2c00 c0132c24 00000000 00000000 
-> Feb  5 13:34:22 stoa kernel:        e8b705f4 e8b705f0 00003cb4 00000438 c0146bde 00000000 00000000 00000000 
-> Feb  5 13:34:22 stoa kernel: Call Trace:
-> Feb  5 13:34:22 stoa kernel:  [<c01319bd>] module_add_modinfo_attrs+0x58/0x7a
-> Feb  5 13:34:22 stoa kernel:  [<c0141624>] kstrdup+0x2f/0x50
-> Feb  5 13:34:22 stoa kernel:  [<c0131a40>] mod_sysfs_setup+0x61/0x8b
-> Feb  5 13:34:22 stoa kernel:  [<c0132c24>] sys_init_module+0x105b/0x12b1
-> Feb  5 13:34:22 stoa kernel:  [<c0146bde>] mmap_region+0x312/0x3ce
-> Feb  5 13:34:22 stoa kernel:  [<c0261a5f>] synchronize_net+0x0/0xa
-> Feb  5 13:34:22 stoa kernel:  [<c0103bee>] syscall_call+0x7/0xb
-> Feb  5 13:34:22 stoa kernel:  [<c012007b>] do_timer+0x65/0xa5
-> Feb  5 13:34:22 stoa kernel:  =======================
-> Feb  5 13:34:22 stoa kernel: Code: 00 00 00 85 d2 74 06 83 7a 0c 00 75 17 89 54 24 04 83 c9 ff 89 ea 89 f0 89 1c 24 e8 bc f2 ff ff 89 c3 eb 0d 8b 5a 0c 0f b7 42 0a <8b> 04 83 89 42 0c 57 9d 89 e8 25 00 80 00 00 66 85 c0 74 1f 85 
-> Feb  5 13:34:22 stoa kernel: EIP: [<c0150a77>] __kmalloc_track_caller+0x4a/0x88 SS:ESP 0068:e8f8bec0
-> 
-> 
-> 
-> 
-> 
-> Feb  5 13:34:22 stoa kernel: BUG: unable to handle kernel paging request at virtual address 3175b800
-> Feb  5 13:34:22 stoa kernel:  printing eip:
-> Feb  5 13:34:22 stoa kernel: c0150b01
-> Feb  5 13:34:22 stoa kernel: *pde = 00000000
-> Feb  5 13:34:22 stoa kernel: Oops: 0000 [#3]
-> Feb  5 13:34:22 stoa kernel: Modules linked in: ppdev lp cpufreq_stats fuse sr_mod sbp2 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss video sd_mod output rng_core irda parport_pc parport 8250_pci 8250 serial_core snd_pcm crc_ccitt snd_timer snd_page_alloc evdev rtc ide_disk ide_cd cdrom usb_storage usbhid scsi_mod ohci1394 piix ieee1394 ide_core ehci_hcd uhci_hcd usbcore unix
-> Feb  5 13:34:22 stoa kernel: CPU:    0
-> Feb  5 13:34:22 stoa kernel: EIP:    0060:[<c0150b01>]    Tainted: G      D VLI
-> Feb  5 13:34:22 stoa kernel: EFLAGS: 00010006   (2.6.23.13newhome #3)
-> Feb  5 13:34:22 stoa kernel: EIP is at __kmalloc+0x4c/0x8a
-> Feb  5 13:34:22 stoa kernel: eax: 00000000   ebx: 3175b800   ecx: c0385be4   edx: c15c62e0
-> Feb  5 13:34:22 stoa kernel: esi: c0385be4   edi: 00000286   ebp: 000000d0   esp: e8b4fe20
-> Feb  5 13:34:22 stoa kernel: ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Feb  5 13:34:22 stoa kernel: Process route (pid: 6201, ti=e8b4e000 task=e8186540 task.ti=e8b4e000)
-> Feb  5 13:34:22 stoa kernel: Stack: e80c1f80 e86a9500 e86a9000 e85d76e8 ffffff97 00000000 c029f81d e8b4fe84 
-> Feb  5 13:34:22 stoa kernel:        0000890b c029caf4 00000000 00000000 00000000 e8b4fef4 e85d76c0 00000000 
-> Feb  5 13:34:22 stoa kernel:        00000000 00000000 00000000 e86a9000 00000000 00000000 00000000 ffffff97 
-> Feb  5 13:34:22 stoa kernel: Call Trace:
-> Feb  5 13:34:22 stoa kernel:  [<c029f81d>] fn_hash_insert+0x7e/0x619
-> Feb  5 13:34:22 stoa kernel:  [<c029caf4>] inet_addr_type+0x73/0xc8
-> Feb  5 13:34:22 stoa kernel:  [<c029d4c9>] ip_rt_ioctl+0x2ed/0x334
-> Feb  5 13:34:22 stoa kernel:  [<c02594a1>] sock_attach_fd+0x53/0xae
-> Feb  5 13:34:22 stoa kernel:  [<c0259054>] sock_ioctl+0x19f/0x1be
-> Feb  5 13:34:22 stoa kernel:  [<c0258eb5>] sock_ioctl+0x0/0x1be
-> Feb  5 13:34:22 stoa kernel:  [<c015c369>] do_ioctl+0x19/0x4d
-> Feb  5 13:34:22 stoa kernel:  [<c015c585>] vfs_ioctl+0x1e8/0x1ff
-> Feb  5 13:34:22 stoa kernel:  [<c01521ce>] do_sys_open+0xbb/0xc5
-> Feb  5 13:34:22 stoa kernel:  [<c015c5cf>] sys_ioctl+0x33/0x4c
-> Feb  5 13:34:22 stoa kernel:  [<c0103bee>] syscall_call+0x7/0xb
-> Feb  5 13:34:22 stoa kernel:  [<c02c0000>] ieee80211_rx_mgmt_assoc_resp+0x4be/0x5c5
-> Feb  5 13:34:22 stoa kernel:  =======================
-> Feb  5 13:34:22 stoa kernel: Code: 00 00 00 85 d2 74 06 83 7a 0c 00 75 17 89 54 24 04 83 c9 ff 89 ea 89 04 24 89 f0 e8 32 f2 ff ff 89 c3 eb 0d 8b 5a 0c 0f b7 42 0a <8b> 04 83 89 42 0c 57 9d 89 e8 25 00 80 00 00 66 85 c0 74 1f 85 
-> Feb  5 13:34:22 stoa kernel: EIP: [<c0150b01>] __kmalloc+0x4c/0x8a SS:ESP 0068:e8b4fe20
-> 
-> 
-> 
-> 
-> Feb  5 13:34:29 stoa kernel: BUG: unable to handle kernel paging request at virtual address 3175b800
-> Feb  5 13:34:29 stoa kernel:  printing eip:
-> Feb  5 13:34:29 stoa kernel: c0150b01
-> Feb  5 13:34:29 stoa kernel: *pde = 00000000
-> Feb  5 13:34:29 stoa kernel: Oops: 0000 [#4]
-> Feb  5 13:34:29 stoa kernel: Modules linked in: ppdev lp cpufreq_stats fuse sr_mod sbp2 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss video sd_mod output rng_core irda parport_pc parport 8250_pci 8250 serial_core snd_pcm crc_ccitt snd_timer snd_page_alloc evdev rtc ide_disk ide_cd cdrom usb_storage usbhid scsi_mod ohci1394 piix ieee1394 ide_core ehci_hcd uhci_hcd usbcore unix
-> Feb  5 13:34:29 stoa kernel: CPU:    0
-> Feb  5 13:34:29 stoa kernel: EIP:    0060:[<c0150b01>]    Tainted: G      D VLI
-> Feb  5 13:34:29 stoa kernel: EFLAGS: 00010006   (2.6.23.13newhome #3)
-> Feb  5 13:34:29 stoa kernel: EIP is at __kmalloc+0x4c/0x8a
-> Feb  5 13:34:29 stoa kernel: eax: 00000000   ebx: 3175b800   ecx: c0385be4   edx: c15c62e0
-> Feb  5 13:34:29 stoa kernel: esi: c0385be4   edi: 00000286   ebp: 000080d0   esp: ea47ddc4
-> Feb  5 13:34:29 stoa kernel: ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Feb  5 13:34:29 stoa kernel: Process sleepd (pid: 5413, ti=ea47c000 task=eceb2000 task.ti=ea47c000)
-> Feb  5 13:34:29 stoa kernel: Stack: e85c2200 ecc47eb0 dfc483f0 00000004 ea47de4c e86a95b0 c01e98d4 c03300a3 
-> Feb  5 13:34:29 stoa kernel:        c03300a3 c0160b25 00000008 00000001 00000000 00000000 dfc483f0 e86a95b0 
-> Feb  5 13:34:29 stoa kernel:        00000000 e86a95b0 c01e9938 137e7407 00000005 e8fbc018 dffea400 e85c2200 
-> Feb  5 13:34:29 stoa kernel: Call Trace:
-> Feb  5 13:34:29 stoa kernel:  [<c01e98d4>] acpi_ns_internalize_name+0x44/0x77
-> Feb  5 13:34:29 stoa kernel:  [<c0160b25>] dput+0x21/0xd7
-> Feb  5 13:34:29 stoa kernel:  [<c01e9938>] acpi_ns_get_node+0x31/0x93
-> Feb  5 13:34:29 stoa kernel:  [<c0163913>] mntput_no_expire+0x11/0x4e
-> Feb  5 13:34:29 stoa kernel:  [<c015a8d3>] link_path_walk+0xa5/0xaf
-> Feb  5 13:34:29 stoa kernel:  [<c01e92aa>] acpi_ns_evaluate+0x2e/0xf0
-> Feb  5 13:34:29 stoa kernel:  [<c01e8f81>] acpi_evaluate_object+0x124/0x1c7
-> Feb  5 13:34:29 stoa kernel:  [<c01db1fc>] acpi_evaluate_integer+0x7b/0xae
-> Feb  5 13:34:29 stoa kernel:  [<c01f1c16>] acpi_bus_get_status+0x32/0x89
-> Feb  5 13:34:29 stoa kernel:  [<c0166c8e>] single_open+0x48/0x68
-> Feb  5 13:34:29 stoa kernel:  [<c01f4c87>] acpi_battery_get_status+0xb/0x3d
-> Feb  5 13:34:29 stoa kernel:  [<c0178e47>] proc_reg_open+0x0/0x30
-> Feb  5 13:34:29 stoa kernel:  [<c0178e71>] proc_reg_open+0x2a/0x30
-> Feb  5 13:34:29 stoa kernel:  [<c01f4d6e>] acpi_battery_update+0x2a/0x88
-> Feb  5 13:34:29 stoa kernel:  [<c0151fc5>] __dentry_open+0xd4/0x160
-> Feb  5 13:34:29 stoa kernel:  [<c01f4e0b>] acpi_battery_read+0x3f/0x7a
-> Feb  5 13:34:29 stoa kernel:  [<c0166d9a>] seq_read+0xec/0x276
-> Feb  5 13:34:29 stoa kernel:  [<c0166cae>] seq_read+0x0/0x276
-> Feb  5 13:34:29 stoa kernel:  [<c0178d15>] proc_reg_read+0x35/0x46
-> Feb  5 13:34:29 stoa kernel:  [<c0178ce0>] proc_reg_read+0x0/0x46
-> Feb  5 13:34:29 stoa kernel:  [<c0153b51>] vfs_read+0x88/0x10a
-> Feb  5 13:34:29 stoa kernel:  [<c0153e71>] sys_read+0x41/0x67
-> Feb  5 13:34:29 stoa kernel:  [<c0103bee>] syscall_call+0x7/0xb
-> Feb  5 13:34:29 stoa kernel:  =======================
-> Feb  5 13:34:29 stoa kernel: Code: 00 00 00 85 d2 74 06 83 7a 0c 00 75 17 89 54 24 04 83 c9 ff 89 ea 89 04 24 89 f0 e8 32 f2 ff ff 89 c3 eb 0d 8b 5a 0c 0f b7 42 0a <8b> 04 83 89 42 0c 57 9d 89 e8 25 00 80 00 00 66 85 c0 74 1f 85 
-> Feb  5 13:34:29 stoa kernel: EIP: [<c0150b01>] __kmalloc+0x4c/0x8a SS:ESP 0068:ea47ddc4
-> 
-> =======================================================================
-> 
-> --
-> www.ljudmila.org/ludliteratura                 myspace.com/therealthings
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Dan Williams (5):
+      async_tx: fix compile breakage, mark do_async_xor __always_inline
+      async_tx: kill ASYNC_TX_ASSUME_COHERENT
+      async_tx: kill tx_set_src and tx_set_dest methods
+      async_tx: replace 'int_en' with operation preparation flags
+      async_tx: allow architecture specific async_tx_find_channel implementations
+
+Denis Cheng (2):
+      async_tx: use LIST_HEAD instead of LIST_HEAD_INIT
+      iop-adma: use LIST_HEAD instead of LIST_HEAD_INIT
+
+ crypto/async_tx/async_memcpy.c         |   38 ++++-----
+ crypto/async_tx/async_memset.c         |   28 +++---
+ crypto/async_tx/async_tx.c             |    9 +-
+ crypto/async_tx/async_xor.c            |  124 +++++++++++++++++-----------
+ drivers/dma/Kconfig                    |    1 +
+ drivers/dma/dmaengine.c                |   49 +++++++-----
+ drivers/dma/ioat_dma.c                 |   43 ++++------
+ drivers/dma/iop-adma.c                 |  138 ++++++++++++--------------------
+ include/asm-arm/arch-iop13xx/adma.h    |   18 +++--
+ include/asm-arm/hardware/iop3xx-adma.h |   30 ++++---
+ include/linux/async_tx.h               |   13 ++-
+ include/linux/dmaengine.h              |   29 ++++---
+ 12 files changed, 259 insertions(+), 261 deletions(-)
+
+The series is a general cleanup to the async_tx-api for 2.6.25.  The
+most significant change 'async_tx: kill tx_set_src and tx_set_dest
+methods' removes the need to perform extra indirect calls when preparing
+a descriptor.  However, in order to keep the same stack footprint,
+async_xor now polls for engine resources rather than simply punting to
+cpu-xor.
+
+The code was sent out for review in December [1], and has received an
+Acked-by from Shannon@Intel for the parts that touch ioat_dma.
+Haavard@Atmel has supplied a Reviewed-by for the pieces he felt
+comfortable judging the correctness.
+
+Regards,
+Dan
+
+[1] http://lkml.org/lkml/2007/12/21/277
+
+---
+diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
+index 047e533..0f62822 100644
+--- a/crypto/async_tx/async_memcpy.c
++++ b/crypto/async_tx/async_memcpy.c
+@@ -35,7 +35,7 @@
+  * @src: src page
+  * @offset: offset in pages to start transaction
+  * @len: length in bytes
+- * @flags: ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK,
++ * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK,
+  * @depend_tx: memcpy depends on the result of this transaction
+  * @cb_fn: function to call when the memcpy completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -46,33 +46,29 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
+ 	struct dma_async_tx_descriptor *depend_tx,
+ 	dma_async_tx_callback cb_fn, void *cb_param)
+ {
+-	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_MEMCPY);
++	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_MEMCPY,
++						      &dest, 1, &src, 1, len);
+ 	struct dma_device *device = chan ? chan->device : NULL;
+-	int int_en = cb_fn ? 1 : 0;
+-	struct dma_async_tx_descriptor *tx = device ?
+-		device->device_prep_dma_memcpy(chan, len,
+-		int_en) : NULL;
++	struct dma_async_tx_descriptor *tx = NULL;
+ 
+-	if (tx) { /* run the memcpy asynchronously */
+-		dma_addr_t addr;
+-		enum dma_data_direction dir;
++	if (device) {
++		dma_addr_t dma_dest, dma_src;
++		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
+ 
+-		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
+-
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_FROM_DEVICE;
+-
+-		addr = dma_map_page(device->dev, dest, dest_offset, len, dir);
+-		tx->tx_set_dest(addr, tx, 0);
++		dma_dest = dma_map_page(device->dev, dest, dest_offset, len,
++					DMA_FROM_DEVICE);
+ 
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_TO_DEVICE;
++		dma_src = dma_map_page(device->dev, src, src_offset, len,
++				       DMA_TO_DEVICE);
+ 
+-		addr = dma_map_page(device->dev, src, src_offset, len, dir);
+-		tx->tx_set_src(addr, tx, 0);
++		tx = device->device_prep_dma_memcpy(chan, dma_dest, dma_src,
++						    len, dma_prep_flags);
++	}
+ 
++	if (tx) {
++		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
+ 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
+-	} else { /* run the memcpy synchronously */
++	} else {
+ 		void *dest_buf, *src_buf;
+ 		pr_debug("%s: (sync) len: %zu\n", __FUNCTION__, len);
+ 
+diff --git a/crypto/async_tx/async_memset.c b/crypto/async_tx/async_memset.c
+index 66ef635..09c0e83 100644
+--- a/crypto/async_tx/async_memset.c
++++ b/crypto/async_tx/async_memset.c
+@@ -35,7 +35,7 @@
+  * @val: fill value
+  * @offset: offset in pages to start transaction
+  * @len: length in bytes
+- * @flags: ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+  * @depend_tx: memset depends on the result of this transaction
+  * @cb_fn: function to call when the memcpy completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -46,24 +46,24 @@ async_memset(struct page *dest, int val, unsigned int offset,
+ 	struct dma_async_tx_descriptor *depend_tx,
+ 	dma_async_tx_callback cb_fn, void *cb_param)
+ {
+-	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_MEMSET);
++	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_MEMSET,
++						      &dest, 1, NULL, 0, len);
+ 	struct dma_device *device = chan ? chan->device : NULL;
+-	int int_en = cb_fn ? 1 : 0;
+-	struct dma_async_tx_descriptor *tx = device ?
+-		device->device_prep_dma_memset(chan, val, len,
+-			int_en) : NULL;
++	struct dma_async_tx_descriptor *tx = NULL;
+ 
+-	if (tx) { /* run the memset asynchronously */
+-		dma_addr_t dma_addr;
+-		enum dma_data_direction dir;
++	if (device) {
++		dma_addr_t dma_dest;
++		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
+ 
+-		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_FROM_DEVICE;
++		dma_dest = dma_map_page(device->dev, dest, offset, len,
++					DMA_FROM_DEVICE);
+ 
+-		dma_addr = dma_map_page(device->dev, dest, offset, len, dir);
+-		tx->tx_set_dest(dma_addr, tx, 0);
++		tx = device->device_prep_dma_memset(chan, dma_dest, val, len,
++						    dma_prep_flags);
++	}
+ 
++	if (tx) {
++		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
+ 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
+ 	} else { /* run the memset synchronously */
+ 		void *dest_buf;
+diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
+index bc18cbb..5628821 100644
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -57,8 +57,7 @@ static struct chan_ref_percpu *channel_table[DMA_TX_TYPE_END];
+  */
+ static spinlock_t async_tx_lock;
+ 
+-static struct list_head
+-async_tx_master_list = LIST_HEAD_INIT(async_tx_master_list);
++static LIST_HEAD(async_tx_master_list);
+ 
+ /* async_tx_issue_pending_all - start all transactions on all channels */
+ void async_tx_issue_pending_all(void)
+@@ -362,13 +361,13 @@ static void __exit async_tx_exit(void)
+ }
+ 
+ /**
+- * async_tx_find_channel - find a channel to carry out the operation or let
++ * __async_tx_find_channel - find a channel to carry out the operation or let
+  *	the transaction execute synchronously
+  * @depend_tx: transaction dependency
+  * @tx_type: transaction type
+  */
+ struct dma_chan *
+-async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
++__async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
+ 	enum dma_transaction_type tx_type)
+ {
+ 	/* see if we can keep the chain on one channel */
+@@ -384,7 +383,7 @@ async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
+ 	} else
+ 		return NULL;
+ }
+-EXPORT_SYMBOL_GPL(async_tx_find_channel);
++EXPORT_SYMBOL_GPL(__async_tx_find_channel);
+ #else
+ static int __init async_tx_init(void)
+ {
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index 2575f67..2259a4f 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -30,35 +30,51 @@
+ #include <linux/raid/xor.h>
+ #include <linux/async_tx.h>
+ 
+-static void
+-do_async_xor(struct dma_async_tx_descriptor *tx, struct dma_device *device,
++/* do_async_xor - dma map the pages and perform the xor with an engine.
++ * 	This routine is marked __always_inline so it can be compiled away
++ * 	when CONFIG_DMA_ENGINE=n
++ */
++static __always_inline struct dma_async_tx_descriptor *
++do_async_xor(struct dma_device *device,
+ 	struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 	unsigned int offset, unsigned int src_cnt, size_t len,
+ 	enum async_tx_flags flags, struct dma_async_tx_descriptor *depend_tx,
+ 	dma_async_tx_callback cb_fn, void *cb_param)
+ {
+-	dma_addr_t dma_addr;
+-	enum dma_data_direction dir;
++	dma_addr_t dma_dest;
++	dma_addr_t *dma_src = (dma_addr_t *) src_list;
++	struct dma_async_tx_descriptor *tx;
+ 	int i;
++	unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
+ 
+ 	pr_debug("%s: len: %zu\n", __FUNCTION__, len);
+ 
+-	dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-		DMA_NONE : DMA_FROM_DEVICE;
+-
+-	dma_addr = dma_map_page(device->dev, dest, offset, len, dir);
+-	tx->tx_set_dest(dma_addr, tx, 0);
+-
+-	dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-		DMA_NONE : DMA_TO_DEVICE;
++	dma_dest = dma_map_page(device->dev, dest, offset, len,
++				DMA_FROM_DEVICE);
+ 
+-	for (i = 0; i < src_cnt; i++) {
+-		dma_addr = dma_map_page(device->dev, src_list[i],
+-			offset, len, dir);
+-		tx->tx_set_src(dma_addr, tx, i);
++	for (i = 0; i < src_cnt; i++)
++		dma_src[i] = dma_map_page(device->dev, src_list[i], offset,
++					  len, DMA_TO_DEVICE);
++
++	/* Since we have clobbered the src_list we are committed
++	 * to doing this asynchronously.  Drivers force forward progress
++	 * in case they can not provide a descriptor
++	 */
++	tx = device->device_prep_dma_xor(chan, dma_dest, dma_src, src_cnt, len,
++					 dma_prep_flags);
++	if (!tx) {
++		if (depend_tx)
++			dma_wait_for_async_tx(depend_tx);
++
++		while (!tx)
++			tx = device->device_prep_dma_xor(chan, dma_dest,
++							 dma_src, src_cnt, len,
++							 dma_prep_flags);
+ 	}
+ 
+ 	async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
++
++	return tx;
+ }
+ 
+ static void
+@@ -102,7 +118,7 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
+  * @src_cnt: number of source pages
+  * @len: length in bytes
+  * @flags: ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DEST,
+- *	ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ *	ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+  * @depend_tx: xor depends on the result of this transaction.
+  * @cb_fn: function to call when the xor completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -113,14 +129,16 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
+ 	struct dma_async_tx_descriptor *depend_tx,
+ 	dma_async_tx_callback cb_fn, void *cb_param)
+ {
+-	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_XOR);
++	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_XOR,
++						      &dest, 1, src_list,
++						      src_cnt, len);
+ 	struct dma_device *device = chan ? chan->device : NULL;
+ 	struct dma_async_tx_descriptor *tx = NULL;
+ 	dma_async_tx_callback _cb_fn;
+ 	void *_cb_param;
+ 	unsigned long local_flags;
+ 	int xor_src_cnt;
+-	int i = 0, src_off = 0, int_en;
++	int i = 0, src_off = 0;
+ 
+ 	BUG_ON(src_cnt <= 1);
+ 
+@@ -140,20 +158,11 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
+ 				_cb_param = cb_param;
+ 			}
+ 
+-			int_en = _cb_fn ? 1 : 0;
+-
+-			tx = device->device_prep_dma_xor(
+-				chan, xor_src_cnt, len, int_en);
+-
+-			if (tx) {
+-				do_async_xor(tx, device, chan, dest,
+-				&src_list[src_off], offset, xor_src_cnt, len,
+-				local_flags, depend_tx, _cb_fn,
+-				_cb_param);
+-			} else /* fall through */
+-				goto xor_sync;
++			tx = do_async_xor(device, chan, dest,
++					  &src_list[src_off], offset,
++					  xor_src_cnt, len, local_flags,
++					  depend_tx, _cb_fn, _cb_param);
+ 		} else { /* run the xor synchronously */
+-xor_sync:
+ 			/* in the sync case the dest is an implied source
+ 			 * (assumes the dest is at the src_off index)
+ 			 */
+@@ -242,7 +251,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
+  * @src_cnt: number of source pages
+  * @len: length in bytes
+  * @result: 0 if sum == 0 else non-zero
+- * @flags: ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+  * @depend_tx: xor depends on the result of this transaction.
+  * @cb_fn: function to call when the xor completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -254,29 +263,36 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
+ 	struct dma_async_tx_descriptor *depend_tx,
+ 	dma_async_tx_callback cb_fn, void *cb_param)
+ {
+-	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_ZERO_SUM);
++	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_ZERO_SUM,
++						      &dest, 1, src_list,
++						      src_cnt, len);
+ 	struct dma_device *device = chan ? chan->device : NULL;
+-	int int_en = cb_fn ? 1 : 0;
+-	struct dma_async_tx_descriptor *tx = device ?
+-		device->device_prep_dma_zero_sum(chan, src_cnt, len, result,
+-			int_en) : NULL;
+-	int i;
++	struct dma_async_tx_descriptor *tx = NULL;
+ 
+ 	BUG_ON(src_cnt <= 1);
+ 
+-	if (tx) {
+-		dma_addr_t dma_addr;
+-		enum dma_data_direction dir;
++	if (device) {
++		dma_addr_t *dma_src = (dma_addr_t *) src_list;
++		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
++		int i;
+ 
+ 		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
+ 
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_TO_DEVICE;
+-
+-		for (i = 0; i < src_cnt; i++) {
+-			dma_addr = dma_map_page(device->dev, src_list[i],
+-				offset, len, dir);
+-			tx->tx_set_src(dma_addr, tx, i);
++		for (i = 0; i < src_cnt; i++)
++			dma_src[i] = dma_map_page(device->dev, src_list[i],
++						  offset, len, DMA_TO_DEVICE);
++
++		tx = device->device_prep_dma_zero_sum(chan, dma_src, src_cnt,
++						      len, result,
++						      dma_prep_flags);
++		if (!tx) {
++			if (depend_tx)
++				dma_wait_for_async_tx(depend_tx);
++
++			while (!tx)
++				tx = device->device_prep_dma_zero_sum(chan,
++					dma_src, src_cnt, len, result,
++					dma_prep_flags);
+ 		}
+ 
+ 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
+@@ -311,6 +327,16 @@ EXPORT_SYMBOL_GPL(async_xor_zero_sum);
+ 
+ static int __init async_xor_init(void)
+ {
++	#ifdef CONFIG_DMA_ENGINE
++	/* To conserve stack space the input src_list (array of page pointers)
++	 * is reused to hold the array of dma addresses passed to the driver.
++	 * This conversion is only possible when dma_addr_t is less than the
++	 * the size of a pointer.  HIGHMEM64G is known to violate this
++	 * assumption.
++	 */
++	BUILD_BUG_ON(sizeof(dma_addr_t) > sizeof(struct page *));
++	#endif
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index c46b7c2..a703def 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -5,6 +5,7 @@
+ menuconfig DMADEVICES
+ 	bool "DMA Engine support"
+ 	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
++	depends on !HIGHMEM64G
+ 	help
+ 	  DMA engines can do asynchronous data transfers without
+ 	  involving the host CPU.  Currently, this framework can be
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index bcf52df..2996523 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -473,20 +473,22 @@ dma_async_memcpy_buf_to_buf(struct dma_chan *chan, void *dest,
+ {
+ 	struct dma_device *dev = chan->device;
+ 	struct dma_async_tx_descriptor *tx;
+-	dma_addr_t addr;
++	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
+ 
+-	tx = dev->device_prep_dma_memcpy(chan, len, 0);
+-	if (!tx)
++	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
++	dma_dest = dma_map_single(dev->dev, dest, len, DMA_FROM_DEVICE);
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, 0);
++
++	if (!tx) {
++		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
++		dma_unmap_single(dev->dev, dma_dest, len, DMA_FROM_DEVICE);
+ 		return -ENOMEM;
++	}
+ 
+ 	tx->ack = 1;
+ 	tx->callback = NULL;
+-	addr = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
+-	tx->tx_set_src(addr, tx, 0);
+-	addr = dma_map_single(dev->dev, dest, len, DMA_FROM_DEVICE);
+-	tx->tx_set_dest(addr, tx, 0);
+ 	cookie = tx->tx_submit(tx);
+ 
+ 	cpu = get_cpu();
+@@ -517,20 +519,22 @@ dma_async_memcpy_buf_to_pg(struct dma_chan *chan, struct page *page,
+ {
+ 	struct dma_device *dev = chan->device;
+ 	struct dma_async_tx_descriptor *tx;
+-	dma_addr_t addr;
++	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
+ 
+-	tx = dev->device_prep_dma_memcpy(chan, len, 0);
+-	if (!tx)
++	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
++	dma_dest = dma_map_page(dev->dev, page, offset, len, DMA_FROM_DEVICE);
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, 0);
++
++	if (!tx) {
++		dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
++		dma_unmap_page(dev->dev, dma_dest, len, DMA_FROM_DEVICE);
+ 		return -ENOMEM;
++	}
+ 
+ 	tx->ack = 1;
+ 	tx->callback = NULL;
+-	addr = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
+-	tx->tx_set_src(addr, tx, 0);
+-	addr = dma_map_page(dev->dev, page, offset, len, DMA_FROM_DEVICE);
+-	tx->tx_set_dest(addr, tx, 0);
+ 	cookie = tx->tx_submit(tx);
+ 
+ 	cpu = get_cpu();
+@@ -563,20 +567,23 @@ dma_async_memcpy_pg_to_pg(struct dma_chan *chan, struct page *dest_pg,
+ {
+ 	struct dma_device *dev = chan->device;
+ 	struct dma_async_tx_descriptor *tx;
+-	dma_addr_t addr;
++	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int cpu;
+ 
+-	tx = dev->device_prep_dma_memcpy(chan, len, 0);
+-	if (!tx)
++	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
++	dma_dest = dma_map_page(dev->dev, dest_pg, dest_off, len,
++				DMA_FROM_DEVICE);
++	tx = dev->device_prep_dma_memcpy(chan, dma_dest, dma_src, len, 0);
++
++	if (!tx) {
++		dma_unmap_page(dev->dev, dma_src, len, DMA_TO_DEVICE);
++		dma_unmap_page(dev->dev, dma_dest, len, DMA_FROM_DEVICE);
+ 		return -ENOMEM;
++	}
+ 
+ 	tx->ack = 1;
+ 	tx->callback = NULL;
+-	addr = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
+-	tx->tx_set_src(addr, tx, 0);
+-	addr = dma_map_page(dev->dev, dest_pg, dest_off, len, DMA_FROM_DEVICE);
+-	tx->tx_set_dest(addr, tx, 0);
+ 	cookie = tx->tx_submit(tx);
+ 
+ 	cpu = get_cpu();
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 45e7b46..dff38ac 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -159,20 +159,6 @@ static int ioat_dma_enumerate_channels(struct ioatdma_device *device)
+ 	return device->common.chancnt;
+ }
+ 
+-static void ioat_set_src(dma_addr_t addr,
+-			 struct dma_async_tx_descriptor *tx,
+-			 int index)
+-{
+-	tx_to_ioat_desc(tx)->src = addr;
+-}
+-
+-static void ioat_set_dest(dma_addr_t addr,
+-			  struct dma_async_tx_descriptor *tx,
+-			  int index)
+-{
+-	tx_to_ioat_desc(tx)->dst = addr;
+-}
+-
+ /**
+  * ioat_dma_memcpy_issue_pending - push potentially unrecognized appended
+  *                                 descriptors to hw
+@@ -415,8 +401,6 @@ static struct ioat_desc_sw *ioat_dma_alloc_descriptor(
+ 
+ 	memset(desc, 0, sizeof(*desc));
+ 	dma_async_tx_descriptor_init(&desc_sw->async_tx, &ioat_chan->common);
+-	desc_sw->async_tx.tx_set_src = ioat_set_src;
+-	desc_sw->async_tx.tx_set_dest = ioat_set_dest;
+ 	switch (ioat_chan->device->version) {
+ 	case IOAT_VER_1_2:
+ 		desc_sw->async_tx.tx_submit = ioat1_tx_submit;
+@@ -714,8 +698,10 @@ static struct ioat_desc_sw *ioat_dma_get_next_descriptor(
+ 
+ static struct dma_async_tx_descriptor *ioat1_dma_prep_memcpy(
+ 						struct dma_chan *chan,
++						dma_addr_t dma_dest,
++						dma_addr_t dma_src,
+ 						size_t len,
+-						int int_en)
++						unsigned long flags)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+ 	struct ioat_desc_sw *new;
+@@ -726,6 +712,8 @@ static struct dma_async_tx_descriptor *ioat1_dma_prep_memcpy(
+ 
+ 	if (new) {
+ 		new->len = len;
++		new->dst = dma_dest;
++		new->src = dma_src;
+ 		return &new->async_tx;
+ 	} else
+ 		return NULL;
+@@ -733,8 +721,10 @@ static struct dma_async_tx_descriptor *ioat1_dma_prep_memcpy(
+ 
+ static struct dma_async_tx_descriptor *ioat2_dma_prep_memcpy(
+ 						struct dma_chan *chan,
++						dma_addr_t dma_dest,
++						dma_addr_t dma_src,
+ 						size_t len,
+-						int int_en)
++						unsigned long flags)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+ 	struct ioat_desc_sw *new;
+@@ -749,6 +739,8 @@ static struct dma_async_tx_descriptor *ioat2_dma_prep_memcpy(
+ 
+ 	if (new) {
+ 		new->len = len;
++		new->dst = dma_dest;
++		new->src = dma_src;
+ 		return &new->async_tx;
+ 	} else
+ 		return NULL;
+@@ -1045,7 +1037,7 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 	u8 *dest;
+ 	struct dma_chan *dma_chan;
+ 	struct dma_async_tx_descriptor *tx;
+-	dma_addr_t addr;
++	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int err = 0;
+ 
+@@ -1073,7 +1065,12 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 		goto out;
+ 	}
+ 
+-	tx = device->common.device_prep_dma_memcpy(dma_chan, IOAT_TEST_SIZE, 0);
++	dma_src = dma_map_single(dma_chan->device->dev, src, IOAT_TEST_SIZE,
++				 DMA_TO_DEVICE);
++	dma_dest = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
++				  DMA_FROM_DEVICE);
++	tx = device->common.device_prep_dma_memcpy(dma_chan, dma_dest, dma_src,
++						   IOAT_TEST_SIZE, 0);
+ 	if (!tx) {
+ 		dev_err(&device->pdev->dev,
+ 			"Self-test prep failed, disabling\n");
+@@ -1082,12 +1079,6 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 	}
+ 
+ 	async_tx_ack(tx);
+-	addr = dma_map_single(dma_chan->device->dev, src, IOAT_TEST_SIZE,
+-			      DMA_TO_DEVICE);
+-	tx->tx_set_src(addr, tx, 0);
+-	addr = dma_map_single(dma_chan->device->dev, dest, IOAT_TEST_SIZE,
+-			      DMA_FROM_DEVICE);
+-	tx->tx_set_dest(addr, tx, 0);
+ 	tx->callback = ioat_dma_test_callback;
+ 	tx->callback_param = (void *)0x8086;
+ 	cookie = tx->tx_submit(tx);
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index e5c62b7..3986d54 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -284,7 +284,7 @@ iop_adma_alloc_slots(struct iop_adma_chan *iop_chan, int num_slots,
+ 			int slots_per_op)
+ {
+ 	struct iop_adma_desc_slot *iter, *_iter, *alloc_start = NULL;
+-	struct list_head chain = LIST_HEAD_INIT(chain);
++	LIST_HEAD(chain);
+ 	int slots_found, retry = 0;
+ 
+ 	/* start search from the last allocated descrtiptor
+@@ -443,17 +443,6 @@ iop_adma_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	return cookie;
+ }
+ 
+-static void
+-iop_adma_set_dest(dma_addr_t addr, struct dma_async_tx_descriptor *tx,
+-	int index)
+-{
+-	struct iop_adma_desc_slot *sw_desc = tx_to_iop_adma_slot(tx);
+-	struct iop_adma_chan *iop_chan = to_iop_adma_chan(tx->chan);
+-
+-	/* to do: support transfers lengths > IOP_ADMA_MAX_BYTE_COUNT */
+-	iop_desc_set_dest_addr(sw_desc->group_head, iop_chan, addr);
+-}
+-
+ static void iop_chan_start_null_memcpy(struct iop_adma_chan *iop_chan);
+ static void iop_chan_start_null_xor(struct iop_adma_chan *iop_chan);
+ 
+@@ -486,7 +475,6 @@ static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
+ 
+ 		dma_async_tx_descriptor_init(&slot->async_tx, chan);
+ 		slot->async_tx.tx_submit = iop_adma_tx_submit;
+-		slot->async_tx.tx_set_dest = iop_adma_set_dest;
+ 		INIT_LIST_HEAD(&slot->chain_node);
+ 		INIT_LIST_HEAD(&slot->slot_node);
+ 		INIT_LIST_HEAD(&slot->async_tx.tx_list);
+@@ -547,18 +535,9 @@ iop_adma_prep_dma_interrupt(struct dma_chan *chan)
+ 	return sw_desc ? &sw_desc->async_tx : NULL;
+ }
+ 
+-static void
+-iop_adma_memcpy_set_src(dma_addr_t addr, struct dma_async_tx_descriptor *tx,
+-	int index)
+-{
+-	struct iop_adma_desc_slot *sw_desc = tx_to_iop_adma_slot(tx);
+-	struct iop_adma_desc_slot *grp_start = sw_desc->group_head;
+-
+-	iop_desc_set_memcpy_src_addr(grp_start, addr);
+-}
+-
+ static struct dma_async_tx_descriptor *
+-iop_adma_prep_dma_memcpy(struct dma_chan *chan, size_t len, int int_en)
++iop_adma_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dma_dest,
++			 dma_addr_t dma_src, size_t len, unsigned long flags)
+ {
+ 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
+ 	struct iop_adma_desc_slot *sw_desc, *grp_start;
+@@ -576,11 +555,12 @@ iop_adma_prep_dma_memcpy(struct dma_chan *chan, size_t len, int int_en)
+ 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
+ 	if (sw_desc) {
+ 		grp_start = sw_desc->group_head;
+-		iop_desc_init_memcpy(grp_start, int_en);
++		iop_desc_init_memcpy(grp_start, flags);
+ 		iop_desc_set_byte_count(grp_start, iop_chan, len);
++		iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
++		iop_desc_set_memcpy_src_addr(grp_start, dma_src);
+ 		sw_desc->unmap_src_cnt = 1;
+ 		sw_desc->unmap_len = len;
+-		sw_desc->async_tx.tx_set_src = iop_adma_memcpy_set_src;
+ 	}
+ 	spin_unlock_bh(&iop_chan->lock);
+ 
+@@ -588,8 +568,8 @@ iop_adma_prep_dma_memcpy(struct dma_chan *chan, size_t len, int int_en)
+ }
+ 
+ static struct dma_async_tx_descriptor *
+-iop_adma_prep_dma_memset(struct dma_chan *chan, int value, size_t len,
+-	int int_en)
++iop_adma_prep_dma_memset(struct dma_chan *chan, dma_addr_t dma_dest,
++			 int value, size_t len, unsigned long flags)
+ {
+ 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
+ 	struct iop_adma_desc_slot *sw_desc, *grp_start;
+@@ -607,9 +587,10 @@ iop_adma_prep_dma_memset(struct dma_chan *chan, int value, size_t len,
+ 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
+ 	if (sw_desc) {
+ 		grp_start = sw_desc->group_head;
+-		iop_desc_init_memset(grp_start, int_en);
++		iop_desc_init_memset(grp_start, flags);
+ 		iop_desc_set_byte_count(grp_start, iop_chan, len);
+ 		iop_desc_set_block_fill_val(grp_start, value);
++		iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
+ 		sw_desc->unmap_src_cnt = 1;
+ 		sw_desc->unmap_len = len;
+ 	}
+@@ -618,19 +599,10 @@ iop_adma_prep_dma_memset(struct dma_chan *chan, int value, size_t len,
+ 	return sw_desc ? &sw_desc->async_tx : NULL;
+ }
+ 
+-static void
+-iop_adma_xor_set_src(dma_addr_t addr, struct dma_async_tx_descriptor *tx,
+-	int index)
+-{
+-	struct iop_adma_desc_slot *sw_desc = tx_to_iop_adma_slot(tx);
+-	struct iop_adma_desc_slot *grp_start = sw_desc->group_head;
+-
+-	iop_desc_set_xor_src_addr(grp_start, index, addr);
+-}
+-
+ static struct dma_async_tx_descriptor *
+-iop_adma_prep_dma_xor(struct dma_chan *chan, unsigned int src_cnt, size_t len,
+-	int int_en)
++iop_adma_prep_dma_xor(struct dma_chan *chan, dma_addr_t dma_dest,
++		      dma_addr_t *dma_src, unsigned int src_cnt, size_t len,
++		      unsigned long flags)
+ {
+ 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
+ 	struct iop_adma_desc_slot *sw_desc, *grp_start;
+@@ -641,39 +613,32 @@ iop_adma_prep_dma_xor(struct dma_chan *chan, unsigned int src_cnt, size_t len,
+ 	BUG_ON(unlikely(len > IOP_ADMA_XOR_MAX_BYTE_COUNT));
+ 
+ 	dev_dbg(iop_chan->device->common.dev,
+-		"%s src_cnt: %d len: %u int_en: %d\n",
+-		__FUNCTION__, src_cnt, len, int_en);
++		"%s src_cnt: %d len: %u flags: %lx\n",
++		__FUNCTION__, src_cnt, len, flags);
+ 
+ 	spin_lock_bh(&iop_chan->lock);
+ 	slot_cnt = iop_chan_xor_slot_count(len, src_cnt, &slots_per_op);
+ 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
+ 	if (sw_desc) {
+ 		grp_start = sw_desc->group_head;
+-		iop_desc_init_xor(grp_start, src_cnt, int_en);
++		iop_desc_init_xor(grp_start, src_cnt, flags);
+ 		iop_desc_set_byte_count(grp_start, iop_chan, len);
++		iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
+ 		sw_desc->unmap_src_cnt = src_cnt;
+ 		sw_desc->unmap_len = len;
+-		sw_desc->async_tx.tx_set_src = iop_adma_xor_set_src;
++		while (src_cnt--)
++			iop_desc_set_xor_src_addr(grp_start, src_cnt,
++						  dma_src[src_cnt]);
+ 	}
+ 	spin_unlock_bh(&iop_chan->lock);
+ 
+ 	return sw_desc ? &sw_desc->async_tx : NULL;
+ }
+ 
+-static void
+-iop_adma_xor_zero_sum_set_src(dma_addr_t addr,
+-				struct dma_async_tx_descriptor *tx,
+-				int index)
+-{
+-	struct iop_adma_desc_slot *sw_desc = tx_to_iop_adma_slot(tx);
+-	struct iop_adma_desc_slot *grp_start = sw_desc->group_head;
+-
+-	iop_desc_set_zero_sum_src_addr(grp_start, index, addr);
+-}
+-
+ static struct dma_async_tx_descriptor *
+-iop_adma_prep_dma_zero_sum(struct dma_chan *chan, unsigned int src_cnt,
+-	size_t len, u32 *result, int int_en)
++iop_adma_prep_dma_zero_sum(struct dma_chan *chan, dma_addr_t *dma_src,
++			   unsigned int src_cnt, size_t len, u32 *result,
++			   unsigned long flags)
+ {
+ 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
+ 	struct iop_adma_desc_slot *sw_desc, *grp_start;
+@@ -690,14 +655,16 @@ iop_adma_prep_dma_zero_sum(struct dma_chan *chan, unsigned int src_cnt,
+ 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
+ 	if (sw_desc) {
+ 		grp_start = sw_desc->group_head;
+-		iop_desc_init_zero_sum(grp_start, src_cnt, int_en);
++		iop_desc_init_zero_sum(grp_start, src_cnt, flags);
+ 		iop_desc_set_zero_sum_byte_count(grp_start, len);
+ 		grp_start->xor_check_result = result;
+ 		pr_debug("\t%s: grp_start->xor_check_result: %p\n",
+ 			__FUNCTION__, grp_start->xor_check_result);
+ 		sw_desc->unmap_src_cnt = src_cnt;
+ 		sw_desc->unmap_len = len;
+-		sw_desc->async_tx.tx_set_src = iop_adma_xor_zero_sum_set_src;
++		while (src_cnt--)
++			iop_desc_set_zero_sum_src_addr(grp_start, src_cnt,
++						       dma_src[src_cnt]);
+ 	}
+ 	spin_unlock_bh(&iop_chan->lock);
+ 
+@@ -882,13 +849,12 @@ static int __devinit iop_adma_memcpy_self_test(struct iop_adma_device *device)
+ 		goto out;
+ 	}
+ 
+-	tx = iop_adma_prep_dma_memcpy(dma_chan, IOP_ADMA_TEST_SIZE, 1);
+ 	dest_dma = dma_map_single(dma_chan->device->dev, dest,
+ 				IOP_ADMA_TEST_SIZE, DMA_FROM_DEVICE);
+-	iop_adma_set_dest(dest_dma, tx, 0);
+ 	src_dma = dma_map_single(dma_chan->device->dev, src,
+ 				IOP_ADMA_TEST_SIZE, DMA_TO_DEVICE);
+-	iop_adma_memcpy_set_src(src_dma, tx, 0);
++	tx = iop_adma_prep_dma_memcpy(dma_chan, dest_dma, src_dma,
++				      IOP_ADMA_TEST_SIZE, 1);
+ 
+ 	cookie = iop_adma_tx_submit(tx);
+ 	iop_adma_issue_pending(dma_chan);
+@@ -929,6 +895,7 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 	struct page *dest;
+ 	struct page *xor_srcs[IOP_ADMA_NUM_SRC_TEST];
+ 	struct page *zero_sum_srcs[IOP_ADMA_NUM_SRC_TEST + 1];
++	dma_addr_t dma_srcs[IOP_ADMA_NUM_SRC_TEST + 1];
+ 	dma_addr_t dma_addr, dest_dma;
+ 	struct dma_async_tx_descriptor *tx;
+ 	struct dma_chan *dma_chan;
+@@ -981,17 +948,13 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 	}
+ 
+ 	/* test xor */
+-	tx = iop_adma_prep_dma_xor(dma_chan, IOP_ADMA_NUM_SRC_TEST,
+-				PAGE_SIZE, 1);
+ 	dest_dma = dma_map_page(dma_chan->device->dev, dest, 0,
+ 				PAGE_SIZE, DMA_FROM_DEVICE);
+-	iop_adma_set_dest(dest_dma, tx, 0);
+-
+-	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST; i++) {
+-		dma_addr = dma_map_page(dma_chan->device->dev, xor_srcs[i], 0,
+-			PAGE_SIZE, DMA_TO_DEVICE);
+-		iop_adma_xor_set_src(dma_addr, tx, i);
+-	}
++	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST; i++)
++		dma_srcs[i] = dma_map_page(dma_chan->device->dev, xor_srcs[i],
++					   0, PAGE_SIZE, DMA_TO_DEVICE);
++	tx = iop_adma_prep_dma_xor(dma_chan, dest_dma, dma_srcs,
++				   IOP_ADMA_NUM_SRC_TEST, PAGE_SIZE, 1);
+ 
+ 	cookie = iop_adma_tx_submit(tx);
+ 	iop_adma_issue_pending(dma_chan);
+@@ -1032,13 +995,13 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 
+ 	zero_sum_result = 1;
+ 
+-	tx = iop_adma_prep_dma_zero_sum(dma_chan, IOP_ADMA_NUM_SRC_TEST + 1,
+-		PAGE_SIZE, &zero_sum_result, 1);
+-	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST + 1; i++) {
+-		dma_addr = dma_map_page(dma_chan->device->dev, zero_sum_srcs[i],
+-			0, PAGE_SIZE, DMA_TO_DEVICE);
+-		iop_adma_xor_zero_sum_set_src(dma_addr, tx, i);
+-	}
++	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST + 1; i++)
++		dma_srcs[i] = dma_map_page(dma_chan->device->dev,
++					   zero_sum_srcs[i], 0, PAGE_SIZE,
++					   DMA_TO_DEVICE);
++	tx = iop_adma_prep_dma_zero_sum(dma_chan, dma_srcs,
++					IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
++					&zero_sum_result, 1);
+ 
+ 	cookie = iop_adma_tx_submit(tx);
+ 	iop_adma_issue_pending(dma_chan);
+@@ -1060,10 +1023,9 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 	}
+ 
+ 	/* test memset */
+-	tx = iop_adma_prep_dma_memset(dma_chan, 0, PAGE_SIZE, 1);
+ 	dma_addr = dma_map_page(dma_chan->device->dev, dest, 0,
+ 			PAGE_SIZE, DMA_FROM_DEVICE);
+-	iop_adma_set_dest(dma_addr, tx, 0);
++	tx = iop_adma_prep_dma_memset(dma_chan, dma_addr, 0, PAGE_SIZE, 1);
+ 
+ 	cookie = iop_adma_tx_submit(tx);
+ 	iop_adma_issue_pending(dma_chan);
+@@ -1089,13 +1051,13 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 
+ 	/* test for non-zero parity sum */
+ 	zero_sum_result = 0;
+-	tx = iop_adma_prep_dma_zero_sum(dma_chan, IOP_ADMA_NUM_SRC_TEST + 1,
+-		PAGE_SIZE, &zero_sum_result, 1);
+-	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST + 1; i++) {
+-		dma_addr = dma_map_page(dma_chan->device->dev, zero_sum_srcs[i],
+-			0, PAGE_SIZE, DMA_TO_DEVICE);
+-		iop_adma_xor_zero_sum_set_src(dma_addr, tx, i);
+-	}
++	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST + 1; i++)
++		dma_srcs[i] = dma_map_page(dma_chan->device->dev,
++					   zero_sum_srcs[i], 0, PAGE_SIZE,
++					   DMA_TO_DEVICE);
++	tx = iop_adma_prep_dma_zero_sum(dma_chan, dma_srcs,
++					IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
++					&zero_sum_result, 1);
+ 
+ 	cookie = iop_adma_tx_submit(tx);
+ 	iop_adma_issue_pending(dma_chan);
+diff --git a/include/asm-arm/arch-iop13xx/adma.h b/include/asm-arm/arch-iop13xx/adma.h
+index 04006c1..efd9a5e 100644
+--- a/include/asm-arm/arch-iop13xx/adma.h
++++ b/include/asm-arm/arch-iop13xx/adma.h
+@@ -247,7 +247,7 @@ static inline u32 iop_desc_get_src_count(struct iop_adma_desc_slot *desc,
+ }
+ 
+ static inline void
+-iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
++iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, unsigned long flags)
+ {
+ 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
+ 	union {
+@@ -257,13 +257,13 @@ iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
+ 
+ 	u_desc_ctrl.value = 0;
+ 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ 	hw_desc->crc_addr = 0;
+ }
+ 
+ static inline void
+-iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
++iop_desc_init_memset(struct iop_adma_desc_slot *desc, unsigned long flags)
+ {
+ 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
+ 	union {
+@@ -274,14 +274,15 @@ iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
+ 	u_desc_ctrl.value = 0;
+ 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
+ 	u_desc_ctrl.field.block_fill_en = 1;
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ 	hw_desc->crc_addr = 0;
+ }
+ 
+ /* to do: support buffers larger than ADMA_MAX_BYTE_COUNT */
+ static inline void
+-iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
++iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt,
++		  unsigned long flags)
+ {
+ 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
+ 	union {
+@@ -292,7 +293,7 @@ iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
+ 	u_desc_ctrl.value = 0;
+ 	u_desc_ctrl.field.src_select = src_cnt - 1;
+ 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ 	hw_desc->crc_addr = 0;
+ 
+@@ -301,7 +302,8 @@ iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
+ 
+ /* to do: support buffers larger than ADMA_MAX_BYTE_COUNT */
+ static inline int
+-iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
++iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt,
++		       unsigned long flags)
+ {
+ 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
+ 	union {
+@@ -314,7 +316,7 @@ iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
+ 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
+ 	u_desc_ctrl.field.zero_result = 1;
+ 	u_desc_ctrl.field.status_write_back_en = 1;
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ 	hw_desc->crc_addr = 0;
+ 
+diff --git a/include/asm-arm/hardware/iop3xx-adma.h b/include/asm-arm/hardware/iop3xx-adma.h
+index 10834b5..5c529e6 100644
+--- a/include/asm-arm/hardware/iop3xx-adma.h
++++ b/include/asm-arm/hardware/iop3xx-adma.h
+@@ -414,7 +414,7 @@ static inline void iop3xx_aau_desc_set_src_addr(struct iop3xx_desc_aau *hw_desc,
+ }
+ 
+ static inline void
+-iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
++iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, unsigned long flags)
+ {
+ 	struct iop3xx_desc_dma *hw_desc = desc->hw_desc;
+ 	union {
+@@ -425,14 +425,14 @@ iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
+ 	u_desc_ctrl.value = 0;
+ 	u_desc_ctrl.field.mem_to_mem_en = 1;
+ 	u_desc_ctrl.field.pci_transaction = 0xe; /* memory read block */
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ 	hw_desc->upper_pci_src_addr = 0;
+ 	hw_desc->crc_addr = 0;
+ }
+ 
+ static inline void
+-iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
++iop_desc_init_memset(struct iop_adma_desc_slot *desc, unsigned long flags)
+ {
+ 	struct iop3xx_desc_aau *hw_desc = desc->hw_desc;
+ 	union {
+@@ -443,12 +443,13 @@ iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
+ 	u_desc_ctrl.value = 0;
+ 	u_desc_ctrl.field.blk1_cmd_ctrl = 0x2; /* memory block fill */
+ 	u_desc_ctrl.field.dest_write_en = 1;
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ }
+ 
+ static inline u32
+-iop3xx_desc_init_xor(struct iop3xx_desc_aau *hw_desc, int src_cnt, int int_en)
++iop3xx_desc_init_xor(struct iop3xx_desc_aau *hw_desc, int src_cnt,
++		     unsigned long flags)
+ {
+ 	int i, shift;
+ 	u32 edcr;
+@@ -509,21 +510,23 @@ iop3xx_desc_init_xor(struct iop3xx_desc_aau *hw_desc, int src_cnt, int int_en)
+ 
+ 	u_desc_ctrl.field.dest_write_en = 1;
+ 	u_desc_ctrl.field.blk1_cmd_ctrl = 0x7; /* direct fill */
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ 
+ 	return u_desc_ctrl.value;
+ }
+ 
+ static inline void
+-iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
++iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt,
++		  unsigned long flags)
+ {
+-	iop3xx_desc_init_xor(desc->hw_desc, src_cnt, int_en);
++	iop3xx_desc_init_xor(desc->hw_desc, src_cnt, flags);
+ }
+ 
+ /* return the number of operations */
+ static inline int
+-iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
++iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt,
++		       unsigned long flags)
+ {
+ 	int slot_cnt = desc->slot_cnt, slots_per_op = desc->slots_per_op;
+ 	struct iop3xx_desc_aau *hw_desc, *prev_hw_desc, *iter;
+@@ -538,10 +541,10 @@ iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
+ 	for (i = 0, j = 0; (slot_cnt -= slots_per_op) >= 0;
+ 		i += slots_per_op, j++) {
+ 		iter = iop_hw_desc_slot_idx(hw_desc, i);
+-		u_desc_ctrl.value = iop3xx_desc_init_xor(iter, src_cnt, int_en);
++		u_desc_ctrl.value = iop3xx_desc_init_xor(iter, src_cnt, flags);
+ 		u_desc_ctrl.field.dest_write_en = 0;
+ 		u_desc_ctrl.field.zero_result_en = 1;
+-		u_desc_ctrl.field.int_en = int_en;
++		u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 		iter->desc_ctrl = u_desc_ctrl.value;
+ 
+ 		/* for the subsequent descriptors preserve the store queue
+@@ -559,7 +562,8 @@ iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
+ }
+ 
+ static inline void
+-iop_desc_init_null_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
++iop_desc_init_null_xor(struct iop_adma_desc_slot *desc, int src_cnt,
++		       unsigned long flags)
+ {
+ 	struct iop3xx_desc_aau *hw_desc = desc->hw_desc;
+ 	union {
+@@ -591,7 +595,7 @@ iop_desc_init_null_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
+ 	}
+ 
+ 	u_desc_ctrl.field.dest_write_en = 0;
+-	u_desc_ctrl.field.int_en = int_en;
++	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
+ 	hw_desc->desc_ctrl = u_desc_ctrl.value;
+ }
+ 
+diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
+index bdca3f1..eb640f0 100644
+--- a/include/linux/async_tx.h
++++ b/include/linux/async_tx.h
+@@ -47,7 +47,6 @@ struct dma_chan_ref {
+  * address is an implied source, whereas the asynchronous case it must be listed
+  * as a source.  The destination address must be the first address in the source
+  * array.
+- * @ASYNC_TX_ASSUME_COHERENT: skip cache maintenance operations
+  * @ASYNC_TX_ACK: immediately ack the descriptor, precludes setting up a
+  * dependency chain
+  * @ASYNC_TX_DEP_ACK: ack the dependency descriptor.  Useful for chaining.
+@@ -55,7 +54,6 @@ struct dma_chan_ref {
+ enum async_tx_flags {
+ 	ASYNC_TX_XOR_ZERO_DST	 = (1 << 0),
+ 	ASYNC_TX_XOR_DROP_DST	 = (1 << 1),
+-	ASYNC_TX_ASSUME_COHERENT = (1 << 2),
+ 	ASYNC_TX_ACK		 = (1 << 3),
+ 	ASYNC_TX_DEP_ACK	 = (1 << 4),
+ };
+@@ -64,9 +62,15 @@ enum async_tx_flags {
+ void async_tx_issue_pending_all(void);
+ enum dma_status dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx);
+ void async_tx_run_dependencies(struct dma_async_tx_descriptor *tx);
++#ifdef CONFIG_ARCH_HAS_ASYNC_TX_FIND_CHANNEL
++#include <asm/async_tx.h>
++#else
++#define async_tx_find_channel(dep, type, dst, dst_count, src, src_count, len) \
++	 __async_tx_find_channel(dep, type)
+ struct dma_chan *
+-async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
++__async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
+ 	enum dma_transaction_type tx_type);
++#endif /* CONFIG_ARCH_HAS_ASYNC_TX_FIND_CHANNEL */
+ #else
+ static inline void async_tx_issue_pending_all(void)
+ {
+@@ -88,7 +92,8 @@ async_tx_run_dependencies(struct dma_async_tx_descriptor *tx,
+ 
+ static inline struct dma_chan *
+ async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
+-	enum dma_transaction_type tx_type)
++	enum dma_transaction_type tx_type, struct page **dst, int dst_count,
++	struct page **src, int src_count, size_t len)
+ {
+ 	return NULL;
+ }
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 5c84bf8..acbb364 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -95,6 +95,15 @@ enum dma_transaction_type {
+ #define DMA_TX_TYPE_END (DMA_INTERRUPT + 1)
+ 
+ /**
++ * enum dma_prep_flags - DMA flags to augment operation preparation
++ * @DMA_PREP_INTERRUPT - trigger an interrupt (callback) upon completion of
++ * 	this transaction
++ */
++enum dma_prep_flags {
++	DMA_PREP_INTERRUPT = (1 << 0),
++};
++
++/**
+  * dma_cap_mask_t - capabilities bitmap modeled after cpumask_t.
+  * See linux/cpumask.h
+  */
+@@ -209,8 +218,6 @@ typedef void (*dma_async_tx_callback)(void *dma_async_param);
+  *	descriptors
+  * @chan: target channel for this operation
+  * @tx_submit: set the prepared descriptor(s) to be executed by the engine
+- * @tx_set_dest: set a destination address in a hardware descriptor
+- * @tx_set_src: set a source address in a hardware descriptor
+  * @callback: routine to call after this operation is complete
+  * @callback_param: general parameter to pass to the callback routine
+  * ---async_tx api specific fields---
+@@ -227,10 +234,6 @@ struct dma_async_tx_descriptor {
+ 	struct list_head tx_list;
+ 	struct dma_chan *chan;
+ 	dma_cookie_t (*tx_submit)(struct dma_async_tx_descriptor *tx);
+-	void (*tx_set_dest)(dma_addr_t addr,
+-		struct dma_async_tx_descriptor *tx, int index);
+-	void (*tx_set_src)(dma_addr_t addr,
+-		struct dma_async_tx_descriptor *tx, int index);
+ 	dma_async_tx_callback callback;
+ 	void *callback_param;
+ 	struct list_head depend_list;
+@@ -279,15 +282,17 @@ struct dma_device {
+ 	void (*device_free_chan_resources)(struct dma_chan *chan);
+ 
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_memcpy)(
+-		struct dma_chan *chan, size_t len, int int_en);
++		struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
++		size_t len, unsigned long flags);
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_xor)(
+-		struct dma_chan *chan, unsigned int src_cnt, size_t len,
+-		int int_en);
++		struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
++		unsigned int src_cnt, size_t len, unsigned long flags);
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_zero_sum)(
+-		struct dma_chan *chan, unsigned int src_cnt, size_t len,
+-		u32 *result, int int_en);
++		struct dma_chan *chan, dma_addr_t *src,	unsigned int src_cnt,
++		size_t len, u32 *result, unsigned long flags);
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_memset)(
+-		struct dma_chan *chan, int value, size_t len, int int_en);
++		struct dma_chan *chan, dma_addr_t dest, int value, size_t len,
++		unsigned long flags);
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_interrupt)(
+ 		struct dma_chan *chan);
+ 
+
+
