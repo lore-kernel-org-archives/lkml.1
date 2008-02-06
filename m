@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbYBFXwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbYBFXyC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763193AbYBFXwi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764045AbYBFXwN
+	id S1763707AbYBFXyC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:54:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbYBFXxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:52:13 -0500
-Received: from ns2.suse.de ([195.135.220.15]:59561 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764005AbYBFXwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:52:11 -0500
-Date: Wed, 6 Feb 2008 15:50:15 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/73] 2.6.23-stable review
-Message-ID: <20080206235015.GA13121@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 6 Feb 2008 18:53:50 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:48829 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759446AbYBFXxt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:53:49 -0500
+To: davem@davemloft.net
+Cc: fujita.tomonori@lab.ntt.co.jp, tomof@acm.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: more iommu sg merging fallout
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080206.151855.136436571.davem@davemloft.net>
+References: <20080205.204138.107606929.davem@davemloft.net>
+	<20080207081236V.fujita.tomonori@lab.ntt.co.jp>
+	<20080206.151855.136436571.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080207085333Q.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 07 Feb 2008 08:53:33 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.23.15 release.
-There are 73 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+On Wed, 06 Feb 2008 15:18:55 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date: Thu, 07 Feb 2008 08:12:36 +0900
+> 
+> > Really sorry about it.
+> 
+> I am happy to test patches you send to me in the future :-)
 
-Responses should be made by Friday, Feb 8 2008 12:00:00 UTC.  Anything
-received after that time might be too late.
+Thanks a lot.
 
-Note, this is going to be one of the last .23-stable releases, unless
-something major comes along.
 
-thanks,
+> > PARISC, Alpha, and IA64 IOMMUs use the two-pass algorithm like SPARC
+> > but their first pass decides how to merge sg entires (and stores that
+> > information in the sg entries), then the second pass simpliy follows
+> > it (Hopefully I understand these IOMMUs correctly, or else I break
+> > them too).
+> 
+> For now I've removed all of the merging code from the sparc64 IOMMU
+> support so that other users do not get corrupt filesystems.  It
+> basically mimicks how the intel-iommu code works, ie. no attempts to
+> merge anything.
 
-greg k-h
+I've just saw it.
+
+
+> I intend to put merging back in, perhaps something similar to
+> powerpc's merging logic but without the expensive (in my opinion)
+> IOMMU allocation every loop.  I think it is better to determine the
+> segment breaks in one pass, allocate that many IOMMU entries in one
+> allocation, then fill them all in.
+
+I thought about asking you if I can modify the SPARC IOMMUs to do
+allocation in every loop.
+
+The reason why I need the allocation in every loop is that I also need
+to fix the problem that IOMMUs allocate memory areas without
+considering a low level driver's segment boundary limits.
+
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg07616.html
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-12/msg02286.html
+
+As far as I know, all the IOMMUs except for SPARC allocate a free area
+in every loop but if it's too expensive for SPARC, then we need to
+find a different way to handle segment boundary limits.
+
+
+> Ideally, we should have some generic code that does all of this.
+> Then you would only need to test one implementation.
+> 
+> It is definitely doable and increasingly necessary as we have so
+> many reimplementations of what is essentially identical core code.
+
+Agreed though it's a very hard task.
