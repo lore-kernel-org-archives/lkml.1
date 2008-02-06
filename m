@@ -1,64 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbYBFUzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbYBFUzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbYBFUzU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 15:55:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYBFUzB
+	id S1759451AbYBFUzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 15:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbYBFUzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 15:55:01 -0500
-Received: from www.tglx.de ([62.245.132.106]:38793 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbYBFUzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 15:55:00 -0500
-Date: Wed, 6 Feb 2008 21:54:42 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Diego Zuccato <diego@otello.alma.unibo.it>,
-       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080206215442.63c94cf3@dilbert.local>
-In-Reply-To: <20080206213449.6614efea@weinigel.se>
-References: <20080125180232.GA4613@kroah.com>
-	<20080202123710.42df1aa0@weinigel.se>
-	<20080202191930.GA19826@kroah.com>
-	<47A5D895.20300@davidnewall.com>
-	<47A6E742.80408@otello.alma.unibo.it>
-	<47A764ED.8030605@weinigel.se>
-	<1202161091.15090.84.camel@violet>
-	<20080206213449.6614efea@weinigel.se>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Feb 2008 15:55:09 -0500
+Received: from tranquility.mcc.ac.uk ([130.88.200.145]:57009 "EHLO
+	tranquility.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757247AbYBFUzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 15:55:07 -0500
+Message-ID: <47AA1E7C.9080205@gentoo.org>
+Date: Wed, 06 Feb 2008 20:54:20 +0000
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071214)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Maarten Bressers <mbres@gentoo.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [PATCH] sr: update to follow tray status correctly
+References: <20071027225830.585C8657DB@smtp.gentoo.org>	 <1193801523.3321.138.camel@localhost.localdomain>	 <1199551191.3399.29.camel@localhost.localdomain>	 <47A9E9C6.4000802@gentoo.org> <1202324518.3112.104.camel@localhost.localdomain>
+In-Reply-To: <1202324518.3112.104.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wed, 6 Feb 2008 21:34:49 +0100
-schrieb Christer Weinigel <christer@weinigel.se>:
+James Bottomley wrote:
+> However, I think you're right, the vanilla TUR does eat NOT_READY for
+> removable media, which CDs are.  Does this fix it?
 
-> 
-> I also think that my customers, that decided to keep their kernel
-> modules binary only, made a big mistake and have told them so.  But I
-> still think it's better for the Linux community to be a bit soft on
-> such companies for a while.  
+Works great, thanks!
 
-That has been done, hasn't it?
-
-> It's better to let them get away with it
-> for a while, and slowly try to convince them about the error of their
-> ways, rather than see them go with Windows CE or a BSD.
-
-If somebody prefers an other OS for license reasons only, let them. You
-cannot have open source software without open source license. If a
-company chooses Linux, they do it for technical reasons, and because
-they're able to modify the sources to suit their needs. Whatever
-advantages they see in Linux, they have to know that they have to
-accept its license. Just saying "I like your software but
-your license is stupid" is childish. Use CE instead.
-
-Thanks,
-Hans
- 
+Daniel
