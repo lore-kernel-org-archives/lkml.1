@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbYBFXfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbYBFXfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760830AbYBFXfS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbYBFXfE
+	id S1762630AbYBFXfk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:35:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760349AbYBFXfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:35:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58136 "EHLO mx3.mail.elte.hu"
+	Wed, 6 Feb 2008 18:35:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39721 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756599AbYBFXfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:35:03 -0500
-Date: Thu, 7 Feb 2008 00:34:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
-	(bisected)
-Message-ID: <20080206233434.GA12393@elte.hu>
-References: <200802010237.59320.rjw@sisk.pl> <200802062318.28172.rjw@sisk.pl> <1202337267.6274.15.camel@lappy> <200802070031.03955.rjw@sisk.pl>
+	id S1760239AbYBFXfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:35:12 -0500
+Message-ID: <47AA440F.8030403@redhat.com>
+Date: Wed, 06 Feb 2008 17:34:39 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802070031.03955.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
+References: <47AA3126.8090102@redhat.com>	<20080206143457.03e8741d.akpm@linux-foundation.org>	<47AA3EAA.9080204@redhat.com> <20080206152239.a2352d6d.akpm@linux-foundation.org>
+In-Reply-To: <20080206152239.a2352d6d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> > http://programming.kicks-ass.net/kernel-patches/sched-rt-group/
-> > 
-> > on top of sched-devel.
+Andrew Morton wrote:
+> On Wed, 06 Feb 2008 17:11:38 -0600
+> Eric Sandeen <sandeen@redhat.com> wrote:
 > 
-> Indeed, with these patches applied the issue is not reproducible any 
-> more.
+>>  /*
+>>   * recursively change the type of the mountpoint.
+>> + * noinline this do_mount helper to save do_mount stack space.
+>>   */
+>> -static int do_change_type(struct nameidata *nd, int flag)
+>> +static noinline int do_change_type(struct nameidata *nd, int flag)
+> 
+> What we could do here is defined a new noinline_because_of_stack_suckiness
+> and use that.  Reasons:
+> 
+> - self-documenting, so we don't need to comment each site
+> 
+> - can be made a no-op for suitable __GNUC__ values if gcc ever fixes this
+> 
+> - our children we can go through and delete them all when nobody is using
+>   the offending gcc versions any more.
+> 
+> what thinkest thou?
 
-great! I've queued Peter's fixes and enhancements up in sched-devel. 
-(not pushed out yet)
+Yes, sounds very good to me.  I'm sure there are more places which could
+use this.
 
-	Ingo
+Or perhaps there are some magic flags to gcc so that it doesn't inline
+so aggressively in situations like this?  IOW is it gcc breakage, or
+design - but maybe with defaults that don't fit well in the limited
+stack... (well, I suppose the "for N mutually exclusive helper functions
+each with stack usage S, use about N*S stack when inlining them all" bit
+probably isn't a feature.)
+
+FWIW the XFS team finally just wrested control from GCC.
+http://oss.sgi.com/archives/xfs/2006-11/msg00195.html
+
+-Eric
