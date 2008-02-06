@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbYBFVva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbYBFVwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbYBFVva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758735AbYBFVvU
+	id S1760275AbYBFVwZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYBFVwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:51:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52455 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752027AbYBFVvT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:51:19 -0500
-Subject: Re: RT scheduler config, suggestions and questions
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47A9F6BE.1010800@qualcomm.com>
-References: <47A8F328.5070107@qualcomm.com>
-	 <1202279815.19243.34.camel@lappy> <1202297381.19243.48.camel@lappy>
-	 <47A9F6BE.1010800@qualcomm.com>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 22:50:55 +0100
-Message-Id: <1202334655.6274.4.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Wed, 6 Feb 2008 16:52:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60433 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754894AbYBFVwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 16:52:14 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
+Date: Wed, 6 Feb 2008 22:50:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <200802010237.59320.rjw@sisk.pl> <200802061925.19474.rjw@sisk.pl> <1202334228.6274.1.camel@lappy>
+In-Reply-To: <1202334228.6274.1.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802062250.07758.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-06 at 10:04 -0800, Max Krasnyanskiy wrote:
-> Peter Zijlstra wrote:
-> > On Wed, 2008-02-06 at 07:36 +0100, Peter Zijlstra wrote:
-> > 
-> >>> btw I can see "watchdog" being very useful to catch hard-RT tasks that exceed the deadline.
-> >>> But's it gotta be per thread.
-> >> It is.
-> >>
-> >>> Single setting per user is not enough. Unless a use has a single RT task.
-> >> ?
-> > 
-> > Ah, its starting to make sense, you want it configurable per thread, not
-> > process wide. Yes, I see how that is useful, just no idea how to expose
-> > that to user-space atm.
-> Yes. That's what I meant. I don't think overall per process setting is that useful.
-> Per thread though would be useful.
+On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
 > 
-> How to expose that to the user-space ? The best option in my opinion is to extend
-> struct sched_param. That way both sched_setparam() and pthread_attr_setschedparam() 
-> can be used to set new attributes and it's backwards compatible.
-> Something like:
+> On Wed, 2008-02-06 at 19:25 +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> > > 
+> > > On Wed, 2008-02-06 at 09:40 +0100, Dmitry Adamushko wrote:
+> > > > On 06/02/2008, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > > On Tuesday, 5 of February 2008, Dmitry Adamushko wrote:
+> > > > > > Rafael, any progress with this issue? (a few questions below).
+> > > > > >
+> > > > > > > >
+> > > > > > > > Does this artsmessage thing also run with RT priority?
+> > > > > > >
+> > > > > > > Well, it's in a strange state (after it's broken).  From top:
+> > > > > > >
+> > > > > > > PR = -51
+> > > > > > > NI = 0
+> > > > > > > S = R
+> > > > > > > %CPU = 0.0
+> > > > > > > %MEM = 0.0
+> > > > > >
+> > > > > > cat /proc/$PID/stat ; sleep 3; cat /proc/$PID/stat ?
+> > > > > > cat /proc/sched_debug; sleep 3 ; cat /proc/sched_debug
+> > > > >
+> > > > > Well, instead please find appended a test program that allows me to trigger
+> > > > > the issue.
+> > > > 
+> > > > Great, I'll look at this problem in the everning (sure, if nobody else
+> > > > is faster :-).
+> > > 
+> > > Yeah, it seems fixed here (after I made my current queue compile for
+> > > this silly CONFIG_USER_SCHED thing again).
+> > > 
+> > > I'm now refusing realtime tasks in groups that do not have real-time
+> > > bandwidth assigned.
+> > 
+> > If you're referring to this patch: http://lkml.org/lkml/2008/2/4/332 , then
+> > sorry, but it doesn't fix the issue for me, with the attached config.
 > 
-> struct sched_param {
-> 	...
-> 	unsigned int sched_rt_limit;
-> 	unsigned int sched_rt_...;
-> };
+> Well, that whole queue.
 
-I'm somewhat afraid to touch sched_param, but it seems I need to change
-it anyway soonish, so I'd better figure out how to do that.
+It doesn't compile for me.
 
+> Your test program just failed to obtain realtime scheduling
 
+Well, it shouldn't.  The expected result is to obtain realtime scheduling
+or we will break existing setups.
 
+> but didn't hang. 
+
+That's much better outcome. :-)
+
+> I'll test your full config. 
+
+OK, thanks.
