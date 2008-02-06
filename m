@@ -1,660 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbYBFCEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763919AbYBFCFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763648AbYBFCEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 21:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760453AbYBFCEd
+	id S1763919AbYBFCFV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 21:05:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763623AbYBFCFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 21:04:33 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:25821 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759972AbYBFCEb (ORCPT
+	Tue, 5 Feb 2008 21:05:06 -0500
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:36272 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760453AbYBFCFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 21:04:31 -0500
-Date: Wed, 6 Feb 2008 02:04:23 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH,RESEND] Basic braille screen reader support
-Message-ID: <20080206020423.GG4394@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-	Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>
-References: <20080204031842.GE4439@implementation> <20080205220054.GD4394@implementation> <20080205165853.561d5f3d.akpm@linux-foundation.org>
+	Tue, 5 Feb 2008 21:05:03 -0500
+Message-ID: <47A91652.4090506@cs.columbia.edu>
+Date: Tue, 05 Feb 2008 21:07:14 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080205165853.561d5f3d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Pierre Peiffer <pierre.peiffer@bull.net>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to	change
+ an ID
+References: <20080129160229.612172683@bull.net> <20080129162000.454857358@bull.net> <20080129210656.GB1990@martell.zuzino.mipt.ru> <47A18E47.5050206@bull.net> <47A19AC2.7040709@sw.ru> <47A1B78C.7050405@bull.net> <47A83194.8060808@cs.columbia.edu> <20080205184234.GA28923@sergelap.austin.ibm.com>
+In-Reply-To: <20080205184234.GA28923@sergelap.austin.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton, le Tue 05 Feb 2008 16:58:53 -0800, a écrit :
-> On Tue, 5 Feb 2008 22:00:54 +0000
-> Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+
+
+Serge E. Hallyn wrote:
+> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>> I strongly second Kirill on this matter.
+>>
+>> IMHO, we should _avoid_ as much as possible exposing internal kernel
+>> state to applications, unless a _real_ need for it is _clearly_
+>> demonstrated. The reasons for this are quite obvious.
 > 
-> > This adds a minimalistic braille screen reader support.
-> > This is meant to be used by blind people e.g. on boot failures or when /
-> > cannot be mounted etc and thus the userland screen readers can not work.
+> Hmm, sure, but this sentence is designed to make us want to agree.  Yes,
+> we want to avoid exporting kernel internals, but generally that means
+> things like the precise layout of the task_struct.  What Pierre is doing
+> is in fact the opposite, exporting resource information in a kernel
+> version invariant way.
+
+LOL ... a bit of misunderstanding - let me put some order here:
+
+my response what with respect to the new interface that Pierre
+suggested, that is - to add a new IPC call to change an identifier
+after it has been allocated (and assigned). This is necessary for the
+restart because applications expect to see the same resource id's as
+they had at the time of the checkpoint.
+
+What you are referring to is the more recent part of the thread, where
+the topic became how data should be saved - in other words, the format
+of the checkpoint data. This is entirely orthogonal to my argument.
+
+Now please re-read my email :)
+
+That said, I'd advocate for something in between a raw dump and a pure
+"parametric" representation of the data. Raw data tends to be, well,
+too raw, which makes the task of reading data from older version by
+newer kernels harder to maintain. On the other hand, it is impossible
+to abstract everything into kernel-independent format.
+
 > 
-> Could you feed it through scritps/checkpatch.pl please?  That finds a lot
-> of trivial stuff which we'd prefer be fixed.
-
-Oops, sorry, it's probably been some time since I last read
-SubmittingPatches.  Actually, this discovered a false positive in
-checkpatch.pl for kbd_table :)
-
-> `lastwrite' is a kernel-wide singleton and hence at least needs some
-> locking protecting its consistency.
+> In fact, the very reason not to go the route you and Pavel are
+> advocating is that if we just dump task state to a file or filesystem
+> from the kernel in one shot, we'll be much more tempted to lay out data
+> in a way that exports and ends up depending on kernel internals.  So
+> we'll just want to read and write the task_struct verbatim.
 > 
-> If this is a single-opener-only device then I _guess_ this approach is OK. 
+> So, there are two very different approaches we can start with.
+> Whichever one we follow, we want to avoid having kernel version
+> dependencies.  They both have their merits to be sure.
 
-It is meant to be yes, though it was lacking protection against this.
-Fixed in this new version.
+You will never be able to avoid that completely, simply because new
+kernels will require saving more (or less) data per object, because
+of new (or dropped) features.
+The best solution in this sense is to provide a filter (hopefully
+in user space, utility) that would convert a checkpoint image file
+from the old format to a newer format.
+And you keep a lot of compatibility code of the kernel, too.
 
-> > +	serial8250_console.write(braille_co, data, c - data);
 > 
-> hm.  Is it appropriate that this driver wire itself directly into
-> serial8250?
-
-We want to have output as early as possible for debugging, just like
-early serial consoles.
-
-> What if the screen reader is attached to some other sort of
-> uart, or a terminal server, or...
-
-Indeed that's an issue.  For now, there is no clean way to attach to the
-early serial drivers, that's why I chose 8250, which should be correct
-99% of the time for the current users of this.  We could add a parameter
-to the console=brl option that specifies which early serial console to
-use.
-
-> Maybe this all should be implemented as a line discipline, or something
-> like that?
-
-For a permanent screen reader, yes (that's what we will probably do for
-SpeakUp), but for an boot reader, I don't think it may even work.
-
-> > +#ifndef MODULE
-> > +	ret = serial8250_console.setup(co, options);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +#endif
+> But note that in either case we need to deal with a bunch of locking.
+> So getting back to Pierre's patchset, IIRC 1-8 are cleanups worth
+> doing no matter 1.  9-11 sound like they are contentuous until
+> we decide whether we want to go with a create_with_id() type approach
+> or a set_id().  12 is IMO a good locking cleanup regardless.  13 and
+> 15 are contentous until we decide whether we want userspace-controlled
+> checkpoint or a one-shot fs.  14 IMO is useful for both c/r approaches.
 > 
-> That's pretty ungainly.
+> Is that pretty accurate?
 
-The problem is that there is currently no better way to setup the serial
-port so early.
+(context switch back to my original reply)
 
-> Again, if we had some clear spearation between the
-> protocol layer and the device-driver layer and some way of binding them
-> under userspace control (like a line discipline), all this would get better.
+I prefer not to add a new interface to IPC that will provide a new
+functionality that isn't needed, except for the checkpoint - because
+there is a better alternative to do the same task; this alternative
+is more suitable because (a) it can be applied incrementally, (b) it
+provides a consistent method to pre-select identifiers of all syscalls,
+(where is the current suggestion suggests one way for IPC and will
+suggest other hacks for other resources).
 
-Again, we need the screen reader working during boot, even before init
-exists.  A line discipline would indeed be fine if we had userspace
-control, but this tool is precisely intended for the case when userspace
-can't be booted :)
+(context switch back to the current reply)
 
-> > @@ -0,0 +1,22 @@
-> > +menuconfig A11Y
-> > +	bool "Accessibility support"
+I definitely welcome a cleanup of the (insanely multiplexedd) IPC
+code. However I argue that the interface need not be extended.
+
 > 
-> That's cute,
-
-Well, that's the official name (www.a11y.org) :)
-
-> but perhaps we should be boring and call it
-> CONFIG_ACCESSIBILITY.  That would be more accessible ;)
-
-Why not :)
-
-> > +	---help---
-> > +	  Enable a submenu where accessibility items may be enabled.
-> > +
-> > +	  If unsure, say N.
-> > +
-> > +if A11Y
-> > +config A11Y_BRAILLE_CONSOLE
+>> It isn't strictly necessary to export a new interface in order to
+>> support checkpoint/restart. **. Hence, I think that the speculation
+>> "we may need it in the future" is too abstract and isn't a good
+>> excuse to commit to a new, currently unneeded, interface.
 > 
-> And that would get very lengthy.
+> OTOH it did succeed in starting some conversation :)
+> 
+>> Should the
+>> need arise in the future, it will be easy to design a new interface
+>> (also based on aggregated experience until then).
+> 
+> What aggregated experience?  We have to start somewhere...
 
-Then keep A11Y here?
+:)  well, assuming the selection of resource IDs is done as I suggested,
+we'll have the restart use it. If someone finds a good reason (other
+than checkpoint/restart) to pre-select/modify an identifier, it will
+be easy to _then_ add an interface. That (hypothetical) interface is
+likely to come out more clever after X months using checkpoint/restart.
 
-Here is a revised patch.
+> 
+>> ** In fact, the suggested interface may prove problematic (as noted
+>> earlier in this thread): if you first create the resource with some
+>> arbitrary identifier and then modify the identifier (in our case,
+>> IPC id), then the restart procedure is bound to execute sequentially,
+>> because of lack of atomicity.
+> 
+> Hmm?  Lack of atomicity wrt what?  All the tasks being restarted were
+> checkpointed at the same time so there will be no conflict in the
+> requested IDs, so I don't know what you're referring to.
 
-Samuel
+Consider that we want to have an ultra-fast restart, so we let processes
+restart in parallel (as much as possible) in the same container. Task A
+wants to allocate IPC id 256, but the kernel allocates 32; before task A
+manages to change it to 256 (with the new interface), task B attempts to
+create an IPC id 32; the kernel provides, say, 1024, and task B fails to
+change it to 32 because it is still used by task A. So restart fails :(
 
-This adds a minimalistic braille screen reader support.
-This is meant to be used by blind people e.g. on boot failures or when /
-cannot be mounted etc and thus the userland screen readers can not work.
+On the other hand, if a process first tells the kernel "I want 32" and
+then calls, for instance, semget(), then the IPC can atomically ensure
+that the process gets what it wanted.
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> 
+>> That said, I suggest the following method instead (this is the method
+>> we use in Zap to determine the desired resource identifier when a new
+>> resource is allocated; I recall that we had discussed it in the past,
+>> perhaps the mini-summit in september ?):
+>>
+>> 1) The process/thread tells the kernel that it wishes to pre-determine
+>> the resource identifier of a subsequent call (this can be done via a
+>> new syscall, or by writing to /proc/self/...).
+>>
+>> 2) Each system call that allocates a resource and assigns an identifier
+>> is modified to check this per-thread field first; if it is set then
+>> it will attempt to allocate that particular value (if already taken,
+>> return an error, eg. EBUSY). Otherwise it will proceed as it is today.
+> 
+> But I thought you were just advocating a one-shot filesystem approach
+> for c/r, so we wouldn't be creating the resources piecemeal?
 
---- linux-2.6.24-orig/drivers/char/consolemap.c	2008-01-25 08:32:05.000000000 +0000
-+++ linux-2.6.24-perso/drivers/char/consolemap.c	2008-02-03 21:27:04.000000000 +0000
-@@ -277,6 +277,7 @@
- 			return p->inverse_translations[m][glyph];
- 	}
- }
-+EXPORT_SYMBOL_GPL(inverse_translate);
- 
- static void update_user_maps(void)
- {
---- linux-2.6.24-orig/drivers/char/vt.c	2008-01-25 08:32:06.000000000 +0000
-+++ linux-2.6.24-perso/drivers/char/vt.c	2008-02-03 21:27:04.000000000 +0000
-@@ -3982,6 +3982,7 @@
- 		c |= 0x100;
- 	return c;
- }
-+EXPORT_SYMBOL_GPL(screen_glyph);
- 
- /* used by vcs - note the word offset */
- unsigned short *screen_pos(struct vc_data *vc, int w_offset, int viewed)
---- linux-2.6.24-orig/drivers/char/keyboard.c	2008-01-25 08:32:06.000000000 +0000
-+++ linux-2.6.24-perso/drivers/char/keyboard.c	2008-02-04 02:44:37.000000000 +0000
-@@ -110,6 +110,7 @@
- const int NR_TYPES = ARRAY_SIZE(max_vals);
- 
- struct kbd_struct kbd_table[MAX_NR_CONSOLES];
-+EXPORT_SYMBOL_GPL(kbd_table);
- static struct kbd_struct *kbd = kbd_table;
- 
- struct vt_spawn_console vt_spawn_con = {
-@@ -260,6 +261,7 @@
- 	} else
- 		kd_nosound(0);
- }
-+EXPORT_SYMBOL_GPL(kd_mksound);
- 
- /*
-  * Setting the keyboard rate.
---- linux-2.6.24-orig/drivers/Kconfig	2008-01-25 08:32:04.000000000 +0000
-+++ linux-2.6.24-perso/drivers/Kconfig	2008-02-04 01:32:17.000000000 +0000
-@@ -95,4 +95,6 @@
- source "drivers/uio/Kconfig"
- 
- source "drivers/virtio/Kconfig"
-+
-+source "drivers/a11y/Kconfig"
- endmenu
---- linux-2.6.24-orig/drivers/Makefile	2008-01-25 08:32:04.000000000 +0000
-+++ linux-2.6.24-perso/drivers/Makefile	2008-02-04 01:33:27.000000000 +0000
-@@ -28,6 +28,8 @@
- obj-$(CONFIG_FB_INTEL)          += video/intelfb/
- 
- obj-y				+= serial/
-+# a11y comes after serial because it depends on it
-+obj-$(CONFIG_ACCESSIBILITY)	+= a11y/
- obj-$(CONFIG_PARPORT)		+= parport/
- obj-y				+= base/ block/ misc/ mfd/ net/ media/
- obj-$(CONFIG_NUBUS)		+= nubus/
---- linux-2.6.24-orig/include/linux/serial_8250.h	2007-10-09 21:31:38.000000000 +0100
-+++ linux-2.6.24-perso/include/linux/serial_8250.h	2008-02-03 21:28:40.000000000 +0000
-@@ -66,4 +66,6 @@
- extern int serial8250_find_port_for_earlycon(void);
- extern int setup_early_serial8250_console(char *cmdline);
- 
-+extern struct console serial8250_console;
-+
- #endif
---- linux-2.6.24-orig/drivers/serial/8250.c	2007-10-09 21:31:38.000000000 +0100
-+++ linux-2.6.24-perso/drivers/serial/8250.c	2008-02-03 21:29:54.000000000 +0000
-@@ -2547,7 +2547,7 @@
- }
- 
- static struct uart_driver serial8250_reg;
--static struct console serial8250_console = {
-+struct console serial8250_console = {
- 	.name		= "ttyS",
- 	.write		= serial8250_console_write,
- 	.device		= uart_console_device,
-@@ -2557,6 +2557,7 @@
- 	.index		= -1,
- 	.data		= &serial8250_reg,
- };
-+EXPORT_SYMBOL_GPL(serial8250_console);
- 
- static int __init serial8250_console_init(void)
- {
-diff -urN linux-2.6.24-orig/drivers/a11y/braille/braille_console.c linux-2.6.24-perso/drivers/a11y/braille/braille_console.c
---- linux-2.6.24-orig/drivers/a11y/braille/braille_console.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.24-perso/drivers/a11y/braille/braille_console.c	2008-02-04 01:58:16.000000000 +0000
-@@ -0,0 +1,404 @@
-+/*
-+ * Minimalistic braille device kernel support.
-+ *
-+ * By default, shows console messages on the braille device.
-+ * Pressing Insert switches to VC browsing.
-+ *
-+ *  Copyright (C) Samuel Thibault <samuel.thibault@ens-lyon.org>
-+ *
-+ * This program is free software ; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation ; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY ; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with the program ; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/autoconf.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/console.h>
-+#include <linux/notifier.h>
-+
-+#include <linux/selection.h>
-+#include <linux/vt_kern.h>
-+#include <linux/consolemap.h>
-+
-+#include <linux/keyboard.h>
-+#include <linux/kbd_kern.h>
-+#include <linux/input.h>
-+
-+#include <linux/serial_8250.h>
-+
-+MODULE_AUTHOR("samuel.thibault@ens-lyon.org");
-+MODULE_DESCRIPTION("braille device");
-+MODULE_LICENSE("GPL");
-+
-+/*
-+ * Braille device support part.
-+ */
-+
-+/* Emit various sounds */
-+static int sound;
-+module_param(sound, bool, 0);
-+MODULE_PARM_DESC(sound, "emit sounds");
-+
-+static void beep(unsigned int freq)
-+{
-+	if (sound)
-+		kd_mksound(freq, HZ/10);
-+}
-+
-+/* mini console */
-+#define WIDTH 40
-+#define BRAILLE_KEY KEY_INSERT
-+static u16 console_buf[WIDTH];
-+static int console_cursor;
-+
-+/* mini view of VC */
-+static int vc_x, vc_y, lastvc_x, lastvc_y;
-+
-+/* show console ? (or show VC) */
-+static int console_show = 1;
-+/* pending newline ? */
-+static int console_newline = 1;
-+static int lastVC = -1;
-+
-+static struct console *braille_co;
-+
-+/* Very VisioBraille-specific */
-+static void braille_write(u16 *buf)
-+{
-+	static u16 lastwrite[WIDTH];
-+	unsigned char data[1 + 1 + 2*WIDTH + 2 + 1], csum = 0, *c;
-+	u16 out;
-+	int i;
-+
-+	if (!braille_co)
-+		return;
-+
-+	if (!memcmp(lastwrite, buf, WIDTH * sizeof(*buf)))
-+		return;
-+	memcpy(lastwrite, buf, WIDTH * sizeof(*buf));
-+
-+#define SOH 1
-+#define STX 2
-+#define ETX 2
-+#define EOT 4
-+#define ENQ 5
-+	data[0] = STX;
-+	data[1] = '>';
-+	csum ^= '>';
-+	c = &data[2];
-+	for (i = 0; i < WIDTH; i++) {
-+		out = buf[i];
-+		if (out >= 0x100)
-+			out = '?';
-+		else if (out == 0x00)
-+			out = ' ';
-+		csum ^= out;
-+		if (out <= 0x05) {
-+			*c++ = SOH;
-+			out |= 0x40;
-+		}
-+		*c++ = out;
-+	}
-+
-+	if (csum <= 0x05) {
-+		*c++ = SOH;
-+		csum = 0x40;
-+	}
-+	*c++ = csum;
-+	*c++ = ETX;
-+
-+	serial8250_console.write(braille_co, data, c - data);
-+}
-+
-+/* Follow the VC cursor*/
-+static void vc_follow_cursor(struct vc_data *vc)
-+{
-+	vc_x = vc->vc_x - (vc->vc_x % WIDTH);
-+	vc_y = vc->vc_y;
-+	lastvc_x = vc->vc_x;
-+	lastvc_y = vc->vc_y;
-+}
-+
-+/* Maybe the VC cursor moved, if so follow it */
-+static void vc_maybe_cursor_moved(struct vc_data *vc)
-+{
-+	if (vc->vc_x != lastvc_x || vc->vc_y != lastvc_y)
-+		vc_follow_cursor(vc);
-+}
-+
-+/* Show portion of VC at vc_x, vc_y */
-+static void vc_refresh(struct vc_data *vc)
-+{
-+	u16 buf[WIDTH];
-+	int i;
-+
-+	for (i = 0; i < WIDTH; i++) {
-+		u16 glyph = screen_glyph(vc,
-+				2 * (vc_x + i) + vc_y * vc->vc_size_row);
-+		buf[i] = inverse_translate(vc, glyph, 1);
-+	}
-+	braille_write(buf);
-+}
-+
-+/*
-+ * Link to keyboard
-+ */
-+
-+static int keyboard_notifier_call(struct notifier_block *blk,
-+				  unsigned long code, void *_param)
-+{
-+	struct keyboard_notifier_param *param = _param;
-+	struct vc_data *vc = param->vc;
-+	int ret = NOTIFY_OK;
-+
-+	if (!param->down)
-+		return ret;
-+
-+	switch (code) {
-+	case KBD_KEYCODE:
-+		if (console_show) {
-+			if (param->value == BRAILLE_KEY) {
-+				console_show = 0;
-+				beep(880);
-+				vc_maybe_cursor_moved(vc);
-+				vc_refresh(vc);
-+				ret = NOTIFY_STOP;
-+			}
-+		} else {
-+			ret = NOTIFY_STOP;
-+			switch (param->value) {
-+			case KEY_INSERT:
-+				beep(440);
-+				console_show = 1;
-+				lastVC = -1;
-+				braille_write(console_buf);
-+				break;
-+			case KEY_LEFT:
-+				if (vc_x > 0) {
-+					vc_x -= WIDTH;
-+					if (vc_x < 0)
-+						vc_x = 0;
-+				} else if (vc_y >= 1) {
-+					beep(880);
-+					vc_y--;
-+					vc_x = vc->vc_cols-WIDTH;
-+				} else
-+					beep(220);
-+				break;
-+			case KEY_RIGHT:
-+				if (vc_x + WIDTH < vc->vc_cols) {
-+					vc_x += WIDTH;
-+				} else if (vc_y + 1 < vc->vc_rows) {
-+					beep(880);
-+					vc_y++;
-+					vc_x = 0;
-+				} else
-+					beep(220);
-+				break;
-+			case KEY_DOWN:
-+				if (vc_y + 1 < vc->vc_rows)
-+					vc_y++;
-+				else
-+					beep(220);
-+				break;
-+			case KEY_UP:
-+				if (vc_y >= 1)
-+					vc_y--;
-+				else
-+					beep(220);
-+				break;
-+			case KEY_HOME:
-+				vc_follow_cursor(vc);
-+				break;
-+			case KEY_PAGEUP:
-+				vc_x = 0;
-+				vc_y = 0;
-+				break;
-+			case KEY_PAGEDOWN:
-+				vc_x = 0;
-+				vc_y = vc->vc_rows-1;
-+				break;
-+			default:
-+				ret = NOTIFY_OK;
-+				break;
-+			}
-+			if (ret == NOTIFY_STOP)
-+				vc_refresh(vc);
-+		}
-+		break;
-+	case KBD_POST_KEYSYM:
-+	{
-+		unsigned char type = KTYP(param->value) - 0xf0;
-+		if (type == KT_SPEC) {
-+			unsigned char val = KVAL(param->value);
-+			int on_off = -1;
-+
-+			switch (val) {
-+			case KVAL(K_CAPS):
-+				on_off = vc_kbd_led(kbd_table + fg_console,
-+						VC_CAPSLOCK);
-+				break;
-+			case KVAL(K_NUM):
-+				on_off = vc_kbd_led(kbd_table + fg_console,
-+						VC_NUMLOCK);
-+				break;
-+			case KVAL(K_HOLD):
-+				on_off = vc_kbd_led(kbd_table + fg_console,
-+						VC_SCROLLOCK);
-+				break;
-+			}
-+			if (on_off == 1)
-+				beep(880);
-+			else if (on_off == 0)
-+				beep(440);
-+		}
-+	}
-+	case KBD_UNBOUND_KEYCODE:
-+	case KBD_UNICODE:
-+	case KBD_KEYSYM:
-+		/* Unused */
-+		break;
-+	}
-+	return ret;
-+}
-+
-+static struct notifier_block keyboard_notifier_block = {
-+	.notifier_call = keyboard_notifier_call,
-+};
-+
-+static int vt_notifier_call(struct notifier_block *blk,
-+			    unsigned long code, void *_param)
-+{
-+	struct vt_notifier_param *param = _param;
-+	struct vc_data *vc = param->vc;
-+	switch (code) {
-+	case VT_ALLOCATE:
-+		break;
-+	case VT_DEALLOCATE:
-+		break;
-+	case VT_WRITE:
-+	{
-+		unsigned char c = param->c;
-+		switch (c) {
-+		case '\b':
-+		case 127:
-+			if (console_cursor > 0) {
-+				console_cursor--;
-+				console_buf[console_cursor] = ' ';
-+			}
-+			break;
-+		case '\n':
-+		case '\v':
-+		case '\f':
-+		case '\r':
-+			console_newline = 1;
-+			break;
-+		case '\t':
-+			c = ' ';
-+			/* Fallthrough */
-+		default:
-+			if (c < 32)
-+				/* Ignore other control sequences */
-+				break;
-+			if (console_newline) {
-+				memset(console_buf, 0, sizeof(console_buf));
-+				console_cursor = 0;
-+				console_newline = 0;
-+			}
-+			if (console_cursor == WIDTH)
-+				memmove(console_buf, &console_buf[1],
-+					(WIDTH-1) * sizeof(*console_buf));
-+			else
-+				console_cursor++;
-+			console_buf[console_cursor-1] = c;
-+			break;
-+		}
-+		if (console_show)
-+			braille_write(console_buf);
-+		else {
-+			vc_maybe_cursor_moved(vc);
-+			vc_refresh(vc);
-+		}
-+		break;
-+	}
-+	case VT_UPDATE:
-+		/* Maybe a VT switch, flush */
-+		if (console_show) {
-+			if (vc->vc_num != lastVC) {
-+				lastVC = vc->vc_num;
-+				memset(console_buf, 0, sizeof(console_buf));
-+				console_cursor = 0;
-+				braille_write(console_buf);
-+			}
-+		} else {
-+			vc_maybe_cursor_moved(vc);
-+			vc_refresh(vc);
-+		}
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block vt_notifier_block = {
-+	.notifier_call = vt_notifier_call,
-+};
-+
-+/*
-+ * Link to serial console
-+ */
-+
-+static int __init braille_console_setup(struct console *co, char *options)
-+{
-+	int ret = 0;
-+	if (braille_co)
-+		return -ENODEV;
-+	if (co->index == -1)
-+		co->index = 0;
-+#ifndef MODULE
-+	ret = serial8250_console.setup(co, options);
-+	if (ret < 0)
-+		return ret;
-+#endif
-+	braille_co = co;
-+	return ret;
-+}
-+
-+static struct console braille_console = {
-+	.name		= "brl",
-+	.setup		= braille_console_setup,
-+	.flags		= CON_PRINTBUFFER,
-+	.index		= -1,
-+};
-+
-+/*
-+ * Module access
-+ */
-+
-+static int __init checkinit(void)
-+{
-+	register_console(&braille_console);
-+	register_keyboard_notifier(&keyboard_notifier_block);
-+	register_vt_notifier(&vt_notifier_block);
-+	return 0;
-+}
-+static void __exit checkexit(void)
-+{
-+	unregister_vt_notifier(&vt_notifier_block);
-+	unregister_keyboard_notifier(&keyboard_notifier_block);
-+	unregister_console(&braille_console);
-+}
-+
-+module_init(checkinit);
-+module_exit(checkexit);
-diff -urN linux-2.6.24-orig/drivers/a11y/Kconfig linux-2.6.24-perso/drivers/a11y/Kconfig
---- linux-2.6.24-orig/drivers/a11y/Kconfig	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.24-perso/drivers/a11y/Kconfig	2008-02-04 01:54:36.000000000 +0000
-@@ -0,0 +1,22 @@
-+menuconfig ACCESSIBILITY
-+	bool "Accessibility support"
-+	---help---
-+	  Enable a submenu where accessibility items may be enabled.
-+
-+	  If unsure, say N.
-+
-+if ACCESSIBILITY
-+config A11Y_BRAILLE_CONSOLE
-+	tristate "Console on braille device"
-+	depends on SERIAL_8250_CONSOLE
-+	---help---
-+	  Enables console output on a braille device connected to a 8250
-+	  serial port. For now only the VisioBraille device is supported.
-+
-+	  To actually enable it, you need to pass option
-+	  console=brl0
-+	  to the kernel. Options are the same as for serial console.
-+
-+	  If unsure, say N.
-+
-+endif # ACCESSIBILITY
-diff -urN linux-2.6.24-orig/drivers/a11y/Makefile linux-2.6.24-perso/drivers/a11y/Makefile
---- linux-2.6.24-orig/drivers/a11y/Makefile	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.24-perso/drivers/a11y/Makefile	2008-02-04 01:42:32.000000000 +0000
-@@ -0,0 +1 @@
-+obj-$(CONFIG_A11Y_BRAILLE_CONSOLE)		+= braille/braille_console.o
+I wasn't. That was Pavel. While I think the idea is neat, I'm not
+convinced that it's practical and best way to go, however I need to
+further think about it.
+
+And as I said, I see this as a separate issue from the problem of
+create_with_id()/set_id issue().
+
+> 
+> The /proc/self approach is one way to go, it has been working for LSMs
+> this long.  I'd agree that it would be nice if we could have a
+> consistent interface to the create_with_id()/set_id() problem.  A first
+> shot addressing ipcs and pids would be a great start.
+> 
+>> (I left out some details - eg. the kernel will keep the desire value
+>> on a per-thread field, when it will be reset, whether we want to also
+>> tag the field with its type and so on, but the idea is now clear).
+>>
+>> The main two advantages are that first, we don't need to devise a new
+>> method for every syscall that allocates said resources (sigh... just
+> 
+> Agreed.
+> 
+>> think of clone() nightmare to add a new argument);
+> 
+> Yes, and then there will need to be the clone_with_pid() extension on
+> top of that.
+
+Exactly !  With the /proc/self/... approach there will not be a need
+for a clone_with_pid() extension in terms of user-visible interface;
+makes the clone-flags headache a bit more manageable :p
+
+Ah... ok, long one, hopefully clarifies the confusion. That said, I
+suggest that the debate regarding the format of the checkpoint data
+shall proceed on a new thread, since IMHO it's orthogonal.
+
+Oren.
+
+> 
+>> second, the change
+>> is incremental: first code the mechanism to set the field, then add
+>> support in the IPC subsystem, later in the DEVPTS, then in clone and
+>> so forth.
+>>
+>> Oren.
+>>
+>> Pierre Peiffer wrote:
+>>> Kirill Korotaev wrote:
+>>>> Why user space can need this API? for checkpointing only?
+>>> I would say "at least for checkpointing"... ;) May be someone else may 
+>>> find an
+>>> interest about this for something else.
+>>> In fact, I'm sure that you have some interest in checkpointing; and thus, 
+>>> you
+>>> have probably some ideas in mind; but whatever the solution you will 
+>>> propose,
+>>> I'm pretty sure that I could say the same thing for your solution.
+>>> And what I finally think is: even if it's for "checkpointing only", if 
+>>> many
+>>> people are interested by this, it may be sufficient to push this ?
+>>>> Then I would not consider it for inclusion until it is clear how to 
+>>>> implement checkpointing.
+>>>> As for me personally - I'm against exporting such APIs, since they are 
+>>>> not needed in real-life user space applications and maintaining it 
+>>>> forever for compatibility doesn't worth it.
+>>> Maintaining these patches is not a big deal, really, but this is not the 
+>>> main
+>>> point; the "need in real life" (1) is in fact the main one, and then, the 
+>>> "is
+>>> this solution the best one ?" (2) the second one.
+>>> About (1), as said in my first mail, as the namespaces and containers are 
+>>> being
+>>> integrated into the mainline kernel, checkpoint/restart is (or will be) 
+>>> the next
+>>> need.
+>>> About (2), my solution propose to do that, as much as possible from 
+>>> userspace,
+>>> to minimize the kernel impact. Of course, this is subject to discussion. 
+>>> My
+>>> opinion is that doing a full checkpoint/restart from kernel space will 
+>>> need lot
+>>> of new specific and intrusive code; I'm not sure that this will be 
+>>> acceptable by
+>>> the community. But this is my opinion only. Discusion is opened.
+>>>> Also such APIs allow creation of non-GPL checkpointing in user-space, 
+>>>> which can be of concern as well.
+>>> Honestly, I don't think this really a concern at all. I mean: I've never 
+>>> seen
+>>> "this allows non-GPL binary and thus, this is bad" as an argument to 
+>>> reject a
+>>> functionality, but I may be wrong, and thus, it can be discussed as well.
+>>> I think the points (1) and (2) as stated above are the key ones.
+>>> Pierre
+>>>> Kirill
+>>>>
+>>>>
+>>>> Pierre Peiffer wrote:
+>>>>> Hi again,
+>>>>>
+>>>>> 	Thinking more about this, I think I must clarify why I choose this way.
+>>>>> In fact, the idea of these patches is to provide the missing user APIs 
+>>>>> (or
+>>>>> extend the existing ones) that allow to set or update _all_ properties 
+>>>>> of all
+>>>>> IPCs, as needed in the case of the checkpoint/restart of an application 
+>>>>> (the
+>>>>> current user API does not allow to specify an ID for a created IPC, for
+>>>>> example). And this, without changing the existing API of course.
+>>>>>
+>>>>> 	And msgget(), semget() and shmget() does not have any parameter we can 
+>>>>> use to
+>>>>> specify an ID.
+>>>>> 	That's why I've decided to not change these routines and add a new 
+>>>>> control
+>>>>> command, IP_SETID, with which we can can change the ID of an IPC. (that 
+>>>>> looks to
+>>>>> me more straightforward and logical)
+>>>>>
+>>>>> 	Now, this patch is, in fact, only a preparation for the patch 10/15 
+>>>>> which
+>>>>> really complete the user API by adding this IPC_SETID command.
+>>>>>
+>>>>> (... continuing below ...)
+>>>>>
+>>>>> Alexey Dobriyan wrote:
+>>>>>> On Tue, Jan 29, 2008 at 05:02:38PM +0100, pierre.peiffer@bull.net 
+>>>>>> wrote:
+>>>>>>> This patch provides three new API to change the ID of an existing
+>>>>>>> System V IPCs.
+>>>>>>>
+>>>>>>> These APIs are:
+>>>>>>> 	long msg_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>>>> 	long sem_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>>>> 	long shm_chid(struct ipc_namespace *ns, int id, int newid);
+>>>>>>>
+>>>>>>> They return 0 or an error code in case of failure.
+>>>>>>>
+>>>>>>> They may be useful for setting a specific ID for an IPC when preparing
+>>>>>>> a restart operation.
+>>>>>>>
+>>>>>>> To be successful, the following rules must be respected:
+>>>>>>> - the IPC exists (of course...)
+>>>>>>> - the new ID must satisfy the ID computation rule.
+>>>>>>> - the entry in the idr corresponding to the new ID must be free.
+>>>>>>>  ipc/util.c          |   48 
+>>>>>>> ++++++++++++++++++++++++++++++++++++++++++++++++
+>>>>>>>  ipc/util.h          |    1 +
+>>>>>>>  8 files changed, 197 insertions(+)
+>>>>>> For the record, OpenVZ uses "create with predefined ID" method which
+>>>>>> leads to less code. For example, change at the end is all we want from
+>>>>>> ipc/util.c .
+>>>>> And in fact, you do that from kernel space, you don't have the 
+>>>>> constraint to fit
+>>>>> the existing user API.
+>>>>> Again, this patch, even if it presents a new kernel API, is in fact a
+>>>>> preparation for the next patch which introduces a new user API.
+>>>>>
+>>>>> Do you think that this could fit your need ?
+>>>>>
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.linux-foundation.org
+>> https://lists.linux-foundation.org/mailman/listinfo/containers
