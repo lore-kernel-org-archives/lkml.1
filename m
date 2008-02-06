@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932542AbYBFXRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbYBFXSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932542AbYBFXRp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764265AbYBFXM5
+	id S932623AbYBFXSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932318AbYBFXPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:12:57 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:58990 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764252AbYBFXMx (ORCPT
+	Wed, 6 Feb 2008 18:15:41 -0500
+Received: from smtp1.stealer.net ([88.198.224.204]:43026 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764277AbYBFXNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:12:53 -0500
-To: davem@davemloft.net
-Cc: tomof@acm.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: more iommu sg merging fallout
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080205.204138.107606929.davem@davemloft.net>
-References: <20080205.204138.107606929.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain;
-	charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080207081236V.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 07 Feb 2008 08:12:36 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Wed, 6 Feb 2008 18:13:10 -0500
+Date: Thu, 7 Feb 2008 00:12:58 +0100 (CET)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: David Rientjes <rientjes@google.com>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipvs: Make the synchronization interval controllable
+In-Reply-To: <alpine.DEB.1.00.0802061409130.7879@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0802062329150.15729@titan.stealer.net>
+References: <1202333990-19359-1-git-send-email-sven.wegener@stealer.net>
+ <alpine.DEB.1.00.0802061409130.7879@chino.kir.corp.google.com>
+Organization: STEALER.net
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -1.0
+X-Spam-Bar: -
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Wed, 06 Feb 2008 23:13:08 +0000
+	Bayes: 0.0173 Tokens: new, 167; hammy, 4; neutral, 3; spammy, 0.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0173]
+X-Spam-Signature: b7de34a763dc7f54c85d00c01973086ce21c2cb5
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 20:41:38 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+On Wed, 6 Feb 2008, David Rientjes wrote:
 
-> 
-> The sparc64 change:
-> 
->     commit fde6a3c82d67f592eb587be4d12222b0ae6d4321
->     Author: FUJITA Tomonori <tomof@acm.org>
->     Date:   Mon Feb 4 22:28:02 2008 -0800
-> 
->     iommu sg merging: sparc64: make iommu respect the segment size limits
->     
->     This patch makes iommu respect segment size limits when merging sg
->     lists.
->     
->     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->     Cc: Jeff Garzik <jeff@garzik.org>
->     Cc: James Bottomley <James.Bottomley@steeleye.com>
->     Acked-by: Jens Axboe <jens.axboe@oracle.com>
->     Cc: "David S. Miller" <davem@davemloft.net>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> has significant errors and is going to eat people's disks, as it just
-> nearly did to mine.
-
-Really sorry about it.
-
-
-> Typically what you'll see are NULL pointer derefernces in
-> dma_4v_map_sg() and dma_4u_map_sg() and then the kernel usually craps
-> on your superblock very shortly thereafter.
-> 
-> The changeset above modified only prepare_sg() but that is only the
-> first pass of the SG mapping algorithm of the sparc64 IOMMU layer.
-> 
-> The second pass that fills in the entries depends upon how the first
-> pass does things.  So if you change the first pass decision making you
-> have to update the second pass's as well.
+> On Wed, 6 Feb 2008, Sven Wegener wrote:
 >
-> That second pass is implemented in fill_sg() (there is a version in
-> both arch/sparc64/kernel/iommu.c and arch/sparc64/kernel/pci_sun4v.c),
-> which probably needs new logic as was added to prepare_sg() to handle
-> dma_get_max_seg_size().
+>> diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
+>> index 948378d..9b57ad3 100644
+>> --- a/net/ipv4/ipvs/ip_vs_sync.c
+>> +++ b/net/ipv4/ipvs/ip_vs_sync.c
+>> @@ -143,6 +143,8 @@ char ip_vs_backup_mcast_ifn[IP_VS_IFNAME_MAXLEN];
+>>  /* multicast addr */
+>>  static struct sockaddr_in mcast_addr;
+>>
+>> +/* milliseconds between synchronization runs */
+>> +int sysctl_ip_vs_sync_interval = 1000;
+>>
+>>  static inline void sb_queue_tail(struct ip_vs_sync_buff *sb)
+>>  {
+>
+> How useful is a negative ip_vs_sync_interval?
 
-PARISC, Alpha, and IA64 IOMMUs use the two-pass algorithm like SPARC
-but their first pass decides how to merge sg entires (and stores that
-information in the sg entries), then the second pass simpliy follows
-it (Hopefully I understand these IOMMUs correctly, or else I break
-them too).
+Negative values will be converted to MAX_JIFFY_OFFSET by msecs_to_jiffies 
+and result in a very long interval. A too long interval will be a good way 
+to get your system OOM. We could use an unsigned int or even restrict the 
+value with proc_dointvec_minmax. I'd prefer the latter, that's what I 
+already had in my mind and it also protects from unintentionally choosing 
+a too long interval.
 
-I'll try this work again for 2.6.26. The SPARC IOMMUs are the most
-complicated and seems that few people tests the -mm SPARC code. So I
-guess that I need to find a SPARC box...
-
-Thanks,
+Sven
