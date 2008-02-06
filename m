@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbYBFWA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761065AbYBFWBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbYBFWA6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYBFWAu
+	id S1761065AbYBFWBs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755765AbYBFWBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:00:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51798 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755637AbYBFWAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:00:49 -0500
-Date: Wed, 6 Feb 2008 23:00:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, kexec@lists.infradead.org
-Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in
-	die_nmi path
-Message-ID: <20080206220001.GA15155@elte.hu>
-References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 6 Feb 2008 17:01:40 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43081 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754897AbYBFWBj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 17:01:39 -0500
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
+	(bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <200802062250.07758.rjw@sisk.pl>
+References: <200802010237.59320.rjw@sisk.pl>
+	 <200802061925.19474.rjw@sisk.pl> <1202334228.6274.1.camel@lappy>
+	 <200802062250.07758.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 23:01:00 +0100
+Message-Id: <1202335261.6274.11.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Neil Horman <nhorman@tuxdriver.com> wrote:
+On Wed, 2008-02-06 at 22:50 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
 
->  	if (!user_mode_vm(regs)) {
-> +		nmi_exit();
-> +		local_irq_enable();
->  		current->thread.trap_no = 2;
->  		crash_kexec(regs);
+> > Well, that whole queue.
+> 
+> It doesn't compile for me.
 
-looks good to me, but please move the local_irq_enable() to within 
-crash_kexec() instead - probably inside the "got the kexec lock" 
-section. That makes crash_kexec() use generally safer too i guess: right 
-it seems that die() too can call crash_kexec() with irqs disabled - and 
-can thus hang in smp_send_stop() [or wherever it hung before].
+I did solve some compile issues since posting, Ingo should have the
+compiling version in sched-devel soonish (don't know if he pushed it
+already).
 
-	Ingo
+> > Your test program just failed to obtain realtime scheduling
+> 
+> Well, it shouldn't.  The expected result is to obtain realtime scheduling
+> or we will break existing setups.
+
+Thats a case of wrong expectations in my book. You enabled group
+scheduling and hence behaviour changes. There is just nothing much one
+can do about it, if you don't assign bandwidth to a group, it won't be
+able to run anything. Better to refuse to run, than to sit idle, right?
+
+But I appreciate the situation, therefore I made the whole rt-group
+scheduling a separate .config option (which defaults to n)
+
