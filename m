@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYBFU7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYBFVA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbYBFU7Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 15:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYBFU7Q
+	id S1760186AbYBFVA3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbYBFVAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 15:59:16 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:54600 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757009AbYBFU7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 15:59:15 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Randy Dunlap <randy.dunlap@ORACLE.COM>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <20080205170939.10085936.randy.dunlap@oracle.com>
-References: <1201815920-24669-1-git-send-email-ijc@hellion.org.uk>
-	 <1201815920-24669-2-git-send-email-ijc@hellion.org.uk>
-	 <1201815920-24669-3-git-send-email-ijc@hellion.org.uk>
-	 <47A24765.3070300@zytor.com>
-	 <1201856568.3804.8.camel@cthulhu.hellion.org.uk>
-	 <20080205170939.10085936.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 20:58:59 +0000
-Message-Id: <1202331539.7333.9.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.181
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] x86: add a crc32 checksum to the kernel image.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=GH9t1naC91kA:10 a=frweXNZgSzYHrrxySyutIQ==:17 a=i5hZOBjDUlFRciee8FUA:9 a=v0-GX6D0azZ3pQZ0V80FNRDbvfwA:4 a=WuK_CZDBSqoA:10
+	Wed, 6 Feb 2008 16:00:15 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58794 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757322AbYBFVAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 16:00:14 -0500
+Date: Wed, 6 Feb 2008 22:00:26 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Chatre, Reinette" <reinette.chatre@intel.com>
+Cc: ipw3945-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       "Zhu, Yi" <yi.zhu@intel.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ipw3945: not only it periodically dies, it also BUG()s
+Message-ID: <20080206210026.GA32641@elf.ucw.cz>
+References: <20080205214441.GA1518@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982BB1@orsmsx416.amr.corp.intel.com> <20080206143218.GA16188@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-On Tue, 2008-02-05 at 17:09 -0800, Randy Dunlap wrote:
-> On Fri, 01 Feb 2008 09:02:48 +0000 Ian Campbell wrote:
-> >  
-> > +**** THE IMAGE CHECKSUM
-> > +
-> > +The CRC-32 is calculated over the entire file using an initial
-> > +remainder of 0xffffffff.  The checksum is appended to the file
+> >>> ...I've reported this before, with full debugging. Not sure if
+> >>> anything happened.
+> >> 
+> >> Could you please point me to where you have reported it before?
+> > 
+> > From pavel@ucw.cz Wed Oct 31 01:52:02 2007
+> > From: Pavel Machek <pavel@ucw.cz>
+> > To: linux-wireless@vger.kernel.org,
+> >        kernel list <linux-kernel@vger.kernel.org>,
+> >        ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
+> > Subject: iwl3945 in 2.6.24-rc1 dies under load
+> > X-Warning: Reading this can be dangerous to your mental health.
+> > 
+> > ...and thread that resulted.
 > 
-> Run-on sentences.
-> Use period (full stop) or semi-colon at end of above sentence.
-> If using a period, capitalize the next word.  Thanks.
-> 
-> 
-> > +therefore the CRC of the file up to the limit specified in the syssize
-> > +field of the header is always 0.
+> Could you please create a new bug in our bug tracking system
+> (www.bughost.org) to enable us to track this problem? Please include the
+> relevant information from the thread as well as the information you
+> doscovered recently.
 
-Thanks. I went with:
+Hmmm... bugzilla says:
 
-+The CRC-32 is calculated over the entire file using an initial
-+remainder of 0xffffffff.  The checksum is appended to the file;
-+therefore the CRC of the file up to the limit specified in the syssize
-+field of the header is always 0.
+    * Exact steps to reproduce
+    * Reproducability of bug (e.g. intermittent or 100% reproducable)
+    * Did this problem not exist in previous version of the driver?
+    * kernel version
+    * AP brand/model
+    * dmesg output at debug level 0x43fff
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		it would be nice to specify how to do this. It is
+insmod parameter, right?
 
+    * Type of security (if any) you are using (e.g. WEP64, WEP128, WPA, WPA2, 802.1x, etc)
+    * Version of firmware
+    * Version of the ieee80211 module
+    * Proximity to the AP
 
+    * Before reporting any firmware errors, please be sure to read Ben
+Cahill's mailing list post on how to most effectively report such
+bugs. 
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		unfortunately the link here does not work.
+
+BTW, why not use kernel.org bugzilla? Having to create another account
+is nasty...
+									Pavel
 -- 
-Ian Campbell
-
-If the master dies and the disciple grieves, the lives of both have
-been wasted.
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
