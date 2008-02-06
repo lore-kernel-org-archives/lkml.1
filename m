@@ -1,91 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbYBFARt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbYBFA0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762855AbYBFARt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 19:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760723AbYBFARl
+	id S1762057AbYBFA0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 19:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYBFA0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 19:17:41 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:24233 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760091AbYBFARj (ORCPT
+	Tue, 5 Feb 2008 19:26:09 -0500
+Received: from web52902.mail.re2.yahoo.com ([206.190.49.12]:26602 "HELO
+	web52902.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753991AbYBFA0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 19:17:39 -0500
-X-YMail-OSG: aBRSIZIVM1mjGTSM8aqBL5fMajpUqSRjF4jBfT2Itaa2rQgelSodzebD9muGPwzOPXcAgMYSI2m9Kyy1aa1_PcFaEE6NuCnMvx2fSIxWUenHlwKpTw--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Julian Satran <Julian_Satran@il.ibm.com>
-In-Reply-To: <47A8B510.8000807@garzik.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net>  <47A8B510.8000807@garzik.org>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 16:17:10 -0800
-Message-Id: <1202257030.2220.90.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Feb 2008 19:26:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=qx+IXFLcP3Bu+64zEMMbhC1TOa4E8g0bbzS0KWIpw5T5EpxYchQtMqVsR9xZdWMT0OBs1HMgmrZroDLsXk/y03aJHne05X8WVLQ1xG6WHLMNVVkorP2QyJSoplHEj0DQ95zCrUjJvz4h+D7vhJdQj8T8l9ujKPjlimzoPmVpNCw=;
+X-YMail-OSG: JF1YVfEVM1lXDfCGy1ysum8mns8PTv_GHEH1fXapHhv0BFhwcT8QVpoMaNlpOtPr2l7y99HOAiOwP18ccbWDOq7NYn23OnO2uig7aoHy8pO5x8TPVSZkliI7nELpCw--
+Date: Wed, 6 Feb 2008 00:26:05 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: [BUG] 2.6.24 refuses to boot - NMI watchdog problem?
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20080205153243.dadaace8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <658272.2386.qm@web52902.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 14:12 -0500, Jeff Garzik wrote:
-> Vladislav Bolkhovitin wrote:
-> > Jeff Garzik wrote:
-> >> iSCSI is way, way too complicated. 
-> > 
-> > I fully agree. From one side, all that complexity is unavoidable for 
-> > case of multiple connections per session, but for the regular case of 
-> > one connection per session it must be a lot simpler.
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 2 Feb 2008 23:36:42 +0000 (GMT)
+> Chris Rankin <rankincj@yahoo.com> wrote:
+
+> > I have a 1 GHz Coppermine PC with 512 MB RAM, and it is failing to boot with the
+> nmi_watchdog=1
+> > option. This kernel was rebuilt after doing a "make mrproper". The dmesg log follows:
 > 
-> 
-> Actually, think about those multiple connections...  we already had to 
-> implement fast-failover (and load bal) SCSI multi-pathing at a higher 
-> level.  IMO that portion of the protocol is redundant:   You need the 
-> same capability elsewhere in the OS _anyway_, if you are to support 
-> multi-pathing.
-> 
-> 	Jeff
-> 
-> 
+> Can you tell us if earlier kernels worked OK, and if so which version(s)?
+> From your other mail it appears that 2.6.23 was OK?
 
-Hey Jeff,
+Oh yes, 2.6.23.14 is fine with nmi_watchdog=1. (This is on a UP machine with a SMP/PREEMPT kernel,
+BTW. "Just for fun.")
 
-I put a whitepaper on the LIO cluster recently about this topic.. It is
-from a few years ago but the datapoints are very relevant.
+Cheers,
+Chris
 
-http://linux-iscsi.org/builds/user/nab/Inter.vs.OuterNexus.Multiplexing.pdf
 
-The key advantage to MC/S and ERL=2 has always been that they are
-completely OS independent.  They are designed to work together and
-actually benefit from one another.
 
-They are also are protocol independent between Traditional iSCSI and
-iSER.
-
---nab
-
-PS: A great thanks for my former colleague Edward Cheng for putting this
-together.
-
-> 
-> 
+      __________________________________________________________
+Sent from Yahoo! Mail - a smarter inbox http://uk.mail.yahoo.com
 
