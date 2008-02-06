@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbYBFKsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761818AbYBFKuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761572AbYBFKsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 05:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYBFKsK
+	id S1761818AbYBFKuc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 05:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbYBFKuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 05:48:10 -0500
-Received: from ns1.suse.de ([195.135.220.2]:39293 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbYBFKsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 05:48:09 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Tino Keitel <tino.keitel@gmx.de>, <linux-kernel@vger.kernel.org>,
-       ath5k-devel@lists.ath5k.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [RFT 1/1] single_chip test
-References: <20080206014131.9d489a34.akpm@linux-foundation.org>
-	<1202294560-7313-1-git-send-email-jirislaby@gmail.com>
-X-Yow: I've read SEVEN MILLION books!!
-Date: Wed, 06 Feb 2008 11:48:06 +0100
-In-Reply-To: <1202294560-7313-1-git-send-email-jirislaby@gmail.com> (Jiri
-	Slaby's message of "Wed\, 6 Feb 2008 11\:42\:40 +0100")
-Message-ID: <jezluetl7d.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Wed, 6 Feb 2008 05:50:25 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:41586 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755637AbYBFKuY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 05:50:24 -0500
+Date: Wed, 6 Feb 2008 08:50:18 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
+To: linux-kernel@vger.kernel.org
+Cc: dwmw2@infradead.org
+Subject: Re: [PATCH] power_supply: Remove capacity_level from list of sysfs
+	attributes
+Message-ID: <20080206105018.GB4232@vespa.holoscopio.com>
+References: <20080205161327.GA8628@vespa.holoscopio.com> <20080206005312.237d7336.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206005312.237d7336.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Wed, Feb 06, 2008 at 12:53:12AM -0800, Andrew Morton wrote:
+> On Tue, 5 Feb 2008 14:13:36 -0200 Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org> wrote:
+> 
+> > ---
+> >  drivers/power/power_supply_sysfs.c |    1 -
+> >  1 files changed, 0 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+> > index d482484..13399d1 100644
+> > --- a/drivers/power/power_supply_sysfs.c
+> > +++ b/drivers/power/power_supply_sysfs.c
+> > @@ -106,7 +106,6 @@ static struct device_attribute power_supply_attrs[] = {
+> >  	POWER_SUPPLY_ATTR(energy_now),
+> >  	POWER_SUPPLY_ATTR(energy_avg),
+> >  	POWER_SUPPLY_ATTR(capacity),
+> > -	POWER_SUPPLY_ATTR(capacity_level),
+> >  	POWER_SUPPLY_ATTR(temp),
+> >  	POWER_SUPPLY_ATTR(temp_ambient),
+> >  	POWER_SUPPLY_ATTR(time_to_empty_now),
+> 
+> What is the reason for making this change?
 
-> @@ -210,12 +205,16 @@ struct ath5k_hw *ath5k_hw_attach(struct ath5k_softc *sc, u8 mac_version)
->  	}
->  
->  	/* Identify single chip solutions */
-> -	if((srev <= AR5K_SREV_VER_AR5414) &&
-> -	(srev >= AR5K_SREV_VER_AR2424)) {
-> -		ah->ah_single_chip = true;
-> -	} else {
-> -		ah->ah_single_chip = false;
-> -	}
-> +	ah->ah_single_chip = !!(srev >= AR5K_SREV_VER_AR2424 &&
-                             ^^
+Sorry. The following commit is the reason for this patch.
 
-This is useless.
+It removes CAPACITY_LEVEL from every other code, leaving the array with
+sysfs attributes with one more entry than the number of enums in
+power_supply.h. This leads to some attributes containing the value of
+the attribute right after it. For example, temp_ambient would have the
+value of time_to_empty_now. In my case, I had time_to_full_avg have the
+value which should be in model_name, when the former was usually empty.
 
-Andreas.
+commit 8efe444038a205e79b38b7ad03878824901849a8
+Author: Andres Salomon <dilinger@queued.net>
+Date:   Wed Dec 12 14:12:56 2007 -0500
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+    power: remove POWER_SUPPLY_PROP_CAPACITY_LEVEL
+
+    The CAPACITY_LEVEL stuff defines various levels of charge; however, what
+    is the difference between them?  What differentiates between HIGH and NORMAL
+    LOW and CRITICAL, etc?
+
+    As it appears that these are fairly arbitrary, we end up making such policy
+    decisions in the kernel (or in hardware).  This is the sort of decision that
+    should be made in userspace, not in the kernel.
+
+    If the hardware does not support _CAPACITY and it cannot be easily calculate
+    then perhaps the driver should register a custom CAPACITY_LEVEL attribute;
+    however, userspace should not become accustomed to looking for such a thing,
+    and we should certainly not encourage drivers to provide CAPACITY_LEVEL
+    stubs.
+
+    The following removes support for POWER_SUPPLY_PROP_CAPACITY_LEVEL.  The
+    OLPC battery driver is the only driver making use of this, so it's
+    removed from there as well.
+
+    Signed-off-by: Andres Salomon <dilinger@debian.org>
+    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
