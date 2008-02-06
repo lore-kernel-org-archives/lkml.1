@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbYBFUdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbYBFUfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbYBFUdn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 15:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbYBFUdf
+	id S1759465AbYBFUfB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 15:35:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbYBFUex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 15:33:35 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:25431 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755124AbYBFUde (ORCPT
+	Wed, 6 Feb 2008 15:34:53 -0500
+Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:41434 "EHLO
+	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863AbYBFUev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 15:33:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=a9S/hYy1fmDOKdpljf9hO0N9Q+GV5h+vu0Wp3lx68zlXrQr0O3jKnPwSjet/EQKRYnHAsQm099YnYicGQm8CJhPKdj+cPU2Qakty5EC/gilEDsAqWagbH4IxhJAdV1IgaqSkK7k0GX7AYTAurkNiUX/JucHp7utUgXIoVijD+Es=
-Message-ID: <84144f020802061233g70eebd88v1ab898c00bdb775@mail.gmail.com>
-Date: Wed, 6 Feb 2008 22:33:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: kerndev@sc-software.com
-Subject: Re: Bug: 2.6.24-smp: Eeek! page_mapcount(page) went negative! (-1)
-Cc: "Hugh Dickins" <hugh@veritas.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0802061214550.4601@sc-software.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Feb 2008 15:34:51 -0500
+Date: Wed, 6 Feb 2008 21:34:49 +0100
+From: Christer Weinigel <christer@weinigel.se>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Diego Zuccato <diego@otello.alma.unibo.it>,
+       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080206213449.6614efea@weinigel.se>
+In-Reply-To: <1202161091.15090.84.camel@violet>
+References: <20080125180232.GA4613@kroah.com>
+	<20080202123710.42df1aa0@weinigel.se>
+	<20080202191930.GA19826@kroah.com>
+	<47A5D895.20300@davidnewall.com>
+	<47A6E742.80408@otello.alma.unibo.it>
+	<47A764ED.8030605@weinigel.se>
+	<1202161091.15090.84.camel@violet>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0802061003370.4601@sc-software.com>
-	 <Pine.LNX.4.64.0802061948380.32204@blonde.site>
-	 <Pine.LNX.4.64.0802061214550.4601@sc-software.com>
-X-Google-Sender-Auth: 3c305eb6e0612af4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 04 Feb 2008 22:38:11 +0100
+Marcel Holtmann <marcel@holtmann.org> wrote:
 
-On Feb 6, 2008 10:21 PM,  <kerndev@sc-software.com> wrote:
-> From reboot after last hang on 02/03/08, I found this...
->
-> Feb  5 23:26:26 sc-software kernel: ------------[ cut here ]------------
-> Feb  5 23:26:26 sc-software kernel: kernel BUG at mm/slab.c:591!
-> Feb  5 23:26:26 sc-software kernel: invalid opcode: 0000 [#1] PREEMPT SMP
-> Feb  5 23:26:26 sc-software kernel: Modules linked in: shpchp pci_hotplug ohci1394 ieee1394
-> Feb  5 23:26:26 sc-software kernel:
-> Feb  5 23:26:26 sc-software kernel: Pid: 6040, comm: modprobe Not tainted (2.6.24 #1)
-> Feb  5 23:26:26 sc-software kernel: EIP: 0060:[<c017960f>] EFLAGS: 00010046 CPU: 1
-> Feb  5 23:26:26 sc-software kernel: EIP is at kfree+0x8f/0xa0
-> Feb  5 23:26:26 sc-software kernel: EAX: 40000000 EBX: f5915380 ECX: c1bb4498 EDX: c1bb4498
-> Feb  5 23:26:26 sc-software kernel: ESI: eff354a0 EDI: f5815280 EBP: f0067e78 ESP: f0067e68
-> Feb  5 23:26:26 sc-software kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Feb  5 23:26:26 sc-software kernel: Process modprobe (pid: 6040, ti=f0066000 task=f00b5550 task.ti=f0066000)
-> Feb  5 23:26:26 sc-software kernel: Stack: 00000282 f5915380 eff354a0 b7fb87b0 f0067f1c c01ac9ac 00000003 00001812
-> Feb  5 23:26:26 sc-software kernel:        f0067e98 0805ba64 00000418 0805ba64 f0067eb4 0805ba64 00001812 00000000
-> Feb  5 23:26:26 sc-software kernel:        f5815280 00000001 00000000 0805be7c 0805ba64 0805aa64 08048000 00000000
-> Feb  5 23:26:26 sc-software kernel: Call Trace:
-> Feb  5 23:26:26 sc-software kernel:  [<c0103e5a>] show_trace_log_lvl+0x1a/0x30
-> Feb  5 23:26:26 sc-software kernel:  [<c0103f2a>] show_stack_log_lvl+0x9a/0xc0
-> Feb  5 23:26:26 sc-software kernel:  [<c01040d7>] show_registers+0xc7/0x250
-> Feb  5 23:26:26 sc-software kernel:  [<c010441f>] die+0x11f/0x220
-> Feb  5 23:26:26 sc-software kernel:  [<c01045b1>] do_trap+0x91/0xd0
-> Feb  5 23:26:26 sc-software kernel:  [<c0104859>] do_invalid_op+0x89/0xa0
-> Feb  5 23:26:26 sc-software kernel:  [<c0657c22>] error_code+0x72/0x78
-> Feb  5 23:26:26 sc-software kernel:  [<c01ac9ac>] load_elf_binary+0x8cc/0xcf0
-> Feb  5 23:26:26 sc-software kernel:  [<c0181864>] search_binary_handler+0xc4/0x250
-> Feb  5 23:26:26 sc-software kernel:  [<c0181b35>] do_execve+0x145/0x190
-> Feb  5 23:26:26 sc-software kernel:  [<c0101c82>] sys_execve+0x32/0xa0
-> Feb  5 23:26:26 sc-software kernel:  [<c0103102>] syscall_call+0x7/0xb
+> Hi Christer,
+> 
+> while the HAL case of Atheros might be still true despite the fact
+> that an OpenHAL has been around for a long time now. The Intel
+> argument is out of the picture since quite some time. The regulatory
+> daemon was an interim solution and has been replaced by a proper
+> firmware solution. So please get your examples up-to-date.
 
-This means we pass a non-slab pointer from load_elf_binary() to
-kfree() which doesn't seem likely to be a software bug reading the
-code. As Hugh suggested, please run memtest86+.
+So how does that invalidate my point?  Intel did jump through a lot of
+hoops to avoid giving away the code that controls their radio.  When
+the regulatory daemon stuff got too much complaints, they finally
+redid their firmware to avoid the daemon.  But they still have not
+exposed the details on how to control their radio.
+
+> You might wanna now point to hiding something in firmware, but the
+> hardware, firmware, driver separation (with being hardware and
+> firmware closed source) is an accepted solution. It is a clean
+> separation. Interface wise and license wise. 
+
+Yes, that is a nice solution.  Provided that you have any firmware at
+all.  But price is everything, chips become dumber and dumber and more
+control functions are pushed to the host.  If you want to sell a device
+in Korea, price is everything; if you can shave off 30 cents by putting
+the firmware in ROM, or by using 1.5 mbits of flash instead of 2 mbits,
+that means an increase in market share or profit margins.  
+
+> Remember that nobody inside the community ever asked for any kind of
+> IP or trade secrets. We only want specifications so we can write the
+> drivers under an appropriate open source license. If the
+> specification describes an API exposed via firmware then that is
+> perfectly fine.
+
+I definitely agree.  I think it's stupid of companies to hide away
+their documentation out of fear of, well, something.  I find it
+extremely frustrating when I bought a device touted as "the first open
+Linux mobile", just to find out that it used a binary-only kernel module
+for the M-Systems DiskOnChip.  A quite nice phone, but due to that one
+module, it was completely impossible to use anything but the ancient
+2.4 kernel it came with.
+
+I also think that my customers, that decided to keep their kernel
+modules binary only, made a big mistake and have told them so.  But I
+still think it's better for the Linux community to be a bit soft on
+such companies for a while.  It's better to let them get away with it
+for a while, and slowly try to convince them about the error of their
+ways, rather than see them go with Windows CE or a BSD.
+
+  /Christer
+
+
