@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763443AbYBFNLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763503AbYBFNQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763443AbYBFNLw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 08:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762749AbYBFNLm
+	id S1763503AbYBFNQL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 08:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762775AbYBFNP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 08:11:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55829 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762725AbYBFNLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 08:11:41 -0500
-Date: Wed, 6 Feb 2008 14:11:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [bug] networking broke, ssh: connect to port 22: Protocol error
-Message-ID: <20080206131129.GB9950@elte.hu>
-References: <20080206113829.GA14793@elte.hu> <20080206.034243.243568099.davem@davemloft.net> <20080206122248.GA5233@elte.hu> <20080206.043246.63923682.davem@davemloft.net>
+	Wed, 6 Feb 2008 08:15:57 -0500
+Received: from h155.mvista.com ([63.81.120.155]:24883 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762774AbYBFNP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 08:15:56 -0500
+Message-ID: <47A9B340.2020603@ru.mvista.com>
+Date: Wed, 06 Feb 2008 16:16:48 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080206.043246.63923682.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       kgdb-bugreport@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Kgdb-bugreport] [PATCH 4/5] KGDB-8250: refactor configuration
+References: <479FBAE8.3070809@web.de> <479FC57D.5030104@web.de> <47A325BC.6030305@ru.mvista.com> <47A38AD9.1060305@web.de>
+In-Reply-To: <47A38AD9.1060305@web.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* David Miller <davem@davemloft.net> wrote:
+Jan Kiszka wrote:
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Wed, 6 Feb 2008 13:22:48 +0100
-> 
-> > So no, it does not fix the problem. The config i sent is a rather 
-> > generic one, it should boot on most whitebox PCs. TCP connections 
-> > will fail immediately, all the time.
-> 
-> I suspect this got added recently with how often and how thoroughly 
-> you test things :-)
+>>>Sorry, previous version was missing some __init[data] attributes which
+>>>were dropped in an intermediate stage. Here comes an updated patch:
 
-yeah, although various other upstream breakages prevented real long 
-randconfig series in the past 2-3 days. I'd say it's either in this pull 
-from your tree:
+>>><---snip--->
 
-  Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-  Date:   Tue Feb 5 10:09:07 2008 -0800
+>>>This major refactoring of the quite complex kgdb8250 configuration does
+>>>the following:
 
-    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
-    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6: (21 commits)
+>>> - ensures that static configurations according to SERIAL_PORT_DFNS are
+>>>   always loaded first
+>>> - tries to pull more accurate configuration via serial8250_get_port_def
+>>>   if simple-config is used
+>>> - detects empty/invalid simple-configs
+>>> - enforces KGDB_PORT_NUM <= SERIAL_8250_NR_UARTS at kconfig level
+>>> - removes kgdb8250_add_port and its hook in serial_core (calling
+>>>   serial8250_get_port_def in demand should provide us the same
+>>>   information)
 
-or perhaps in this one:
+>>   You left powerpc-lite.patch broken with this change as it has
+>>multiple calls to kgdb8250_add_port()...
 
-  Author: Linus Torvalds <torvalds@linux-foundation.org>
-  Date:   Mon Feb 4 07:43:36 2008 -0800
+> I see. But I wonder if there ever was a real need for these hooks (in
+> 2.4 times?): If I look at bamboo_early_serial_map() e.g., I find it
+> calling into early_serial_setup() which fills serial8250_ports[] - and
+> that content is now retrieved via serial8250_get_port_def() when we
+> parse the runtime or build-time provided parameters (port number &
+> baudrate).
 
-    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+    Of course. But now the kgdb8250_add_port() calls need to be removed.
 
-    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6: (77 commits)
+>>>Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
-i'll figure it out, it's totally reproducible so it should be easy to 
-bisect. Just wanted to know whether you had anything queued up already 
-for something like this.
-
-	Ingo
+WBR, Sergei
