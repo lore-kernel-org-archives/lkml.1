@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765743AbYBGAJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763724AbYBGAKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765743AbYBGAJs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764866AbYBFX5d
+	id S1763724AbYBGAKU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764874AbYBFX5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:57:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60707 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:57:36 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60728 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764854AbYBFX5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:57:31 -0500
-Date: Wed, 6 Feb 2008 15:52:52 -0800
+	id S1764854AbYBFX5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:57:34 -0500
+Date: Wed, 6 Feb 2008 15:52:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-acpi@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       Bob Moore <robert.moore@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 33/73] ACPICA: fix acpi-cpufreq boot crash due to _PSD
-	return-by-reference
-Message-ID: <20080206235252.GH13121@suse.de>
+       Zhao Yakui <yakui.zhao@intel.com>, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 34/73] ACPI: Not register gsi for PCI IDE controller in
+	legacy mode
+Message-ID: <20080206235255.GI13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpica-fix-acpi-cpufreq-boot-crash-due-to-_psd-return-by-reference.patch"
+Content-Disposition: inline; filename="acpi-not-register-gsi-for-pci-ide-controller-in-legacy-mode.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,146 +38,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Bob Moore <robert.moore@intel.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-patch 152c300d007c70c4a1847dad39ecdaba22e7d457 in mainline.
+patch 96c2a8766bf4fe91abac863749c11637fabcc64f in mainline.
 
-Changed resolution of named references in packages
+When PCI IDE controller works in legacy mode and no PRT entry is found
+in ACPI PRT table, OSPM will neither read the irq number from the IDE
+PCI configuration space nor call the function of acpi_register_gsi to
+register gsi.
 
-Fixed a problem with the Package operator where all named
-references were created as object references and left otherwise
-unresolved. According to the ACPI specification, a Package can
-only contain Data Objects or references to control methods. The
-implication is that named references to Data Objects (Integer,
-Buffer, String, Package, BufferField, Field) should be resolved
-immediately upon package creation. This is the approach taken
-with this change. References to all other named objects (Methods,
-Devices, Scopes, etc.) are all now properly created as reference objects.
+http://bugzilla.kernel.org/show_bug.cgi?id=5637
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5328
-http://bugzilla.kernel.org/show_bug.cgi?id=9429
-
-Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/dispatcher/dsobject.c |   91 ++++++++++++++++++++++++++++++++++---
- 1 file changed, 85 insertions(+), 6 deletions(-)
+ drivers/acpi/pci_irq.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/drivers/acpi/dispatcher/dsobject.c
-+++ b/drivers/acpi/dispatcher/dsobject.c
-@@ -137,6 +137,71 @@ acpi_ds_build_internal_object(struct acp
- 				return_ACPI_STATUS(status);
- 			}
- 		}
-+
-+		/* Special object resolution for elements of a package */
-+
-+		if ((op->common.parent->common.aml_opcode == AML_PACKAGE_OP) ||
-+		    (op->common.parent->common.aml_opcode ==
-+		     AML_VAR_PACKAGE_OP)) {
-+			/*
-+			 * Attempt to resolve the node to a value before we insert it into
-+			 * the package. If this is a reference to a common data type,
-+			 * resolve it immediately. According to the ACPI spec, package
-+			 * elements can only be "data objects" or method references.
-+			 * Attempt to resolve to an Integer, Buffer, String or Package.
-+			 * If cannot, return the named reference (for things like Devices,
-+			 * Methods, etc.) Buffer Fields and Fields will resolve to simple
-+			 * objects (int/buf/str/pkg).
-+			 *
-+			 * NOTE: References to things like Devices, Methods, Mutexes, etc.
-+			 * will remain as named references. This behavior is not described
-+			 * in the ACPI spec, but it appears to be an oversight.
-+			 */
-+			obj_desc = (union acpi_operand_object *)op->common.node;
-+
-+			status =
-+			    acpi_ex_resolve_node_to_value(ACPI_CAST_INDIRECT_PTR
-+							  (struct
-+							   acpi_namespace_node,
-+							   &obj_desc),
-+							  walk_state);
-+			if (ACPI_FAILURE(status)) {
-+				return_ACPI_STATUS(status);
-+			}
-+
-+			switch (op->common.node->type) {
-+				/*
-+				 * For these types, we need the actual node, not the subobject.
-+				 * However, the subobject got an extra reference count above.
-+				 */
-+			case ACPI_TYPE_MUTEX:
-+			case ACPI_TYPE_METHOD:
-+			case ACPI_TYPE_POWER:
-+			case ACPI_TYPE_PROCESSOR:
-+			case ACPI_TYPE_EVENT:
-+			case ACPI_TYPE_REGION:
-+			case ACPI_TYPE_DEVICE:
-+			case ACPI_TYPE_THERMAL:
-+
-+				obj_desc =
-+				    (union acpi_operand_object *)op->common.
-+				    node;
-+				break;
-+
-+			default:
-+				break;
-+			}
-+
-+			/*
-+			 * If above resolved to an operand object, we are done. Otherwise,
-+			 * we have a NS node, we must create the package entry as a named
-+			 * reference.
-+			 */
-+			if (ACPI_GET_DESCRIPTOR_TYPE(obj_desc) !=
-+			    ACPI_DESC_TYPE_NAMED) {
-+				goto exit;
-+			}
-+		}
- 	}
+--- a/drivers/acpi/pci_irq.c
++++ b/drivers/acpi/pci_irq.c
+@@ -429,6 +429,15 @@ int acpi_pci_irq_enable(struct pci_dev *
+ 					  &polarity, &link,
+ 					  acpi_pci_allocate_irq);
  
- 	/* Create and init a new internal ACPI object */
-@@ -156,6 +221,7 @@ acpi_ds_build_internal_object(struct acp
- 		return_ACPI_STATUS(status);
- 	}
- 
-+      exit:
- 	*obj_desc_ptr = obj_desc;
- 	return_ACPI_STATUS(AE_OK);
- }
-@@ -356,12 +422,25 @@ acpi_ds_build_internal_package_obj(struc
- 	arg = arg->common.next;
- 	for (i = 0; arg && (i < element_count); i++) {
- 		if (arg->common.aml_opcode == AML_INT_RETURN_VALUE_OP) {
--
--			/* This package element is already built, just get it */
--
--			obj_desc->package.elements[i] =
--			    ACPI_CAST_PTR(union acpi_operand_object,
--					  arg->common.node);
-+			if (arg->common.node->type == ACPI_TYPE_METHOD) {
-+				/*
-+				 * A method reference "looks" to the parser to be a method
-+				 * invocation, so we special case it here
-+				 */
-+				arg->common.aml_opcode = AML_INT_NAMEPATH_OP;
-+				status =
-+				    acpi_ds_build_internal_object(walk_state,
-+								  arg,
-+								  &obj_desc->
-+								  package.
-+								  elements[i]);
-+			} else {
-+				/* This package element is already built, just get it */
-+
-+				obj_desc->package.elements[i] =
-+				    ACPI_CAST_PTR(union acpi_operand_object,
-+						  arg->common.node);
-+			}
- 		} else {
- 			status = acpi_ds_build_internal_object(walk_state, arg,
- 							       &obj_desc->
++	if (irq < 0) {
++		/*
++		 * IDE legacy mode controller IRQs are magic. Why do compat
++		 * extensions always make such a nasty mess.
++		 */
++		if (dev->class >> 8 == PCI_CLASS_STORAGE_IDE &&
++				(dev->class & 0x05) == 0)
++			return 0;
++	}
+ 	/*
+ 	 * No IRQ known to the ACPI subsystem - maybe the BIOS / 
+ 	 * driver reported one, then use it. Exit in any case.
 
 -- 
