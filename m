@@ -1,67 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760442AbYBFVbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbYBFVkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760442AbYBFVbl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbYBFVbd
+	id S1758609AbYBFVkI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYBFVjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:31:33 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41450 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752831AbYBFVbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:31:33 -0500
-Date: Wed, 6 Feb 2008 22:31:48 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Len Brown <len.brown@intel.com>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: Re: [linux-pm] Re: Small pm documentation cleanups
-Message-ID: <20080206213148.GD32641@elf.ucw.cz>
-References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl> <47A7F581.8060300@nigel.suspend2.net> <20080205182712.GA9483@elf.ucw.cz> <47AA2627.4030509@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AA2627.4030509@nigel.suspend2.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 6 Feb 2008 16:39:55 -0500
+Received: from smtp1.stealer.net ([88.198.224.204]:59198 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYBFVjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 16:39:54 -0500
+From: Sven Wegener <sven.wegener@stealer.net>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] ipvs: Make the synchronization interval controllable
+Date: Wed,  6 Feb 2008 22:39:50 +0100
+Message-Id: <1202333990-19359-1-git-send-email-sven.wegener@stealer.net>
+X-Mailer: git-send-email 1.5.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-02-07 08:27:03, Nigel Cunningham wrote:
-> Hi again.
->
-> Pavel Machek wrote:
->> Hi!
->>
->>>> On Tuesday, 5 of February 2008, Pavel Machek wrote:
->>>>> Small documentation fixes/additions that accumulated in my tree.
->>>>>
->>>>> Signed-off-by: Pavel Machek <pavel@suse.cz>
->>>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
->>>>
->> ...
->>>>> 0
->>>>>   	acpi_sleep=	[HW,ACPI] Sleep options
->>>>> -			Format: { s3_bios, s3_mode }
->>>>> -			See Documentation/power/video.txt
->>>>> +			Format: { s3_bios, s3_mode, s3_beep }
->>>>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
->>>>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
->>>>> +			kernel's real-mode entry point is called.
->>> s/kernel's/the kernel's/
->>
->> Thanks for comments, I applied them.
->
-> You're welcome. Sorry for replying again, but I just noticed another one in 
-> the line above - it should be something like "it makes the PC's speaker 
-> beep as soon as" ('on PC speaker' isn't right).
->
-> Sorry for not getting that last time.
+The default synchronization interval of 1000 milliseconds is too high for a
+heavily loaded director. Collecting the connection information from one second
+and then sending it out in a burst will overflow the socket buffer and lead to
+synchronization information being dropped. Make the interval controllable by a
+sysctl variable so that users can tune it.
 
-Ok, lets fix that in followup patch...
-									Pavel
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+---
+ Documentation/networking/ipvs-sysctl.txt |    9 +++++++++
+ net/ipv4/ipvs/ip_vs_ctl.c                |    9 ++++++++-
+ net/ipv4/ipvs/ip_vs_sync.c               |    6 ++++--
+ 3 files changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/networking/ipvs-sysctl.txt b/Documentation/networking/ipvs-sysctl.txt
+index 4ccdbca..1389e2f 100644
+--- a/Documentation/networking/ipvs-sysctl.txt
++++ b/Documentation/networking/ipvs-sysctl.txt
+@@ -141,3 +141,12 @@ sync_threshold - INTEGER
+         synchronized, every time the number of its incoming packets
+         modulus 50 equals the threshold. The range of the threshold is
+         from 0 to 49.
++
++sync_interval - INTEGER
++	default 1000
++
++	The information from synchronization is buffered and sent out at
++	regular intervals by a kernel thread. The interval (in ms) is
++	controlled by this value. The default is too high for a heavily loaded
++	director. If you get a lot of "ip_vs_send_async error" messages from
++	your kernel, then you should lower this value.
+diff --git a/net/ipv4/ipvs/ip_vs_ctl.c b/net/ipv4/ipvs/ip_vs_ctl.c
+index 94c5767..2781505 100644
+--- a/net/ipv4/ipvs/ip_vs_ctl.c
++++ b/net/ipv4/ipvs/ip_vs_ctl.c
+@@ -81,7 +81,7 @@ int sysctl_ip_vs_expire_nodest_conn = 0;
+ int sysctl_ip_vs_expire_quiescent_template = 0;
+ int sysctl_ip_vs_sync_threshold[2] = { 3, 50 };
+ int sysctl_ip_vs_nat_icmp_send = 0;
+-
++extern int sysctl_ip_vs_sync_interval;
+ 
+ #ifdef CONFIG_IP_VS_DEBUG
+ static int sysctl_ip_vs_debug_level = 0;
+@@ -1582,6 +1582,13 @@ static struct ctl_table vs_vars[] = {
+ 		.proc_handler	= &proc_do_sync_threshold,
+ 	},
+ 	{
++		.procname	= "sync_interval",
++		.data		= &sysctl_ip_vs_sync_interval,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
+ 		.procname	= "nat_icmp_send",
+ 		.data		= &sysctl_ip_vs_nat_icmp_send,
+ 		.maxlen		= sizeof(int),
+diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
+index 948378d..9b57ad3 100644
+--- a/net/ipv4/ipvs/ip_vs_sync.c
++++ b/net/ipv4/ipvs/ip_vs_sync.c
+@@ -143,6 +143,8 @@ char ip_vs_backup_mcast_ifn[IP_VS_IFNAME_MAXLEN];
+ /* multicast addr */
+ static struct sockaddr_in mcast_addr;
+ 
++/* milliseconds between synchronization runs */
++int sysctl_ip_vs_sync_interval = 1000;
+ 
+ static inline void sb_queue_tail(struct ip_vs_sync_buff *sb)
+ {
+@@ -701,7 +703,7 @@ static void sync_master_loop(void)
+ 		if (stop_master_sync)
+ 			break;
+ 
+-		msleep_interruptible(1000);
++		msleep_interruptible(sysctl_ip_vs_sync_interval);
+ 	}
+ 
+ 	/* clean up the sync_buff queue */
+@@ -758,7 +760,7 @@ static void sync_backup_loop(void)
+ 		if (stop_backup_sync)
+ 			break;
+ 
+-		msleep_interruptible(1000);
++		msleep_interruptible(sysctl_ip_vs_sync_interval);
+ 	}
+ 
+ 	/* release the sending multicast socket */
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.4
+
