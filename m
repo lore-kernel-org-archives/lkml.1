@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbYBFB7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763611AbYBFCAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763519AbYBFB7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760063AbYBFB7K
+	id S1763611AbYBFCAS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 21:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759693AbYBFCAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:59:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45006 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758793AbYBFB7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:59:08 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH for review] ACPI: Create /sys/firmware/acpi/interrupts/ counters
-Date: Tue, 5 Feb 2008 20:58:50 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200802050230.10873.lenb@kernel.org> <200802051812.09228.lenb@kernel.org> <20080205231842.GB8740@suse.de>
-In-Reply-To: <20080205231842.GB8740@suse.de>
+	Tue, 5 Feb 2008 21:00:01 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51983 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759477AbYBFCAA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 21:00:00 -0500
+Date: Wed, 06 Feb 2008 10:54:11 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] badness() dramatically overcounts memory
+Cc: kosaki.motohiro@jp.fujitsu.com, Jeff Davis <linux@j-davis.com>,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@qumranet.com>
+In-Reply-To: <alpine.DEB.1.00.0802051507460.18347@chino.kir.corp.google.com>
+References: <1202252561.24634.64.camel@dogma.ljc.laika.com> <alpine.DEB.1.00.0802051507460.18347@chino.kir.corp.google.com>
+Message-Id: <20080206105041.2717.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802052058.50663.lenb@kernel.org>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 February 2008 18:18, Greg KH wrote:
-> On Tue, Feb 05, 2008 at 06:12:09PM -0500, Len Brown wrote:
-> > On Tuesday 05 February 2008 17:18, Greg KH wrote:
-> > > On Tue, Feb 05, 2008 at 02:30:10AM -0500, Len Brown wrote:
-> > > > # cat /sys/firmware/acpi/interrupts/summary
-> > > > pm_timer     0
-> > > > glbl_lock    0
-> > > > power_btn    0
-> > > > sleep_btn    0
-> > > > rtc          0
-> > > > gpe00    0
-> > ...
-> > > > gpe1F    0
-> > > > gpe_hi    0
-> > > > gpe_total   63
-> > > > acpi_irq    63
-> > > 
-> > > Eeek!  Why?  What's wrong with individual files here?
+Hi
+
+> > > The interesting thing is the use of total_vm and not the RSS which is used as
+> > > the basis by the OOM killer. I need to read/understand the code a bit more.
 > > 
-> > My expectation is that this is a shell interface for debugging,
-> > not an API for programs.  ala /proc/interrupts.
+> > RSS makes more sense to me as well.
 > 
-> Great, then use debugfs for it.  Please, don't put debug stuff like this
-> in sysfs, that's not what it is there for.  You can do whatever you want
-> in debugfs :)
+> Andrea Arcangeli has patches pending which change this to the RSS.  
+> Specifically:
+> 
+> 	http://marc.info/?l=linux-mm&m=119977937126925
 
-Can you point to a model of good behaviour that I can copy?
+I agreed with you that RSS is better :)
 
-note that I want this information to be available on every system,
-just like /proc/interrupts is.
 
-/proc/ has seqfile support, is there a reason I shouldn't use it?
-I'd banned additional files from /proc/acpi for a long time
-since the directory layout was ill-conceived.  But maybe I
-should re-consider the headlong rush to use sysfs?
 
-thanks,
--Len
+but..
+on many node numa, per zone rss is more better..
+
+
+- kosaki
+
+
