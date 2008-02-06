@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbYBFB1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762246AbYBFB3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932140AbYBFB1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYBFB1O
+	id S1762246AbYBFB3I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 20:29:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYBFB24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:27:14 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:48234 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbYBFB1N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:27:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Md5jfQHmuXDQKCpP0y4JYAoyp5Js8qzRsycWrKRulc1QIxaMwPk/iCpWT1Zd0X1yCXdIzIXRa3iCyJqO0VppUZfDgM9iyedpiAcwYbi1FdLWSFVP2ZfpnI4Nu8z8KZoWf7GqyLo7DFCBpm5EerlP1GI5vWierqxExyu8sZSY6Ds=
-Message-ID: <75b66ecd0802051727r6e3133dfxc8b263af085abf7@mail.gmail.com>
-Date: Tue, 5 Feb 2008 20:27:09 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: New RTC drivers don't provide the sysctl to set max user frequency
-Cc: vapier.adi@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <47A8E90D.4000008@redhat.com>
+	Tue, 5 Feb 2008 20:28:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55178 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753424AbYBFB2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 20:28:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Date: Wed, 6 Feb 2008 02:27:13 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <20080205190600.GB11613@elf.ucw.cz>
+In-Reply-To: <20080205190600.GB11613@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <47A8E90D.4000008@redhat.com>
-X-Google-Sender-Auth: 01e3d3c43cb570d5
+Message-Id: <200802060227.14385.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 5, 2008 5:54 PM, Chuck Ebbert <cebbert@redhat.com> wrote:
-> Is every application that uses /proc/sys/dev/rtc/max-user-freq
-> supposed to be updated to use the new /sys interface?
+On Tuesday, 5 of February 2008, Pavel Machek wrote:
+> 
+> This rewrites wakeup code to .c, and it fixes stack (should use movl
+> ,%esp, not movw). Testers wanted. Makefile infrastructure was done by
+> hpa, cleanups by rjw.
 
-IMHO the default should be increased to 1024 - the current default of
-64 dates back to the 486 era.  This would eliminate the need for a lot
-of apps to touch it at all.
+I'll test it tomorrow and I still have some more cleanups (I was distracted by
+a nasty scheduler issue in the current mainline).
 
-Unprivileged users have lots of other ways to generate more than 1024
-interrupts/second anyway.
-
-Lee
+Thanks,
+Rafael
