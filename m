@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYBFXGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761498AbYBFXHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbYBFXGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763444AbYBFXFP
+	id S1761498AbYBFXHE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762882AbYBFXFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:05:15 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:39856 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762729AbYBFXFF convert rfc822-to-8bit (ORCPT
+	Wed, 6 Feb 2008 18:05:33 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:13730 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763485AbYBFXF2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:05:05 -0500
+	Wed, 6 Feb 2008 18:05:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=urgHHm/527d6BTkELhphpMeUFLaB/6J7Dzy5Oo5wthCA7jUrBwYp+XVPN33tA5NkhJ67C7uF3HZfIxhgiXSdFiQMrXXEBXsFQmeqgVf3vfmCUdBcuwwfd89P87pqmk3oKOXEfBQ12B+dsTedpz9TksjcY/zTIltY55oxC5DblbQ=
-Message-ID: <6101e8c40802061505g101d2cafq477b57f110cbae66@mail.gmail.com>
-Date: Thu, 7 Feb 2008 00:05:03 +0100
+        b=OAUh0CUWiw2O6/6V7g0sqA7IYsJMscLWO3yn1Fd7M8KypPfELvapuH4FnzOrueki1+9eTSo8v3Slwesny9dAKMXDu4hFzfXID5SiaX6PRRcYgm+UmdOQHLy1RzXdAEtb6jVKxBlAUfKyod1K3KRw8thAt2ZKHUBrPLL9Cs3j7EU=
+Message-ID: <6101e8c40802061505o1ce85087uf80f76a040dfd4eb@mail.gmail.com>
+Date: Thu, 7 Feb 2008 00:05:25 +0100
 From: "Oliver Pinter" <oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: Re: [2.6.22.y] {12/17} - nfsacl-retval.diff - series for stable kernel #2
-In-Reply-To: <6101e8c40802011734l63bdb871r29006ad5af408234@mail.gmail.com>
+Subject: Re: [2.6.22.y] {11/17} - via-velocity-dont-oops-on-mtu-change-2 - series for stable kernel #2
+In-Reply-To: <6101e8c40802011734m192c8df3pff12d784fc175465@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <6101e8c40802011734l63bdb871r29006ad5af408234@mail.gmail.com>
+References: <6101e8c40802011734m192c8df3pff12d784fc175465@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
-Date: Fri, 2 Nov 2007 15:36:08 -0400
-Subject: [PATCH] knfsd: fix spurious EINVAL errors on first access of
-new filesystem
-References: 340873
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Wed, 28 Nov 2007 22:20:16 +0000 (-0800)
+Subject: via-velocity: don't oops on MTU change (resend)
+Patch-mainline: v2.6.24-rc4
+References: 341537
 
-The v2/v3 acl code in nfsd is translating any return from fh_verify() to
-nfserr_inval.  This is particularly unfortunate in the case of an
-nfserr_dropit return, which is an internal error meant to indicate to
-callers that this request has been deferred and should just be dropped
-pending the results of an upcall to mountd.
+via-velocity: don't oops on MTU change (resend)
 
-Thanks to Roland <devzero@web.de> for bug report and data collection.
+The VIA veloicty driver needs the following to allow changing MTU when down.
+The buffer size needs to be computed when device is brought up, not when
+device is initialized.  This also fixes a bug where the buffer size was
+computed differently on change_mtu versus initial setting.
 
-Cc: Roland <devzero@web.de>
-Acked-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ drivers/net/via-velocity.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.23/fs/nfsd/nfs2acl.c
-===================================================================
---- linux-2.6.23.orig/fs/nfsd/nfs2acl.c
-+++ linux-2.6.23/fs/nfsd/nfs2acl.c
-@@ -41,7 +41,7 @@ static __be32 nfsacld_proc_getacl(struct
+--- a/drivers/net/via-velocity.c	2008-01-03 15:18:50.000000000 -0500
++++ b/drivers/net/via-velocity.c	2008-01-03 15:22:18.000000000 -0500
+@@ -1075,6 +1075,9 @@ static int velocity_init_rd_ring(struct
+ 	int ret = -ENOMEM;
+ 	unsigned int rsize = sizeof(struct velocity_rd_info) *
+ 					vptr->options.numrx;
++	int mtu = vptr->dev->mtu;
++
++	vptr->rx_buf_sz = (mtu <= ETH_DATA_LEN) ? PKT_BUF_SZ : mtu + 32;
 
- 	fh = fh_copy(&resp->fh, &argp->fh);
- 	if ((nfserr = fh_verify(rqstp, &resp->fh, 0, MAY_NOP)))
--		RETURN_STATUS(nfserr_inval);
-+		RETURN_STATUS(nfserr);
+ 	vptr->rd_info = kmalloc(rsize, GFP_KERNEL);
+ 	if(vptr->rd_info == NULL)
+@@ -1733,8 +1736,6 @@ static int velocity_open(struct net_devi
+ 	struct velocity_info *vptr = netdev_priv(dev);
+ 	int ret;
 
- 	if (argp->mask & ~(NFS_ACL|NFS_ACLCNT|NFS_DFACL|NFS_DFACLCNT))
- 		RETURN_STATUS(nfserr_inval);
-Index: linux-2.6.23/fs/nfsd/nfs3acl.c
-===================================================================
---- linux-2.6.23.orig/fs/nfsd/nfs3acl.c
-+++ linux-2.6.23/fs/nfsd/nfs3acl.c
-@@ -37,7 +37,7 @@ static __be32 nfsd3_proc_getacl(struct s
+-	vptr->rx_buf_sz = (dev->mtu <= 1504 ? PKT_BUF_SZ : dev->mtu + 32);
+-
+ 	ret = velocity_init_rings(vptr);
+ 	if (ret < 0)
+ 		goto out;
+@@ -1813,12 +1814,6 @@ static int velocity_change_mtu(struct ne
+ 		velocity_free_rd_ring(vptr);
 
- 	fh = fh_copy(&resp->fh, &argp->fh);
- 	if ((nfserr = fh_verify(rqstp, &resp->fh, 0, MAY_NOP)))
--		RETURN_STATUS(nfserr_inval);
-+		RETURN_STATUS(nfserr);
+ 		dev->mtu = new_mtu;
+-		if (new_mtu > 8192)
+-			vptr->rx_buf_sz = 9 * 1024;
+-		else if (new_mtu > 4096)
+-			vptr->rx_buf_sz = 8192;
+-		else
+-			vptr->rx_buf_sz = 4 * 1024;
 
- 	if (argp->mask & ~(NFS_ACL|NFS_ACLCNT|NFS_DFACL|NFS_DFACLCNT))
- 		RETURN_STATUS(nfserr_inval);
+ 		ret = velocity_init_rd_ring(vptr);
+ 		if (ret < 0)
 
 
 On 2/2/08, Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
-> mainline: ac8587dcb58e40dd336d99d60f852041e06cc3dd
+> mainline: 48f6b053613b62fed7a2fe3255e5568260a8d615
+>
 >
 > --
 > Thanks,
