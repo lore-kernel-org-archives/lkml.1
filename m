@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbYBFXD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbYBFXDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762835AbYBFXD3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbYBFXDU
+	id S1762423AbYBFXDs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbYBFXDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:03:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54582 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756440AbYBFXDT (ORCPT
+	Wed, 6 Feb 2008 18:03:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:17141 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762854AbYBFXDc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:03:19 -0500
-Date: Wed, 6 Feb 2008 15:01:27 -0800
-From: Greg KH <greg@kroah.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@users.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH 2/2] - SH/Dreamcast - fix maple bus bugs
-Message-ID: <20080206230127.GA9614@kroah.com>
-References: <1202337981.6162.8.camel@localhost.localdomain> <1202338431.6162.15.camel@localhost.localdomain>
+	Wed, 6 Feb 2008 18:03:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wHsIObk8qHfVISo9uwGZedkPE3ymKmApb5bZnxYnFP7NN/MIV3jtMT1ztB6/68o6HyJU2uva8ZT4a2Z7rjQ/zSCcs082bmeY/nKIdt2GInD0hbtilmO3u1s8nzatFTffNvw6ZebhKfJoN1ahu02iOKSc5VO81ZPa7yl3V2ZrJv4=
+Message-ID: <6101e8c40802061503k39333288s3b5112576663d2f8@mail.gmail.com>
+Date: Thu, 7 Feb 2008 00:03:30 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       stable-commits@vger.kernel.org
+Subject: Re: [2.6.22.y] {16/17} - nfsv4-MAXNAME-fix.diff - series for stable kernel #2
+In-Reply-To: <6101e8c40802011734t235bc7j88a5f3fb6227aaf4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1202338431.6162.15.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <6101e8c40802011734t235bc7j88a5f3fb6227aaf4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 10:53:51PM +0000, Adrian McMenamin wrote:
-> -	dev->function = function;
-> -	dev->dev.bus = &maple_bus_type;
-> -	dev->dev.parent = &maple_bus;
-> -	dev->dev.release = &maple_release_device;
-> -	retval = device_register(&dev->dev);
-> -	if (retval) {
-> -		printk(KERN_INFO
-> -		       "Maple bus: Attempt to register device (%x, %x) failed.\n",
-> -		       dev->port, dev->unit);
-> -		maple_free_dev(dev);
-> +	mdev->function = function;
-> +	mdev->dev.release = &maple_release_device;
-> +	if (mdev->registered == 0) {
-> +		retval = device_register(&mdev->dev);
-> +		if (retval) {
-> +			printk(KERN_INFO
-> +			"Maple bus: Attempt to register device"
-> +			" (%x, %x) failed.\n",
-> +			mdev->port, mdev->unit);
-> +			maple_free_dev(mdev);
-> +			mdev = NULL;
-> +			return;
-> +		}
-> +		mdev->registered = 1;
->  	}
-> -	dev->registered = 1;
+From: J. Bruce Fields <bfields@citi.umich.edu>
+Date: Fri, 28 Sep 2007 16:45:51 -0400
+Subject: knfsd: query filesystem for NFSv4 getattr of FATTR4_MAXNAME
+References: 271803
+Patch-mainline: 2.6.24 (likely)
 
-I think you are still papering over the real problem here of trying to
-register a device twice.  That's something you should never be doing,
-and your bus walking logic must be incorrect...
+Without this we always return 2^32-1 as the the maximum namelength.
 
-thanks,
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-greg k-h
+---
+ fs/nfsd/nfs4xdr.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+--- linux-2.6.22.orig/fs/nfsd/nfs4xdr.c
++++ linux-2.6.22/fs/nfsd/nfs4xdr.c
+@@ -1453,7 +1453,8 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+ 	err = vfs_getattr(exp->ex_mnt, dentry, &stat);
+ 	if (err)
+ 		goto out_nfserr;
+-	if ((bmval0 & (FATTR4_WORD0_FILES_FREE | FATTR4_WORD0_FILES_TOTAL)) ||
++	if ((bmval0 & (FATTR4_WORD0_FILES_FREE | FATTR4_WORD0_FILES_TOTAL |
++			FATTR4_WORD0_MAXNAME)) ||
+ 	    (bmval1 & (FATTR4_WORD1_SPACE_AVAIL | FATTR4_WORD1_SPACE_FREE |
+ 		       FATTR4_WORD1_SPACE_TOTAL))) {
+ 		err = vfs_statfs(dentry, &statfs);
+@@ -1699,7 +1700,7 @@ out_acl:
+ 	if (bmval0 & FATTR4_WORD0_MAXNAME) {
+ 		if ((buflen -= 4) < 0)
+ 			goto out_resource;
+-		WRITE32(~(u32) 0);
++		WRITE32(statfs.f_namelen);
+ 	}
+ 	if (bmval0 & FATTR4_WORD0_MAXREAD) {
+ 		if ((buflen -= 8) < 0)
+
+
+On 2/2/08, Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
+> mainline: a16e92edcd0a2846455a30823e1bac964e743baa
+>
+>
+> --
+> Thanks,
+> Oliver
+>
+
+
+-- 
+Thanks,
+Oliver
