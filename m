@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYBFRxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYBFRzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYBFRxs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbYBFRxk
+	id S1756782AbYBFRzo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYBFRzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:53:40 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:34506 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753885AbYBFRxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:53:39 -0500
-Message-ID: <47A9F3E4.6040707@qualcomm.com>
-Date: Wed, 06 Feb 2008 09:52:36 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 6 Feb 2008 12:55:37 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:23765 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754030AbYBFRzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 12:55:36 -0500
+Message-ID: <47A9F495.8060400@msgid.tls.msk.ru>
+Date: Wed, 06 Feb 2008 20:55:33 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: RT scheduler config, suggestions and questions
-References: <47A8F328.5070107@qualcomm.com> <1202279815.19243.34.camel@lappy>
-In-Reply-To: <1202279815.19243.34.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: remount-ro & umount & quota interaction
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-02-05 at 15:37 -0800, Max Krasnyanskiy wrote:
->> Folks,
->>
->> I just realized that in latest Linus' tree following sysctls are under SCHED_DEBUG:
->> 	sched_rt_period
->> 	sched_rt_ratio
->>
->> I do not believe that is correct. I know that we do not want to expose scheduler knobs
->> in general but theses are not the heuristic kind of knobs. There is no way the scheduler 
->> can magically figure out what the correct setting should be here.
-> 
-> Yeah, since fixed.
-Super. I guess it's not in mainline yet. Or it wasn't yesterday.
- 
->> Also shouldn't those new RT features that recently went be configurable and _disabled_ 
->> by default ? For example "RT watchdog" and "RT throttling" actually seem very questionable. 
->> SCHED_FIFO is clearly defined as
->> "
->>   A SCHED_FIFO process runs until either it is blocked by an I/O request, it is preempted 
->>   by a higher priority process, or it calls sched_yield(2).
->> "
-> 
-> The watchdog is disabled by default, the bandwidth is .95s every 1s,
-> which is mainly a safe-guard against run-away real-time tasks. As long
-> as real-time usage stays within those limits nothing happens. If you
-> don't like it set sched_rt_runtime [*] to -1.
-Oh. From looking at the code I assumed I need to set sched_rt_ratio to 65536.
-I guess you changed things around a bit. I'll look at the latest changes.
+For a long time I'm bitten by a bad interaction
+of mount -o remount,ro and quota operations.
 
->> Both the watchdog and the throttling are clearly braking that rule. I think it's good to have 
->> those features but not enabled by default and certainly not with sysctls that disable them 
->> hidden under debugging.
->> How about this:
->> - We introduce Kconfig options for them ?
-> 
-> I don't see why this would be needed.
-Reduces code size and RT scheduler complexity for the cases when these features are not required.
-For example my preference would for RT scheduler to be as lean as possible to avoid any kind of 
-overhead and cache pollution. I know both watchdog and throttling end up being a single if() when
-disabled via sysctl, but it all adds up.
- 
->> - Expose all rt sysctls outside of #ifdef DEBUG
-> 
-> Already did this somewhere along the line.
-> 
->> btw I can see "watchdog" being very useful to catch hard-RT tasks that exceed the deadline.
->> But's it gotta be per thread.
-> 
-> It is.
-> 
->> Single setting per user is not enough. Unless a use has a single RT task.
-> 
-> ?
-Currently it's per process. Most RT apps will most likely have several RT threads.
+The sequence is as follows:
 
-Max
+ mount /fs
+ quotaon -ug /fs
+ mount -o remount,ro /fs
+ umount /fs
+
+At this point, umount never returns.  /proc/$pid/wchan
+shows vfs_quota_off:
+
+Feb  6 20:53:25 linux kernel: umount        D e5183eb8     0  8646      1
+Feb  6 20:53:25 linux kernel:        e5183ecc 00000086 00000002 e5183eb8 e5183eb0 00000000 c1db2540 c1db2684
+Feb  6 20:53:25 linux kernel:        c1db2684 c1c0dd00 00000000 cfd9f1c0 c0367080 c0367080 f5849000 f7f06880
+Feb  6 20:53:25 linux kernel:        f7e89d80 00000000 c0367080 b7c9795c 005f3997 00000000 000000ff 00000000
+Feb  6 20:53:25 linux kernel: Call Trace:
+Feb  6 20:53:25 linux kernel:  [<c01a2a65>] vfs_quota_off+0x345/0x490
+Feb  6 20:53:25 linux kernel:  [<c013a3a0>] autoremove_wake_function+0x0/0x50
+Feb  6 20:53:25 linux kernel:  [<c0174bf6>] deactivate_super+0x46/0x80
+Feb  6 20:53:25 linux kernel:  [<c0188bba>] sys_umount+0x4a/0x240
+Feb  6 20:53:25 linux kernel:  [<c017637f>] sys_stat64+0xf/0x30
+Feb  6 20:53:25 linux kernel:  [<c0162069>] remove_vma+0x39/0x50
+Feb  6 20:53:25 linux kernel:  [<c0162b67>] do_munmap+0x197/0x1f0
+Feb  6 20:53:25 linux kernel:  [<c0188dc5>] sys_oldumount+0x15/0x20
+Feb  6 20:53:25 linux kernel:  [<c010417e>] sysenter_past_esp+0x5f/0x85
+
+The filesystem is ext3.  The issue is here for a long time,
+at least since before 2.6.20, and is still present in 2.6.23
+(I'll try 2.6.24 later today).
+
+Can it be fixed please? :)
+
+Thanks!
+
+/mjt
