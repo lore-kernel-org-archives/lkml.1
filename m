@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933438AbYBGASq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932592AbYBGATR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933438AbYBGASq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762570AbYBFX6v
+	id S932592AbYBGATR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbYBFX66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:58:51 -0500
-Received: from mx1.suse.de ([195.135.220.2]:46333 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:58:58 -0500
+Received: from ns2.suse.de ([195.135.220.15]:32894 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932400AbYBFX6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:58:48 -0500
-Date: Wed, 6 Feb 2008 15:53:42 -0800
+	id S932420AbYBFX6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:58:55 -0500
+Date: Wed, 6 Feb 2008 15:53:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,12 +21,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Dmitry Torokhov <dtor@mail.ru>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: [patch 49/73] Input: evdev - implement proper locking
-Message-ID: <20080206235342.GX13121@suse.de>
+Subject: [patch 50/73] Input: mousedev - implement proper locking
+Message-ID: <20080206235344.GY13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="input-evdev-implement-proper-locking.patch"
+Content-Disposition: inline; filename="input-mousedev-implement-proper-locking.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,301 +37,602 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-patch 6addb1d6de1968b84852f54561cc9a999909b5a9 in mainline.
+patch 464b241575f3700e14492e34f26bcd1794280f55 in mainline.
 
 Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Cc: Al Viro <viro@ZenIV.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/evdev.c |  719 +++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 476 insertions(+), 243 deletions(-)
+ drivers/input/mousedev.c |  742 +++++++++++++++++++++++++++++------------------
+ 1 file changed, 470 insertions(+), 272 deletions(-)
 
---- a/drivers/input/evdev.c
-+++ b/drivers/input/evdev.c
-@@ -30,6 +30,8 @@ struct evdev {
+--- a/drivers/input/mousedev.c
++++ b/drivers/input/mousedev.c
+@@ -61,9 +61,11 @@ struct mousedev {
+ 	int open;
+ 	int minor;
+ 	char name[16];
++	struct input_handle handle;
  	wait_queue_head_t wait;
- 	struct evdev_client *grab;
  	struct list_head client_list;
+-	struct input_handle handle;
 +	spinlock_t client_lock; /* protects client_list */
 +	struct mutex mutex;
  	struct device dev;
- };
  
-@@ -37,39 +39,53 @@ struct evdev_client {
- 	struct input_event buffer[EVDEV_BUFFER_SIZE];
- 	int head;
- 	int tail;
-+	spinlock_t buffer_lock; /* protects access to buffer, head and tail */
- 	struct fasync_struct *fasync;
- 	struct evdev *evdev;
- 	struct list_head node;
- };
+ 	struct list_head mixdev_node;
+@@ -113,108 +115,137 @@ static unsigned char mousedev_imex_seq[]
+ static struct input_handler mousedev_handler;
  
- static struct evdev *evdev_table[EVDEV_MINORS];
-+static DEFINE_MUTEX(evdev_table_mutex);
+ static struct mousedev *mousedev_table[MOUSEDEV_MINORS];
++static DEFINE_MUTEX(mousedev_table_mutex);
+ static struct mousedev *mousedev_mix;
+ static LIST_HEAD(mousedev_mix_list);
  
--static void evdev_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
-+static void evdev_pass_event(struct evdev_client *client,
-+			     struct input_event *event)
-+{
-+	/*
-+	 * Interrupts are disabled, just acquire the lock
-+	 */
-+	spin_lock(&client->buffer_lock);
-+	client->buffer[client->head++] = *event;
-+	client->head &= EVDEV_BUFFER_SIZE - 1;
-+	spin_unlock(&client->buffer_lock);
++static void mixdev_open_devices(void);
++static void mixdev_close_devices(void);
 +
-+	kill_fasync(&client->fasync, SIGIO, POLL_IN);
-+}
-+
-+/*
-+ * Pass incoming event to all connected clients. Note that we are
-+ * caleld under a spinlock with interrupts off so we don't need
-+ * to use rcu_read_lock() here. Writers will be using syncronize_sched()
-+ * instead of synchrnoize_rcu().
-+ */
-+static void evdev_event(struct input_handle *handle,
-+			unsigned int type, unsigned int code, int value)
+ #define fx(i)  (mousedev->old_x[(mousedev->pkt_count - (i)) & 03])
+ #define fy(i)  (mousedev->old_y[(mousedev->pkt_count - (i)) & 03])
+ 
+-static void mousedev_touchpad_event(struct input_dev *dev, struct mousedev *mousedev, unsigned int code, int value)
++static void mousedev_touchpad_event(struct input_dev *dev,
++				    struct mousedev *mousedev,
++				    unsigned int code, int value)
  {
- 	struct evdev *evdev = handle->private;
- 	struct evdev_client *client;
-+	struct input_event event;
+ 	int size, tmp;
+ 	enum { FRACTION_DENOM = 128 };
  
--	if (evdev->grab) {
--		client = evdev->grab;
--
--		do_gettimeofday(&client->buffer[client->head].time);
--		client->buffer[client->head].type = type;
--		client->buffer[client->head].code = code;
--		client->buffer[client->head].value = value;
--		client->head = (client->head + 1) & (EVDEV_BUFFER_SIZE - 1);
--
--		kill_fasync(&client->fasync, SIGIO, POLL_IN);
--	} else
--		list_for_each_entry(client, &evdev->client_list, node) {
--
--			do_gettimeofday(&client->buffer[client->head].time);
--			client->buffer[client->head].type = type;
--			client->buffer[client->head].code = code;
--			client->buffer[client->head].value = value;
--			client->head = (client->head + 1) & (EVDEV_BUFFER_SIZE - 1);
--
--			kill_fasync(&client->fasync, SIGIO, POLL_IN);
--		}
-+	do_gettimeofday(&event.time);
-+	event.type = type;
-+	event.code = code;
-+	event.value = value;
+ 	switch (code) {
+-		case ABS_X:
+-			fx(0) = value;
+-			if (mousedev->touch && mousedev->pkt_count >= 2) {
+-				size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
+-				if (size == 0)
+-					size = 256 * 2;
+-				tmp = ((value - fx(2)) * (256 * FRACTION_DENOM)) / size;
+-				tmp += mousedev->frac_dx;
+-				mousedev->packet.dx = tmp / FRACTION_DENOM;
+-				mousedev->frac_dx = tmp - mousedev->packet.dx * FRACTION_DENOM;
+-			}
+-			break;
+ 
+-		case ABS_Y:
+-			fy(0) = value;
+-			if (mousedev->touch && mousedev->pkt_count >= 2) {
+-				/* use X size to keep the same scale */
+-				size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
+-				if (size == 0)
+-					size = 256 * 2;
+-				tmp = -((value - fy(2)) * (256 * FRACTION_DENOM)) / size;
+-				tmp += mousedev->frac_dy;
+-				mousedev->packet.dy = tmp / FRACTION_DENOM;
+-				mousedev->frac_dy = tmp - mousedev->packet.dy * FRACTION_DENOM;
+-			}
+-			break;
++	case ABS_X:
++		fx(0) = value;
++		if (mousedev->touch && mousedev->pkt_count >= 2) {
++			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
++			if (size == 0)
++				size = 256 * 2;
++			tmp = ((value - fx(2)) * 256 * FRACTION_DENOM) / size;
++			tmp += mousedev->frac_dx;
++			mousedev->packet.dx = tmp / FRACTION_DENOM;
++			mousedev->frac_dx =
++				tmp - mousedev->packet.dx * FRACTION_DENOM;
++		}
++		break;
 +
-+	client = rcu_dereference(evdev->grab);
-+	if (client)
-+		evdev_pass_event(client, &event);
-+	else
-+		list_for_each_entry_rcu(client, &evdev->client_list, node)
-+			evdev_pass_event(client, &event);
- 
- 	wake_up_interruptible(&evdev->wait);
- }
-@@ -88,38 +104,142 @@ static int evdev_flush(struct file *file
- {
- 	struct evdev_client *client = file->private_data;
- 	struct evdev *evdev = client->evdev;
-+	int retval;
-+
-+	retval = mutex_lock_interruptible(&evdev->mutex);
-+	if (retval)
-+		return retval;
- 
- 	if (!evdev->exist)
--		return -ENODEV;
-+		retval = -ENODEV;
-+	else
-+		retval = input_flush_device(&evdev->handle, file);
- 
--	return input_flush_device(&evdev->handle, file);
-+	mutex_unlock(&evdev->mutex);
-+	return retval;
++	case ABS_Y:
++		fy(0) = value;
++		if (mousedev->touch && mousedev->pkt_count >= 2) {
++			/* use X size to keep the same scale */
++			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
++			if (size == 0)
++				size = 256 * 2;
++			tmp = -((value - fy(2)) * 256 * FRACTION_DENOM) / size;
++			tmp += mousedev->frac_dy;
++			mousedev->packet.dy = tmp / FRACTION_DENOM;
++			mousedev->frac_dy = tmp -
++				mousedev->packet.dy * FRACTION_DENOM;
++		}
++		break;
+ 	}
  }
  
- static void evdev_free(struct device *dev)
+-static void mousedev_abs_event(struct input_dev *dev, struct mousedev *mousedev, unsigned int code, int value)
++static void mousedev_abs_event(struct input_dev *dev, struct mousedev *mousedev,
++				unsigned int code, int value)
  {
- 	struct evdev *evdev = container_of(dev, struct evdev, dev);
+ 	int size;
  
--	evdev_table[evdev->minor] = NULL;
- 	kfree(evdev);
+ 	switch (code) {
+-		case ABS_X:
+-			size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
+-			if (size == 0)
+-				size = xres ? : 1;
+-			if (value > dev->absmax[ABS_X])
+-				value = dev->absmax[ABS_X];
+-			if (value < dev->absmin[ABS_X])
+-				value = dev->absmin[ABS_X];
+-			mousedev->packet.x = ((value - dev->absmin[ABS_X]) * xres) / size;
+-			mousedev->packet.abs_event = 1;
+-			break;
+ 
+-		case ABS_Y:
+-			size = dev->absmax[ABS_Y] - dev->absmin[ABS_Y];
+-			if (size == 0)
+-				size = yres ? : 1;
+-			if (value > dev->absmax[ABS_Y])
+-				value = dev->absmax[ABS_Y];
+-			if (value < dev->absmin[ABS_Y])
+-				value = dev->absmin[ABS_Y];
+-			mousedev->packet.y = yres - ((value - dev->absmin[ABS_Y]) * yres) / size;
+-			mousedev->packet.abs_event = 1;
+-			break;
++	case ABS_X:
++		size = dev->absmax[ABS_X] - dev->absmin[ABS_X];
++		if (size == 0)
++			size = xres ? : 1;
++		if (value > dev->absmax[ABS_X])
++			value = dev->absmax[ABS_X];
++		if (value < dev->absmin[ABS_X])
++			value = dev->absmin[ABS_X];
++		mousedev->packet.x =
++			((value - dev->absmin[ABS_X]) * xres) / size;
++		mousedev->packet.abs_event = 1;
++		break;
++
++	case ABS_Y:
++		size = dev->absmax[ABS_Y] - dev->absmin[ABS_Y];
++		if (size == 0)
++			size = yres ? : 1;
++		if (value > dev->absmax[ABS_Y])
++			value = dev->absmax[ABS_Y];
++		if (value < dev->absmin[ABS_Y])
++			value = dev->absmin[ABS_Y];
++		mousedev->packet.y = yres -
++			((value - dev->absmin[ABS_Y]) * yres) / size;
++		mousedev->packet.abs_event = 1;
++		break;
+ 	}
  }
  
-+/*
-+ * Grabs an event device (along with underlying input device).
-+ * This function is called with evdev->mutex taken.
-+ */
-+static int evdev_grab(struct evdev *evdev, struct evdev_client *client)
-+{
-+	int error;
-+
-+	if (evdev->grab)
-+		return -EBUSY;
-+
-+	error = input_grab_device(&evdev->handle);
-+	if (error)
-+		return error;
-+
-+	rcu_assign_pointer(evdev->grab, client);
-+	/*
-+	 * We don't use synchronize_rcu() here because read-side
-+	 * critical section is protected by a spinlock instead
-+	 * of rcu_read_lock().
-+	 */
-+	synchronize_sched();
-+
-+	return 0;
-+}
-+
-+static int evdev_ungrab(struct evdev *evdev, struct evdev_client *client)
-+{
-+	if (evdev->grab != client)
-+		return  -EINVAL;
-+
-+	rcu_assign_pointer(evdev->grab, NULL);
-+	synchronize_sched();
-+	input_release_device(&evdev->handle);
-+
-+	return 0;
-+}
-+
-+static void evdev_attach_client(struct evdev *evdev,
-+				struct evdev_client *client)
-+{
-+	spin_lock(&evdev->client_lock);
-+	list_add_tail_rcu(&client->node, &evdev->client_list);
-+	spin_unlock(&evdev->client_lock);
-+	synchronize_sched();
-+}
-+
-+static void evdev_detach_client(struct evdev *evdev,
-+				struct evdev_client *client)
-+{
-+	spin_lock(&evdev->client_lock);
-+	list_del_rcu(&client->node);
-+	spin_unlock(&evdev->client_lock);
-+	synchronize_sched();
-+}
-+
-+static int evdev_open_device(struct evdev *evdev)
-+{
-+	int retval;
-+
-+	retval = mutex_lock_interruptible(&evdev->mutex);
-+	if (retval)
-+		return retval;
-+
-+	if (!evdev->exist)
-+		retval = -ENODEV;
-+	else if (!evdev->open++)
-+		retval = input_open_device(&evdev->handle);
-+
-+	mutex_unlock(&evdev->mutex);
-+	return retval;
-+}
-+
-+static void evdev_close_device(struct evdev *evdev)
-+{
-+	mutex_lock(&evdev->mutex);
-+
-+	if (evdev->exist && !--evdev->open)
-+		input_close_device(&evdev->handle);
-+
-+	mutex_unlock(&evdev->mutex);
-+}
-+
-+/*
-+ * Wake up users waiting for IO so they can disconnect from
-+ * dead device.
-+ */
-+static void evdev_hangup(struct evdev *evdev)
-+{
-+	struct evdev_client *client;
-+
-+	spin_lock(&evdev->client_lock);
-+	list_for_each_entry(client, &evdev->client_list, node)
-+		kill_fasync(&client->fasync, SIGIO, POLL_HUP);
-+	spin_unlock(&evdev->client_lock);
-+
-+	wake_up_interruptible(&evdev->wait);
-+}
-+
- static int evdev_release(struct inode *inode, struct file *file)
+-static void mousedev_rel_event(struct mousedev *mousedev, unsigned int code, int value)
++static void mousedev_rel_event(struct mousedev *mousedev,
++				unsigned int code, int value)
  {
- 	struct evdev_client *client = file->private_data;
- 	struct evdev *evdev = client->evdev;
+ 	switch (code) {
+-		case REL_X:	mousedev->packet.dx += value; break;
+-		case REL_Y:	mousedev->packet.dy -= value; break;
+-		case REL_WHEEL:	mousedev->packet.dz -= value; break;
++	case REL_X:
++		mousedev->packet.dx += value;
++		break;
++
++	case REL_Y:
++		mousedev->packet.dy -= value;
++		break;
++
++	case REL_WHEEL:
++		mousedev->packet.dz -= value;
++		break;
+ 	}
+ }
  
--	if (evdev->grab == client) {
--		input_release_device(&evdev->handle);
--		evdev->grab = NULL;
--	}
-+	mutex_lock(&evdev->mutex);
-+	if (evdev->grab == client)
-+		evdev_ungrab(evdev, client);
-+	mutex_unlock(&evdev->mutex);
- 
- 	evdev_fasync(-1, file, 0);
--	list_del(&client->node);
-+	evdev_detach_client(evdev, client);
- 	kfree(client);
- 
--	if (!--evdev->open && evdev->exist)
--		input_close_device(&evdev->handle);
--
-+	evdev_close_device(evdev);
- 	put_device(&evdev->dev);
- 
- 	return 0;
-@@ -127,41 +247,44 @@ static int evdev_release(struct inode *i
- 
- static int evdev_open(struct inode *inode, struct file *file)
+-static void mousedev_key_event(struct mousedev *mousedev, unsigned int code, int value)
++static void mousedev_key_event(struct mousedev *mousedev,
++				unsigned int code, int value)
  {
--	struct evdev_client *client;
- 	struct evdev *evdev;
-+	struct evdev_client *client;
- 	int i = iminor(inode) - EVDEV_MINOR_BASE;
- 	int error;
+ 	int index;
  
- 	if (i >= EVDEV_MINORS)
- 		return -ENODEV;
- 
-+	error = mutex_lock_interruptible(&evdev_table_mutex);
-+	if (error)
-+		return error;
- 	evdev = evdev_table[i];
-+	if (evdev)
-+		get_device(&evdev->dev);
-+	mutex_unlock(&evdev_table_mutex);
- 
--	if (!evdev || !evdev->exist)
-+	if (!evdev)
- 		return -ENODEV;
- 
--	get_device(&evdev->dev);
--
- 	client = kzalloc(sizeof(struct evdev_client), GFP_KERNEL);
- 	if (!client) {
- 		error = -ENOMEM;
- 		goto err_put_evdev;
+ 	switch (code) {
+-		case BTN_TOUCH:
+-		case BTN_0:
+-		case BTN_LEFT:		index = 0; break;
+-		case BTN_STYLUS:
+-		case BTN_1:
+-		case BTN_RIGHT:		index = 1; break;
+-		case BTN_2:
+-		case BTN_FORWARD:
+-		case BTN_STYLUS2:
+-		case BTN_MIDDLE:	index = 2; break;
+-		case BTN_3:
+-		case BTN_BACK:
+-		case BTN_SIDE:		index = 3; break;
+-		case BTN_4:
+-		case BTN_EXTRA:		index = 4; break;
+-		default:		return;
++
++	case BTN_TOUCH:
++	case BTN_0:
++	case BTN_LEFT:		index = 0; break;
++
++	case BTN_STYLUS:
++	case BTN_1:
++	case BTN_RIGHT:		index = 1; break;
++
++	case BTN_2:
++	case BTN_FORWARD:
++	case BTN_STYLUS2:
++	case BTN_MIDDLE:	index = 2; break;
++
++	case BTN_3:
++	case BTN_BACK:
++	case BTN_SIDE:		index = 3; break;
++
++	case BTN_4:
++	case BTN_EXTRA:		index = 4; break;
++
++	default:		return;
  	}
  
-+	spin_lock_init(&client->buffer_lock);
- 	client->evdev = evdev;
--	list_add_tail(&client->node, &evdev->client_list);
-+	evdev_attach_client(evdev, client);
+ 	if (value) {
+@@ -226,19 +257,22 @@ static void mousedev_key_event(struct mo
+ 	}
+ }
  
--	if (!evdev->open++ && evdev->exist) {
--		error = input_open_device(&evdev->handle);
+-static void mousedev_notify_readers(struct mousedev *mousedev, struct mousedev_hw_data *packet)
++static void mousedev_notify_readers(struct mousedev *mousedev,
++				    struct mousedev_hw_data *packet)
+ {
+ 	struct mousedev_client *client;
+ 	struct mousedev_motion *p;
+-	unsigned long flags;
++	unsigned int new_head;
+ 	int wake_readers = 0;
+ 
+-	list_for_each_entry(client, &mousedev->client_list, node) {
+-		spin_lock_irqsave(&client->packet_lock, flags);
++	list_for_each_entry_rcu(client, &mousedev->client_list, node) {
++
++		/* Just acquire the lock, interrupts already disabled */
++		spin_lock(&client->packet_lock);
+ 
+ 		p = &client->packets[client->head];
+ 		if (client->ready && p->buttons != mousedev->packet.buttons) {
+-			unsigned int new_head = (client->head + 1) % PACKET_QUEUE_LEN;
++			new_head = (client->head + 1) % PACKET_QUEUE_LEN;
+ 			if (new_head != client->tail) {
+ 				p = &client->packets[client->head = new_head];
+ 				memset(p, 0, sizeof(struct mousedev_motion));
+@@ -253,19 +287,22 @@ static void mousedev_notify_readers(stru
+ 		}
+ 
+ 		client->pos_x += packet->dx;
+-		client->pos_x = client->pos_x < 0 ? 0 : (client->pos_x >= xres ? xres : client->pos_x);
++		client->pos_x = client->pos_x < 0 ?
++			0 : (client->pos_x >= xres ? xres : client->pos_x);
+ 		client->pos_y += packet->dy;
+-		client->pos_y = client->pos_y < 0 ? 0 : (client->pos_y >= yres ? yres : client->pos_y);
++		client->pos_y = client->pos_y < 0 ?
++			0 : (client->pos_y >= yres ? yres : client->pos_y);
+ 
+ 		p->dx += packet->dx;
+ 		p->dy += packet->dy;
+ 		p->dz += packet->dz;
+ 		p->buttons = mousedev->packet.buttons;
+ 
+-		if (p->dx || p->dy || p->dz || p->buttons != client->last_buttons)
++		if (p->dx || p->dy || p->dz ||
++		    p->buttons != client->last_buttons)
+ 			client->ready = 1;
+ 
+-		spin_unlock_irqrestore(&client->packet_lock, flags);
++		spin_unlock(&client->packet_lock);
+ 
+ 		if (client->ready) {
+ 			kill_fasync(&client->fasync, SIGIO, POLL_IN);
+@@ -281,7 +318,8 @@ static void mousedev_touchpad_touch(stru
+ {
+ 	if (!value) {
+ 		if (mousedev->touch &&
+-		    time_before(jiffies, mousedev->touch + msecs_to_jiffies(tap_time))) {
++		    time_before(jiffies,
++				mousedev->touch + msecs_to_jiffies(tap_time))) {
+ 			/*
+ 			 * Toggle left button to emulate tap.
+ 			 * We rely on the fact that mousedev_mix always has 0
+@@ -290,7 +328,8 @@ static void mousedev_touchpad_touch(stru
+ 			set_bit(0, &mousedev->packet.buttons);
+ 			set_bit(0, &mousedev_mix->packet.buttons);
+ 			mousedev_notify_readers(mousedev, &mousedev_mix->packet);
+-			mousedev_notify_readers(mousedev_mix, &mousedev_mix->packet);
++			mousedev_notify_readers(mousedev_mix,
++						&mousedev_mix->packet);
+ 			clear_bit(0, &mousedev->packet.buttons);
+ 			clear_bit(0, &mousedev_mix->packet.buttons);
+ 		}
+@@ -302,54 +341,61 @@ static void mousedev_touchpad_touch(stru
+ 		mousedev->touch = jiffies;
+ }
+ 
+-static void mousedev_event(struct input_handle *handle, unsigned int type, unsigned int code, int value)
++static void mousedev_event(struct input_handle *handle,
++			   unsigned int type, unsigned int code, int value)
+ {
+ 	struct mousedev *mousedev = handle->private;
+ 
+ 	switch (type) {
+-		case EV_ABS:
+-			/* Ignore joysticks */
+-			if (test_bit(BTN_TRIGGER, handle->dev->keybit))
+-				return;
+ 
+-			if (test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
+-				mousedev_touchpad_event(handle->dev, mousedev, code, value);
++	case EV_ABS:
++		/* Ignore joysticks */
++		if (test_bit(BTN_TRIGGER, handle->dev->keybit))
++			return;
++
++		if (test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
++			mousedev_touchpad_event(handle->dev,
++						mousedev, code, value);
++		else
++			mousedev_abs_event(handle->dev, mousedev, code, value);
++
++		break;
++
++	case EV_REL:
++		mousedev_rel_event(mousedev, code, value);
++		break;
++
++	case EV_KEY:
++		if (value != 2) {
++			if (code == BTN_TOUCH &&
++			    test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
++				mousedev_touchpad_touch(mousedev, value);
+ 			else
+-				mousedev_abs_event(handle->dev, mousedev, code, value);
+-
+-			break;
+-
+-		case EV_REL:
+-			mousedev_rel_event(mousedev, code, value);
+-			break;
++				mousedev_key_event(mousedev, code, value);
++		}
++		break;
+ 
+-		case EV_KEY:
+-			if (value != 2) {
+-				if (code == BTN_TOUCH && test_bit(BTN_TOOL_FINGER, handle->dev->keybit))
+-					mousedev_touchpad_touch(mousedev, value);
+-				else
+-					mousedev_key_event(mousedev, code, value);
++	case EV_SYN:
++		if (code == SYN_REPORT) {
++			if (mousedev->touch) {
++				mousedev->pkt_count++;
++				/*
++				 * Input system eats duplicate events,
++				 * but we need all of them to do correct
++				 * averaging so apply present one forward
++				 */
++				fx(0) = fx(1);
++				fy(0) = fy(1);
+ 			}
+-			break;
+-
+-		case EV_SYN:
+-			if (code == SYN_REPORT) {
+-				if (mousedev->touch) {
+-					mousedev->pkt_count++;
+-					/* Input system eats duplicate events, but we need all of them
+-					 * to do correct averaging so apply present one forward
+-					 */
+-					fx(0) = fx(1);
+-					fy(0) = fy(1);
+-				}
+ 
+-				mousedev_notify_readers(mousedev, &mousedev->packet);
+-				mousedev_notify_readers(mousedev_mix, &mousedev->packet);
++			mousedev_notify_readers(mousedev, &mousedev->packet);
++			mousedev_notify_readers(mousedev_mix, &mousedev->packet);
+ 
+-				mousedev->packet.dx = mousedev->packet.dy = mousedev->packet.dz = 0;
+-				mousedev->packet.abs_event = 0;
+-			}
+-			break;
++			mousedev->packet.dx = mousedev->packet.dy =
++				mousedev->packet.dz = 0;
++			mousedev->packet.abs_event = 0;
++		}
++		break;
+ 	}
+ }
+ 
+@@ -367,41 +413,45 @@ static void mousedev_free(struct device 
+ {
+ 	struct mousedev *mousedev = container_of(dev, struct mousedev, dev);
+ 
+-	mousedev_table[mousedev->minor] = NULL;
+ 	kfree(mousedev);
+ }
+ 
+-static int mixdev_add_device(struct mousedev *mousedev)
++static int mousedev_open_device(struct mousedev *mousedev)
+ {
+-	int error;
+-
+-	if (mousedev_mix->open) {
+-		error = input_open_device(&mousedev->handle);
+-		if (error)
+-			return error;
++	int retval;
+ 
+-		mousedev->open++;
+-		mousedev->mixdev_open = 1;
+-	}
++	retval = mutex_lock_interruptible(&mousedev->mutex);
++	if (retval)
++		return retval;
+ 
+-	get_device(&mousedev->dev);
+-	list_add_tail(&mousedev->mixdev_node, &mousedev_mix_list);
++	if (mousedev->minor == MOUSEDEV_MIX)
++		mixdev_open_devices();
++	else if (!mousedev->exist)
++		retval = -ENODEV;
++	else if (!mousedev->open++)
++		retval = input_open_device(&mousedev->handle);
+ 
+-	return 0;
++	mutex_unlock(&mousedev->mutex);
++	return retval;
+ }
+ 
+-static void mixdev_remove_device(struct mousedev *mousedev)
++static void mousedev_close_device(struct mousedev *mousedev)
+ {
+-	if (mousedev->mixdev_open) {
+-		mousedev->mixdev_open = 0;
+-		if (!--mousedev->open && mousedev->exist)
+-			input_close_device(&mousedev->handle);
+-	}
++	mutex_lock(&mousedev->mutex);
+ 
+-	list_del_init(&mousedev->mixdev_node);
+-	put_device(&mousedev->dev);
++	if (mousedev->minor == MOUSEDEV_MIX)
++		mixdev_close_devices();
++	else if (mousedev->exist && !--mousedev->open)
++		input_close_device(&mousedev->handle);
++
++	mutex_unlock(&mousedev->mutex);
+ }
+ 
++/*
++ * Open all available devices so they can all be multiplexed in one.
++ * stream. Note that this function is called with mousedev_mix->mutex
++ * held.
++ */
+ static void mixdev_open_devices(void)
+ {
+ 	struct mousedev *mousedev;
+@@ -411,16 +461,19 @@ static void mixdev_open_devices(void)
+ 
+ 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
+ 		if (!mousedev->mixdev_open) {
+-			if (!mousedev->open && mousedev->exist)
+-				if (input_open_device(&mousedev->handle))
+-					continue;
++			if (mousedev_open_device(mousedev))
++				continue;
+ 
+-			mousedev->open++;
+ 			mousedev->mixdev_open = 1;
+ 		}
+ 	}
+ }
+ 
++/*
++ * Close all devices that were opened as part of multiplexed
++ * device. Note that this function is called with mousedev_mix->mutex
++ * held.
++ */
+ static void mixdev_close_devices(void)
+ {
+ 	struct mousedev *mousedev;
+@@ -431,33 +484,50 @@ static void mixdev_close_devices(void)
+ 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
+ 		if (mousedev->mixdev_open) {
+ 			mousedev->mixdev_open = 0;
+-			if (!--mousedev->open && mousedev->exist)
+-				input_close_device(&mousedev->handle);
++			mousedev_close_device(mousedev);
+ 		}
+ 	}
+ }
+ 
++
++static void mousedev_attach_client(struct mousedev *mousedev,
++				   struct mousedev_client *client)
++{
++	spin_lock(&mousedev->client_lock);
++	list_add_tail_rcu(&client->node, &mousedev->client_list);
++	spin_unlock(&mousedev->client_lock);
++	/*
++	 * We don't use synchronize_rcu() here because read-side
++	 * critical section is protected by a spinlock (dev->event_lock)
++	 * instead of rcu_read_lock().
++	 */
++	synchronize_sched();
++}
++
++static void mousedev_detach_client(struct mousedev *mousedev,
++				   struct mousedev_client *client)
++{
++	spin_lock(&mousedev->client_lock);
++	list_del_rcu(&client->node);
++	spin_unlock(&mousedev->client_lock);
++	synchronize_sched();
++}
++
+ static int mousedev_release(struct inode *inode, struct file *file)
+ {
+ 	struct mousedev_client *client = file->private_data;
+ 	struct mousedev *mousedev = client->mousedev;
+ 
+ 	mousedev_fasync(-1, file, 0);
+-
+-	list_del(&client->node);
++	mousedev_detach_client(mousedev, client);
+ 	kfree(client);
+ 
+-	if (mousedev->minor == MOUSEDEV_MIX)
+-		mixdev_close_devices();
+-	else if (!--mousedev->open && mousedev->exist)
+-		input_close_device(&mousedev->handle);
+-
++	mousedev_close_device(mousedev);
+ 	put_device(&mousedev->dev);
+ 
+ 	return 0;
+ }
+ 
+-
+ static int mousedev_open(struct inode *inode, struct file *file)
+ {
+ 	struct mousedev_client *client;
+@@ -475,12 +545,17 @@ static int mousedev_open(struct inode *i
+ 	if (i >= MOUSEDEV_MINORS)
+ 		return -ENODEV;
+ 
++	error = mutex_lock_interruptible(&mousedev_table_mutex);
++	if (error)
++		return error;
+ 	mousedev = mousedev_table[i];
++	if (mousedev)
++		get_device(&mousedev->dev);
++	mutex_unlock(&mousedev_table_mutex);
++
+ 	if (!mousedev)
+ 		return -ENODEV;
+ 
+-	get_device(&mousedev->dev);
+-
+ 	client = kzalloc(sizeof(struct mousedev_client), GFP_KERNEL);
+ 	if (!client) {
+ 		error = -ENOMEM;
+@@ -491,21 +566,17 @@ static int mousedev_open(struct inode *i
+ 	client->pos_x = xres / 2;
+ 	client->pos_y = yres / 2;
+ 	client->mousedev = mousedev;
+-	list_add_tail(&client->node, &mousedev->client_list);
++	mousedev_attach_client(mousedev, client);
+ 
+-	if (mousedev->minor == MOUSEDEV_MIX)
+-		mixdev_open_devices();
+-	else if (!mousedev->open++ && mousedev->exist) {
+-		error = input_open_device(&mousedev->handle);
 -		if (error)
 -			goto err_free_client;
 -	}
-+	error = evdev_open_device(evdev);
++	error = mousedev_open_device(mousedev);
 +	if (error)
 +		goto err_free_client;
  
@@ -340,575 +641,259 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
  
   err_free_client:
 -	list_del(&client->node);
-+	evdev_detach_client(evdev, client);
++	mousedev_detach_client(mousedev, client);
  	kfree(client);
-  err_put_evdev:
- 	put_device(&evdev->dev);
-@@ -197,12 +320,14 @@ static inline size_t evdev_event_size(vo
- 		sizeof(struct input_event_compat) : sizeof(struct input_event);
+  err_put_mousedev:
+ 	put_device(&mousedev->dev);
+@@ -517,41 +588,41 @@ static inline int mousedev_limit_delta(i
+ 	return delta > limit ? limit : (delta < -limit ? -limit : delta);
  }
  
--static int evdev_event_from_user(const char __user *buffer, struct input_event *event)
-+static int evdev_event_from_user(const char __user *buffer,
-+				 struct input_event *event)
+-static void mousedev_packet(struct mousedev_client *client, signed char *ps2_data)
++static void mousedev_packet(struct mousedev_client *client,
++			    signed char *ps2_data)
  {
- 	if (COMPAT_TEST) {
- 		struct input_event_compat compat_event;
+-	struct mousedev_motion *p;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&client->packet_lock, flags);
+-	p = &client->packets[client->tail];
++	struct mousedev_motion *p = &client->packets[client->tail];
  
--		if (copy_from_user(&compat_event, buffer, sizeof(struct input_event_compat)))
-+		if (copy_from_user(&compat_event, buffer,
-+				   sizeof(struct input_event_compat)))
- 			return -EFAULT;
+-	ps2_data[0] = 0x08 | ((p->dx < 0) << 4) | ((p->dy < 0) << 5) | (p->buttons & 0x07);
++	ps2_data[0] = 0x08 |
++		((p->dx < 0) << 4) | ((p->dy < 0) << 5) | (p->buttons & 0x07);
+ 	ps2_data[1] = mousedev_limit_delta(p->dx, 127);
+ 	ps2_data[2] = mousedev_limit_delta(p->dy, 127);
+ 	p->dx -= ps2_data[1];
+ 	p->dy -= ps2_data[2];
  
- 		event->time.tv_sec = compat_event.time.tv_sec;
-@@ -219,7 +344,8 @@ static int evdev_event_from_user(const c
- 	return 0;
- }
- 
--static int evdev_event_to_user(char __user *buffer, const struct input_event *event)
-+static int evdev_event_to_user(char __user *buffer,
-+				const struct input_event *event)
- {
- 	if (COMPAT_TEST) {
- 		struct input_event_compat compat_event;
-@@ -230,7 +356,8 @@ static int evdev_event_to_user(char __us
- 		compat_event.code = event->code;
- 		compat_event.value = event->value;
- 
--		if (copy_to_user(buffer, &compat_event, sizeof(struct input_event_compat)))
-+		if (copy_to_user(buffer, &compat_event,
-+				 sizeof(struct input_event_compat)))
- 			return -EFAULT;
- 
- 	} else {
-@@ -248,7 +375,8 @@ static inline size_t evdev_event_size(vo
- 	return sizeof(struct input_event);
- }
- 
--static int evdev_event_from_user(const char __user *buffer, struct input_event *event)
-+static int evdev_event_from_user(const char __user *buffer,
-+				 struct input_event *event)
- {
- 	if (copy_from_user(event, buffer, sizeof(struct input_event)))
- 		return -EFAULT;
-@@ -256,7 +384,8 @@ static int evdev_event_from_user(const c
- 	return 0;
- }
- 
--static int evdev_event_to_user(char __user *buffer, const struct input_event *event)
-+static int evdev_event_to_user(char __user *buffer,
-+				const struct input_event *event)
- {
- 	if (copy_to_user(buffer, event, sizeof(struct input_event)))
- 		return -EFAULT;
-@@ -266,37 +395,71 @@ static int evdev_event_to_user(char __us
- 
- #endif /* CONFIG_COMPAT */
- 
--static ssize_t evdev_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
-+static ssize_t evdev_write(struct file *file, const char __user *buffer,
-+			   size_t count, loff_t *ppos)
- {
- 	struct evdev_client *client = file->private_data;
- 	struct evdev *evdev = client->evdev;
- 	struct input_event event;
--	int retval = 0;
-+	int retval;
- 
--	if (!evdev->exist)
--		return -ENODEV;
-+	retval = mutex_lock_interruptible(&evdev->mutex);
-+	if (retval)
-+		return retval;
+ 	switch (client->mode) {
+-		case MOUSEDEV_EMUL_EXPS:
+-			ps2_data[3] = mousedev_limit_delta(p->dz, 7);
+-			p->dz -= ps2_data[3];
+-			ps2_data[3] = (ps2_data[3] & 0x0f) | ((p->buttons & 0x18) << 1);
+-			client->bufsiz = 4;
+-			break;
+-
+-		case MOUSEDEV_EMUL_IMPS:
+-			ps2_data[0] |= ((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
+-			ps2_data[3] = mousedev_limit_delta(p->dz, 127);
+-			p->dz -= ps2_data[3];
+-			client->bufsiz = 4;
+-			break;
+-
+-		case MOUSEDEV_EMUL_PS2:
+-		default:
+-			ps2_data[0] |= ((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
+-			p->dz = 0;
+-			client->bufsiz = 3;
+-			break;
++	case MOUSEDEV_EMUL_EXPS:
++		ps2_data[3] = mousedev_limit_delta(p->dz, 7);
++		p->dz -= ps2_data[3];
++		ps2_data[3] = (ps2_data[3] & 0x0f) | ((p->buttons & 0x18) << 1);
++		client->bufsiz = 4;
++		break;
 +
-+	if (!evdev->exist) {
-+		retval = -ENODEV;
-+		goto out;
-+	}
- 
- 	while (retval < count) {
- 
--		if (evdev_event_from_user(buffer + retval, &event))
--			return -EFAULT;
--		input_inject_event(&evdev->handle, event.type, event.code, event.value);
-+		if (evdev_event_from_user(buffer + retval, &event)) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
++	case MOUSEDEV_EMUL_IMPS:
++		ps2_data[0] |=
++			((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
++		ps2_data[3] = mousedev_limit_delta(p->dz, 127);
++		p->dz -= ps2_data[3];
++		client->bufsiz = 4;
++		break;
 +
-+		input_inject_event(&evdev->handle,
-+				   event.type, event.code, event.value);
- 		retval += evdev_event_size();
++	case MOUSEDEV_EMUL_PS2:
++	default:
++		ps2_data[0] |=
++			((p->buttons & 0x10) >> 3) | ((p->buttons & 0x08) >> 1);
++		p->dz = 0;
++		client->bufsiz = 3;
++		break;
  	}
  
-+ out:
-+	mutex_unlock(&evdev->mutex);
- 	return retval;
+ 	if (!p->dx && !p->dy && !p->dz) {
+@@ -561,12 +632,56 @@ static void mousedev_packet(struct mouse
+ 		} else
+ 			client->tail = (client->tail + 1) % PACKET_QUEUE_LEN;
+ 	}
+-
+-	spin_unlock_irqrestore(&client->packet_lock, flags);
  }
  
--static ssize_t evdev_read(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
-+static int evdev_fetch_next_event(struct evdev_client *client,
-+				  struct input_event *event)
++static void mousedev_generate_response(struct mousedev_client *client,
++					int command)
 +{
-+	int have_event;
++	client->ps2[0] = 0xfa; /* ACK */
 +
-+	spin_lock_irq(&client->buffer_lock);
++	switch (command) {
+ 
+-static ssize_t mousedev_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
++	case 0xeb: /* Poll */
++		mousedev_packet(client, &client->ps2[1]);
++		client->bufsiz++; /* account for leading ACK */
++		break;
 +
-+	have_event = client->head != client->tail;
-+	if (have_event) {
-+		*event = client->buffer[client->tail++];
-+		client->tail &= EVDEV_BUFFER_SIZE - 1;
++	case 0xf2: /* Get ID */
++		switch (client->mode) {
++		case MOUSEDEV_EMUL_PS2:
++			client->ps2[1] = 0;
++			break;
++		case MOUSEDEV_EMUL_IMPS:
++			client->ps2[1] = 3;
++			break;
++		case MOUSEDEV_EMUL_EXPS:
++			client->ps2[1] = 4;
++			break;
++		}
++		client->bufsiz = 2;
++		break;
++
++	case 0xe9: /* Get info */
++		client->ps2[1] = 0x60; client->ps2[2] = 3; client->ps2[3] = 200;
++		client->bufsiz = 4;
++		break;
++
++	case 0xff: /* Reset */
++		client->impsseq = client->imexseq = 0;
++		client->mode = MOUSEDEV_EMUL_PS2;
++		client->ps2[1] = 0xaa; client->ps2[2] = 0x00;
++		client->bufsiz = 3;
++		break;
++
++	default:
++		client->bufsiz = 1;
++		break;
 +	}
-+
-+	spin_unlock_irq(&client->buffer_lock);
-+
-+	return have_event;
++	client->buffer = client->bufsiz;
 +}
 +
-+static ssize_t evdev_read(struct file *file, char __user *buffer,
-+			  size_t count, loff_t *ppos)
++static ssize_t mousedev_write(struct file *file, const char __user *buffer,
++				size_t count, loff_t *ppos)
  {
- 	struct evdev_client *client = file->private_data;
- 	struct evdev *evdev = client->evdev;
-+	struct input_event event;
- 	int retval;
+ 	struct mousedev_client *client = file->private_data;
+ 	unsigned char c;
+@@ -577,6 +692,8 @@ static ssize_t mousedev_write(struct fil
+ 		if (get_user(c, buffer + i))
+ 			return -EFAULT;
  
- 	if (count < evdev_event_size())
- 		return -EINVAL;
++		spin_lock_irq(&client->packet_lock);
++
+ 		if (c == mousedev_imex_seq[client->imexseq]) {
+ 			if (++client->imexseq == MOUSEDEV_SEQ_LEN) {
+ 				client->imexseq = 0;
+@@ -593,68 +710,39 @@ static ssize_t mousedev_write(struct fil
+ 		} else
+ 			client->impsseq = 0;
  
--	if (client->head == client->tail && evdev->exist && (file->f_flags & O_NONBLOCK))
-+	if (client->head == client->tail && evdev->exist &&
+-		client->ps2[0] = 0xfa;
+-
+-		switch (c) {
+-
+-			case 0xeb: /* Poll */
+-				mousedev_packet(client, &client->ps2[1]);
+-				client->bufsiz++; /* account for leading ACK */
+-				break;
+-
+-			case 0xf2: /* Get ID */
+-				switch (client->mode) {
+-					case MOUSEDEV_EMUL_PS2:  client->ps2[1] = 0; break;
+-					case MOUSEDEV_EMUL_IMPS: client->ps2[1] = 3; break;
+-					case MOUSEDEV_EMUL_EXPS: client->ps2[1] = 4; break;
+-				}
+-				client->bufsiz = 2;
+-				break;
+-
+-			case 0xe9: /* Get info */
+-				client->ps2[1] = 0x60; client->ps2[2] = 3; client->ps2[3] = 200;
+-				client->bufsiz = 4;
+-				break;
+-
+-			case 0xff: /* Reset */
+-				client->impsseq = client->imexseq = 0;
+-				client->mode = MOUSEDEV_EMUL_PS2;
+-				client->ps2[1] = 0xaa; client->ps2[2] = 0x00;
+-				client->bufsiz = 3;
+-				break;
+-
+-			default:
+-				client->bufsiz = 1;
+-				break;
+-		}
++		mousedev_generate_response(client, c);
+ 
+-		client->buffer = client->bufsiz;
++		spin_unlock_irq(&client->packet_lock);
+ 	}
+ 
+ 	kill_fasync(&client->fasync, SIGIO, POLL_IN);
+-
+ 	wake_up_interruptible(&client->mousedev->wait);
+ 
+ 	return count;
+ }
+ 
+-static ssize_t mousedev_read(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
++static ssize_t mousedev_read(struct file *file, char __user *buffer,
++			     size_t count, loff_t *ppos)
+ {
+ 	struct mousedev_client *client = file->private_data;
++	struct mousedev *mousedev = client->mousedev;
++	signed char data[sizeof(client->ps2)];
+ 	int retval = 0;
+ 
+-	if (!client->ready && !client->buffer && (file->f_flags & O_NONBLOCK))
++	if (!client->ready && !client->buffer && mousedev->exist &&
 +	    (file->f_flags & O_NONBLOCK))
  		return -EAGAIN;
  
- 	retval = wait_event_interruptible(evdev->wait,
-@@ -307,14 +470,12 @@ static ssize_t evdev_read(struct file *f
- 	if (!evdev->exist)
+-	retval = wait_event_interruptible(client->mousedev->wait,
+-					  !client->mousedev->exist || client->ready || client->buffer);
+-
++	retval = wait_event_interruptible(mousedev->wait,
++			!mousedev->exist || client->ready || client->buffer);
+ 	if (retval)
+ 		return retval;
+ 
+-	if (!client->mousedev->exist)
++	if (!mousedev->exist)
  		return -ENODEV;
  
--	while (client->head != client->tail && retval + evdev_event_size() <= count) {
--
--		struct input_event *event = (struct input_event *) client->buffer + client->tail;
-+	while (retval + evdev_event_size() <= count &&
-+	       evdev_fetch_next_event(client, &event)) {
- 
--		if (evdev_event_to_user(buffer + retval, event))
-+		if (evdev_event_to_user(buffer + retval, &event))
- 			return -EFAULT;
- 
--		client->tail = (client->tail + 1) & (EVDEV_BUFFER_SIZE - 1);
- 		retval += evdev_event_size();
- 	}
- 
-@@ -409,8 +570,8 @@ static int str_to_user(const char *str, 
- 	return copy_to_user(p, str, len) ? -EFAULT : len;
- }
- 
--static long evdev_ioctl_handler(struct file *file, unsigned int cmd,
--				void __user *p, int compat_mode)
-+static long evdev_do_ioctl(struct file *file, unsigned int cmd,
-+			   void __user *p, int compat_mode)
- {
- 	struct evdev_client *client = file->private_data;
- 	struct evdev *evdev = client->evdev;
-@@ -421,186 +582,208 @@ static long evdev_ioctl_handler(struct f
- 	int i, t, u, v;
- 	int error;
- 
--	if (!evdev->exist)
--		return -ENODEV;
--
- 	switch (cmd) {
- 
--		case EVIOCGVERSION:
--			return put_user(EV_VERSION, ip);
-+	case EVIOCGVERSION:
-+		return put_user(EV_VERSION, ip);
- 
--		case EVIOCGID:
--			if (copy_to_user(p, &dev->id, sizeof(struct input_id)))
--				return -EFAULT;
--			return 0;
-+	case EVIOCGID:
-+		if (copy_to_user(p, &dev->id, sizeof(struct input_id)))
-+			return -EFAULT;
-+		return 0;
- 
--		case EVIOCGREP:
--			if (!test_bit(EV_REP, dev->evbit))
--				return -ENOSYS;
--			if (put_user(dev->rep[REP_DELAY], ip))
--				return -EFAULT;
--			if (put_user(dev->rep[REP_PERIOD], ip + 1))
--				return -EFAULT;
--			return 0;
-+	case EVIOCGREP:
-+		if (!test_bit(EV_REP, dev->evbit))
-+			return -ENOSYS;
-+		if (put_user(dev->rep[REP_DELAY], ip))
-+			return -EFAULT;
-+		if (put_user(dev->rep[REP_PERIOD], ip + 1))
-+			return -EFAULT;
-+		return 0;
- 
--		case EVIOCSREP:
--			if (!test_bit(EV_REP, dev->evbit))
--				return -ENOSYS;
--			if (get_user(u, ip))
--				return -EFAULT;
--			if (get_user(v, ip + 1))
--				return -EFAULT;
-+	case EVIOCSREP:
-+		if (!test_bit(EV_REP, dev->evbit))
-+			return -ENOSYS;
-+		if (get_user(u, ip))
-+			return -EFAULT;
-+		if (get_user(v, ip + 1))
-+			return -EFAULT;
- 
--			input_inject_event(&evdev->handle, EV_REP, REP_DELAY, u);
--			input_inject_event(&evdev->handle, EV_REP, REP_PERIOD, v);
-+		input_inject_event(&evdev->handle, EV_REP, REP_DELAY, u);
-+		input_inject_event(&evdev->handle, EV_REP, REP_PERIOD, v);
- 
--			return 0;
-+		return 0;
- 
--		case EVIOCGKEYCODE:
--			if (get_user(t, ip))
--				return -EFAULT;
-+	case EVIOCGKEYCODE:
-+		if (get_user(t, ip))
-+			return -EFAULT;
- 
--			error = dev->getkeycode(dev, t, &v);
--			if (error)
--				return error;
-+		error = dev->getkeycode(dev, t, &v);
-+		if (error)
-+			return error;
- 
--			if (put_user(v, ip + 1))
--				return -EFAULT;
-+		if (put_user(v, ip + 1))
-+			return -EFAULT;
- 
--			return 0;
-+		return 0;
- 
--		case EVIOCSKEYCODE:
--			if (get_user(t, ip) || get_user(v, ip + 1))
--				return -EFAULT;
-+	case EVIOCSKEYCODE:
-+		if (get_user(t, ip) || get_user(v, ip + 1))
-+			return -EFAULT;
- 
--			return dev->setkeycode(dev, t, v);
-+		return dev->setkeycode(dev, t, v);
- 
--		case EVIOCSFF:
--			if (copy_from_user(&effect, p, sizeof(effect)))
--				return -EFAULT;
-+	case EVIOCSFF:
-+		if (copy_from_user(&effect, p, sizeof(effect)))
-+			return -EFAULT;
- 
--			error = input_ff_upload(dev, &effect, file);
-+		error = input_ff_upload(dev, &effect, file);
- 
--			if (put_user(effect.id, &(((struct ff_effect __user *)p)->id)))
--				return -EFAULT;
-+		if (put_user(effect.id, &(((struct ff_effect __user *)p)->id)))
-+			return -EFAULT;
- 
--			return error;
-+		return error;
- 
--		case EVIOCRMFF:
--			return input_ff_erase(dev, (int)(unsigned long) p, file);
-+	case EVIOCRMFF:
-+		return input_ff_erase(dev, (int)(unsigned long) p, file);
- 
--		case EVIOCGEFFECTS:
--			i = test_bit(EV_FF, dev->evbit) ? dev->ff->max_effects : 0;
--			if (put_user(i, ip))
--				return -EFAULT;
--			return 0;
-+	case EVIOCGEFFECTS:
-+		i = test_bit(EV_FF, dev->evbit) ?
-+				dev->ff->max_effects : 0;
-+		if (put_user(i, ip))
-+			return -EFAULT;
-+		return 0;
- 
--		case EVIOCGRAB:
--			if (p) {
--				if (evdev->grab)
--					return -EBUSY;
--				if (input_grab_device(&evdev->handle))
--					return -EBUSY;
--				evdev->grab = client;
--				return 0;
--			} else {
--				if (evdev->grab != client)
--					return -EINVAL;
--				input_release_device(&evdev->handle);
--				evdev->grab = NULL;
--				return 0;
-+	case EVIOCGRAB:
-+		if (p)
-+			return evdev_grab(evdev, client);
-+		else
-+			return evdev_ungrab(evdev, client);
++	spin_lock_irq(&client->packet_lock);
 +
-+	default:
+ 	if (!client->buffer && client->ready) {
+ 		mousedev_packet(client, client->ps2);
+ 		client->buffer = client->bufsiz;
+@@ -663,9 +751,12 @@ static ssize_t mousedev_read(struct file
+ 	if (count > client->buffer)
+ 		count = client->buffer;
+ 
++	memcpy(data, client->ps2 + client->bufsiz - client->buffer, count);
+ 	client->buffer -= count;
+ 
+-	if (copy_to_user(buffer, client->ps2 + client->bufsiz - client->buffer - count, count))
++	spin_unlock_irq(&client->packet_lock);
 +
-+		if (_IOC_TYPE(cmd) != 'E')
-+			return -EINVAL;
-+
-+		if (_IOC_DIR(cmd) == _IOC_READ) {
-+
-+			if ((_IOC_NR(cmd) & ~EV_MAX) == _IOC_NR(EVIOCGBIT(0, 0))) {
-+
-+				unsigned long *bits;
-+				int len;
-+
-+				switch (_IOC_NR(cmd) & EV_MAX) {
-+
-+				case      0: bits = dev->evbit;  len = EV_MAX;  break;
-+				case EV_KEY: bits = dev->keybit; len = KEY_MAX; break;
-+				case EV_REL: bits = dev->relbit; len = REL_MAX; break;
-+				case EV_ABS: bits = dev->absbit; len = ABS_MAX; break;
-+				case EV_MSC: bits = dev->mscbit; len = MSC_MAX; break;
-+				case EV_LED: bits = dev->ledbit; len = LED_MAX; break;
-+				case EV_SND: bits = dev->sndbit; len = SND_MAX; break;
-+				case EV_FF:  bits = dev->ffbit;  len = FF_MAX;  break;
-+				case EV_SW:  bits = dev->swbit;  len = SW_MAX;  break;
-+				default: return -EINVAL;
-+			}
-+				return bits_to_user(bits, len, _IOC_SIZE(cmd), p, compat_mode);
- 			}
++	if (copy_to_user(buffer, data, count))
+ 		return -EFAULT;
  
--		default:
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGKEY(0)))
-+				return bits_to_user(dev->key, KEY_MAX, _IOC_SIZE(cmd),
-+						    p, compat_mode);
- 
--			if (_IOC_TYPE(cmd) != 'E')
--				return -EINVAL;
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGLED(0)))
-+				return bits_to_user(dev->led, LED_MAX, _IOC_SIZE(cmd),
-+						    p, compat_mode);
- 
--			if (_IOC_DIR(cmd) == _IOC_READ) {
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGSND(0)))
-+				return bits_to_user(dev->snd, SND_MAX, _IOC_SIZE(cmd),
-+						    p, compat_mode);
- 
--				if ((_IOC_NR(cmd) & ~EV_MAX) == _IOC_NR(EVIOCGBIT(0,0))) {
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGSW(0)))
-+				return bits_to_user(dev->sw, SW_MAX, _IOC_SIZE(cmd),
-+						    p, compat_mode);
- 
--					unsigned long *bits;
--					int len;
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGNAME(0)))
-+				return str_to_user(dev->name, _IOC_SIZE(cmd), p);
- 
--					switch (_IOC_NR(cmd) & EV_MAX) {
--						case      0: bits = dev->evbit;  len = EV_MAX;  break;
--						case EV_KEY: bits = dev->keybit; len = KEY_MAX; break;
--						case EV_REL: bits = dev->relbit; len = REL_MAX; break;
--						case EV_ABS: bits = dev->absbit; len = ABS_MAX; break;
--						case EV_MSC: bits = dev->mscbit; len = MSC_MAX; break;
--						case EV_LED: bits = dev->ledbit; len = LED_MAX; break;
--						case EV_SND: bits = dev->sndbit; len = SND_MAX; break;
--						case EV_FF:  bits = dev->ffbit;  len = FF_MAX;  break;
--						case EV_SW:  bits = dev->swbit;  len = SW_MAX;  break;
--						default: return -EINVAL;
--					}
--					return bits_to_user(bits, len, _IOC_SIZE(cmd), p, compat_mode);
--				}
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGPHYS(0)))
-+				return str_to_user(dev->phys, _IOC_SIZE(cmd), p);
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGKEY(0)))
--					return bits_to_user(dev->key, KEY_MAX, _IOC_SIZE(cmd),
--							    p, compat_mode);
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOCGUNIQ(0)))
-+				return str_to_user(dev->uniq, _IOC_SIZE(cmd), p);
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGLED(0)))
--					return bits_to_user(dev->led, LED_MAX, _IOC_SIZE(cmd),
--							    p, compat_mode);
-+			if ((_IOC_NR(cmd) & ~ABS_MAX) == _IOC_NR(EVIOCGABS(0))) {
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGSND(0)))
--					return bits_to_user(dev->snd, SND_MAX, _IOC_SIZE(cmd),
--							    p, compat_mode);
-+				t = _IOC_NR(cmd) & ABS_MAX;
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGSW(0)))
--					return bits_to_user(dev->sw, SW_MAX, _IOC_SIZE(cmd),
--							    p, compat_mode);
-+				abs.value = dev->abs[t];
-+				abs.minimum = dev->absmin[t];
-+				abs.maximum = dev->absmax[t];
-+				abs.fuzz = dev->absfuzz[t];
-+				abs.flat = dev->absflat[t];
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGNAME(0)))
--					return str_to_user(dev->name, _IOC_SIZE(cmd), p);
-+				if (copy_to_user(p, &abs, sizeof(struct input_absinfo)))
-+					return -EFAULT;
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGPHYS(0)))
--					return str_to_user(dev->phys, _IOC_SIZE(cmd), p);
-+				return 0;
-+			}
- 
--				if (_IOC_NR(cmd) == _IOC_NR(EVIOCGUNIQ(0)))
--					return str_to_user(dev->uniq, _IOC_SIZE(cmd), p);
-+		}
- 
--				if ((_IOC_NR(cmd) & ~ABS_MAX) == _IOC_NR(EVIOCGABS(0))) {
-+		if (_IOC_DIR(cmd) == _IOC_WRITE) {
- 
--					t = _IOC_NR(cmd) & ABS_MAX;
-+			if ((_IOC_NR(cmd) & ~ABS_MAX) == _IOC_NR(EVIOCSABS(0))) {
- 
--					abs.value = dev->abs[t];
--					abs.minimum = dev->absmin[t];
--					abs.maximum = dev->absmax[t];
--					abs.fuzz = dev->absfuzz[t];
--					abs.flat = dev->absflat[t];
-+				t = _IOC_NR(cmd) & ABS_MAX;
- 
--					if (copy_to_user(p, &abs, sizeof(struct input_absinfo)))
--						return -EFAULT;
-+				if (copy_from_user(&abs, p,
-+						sizeof(struct input_absinfo)))
-+					return -EFAULT;
-+
-+				/*
-+				 * Take event lock to ensure that we are not
-+				 * changing device parameters in the middle
-+				 * of event.
-+				 */
-+				spin_lock_irq(&dev->event_lock);
-+
-+				dev->abs[t] = abs.value;
-+				dev->absmin[t] = abs.minimum;
-+				dev->absmax[t] = abs.maximum;
-+				dev->absfuzz[t] = abs.fuzz;
-+				dev->absflat[t] = abs.flat;
- 
--					return 0;
--				}
-+				spin_unlock_irq(&dev->event_lock);
- 
-+				return 0;
- 			}
-+		}
-+	}
-+	return -EINVAL;
-+}
- 
--			if (_IOC_DIR(cmd) == _IOC_WRITE) {
--
--				if ((_IOC_NR(cmd) & ~ABS_MAX) == _IOC_NR(EVIOCSABS(0))) {
-+static long evdev_ioctl_handler(struct file *file, unsigned int cmd,
-+				void __user *p, int compat_mode)
-+{
-+	struct evdev_client *client = file->private_data;
-+	struct evdev *evdev = client->evdev;
-+	int retval;
- 
--					t = _IOC_NR(cmd) & ABS_MAX;
-+	retval = mutex_lock_interruptible(&evdev->mutex);
-+	if (retval)
-+		return retval;
- 
--					if (copy_from_user(&abs, p, sizeof(struct input_absinfo)))
--						return -EFAULT;
-+	if (!evdev->exist) {
-+		retval = -ENODEV;
-+		goto out;
-+	}
- 
--					dev->abs[t] = abs.value;
--					dev->absmin[t] = abs.minimum;
--					dev->absmax[t] = abs.maximum;
--					dev->absfuzz[t] = abs.fuzz;
--					dev->absflat[t] = abs.flat;
-+	retval = evdev_do_ioctl(file, cmd, p, compat_mode);
- 
--					return 0;
--				}
--			}
--	}
--	return -EINVAL;
-+ out:
-+	mutex_unlock(&evdev->mutex);
-+	return retval;
- }
- 
- static long evdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-@@ -609,27 +792,79 @@ static long evdev_ioctl(struct file *fil
- }
- 
- #ifdef CONFIG_COMPAT
--static long evdev_ioctl_compat(struct file *file, unsigned int cmd, unsigned long arg)
-+static long evdev_ioctl_compat(struct file *file,
-+				unsigned int cmd, unsigned long arg)
- {
- 	return evdev_ioctl_handler(file, cmd, compat_ptr(arg), 1);
- }
- #endif
- 
- static const struct file_operations evdev_fops = {
--	.owner =	THIS_MODULE,
--	.read =		evdev_read,
--	.write =	evdev_write,
--	.poll =		evdev_poll,
--	.open =		evdev_open,
--	.release =	evdev_release,
--	.unlocked_ioctl = evdev_ioctl,
-+	.owner		= THIS_MODULE,
-+	.read		= evdev_read,
-+	.write		= evdev_write,
-+	.poll		= evdev_poll,
-+	.open		= evdev_open,
-+	.release	= evdev_release,
-+	.unlocked_ioctl	= evdev_ioctl,
- #ifdef CONFIG_COMPAT
--	.compat_ioctl =	evdev_ioctl_compat,
-+	.compat_ioctl	= evdev_ioctl_compat,
- #endif
--	.fasync =	evdev_fasync,
--	.flush =	evdev_flush
-+	.fasync		= evdev_fasync,
-+	.flush		= evdev_flush
+ 	return count;
+@@ -692,6 +783,60 @@ static const struct file_operations mous
+ 	.fasync =	mousedev_fasync,
  };
  
-+static int evdev_install_chrdev(struct evdev *evdev)
++static int mousedev_install_chrdev(struct mousedev *mousedev)
 +{
-+	/*
-+	 * No need to do any locking here as calls to connect and
-+	 * disconnect are serialized by the input core
-+	 */
-+	evdev_table[evdev->minor] = evdev;
++	mousedev_table[mousedev->minor] = mousedev;
 +	return 0;
 +}
 +
-+static void evdev_remove_chrdev(struct evdev *evdev)
++static void mousedev_remove_chrdev(struct mousedev *mousedev)
 +{
-+	/*
-+	 * Lock evdev table to prevent race with evdev_open()
-+	 */
-+	mutex_lock(&evdev_table_mutex);
-+	evdev_table[evdev->minor] = NULL;
-+	mutex_unlock(&evdev_table_mutex);
++	mutex_lock(&mousedev_table_mutex);
++	mousedev_table[mousedev->minor] = NULL;
++	mutex_unlock(&mousedev_table_mutex);
 +}
 +
 +/*
@@ -916,147 +901,237 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 + * prevents new users from opening the device. Already posted
 + * blocking reads will stay, however new ones will fail.
 + */
-+static void evdev_mark_dead(struct evdev *evdev)
++static void mousedev_mark_dead(struct mousedev *mousedev)
 +{
-+	mutex_lock(&evdev->mutex);
-+	evdev->exist = 0;
-+	mutex_unlock(&evdev->mutex);
-+}
-+
-+static void evdev_cleanup(struct evdev *evdev)
-+{
-+	struct input_handle *handle = &evdev->handle;
-+
-+	evdev_mark_dead(evdev);
-+	evdev_hangup(evdev);
-+	evdev_remove_chrdev(evdev);
-+
-+	/* evdev is marked dead so no one else accesses evdev->open */
-+	if (evdev->open) {
-+		input_flush_device(handle, NULL);
-+		input_close_device(handle);
-+	}
++	mutex_lock(&mousedev->mutex);
++	mousedev->exist = 0;
++	mutex_unlock(&mousedev->mutex);
 +}
 +
 +/*
-+ * Create new evdev device. Note that input core serializes calls
-+ * to connect and disconnect so we don't need to lock evdev_table here.
++ * Wake up users waiting for IO so they can disconnect from
++ * dead device.
 + */
- static int evdev_connect(struct input_handler *handler, struct input_dev *dev,
- 			 const struct input_device_id *id)
++static void mousedev_hangup(struct mousedev *mousedev)
++{
++	struct mousedev_client *client;
++
++	spin_lock(&mousedev->client_lock);
++	list_for_each_entry(client, &mousedev->client_list, node)
++		kill_fasync(&client->fasync, SIGIO, POLL_HUP);
++	spin_unlock(&mousedev->client_lock);
++
++	wake_up_interruptible(&mousedev->wait);
++}
++
++static void mousedev_cleanup(struct mousedev *mousedev)
++{
++	struct input_handle *handle = &mousedev->handle;
++
++	mousedev_mark_dead(mousedev);
++	mousedev_hangup(mousedev);
++	mousedev_remove_chrdev(mousedev);
++
++	/* mousedev is marked dead so no one else accesses mousedev->open */
++	if (mousedev->open)
++		input_close_device(handle);
++}
++
+ static struct mousedev *mousedev_create(struct input_dev *dev,
+ 					struct input_handler *handler,
+ 					int minor)
+@@ -707,6 +852,10 @@ static struct mousedev *mousedev_create(
+ 
+ 	INIT_LIST_HEAD(&mousedev->client_list);
+ 	INIT_LIST_HEAD(&mousedev->mixdev_node);
++	spin_lock_init(&mousedev->client_lock);
++	mutex_init(&mousedev->mutex);
++	lockdep_set_subclass(&mousedev->mutex,
++			     minor == MOUSEDEV_MIX ? MOUSEDEV_MIX : 0);
+ 	init_waitqueue_head(&mousedev->wait);
+ 
+ 	if (minor == MOUSEDEV_MIX)
+@@ -731,14 +880,27 @@ static struct mousedev *mousedev_create(
+ 	mousedev->dev.release = mousedev_free;
+ 	device_initialize(&mousedev->dev);
+ 
+-	mousedev_table[minor] = mousedev;
++	if (minor != MOUSEDEV_MIX) {
++		error = input_register_handle(&mousedev->handle);
++		if (error)
++			goto err_free_mousedev;
++	}
++
++	error = mousedev_install_chrdev(mousedev);
++	if (error)
++		goto err_unregister_handle;
+ 
+ 	error = device_add(&mousedev->dev);
+ 	if (error)
+-		goto err_free_mousedev;
++		goto err_cleanup_mousedev;
+ 
+ 	return mousedev;
+ 
++ err_cleanup_mousedev:
++	mousedev_cleanup(mousedev);
++ err_unregister_handle:
++	if (minor != MOUSEDEV_MIX)
++		input_unregister_handle(&mousedev->handle);
+  err_free_mousedev:
+ 	put_device(&mousedev->dev);
+  err_out:
+@@ -747,29 +909,64 @@ static struct mousedev *mousedev_create(
+ 
+ static void mousedev_destroy(struct mousedev *mousedev)
  {
-@@ -637,7 +872,10 @@ static int evdev_connect(struct input_ha
+-	struct mousedev_client *client;
+-
+ 	device_del(&mousedev->dev);
+-	mousedev->exist = 0;
++	mousedev_cleanup(mousedev);
++	if (mousedev->minor != MOUSEDEV_MIX)
++		input_unregister_handle(&mousedev->handle);
++	put_device(&mousedev->dev);
++}
+ 
+-	if (mousedev->open) {
+-		input_close_device(&mousedev->handle);
+-		list_for_each_entry(client, &mousedev->client_list, node)
+-			kill_fasync(&client->fasync, SIGIO, POLL_HUP);
+-		wake_up_interruptible(&mousedev->wait);
++static int mixdev_add_device(struct mousedev *mousedev)
++{
++	int retval;
++
++	retval = mutex_lock_interruptible(&mousedev_mix->mutex);
++	if (retval)
++		return retval;
++
++	if (mousedev_mix->open) {
++		retval = mousedev_open_device(mousedev);
++		if (retval)
++			goto out;
++
++		mousedev->mixdev_open = 1;
+ 	}
+ 
++	get_device(&mousedev->dev);
++	list_add_tail(&mousedev->mixdev_node, &mousedev_mix_list);
++
++ out:
++	mutex_unlock(&mousedev_mix->mutex);
++	return retval;
++}
++
++static void mixdev_remove_device(struct mousedev *mousedev)
++{
++	mutex_lock(&mousedev_mix->mutex);
++
++	if (mousedev->mixdev_open) {
++		mousedev->mixdev_open = 0;
++		mousedev_close_device(mousedev);
++	}
++
++	list_del_init(&mousedev->mixdev_node);
++	mutex_unlock(&mousedev_mix->mutex);
++
+ 	put_device(&mousedev->dev);
+ }
+ 
+-static int mousedev_connect(struct input_handler *handler, struct input_dev *dev,
++static int mousedev_connect(struct input_handler *handler,
++			    struct input_dev *dev,
+ 			    const struct input_device_id *id)
+ {
+ 	struct mousedev *mousedev;
  	int minor;
  	int error;
  
--	for (minor = 0; minor < EVDEV_MINORS && evdev_table[minor]; minor++);
-+	for (minor = 0; minor < EVDEV_MINORS; minor++)
-+		if (!evdev_table[minor])
+-	for (minor = 0; minor < MOUSEDEV_MINORS && mousedev_table[minor]; minor++);
++	for (minor = 0; minor < MOUSEDEV_MINORS; minor++)
++		if (!mousedev_table[minor])
 +			break;
 +
- 	if (minor == EVDEV_MINORS) {
- 		printk(KERN_ERR "evdev: no more free evdev devices\n");
+ 	if (minor == MOUSEDEV_MINORS) {
+ 		printk(KERN_ERR "mousedev: no more free mousedev devices\n");
  		return -ENFILE;
-@@ -648,38 +886,44 @@ static int evdev_connect(struct input_ha
- 		return -ENOMEM;
+@@ -779,21 +976,13 @@ static int mousedev_connect(struct input
+ 	if (IS_ERR(mousedev))
+ 		return PTR_ERR(mousedev);
  
- 	INIT_LIST_HEAD(&evdev->client_list);
-+	spin_lock_init(&evdev->client_lock);
-+	mutex_init(&evdev->mutex);
- 	init_waitqueue_head(&evdev->wait);
- 
-+	snprintf(evdev->name, sizeof(evdev->name), "event%d", minor);
- 	evdev->exist = 1;
- 	evdev->minor = minor;
-+
- 	evdev->handle.dev = dev;
- 	evdev->handle.name = evdev->name;
- 	evdev->handle.handler = handler;
- 	evdev->handle.private = evdev;
--	snprintf(evdev->name, sizeof(evdev->name), "event%d", minor);
- 
--	snprintf(evdev->dev.bus_id, sizeof(evdev->dev.bus_id),
--		 "event%d", minor);
-+	strlcpy(evdev->dev.bus_id, evdev->name, sizeof(evdev->dev.bus_id));
-+	evdev->dev.devt = MKDEV(INPUT_MAJOR, EVDEV_MINOR_BASE + minor);
- 	evdev->dev.class = &input_class;
- 	evdev->dev.parent = &dev->dev;
--	evdev->dev.devt = MKDEV(INPUT_MAJOR, EVDEV_MINOR_BASE + minor);
- 	evdev->dev.release = evdev_free;
- 	device_initialize(&evdev->dev);
- 
--	evdev_table[minor] = evdev;
+-	error = input_register_handle(&mousedev->handle);
+-	if (error)
+-		goto err_delete_mousedev;
 -
--	error = device_add(&evdev->dev);
-+	error = input_register_handle(&evdev->handle);
- 	if (error)
- 		goto err_free_evdev;
- 
--	error = input_register_handle(&evdev->handle);
-+	error = evdev_install_chrdev(evdev);
-+	if (error)
-+		goto err_unregister_handle;
-+
-+	error = device_add(&evdev->dev);
- 	if (error)
--		goto err_delete_evdev;
-+		goto err_cleanup_evdev;
+ 	error = mixdev_add_device(mousedev);
+-	if (error)
+-		goto err_unregister_handle;
++	if (error) {
++		mousedev_destroy(mousedev);
++		return error;
++	}
  
  	return 0;
- 
-- err_delete_evdev:
--	device_del(&evdev->dev);
-+ err_cleanup_evdev:
-+	evdev_cleanup(evdev);
-+ err_unregister_handle:
-+	input_unregister_handle(&evdev->handle);
-  err_free_evdev:
- 	put_device(&evdev->dev);
- 	return error;
-@@ -688,21 +932,10 @@ static int evdev_connect(struct input_ha
- static void evdev_disconnect(struct input_handle *handle)
- {
- 	struct evdev *evdev = handle->private;
--	struct evdev_client *client;
- 
--	input_unregister_handle(handle);
- 	device_del(&evdev->dev);
 -
--	evdev->exist = 0;
--
--	if (evdev->open) {
--		input_flush_device(handle, NULL);
--		input_close_device(handle);
--		list_for_each_entry(client, &evdev->client_list, node)
--			kill_fasync(&client->fasync, SIGIO, POLL_HUP);
--		wake_up_interruptible(&evdev->wait);
--	}
--
-+	evdev_cleanup(evdev);
-+	input_unregister_handle(handle);
- 	put_device(&evdev->dev);
+- err_unregister_handle:
+-	input_unregister_handle(&mousedev->handle);
+- err_delete_mousedev:
+-	device_unregister(&mousedev->dev);
+-	return error;
  }
  
-@@ -714,13 +947,13 @@ static const struct input_device_id evde
- MODULE_DEVICE_TABLE(input, evdev_ids);
+ static void mousedev_disconnect(struct input_handle *handle)
+@@ -801,33 +990,42 @@ static void mousedev_disconnect(struct i
+ 	struct mousedev *mousedev = handle->private;
  
- static struct input_handler evdev_handler = {
--	.event =	evdev_event,
--	.connect =	evdev_connect,
--	.disconnect =	evdev_disconnect,
--	.fops =		&evdev_fops,
--	.minor =	EVDEV_MINOR_BASE,
--	.name =		"evdev",
--	.id_table =	evdev_ids,
-+	.event		= evdev_event,
-+	.connect	= evdev_connect,
-+	.disconnect	= evdev_disconnect,
-+	.fops		= &evdev_fops,
-+	.minor		= EVDEV_MINOR_BASE,
-+	.name		= "evdev",
-+	.id_table	= evdev_ids,
- };
+ 	mixdev_remove_device(mousedev);
+-	input_unregister_handle(handle);
+ 	mousedev_destroy(mousedev);
+ }
  
- static int __init evdev_init(void)
+ static const struct input_device_id mousedev_ids[] = {
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_RELBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_KEYBIT |
++				INPUT_DEVICE_ID_MATCH_RELBIT,
+ 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
+ 		.keybit = { [LONG(BTN_LEFT)] = BIT(BTN_LEFT) },
+ 		.relbit = { BIT(REL_X) | BIT(REL_Y) },
+-	},	/* A mouse like device, at least one button, two relative axes */
++	},	/* A mouse like device, at least one button,
++		   two relative axes */
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_RELBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_RELBIT,
+ 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
+ 		.relbit = { BIT(REL_WHEEL) },
+ 	},	/* A separate scrollwheel */
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_KEYBIT |
++				INPUT_DEVICE_ID_MATCH_ABSBIT,
+ 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
+ 		.keybit = { [LONG(BTN_TOUCH)] = BIT(BTN_TOUCH) },
+ 		.absbit = { BIT(ABS_X) | BIT(ABS_Y) },
+-	},	/* A tablet like device, at least touch detection, two absolute axes */
++	},	/* A tablet like device, at least touch detection,
++		   two absolute axes */
+ 	{
+-		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_KEYBIT |
++				INPUT_DEVICE_ID_MATCH_ABSBIT,
+ 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
+ 		.keybit = { [LONG(BTN_TOOL_FINGER)] = BIT(BTN_TOOL_FINGER) },
+-		.absbit = { BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE) | BIT(ABS_TOOL_WIDTH) },
++		.absbit = { BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE) |
++				BIT(ABS_TOOL_WIDTH) },
+ 	},	/* A touchpad */
+ 
+ 	{ },	/* Terminating entry */
 
 -- 
