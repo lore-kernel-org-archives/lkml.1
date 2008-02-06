@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbYBFXPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932369AbYBFXQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932326AbYBFXPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764190AbYBFXLm
+	id S932369AbYBFXQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764199AbYBFXLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:11:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43433 "EHLO mx2.mail.elte.hu"
+	Wed, 6 Feb 2008 18:11:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38465 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762348AbYBFXLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:11:40 -0500
-Date: Thu, 7 Feb 2008 00:10:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Hugh Dickins <hugh@veritas.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document randomize_va_space and CONFIG_COMPAT_BRK (was
-	Re: [PATCH 2/2] ASLR: add possibility for more fine-grained
-	tweaking)
-Message-ID: <20080206231040.GA6225@elte.hu>
-References: <Pine.LNX.4.64.0802061438150.30955@jikos.suse.cz> <Pine.LNX.4.64.0802061442300.30955@jikos.suse.cz> <20080206134959.GA25689@elte.hu> <Pine.LNX.4.64.0802061650230.30955@jikos.suse.cz>
+	id S1763215AbYBFXLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:11:44 -0500
+Message-ID: <47AA3EAA.9080204@redhat.com>
+Date: Wed, 06 Feb 2008 17:11:38 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802061650230.30955@jikos.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
+References: <47AA3126.8090102@redhat.com> <20080206143457.03e8741d.akpm@linux-foundation.org>
+In-Reply-To: <20080206143457.03e8741d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(updated with comments about the noinlines, and a fix for
+ an >80 char line)
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
+do_mount() uses a whopping 616 bytes of stack on x86_64 in 
+2.6.24-mm1, largely thanks to gcc inlining the various helper 
+functions.
 
-> On Wed, 6 Feb 2008, Ingo Molnar wrote:
-> 
-> > i've already added the patch below to x86.git.
-> 
-> OK, cool, thanks.
-> 
-> Still, I think that we want the Documentation/sysctl/kernel.txt part 
-> of my patch probably. Updated patch below.
+noinlining these can slim it down a lot; on my box this patch
+gets it down to 168, which is mostly the struct nameidata nd;
+left on the stack.
 
-thanks, applied.
+These functions are called only as do_mount() helpers;
+none of them should be in any path that would see a performance
+benefit from inlining...
 
-i'm wondering about the following detail: i guess on 64-bit x86 kernels 
-we could default to !CONFIG_COMPAT_BRK? In 1997 there was no 64-bit x86. 
-Maybe for compat 32-bit binaries we could keep it off, but always do it 
-for 64-bit binaries.
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
 
-	Ingo
+Index: linux-2.6.24-mm1/fs/namespace.c
+===================================================================
+--- linux-2.6.24-mm1.orig/fs/namespace.c
++++ linux-2.6.24-mm1/fs/namespace.c
+@@ -1295,8 +1295,9 @@ out_unlock:
+ 
+ /*
+  * recursively change the type of the mountpoint.
++ * noinline this do_mount helper to save do_mount stack space.
+  */
+-static int do_change_type(struct nameidata *nd, int flag)
++static noinline int do_change_type(struct nameidata *nd, int flag)
+ {
+ 	struct vfsmount *m, *mnt = nd->path.mnt;
+ 	int recurse = flag & MS_REC;
+@@ -1319,8 +1320,10 @@ static int do_change_type(struct nameida
+ 
+ /*
+  * do loopback mount.
++ * noinline this do_mount helper to save do_mount stack space.
+  */
+-static int do_loopback(struct nameidata *nd, char *old_name, int recurse)
++static noinline int do_loopback(struct nameidata *nd, char *old_name,
++				int recurse)
+ {
+ 	struct nameidata old_nd;
+ 	struct vfsmount *mnt = NULL;
+@@ -1386,8 +1389,9 @@ static int change_mount_flags(struct vfs
+  * change filesystem flags. dir should be a physical root of filesystem.
+  * If you've mounted a non-root directory somewhere and want to do remount
+  * on it - tough luck.
++ * noinline this do_mount helper to save do_mount stack space.
+  */
+-static int do_remount(struct nameidata *nd, int flags, int mnt_flags,
++static noinline int do_remount(struct nameidata *nd, int flags, int mnt_flags,
+ 		      void *data)
+ {
+ 	int err;
+@@ -1425,7 +1429,10 @@ static inline int tree_contains_unbindab
+ 	return 0;
+ }
+ 
+-static int do_move_mount(struct nameidata *nd, char *old_name)
++/*
++ * noinline this do_mount helper to save do_mount stack space.
++ */
++static noinline int do_move_mount(struct nameidata *nd, char *old_name)
+ {
+ 	struct nameidata old_nd, parent_nd;
+ 	struct vfsmount *p;
+@@ -1504,8 +1511,9 @@ out:
+ /*
+  * create a new mount for userspace and request it to be added into the
+  * namespace's tree
++ * noinline this do_mount helper to save do_mount stack space.
+  */
+-static int do_new_mount(struct nameidata *nd, char *type, int flags,
++static noinline int do_new_mount(struct nameidata *nd, char *type, int flags,
+ 			int mnt_flags, char *name, void *data)
+ {
+ 	struct vfsmount *mnt;
+
