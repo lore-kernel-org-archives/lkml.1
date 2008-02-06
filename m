@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932972AbYBGAMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765523AbYBGAMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932972AbYBGAMI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:12:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764901AbYBFX5v
+	id S1765523AbYBGAMh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbYBFX54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:57:51 -0500
-Received: from mail.suse.de ([195.135.220.2]:46093 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:57:56 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60843 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764481AbYBFX5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:57:49 -0500
-Date: Wed, 6 Feb 2008 15:53:02 -0800
+	id S1764147AbYBFX5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:57:54 -0500
+Date: Wed, 6 Feb 2008 15:53:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 37/73] PM: ACPI and APM must not be enabled at the same time
-Message-ID: <20080206235302.GL13121@suse.de>
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 38/73] CRYPTO: padlock: Fix spurious ECB page fault
+Message-ID: <20080206235306.GM13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pm-acpi-and-apm-must-not-be-enabled-at-the-same-time.patch"
+Content-Disposition: inline; filename="crypto-padlock-fix-spurious-ecb-page-fault.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,168 +35,102 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Len Brown <len.brown@intel.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-patch 9f9adecd2d0e4f88fa0e8cb06c6ec207748df70a in mainline.
+[CRYPTO] padlock: Fix spurious ECB page fault
 
-ACPI and APM used "pm_active" to guarantee that
-they would not be simultaneously active.
+[ Upstream commit: d4a7dd8e637b322faaa934ffcd6dd07711af831f ]
+[ Upstream commit: 490fe3f05be3f7c87d7932bcb6e6e53e3db2cd9c ]
 
-But pm_active was recently moved under CONFIG_PM_LEGACY,
-so that without CONFIG_PM_LEGACY, pm_active became a NOP --
-allowing ACPI and APM to both be simultaneously enabled.
-This caused unpredictable results, including boot hangs.
+The xcryptecb instruction always processes an even number of blocks so
+we need to ensure th existence of an extra block if we have to process
+an odd number of blocks.
 
-Further, the code under CONFIG_PM_LEGACY is scheduled
-for removal.
-
-So replace pm_active with pm_flags.
-pm_flags depends only on CONFIG_PM,
-which is present for both CONFIG_APM and CONFIG_ACPI.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9194
-
-Signed-off-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/i386/kernel/apm.c    |   10 +++-------
- drivers/acpi/bus.c        |    7 ++-----
- include/linux/pm.h        |    9 +++++++++
- include/linux/pm_legacy.h |    6 ------
- kernel/power/main.c       |    3 +++
- kernel/power/pm.c         |    4 ----
- 6 files changed, 17 insertions(+), 22 deletions(-)
+ drivers/crypto/padlock-aes.c |   53 +++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 49 insertions(+), 4 deletions(-)
 
---- a/arch/i386/kernel/apm.c
-+++ b/arch/i386/kernel/apm.c
-@@ -2256,14 +2256,12 @@ static int __init apm_init(void)
- 		apm_info.disabled = 1;
- 		return -ENODEV;
- 	}
--	if (PM_IS_ACTIVE()) {
-+	if (pm_flags & PM_ACPI) {
- 		printk(KERN_NOTICE "apm: overridden by ACPI.\n");
- 		apm_info.disabled = 1;
- 		return -ENODEV;
- 	}
--#ifdef CONFIG_PM_LEGACY
--	pm_active = 1;
--#endif
-+	pm_flags |= PM_APM;
+--- a/drivers/crypto/padlock-aes.c
++++ b/drivers/crypto/padlock-aes.c
+@@ -419,13 +419,58 @@ static int aes_set_key(struct crypto_tfm
+ /* ====== Encryption/decryption routines ====== */
  
- 	/*
- 	 * Set up a segment that references the real mode segment 0x40
-@@ -2366,9 +2364,7 @@ static void __exit apm_exit(void)
- 		kthread_stop(kapmd_task);
- 		kapmd_task = NULL;
- 	}
--#ifdef CONFIG_PM_LEGACY
--	pm_active = 0;
--#endif
-+	pm_flags &= ~PM_APM;
+ /* These are the real call to PadLock. */
++static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
++				  void *control_word)
++{
++	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
++		      : "+S"(input), "+D"(output)
++		      : "d"(control_word), "b"(key), "c"(1));
++}
++
++static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
++{
++	u8 buf[AES_BLOCK_SIZE * 2 + PADLOCK_ALIGNMENT - 1];
++	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
++
++	memcpy(tmp, in, AES_BLOCK_SIZE);
++	padlock_xcrypt(tmp, out, key, cword);
++}
++
++static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
++			     struct cword *cword)
++{
++	asm volatile ("pushfl; popfl");
++
++	/* padlock_xcrypt requires at least two blocks of data. */
++	if (unlikely(!(((unsigned long)in ^ (PAGE_SIZE - AES_BLOCK_SIZE)) &
++		       (PAGE_SIZE - 1)))) {
++		aes_crypt_copy(in, out, key, cword);
++		return;
++	}
++
++	padlock_xcrypt(in, out, key, cword);
++}
++
+ static inline void padlock_xcrypt_ecb(const u8 *input, u8 *output, void *key,
+ 				      void *control_word, u32 count)
+ {
++	if (count == 1) {
++		aes_crypt(input, output, key, control_word);
++		return;
++	}
++
+ 	asm volatile ("pushfl; popfl");		/* enforce key reload. */
+-	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
++	asm volatile ("test $1, %%cl;"
++		      "je 1f;"
++		      "lea -1(%%ecx), %%eax;"
++		      "mov $1, %%ecx;"
++		      ".byte 0xf3,0x0f,0xa7,0xc8;"	/* rep xcryptecb */
++		      "mov %%eax, %%ecx;"
++		      "1:"
++		      ".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
+ 		      : "+S"(input), "+D"(output)
+-		      : "d"(control_word), "b"(key), "c"(count));
++		      : "d"(control_word), "b"(key), "c"(count)
++		      : "ax");
  }
  
- module_init(apm_init);
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -29,7 +29,6 @@
- #include <linux/list.h>
- #include <linux/sched.h>
- #include <linux/pm.h>
--#include <linux/pm_legacy.h>
- #include <linux/device.h>
- #include <linux/proc_fs.h>
- #ifdef CONFIG_X86
-@@ -757,16 +756,14 @@ static int __init acpi_init(void)
- 	result = acpi_bus_init();
+ static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void *key,
+@@ -443,13 +488,13 @@ static inline u8 *padlock_xcrypt_cbc(con
+ static void aes_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+ {
+ 	struct aes_ctx *ctx = aes_ctx(tfm);
+-	padlock_xcrypt_ecb(in, out, ctx->E, &ctx->cword.encrypt, 1);
++	aes_crypt(in, out, ctx->E, &ctx->cword.encrypt);
+ }
  
- 	if (!result) {
--#ifdef CONFIG_PM_LEGACY
--		if (!PM_IS_ACTIVE())
--			pm_active = 1;
-+		if (!(pm_flags & PM_APM))
-+			pm_flags |= PM_ACPI;
- 		else {
- 			printk(KERN_INFO PREFIX
- 			       "APM is already active, exiting\n");
- 			disable_acpi();
- 			result = -ENODEV;
- 		}
--#endif
- 	} else
- 		disable_acpi();
+ static void aes_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+ {
+ 	struct aes_ctx *ctx = aes_ctx(tfm);
+-	padlock_xcrypt_ecb(in, out, ctx->D, &ctx->cword.decrypt, 1);
++	aes_crypt(in, out, ctx->D, &ctx->cword.decrypt);
+ }
  
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -344,6 +344,15 @@ static inline int call_platform_enable_w
- 		device_set_wakeup_enable(dev,val); \
- 	} while(0)
- 
-+/*
-+ * Global Power Management flags
-+ * Used to keep APM and ACPI from both being active
-+ */
-+extern unsigned int	pm_flags;
-+
-+#define PM_APM	1
-+#define PM_ACPI	2
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _LINUX_PM_H */
---- a/include/linux/pm_legacy.h
-+++ b/include/linux/pm_legacy.h
-@@ -4,10 +4,6 @@
- 
- #ifdef CONFIG_PM_LEGACY
- 
--extern int pm_active;
--
--#define PM_IS_ACTIVE() (pm_active != 0)
--
- /*
-  * Register a device with power management
-  */
-@@ -21,8 +17,6 @@ int __deprecated pm_send_all(pm_request_
- 
- #else /* CONFIG_PM_LEGACY */
- 
--#define PM_IS_ACTIVE() 0
--
- static inline struct pm_dev *pm_register(pm_dev_t type,
- 					 unsigned long id,
- 					 pm_callback callback)
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -27,6 +27,9 @@ BLOCKING_NOTIFIER_HEAD(pm_chain_head);
- 
- DEFINE_MUTEX(pm_mutex);
- 
-+unsigned int pm_flags;
-+EXPORT_SYMBOL(pm_flags);
-+
- #ifdef CONFIG_SUSPEND
- 
- /* This is just an arbitrary number */
---- a/kernel/power/pm.c
-+++ b/kernel/power/pm.c
-@@ -27,8 +27,6 @@
- #include <linux/interrupt.h>
- #include <linux/mutex.h>
- 
--int pm_active;
--
- /*
-  *	Locking notes:
-  *		pm_devs_lock can be a semaphore providing pm ops are not called
-@@ -204,6 +202,4 @@ int pm_send_all(pm_request_t rqst, void 
- 
- EXPORT_SYMBOL(pm_register);
- EXPORT_SYMBOL(pm_send_all);
--EXPORT_SYMBOL(pm_active);
--
- 
+ static struct crypto_alg aes_alg = {
 
 -- 
