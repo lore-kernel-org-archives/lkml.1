@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbYBFV1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbYBFV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbYBFV1c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbYBFV1Z
+	id S1760813AbYBFV1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756498AbYBFV1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:27:25 -0500
-Received: from www17.your-server.de ([213.133.104.17]:57520 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755650AbYBFV1Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:27:25 -0500
-Message-ID: <47AA2634.7020907@m3y3r.de>
-Date: Wed, 06 Feb 2008 22:27:16 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071118)
+	Wed, 6 Feb 2008 16:27:36 -0500
+Received: from crca.org.au ([67.207.131.56]:47622 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758359AbYBFV1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 16:27:35 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <47AA2627.4030509@nigel.suspend2.net>
+Date: Thu, 07 Feb 2008 08:27:03 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Latest kernel doesn't boot
-References: <1202249704.47a8dfe89a99c@213.133.104.17> <47A8E427.6040205@zytor.com> <47AA1633.4000309@m3y3r.de> <47AA2082.4000402@zytor.com>
-In-Reply-To: <47AA2082.4000402@zytor.com>
+To: Pavel Machek <pavel@ucw.cz>
+CC: Len Brown <len.brown@intel.com>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: [linux-pm] Re: Small pm documentation cleanups
+References: <20080204234700.GA1912@elf.ucw.cz> <200802050224.51039.rjw@sisk.pl>	<47A7F581.8060300@nigel.suspend2.net> <20080205182712.GA9483@elf.ucw.cz>
+In-Reply-To: <20080205182712.GA9483@elf.ucw.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin schrieb:
-> Thomas Meyer wrote:
->>
->> I can not revert the commit e429795c68d3001ecae74f6465420c9f043b0ece. 
->> it gave me errors.
->> but i'm also not sure what could be wrong with this commit!
->>
->> my first idea was that the commit 
->> "[2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 memory 
->> map on EFI 32 platform" is the offender, because the macbook pro 
->> doesn't provide a e820 memory map at all. but bisect showed that i'm 
->> wrong here?!
->>
->
-> ELILO is expected to convert the memory map from EFI to e820 format.
-I'm using elilo-3.6-ia32.efi provided at the elilo homepage.  i wasn't 
-able to create a working efi toolchain :-(
-Does elilo-3.6 already do the converting of the memory map, or not?
-> EFI32 is likely to be poorly supported, since Apple is likely to be 
-> the only platform to *ever* ship EFI32 in mass production, and it has 
-> a BIOS emulation layer available.
-What do you want so say? Does linux support EFI or not?
->
->     -hpa
->
+Hi again.
 
-mfg
-thomas
+Pavel Machek wrote:
+> Hi!
+> 
+>>> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+>>>> Small documentation fixes/additions that accumulated in my tree.
+>>>>
+>>>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+>>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>
+> ...
+>>>> 0
+>>>>   	acpi_sleep=	[HW,ACPI] Sleep options
+>>>> -			Format: { s3_bios, s3_mode }
+>>>> -			See Documentation/power/video.txt
+>>>> +			Format: { s3_bios, s3_mode, s3_beep }
+>>>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
+>>>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
+>>>> +			kernel's real-mode entry point is called.
+>> s/kernel's/the kernel's/
+> 
+> Thanks for comments, I applied them.
+
+You're welcome. Sorry for replying again, but I just noticed another one 
+in the line above - it should be something like "it makes the PC's 
+speaker beep as soon as" ('on PC speaker' isn't right).
+
+Sorry for not getting that last time.
+
+Nigel
