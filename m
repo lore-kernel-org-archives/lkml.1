@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbYBFOuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbYBFOyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbYBFOuY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 09:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYBFOuM
+	id S1752732AbYBFOyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 09:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYBFOyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 09:50:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39838 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747AbYBFOuL (ORCPT
+	Wed, 6 Feb 2008 09:54:09 -0500
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:31226 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751142AbYBFOyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 09:50:11 -0500
-Subject: Re: softlockup: automatically detect hung TASK_UNINTERRUPTIBLE
-	tasks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080205164626.f9c920e0.akpm@linux-foundation.org>
-References: <200801252259.m0PMxHmD012059@hera.kernel.org>
-	 <20080205164626.f9c920e0.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 15:50:02 +0100
-Message-Id: <1202309402.6310.0.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Wed, 6 Feb 2008 09:54:08 -0500
+Message-ID: <47A9C9DF.90308@panasas.com>
+Date: Wed, 06 Feb 2008 16:53:19 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.14
+References: <1202227125.0@pinky> <47A8B877.4080001@panasas.com> <20080206144349.GB16777@shadowen.org>
+In-Reply-To: <20080206144349.GB16777@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Feb 2008 14:53:24.0231 (UTC) FILETIME=[05F24970:01C868D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-02-05 at 16:46 -0800, Andrew Morton wrote:
-> On Fri, 25 Jan 2008 22:59:17 GMT
-> Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+On Feb. 06, 2008, 16:43 +0200, Andy Whitcroft <apw@shadowen.org> wrote:
+> On Tue, Feb 05, 2008 at 09:26:47PM +0200, Benny Halevy wrote:
+>> Was version 0.13 NACKed?
 > 
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=82a1fcb90287052aabfa235e7ffc693ea003fe69
-> > Commit:     82a1fcb90287052aabfa235e7ffc693ea003fe69
-> > Parent:     d0d23b5432fe61229dd3641c5e94d4130bc4e61b
-> > Author:     Ingo Molnar <mingo@elte.hu>
-> > AuthorDate: Fri Jan 25 21:08:02 2008 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Fri Jan 25 21:08:02 2008 +0100
-> > 
-> >     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
+> It was picked up by Andrew for -mm according to my email.  I do not
+> think there has been an -mm release since then however.  This patch is
+> relative to that version.
 > 
-> One of my test boxes (an 8-way x86_64 software-development thing from Intel
-> - I'm not sure what's inside it) no longer powers itself off when I run `halt
-> -pfn'.
-> 
-> During bisection I found two different problems.  Sometimes the machine
-> wouldn't power off at all.  Other times it would power off after a pause of
-> around twenty seconds.
-> 
-> Bisection indicates that this commit is what caused the 20-second pause. 
-> It could be that some later commit caused the infinity-second pause.
+> -apw
 
+OK. I was afraid it was since Andrew had some comments about white spacing
+in checkpatch.pl itself IIRC.
 
-Does that kernel have:
-
-commit ed50d6cbc394cd0966469d3e249353c9dd1d38b9
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Sat Feb 2 00:23:08 2008 +0100
-
-    debug: softlockup looping fix
-
-
-
+Benny
