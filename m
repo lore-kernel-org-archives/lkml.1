@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbYBFIOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbYBFITU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761071AbYBFIOb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 03:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758751AbYBFIOE
+	id S1760236AbYBFITU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 03:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYBFITE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 03:14:04 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39678 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758432AbYBFIOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 03:14:03 -0500
-From: Andi Kleen <ak@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH] [1/2] Move NUMAQ io handling into arch/x86/pci/numa.c
-Date: Wed, 6 Feb 2008 09:15:00 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       apw@shadowen.org
-References: <20080201608.475239056@suse.de> <20080205222603.GB4207@csn.ul.ie>
-In-Reply-To: <20080205222603.GB4207@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 03:19:04 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43314 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbYBFITD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 03:19:03 -0500
+Date: Wed, 6 Feb 2008 09:53:57 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ross Vandegrift <ross@kallisti.us>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080206085357.GA1402@one.firstfloor.org>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205192559.GA10573@kallisti.us> <20080205201106.GB26150@one.firstfloor.org> <20080205212335.GA11287@kallisti.us>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802060915.01121.ak@suse.de>
+In-Reply-To: <20080205212335.GA11287@kallisti.us>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I work at a hosting company and we see these kinds of issues in the
+> real world fairly frequently.  I would guess maybe a monthly basis.
+> The servers where we have seen this are typically running RHEL 4 or 5
+> kernels, so I can't really speak to how recent the kernel is in this
+> specific term.
 
-> > +#define XQUAD_PORTIO_BASE 0xfe400000
->
-> There is still a definition in include/asm-x86/io_32.h . Is this
-> intentional?
+RHEL5 should be recent enough.
 
-Probably not.
+> 
+> If I can find a box that we could temporary get a kernel.org kernel
+> on, I'll see if I can get a real comparison together.  We have
+> collected a few of the more effective attack tools that have been left
+> on compromised systems, so it wouldn't be too difficult to get some
+> numbers.
 
->
-> > +extern void *xquad_portio;    /* Where the IO area was mapped */
->
-> Does the extern need to be here when you've added it (minus the comment)
-> to mach_apic.h later in the patch?
+That would be useful yes -- for different bandwidths.
 
-The extern was intended to be removed, but somehow that change didn't make 
-it into the final patch. Doesn't matter much either way though.
-
-> Fix for "x86: move NUMAQ io handling into arch/x86/pci/numa.c"
->
-> The intention of commit c7e844f0415252c7e1a2153a97e7a0c511d61ada was to
-> replace a number of outl_quad() calls with a writel() equivilant. One of
-> the changes was not equivilant. This patch corrects it.
-
-Yes looks good; thanks.
+If the young/old heuristics do not work well enough anymore most likely we should
+try readding RED to the syn queue again. That used to be pretty effective
+in the early days. I don't quite remember why Linux didn't end up using it
+in fact.
 
 -Andi
+
