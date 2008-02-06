@@ -1,75 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYBFXAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761694AbYBFXBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbYBFXAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbYBFXAX
+	id S1761694AbYBFXBe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:01:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758525AbYBFXBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:00:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:11350 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757090AbYBFXAV convert rfc822-to-8bit (ORCPT
+	Wed, 6 Feb 2008 18:01:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39964 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758353AbYBFXBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:00:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YbwWXvJu7I8T4GM28SSzGUA6mT+lsNG1vDZZG+b3OaKp3W+YJiXxa/7jVp12Sq0G8K+2wxYsAqsYTsLhzOTmZLNTZSiKzpgyv/HqqoEmWj1+aj3caMf4vJicyHfSZCuuGw6xxE+RUpy8zQlaFvncrJKGZMeSnP07WW4uDqKVFL8=
-Message-ID: <6101e8c40802061500r5de80eaam3deeb602b9495c7e@mail.gmail.com>
-Date: Thu, 7 Feb 2008 00:00:15 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       stable-commits@vger.kernel.org
-Subject: Re: [2.6.22.y] {02/17} - invalid-semicolon - series for stable kernel #2
-In-Reply-To: <6101e8c40802011733ua1bf863v86316585332ef8f1@mail.gmail.com>
+	Wed, 6 Feb 2008 18:01:23 -0500
+Message-ID: <47AA3B16.7000507@zytor.com>
+Date: Wed, 06 Feb 2008 14:56:22 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <6101e8c40802011733ua1bf863v86316585332ef8f1@mail.gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
+       tglx@linutronix.de, mingo@redhat.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in	die_nmi
+ path
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com>
+In-Reply-To: <20080206224805.GD11886@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----8<---
-From: Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>
-Subject: [POWERPC] Fix invalid semicolon after if statement
-Patch-mainline: 2.6.23-rc4 2b02d13996fe28478e45605de9bd8bdca25718de
-Acked-by: schwab@suse.de
+Vivek Goyal wrote:
+> 
+> I am wondering if interrupts are disabled on crashing cpu or if crashing
+> cpu is inside die_nmi(), how would it stop/prevent delivery of NMI IPI to
+> other cpus.
+> 
 
-    A similar fix to netfilter from Eric Dumazet inspired me to
-    look around a bit by using some grep/sed stuff as looking for
-    this kind of bugs seemed easy to automate.  This is one of them
-    I found where it looks like this semicolon is not valid.
+I don't see how it would.
 
-    Signed-off-by: Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
----
- arch/powerpc/mm/hash_utils_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/powerpc/mm/hash_utils_64.c	2007-07-08 19:32:17.000000000 -0400
-+++ b/arch/powerpc/mm/hash_utils_64.c	2007-08-27 14:01:20.000000000 -0400
-@@ -795,7 +795,7 @@ void hash_preload(struct mm_struct *mm,
-
- #ifdef CONFIG_PPC_MM_SLICES
- 	/* We only prefault standard pages for now */
--	if (unlikely(get_slice_psize(mm, ea) != mm->context.user_psize));
-+	if (unlikely(get_slice_psize(mm, ea) != mm->context.user_psize))
- 		return;
- #endif
----8<---
-
-On 2/2/08, Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
-> mainline: 2b02d13996fe28478e45605de9bd8bdca25718de
->
-> --
-> Thanks,
-> Oliver
->
-
-
--- 
-Thanks,
-Oliver
+	-hpa
