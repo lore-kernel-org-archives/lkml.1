@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbYBGAGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbYBGAGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765488AbYBGAGJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764780AbYBFX5C
+	id S1765544AbYBGAGj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764781AbYBFX5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:57:02 -0500
-Received: from ns.suse.de ([195.135.220.2]:45867 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:57:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60609 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762069AbYBFX47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:56:59 -0500
-Date: Wed, 6 Feb 2008 15:52:32 -0800
+	id S1762069AbYBFX5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:57:03 -0500
+Date: Wed, 6 Feb 2008 15:52:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 25/73] IPSEC: Avoid undefined shift operation when testing
-	algorithm ID
-Message-ID: <20080206235232.GZ13121@suse.de>
+Subject: [patch 26/73] NET: Correct two mistaken skb_reset_mac_header()
+	conversions.
+Message-ID: <20080206235235.GA13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipsec-avoid-undefined-shift-operation-when-testing-algorithm-id.patch"
+Content-Disposition: inline; filename="net-correct-two-mistaken-skb_reset_mac_header-conversions.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,58 +36,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: David Miller <davem@davemloft.net>
 
-[IPSEC]: Avoid undefined shift operation when testing algorithm ID
+[NET]: Correct two mistaken skb_reset_mac_header() conversions.
 
-[ Upstream commit: f398035f2dec0a6150833b0bc105057953594edb ]
+[ Upstream commit: c6e6ca712b5cc06a662f900c0484d49d7334af64 ]
 
-The aalgos/ealgos fields are only 32 bits wide.  However, af_key tries
-to test them with the expression 1 << id where id can be as large as
-253.  This produces different behaviour on different architectures.
+This operation helper abstracts:
 
-The following patch explicitly checks whether ID is greater than 31
-and fails the check if that's the case.
+	skb->mac_header = skb->data;
 
-We cannot easily extend the mask to be longer than 32 bits due to
-exposure to user-space.  Besides, this whole interface is obsolete
-anyway in favour of the xfrm_user interface which doesn't use this
-bit mask in templates (well not within the kernel anyway).
+but it was done in two more places which were actually:
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+	skb->mac_header = skb->network_header;
+
+and those are corrected here.
+
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/key/af_key.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ net/ax25/ax25_in.c  |    2 +-
+ net/netrom/nr_dev.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/key/af_key.c
-+++ b/net/key/af_key.c
-@@ -2780,12 +2780,22 @@ static struct sadb_msg *pfkey_get_base_m
+--- a/net/ax25/ax25_in.c
++++ b/net/ax25/ax25_in.c
+@@ -124,7 +124,7 @@ int ax25_rx_iframe(ax25_cb *ax25, struct
+ 		}
  
- static inline int aalg_tmpl_set(struct xfrm_tmpl *t, struct xfrm_algo_desc *d)
- {
--	return t->aalgos & (1 << d->desc.sadb_alg_id);
-+	unsigned int id = d->desc.sadb_alg_id;
-+
-+	if (id >= sizeof(t->aalgos) * 8)
-+		return 0;
-+
-+	return (t->aalgos >> id) & 1;
- }
+ 		skb_pull(skb, 1);	/* Remove PID */
+-		skb_reset_mac_header(skb);
++		skb->mac_header = skb->network_header;
+ 		skb_reset_network_header(skb);
+ 		skb->dev      = ax25->ax25_dev->dev;
+ 		skb->pkt_type = PACKET_HOST;
+--- a/net/netrom/nr_dev.c
++++ b/net/netrom/nr_dev.c
+@@ -56,7 +56,7 @@ int nr_rx_ip(struct sk_buff *skb, struct
  
- static inline int ealg_tmpl_set(struct xfrm_tmpl *t, struct xfrm_algo_desc *d)
- {
--	return t->ealgos & (1 << d->desc.sadb_alg_id);
-+	unsigned int id = d->desc.sadb_alg_id;
-+
-+	if (id >= sizeof(t->ealgos) * 8)
-+		return 0;
-+
-+	return (t->ealgos >> id) & 1;
- }
+ 	/* Spoof incoming device */
+ 	skb->dev      = dev;
+-	skb_reset_mac_header(skb);
++	skb->mac_header = skb->network_header;
+ 	skb_reset_network_header(skb);
+ 	skb->pkt_type = PACKET_HOST;
  
- static int count_ah_combs(struct xfrm_tmpl *t)
 
 -- 
