@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763879AbYBFXt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbYBFXvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763879AbYBFXt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759831AbYBFXtP
+	id S1762784AbYBFXvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbYBFXvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:49:15 -0500
-Received: from smtp20.kymp.net ([80.248.96.137]:56449 "EHLO smtp20.kymp.net"
+	Wed, 6 Feb 2008 18:51:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60986 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759780AbYBFXtO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:49:14 -0500
-X-Greylist: delayed 39349 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Feb 2008 18:49:14 EST
-Date: Wed, 6 Feb 2008 14:53:22 +0200
-From: Mika Bostrom <bostik@bostik.iki.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Understanding clock drift in virtual machines w/ CFS, NOHZ
-Message-ID: <20080206125322.GA2923@bostik.iki.fi>
-Reply-To: Mika Bostrom <bostik@bostik.iki.fi>
+	id S1759317AbYBFXu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:50:59 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Date: Thu, 7 Feb 2008 00:48:59 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl>
+In-Reply-To: <200802060227.14385.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-Content-Transfer-Encoding: 8BIT
+Message-Id: <200802070049.00461.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Good day.
+On Wednesday, 6 of February 2008, Rafael J. Wysocki wrote:
+> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+> > 
+> > This rewrites wakeup code to .c, and it fixes stack (should use movl
+> > ,%esp, not movw). Testers wanted. Makefile infrastructure was done by
+> > hpa, cleanups by rjw.
+> 
+> I'll test it tomorrow
 
-  I have come across the occasional issue of clock drift when running
-(earlier) kernels inside a virtual machine. The reason for drift is
-simple enough - host may be under heavy load, guest may not get enough
-resources to run all the ticks (HZ) it is supposed to. At least to put
-it simply.
+Works on my nx6325 (good sign, the box is easy to break ;-)).
 
-  Now, I have been wondering how the introduction of CFS and CONFIG_NOHZ
-(dynticks) change this, or if they do at all. If I have understood
-correctly, only the host's scheduler is really involved so it enters the
-picture when host is running a recent kernel. In a pure hypervisor-only
-virtualization, that point should be moot.
+> and I still have some more cleanups (I was distracted by a nasty scheduler
+> issue in the current mainline).
 
-  And then we have dynticks. Try as I might, I haven't been able to wrap
-my head around the combination. What happens to the kernel and
-timekeeping when guest has NOHZ enabled?
+The cleanups are still in the works (sorry).
 
-  My google-fu is not good enough to find the relevant documentation if
-such even exists on this subject. To top it off, I'm not certain whether
-my question is trivial, non-issue or just plain weird.
-
-  Any pointers on where I should look for more information will be
-appreciated.
-
--- 
- Mika Boström      +358-40-525-7347  -=-  The flogging will continue
- Bostik@iki.fi    www.iki.fi/bostik  -=-  until morale improves
- GPG: 0x039F188E; EC67 5B3A E6E3 6A84 9CB2  94D3 BFCD BD57 039F 188E
+Rafael
