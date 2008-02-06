@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbYBFWlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbYBFWnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbYBFWlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbYBFWlE
+	id S1760084AbYBFWnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757646AbYBFWnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:41:04 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35246 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756568AbYBFWlD (ORCPT
+	Wed, 6 Feb 2008 17:43:11 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:42517 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757577AbYBFWnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:41:03 -0500
-Date: Wed, 6 Feb 2008 22:40:50 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Mika Lawando <rzryyvzy@trashmail.net>
-Subject: Re: What is the limit size of tmpfs /dev/shm ?
-In-Reply-To: <47AA2E40.2020701@zytor.com>
-Message-ID: <Pine.LNX.4.64.0802062233090.22295@blonde.site>
-References: <47A9CA0E.3030507@wpkg.org> <Pine.LNX.4.64.0802061517380.8470@blonde.site>
- <47AA0A2E.30701@zytor.com> <Pine.LNX.4.64.0802061938120.32204@blonde.site>
- <47AA102F.1070105@zytor.com> <Pine.LNX.4.64.0802062150440.16791@blonde.site>
- <47AA2E40.2020701@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Feb 2008 17:43:09 -0500
+Date: Wed, 06 Feb 2008 15:01:26 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: my config doesnt compile in your tree
+In-reply-to: <20080206215304.GA13582@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200802061501.26533.yinghai.lu@sun.com>
+Organization: SUN
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200802061246.43413.yinghai.lu@sun.com>
+ <20080206215304.GA13582@elte.hu>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Feb 2008, H. Peter Anvin wrote:
+On Wednesday 06 February 2008 01:53:04 pm Ingo Molnar wrote:
 > 
-> The specific application was this:
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
-> - extract a kernel tarball
-> - "make distclean"
-> - cp -al the resulting tree
-> - apply a patch to each tree
-> - do a diff between the trees
-> - delete all files
+> > your latest tree. x86/master and x86/mm
+> > 
+> >   AS      arch/x86/kernel/entry_64.o
+> > arch/x86/kernel/entry_64.S: Assembler messages:
+> > arch/x86/kernel/entry_64.S:618: Error: CFI state restore without previous remember
 > 
-> ... repeat something like 20,000 times.
+> could you try the latest (freshly updated) x86.git, does it still have 
+> this problem?
 
-Right, thanks.
+could be compiled.
 
-Certainly extracting a tarball can be a surprising challenge
-for some filesystems.
+but one machine got panic. others are ok. will check that.
 
-And you remind me that of course, to the extent that a load is
-about metadata (lots of creates for example), tmpfs can hardly
-lose since its metadata never goes out to swap.  But there is
-plenty of data in your test above.
+YH
 
-Hugh
