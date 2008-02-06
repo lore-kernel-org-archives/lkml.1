@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYBFRqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYBFRrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbYBFRqr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbYBFRpv
+	id S1755964AbYBFRrB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:47:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYBFRpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:45:51 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:44522 "EHLO
+	Wed, 6 Feb 2008 12:45:53 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:44523 "EHLO
 	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756685AbYBFRpp (ORCPT
+	with ESMTP id S1756691AbYBFRpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:45:45 -0500
-Date: Wed, 6 Feb 2008 12:44:46 -0500
+	Wed, 6 Feb 2008 12:45:46 -0500
+Date: Wed, 6 Feb 2008 12:44:45 -0500
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/5] UML - Style fixes in arch/um/os-Linux
-Message-ID: <20080206174446.GA7846@c2.user-mode-linux.org>
+Subject: [PATCH 1/5] UML - Runtime host VMSPLIT detection
+Message-ID: <20080206174445.GA7841@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,645 +25,479 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Style changes under arch/um/os-Linux:
-	include trimming
-	CodingStyle fixes
-	some printks needed severity indicators	
+Calculate TASK_SIZE at run-time by figuring out the host's VMSPLIT -
+this is needed on i386 if UML is to run on hosts with varying VMSPLITs
+without recompilation.
 
-make_tempfile turns out not to be used outside of mem.c, so it is now
-static.  Its declaration in tempfile.h is no longer needed, and
-tempfile.h itself is no longer needed.
+TASK_SIZE is now defined in terms of a variable, task_size.  This gets
+rid of an include of pgtable.h from processor.h, which can cause
+include loops.
 
-create_tmp_file was also made static.
+On i386, task_size is calculated early in boot by probing the address
+space in a binary search to figure out where the boundary between
+usable and non-usable memory is.  This tries to make sure that a page
+that is considered to be in userspace is, or can be made, read-write.
+I'm concerned about a system-global VDSO page in kernel memory being
+hit and considered to be a userspace page.
 
-checkpatch moans about an EXPORT_SYMBOL in user_syms.c which is part
-of a macro definition - this is copying a bit of kernel infrastructure
-into the libc side of UML because the kernel headers can't be included
-there.
+On x86_64, task_size is just the old value of CONFIG_TOP_ADDR.
+
+A bunch of config variable are gone now.  CONFIG_TOP_ADDR is directly
+replaced by TASK_SIZE.  NEST_LEVEL is gone since the relocation of
+the stubs makes it irrelevant.  All the HOST_VMSPLIT stuff is gone.
+All references to these in arch/um/Makefile are also gone.
+
+I noticed and fixed a missing extern in os.h when adding
+os_get_task_size.
+
+Note: This has been revised to fix the 32-bit UML on 64-bit host bug
+that Miklos ran into.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/include/tempfile.h               |   11 ---
- arch/um/os-Linux/aio.c                   |    2 
- arch/um/os-Linux/drivers/ethertap_kern.c |    8 +-
- arch/um/os-Linux/drivers/tuntap_kern.c   |    6 -
- arch/um/os-Linux/include/file.h          |   13 ---
- arch/um/os-Linux/mem.c                   |  101 +++++++++++++++----------------
- arch/um/os-Linux/process.c               |    2 
- arch/um/os-Linux/signal.c                |    2 
- arch/um/os-Linux/skas/process.c          |    6 -
- arch/um/os-Linux/sys-i386/registers.c    |    4 -
- arch/um/os-Linux/sys-x86_64/registers.c  |   21 +++---
- arch/um/os-Linux/uaccess.c               |    4 -
- arch/um/os-Linux/user_syms.c             |    4 -
- arch/um/os-Linux/util.c                  |   43 ++++---------
- 14 files changed, 98 insertions(+), 129 deletions(-)
+ arch/um/Kconfig                         |   11 --
+ arch/um/Kconfig.i386                    |   37 ---------
+ arch/um/Kconfig.x86_64                  |    4 -
+ arch/um/Makefile                        |   11 --
+ arch/um/defconfig                       |    3 
+ arch/um/include/as-layout.h             |    2 
+ arch/um/include/os.h                    |    5 +
+ arch/um/kernel/exec.c                   |    2 
+ arch/um/kernel/um_arch.c                |   16 +++-
+ arch/um/os-Linux/sys-i386/Makefile      |    2 
+ arch/um/os-Linux/sys-i386/task_size.c   |  120 ++++++++++++++++++++++++++++++++
+ arch/um/os-Linux/sys-x86_64/Makefile    |    2 
+ arch/um/os-Linux/sys-x86_64/task_size.c |    5 +
+ include/asm-um/fixmap.h                 |    3 
+ include/asm-um/processor-generic.h      |    5 -
+ 15 files changed, 153 insertions(+), 75 deletions(-)
 
-Index: linux-2.6.22/arch/um/os-Linux/user_syms.c
+Index: linux-2.6-git/arch/um/kernel/um_arch.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/user_syms.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/user_syms.c	2007-12-14 11:23:36.000000000 -0500
-@@ -34,8 +34,8 @@ EXPORT_SYMBOL(printf);
-  * good; so the versions of these symbols will always match
+--- linux-2.6-git.orig/arch/um/kernel/um_arch.c	2008-02-06 11:19:07.000000000 -0500
++++ linux-2.6-git/arch/um/kernel/um_arch.c	2008-02-06 11:31:53.000000000 -0500
+@@ -241,6 +241,11 @@ static struct notifier_block panic_exit_
+ };
+ 
+ /* Set during early boot */
++unsigned long task_size;
++EXPORT_SYMBOL(task_size);
++
++unsigned long host_task_size;
++
+ unsigned long brk_start;
+ unsigned long end_iomem;
+ EXPORT_SYMBOL(end_iomem);
+@@ -267,6 +272,13 @@ int __init linux_main(int argc, char **a
+ 	if (have_root == 0)
+ 		add_arg(DEFAULT_COMMAND_LINE);
+ 
++	host_task_size = os_get_task_size();
++	/*
++	 * TASK_SIZE needs to be PGDIR_SIZE aligned or else exit_mmap craps
++	 * out
++	 */
++	task_size = host_task_size & PGDIR_MASK;
++
+ 	/* OS sanity checks that need to happen before the kernel runs */
+ 	os_early_checks();
+ 
+@@ -303,7 +315,7 @@ int __init linux_main(int argc, char **a
+ 
+ 	highmem = 0;
+ 	iomem_size = (iomem_size + PAGE_SIZE - 1) & PAGE_MASK;
+-	max_physmem = CONFIG_TOP_ADDR - uml_physmem - iomem_size - MIN_VMALLOC;
++	max_physmem = TASK_SIZE - uml_physmem - iomem_size - MIN_VMALLOC;
+ 
+ 	/*
+ 	 * Zones have to begin on a 1 << MAX_ORDER page boundary,
+@@ -335,7 +347,7 @@ int __init linux_main(int argc, char **a
+ 	}
+ 
+ 	virtmem_size = physmem_size;
+-	avail = CONFIG_TOP_ADDR - start_vm;
++	avail = TASK_SIZE - start_vm;
+ 	if (physmem_size > avail)
+ 		virtmem_size = avail;
+ 	end_vm = start_vm + virtmem_size;
+Index: linux-2.6-git/include/asm-um/processor-generic.h
+===================================================================
+--- linux-2.6-git.orig/include/asm-um/processor-generic.h	2008-02-06 11:19:09.000000000 -0500
++++ linux-2.6-git/include/asm-um/processor-generic.h	2008-02-06 11:31:53.000000000 -0500
+@@ -11,7 +11,6 @@ struct pt_regs;
+ struct task_struct;
+ 
+ #include "asm/ptrace.h"
+-#include "asm/pgtable.h"
+ #include "registers.h"
+ #include "sysdep/archsetjmp.h"
+ 
+@@ -92,7 +91,9 @@ static inline void mm_copy_segments(stru
+ /*
+  * User space process size: 3GB (default).
   */
- #define EXPORT_SYMBOL_PROTO(sym)       \
--       int sym(void);                  \
--       EXPORT_SYMBOL(sym);
-+	int sym(void);                  \
-+	EXPORT_SYMBOL(sym);
+-#define TASK_SIZE (CONFIG_TOP_ADDR & PGDIR_MASK)
++extern unsigned long task_size;
++
++#define TASK_SIZE (task_size)
  
- extern void readdir64(void) __attribute__((weak));
- EXPORT_SYMBOL(readdir64);
-Index: linux-2.6.22/arch/um/include/tempfile.h
+ /* This decides where the kernel will search for a free chunk of vm
+  * space during mmap's.
+Index: linux-2.6-git/arch/um/include/os.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/tempfile.h	2007-12-14 11:21:17.000000000 -0500
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,11 +0,0 @@
--/* 
-- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
--
--#ifndef __TEMPFILE_H__
--#define __TEMPFILE_H__
--
--extern int make_tempfile(const char *template, char **tempname, int do_unlink);
--
--#endif
-Index: linux-2.6.22/arch/um/os-Linux/aio.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/aio.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/aio.c	2007-12-14 11:28:05.000000000 -0500
-@@ -142,7 +142,7 @@ static int do_not_aio(struct aio_thread_
- 	if (actual != req->offset)
- 		return -errno;
+--- linux-2.6-git.orig/arch/um/include/os.h	2008-02-06 11:19:07.000000000 -0500
++++ linux-2.6-git/arch/um/include/os.h	2008-02-06 11:31:53.000000000 -0500
+@@ -295,6 +295,9 @@ extern void maybe_sigio_broken(int fd, i
+ extern int os_arch_prctl(int pid, int code, unsigned long *addr);
  
--	switch(req->type) {
-+	switch (req->type) {
- 	case AIO_READ:
- 		n = read(req->io_fd, req->buf, req->len);
- 		break;
-Index: linux-2.6.22/arch/um/os-Linux/include/file.h
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/include/file.h	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/include/file.h	2007-12-14 11:23:36.000000000 -0500
-@@ -1,5 +1,5 @@
- /* 
-- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-+ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
-@@ -9,14 +9,3 @@
- #define DEV_NULL "/dev/null"
+ /* tty.c */
+-int get_pty(void);
++extern int get_pty(void);
++
++/* sys-$ARCH/task_size.c */
++extern unsigned long os_get_task_size(void);
  
  #endif
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
-Index: linux-2.6.22/arch/um/os-Linux/mem.c
+Index: linux-2.6-git/arch/um/os-Linux/sys-i386/Makefile
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/mem.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/mem.c	2007-12-14 11:35:12.000000000 -0500
-@@ -1,22 +1,21 @@
-+/*
-+ * Copyright (C) 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-+ * Licensed under the GPL
-+ */
-+
- #include <stdio.h>
--#include <stdlib.h>
- #include <stddef.h>
--#include <stdarg.h>
+--- linux-2.6-git.orig/arch/um/os-Linux/sys-i386/Makefile	2008-02-06 11:17:27.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/sys-i386/Makefile	2008-02-06 11:31:53.000000000 -0500
+@@ -3,7 +3,7 @@
+ # Licensed under the GPL
+ #
+ 
+-obj-y = registers.o signal.o tls.o
++obj-y = registers.o signal.o task_size.o tls.o
+ 
+ USER_OBJS := $(obj-y)
+ 
+Index: linux-2.6-git/arch/um/os-Linux/sys-i386/task_size.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-git/arch/um/os-Linux/sys-i386/task_size.c	2008-02-06 11:31:53.000000000 -0500
+@@ -0,0 +1,120 @@
++#include <stdio.h>
 +#include <stdlib.h>
- #include <unistd.h>
- #include <errno.h>
--#include <string.h>
- #include <fcntl.h>
--#include <sys/types.h>
-+#include <string.h>
- #include <sys/mman.h>
--#include <sys/statfs.h>
--#include "user.h"
--#include "mem_user.h"
-+#include <sys/param.h>
- #include "init.h"
--#include "os.h"
--#include "tempfile.h"
- #include "kern_constants.h"
--
--#include <sys/param.h>
-+#include "os.h"
-+#include "user.h"
- 
- /* Modified by which_tmpdir, which is called during early boot */
- static char *default_tmpdir = "/tmp";
-@@ -33,18 +32,19 @@ static void __init find_tempdir(void)
- 	int i;
- 	char *dir = NULL;
- 
--	if(tempdir != NULL) /* We've already been called */
-+	if (tempdir != NULL)
-+		/* We've already been called */
- 		return;
--	for(i = 0; dirs[i]; i++){
-+	for (i = 0; dirs[i]; i++) {
- 		dir = getenv(dirs[i]);
--		if((dir != NULL) && (*dir != '\0'))
-+		if ((dir != NULL) && (*dir != '\0'))
- 			break;
- 	}
--	if((dir == NULL) || (*dir == '\0'))
-+	if ((dir == NULL) || (*dir == '\0'))
- 		dir = default_tmpdir;
- 
- 	tempdir = malloc(strlen(dir) + 2);
--	if(tempdir == NULL){
-+	if (tempdir == NULL) {
- 		fprintf(stderr, "Failed to malloc tempdir, "
- 			"errno = %d\n", errno);
- 		return;
-@@ -53,7 +53,8 @@ static void __init find_tempdir(void)
- 	strcat(tempdir, "/");
- }
- 
--/* This will return 1, with the first character in buf being the
-+/*
-+ * This will return 1, with the first character in buf being the
-  * character following the next instance of c in the file.  This will
-  * read the file as needed.  If there's an error, -errno is returned;
-  * if the end of the file is reached, 0 is returned.
-@@ -64,11 +65,11 @@ static int next(int fd, char *buf, size_
- 	size_t len;
- 	char *ptr;
- 
--	while((ptr = strchr(buf, c)) == NULL){
-+	while ((ptr = strchr(buf, c)) == NULL) {
- 		n = read(fd, buf, size - 1);
--		if(n == 0)
-+		if (n == 0)
- 			return 0;
--		else if(n < 0)
-+		else if (n < 0)
- 			return -errno;
- 
- 		buf[n] = '\0';
-@@ -78,11 +79,12 @@ static int next(int fd, char *buf, size_
- 	len = strlen(ptr);
- 	memmove(buf, ptr, len + 1);
- 
--	/* Refill the buffer so that if there's a partial string that we care
-+	/*
-+	 * Refill the buffer so that if there's a partial string that we care
- 	 * about, it will be completed, and we can recognize it.
- 	 */
- 	n = read(fd, &buf[len], size - len - 1);
--	if(n < 0)
-+	if (n < 0)
- 		return -errno;
- 
- 	buf[len + n] = '\0';
-@@ -92,7 +94,8 @@ static int next(int fd, char *buf, size_
- /* which_tmpdir is called only during early boot */
- static int checked_tmpdir = 0;
- 
--/* Look for a tmpfs mounted at /dev/shm.  I couldn't find a cleaner
-+/*
-+ * Look for a tmpfs mounted at /dev/shm.  I couldn't find a cleaner
-  * way to do this than to parse /proc/mounts.  statfs will return the
-  * same filesystem magic number and fs id for both /dev and /dev/shm
-  * when they are both tmpfs, so you can't tell if they are different
-@@ -107,7 +110,7 @@ static void which_tmpdir(void)
- 	int fd, found;
- 	char buf[128] = { '\0' };
- 
--	if(checked_tmpdir)
-+	if (checked_tmpdir)
- 		return;
- 
- 	checked_tmpdir = 1;
-@@ -115,28 +118,28 @@ static void which_tmpdir(void)
- 	printf("Checking for tmpfs mount on /dev/shm...");
- 
- 	fd = open("/proc/mounts", O_RDONLY);
--	if(fd < 0){
-+	if (fd < 0) {
- 		printf("failed to open /proc/mounts, errno = %d\n", errno);
- 		return;
- 	}
- 
--	while(1){
-+	while (1) {
- 		found = next(fd, buf, ARRAY_SIZE(buf), ' ');
--		if(found != 1)
-+		if (found != 1)
- 			break;
- 
--		if(!strncmp(buf, "/dev/shm", strlen("/dev/shm")))
-+		if (!strncmp(buf, "/dev/shm", strlen("/dev/shm")))
- 			goto found;
- 
- 		found = next(fd, buf, ARRAY_SIZE(buf), '\n');
--		if(found != 1)
-+		if (found != 1)
- 			break;
- 	}
- 
- err:
--	if(found == 0)
-+	if (found == 0)
- 		printf("nothing mounted on /dev/shm\n");
--	else if(found < 0)
-+	else if (found < 0)
- 		printf("read returned errno %d\n", -found);
- 
- out:
-@@ -146,10 +149,10 @@ out:
- 
- found:
- 	found = next(fd, buf, ARRAY_SIZE(buf), ' ');
--	if(found != 1)
-+	if (found != 1)
- 		goto err;
- 
--	if(strncmp(buf, "tmpfs", strlen("tmpfs"))){
-+	if (strncmp(buf, "tmpfs", strlen("tmpfs"))) {
- 		printf("not tmpfs\n");
- 		goto out;
- 	}
-@@ -164,8 +167,8 @@ found:
-  * (file: kernel/tt/ptproxy/proxy.c, proc: start_debugger).
-  * So it isn't 'static' yet.
-  */
--int __init make_tempfile(const char *template, char **out_tempname,
--			 int do_unlink)
-+static int __init make_tempfile(const char *template, char **out_tempname,
-+				int do_unlink)
- {
- 	char *tempname;
- 	int fd;
-@@ -182,16 +185,16 @@ int __init make_tempfile(const char *tem
- 		tempname[0] = '\0';
- 	strncat(tempname, template, MAXPATHLEN-1-strlen(tempname));
- 	fd = mkstemp(tempname);
--	if(fd < 0){
-+	if (fd < 0) {
- 		fprintf(stderr, "open - cannot create %s: %s\n", tempname,
- 			strerror(errno));
- 		goto out;
- 	}
--	if(do_unlink && (unlink(tempname) < 0)){
-+	if (do_unlink && (unlink(tempname) < 0)) {
- 		perror("unlink");
- 		goto out;
- 	}
--	if(out_tempname){
-+	if (out_tempname) {
- 		*out_tempname = tempname;
- 	} else {
- 		free(tempname);
-@@ -204,27 +207,23 @@ out:
- 
- #define TEMPNAME_TEMPLATE "vm_file-XXXXXX"
- 
--/*
-- * This proc is used in start_up.c
-- * So it isn't 'static'.
-- */
--int __init create_tmp_file(unsigned long long len)
-+static int __init create_tmp_file(unsigned long long len)
- {
- 	int fd, err;
- 	char zero;
- 
- 	fd = make_tempfile(TEMPNAME_TEMPLATE, NULL, 1);
--	if(fd < 0) {
-+	if (fd < 0)
- 		exit(1);
--	}
- 
- 	err = fchmod(fd, 0777);
--	if(err < 0){
-+	if (err < 0) {
- 		perror("fchmod");
- 		exit(1);
- 	}
- 
--	/* Seek to len - 1 because writing a character there will
-+	/*
-+	 * Seek to len - 1 because writing a character there will
- 	 * increase the file size by one byte, to the desired length.
- 	 */
- 	if (lseek64(fd, len - 1, SEEK_SET) < 0) {
-@@ -235,7 +234,7 @@ int __init create_tmp_file(unsigned long
- 	zero = 0;
- 
- 	err = write(fd, &zero, 1);
--	if(err != 1){
-+	if (err != 1) {
- 		perror("write");
- 		exit(1);
- 	}
-@@ -250,7 +249,7 @@ int __init create_mem_file(unsigned long
- 	fd = create_tmp_file(len);
- 
- 	err = os_set_exec_close(fd);
--	if(err < 0){
-+	if (err < 0) {
- 		errno = -err;
- 		perror("exec_close");
- 	}
-@@ -267,11 +266,11 @@ void __init check_tmpexec(void)
- 		    PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, fd, 0);
- 	printf("Checking PROT_EXEC mmap in %s...",tempdir);
- 	fflush(stdout);
--	if(addr == MAP_FAILED){
-+	if (addr == MAP_FAILED) {
- 		err = errno;
- 		perror("failed");
- 		close(fd);
--		if(err == EPERM)
-+		if (err == EPERM)
- 			printf("%s must be not mounted noexec\n",tempdir);
- 		exit(1);
- 	}
-Index: linux-2.6.22/arch/um/os-Linux/signal.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/signal.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/signal.c	2007-12-14 11:28:07.000000000 -0500
-@@ -237,7 +237,7 @@ void unblock_signals(void)
- 	 * interrupts may have arrived and we need to re-enable them and
- 	 * recheck signals_pending.
- 	 */
--	while(1) {
-+	while (1) {
- 		/*
- 		 * Save and reset save_pending after enabling signals.  This
- 		 * way, signals_pending won't be changed while we're reading it.
-Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-12-14 11:35:42.000000000 -0500
-@@ -341,7 +341,7 @@ void userspace(struct uml_pt_regs *regs)
- 	int local_using_sysemu;
- 
- 	if (getitimer(ITIMER_VIRTUAL, &timer))
--		printk("Failed to get itimer, errno = %d\n", errno);
-+		printk(UM_KERN_ERR "Failed to get itimer, errno = %d\n", errno);
- 	nsecs = timer.it_value.tv_sec * UM_NSEC_PER_SEC +
- 		timer.it_value.tv_usec * UM_NSEC_PER_USEC;
- 	nsecs += os_nsecs();
-@@ -388,7 +388,7 @@ void userspace(struct uml_pt_regs *regs)
- 
- 		if (WIFSTOPPED(status)) {
- 			int sig = WSTOPSIG(status);
--		  	switch(sig) {
-+			switch (sig) {
- 			case SIGSEGV:
- 				if (PTRACE_FULL_FAULTINFO ||
- 				    !ptrace_faultinfo) {
-@@ -641,7 +641,7 @@ int start_idle_thread(void *stack, jmp_b
- 	 * after returning to the jumper.
- 	 */
- 	n = setjmp(initial_jmpbuf);
--	switch(n) {
-+	switch (n) {
- 	case INIT_JMP_NEW_THREAD:
- 		(*switch_buf)[0].JB_IP = (unsigned long) new_thread_handler;
- 		(*switch_buf)[0].JB_SP = (unsigned long) stack +
-Index: linux-2.6.22/arch/um/os-Linux/sys-i386/registers.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/sys-i386/registers.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/sys-i386/registers.c	2007-12-14 11:23:36.000000000 -0500
-@@ -62,10 +62,10 @@ void arch_init_registers(int pid)
- 	int err;
- 
- 	err = ptrace(PTRACE_GETFPXREGS, pid, 0, fpx_regs);
--	if(!err)
-+	if (!err)
- 		return;
- 
--	if(errno != EIO)
-+	if (errno != EIO)
- 		panic("check_ptrace : PTRACE_GETFPXREGS failed, errno = %d",
- 		      errno);
- 
-Index: linux-2.6.22/arch/um/os-Linux/sys-x86_64/registers.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/sys-x86_64/registers.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/sys-x86_64/registers.c	2007-12-14 11:23:36.000000000 -0500
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-+ * Copyright (C) 2006 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
-@@ -7,31 +7,36 @@
- #include <sys/ptrace.h>
- #define __FRAME_OFFSETS
- #include <asm/ptrace.h>
-+#include "kern_constants.h"
- #include "longjmp.h"
- #include "user.h"
- 
- int save_fp_registers(int pid, unsigned long *fp_regs)
- {
--	if(ptrace(PTRACE_GETFPREGS, pid, 0, fp_regs) < 0)
-+	if (ptrace(PTRACE_GETFPREGS, pid, 0, fp_regs) < 0)
- 		return -errno;
- 	return 0;
- }
- 
- int restore_fp_registers(int pid, unsigned long *fp_regs)
- {
--	if(ptrace(PTRACE_SETFPREGS, pid, 0, fp_regs) < 0)
-+	if (ptrace(PTRACE_SETFPREGS, pid, 0, fp_regs) < 0)
- 		return -errno;
- 	return 0;
- }
- 
- unsigned long get_thread_reg(int reg, jmp_buf *buf)
- {
--	switch(reg){
--	case RIP: return buf[0]->__rip;
--	case RSP: return buf[0]->__rsp;
--	case RBP: return buf[0]->__rbp;
-+	switch (reg) {
-+	case RIP:
-+		return buf[0]->__rip;
-+	case RSP:
-+		return buf[0]->__rsp;
-+	case RBP:
-+		return buf[0]->__rbp;
- 	default:
--		printk("get_thread_regs - unknown register %d\n", reg);
-+		printk(UM_KERN_ERR "get_thread_regs - unknown register %d\n",
-+		       reg);
- 		return 0;
- 	}
- }
-Index: linux-2.6.22/arch/um/os-Linux/uaccess.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/uaccess.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/uaccess.c	2007-12-14 11:23:36.000000000 -0500
-@@ -1,6 +1,6 @@
- /*
-  * Copyright (C) 2001 Chris Emerson (cemerson@chiark.greenend.org.uk)
-- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
-+ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
-@@ -16,7 +16,7 @@ unsigned long __do_user_copy(void *to, c
- 
- 	jmp_buf jbuf;
- 	*fault_catcher = &jbuf;
--	if(UML_SETJMP(&jbuf) == 0){
-+	if (UML_SETJMP(&jbuf) == 0) {
- 		(*op)(to, from, n);
- 		ret = 0;
- 		*faulted_out = 0;
-Index: linux-2.6.22/arch/um/os-Linux/util.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/util.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/util.c	2007-12-14 11:28:07.000000000 -0500
-@@ -1,39 +1,24 @@
- /*
-- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
-+ * Copyright (C) 2000 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
- #include <stdio.h>
- #include <stdlib.h>
--#include <unistd.h>
--#include <limits.h>
--#include <sys/mman.h>
--#include <sys/stat.h>
--#include <sys/utsname.h>
--#include <sys/param.h>
--#include <sys/time.h>
--#include "asm/types.h"
--#include <ctype.h>
--#include <signal.h>
--#include <wait.h>
- #include <errno.h>
--#include <stdarg.h>
--#include <sched.h>
--#include <termios.h>
 +#include <signal.h>
- #include <string.h>
--#include "kern_util.h"
--#include "user.h"
--#include "mem_user.h"
--#include "init.h"
--#include "ptrace_user.h"
--#include "uml-config.h"
--#include "os.h"
--#include "longjmp.h"
-+#include <termios.h>
-+#include <wait.h>
 +#include <sys/mman.h>
-+#include <sys/utsname.h>
- #include "kern_constants.h"
-+#include "os.h"
-+#include "user.h"
- 
- void stack_protections(unsigned long address)
- {
--	if(mprotect((void *) address, UM_THREAD_SIZE,
-+	if (mprotect((void *) address, UM_THREAD_SIZE,
- 		    PROT_READ | PROT_WRITE | PROT_EXEC) < 0)
- 		panic("protecting stack failed, errno = %d", errno);
- }
-@@ -44,17 +29,19 @@ int raw(int fd)
- 	int err;
- 
- 	CATCH_EINTR(err = tcgetattr(fd, &tt));
--	if(err < 0)
-+	if (err < 0)
- 		return -errno;
- 
- 	cfmakeraw(&tt);
- 
- 	CATCH_EINTR(err = tcsetattr(fd, TCSADRAIN, &tt));
--	if(err < 0)
-+	if (err < 0)
- 		return -errno;
- 
--	/* XXX tcsetattr could have applied only some changes
--	 * (and cfmakeraw() is a set of changes) */
++#include "longjmp.h"
++#include "kern_constants.h"
++
++static jmp_buf buf;
++
++static void segfault(int sig)
++{
++	longjmp(buf, 1);
++}
++
++static int page_ok(unsigned long page)
++{
++	unsigned long *address = (unsigned long *) (page << UM_KERN_PAGE_SHIFT);
++	unsigned long n = ~0UL;
++	void *mapped = NULL;
++	int ok = 0;
++
 +	/*
-+	 * XXX tcsetattr could have applied only some changes
-+	 * (and cfmakeraw() is a set of changes)
++	 * First see if the page is readable.  If it is, it may still
++	 * be a VDSO, so we go on to see if it's writable.  If not
++	 * then try mapping memory there.  If that fails, then we're
++	 * still in the kernel area.  As a sanity check, we'll fail if
++	 * the mmap succeeds, but gives us an address different from
++	 * what we wanted.
 +	 */
- 	return 0;
- }
- 
-Index: linux-2.6.22/arch/um/os-Linux/drivers/ethertap_kern.c
++	if (setjmp(buf) == 0)
++		n = *address;
++	else {
++		mapped = mmap(address, UM_KERN_PAGE_SIZE,
++			      PROT_READ | PROT_WRITE,
++			      MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++		if (mapped == MAP_FAILED)
++			return 0;
++		if (mapped != address)
++			goto out;
++	}
++
++	/*
++	 * Now, is it writeable?  If so, then we're in user address
++	 * space.  If not, then try mprotecting it and try the write
++	 * again.
++	 */
++	if (setjmp(buf) == 0) {
++		*address = n;
++		ok = 1;
++		goto out;
++	} else if (mprotect(address, UM_KERN_PAGE_SIZE,
++			    PROT_READ | PROT_WRITE) != 0)
++		goto out;
++
++	if (setjmp(buf) == 0) {
++		*address = n;
++		ok = 1;
++	}
++
++ out:
++	if (mapped != NULL)
++		munmap(mapped, UM_KERN_PAGE_SIZE);
++	return ok;
++}
++
++unsigned long os_get_task_size(void)
++{
++	struct sigaction sa, old;
++	unsigned long bottom = 0;
++	/*
++	 * A 32-bit UML on a 64-bit host gets confused about the VDSO at
++	 * 0xffffe000.  It is mapped, is readable, can be reprotected writeable
++	 * and written.  However, exec discovers later that it can't be
++	 * unmapped.  So, just set the highest address to be checked to just
++	 * below it.  This might waste some address space on 4G/4G 32-bit
++	 * hosts, but shouldn't hurt otherwise.
++	 */
++	unsigned long top = 0xffffd000 >> UM_KERN_PAGE_SHIFT;
++	unsigned long test;
++
++	printf("Locating the top of the address space ... ");
++	fflush(stdout);
++
++	/*
++	 * We're going to be longjmping out of the signal handler, so
++	 * SA_DEFER needs to be set.
++	 */
++	sa.sa_handler = segfault;
++	sigemptyset(&sa.sa_mask);
++	sa.sa_flags = SA_NODEFER;
++	sigaction(SIGSEGV, &sa, &old);
++
++	if (!page_ok(bottom)) {
++		fprintf(stderr, "Address 0x%x no good?\n",
++			bottom << UM_KERN_PAGE_SHIFT);
++		exit(1);
++	}
++
++	/* This could happen with a 4G/4G split */
++	if (page_ok(top))
++		goto out;
++
++	do {
++		test = bottom + (top - bottom) / 2;
++		if (page_ok(test))
++			bottom = test;
++		else
++			top = test;
++	} while (top - bottom > 1);
++
++out:
++	/* Restore the old SIGSEGV handling */
++	sigaction(SIGSEGV, &old, NULL);
++
++	top <<= UM_KERN_PAGE_SHIFT;
++	printf("0x%x\n", top);
++	fflush(stdout);
++
++	return top;
++}
+Index: linux-2.6-git/arch/um/os-Linux/sys-x86_64/Makefile
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/drivers/ethertap_kern.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/drivers/ethertap_kern.c	2007-12-14 11:23:36.000000000 -0500
-@@ -6,7 +6,7 @@
-  * Licensed under the GPL.
+--- linux-2.6-git.orig/arch/um/os-Linux/sys-x86_64/Makefile	2008-02-06 11:17:27.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/sys-x86_64/Makefile	2008-02-06 11:31:53.000000000 -0500
+@@ -3,7 +3,7 @@
+ # Licensed under the GPL
+ #
+ 
+-obj-y = registers.o prctl.o signal.o
++obj-y = registers.o prctl.o signal.o task_size.o
+ 
+ USER_OBJS := $(obj-y)
+ 
+Index: linux-2.6-git/arch/um/os-Linux/sys-x86_64/task_size.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-git/arch/um/os-Linux/sys-x86_64/task_size.c	2008-02-06 11:31:53.000000000 -0500
+@@ -0,0 +1,5 @@
++unsigned long os_get_task_size(unsigned long shift)
++{
++	/* The old value of CONFIG_TOP_ADDR */
++	return 0x7fc0000000;
++}
+Index: linux-2.6-git/arch/um/Kconfig
+===================================================================
+--- linux-2.6-git.orig/arch/um/Kconfig	2008-02-06 11:19:06.000000000 -0500
++++ linux-2.6-git/arch/um/Kconfig	2008-02-06 11:31:53.000000000 -0500
+@@ -203,17 +203,6 @@ config NR_CPUS
+ 	depends on SMP
+ 	default "32"
+ 
+-config NEST_LEVEL
+-	int "Nesting level"
+-	default "0"
+-	help
+-          This is set to the number of layers of UMLs that this UML will be run
+-          in.  Normally, this is zero, meaning that it will run directly on the
+-          host.  Setting it to one will build a UML that can run inside a UML
+-          that is running on the host.  Generally, if you intend this UML to run
+-          inside another UML, set CONFIG_NEST_LEVEL to one more than the host
+-          UML.
+-
+ config HIGHMEM
+ 	bool "Highmem support (EXPERIMENTAL)"
+ 	depends on !64BIT && EXPERIMENTAL
+Index: linux-2.6-git/arch/um/Kconfig.i386
+===================================================================
+--- linux-2.6-git.orig/arch/um/Kconfig.i386	2008-02-06 11:17:27.000000000 -0500
++++ linux-2.6-git/arch/um/Kconfig.i386	2008-02-06 11:31:53.000000000 -0500
+@@ -23,43 +23,6 @@ config SEMAPHORE_SLEEPERS
+ 	bool
+ 	default y
+ 
+-choice
+-	prompt "Host memory split"
+-	default HOST_VMSPLIT_3G
+-	help
+-        This is needed when the host kernel on which you run has a non-default
+-	(like 2G/2G) memory split, instead of the customary 3G/1G. If you did
+-	not recompile your own kernel but use the default distro's one, you can
+-	safely accept the "Default split" option.
+-
+-	It can be enabled on recent (>=2.6.16-rc2) vanilla kernels via
+-	CONFIG_VM_SPLIT_*, or on previous kernels with special patches (-ck
+-	patchset by Con Kolivas, or other ones) - option names match closely the
+-	host CONFIG_VM_SPLIT_* ones.
+-
+-	A lower setting (where 1G/3G is lowest and 3G/1G is higher) will
+-	tolerate even more "normal" host kernels, but an higher setting will be
+-	stricter.
+-
+-	So, if you do not know what to do here, say 'Default split'.
+-
+-config HOST_VMSPLIT_3G
+-	bool "Default split (3G/1G user/kernel host split)"
+-config HOST_VMSPLIT_3G_OPT
+-	bool "3G/1G user/kernel host split (for full 1G low memory)"
+-config HOST_VMSPLIT_2G
+-	bool "2G/2G user/kernel host split"
+-config HOST_VMSPLIT_1G
+-	bool "1G/3G user/kernel host split"
+-endchoice
+-
+-config TOP_ADDR
+-	hex
+-	default 0xB0000000 if HOST_VMSPLIT_3G_OPT
+-	default 0x78000000 if HOST_VMSPLIT_2G
+-	default 0x40000000 if HOST_VMSPLIT_1G
+-	default 0xC0000000
+-
+ config 3_LEVEL_PGTABLES
+ 	bool "Three-level pagetables (EXPERIMENTAL)"
+ 	default n
+Index: linux-2.6-git/arch/um/Kconfig.x86_64
+===================================================================
+--- linux-2.6-git.orig/arch/um/Kconfig.x86_64	2008-02-06 11:17:27.000000000 -0500
++++ linux-2.6-git/arch/um/Kconfig.x86_64	2008-02-06 11:31:53.000000000 -0500
+@@ -15,10 +15,6 @@ config SEMAPHORE_SLEEPERS
+ 	bool
+ 	default y
+ 
+-config TOP_ADDR
+- 	hex
+-	default 0x7fc0000000
+-
+ config 3_LEVEL_PGTABLES
+        bool
+        default y
+Index: linux-2.6-git/arch/um/Makefile
+===================================================================
+--- linux-2.6-git.orig/arch/um/Makefile	2008-02-06 11:19:06.000000000 -0500
++++ linux-2.6-git/arch/um/Makefile	2008-02-06 11:31:53.000000000 -0500
+@@ -79,13 +79,6 @@ KERNEL_DEFINES = $(strip -Derrno=kernel_
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+ KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
+ 
+-# These are needed for clean and mrproper, since in that case .config is not
+-# included; the values here are meaningless
+-
+-CONFIG_NEST_LEVEL ?= 0
+-
+-SIZE = ($(CONFIG_NEST_LEVEL) * 0x20000000)
+-
+ PHONY += linux
+ 
+ all: linux
+@@ -120,10 +113,6 @@ CFLAGS_NO_HARDENING := $(call cc-option,
+ CONFIG_KERNEL_STACK_ORDER ?= 2
+ STACK_SIZE := $(shell echo $$[ 4096 * (1 << $(CONFIG_KERNEL_STACK_ORDER)) ] )
+ 
+-ifndef START
+-  START = $(shell echo $$[ $(TOP_ADDR) - $(SIZE) ] )
+-endif
+-
+ CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
+ 	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=$(STACK_SIZE)
+ 
+Index: linux-2.6-git/arch/um/defconfig
+===================================================================
+--- linux-2.6-git.orig/arch/um/defconfig	2008-02-06 11:19:06.000000000 -0500
++++ linux-2.6-git/arch/um/defconfig	2008-02-06 11:31:53.000000000 -0500
+@@ -56,8 +56,6 @@ CONFIG_X86_TSC=y
+ CONFIG_UML_X86=y
+ # CONFIG_64BIT is not set
+ CONFIG_SEMAPHORE_SLEEPERS=y
+-# CONFIG_HOST_2G_2G is not set
+-CONFIG_TOP_ADDR=0xc0000000
+ # CONFIG_3_LEVEL_PGTABLES is not set
+ CONFIG_ARCH_HAS_SC_SIGNALS=y
+ CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA=y
+@@ -81,7 +79,6 @@ CONFIG_HOSTFS=y
+ # CONFIG_HPPFS is not set
+ CONFIG_MCONSOLE=y
+ CONFIG_MAGIC_SYSRQ=y
+-CONFIG_NEST_LEVEL=0
+ # CONFIG_HIGHMEM is not set
+ CONFIG_KERNEL_STACK_ORDER=0
+ 
+Index: linux-2.6-git/include/asm-um/fixmap.h
+===================================================================
+--- linux-2.6-git.orig/include/asm-um/fixmap.h	2008-02-06 11:19:09.000000000 -0500
++++ linux-2.6-git/include/asm-um/fixmap.h	2008-02-06 11:31:53.000000000 -0500
+@@ -1,6 +1,7 @@
+ #ifndef __UM_FIXMAP_H
+ #define __UM_FIXMAP_H
+ 
++#include <asm/processor.h>
+ #include <asm/system.h>
+ #include <asm/kmap_types.h>
+ #include <asm/archparam.h>
+@@ -57,7 +58,7 @@ extern void __set_fixmap (enum fixed_add
+  * at the top of mem..
   */
  
--#include "linux/init.h"
-+#include <linux/init.h>
- #include <linux/netdevice.h>
- #include "etap.h"
- #include "net_kern.h"
-@@ -30,10 +30,10 @@ static void etap_init(struct net_device 
- 	epri->control_fd = -1;
- 	epri->dev = dev;
+-#define FIXADDR_TOP	(CONFIG_TOP_ADDR - 2 * PAGE_SIZE)
++#define FIXADDR_TOP	(TASK_SIZE - 2 * PAGE_SIZE)
+ #define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
  
--	printk("ethertap backend - %s", epri->dev_name);
-+	printk(KERN_INFO "ethertap backend - %s", epri->dev_name);
- 	if (epri->gate_addr != NULL)
--		printk(", IP = %s", epri->gate_addr);
--	printk("\n");
-+		printk(KERN_CONT ", IP = %s", epri->gate_addr);
-+	printk(KERN_CONT "\n");
- }
- 
- static int etap_read(int fd, struct sk_buff *skb, struct uml_net_private *lp)
-Index: linux-2.6.22/arch/um/os-Linux/drivers/tuntap_kern.c
+Index: linux-2.6-git/arch/um/include/as-layout.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/drivers/tuntap_kern.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/drivers/tuntap_kern.c	2007-12-14 11:23:36.000000000 -0500
-@@ -29,10 +29,10 @@ static void tuntap_init(struct net_devic
- 	tpri->fd = -1;
- 	tpri->dev = dev;
+--- linux-2.6-git.orig/arch/um/include/as-layout.h	2008-02-06 11:19:07.000000000 -0500
++++ linux-2.6-git/arch/um/include/as-layout.h	2008-02-06 11:31:53.000000000 -0500
+@@ -57,6 +57,8 @@ extern unsigned long _stext, _etext, _sd
+ extern unsigned long _unprotected_end;
+ extern unsigned long brk_start;
  
--	printk("TUN/TAP backend - ");
-+	printk(KERN_INFO "TUN/TAP backend - ");
- 	if (tpri->gate_addr != NULL)
--		printk("IP = %s", tpri->gate_addr);
--	printk("\n");
-+		printk(KERN_CONT "IP = %s", tpri->gate_addr);
-+	printk(KERN_CONT "\n");
- }
++extern unsigned long host_task_size;
++
+ extern int linux_main(int argc, char **argv);
  
- static int tuntap_read(int fd, struct sk_buff *skb, struct uml_net_private *lp)
-Index: linux-2.6.22/arch/um/os-Linux/process.c
+ extern void (*sig_info[])(int, struct uml_pt_regs *);
+Index: linux-2.6-git/arch/um/kernel/exec.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/process.c	2007-12-14 11:21:17.000000000 -0500
-+++ linux-2.6.22/arch/um/os-Linux/process.c	2007-12-14 11:28:07.000000000 -0500
-@@ -224,7 +224,7 @@ int __init can_drop_memory(void)
- 		goto out_unmap;
- 	}
+--- linux-2.6-git.orig/arch/um/kernel/exec.c	2008-02-06 11:19:07.000000000 -0500
++++ linux-2.6-git/arch/um/kernel/exec.c	2008-02-06 11:33:27.000000000 -0500
+@@ -25,7 +25,7 @@ void flush_thread(void)
  
--	printk("OK\n");
-+	printk(UM_KERN_CONT "OK\n");
- 	ok = 1;
- 
- out_unmap:
+ 	ret = unmap(&current->mm->context.id, 0, STUB_START, 0, &data);
+ 	ret = ret || unmap(&current->mm->context.id, STUB_END,
+-			   TASK_SIZE - STUB_END, 1, &data);
++			   host_task_size - STUB_END, 1, &data);
+ 	if (ret) {
+ 		printk(KERN_ERR "flush_thread - clearing address space failed, "
+ 		       "err = %d\n", ret);
