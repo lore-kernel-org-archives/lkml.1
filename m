@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYBFEkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbYBFElV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbYBFEkp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 23:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbYBFEkg
+	id S1760265AbYBFElV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 23:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbYBFElK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 23:40:36 -0500
-Received: from mail.windriver.com ([147.11.1.11]:64656 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbYBFEkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 23:40:35 -0500
-Message-ID: <47A93A35.3090001@windriver.com>
-Date: Tue, 05 Feb 2008 22:40:21 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@web.de>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kgdb-bugreport@lists.sourceforge.net,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/3] KGDB: Major refactoring
-References: <47A8F275.9090901@web.de>
-In-Reply-To: <47A8F275.9090901@web.de>
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 5 Feb 2008 23:41:10 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59047
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757245AbYBFElJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 23:41:09 -0500
+Date: Tue, 05 Feb 2008 20:41:38 -0800 (PST)
+Message-Id: <20080205.204138.107606929.davem@davemloft.net>
+To: tomof@acm.org
+CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: more iommu sg merging fallout
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Feb 2008 04:40:01.0824 (UTC) FILETIME=[5600A200:01C8687A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kiszka wrote:
-> As most changes are tightly coupled, this refactoring patch for
-> KGDB_8250 as well as the core and the new KGDBOC driver comes as a
-> single chunk. The changes are:
->  - Reorganized configuration: I/O drivers can be independently
->    configured as module or built-in
->  - Dynamic reconfiguration for KGDB_8250 (just like for KGDBOC)
->  - Reworked KGDB_8250 configuration string format
->  - attachwait removed, arming the debugger via assigning an I/O driver
->    implies "attachwait"
->  - Cleaned up I/O driver managment of the core
->  - Matured the various boot-up, configure, unconfigure code paths for
->    both I/O drivers
->  - IRQ vs. KGDB_CONSOLE-output SMP race fixed for KGDB_8250
->  - Reduced and cleaned up hooks into serial_core/8250
->  - Kconfig cleanups
->
-> What we no longer have:
->  - Simple serial configuration for _early_ debugging, use the io/mem
->    format instead or wait until the debugger is able to resolve "ttySx"
->    during late-init
->
-> To-do:
->  - KGDBOC does not yet cleanly interacts with the TTY subsystem to
->    attach to some console
->
-> Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
->   
 
-Jan,
+The sparc64 change:
 
-I pulled in all your changes and made some minor white space fixes. 
+    commit fde6a3c82d67f592eb587be4d12222b0ae6d4321
+    Author: FUJITA Tomonori <tomof@acm.org>
+    Date:   Mon Feb 4 22:28:02 2008 -0800
 
-I started the 2.6.25 branch with all Ingo's changes, your changes and
-several additional patches I received.
+    iommu sg merging: sparc64: make iommu respect the segment size limits
+    
+    This patch makes iommu respect segment size limits when merging sg
+    lists.
+    
+    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Cc: Jeff Garzik <jeff@garzik.org>
+    Cc: James Bottomley <James.Bottomley@steeleye.com>
+    Acked-by: Jens Axboe <jens.axboe@oracle.com>
+    Cc: "David S. Miller" <davem@davemloft.net>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=summary
+has significant errors and is going to eat people's disks, as it just
+nearly did to mine.
 
-Thanks,
-Jason.
+Typically what you'll see are NULL pointer derefernces in
+dma_4v_map_sg() and dma_4u_map_sg() and then the kernel usually craps
+on your superblock very shortly thereafter.
+
+The changeset above modified only prepare_sg() but that is only the
+first pass of the SG mapping algorithm of the sparc64 IOMMU layer.
+
+The second pass that fills in the entries depends upon how the first
+pass does things.  So if you change the first pass decision making you
+have to update the second pass's as well.
+
+That second pass is implemented in fill_sg() (there is a version in
+both arch/sparc64/kernel/iommu.c and arch/sparc64/kernel/pci_sun4v.c),
+which probably needs new logic as was added to prepare_sg() to handle
+dma_get_max_seg_size().
