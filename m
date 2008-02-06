@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765107AbYBGAXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765385AbYBGAYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765107AbYBGAXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761009AbYBFX7b
+	id S1765385AbYBGAYF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932523AbYBFX7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:59:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33021 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:59:33 -0500
+Received: from mail.suse.de ([195.135.220.2]:46486 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932513AbYBFX72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:59:28 -0500
-Date: Wed, 6 Feb 2008 15:54:01 -0800
+	id S1758856AbYBFX7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:59:30 -0500
+Date: Wed, 6 Feb 2008 15:54:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Paris <eparis@redhat.com>, James Morris <jmorris@namei.org>
-Subject: [patch 57/73] security: protect from stack expantion into low vm
-	addresses
-Message-ID: <20080206235401.GF13121@suse.de>
+       Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>
+Subject: [patch 58/73] md: fix data corruption when a degraded raid5 array
+	is reshaped
+Message-ID: <20080206235403.GG13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="security-protect-from-stack-expantion-into-low-vm-addresses.patch"
+Content-Disposition: inline; filename="md-fix-data-corruption-when-a-degraded-raid5-array-is-reshaped.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,44 +36,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Eric Paris <eparis@redhat.com>
+From: Dan Williams <dan.j.williams@intel.com>
 
-patch 8869477a49c3e99def1fcdadd6bbc407fea14b45 in mainline.
+patch 0f94e87cdeaaac9f0f9a28a5dd2a5070b87cd3e8 in mainline.
 
-Add security checks to make sure we are not attempting to expand the
-stack into memory protected by mmap_min_addr
+We currently do not wait for the block from the missing device to be
+computed from parity before copying data to the new stripe layout.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
-Signed-off-by: James Morris <jmorris@namei.org>
+The change in the raid6 code is not techincally needed as we don't delay
+data block recovery in the same way for raid6 yet.  But making the change
+now is safer long-term.
+
+This bug exists in 2.6.23 and 2.6.24-rc
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Acked-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/mmap.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/md/raid5.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1619,6 +1619,12 @@ static inline int expand_downwards(struc
- 	 */
- 	if (unlikely(anon_vma_prepare(vma)))
- 		return -ENOMEM;
-+
-+	address &= PAGE_MASK;
-+	error = security_file_mmap(0, 0, 0, 0, address, 1);
-+	if (error)
-+		return error;
-+
- 	anon_vma_lock(vma);
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -2875,7 +2875,8 @@ static void handle_stripe5(struct stripe
+ 		md_done_sync(conf->mddev, STRIPE_SECTORS, 1);
+ 	}
  
- 	/*
-@@ -1626,8 +1632,6 @@ static inline int expand_downwards(struc
- 	 * is required to hold the mmap_sem in read mode.  We need the
- 	 * anon_vma lock to serialize against concurrent expand_stacks.
- 	 */
--	address &= PAGE_MASK;
--	error = 0;
+-	if (s.expanding && s.locked == 0)
++	if (s.expanding && s.locked == 0 &&
++	    !test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending))
+ 		handle_stripe_expansion(conf, sh, NULL);
  
- 	/* Somebody else might have raced and expanded it already */
- 	if (address < vma->vm_start) {
+ 	if (sh->ops.count)
+@@ -3077,7 +3078,8 @@ static void handle_stripe6(struct stripe
+ 		md_done_sync(conf->mddev, STRIPE_SECTORS, 1);
+ 	}
+ 
+-	if (s.expanding && s.locked == 0)
++	if (s.expanding && s.locked == 0 &&
++	    !test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending))
+ 		handle_stripe_expansion(conf, sh, &r6s);
+ 
+ 	spin_unlock(&sh->lock);
 
 -- 
