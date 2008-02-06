@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbYBFXfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761582AbYBFXgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762630AbYBFXfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760349AbYBFXfO
+	id S1761582AbYBFXgw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758919AbYBFXgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:35:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39721 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760239AbYBFXfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:35:12 -0500
-Message-ID: <47AA440F.8030403@redhat.com>
-Date: Wed, 06 Feb 2008 17:34:39 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
-References: <47AA3126.8090102@redhat.com>	<20080206143457.03e8741d.akpm@linux-foundation.org>	<47AA3EAA.9080204@redhat.com> <20080206152239.a2352d6d.akpm@linux-foundation.org>
-In-Reply-To: <20080206152239.a2352d6d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Feb 2008 18:36:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52907
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758136AbYBFXgo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:36:44 -0500
+Date: Wed, 06 Feb 2008 15:37:14 -0800 (PST)
+Message-Id: <20080206.153714.133821225.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080206233117.GA28931@suse.de>
+References: <20080206.152639.35541094.davem@davemloft.net>
+	<20080206233117.GA28931@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 06 Feb 2008 17:11:38 -0600
-> Eric Sandeen <sandeen@redhat.com> wrote:
-> 
->>  /*
->>   * recursively change the type of the mountpoint.
->> + * noinline this do_mount helper to save do_mount stack space.
->>   */
->> -static int do_change_type(struct nameidata *nd, int flag)
->> +static noinline int do_change_type(struct nameidata *nd, int flag)
-> 
-> What we could do here is defined a new noinline_because_of_stack_suckiness
-> and use that.  Reasons:
-> 
-> - self-documenting, so we don't need to comment each site
-> 
-> - can be made a no-op for suitable __GNUC__ values if gcc ever fixes this
-> 
-> - our children we can go through and delete them all when nobody is using
->   the offending gcc versions any more.
-> 
-> what thinkest thou?
+From: Greg KH <gregkh@suse.de>
+Date: Wed, 6 Feb 2008 15:31:17 -0800
 
-Yes, sounds very good to me.  I'm sure there are more places which could
-use this.
+> On Wed, Feb 06, 2008 at 03:26:39PM -0800, David Miller wrote:
+> > I'm pretty sure the following changeset is to blame:
+> > 
+> > commit edfaa7c36574f1bf09c65ad602412db9da5f96bf
+> > Author: Kay Sievers <kay.sievers@vrfy.org>
+> > Date:   Mon May 21 22:08:01 2007 +0200
+> > 
+> >     Driver core: convert block from raw kobjects to core devices
+> >     
+> >     This moves the block devices to /sys/class/block. It will create a
+> >     flat list of all block devices, with the disks and partitions in one
+> >     directory. For compatibility /sys/block is created and contains symlinks
+> >     to the disks.
+> 
+> So I'm guessing if you revert this it works?
 
-Or perhaps there are some magic flags to gcc so that it doesn't inline
-so aggressively in situations like this?  IOW is it gcc breakage, or
-design - but maybe with defaults that don't fit well in the limited
-stack... (well, I suppose the "for N mutually exclusive helper functions
-each with stack usage S, use about N*S stack when inlining them all" bit
-probably isn't a feature.)
+Unfortunately that's not so simple to test because afterwards there
+are changesets where all the files under block/ got renamed and as
+such I can't just revert that single patch from the tip.
 
-FWIW the XFS team finally just wrested control from GCC.
-http://oss.sgi.com/archives/xfs/2006-11/msg00195.html
+> Do you have CONFIG_SYSFS_DEPRECATED=Y or N?
 
--Eric
+I have SYSFS_DEPRECATED=y
