@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764398AbYBGAAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764708AbYBGABH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764398AbYBGAAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764236AbYBFXyk
+	id S1764708AbYBGABH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:01:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761678AbYBFXyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:54:40 -0500
-Received: from mail.suse.de ([195.135.220.2]:45207 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:54:44 -0500
+Received: from mail.suse.de ([195.135.220.2]:45234 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764227AbYBFXyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:54:39 -0500
-Date: Wed, 6 Feb 2008 15:51:23 -0800
+	id S1764252AbYBFXyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:54:43 -0500
+Date: Wed, 6 Feb 2008 15:51:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Peter Tyser <ptyser@xes-inc.com>,
        Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 13/73] sky2: disable rx checksum on Yukon XL
-Message-ID: <20080206235123.GN13121@suse.de>
+Subject: [patch 14/73] sky2: RX lockup fix
+Message-ID: <20080206235126.GO13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=sky2-xl-chksum
+Content-Disposition: inline; filename=sky2-1
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,52 +38,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-Backport of 8b31cfbcd1b54362ef06c85beb40e65a349169a2
+Backport commit 798fdd07fcc131f396e521febb4a7d42559bf4b5
 
-The Marvell Yukon XL chipset appears to have a hardware glitch
-where it will repeat the checksum of the last packet. Of course, this is
-timing sensitive and only happens sometimes...
+I'm using a Marvell 88E8062 on a custom PPC64 blade and ran into RX
+lockups while validating the sky2 driver.  The receive MAC FIFO would
+become stuck during testing with high traffic.  One port of the 88E8062
+would lockup, while the other port remained functional.  Re-inserting
+the sky2 module would not fix the problem - only a power cycle would.
 
-More info: http://bugzilla.kernel.org/show_bug.cgi?id=9381
+I looked over Marvell's most recent sk98lin driver and it looks like
+they had a "workaround" for the Yukon XL that the sky2 doesn't have yet.
+The sk98lin driver disables the RX MAC FIFO flush feature for all
+revisions of the Yukon XL.
 
-As a workaround just disable hardware checksumming by default on
-this chip version. The earlier workaround for PCIX, dual port
-was also on Yukon XL so don't need to disable checksumming there.
+According to skgeinit.c of the sk98lin driver, "Flushing must be enabled
+(needed for ASF see dev. #4.29), but the flushing mask should be
+disabled (see dev. #4.115)".  Nice. I implemented this same change in
+the sky2 driver and verified that the RX lockup I was seeing was
+resolved.
 
+Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
 Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
 ---
- drivers/net/sky2.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/net/sky2.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 --- a/drivers/net/sky2.c
 +++ b/drivers/net/sky2.c
-@@ -1307,15 +1307,11 @@ static int sky2_up(struct net_device *de
- 	 */
- 	if (otherdev && netif_running(otherdev) &&
-  	    (cap = pci_find_capability(hw->pdev, PCI_CAP_ID_PCIX))) {
-- 		struct sky2_port *osky2 = netdev_priv(otherdev);
-  		u16 cmd;
+@@ -812,8 +812,13 @@ static void sky2_mac_init(struct sky2_hw
  
-  		cmd = sky2_pci_read16(hw, cap + PCI_X_CMD);
-  		cmd &= ~PCI_X_CMD_MAX_SPLIT;
-  		sky2_pci_write16(hw, cap + PCI_X_CMD, cmd);
--
-- 		sky2->rx_csum = 0;
-- 		osky2->rx_csum = 0;
-  	}
+ 	sky2_write32(hw, SK_REG(port, RX_GMF_CTRL_T), rx_reg);
  
- 	if (netif_msg_ifup(sky2))
-@@ -4017,7 +4013,7 @@ static __devinit struct net_device *sky2
- 	sky2->duplex = -1;
- 	sky2->speed = -1;
- 	sky2->advertising = sky2_supported_modes(hw);
--	sky2->rx_csum = 1;
-+	sky2->rx_csum = (hw->chip_id != CHIP_ID_YUKON_XL);
- 	sky2->wol = wol;
+-	/* Flush Rx MAC FIFO on any flow control or error */
+-	sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), GMR_FS_ANY_ERR);
++	if (hw->chip_id == CHIP_ID_YUKON_XL) {
++		/* Hardware errata - clear flush mask */
++		sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), 0);
++	} else {
++		/* Flush Rx MAC FIFO on any flow control or error */
++		sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), GMR_FS_ANY_ERR);
++	}
  
- 	spin_lock_init(&sky2->phy_lock);
+ 	/* Set threshold to 0xa (64 bytes) + 1 to workaround pause bug  */
+ 	reg = RX_GMF_FL_THR_DEF + 1;
 
 -- 
