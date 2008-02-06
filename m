@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbYBGAGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765615AbYBGAG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765544AbYBGAGj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764781AbYBFX5F
+	id S1765615AbYBGAG6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764400AbYBFX5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:57:05 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60609 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:57:08 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60629 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762069AbYBFX5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:57:03 -0500
-Date: Wed, 6 Feb 2008 15:52:35 -0800
+	id S1762069AbYBFX5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:57:06 -0500
+Date: Wed, 6 Feb 2008 15:52:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 26/73] NET: Correct two mistaken skb_reset_mac_header()
-	conversions.
-Message-ID: <20080206235235.GA13121@suse.de>
+       Timo Teras <timo.teras@iki.fi>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 27/73] IPV4: ip_gre: set mac_header correctly in receive
+	path
+Message-ID: <20080206235238.GB13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-correct-two-mistaken-skb_reset_mac_header-conversions.patch"
+Content-Disposition: inline; filename="ipv4-ip_gre-set-mac_header-correctly-in-receive-path.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,51 +36,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: David Miller <davem@davemloft.net>
+From: Timo Teras <timo.teras@iki.fi>
 
-[NET]: Correct two mistaken skb_reset_mac_header() conversions.
+[IPV4] ip_gre: set mac_header correctly in receive path
 
-[ Upstream commit: c6e6ca712b5cc06a662f900c0484d49d7334af64 ]
+[ Upstream commit: 1d0691674764098304ae4c63c715f5883b4d3784 ]
 
-This operation helper abstracts:
+mac_header update in ipgre_recv() was incorrectly changed to
+skb_reset_mac_header() when it was introduced.
 
-	skb->mac_header = skb->data;
-
-but it was done in two more places which were actually:
-
-	skb->mac_header = skb->network_header;
-
-and those are corrected here.
-
+Signed-off-by: Timo Teras <timo.teras@iki.fi>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ax25/ax25_in.c  |    2 +-
- net/netrom/nr_dev.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/ipv4/ip_gre.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ax25/ax25_in.c
-+++ b/net/ax25/ax25_in.c
-@@ -124,7 +124,7 @@ int ax25_rx_iframe(ax25_cb *ax25, struct
+--- a/net/ipv4/ip_gre.c
++++ b/net/ipv4/ip_gre.c
+@@ -613,7 +613,7 @@ static int ipgre_rcv(struct sk_buff *skb
+ 				offset += 4;
  		}
  
- 		skb_pull(skb, 1);	/* Remove PID */
 -		skb_reset_mac_header(skb);
 +		skb->mac_header = skb->network_header;
+ 		__pskb_pull(skb, offset);
  		skb_reset_network_header(skb);
- 		skb->dev      = ax25->ax25_dev->dev;
- 		skb->pkt_type = PACKET_HOST;
---- a/net/netrom/nr_dev.c
-+++ b/net/netrom/nr_dev.c
-@@ -56,7 +56,7 @@ int nr_rx_ip(struct sk_buff *skb, struct
- 
- 	/* Spoof incoming device */
- 	skb->dev      = dev;
--	skb_reset_mac_header(skb);
-+	skb->mac_header = skb->network_header;
- 	skb_reset_network_header(skb);
- 	skb->pkt_type = PACKET_HOST;
- 
+ 		skb_postpull_rcsum(skb, skb_transport_header(skb), offset);
 
 -- 
