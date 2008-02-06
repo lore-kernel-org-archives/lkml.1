@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759335AbYBFTyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYBFT4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759335AbYBFTyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 14:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbYBFTyM
+	id S1758885AbYBFT4E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 14:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYBFTzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 14:54:12 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:27485 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755534AbYBFTyK (ORCPT
+	Wed, 6 Feb 2008 14:55:54 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38251 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752304AbYBFTzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 14:54:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=pEgcFev4JICLrzHvEVjorF+E8hKB0wJrOYGKyNsr1qFdPd/HnqPPri04a9YkIVqi3dxwQ3ssGhuiCOHgewDw1dFIEN8MjDJKMMOLWWd4pY4BxooDz2v0IOgRS3+LYCdatJk7H9srAcL/WrgGyvZBCgM2CSNi9WSq+P1yoHtsD1o=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: feature-removal-schedule.txt is getting out of date again
-Date: Wed, 6 Feb 2008 21:07:55 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-References: <alpine.LFD.1.00.0802060419140.17178@localhost.localdomain> <200802062054.59755.bzolnier@gmail.com> <1202327360.5820.24.camel@brick>
-In-Reply-To: <1202327360.5820.24.camel@brick>
+	Wed, 6 Feb 2008 14:55:53 -0500
+Date: Wed, 6 Feb 2008 19:55:36 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: John Heil <kerndev@sc-software.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Bug: 2.6.24-smp: Eeek! page_mapcount(page) went negative! (-1)
+In-Reply-To: <Pine.LNX.4.64.0802061003370.4601@sc-software.com>
+Message-ID: <Pine.LNX.4.64.0802061948380.32204@blonde.site>
+References: <Pine.LNX.4.64.0802061003370.4601@sc-software.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802062107.56084.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 February 2008, Harvey Harrison wrote:
-> On Wed, 2008-02-06 at 20:54 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > On Wednesday 06 February 2008, Robert P. J. Day wrote:
-> > > 
-> > >   yes, i realize i'm sounding like a broken record but, once again,
-> > > Documentation/feature-removal-schedule.txt is slipping out of date WRT
-> > > items that are now slightly, if not noticeably, behind schedule for
-> > > removal.
-> > 
+On Wed, 6 Feb 2008, kerndev@sc-software.com wrote:
 > 
-> I had pinged people about a week ago on lots of these items, for the
-> most part patches are staged and going in through various trees, let's
-> wait for rc1 and see what has landed by then.
+> Before digging into this myself (don't really have enought time),
+> I thought I'd submit it here...
 
-OK, great to see that it is being dealt with.
+Thanks for the report.
 
-Thanks,
-Bart
+> Feb  6 09:09:47 sc-software kernel: Eeek! page_mapcount(page) went negative!
+
+These very often turn out the be due to bad RAM or some such:
+worth running memtest86+ overnight when you can, though its
+success wouldn't be conclusive.
+
+> (-1)
+> Feb  6 09:09:47 sc-software kernel:   page pfn = 12b1b1
+> Feb  6 09:09:47 sc-software kernel:   page->flags = 80080014
+> Feb  6 09:09:47 sc-software kernel:   page->count = 0
+
+That's a free page which shouldn't have appeared in the pagetable.
+It could be that there's a bit error somewhere in that pfn of 12b1b1.
+
+> Feb  6 09:09:47 sc-software kernel:   page->mapping = 00000000
+> Feb  6 09:09:47 sc-software kernel:   vma->vm_ops = 0x0
+> Feb  6 09:09:47 sc-software kernel: ------------[ cut here ]------------
+> Feb  6 09:09:47 sc-software kernel: kernel BUG at mm/rmap.c:631!
+> Feb  6 09:09:47 sc-software kernel: invalid opcode: 0000 [#2] PREEMPT SMP
+> Feb  6 09:09:47 sc-software kernel: Modules linked in: shpchp pci_hotplug
+> ohci1394 ieee1394
+> Feb  6 09:09:47 sc-software kernel:
+> Feb  6 09:09:47 sc-software kernel: Pid: 3710, comm: X Tainted: G      D
+
+But that [#2] and that D taint both say there was already a problem
+before this: anything showing in the log for that?
+
+Hugh
