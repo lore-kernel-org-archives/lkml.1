@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbYBFXTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932909AbYBFXTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932815AbYBFXTP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932366AbYBFXQk
+	id S932909AbYBFXTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932660AbYBFXS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:16:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36271 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763989AbYBFXQi (ORCPT
+	Wed, 6 Feb 2008 18:18:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49523
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932655AbYBFXS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:16:38 -0500
-Date: Wed, 6 Feb 2008 15:10:20 -0800
-From: Greg KH <greg@kroah.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [stable] The SMP alternatives code breaks exception fixup?
-Message-ID: <20080206231020.GB12395@kroah.com>
-References: <479504F6.4080005@redhat.com> <p73zluymnx0.fsf@crumb.suse.de> <alpine.LFD.1.00.0801221312200.3199@apollo.tec.linutronix.de> <47964FD5.6020801@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47964FD5.6020801@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 6 Feb 2008 18:18:26 -0500
+Date: Wed, 06 Feb 2008 15:18:55 -0800 (PST)
+Message-Id: <20080206.151855.136436571.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: tomof@acm.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: more iommu sg merging fallout
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080207081236V.fujita.tomonori@lab.ntt.co.jp>
+References: <20080205.204138.107606929.davem@davemloft.net>
+	<20080207081236V.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 03:19:33PM -0500, Chuck Ebbert wrote:
-> On 01/22/2008 07:35 AM, Thomas Gleixner wrote:
-> > 
-> > That's a long standing bug in both the PI futex and the standard futex
-> > code. Needs to go to stable as well.
-> > 
-> 
-> Here's the 2.6.23 version:
-> 
-> 
-> Subject: x86: fix missing exception entry for SMP alternatives in futex macros
-> From: Thomas Gleixner <tglx@linutronix.de>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 07 Feb 2008 08:12:36 +0900
 
-I don't see this in Linus's tree, am I just missing it?  Do you have a
-git commit id?
+> Really sorry about it.
 
-thanks,
+I am happy to test patches you send to me in the future :-)
 
-greg k-h
+> PARISC, Alpha, and IA64 IOMMUs use the two-pass algorithm like SPARC
+> but their first pass decides how to merge sg entires (and stores that
+> information in the sg entries), then the second pass simpliy follows
+> it (Hopefully I understand these IOMMUs correctly, or else I break
+> them too).
+
+For now I've removed all of the merging code from the sparc64 IOMMU
+support so that other users do not get corrupt filesystems.  It
+basically mimicks how the intel-iommu code works, ie. no attempts to
+merge anything.
+
+I intend to put merging back in, perhaps something similar to
+powerpc's merging logic but without the expensive (in my opinion)
+IOMMU allocation every loop.  I think it is better to determine the
+segment breaks in one pass, allocate that many IOMMU entries in one
+allocation, then fill them all in.
+
+Ideally, we should have some generic code that does all of this.
+Then you would only need to test one implementation.
+
+It is definitely doable and increasingly necessary as we have so
+many reimplementations of what is essentially identical core code.
+
