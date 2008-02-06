@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbYBFRwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYBFRxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465AbYBFRwl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbYBFRwb
+	id S1757174AbYBFRxs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbYBFRxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:52:31 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:41856 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753885AbYBFRwa (ORCPT
+	Wed, 6 Feb 2008 12:53:40 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:34506 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753885AbYBFRxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:52:30 -0500
-Message-ID: <47A9F3D7.5000903@web.de>
-Date: Wed, 06 Feb 2008 18:52:23 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 6 Feb 2008 12:53:39 -0500
+Message-ID: <47A9F3E4.6040707@qualcomm.com>
+Date: Wed, 06 Feb 2008 09:52:36 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: Jason Wessel <jason.wessel@windriver.com>,
-       kgdb-bugreport@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Kgdb-bugreport] [PATCH 4/5] KGDB-8250: refactor configuration
-References: <479FBAE8.3070809@web.de> <479FC57D.5030104@web.de> <47A325BC.6030305@ru.mvista.com> <47A38AD9.1060305@web.de> <47A9B340.2020603@ru.mvista.com>
-In-Reply-To: <47A9B340.2020603@ru.mvista.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig02A0C13BF170C9A397D835C6"
-X-Provags-ID: V01U2FsdGVkX1/Dj/48KqUEIodhgBvJmh87aGfp2R7+YwKlAEgy
-	9JsBu+Ae+mwn+jrlMykiGYx9e2MouRd/CbgYxobGLcS1QNVVKV
-	X+ID9SVno=
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: RT scheduler config, suggestions and questions
+References: <47A8F328.5070107@qualcomm.com> <1202279815.19243.34.camel@lappy>
+In-Reply-To: <1202279815.19243.34.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig02A0C13BF170C9A397D835C6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Peter Zijlstra wrote:
+> On Tue, 2008-02-05 at 15:37 -0800, Max Krasnyanskiy wrote:
+>> Folks,
+>>
+>> I just realized that in latest Linus' tree following sysctls are under SCHED_DEBUG:
+>> 	sched_rt_period
+>> 	sched_rt_ratio
+>>
+>> I do not believe that is correct. I know that we do not want to expose scheduler knobs
+>> in general but theses are not the heuristic kind of knobs. There is no way the scheduler 
+>> can magically figure out what the correct setting should be here.
+> 
+> Yeah, since fixed.
+Super. I guess it's not in mainline yet. Or it wasn't yesterday.
+ 
+>> Also shouldn't those new RT features that recently went be configurable and _disabled_ 
+>> by default ? For example "RT watchdog" and "RT throttling" actually seem very questionable. 
+>> SCHED_FIFO is clearly defined as
+>> "
+>>   A SCHED_FIFO process runs until either it is blocked by an I/O request, it is preempted 
+>>   by a higher priority process, or it calls sched_yield(2).
+>> "
+> 
+> The watchdog is disabled by default, the bandwidth is .95s every 1s,
+> which is mainly a safe-guard against run-away real-time tasks. As long
+> as real-time usage stays within those limits nothing happens. If you
+> don't like it set sched_rt_runtime [*] to -1.
+Oh. From looking at the code I assumed I need to set sched_rt_ratio to 65536.
+I guess you changed things around a bit. I'll look at the latest changes.
 
-Sergei Shtylyov wrote:
->>>   You left powerpc-lite.patch broken with this change as it has
->>> multiple calls to kgdb8250_add_port()...
->=20
->> I see. But I wonder if there ever was a real need for these hooks (in
->> 2.4 times?): If I look at bamboo_early_serial_map() e.g., I find it
->> calling into early_serial_setup() which fills serial8250_ports[] - and=
+>> Both the watchdog and the throttling are clearly braking that rule. I think it's good to have 
+>> those features but not enabled by default and certainly not with sysctls that disable them 
+>> hidden under debugging.
+>> How about this:
+>> - We introduce Kconfig options for them ?
+> 
+> I don't see why this would be needed.
+Reduces code size and RT scheduler complexity for the cases when these features are not required.
+For example my preference would for RT scheduler to be as lean as possible to avoid any kind of 
+overhead and cache pollution. I know both watchdog and throttling end up being a single if() when
+disabled via sysctl, but it all adds up.
+ 
+>> - Expose all rt sysctls outside of #ifdef DEBUG
+> 
+> Already did this somewhere along the line.
+> 
+>> btw I can see "watchdog" being very useful to catch hard-RT tasks that exceed the deadline.
+>> But's it gotta be per thread.
+> 
+> It is.
+> 
+>> Single setting per user is not enough. Unless a use has a single RT task.
+> 
+> ?
+Currently it's per process. Most RT apps will most likely have several RT threads.
 
->> that content is now retrieved via serial8250_get_port_def() when we
->> parse the runtime or build-time provided parameters (port number &
->> baudrate).
->=20
->    Of course. But now the kgdb8250_add_port() calls need to be removed.=
-
-
-For sure. Most arch patches need to go through some refactoring anyway
-when preparing them for upstream. Cleaning up no longer required hooks
-should be no problem at this chance.
-
-If you want to accelerate this process, please check out Jason's
-linux-2.6-kgdb.git for 2.6.25 and start rebasing the powerpc patch. He
-just recently said that support around kgdb for non-x86 would be highly
-welcome. And if you stumble over ppc-related issues that cannot be
-solved with latest kgdb design, please let us know. The sooner, the bette=
-r.
-
-Jan
-
-
---------------enig02A0C13BF170C9A397D835C6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFHqfPcniDOoMHTA+kRAlDaAJ9jpKM9ePo6JV9K6Lp55Lvdpq9I1ACggJeD
-RZ8UOaLv+G8cHEWg2kZJ4yw=
-=b3S2
------END PGP SIGNATURE-----
-
---------------enig02A0C13BF170C9A397D835C6--
+Max
