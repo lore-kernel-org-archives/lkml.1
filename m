@@ -1,78 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763684AbYBFXM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbYBFXNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763684AbYBFXM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763228AbYBFXHg
+	id S1761929AbYBFXNd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763706AbYBFXIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:07:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:25856 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763249AbYBFXHb convert rfc822-to-8bit (ORCPT
+	Wed, 6 Feb 2008 18:08:04 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:14630 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763669AbYBFXHs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:07:31 -0500
+	Wed, 6 Feb 2008 18:07:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xFpOdjvEHegeTTKvwa6BkwAJG7B18EnCqBi2rPR7LDQ4KdrIC1t0MDX7X2JnCXB+1O4iQOvoVrOki8UKdp4BfHGSyx2V9nTF/hLYyv21qBdwAJ8P6z6nd37kHAgUVqXsG3yy1bjfr54GXjaDnOf/0Zj8nuelQPcOnhM6MPz8OHE=
-Message-ID: <6101e8c40802061507y109776d0o790ebefcf71baf1@mail.gmail.com>
-Date: Thu, 7 Feb 2008 00:07:28 +0100
+        b=Xoi8AeQoJMtNcTCN770obrg83KeCdBgpKi6fk7ni8WJHuida/Ak6wh3Tb//pjgthBxkTMlNaQpft8IXLb88OBio1gPKaM4nCd+SMWCV8oV0ZWSpCsOURtqdJ8gNaiJbQ76x83INpE1kbhhv0DtSCmauxBYPVSl7k016VsLWYTeA=
+Message-ID: <6101e8c40802061507v14b4ffbek19c08eafdd54fae9@mail.gmail.com>
+Date: Thu, 7 Feb 2008 00:07:45 +0100
 From: "Oliver Pinter" <oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: Re: [2.6.22.y] {05/17} - cciss-fix_memory_leak - series for stable kernel #2
-In-Reply-To: <6101e8c40802011733g504c1cd7ubaceee5df9a51a66@mail.gmail.com>
+Subject: Re: [2.6.22.y] {04/17} - cciss-panic-in-blk_rq_map_sg - series for stable kernel #2
+In-Reply-To: <6101e8c40802011733vee8d363l8913cbb68781fd30@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <6101e8c40802011733g504c1cd7ubaceee5df9a51a66@mail.gmail.com>
+References: <6101e8c40802011733vee8d363l8913cbb68781fd30@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f2912a1223c0917a7b4e054f18086209137891ea Mon Sep 17 00:00:00 2001
-From: Jesper Juhl <jesper.juhl@gmail.com>
-Date: Tue, 31 Jul 2007 00:39:39 -0700
-Subject: [PATCH] cciss: fix memory leak
+>From a683d652d334a546be9175b894f42dbd8e399536 Mon Sep 17 00:00:00 2001
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Date: Fri, 21 Sep 2007 08:33:55 +0200
+Subject: [PATCH] Panic in blk_rq_map_sg() from CCISS driver
 
-There's a memory leak in the cciss driver.
+New scatter/gather list chaining [sg_next()] treats 'page' member of
+struct scatterlist with low bit set [0x01] as a chain pointer to
+another struct scatterlist [array].  The CCISS driver request function
+passes an uninitialized, temporary, on-stack scatterlist array to
+blk_rq_map_sq().  sg_next() interprets random data on the stack as a
+chain pointer and eventually tries to de-reference an invalid pointer,
+resulting in:
 
-in alloc_cciss_hba() we may leak sizeof(ctlr_info_t) bytes if a
-call to alloc_disk(1 << NWD_SHIFT) fails.
-This patch should fix the issue.
+[<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
+PGD 6090c3067 PUD 0
+Oops: 0000 [1] SMP
+last sysfs file: /block/cciss!c0d0/cciss!c0d0p1/dev
+CPU 6
+Modules linked in: ehci_hcd ohci_hcd uhci_hcd
+Pid: 1, comm: init Not tainted 2.6.23-rc6-mm1 #3
+RIP: 0010:[<ffffffff8031dd70>] [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
+RSP: 0018:ffff81060901f768 EFLAGS: 00010206
+RAX: 000000040b161000 RBX: ffff81060901f7d8 RCX: 000000040b162c00
+RDX: 0000000000000000 RSI: ffff81060b13a260 RDI: ffff81060b139600
+RBP: 0000000000001400 R08: 00000000fffffffe R09: 0000000000000400
+R10: 0000000000000000 R11: 000000040b163000 R12: ffff810102fe0000
+R13: 0000000000000001 R14: 0000000000000001 R15: 00001e0000000000
+FS: 00000000026108f0(0063) GS:ffff810409000b80(0000) knlGS:0000000000000000
+CS: 0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 000000010000001e CR3: 00000006090c6000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process init (pid: 1, threadinfo ffff81060901e000, task ffff810409020800)
+last branch before last exception/interrupt
+from [<ffffffff8031de0a>] blk_rq_map_sg+0x10a/0x170
+to [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
+Stack: 000000018068ea00 ffff810102fe0000 0000000000000000 ffff810011400000
+0000000000000002 0000000000000000 ffff81040b172000 ffffffff803acd3d
+0000000000003ec1 ffff8106090d5000 ffff8106090d5000 ffff810102fe0000
+Call Trace:
+[<ffffffff803acd3d>] do_cciss_request+0x15d/0x4c0
+[<ffffffff80298968>] new_slab+0x1c8/0x270
+[<ffffffff80298ffd>] __slab_alloc+0x22d/0x470
+[<ffffffff8027327b>] mempool_alloc+0x4b/0x130
+[<ffffffff8032b21e>] cfq_set_request+0xee/0x380
+[<ffffffff8027327b>] mempool_alloc+0x4b/0x130
+[<ffffffff8031ff98>] get_request+0x168/0x360
+[<ffffffff80331b0d>] rb_insert_color+0x8d/0x110
+[<ffffffff8031cfd8>] elv_rb_add+0x58/0x60
+[<ffffffff8032a329>] cfq_add_rq_rb+0x69/0xa0
+[<ffffffff8031c1ab>] elv_merged_request+0x5b/0x60
+[<ffffffff803224fd>] __make_request+0x23d/0x650
+[<ffffffff80298ffd>] __slab_alloc+0x22d/0x470
+[<ffffffff80270000>] generic_write_checks+0x140/0x190
+[<ffffffff8031f012>] generic_make_request+0x1c2/0x3a0
+<etc>
+Kernel panic - not syncing: Attempted to kill init!
 
-Spotted by the Coverity checker.
+This patch initializes the tmp_sg array to zeroes.  Perhaps not the ultimate
+fix, but an effective work-around.  I can now boot 23-rc6-mm1 on an HP
+Proliant x86_64 with CCISS boot disk.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-Acked-by: Mike Miller <mike.miller@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ drivers/block/cciss.c |    1 +
+ 1 file changed, 1 insertion(+)
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 1be82d5..a11b2bd 100644
+index 55c3237..2023d61 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -3227,12 +3227,15 @@ static int alloc_cciss_hba(void)
- 	for (i = 0; i < MAX_CTLR; i++) {
- 		if (!hba[i]) {
- 			ctlr_info_t *p;
-+
- 			p = kzalloc(sizeof(ctlr_info_t), GFP_KERNEL);
- 			if (!p)
- 				goto Enomem;
- 			p->gendisk[0] = alloc_disk(1 << NWD_SHIFT);
--			if (!p->gendisk[0])
-+			if (!p->gendisk[0]) {
-+				kfree(p);
- 				goto Enomem;
-+			}
- 			hba[i] = p;
- 			return i;
- 		}
+@@ -2570,6 +2570,7 @@ static void do_cciss_request(struct request_queue *q)
+ 	       (int)creq->nr_sectors);
+ #endif				/* CCISS_DEBUG */
+
++	memset(tmp_sg, 0, sizeof(tmp_sg));
+ 	seg = blk_rq_map_sg(q, creq, tmp_sg);
+
+ 	/* get the DMA records for the setup */
 
 
 On 2/2/08, Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
-> mainline: f2912a1223c0917a7b4e054f18086209137891ea
+> mainline: a683d652d334a546be9175b894f42dbd8e399536
 >
 > --
 > Thanks,
