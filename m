@@ -1,81 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYBFVA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYBFVBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760186AbYBFVA3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbYBFVAP
+	id S1760479AbYBFVBH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:01:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbYBFVAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:00:15 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58794 "EHLO amd.ucw.cz"
+	Wed, 6 Feb 2008 16:00:55 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:39651 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757322AbYBFVAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:00:14 -0500
-Date: Wed, 6 Feb 2008 22:00:26 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Chatre, Reinette" <reinette.chatre@intel.com>
-Cc: ipw3945-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       "Zhu, Yi" <yi.zhu@intel.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: ipw3945: not only it periodically dies, it also BUG()s
-Message-ID: <20080206210026.GA32641@elf.ucw.cz>
-References: <20080205214441.GA1518@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982BB1@orsmsx416.amr.corp.intel.com> <20080206143218.GA16188@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com>
+	id S1757468AbYBFVAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 16:00:54 -0500
+Date: Wed, 6 Feb 2008 13:00:53 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: statistics improvements
+In-Reply-To: <20080206001948.6f749aa8.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0802061259490.26108@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
+ <20080206001948.6f749aa8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+SLUB: statistics improvements
 
-> >>> ...I've reported this before, with full debugging. Not sure if
-> >>> anything happened.
-> >> 
-> >> Could you please point me to where you have reported it before?
-> > 
-> > From pavel@ucw.cz Wed Oct 31 01:52:02 2007
-> > From: Pavel Machek <pavel@ucw.cz>
-> > To: linux-wireless@vger.kernel.org,
-> >        kernel list <linux-kernel@vger.kernel.org>,
-> >        ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
-> > Subject: iwl3945 in 2.6.24-rc1 dies under load
-> > X-Warning: Reading this can be dangerous to your mental health.
-> > 
-> > ...and thread that resulted.
-> 
-> Could you please create a new bug in our bug tracking system
-> (www.bughost.org) to enable us to track this problem? Please include the
-> relevant information from the thread as well as the information you
-> doscovered recently.
+- Fix indentation in unfreeze_slab
 
-Hmmm... bugzilla says:
+- FREE_SLAB/ALLOC_SLAB counters were slightly misplaced and counted
+  even if the slab was kept because we were below the mininum of
+  partial slabs.
 
-    * Exact steps to reproduce
-    * Reproducability of bug (e.g. intermittent or 100% reproducable)
-    * Did this problem not exist in previous version of the driver?
-    * kernel version
-    * AP brand/model
-    * dmesg output at debug level 0x43fff
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		it would be nice to specify how to do this. It is
-insmod parameter, right?
+- Export per cpu statistics to user space (follow numa convention
+  but change the n character to c (no slabinfo support for display yet)
 
-    * Type of security (if any) you are using (e.g. WEP64, WEP128, WPA, WPA2, 802.1x, etc)
-    * Version of firmware
-    * Version of the ieee80211 module
-    * Proximity to the AP
+F.e.
 
-    * Before reporting any firmware errors, please be sure to read Ben
-Cahill's mailing list post on how to most effectively report such
-bugs. 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		unfortunately the link here does not work.
+christoph@stapp:/sys/kernel/slab/kmalloc-8$ cat alloc_fastpath
+9968 c0=4854 c1=1050 c2=468 c3=190 c4=116 c5=1779 c6=185 c7=1326
 
-BTW, why not use kernel.org bugzilla? Having to create another account
-is nasty...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+---
+ mm/slub.c |   39 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 31 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2008-02-06 12:47:41.246444483 -0800
++++ linux-2.6/mm/slub.c	2008-02-06 12:50:42.253891850 -0800
+@@ -1377,7 +1377,7 @@ static void unfreeze_slab(struct kmem_ca
+ 		} else {
+ 			stat(c, DEACTIVATE_FULL);
+ 			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
+-			add_full(n, page);
++				add_full(n, page);
+ 		}
+ 		slab_unlock(page);
+ 	} else {
+@@ -1395,6 +1395,7 @@ static void unfreeze_slab(struct kmem_ca
+ 			slab_unlock(page);
+ 		} else {
+ 			slab_unlock(page);
++			stat(get_cpu_slab(s, raw_smp_processor_id()), FREE_SLAB);
+ 			discard_slab(s, page);
+ 		}
+ 	}
+@@ -1567,9 +1568,9 @@ new_slab:
+ 
+ 	if (new) {
+ 		c = get_cpu_slab(s, smp_processor_id());
++		stat(c, ALLOC_SLAB);
+ 		if (c->page)
+ 			flush_slab(s, c);
+-		stat(c, ALLOC_SLAB);
+ 		slab_lock(new);
+ 		SetSlabFrozen(new);
+ 		c->page = new;
+@@ -4014,15 +4015,37 @@ SLAB_ATTR(remote_node_defrag_ratio);
+ 
+ #ifdef CONFIG_SLUB_STATS
+ 
++static int show_stat(struct kmem_cache *s, char *buf, enum stat_item si)
++{
++	unsigned long sum  = 0;
++	int cpu;
++	int len;
++	int *data = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
++
++	if (!data)
++		return -ENOMEM;
++
++	for_each_online_cpu(cpu) {
++		int x = get_cpu_slab(s, cpu)->stat[si];
++
++		data[cpu] = x;
++		sum += x;
++	}
++
++	len = sprintf(buf, "%lu", sum);
++
++	for_each_online_cpu(cpu) {
++		if (data[cpu] && len < PAGE_SIZE - 20)
++			len += sprintf(buf + len, " c%d=%u", cpu, data[cpu]);
++	}
++	kfree(data);
++	return len + sprintf(buf + len, "\n");
++}
++
+ #define STAT_ATTR(si, text) 					\
+ static ssize_t text##_show(struct kmem_cache *s, char *buf)	\
+ {								\
+-	unsigned long sum  = 0;					\
+-	int cpu;						\
+-								\
+-	for_each_online_cpu(cpu)				\
+-		sum += get_cpu_slab(s, cpu)->stat[si];		\
+-	return sprintf(buf, "%lu\n", sum);			\
++	return show_stat(s, buf, si);				\
+ }								\
+ SLAB_ATTR_RO(text);						\
+ 
