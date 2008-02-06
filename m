@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbYBFWU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbYBFWUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759961AbYBFWU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757124AbYBFWUP
+	id S1760895AbYBFWUw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760084AbYBFWUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:20:15 -0500
-Received: from wr-out-0506.google.com ([64.233.184.231]:53187 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754897AbYBFWUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:20:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=G/q/tUuGpPT//vgWGAymhZuj9RbmqSTBJKOMx8RLG1g6U6y3l6XzAFalMJQAyaAQz05eq3SmjLc4FeyvDZ+w10KLa9X0Xs8Jv2EwWaA5bvAFrSnq5kVYnrgMUPFwYl+gY0FEK8H5RQVMrtMl39zQf0i+sPp2XjBewhSG1P3sE7I=
-Message-ID: <31e679430802061420m113f7fa9tdfe8fd24929ed4c6@mail.gmail.com>
-Date: Wed, 6 Feb 2008 17:20:09 -0500
-From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: T61P sound issue
-Cc: "Theodore Tso" <tytso@mit.edu>, tiwai@suse.de,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Klaus S. Madsen" <ksm@hjernemadsen.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802061455110.30873@twin.jikos.cz>
+	Wed, 6 Feb 2008 17:20:37 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60581 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760113AbYBFWUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 17:20:36 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
+Date: Wed, 6 Feb 2008 23:18:27 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <200802010237.59320.rjw@sisk.pl> <200802062250.07758.rjw@sisk.pl> <1202335261.6274.11.camel@lappy>
+In-Reply-To: <1202335261.6274.11.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com>
-	 <20080204194038.d8851b8d.akpm@linux-foundation.org>
-	 <20080205113633.GI27738@hjernemadsen.org>
-	 <20080205102219.83fe459d.akpm@linux-foundation.org>
-	 <31e679430802051304l7c1d68d8r153c753a5b96087a@mail.gmail.com>
-	 <Pine.LNX.4.64.0802052207330.30873@twin.jikos.cz>
-	 <20080206022517.GB27119@mit.edu>
-	 <Pine.LNX.4.64.0802060909420.30873@twin.jikos.cz>
-	 <20080206135306.GI27119@mit.edu>
-	 <Pine.LNX.4.64.0802061455110.30873@twin.jikos.cz>
-X-Google-Sender-Auth: 5088b25aad3b5208
+Message-Id: <200802062318.28172.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> 
+> On Wed, 2008-02-06 at 22:50 +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> 
+> > > Well, that whole queue.
+> > 
+> > It doesn't compile for me.
+> 
+> I did solve some compile issues since posting, Ingo should have the
+> compiling version in sched-devel soonish (don't know if he pushed it
+> already).
 
-On Feb 6, 2008 8:56 AM, Jiri Kosina <jikos@jikos.cz> wrote:
-> On Wed, 6 Feb 2008, Theodore Tso wrote:
->
-> > > I have also seen sound working flawlessly on another X61s. Maybe they
-> > > changed some chipset revisions on the fly, or whatever.
-> > > What does lspci -v show for your soundcard please?
-> > Attached please find my lspci -v and dmidecode information.
->
-> Thanks. As I have already written elsewhere in this thread, the problem
-> went away after I updated the BIOS to the latest version. So it was Lenovo
-> who was to blame, and I was just unlucky enough to hit the series with
-> broken BIOS.
->
+Can you point me to the cleaned up version, please?
 
-BIOS upgraded, now the sound works on consoles (beeps) but not even
-alsaplayer can play sounds.
+> > > Your test program just failed to obtain realtime scheduling
+> > 
+> > Well, it shouldn't.  The expected result is to obtain realtime scheduling
+> > or we will break existing setups.
+> 
+> Thats a case of wrong expectations in my book. You enabled group
+> scheduling and hence behaviour changes.
 
-I'll keep trying.
+So, I'd have to unset FAIR_GROUP_SCHED to obtain the previous behavior?
 
-In any case, I have other issues: Serial port is really laggy (on Dock
-of course), even if I use a usb-serial converter, still laggy (laptop
-or dock).
-USB is taking ages to enumerate.
+> There is just nothing much one can do about it, if you don't assign bandwidth
+> to a group, it won't be able to run anything. Better to refuse to run, than to sit
+> idle, right? 
 
-If anyone has any clue about these... please shoot me :-p
+As a general rule, probably yes.
 
-> Thanks,
->
-> --
-> Jiri Kosina
->
+> But I appreciate the situation, therefore I made the whole rt-group
+> scheduling a separate .config option (which defaults to n)
 
-
-
--- 
-Best Regards,
-
-Felipe Balbi
-felipebalbi@users.sourceforge.net
+Which is introduced by the new patches, isn't it?
