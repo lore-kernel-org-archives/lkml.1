@@ -1,178 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbYBFGIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYBFGPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbYBFGIp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 01:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYBFGIh
+	id S1760074AbYBFGPi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 01:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYBFGP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 01:08:37 -0500
-Received: from mxsf09.insightbb.com ([74.128.0.79]:16599 "EHLO
-	mxsf09.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbYBFGIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 01:08:35 -0500
-X-IronPort-AV: E=Sophos;i="4.25,310,1199682000"; 
-   d="scan'208";a="244099239"
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAMvdqEdKjlCP/2dsb2JhbACBWKw9gXY
-X-IronPort-AV: E=Sophos;i="4.25,310,1199682000"; 
-   d="scan'208";a="153818900"
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates for 2.6.25-rc0
-Date: Wed, 6 Feb 2008 01:08:30 -0500
-User-Agent: KMail/1.9.3
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 6 Feb 2008 01:15:28 -0500
+Received: from colo.lackof.org ([198.49.126.79]:34871 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751871AbYBFGP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 01:15:26 -0500
+Date: Tue, 5 Feb 2008 23:15:07 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Santiago Garcia Mantinan <manty@manty.net>
+Cc: linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: uli526x doesn't get link if no link when interface is set up
+Message-ID: <20080206061507.GA22107@colo.lackof.org>
+References: <20080202145638.GA5871@dis.manty.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802060108.31644.dtor@insightbb.com>
+In-Reply-To: <20080202145638.GA5871@dis.manty.net>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sat, Feb 02, 2008 at 03:56:38PM +0100, Santiago Garcia Mantinan wrote:
+> Hi!
+> 
+> I've been experiencing problems with this (internal) card ever since I
+> bought this motherboard, lately I've been doing some tests and I found out
+> some things, maybe not enough to let us debug this, but I'll explain it just
+> in case.
 
-Please pull from:
+Santiago,
+Thanks for the excellent bug report.
+Is this perhaps the same problem as described here?
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+    http://bugzilla.kernel.org/show_bug.cgi?id=5839
 
-to receive updates for the input subsystem. Most of the changes were in -mm for
-some time with the exception of PXA keypad driver update. However, since there
-are currently no users of said driver in mainline kernel, I consider the update
-pretty safe. 
+It sounds similar but I only skimmed over your report.
+If you think it is, could you add (just cut/paste)
+you email to that bug for me?
+Could you also try the patch I attached to that bug report?
+If it works for you, we can both pester Kyle McMartin to
+push it upstream. ;)
 
-Changelog:
----------
+Thanks for the excellent bug report...I'll take a closer look
+at it later this week or weekend.
 
-Andre Haupt (1):
-      Input: remove duplicate includes
+thanks,
+grant
 
-Andrew Morton (1):
-      Input: i8042 - non-x86 build fix
-
-Bruce Duncan (1):
-      Input: i8042 - enable DMI quirks on x86-64
-
-Carlos Corbacho (2):
-      Input: i8042 - add Dritek keyboard extension quirk
-      Input: i8042 - add Dritek quirk for Acer Aspire 9110
-
-David Brownell (1):
-      Input: ads7846 - stop updating dev->power.power_state
-
-Dmitry Baryshkov (1):
-      Input: add Tosa keyboard driver
-
-Dmitry Torokhov (10):
-      Input: Add proper locking when changing device's keymap
-      Input: keyspan_remote - add support for loadable keymaps
-      Input: atlas_btns - add support for loadable keymaps
-      Input: cobalt_btns - add support for loadable keymaps
-      Input: atkbd - remove unneeded synchronize_sched()
-      Input: i8042 - use synchronize_irq() instead of synchronize_sched()
-      Input: iforce - don't access input_dev->private directly
-      V4L/DVB: Don't access input_dev->private directly
-      Input: remove cdev from input_dev structure
-      Input: mousedev - use BIT_MASK instead of BIT
-
-Eric Miao (8):
-      Input: pxa27x_keypad - rename the driver (was pxa27x_keyboard)
-      Input: pxa27x_keypad - remove pin configuration from the driver
-      Input: pxa27x_keypad - introduce driver structure and use KEY() to define matrix keys
-      Input: pxa27x_keypad - introduce pxa27x_keypad_config()
-      Input: pxa27x_keypad - enable rotary encoders and direct keys
-      Input: pxa27x_keypad - use device resources for I/O memory mapping and IRQ
-      Input: pxa27x_keypad - add debounce_interval to the keypad platform data
-      Input: pxa27x_keypad - also enable on PXA3xx
-
-Francisco Alecrim (1):
-      Input: remove duplicated headers in drivers/char/keyboard.c
-
-Giel de Nijs (1):
-      Input: atkbd - properly handle special keys on Dell Latitudes
-
-Jan Engelhardt (1):
-      Input: constify function pointer tables (seq_operations)
-
-Jiri Kosina (1):
-      Input: i8042 - add Fujitsu-Siemens Amilo Pro 2010 to nomux list
-
-Julia Lawall (1):
-      Input: drop redundant includes of moduleparam.h
-
-Richard Purdie (1):
-      Input: add input event to APM event bridge
-
-Stephen Hemminger (2):
-      Input: implement proper timer rounding for polled devices
-      Input: add driver for Fujitsu application buttons
-
-Steven Whitehouse (1):
-      Input: fix bug in example code
-
-Diffstat:
---------
-
- Documentation/input/input-programming.txt         |    2 +-
- arch/arm/mach-pxa/tosa.c                          |   43 ++
- drivers/char/keyboard.c                           |    5 +-
- drivers/input/Kconfig                             |   12 +
- drivers/input/Makefile                            |    1 +
- drivers/input/apm-power.c                         |  131 +++++
- drivers/input/evdev.c                             |    6 +-
- drivers/input/input-polldev.c                     |   18 +-
- drivers/input/input.c                             |   85 +++-
- drivers/input/joystick/amijoy.c                   |    1 -
- drivers/input/joystick/analog.c                   |    1 -
- drivers/input/joystick/db9.c                      |    1 -
- drivers/input/joystick/gamecon.c                  |    1 -
- drivers/input/joystick/iforce/iforce-main.c       |   17 +-
- drivers/input/joystick/turbografx.c               |    1 -
- drivers/input/joystick/xpad.c                     |    1 -
- drivers/input/keyboard/Kconfig                    |   29 +-
- drivers/input/keyboard/Makefile                   |    3 +-
- drivers/input/keyboard/atkbd.c                    |   91 +++-
- drivers/input/keyboard/lkkbd.c                    |    1 -
- drivers/input/keyboard/pxa27x_keyboard.c          |  274 ----------
- drivers/input/keyboard/pxa27x_keypad.c            |  572 +++++++++++++++++++++
- drivers/input/keyboard/tosakbd.c                  |  415 +++++++++++++++
- drivers/input/misc/Kconfig                        |   14 +
- drivers/input/misc/Makefile                       |    1 +
- drivers/input/misc/apanel.c                       |  378 ++++++++++++++
- drivers/input/misc/ati_remote.c                   |    1 -
- drivers/input/misc/atlas_btns.c                   |   39 +-
- drivers/input/misc/cobalt_btns.c                  |   73 ++--
- drivers/input/misc/keyspan_remote.c               |  119 +++--
- drivers/input/mouse/inport.c                      |    1 -
- drivers/input/mouse/logibm.c                      |    1 -
- drivers/input/mouse/psmouse-base.c                |    1 -
- drivers/input/mouse/trackpoint.c                  |    1 -
- drivers/input/mousedev.c                          |    3 +-
- drivers/input/serio/i8042-x86ia64io.h             |   67 +++-
- drivers/input/serio/i8042.c                       |   26 +-
- drivers/input/serio/libps2.c                      |    1 -
- drivers/input/touchscreen/ads7846.c               |    8 +-
- drivers/input/touchscreen/mk712.c                 |    1 -
- drivers/input/touchscreen/ucb1400_ts.c            |    1 -
- drivers/media/video/usbvideo/konicawc.c           |    2 -
- drivers/media/video/usbvideo/quickcam_messenger.c |    2 -
- include/asm-arm/arch-pxa/pxa27x_keyboard.h        |   13 -
- include/asm-arm/arch-pxa/pxa27x_keypad.h          |   56 ++
- include/asm-arm/arch-pxa/tosa.h                   |   30 ++
- include/linux/input.h                             |    7 +-
- 47 files changed, 2073 insertions(+), 484 deletions(-)
- create mode 100644 drivers/input/apm-power.c
- delete mode 100644 drivers/input/keyboard/pxa27x_keyboard.c
- create mode 100644 drivers/input/keyboard/pxa27x_keypad.c
- create mode 100644 drivers/input/keyboard/tosakbd.c
- create mode 100644 drivers/input/misc/apanel.c
- delete mode 100644 include/asm-arm/arch-pxa/pxa27x_keyboard.h
- create mode 100644 include/asm-arm/arch-pxa/pxa27x_keypad.h
-
--- 
-Dmitry
+> 
+> The problem is that if the uli526x card is set up (ifconfig ethX up) when
+> there is no cable plugged or the cable is plugged to something that is off
+> at that time, this means, when there is no link for the card to detect,
+> then, when the cable or the switch or whatever is plugged, the link is not
+> detected by the uli526x card an thus no link is stablished (led on the
+> switch remains off).
+> 
+> This is the status reported by ethtool when the link should be on but the
+> driver is not detecting this condition and thus it is off:
+> 
+>         Supported ports: [ MII ]
+>         Supported link modes:   10baseT/Half 10baseT/Full 
+>                                 100baseT/Half 100baseT/Full 
+>         Supports auto-negotiation: Yes
+>         Advertised link modes:  10baseT/Half 10baseT/Full 
+>                                 100baseT/Half 100baseT/Full 
+>         Advertised auto-negotiation: Yes
+>         Speed: Unknown! (65535)
+>         Duplex: Unknown! (255)
+>         Port: MII
+>         PHYAD: 1
+>         Transceiver: external
+>         Auto-negotiation: on
+>         Supports Wake-on: pg
+>         Wake-on: d
+>         Link detected: no
+> 
+> If at this time we run: "ifconfig ethX down" and after some time: "ifconfig
+> ethX up" then the link is detected, but if we run this two commands without
+> waiting a time between them, the link remains undetected.
+> 
+> In fact, if with an stablished and detected link, we run: "ifconfig ethX
+> down;ifconfig ethX up" the link is lost again and is not detected till we
+> run the two commands waiting some time between them.
+> 
+> Once the link is stablished if we don't touch the interface config (we don't
+> ifconfig it down) then we can unplug the cable or turn off the switch or
+> whatever and the card will detect the link whenever it becomes available
+> again.
+> 
+> This makes me think that the problem is something related to the way on
+> which we are setting the card up.
+> 
+> I'm running 2.6.24 on a amd64 machine, these are the messages I get from the
+> driver on load:
+> uli526x: ULi M5261/M5263 net driver, version 0.9.3 (2005-7-29)
+> ACPI: PCI Interrupt 0000:00:12.0[A] -> GSI 20 (level, low) -> IRQ 20
+> eth1: ULi M5263 at pci0000:00:12.0, 00:13:8f:a7:af:b4, irq 20.
+> uli526x: eth1 NIC Link is Up 100 Mbps Full duplex
+> 
+> This is my lspci output:
+> 00:12.0 0200: 10b9:5263 (rev 60)
+>         Subsystem: 1849:5263
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Latency: 32 (5000ns min, 10000ns max), Cache Line Size: 64 bytes
+>         Interrupt: pin A routed to IRQ 20
+>         Region 0: I/O ports at c800 [size=256]
+>         Region 1: Memory at dedefc00 (32-bit, non-prefetchable) [size=256]
+>         Capabilities: [50] Power Management version 2
+>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Kernel driver in use: uli526x
+>         Kernel modules: uli526x
+> 
+> I don't know what else to add but I offer myself to do all the wanted tests.
+> 
+> Regards...
+> -- 
+> Manty/BestiaTester -> http://manty.net
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
