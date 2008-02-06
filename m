@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763937AbYBFX2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761076AbYBFXcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763937AbYBFX2c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbYBFX2X
+	id S1761076AbYBFXcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbYBFXcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:28:23 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39165 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757027AbYBFX2W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:28:22 -0500
-Date: Wed, 6 Feb 2008 15:28:18 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Oliver Pinter <oliver.pntr@gmail.com>
-cc: Greg KH <greg@kroah.com>, "Justin M. Forbes" <jmforbes@linuxtx.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, torvalds@linux-foundation.org,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, dhaval@linux.vnet.ibm.com
-Subject: Re: [patch 22/27] quicklist: Set tlb->need_flush if pages are
- remaining in quicklist 0
-In-Reply-To: <6101e8c40802061511k6356cd5cued8d9eb646a27bc9@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802061528160.22648@schroedinger.engr.sgi.com>
-References: <20080202001232.472591439@mini.kroah.org>  <20080202002103.GW8368@suse.de>
-  <Pine.LNX.4.64.0802011638330.21566@schroedinger.engr.sgi.com> 
- <1201915720.3781.18.camel@turion.linuxtx.org> 
- <Pine.LNX.4.64.0802011729560.21840@schroedinger.engr.sgi.com> 
- <20080206224520.GA11045@kroah.com> <6101e8c40802061511k6356cd5cued8d9eb646a27bc9@mail.gmail.com>
+	Wed, 6 Feb 2008 18:32:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60894 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757733AbYBFXcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:32:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper (bisected)
+Date: Thu, 7 Feb 2008 00:31:03 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <200802010237.59320.rjw@sisk.pl> <200802062318.28172.rjw@sisk.pl> <1202337267.6274.15.camel@lappy>
+In-Reply-To: <1202337267.6274.15.camel@lappy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802070031.03955.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correct
+On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> 
+> On Wed, 2008-02-06 at 23:18 +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> > > 
+> > > On Wed, 2008-02-06 at 22:50 +0100, Rafael J. Wysocki wrote:
+> > > > On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> > > 
+> > > > > Well, that whole queue.
+> > > > 
+> > > > It doesn't compile for me.
+> > > 
+> > > I did solve some compile issues since posting, Ingo should have the
+> > > compiling version in sched-devel soonish (don't know if he pushed it
+> > > already).
+> > 
+> > Can you point me to the cleaned up version, please?
+> 
+> http://programming.kicks-ass.net/kernel-patches/sched-rt-group/
+> 
+> on top of sched-devel.
 
+Indeed, with these patches applied the issue is not reproducible any more.
 
+Thanks,
+Rafael
