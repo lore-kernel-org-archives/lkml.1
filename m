@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbYBFKf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbYBFKk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbYBFKf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 05:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYBFKfM
+	id S1761283AbYBFKk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 05:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYBFKks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 05:35:12 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:44782 "EHLO
+	Wed, 6 Feb 2008 05:40:48 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:53617 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbYBFKfL (ORCPT
+	with ESMTP id S1753061AbYBFKkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 05:35:11 -0500
+	Wed, 6 Feb 2008 05:40:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=mU9FICCmYRxT2flOQQmHI29metFliomUPGHGOOSOnohAFxzriEoFuokVSe1z7+bw5/Pf3CpTWI0xuGf4ofbjYiOh5UAUOrc6VJl3se7BAekn7CX5Ni7BXxvo/g8P2LOk7AdulKzAMasIWGAwBw9g5RMIt/bltwP1J6XA3MY3MRE=
-Date: Wed, 6 Feb 2008 11:35:10 +0100
-To: "Mader, Alexander (N-MSR)" <Alexander.Mader@niles.de>
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       "Stuge, Peter" <stuge-linux-pcmcia@cdy.org>
-Subject: Re: Resolved (sort of): Unable to access PCMCIA with O2 Micro
- OZ711MP1/MS1
-Message-Id: <20080206113510.20f26299.Kristoffer.ericson@gmail.com>
-In-Reply-To: <47A96983.1090108@niles.de>
-References: <47A7F828.1010303@niles.de>
-	<20080205140622.bf41f3ce.Kristoffer.ericson@gmail.com>
-	<47A96983.1090108@niles.de>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tnk1r81x00XUt4RWcvtvDeNQoZJv/iAOFMEp9j51B5mzrhlQJvOQPzMN5uhOejUQggYVUBgO7AFURnW3sjlVF2C2ZSnqkvdCCBu8r2r2w2hS0TTjXaR+cimnw1Cvs68usqUaNuJ3ZsLK35OHZgnQQNglNm/nMxTYilK1bkbIauA=
+Message-ID: <86802c440802060240n4b2ad0c9l1eb9ee049de13b5c@mail.gmail.com>
+Date: Wed, 6 Feb 2008 02:40:46 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alexey Dobriyan" <adobriyan@sw.ru>
+Subject: Re: tg3 broken after "PCI: Fix bus resource assignment on 32 bits with 64b resources"
+Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080206100510.GA29127@localhost.sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Content-Disposition: inline
+References: <20080204151222.GB25790@localhost.sw.ru>
+	 <1202162073.7079.8.camel@pasglop>
+	 <20080205091758.GB26618@localhost.sw.ru>
+	 <86802c440802050207j60385efbif6f693dc0b1fd297@mail.gmail.com>
+	 <1202244592.7079.68.camel@pasglop>
+	 <20080206100510.GA29127@localhost.sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Feb 2008 09:02:11 +0100
-"Mader, Alexander (N-MSR)" <Alexander.Mader@niles.de> wrote:
+On Feb 6, 2008 2:05 AM, Alexey Dobriyan <adobriyan@sw.ru> wrote:
+>
+> On Wed, Feb 06, 2008 at 07:49:52AM +1100, Benjamin Herrenschmidt wrote:
+> >
+> > > so x86_64 will work well?
+> > >
+> > > the problem is that BIOS does not assign one resource for you tg3. and
+> > > kernel pcibios_assign_to_unassign (?) try
+> > > to assign resource to your card.
+> >
+> > But the kernel shouldn't try to assign a resource in the 64 bits space
+> > to a card behind a bridge... at least not a non-prefetchable resource
+> > since those can't be forwarded (P2P bridges only define a 32 bits window
+> > for non-prefetchable resources).
+> >
+> > So it does look to me like the kernel may be doing something wrong. I
+> > haven't had a chance to look at the logs in details yet (just woke up).
+> >
+> > > revert the patch happen to work, you only have 2g less RAM (?), so
+> > > 0x8000000 still can be used.
+> > >
+> > > sometime you could get hang if your MB have two HT chains. ...because
+> > > BIOS already allocate two io range for the two chain.
+> > > and kernel may assign resource from the range1 belong to HT1 to device
+> > > under HT0.
+> > > solution: need pci root bios to provide _CRS to replace...
+> > > and i have one patch but it only take care of 64 bit kernel for this case.
+> > >
+> > >
+> > > easy solution for you: try to get one updated BIOS.
+>
+> BTW, "[PATCH] x86_32: fix regression caused by trim ram according to mtrr on system with 4G more RAM"
+> http://marc.info/?l=linux-kernel&m=120229095121673&w=2
+> fixes this box too and I have back all 4G of RAM as a bonus. :-)
 
-> Kristoffer Ericson schrieb:
-> > "Mader, Alexander (N-MSR)" wrote:
-> >> On a Fujitsu Siemens Celsius H240 a 2.6.22-3-amd64 kernel from Debian 
-> >> testing is in use. PCMCIA utilities for Linux 2.6 version 014-4 are 
-> >> installed. I could supply the output of lspci and lshal.
-> > 
-> > Assuming debian has alot of patches applied, it would be interesting to see
-> > if this bug exist on vanilla 2.6.24. Would probably get alot more attention from
-> > pcmcia guru's.
-> 
-> Hello,
-> 
-> obviously this is the case. This morning I tried a different non-cardbus 
-> PCMCIA card and it worked, which in turn was the case for the other test 
-> candidates, NICs and CF adapters: they all are accessible right now. In 
-> the moment I am trying to find out which update caused the improvement.
+so you have 4g ram, and with hw memhole enabled? BIOS should have Tom2
+set, and WB set ..
 
-Glad to hear its working. If you are eager to see what patch caused the bug (debian or vanilla) you can
-always do a bisect. Or simply run through 2.6.20 -> 2.6.24 vanilla kernels and see where it worked and when it didn't.
+you must have rev C or Rev E instead of rev F?
 
-> 
-> Thank you very much for your attention and, please, excuse me for 
-> bothering you.
-> 
+can you post the /proc/mtrrs and boot message?
 
-no worries.
-
-> Best regards, Alexander.
+YH
