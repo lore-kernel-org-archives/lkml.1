@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbYBFICe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760111AbYBFIMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761320AbYBFICe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 03:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760229AbYBFICZ
+	id S1760111AbYBFIMD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 03:12:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbYBFILw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 03:02:25 -0500
-Received: from mail.kapp-coburg.de ([217.24.55.52]:55433 "EHLO
-	mail.kapp-coburg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760202AbYBFICY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 03:02:24 -0500
-Message-ID: <47A96983.1090108@niles.de>
-Date: Wed, 06 Feb 2008 09:02:11 +0100
-From: "Mader, Alexander (N-MSR)" <Alexander.Mader@niles.de>
-Organization: NILES Werkzeugmaschinen GmbH
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	Wed, 6 Feb 2008 03:11:52 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:39793 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756876AbYBFILv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 03:11:51 -0500
+Date: Wed, 6 Feb 2008 09:11:27 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Theodore Tso <tytso@MIT.EDU>
+cc: Felipe Balbi <felipebalbi@users.sourceforge.net>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: T61P sound issue
+In-Reply-To: <20080206022517.GB27119@mit.edu>
+Message-ID: <Pine.LNX.4.64.0802060909420.30873@twin.jikos.cz>
+References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com>
+ <20080204194038.d8851b8d.akpm@linux-foundation.org> <20080205113633.GI27738@hjernemadsen.org>
+ <20080205102219.83fe459d.akpm@linux-foundation.org>
+ <31e679430802051304l7c1d68d8r153c753a5b96087a@mail.gmail.com>
+ <Pine.LNX.4.64.0802052207330.30873@twin.jikos.cz> <20080206022517.GB27119@mit.edu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-       "Stuge, Peter" <stuge-linux-pcmcia@cdy.org>
-Subject: Resolved (sort of): Unable to access PCMCIA with O2 Micro OZ711MP1/MS1
-References: <47A7F828.1010303@niles.de> <20080205140622.bf41f3ce.Kristoffer.ericson@gmail.com>
-In-Reply-To: <20080205140622.bf41f3ce.Kristoffer.ericson@gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristoffer Ericson schrieb:
-> "Mader, Alexander (N-MSR)" wrote:
->> On a Fujitsu Siemens Celsius H240 a 2.6.22-3-amd64 kernel from Debian 
->> testing is in use. PCMCIA utilities for Linux 2.6 version 014-4 are 
->> installed. I could supply the output of lspci and lshal.
-> 
-> Assuming debian has alot of patches applied, it would be interesting to see
-> if this bug exist on vanilla 2.6.24. Would probably get alot more attention from
-> pcmcia guru's.
+On Tue, 5 Feb 2008, Theodore Tso wrote:
 
-Hello,
+> Hmm.. sound works just fine for me on my X61s (model #7668-CTO) running 
+> 2.6.24.
 
-obviously this is the case. This morning I tried a different non-cardbus 
-PCMCIA card and it worked, which in turn was the case for the other test 
-candidates, NICs and CF adapters: they all are accessible right now. In 
-the moment I am trying to find out which update caused the improvement.
+I have also seen sound working flawlessly on another X61s. Maybe they 
+changed some chipset revisions on the fly, or whatever.
 
-Thank you very much for your attention and, please, excuse me for 
-bothering you.
+What does lspci -v show for your soundcard please?
 
-Best regards, Alexander.
+> I do have this private patch applied --- maybe it makes a difference
+> for you?  I don't think it should make a difference, but....
+
+I will give it a try, thanks.
+
+-- 
+Jiri Kosina
