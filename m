@@ -1,114 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbYBFVkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbYBFVlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbYBFVkI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 16:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYBFVjz
+	id S1759569AbYBFVlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 16:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbYBFVlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 16:39:55 -0500
-Received: from smtp1.stealer.net ([88.198.224.204]:59198 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbYBFVjy (ORCPT
+	Wed, 6 Feb 2008 16:41:05 -0500
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr ([84.96.92.124]:39553
+	"EHLO neuf-infra-smtp-out-sp604003av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758873AbYBFVlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 16:39:54 -0500
-From: Sven Wegener <sven.wegener@stealer.net>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ipvs: Make the synchronization interval controllable
-Date: Wed,  6 Feb 2008 22:39:50 +0100
-Message-Id: <1202333990-19359-1-git-send-email-sven.wegener@stealer.net>
-X-Mailer: git-send-email 1.5.4
+	Wed, 6 Feb 2008 16:41:04 -0500
+Message-ID: <47AA2955.50502@cosmosbay.com>
+Date: Wed, 06 Feb 2008 22:40:37 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: statistics improvements
+References: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com> <20080206001948.6f749aa8.akpm@linux-foundation.org> <Pine.LNX.4.64.0802061259490.26108@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0802061259490.26108@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The default synchronization interval of 1000 milliseconds is too high for a
-heavily loaded director. Collecting the connection information from one second
-and then sending it out in a burst will overflow the socket buffer and lead to
-synchronization information being dropped. Make the interval controllable by a
-sysctl variable so that users can tune it.
+Christoph Lameter a écrit :
+> SLUB: statistics improvements
+> 
+> - Fix indentation in unfreeze_slab
+> 
+> - FREE_SLAB/ALLOC_SLAB counters were slightly misplaced and counted
+>   even if the slab was kept because we were below the mininum of
+>   partial slabs.
+> 
+> - Export per cpu statistics to user space (follow numa convention
+>   but change the n character to c (no slabinfo support for display yet)
+> 
+> F.e.
+> 
+> christoph@stapp:/sys/kernel/slab/kmalloc-8$ cat alloc_fastpath
+> 9968 c0=4854 c1=1050 c2=468 c3=190 c4=116 c5=1779 c6=185 c7=1326
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
----
- Documentation/networking/ipvs-sysctl.txt |    9 +++++++++
- net/ipv4/ipvs/ip_vs_ctl.c                |    9 ++++++++-
- net/ipv4/ipvs/ip_vs_sync.c               |    6 ++++--
- 3 files changed, 21 insertions(+), 3 deletions(-)
+nice :)
 
-diff --git a/Documentation/networking/ipvs-sysctl.txt b/Documentation/networking/ipvs-sysctl.txt
-index 4ccdbca..1389e2f 100644
---- a/Documentation/networking/ipvs-sysctl.txt
-+++ b/Documentation/networking/ipvs-sysctl.txt
-@@ -141,3 +141,12 @@ sync_threshold - INTEGER
-         synchronized, every time the number of its incoming packets
-         modulus 50 equals the threshold. The range of the threshold is
-         from 0 to 49.
-+
-+sync_interval - INTEGER
-+	default 1000
-+
-+	The information from synchronization is buffered and sent out at
-+	regular intervals by a kernel thread. The interval (in ms) is
-+	controlled by this value. The default is too high for a heavily loaded
-+	director. If you get a lot of "ip_vs_send_async error" messages from
-+	your kernel, then you should lower this value.
-diff --git a/net/ipv4/ipvs/ip_vs_ctl.c b/net/ipv4/ipvs/ip_vs_ctl.c
-index 94c5767..2781505 100644
---- a/net/ipv4/ipvs/ip_vs_ctl.c
-+++ b/net/ipv4/ipvs/ip_vs_ctl.c
-@@ -81,7 +81,7 @@ int sysctl_ip_vs_expire_nodest_conn = 0;
- int sysctl_ip_vs_expire_quiescent_template = 0;
- int sysctl_ip_vs_sync_threshold[2] = { 3, 50 };
- int sysctl_ip_vs_nat_icmp_send = 0;
--
-+extern int sysctl_ip_vs_sync_interval;
- 
- #ifdef CONFIG_IP_VS_DEBUG
- static int sysctl_ip_vs_debug_level = 0;
-@@ -1582,6 +1582,13 @@ static struct ctl_table vs_vars[] = {
- 		.proc_handler	= &proc_do_sync_threshold,
- 	},
- 	{
-+		.procname	= "sync_interval",
-+		.data		= &sysctl_ip_vs_sync_interval,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.procname	= "nat_icmp_send",
- 		.data		= &sysctl_ip_vs_nat_icmp_send,
- 		.maxlen		= sizeof(int),
-diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
-index 948378d..9b57ad3 100644
---- a/net/ipv4/ipvs/ip_vs_sync.c
-+++ b/net/ipv4/ipvs/ip_vs_sync.c
-@@ -143,6 +143,8 @@ char ip_vs_backup_mcast_ifn[IP_VS_IFNAME_MAXLEN];
- /* multicast addr */
- static struct sockaddr_in mcast_addr;
- 
-+/* milliseconds between synchronization runs */
-+int sysctl_ip_vs_sync_interval = 1000;
- 
- static inline void sb_queue_tail(struct ip_vs_sync_buff *sb)
- {
-@@ -701,7 +703,7 @@ static void sync_master_loop(void)
- 		if (stop_master_sync)
- 			break;
- 
--		msleep_interruptible(1000);
-+		msleep_interruptible(sysctl_ip_vs_sync_interval);
- 	}
- 
- 	/* clean up the sync_buff queue */
-@@ -758,7 +760,7 @@ static void sync_backup_loop(void)
- 		if (stop_backup_sync)
- 			break;
- 
--		msleep_interruptible(1000);
-+		msleep_interruptible(sysctl_ip_vs_sync_interval);
- 	}
- 
- 	/* release the sending multicast socket */
--- 
-1.5.4
+> 
+> 
+> +static int show_stat(struct kmem_cache *s, char *buf, enum stat_item si)
+> +{
+> +	unsigned long sum  = 0;
+> +	int cpu;
+> +	int len;
+> +	int *data = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
+> +
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	for_each_online_cpu(cpu) {
+> +		int x = get_cpu_slab(s, cpu)->stat[si];
+
+unsigned int x = ...
+
+> +
+> +		data[cpu] = x;
+> +		sum += x;
+
+or else x will sign extend here on 64 bit arches ?
+
+> +	}
+> +
+> +	len = sprintf(buf, "%lu", sum);
+> +
+> +	for_each_online_cpu(cpu) {
+> +		if (data[cpu] && len < PAGE_SIZE - 20)
+> +			len += sprintf(buf + len, " c%d=%u", cpu, data[cpu]);
+> +	}
+> +	kfree(data);
+> +	return len + sprintf(buf + len, "\n");
+> +}
+> +
+
 
