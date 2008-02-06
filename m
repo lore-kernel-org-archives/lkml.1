@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYBFQgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYBFQmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbYBFQgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 11:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYBFQge
+	id S1754981AbYBFQmv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 11:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYBFQmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 11:36:34 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:32428 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261AbYBFQgc (ORCPT
+	Wed, 6 Feb 2008 11:42:42 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:47758 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbYBFQml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 11:36:32 -0500
+	Wed, 6 Feb 2008 11:42:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=o5Qkf3VlKTSIRP7i9NHC68Ut39rDdlqY0sz8H69nKtf000rr8nNUHIecijHSIvmWOCBCuJvgfix6QuBqafgA1c5Bsn+atKXq1PIP9WS+On6JOMPkRcoFm9pnSeNtwMDQuWmJlydPH+fzYuyT9CHXo4OAoXVj88Sx1qX5/Z8l9Pw=
-Date: Wed, 6 Feb 2008 17:36:36 +0100
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Chris Holvenstot <cholvenstot@comcast.net>,
-       Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-git15 Keyboard Issue?
-Message-Id: <20080206173636.23f81913.Kristoffer.ericson@gmail.com>
-In-Reply-To: <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
-References: <1202302978.9058.13.camel@popeye>
-	<Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>
-	<1202305740.9058.22.camel@popeye>
-	<Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        d=googlemail.com; s=gamma;
+        h=date:x-mailer:reply-to:x-priority:message-id:to:subject:mime-version:content-type:content-transfer-encoding:from;
+        b=xxxEYtz2Qx/PN2xjkFm5NHZFkuuwsu0Tea/3VqLjLpsSdhQXItkcv8P38EtPVgfyBHOE3mBO8zD9+HyL7CXuuw9EbzuIa3z4X8n6agDnTRAlJJLUwV8oq47ABesvoBg0DUapELEhyv7ZoikwqN+AKI4YubyMpJeM3Ei/uydJUYg=
+Date: Wed, 6 Feb 2008 18:42:41 +0200
+X-Mailer: The Bat! (v3.71.04) Home
+Reply-To: Dmitry Shapin <shapin@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <405295915.20080206184241@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] cypress_m8: added UPS Powercom (0d9f:0002)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+From: Dmitry Shapin <shapin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Feb 2008 14:54:21 +0100 (CET)
-Jiri Kosina <jikos@jikos.cz> wrote:
+Added support for UPS Powercom USB interface (0d9f:0002) in chip CY7C63723.
+In my case, this Powercom BNT800AP.
 
-> On Wed, 6 Feb 2008, Chris Holvenstot wrote:
-> 
-> > On this system I am using a PS2 Keyboard - and let me stress that it is 
-> > only occasionaly that it happens - I have had 2.6.24-git15 up for about 
-> > 2 hours now and have only seen it about a dozen times. I also note one 
-> > other thing - although my system is lightly loaded - at this time of day 
-> > I am pretty much just using email on an AMD 64 X2 4600+ with 2 gigs of 
-> > of memory - I have noticed several times that I will be typing away and 
-> > nothing is appearing on the screen - and a few seconds later - boom - 
-> > there it all is.
-> 
-> It could be some timing problem. Does this happen also in console, or 
-> only when running X?
-> 
-> Could you please try to
-> 
-> - boot with 'nohpet' kernel parameter
-> - taskset -p 0x00000002 <pid_of_Xserver> if this is a multi-CPU/core 
->   machine and you are experiencing the problems only in X
-> 
+Signed-off-by: Dmitry Shapin <shapin@gmail.com>
 
-Perhaps something to CC linux-input on?
+--- linux.orig/drivers/usb/serial/cypress_m8.h  2008-01-25 00:58:37.000000000 +0200
++++ linux/drivers/usb/serial/cypress_m8.h       2008-02-06 17:07:08.000000000 +0200
+@@ -19,6 +19,10 @@
+ #define VENDOR_ID_CYPRESS               0x04b4
+ #define PRODUCT_ID_CYPHIDCOM            0x5500
+ 
++/* Powercom UPS, chip CY7C63723 */
++#define VENDOR_ID_POWERCOM              0x0d9f
++#define PRODUCT_ID_UPS                  0x0002
++
+ /* Nokia CA-42 USB to serial cable */
+ #define VENDOR_ID_DAZZLE               0x07d0
+ #define PRODUCT_ID_CA42                        0x4101
+--- linux.orig/drivers/usb/serial/cypress_m8.c  2008-02-06 13:44:45.000000000 +0200
++++ linux/drivers/usb/serial/cypress_m8.c       2008-02-06 17:47:25.000000000 +0200
+@@ -94,6 +94,7 @@
+ 
+ static struct usb_device_id id_table_cyphidcomrs232 [] = {
+        { USB_DEVICE(VENDOR_ID_CYPRESS, PRODUCT_ID_CYPHIDCOM) },
++       { USB_DEVICE(VENDOR_ID_POWERCOM, PRODUCT_ID_UPS) },
+        { }                                             /* Terminating entry */
+ };
+ 
+@@ -106,6 +107,7 @@
+        { USB_DEVICE(VENDOR_ID_DELORME, PRODUCT_ID_EARTHMATEUSB) },
+        { USB_DEVICE(VENDOR_ID_DELORME, PRODUCT_ID_EARTHMATEUSB_LT20) },
+        { USB_DEVICE(VENDOR_ID_CYPRESS, PRODUCT_ID_CYPHIDCOM) },
++       { USB_DEVICE(VENDOR_ID_POWERCOM, PRODUCT_ID_UPS) },
+        { USB_DEVICE(VENDOR_ID_DAZZLE, PRODUCT_ID_CA42) },
+        { }                                             /* Terminating entry */
+ };
 
-> Thanks,
-> 
-> -- 
-> Jiri Kosina
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
