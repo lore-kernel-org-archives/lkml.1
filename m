@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYBFWsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761422AbYBFWtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761328AbYBFWsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYBFWsK
+	id S1761422AbYBFWtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757633AbYBFWtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:48:10 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37303 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757697AbYBFWsI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:48:08 -0500
-Date: Wed, 6 Feb 2008 14:47:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Harald Arnesen" <skogtun.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: Re: Latest git oopses during boot
-Message-Id: <20080206144732.5a1a2c3b.akpm@linux-foundation.org>
-In-Reply-To: <8120cfd40802060832w2dd3631foad324b3633427230@mail.gmail.com>
-References: <8120cfd40802060832w2dd3631foad324b3633427230@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 17:49:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50989 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750988AbYBFWtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 17:49:13 -0500
+Date: Wed, 6 Feb 2008 17:48:05 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Neil Horman <nhorman@tuxdriver.com>, tglx@linutronix.de, mingo@redhat.com,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in
+	die_nmi path
+Message-ID: <20080206224805.GD11886@redhat.com>
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206220001.GA15155@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206220001.GA15155@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Feb 2008 17:32:22 +0100
-"Harald Arnesen" <skogtun.linux@gmail.com> wrote:
+On Wed, Feb 06, 2008 at 11:00:01PM +0100, Ingo Molnar wrote:
+> 
+> * Neil Horman <nhorman@tuxdriver.com> wrote:
+> 
+> >  	if (!user_mode_vm(regs)) {
+> > +		nmi_exit();
+> > +		local_irq_enable();
+> >  		current->thread.trap_no = 2;
+> >  		crash_kexec(regs);
+> 
+> looks good to me, but please move the local_irq_enable() to within 
+> crash_kexec() instead - probably inside the "got the kexec lock" 
+> section. That makes crash_kexec() use generally safer too i guess: right 
+> it seems that die() too can call crash_kexec() with irqs disabled - and 
+> can thus hang in smp_send_stop() [or wherever it hung before].
+> 
 
-> Photo of screen attached (no serial terminal, and alas, no decent
-> tripod either).
+In general, I think we should not be servicing interrupts once the system
+has crashed and crash_kexec() has been invoked. 
 
-Thanks, but you've disabled so many debug options that the trace isn't
-very useful.
+In fact, right now machine_crash_shutdown() explicity disables interrupt
+before sending NMIs to other cpus to stop these cpus and which makes sense to
+me.
 
-> git-bisect gives me this:
-> 
-> 6b7b651055221127304a4e373ee9b762398d54d7 is first bad commit
-> commit 6b7b651055221127304a4e373ee9b762398d54d7
-> Author: FUJITA Tomonori <tomof@acm.org>
-> Date:   Mon Feb 4 22:27:55 2008 -0800
-> 
->     iommu sg merging: add device_dma_parameters structure
-> 
->     IOMMUs merges scatter/gather segments without considering a low level
->     driver's restrictions. The problem is that IOMMUs can't access to the
->     limitations because they are in request_queue.
-> 
->     This patchset introduces a new structure, device_dma_parameters,
->     including dma information. A pointer to device_dma_parameters is added
->     to struct device. The bus specific structures (like pci_dev) includes
->     device_dma_parameters. Low level drivers can use dma_set_max_seg_size
->     to tell IOMMUs about the restrictions.
-> 
->     We can move more dma stuff in struct device (like dma_mask) to struct
->     device_dma_parameters later (needs some cleanups before that).
-> 
->     This includes patches for all the IOMMUs that could merge sg (x86_64,
->     ppc, IA64, alpha, sparc64, and parisc) though only the ppc patch was
->     tested. The patches for other IOMMUs are only compile tested.
-> 
-> $ gcc -v
-> Using built-in specs.
-> Target: i686-pc-linux-gnu
-> Configured with: ../configure --prefix=/opt/gcc
-> Thread model: posix
-> gcc version 4.2.3
-> 
-> Config:
->
-> ...
-> 
-> # CONFIG_DEBUG_BUGVERBOSE is not set
->
+I am wondering if interrupts are disabled on crashing cpu or if crashing
+cpu is inside die_nmi(), how would it stop/prevent delivery of NMI IPI to
+other cpus.
 
-This one really should be enabled at all times, please.
+Am I missing something obivious?
 
-Can you please set it and retry?
+Thanks
+Vivek
