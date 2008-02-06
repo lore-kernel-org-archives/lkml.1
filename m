@@ -1,117 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYBFRE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYBFRHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbYBFRE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYBFRET
+	id S1756110AbYBFRHE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYBFRGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:04:19 -0500
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:40090 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186AbYBFRES (ORCPT
+	Wed, 6 Feb 2008 12:06:53 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:47116 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753116AbYBFRGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:04:18 -0500
-Message-ID: <47A9E883.2000806@tiscali.nl>
-Date: Wed, 06 Feb 2008 18:04:03 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 6 Feb 2008 12:06:52 -0500
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: "Erez Zilber" <erezz@voltaire.com>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, vst@vlnb.net, linux-scsi@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+X-Message-Flag: Warning: May contain useful information
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	<1201639331.3069.58.camel@localhost.localdomain>
+	<adazluoe2t3.fsf@cisco.com>
+	<20080130083239E.fujita.tomonori@lab.ntt.co.jp>
+	<e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
+	<47A89660.1080804@Voltaire.COM>
+	<e2e108260802060416w492db372mc09848edd365d441@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 06 Feb 2008 09:06:37 -0800
+In-Reply-To: <e2e108260802060416w492db372mc09848edd365d441@mail.gmail.com> (Bart Van Assche's message of "Wed, 6 Feb 2008 13:16:43 +0100")
+Message-ID: <ada8x1ydnfm.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-CC: Russell King <linux@arm.linux.org.uk>, rpurdie@openedhand.com,
-       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/HP7XX] - Add combined LCD / BL driver for platform HP
- Jornada 7xx handhelds
-References: <20080205195331.fa2ca02b.Kristoffer.ericson@gmail.com>	<47A9A944.7090401@tiscali.nl>	<47A9AA4F.80508@tiscali.nl> <20080206173341.619c52c8.Kristoffer.ericson@gmail.com>
-In-Reply-To: <20080206173341.619c52c8.Kristoffer.ericson@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Feb 2008 17:06:37.0645 (UTC) FILETIME=[A26477D0:01C868E2]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristoffer Ericson wrote:
-> Oki, here is attempt #2 (btw, new mail or just keep thread?)
-> 
-> Tested to build and checkpatch.
-> 
-> diff --git a/drivers/video/backlight/jornada720_bllcd.c b/drivers/video/backlight/jornada720_bllcd.c
+ > Sorry, but I'm afraid you got this wrong. When the iSER transport is
+ > used instead of TCP, all data is sent via RDMA, including unsolicited
+ > data. If you have look at the iSER implementation in the Linux kernel
+ > (source files under drivers/infiniband/ulp/iser), you will see that
+ > all data is transferred via RDMA and not via TCP/IP.
 
-> +static int jornada_bl_update_status(struct backlight_device *dev)
-> +{
-> +	int ret = 0;
-> +
-> +	jornada_ssp_start();
-> +
-> +	if (dev->props.power != FB_BLANK_UNBLANK ||
-> +		dev->props.fb_blank != FB_BLANK_UNBLANK) {
-> +		ret = jornada_ssp_inout(BRIGHTNESSOFF);
-> +		if (ret == -ETIMEDOUT)
+I think the confusion here is caused by a slight misuse of the term
+"RDMA".  It is true that all data is always transported over an
+InfiniBand connection when iSER is used, but not all such transfers
+are one-sided RDMA operations; some data can be transferred using
+send/receive operations.
 
-since there is no curly bracket here...
+ - R.
 
-> +			printk(KERN_ERR "jornada720_bl:	\
-> +				BrightnessOff timeout\n");
-
-...indentation is wrong in lines below
-
-> +			/* backlight off */
-> +			PPSR &= ~PPC_LDD1;
-> +			PPDR |= PPC_LDD1;
-> +
-> +	} else	{	/* backlight on */
-
-too much indentation in lines below as well
-
-> +			PPSR |= PPC_LDD1;
-> +			if ((jornada_ssp_inout(SETBRIGHTNESS)) == TXDUMMY) {
-> +			    /* send brightness value (0 is max, 255 lowest) */
-> +				if (jornada_ssp_byte(JORNADA_BL_MAX_BRIGHTNESS -
-> +					 dev->props.brightness) != -ETIMEDOUT)
-> +				ret = (JORNADA_BL_MAX_BRIGHTNESS -
-> +					dev->props.brightness);
-> +			} else
-> +				printk(KERN_ERR "jornada720_bl:	\
-> +					SetBrightness timeout\n");
-> +		}
-> +	jornada_ssp_end();
-> +
-> +	return ret;
-> +}
-
-> +static int jornada_lcd_set_contrast(struct lcd_device *pdev, int contrast)
-> +{
-> +	int ret = 0;
-> +
-> +	jornada_ssp_start();
-> +
-> +	ret = jornada_ssp_inout(SETCONTRAST);
-> +
-> +	if (ret == -ETIMEDOUT)
-> +		printk(KERN_ERR "jornada_lcd: failure to set contrast\n");
-> +	 else
-
-whitespace before else
-
-> +		ret = jornada_ssp_byte(contrast);
-> +
-> +	jornada_ssp_end();
-> +
-> +	return ret;
-> +}
-> +
-> +static int jornada_lcd_set_power(struct lcd_device  *pdev, int power)
-> +{
-> +	if (power != FB_BLANK_UNBLANK) {
-> +		/* turn off LCD */
-> +		PPSR &= ~PPC_LDD2;
-> +		PPDR |= PPC_LDD2;
-> +	} else {
-> +		/* turn on LCD */
-> +		PPSR |= PPC_LDD2;
-> +		}
-
-whitespace before curly bracket
-
-> +
-> +	return 0;
-> +}
