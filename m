@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbYBFXX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763287AbYBFXYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762259AbYBFXX2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:23:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbYBFXXS
+	id S1763287AbYBFXYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbYBFXYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:23:18 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50359 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755951AbYBFXXR (ORCPT
+	Wed, 6 Feb 2008 18:24:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:8743 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757549AbYBFXYN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:23:17 -0500
-Date: Wed, 6 Feb 2008 15:22:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
-Message-Id: <20080206152239.a2352d6d.akpm@linux-foundation.org>
-In-Reply-To: <47AA3EAA.9080204@redhat.com>
-References: <47AA3126.8090102@redhat.com>
-	<20080206143457.03e8741d.akpm@linux-foundation.org>
-	<47AA3EAA.9080204@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 18:24:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=utYGwtTOEN8GErEMIfoi/w1FRQ5U+uDOsp/RXyqbddV8Nz3g/HgaIomTmC4qM8Hf8xQ0B9/FUD86CJdJ68Hcy0txCrvrQooBSnBfan9ykknJN2aje5VAJgOyZJwduAX/s+UUxCPn+1FNouOwKbAE8Y8uBpoo/k+S14zasOAY1gY=
+Date: Thu, 7 Feb 2008 01:21:34 +0200
+To: Rusty Russel <rusty@rustcorp.com.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [Lguest/x86]: Clash with ioremap_nocache() + _PAGE_PWT
+Message-ID: <20080206232134.GB6450@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Feb 2008 17:11:38 -0600
-Eric Sandeen <sandeen@redhat.com> wrote:
+Hi all,
 
->  /*
->   * recursively change the type of the mountpoint.
-> + * noinline this do_mount helper to save do_mount stack space.
->   */
-> -static int do_change_type(struct nameidata *nd, int flag)
-> +static noinline int do_change_type(struct nameidata *nd, int flag)
+Beginning from commit 4138cc3418f5, ioremap_nocache() sets the _PAGE_PWT
+flag. 
 
-What we could do here is defined a new noinline_because_of_stack_suckiness
-and use that.  Reasons:
+Lguest doesn't accept a guest pte with a _PWT flag and reports a
+"bad page table entry" in that case. 
 
-- self-documenting, so we don't need to comment each site
+I've removed check from lguest code and everything worked fine. 
+Is this safe from the Lguest side ?
 
-- can be made a no-op for suitable __GNUC__ values if gcc ever fixes this
+Mentioned commit [*]:
 
-- our children we can go through and delete them all when nobody is using
-  the offending gcc versions any more.
+commit 4138cc3418f5eaa7524ff8e927102863f1ba0ea5
+Author: Siddha, Suresh B <suresh.b.siddha@intel.com>
+Date:   Wed Jan 30 13:33:43 2008 +0100
 
-what thinkest thou?
+    x86: set strong uncacheable where UC is really desired
+    
+    Also use _PAGE_PWT for all the mappings which need uncache mapping.
+    Instead of existing PAT2 which is UC- (and can be overwritten by MTRRs),
+    we now use PAT3 which is strong uncacheable.
+    
+    This makes it consistent with pgprot_noncached()
+
+diff --git a/arch/x86/mm/ioremap_32.c b/arch/x86/mm/ioremap_32.c
+index 0b27831..ef0f6a4 100644
+--- a/arch/x86/mm/ioremap_32.c
++++ b/arch/x86/mm/ioremap_32.c
+@@ -119,7 +119,7 @@ EXPORT_SYMBOL(__ioremap);
+ void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
+ {
+ 	unsigned long last_addr;
+-	void __iomem *p = __ioremap(phys_addr, size, _PAGE_PCD);
++	void __iomem *p = __ioremap(phys_addr, size, _PAGE_PCD | _PAGE_PWT);
+ 	if (!p) 
+ 		return p; 
+
+Thanks,
+
+[*]: latest pull calls set_memory_uc() which also sets the _PWT flag.
+
+--
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
