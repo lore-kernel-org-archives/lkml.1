@@ -1,106 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbYBFBvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbYBFBvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763378AbYBFBvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYBFBvM
+	id S1761110AbYBFBvn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 20:51:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760863AbYBFBvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:51:12 -0500
-Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:21911 "HELO
-	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753732AbYBFBvK (ORCPT
+	Tue, 5 Feb 2008 20:51:32 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44190 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760813AbYBFBvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:51:10 -0500
-X-YMail-OSG: rXgjoYEVM1kpT21ANVXAkYaHaZMnFyjvpuau6s1IaDepmL2ak8.gBoM7EG1CORtgNyEZFhGpW2o2r6nnDyOuu8B4bzBcDtKrHVdH6q2ddkHl_v65Ao8Ga2XCPmTHTasZvFzH0Iap9YTEiVI-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Julian Satran <Julian_Satran@il.ibm.com>
-In-Reply-To: <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
-	 <47A8B757.10101@vlnb.net>
-	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 17:43:20 -0800
-Message-Id: <1202262200.2220.118.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Tue, 5 Feb 2008 20:51:31 -0500
+Message-ID: <47A9129A.7050706@zytor.com>
+Date: Tue, 05 Feb 2008 17:51:22 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl> <47A90F23.80009@zytor.com> <200802060242.15097.rjw@sisk.pl>
+In-Reply-To: <200802060242.15097.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 16:11 -0800, Nicholas A. Bellinger wrote:
-> On Tue, 2008-02-05 at 22:21 +0300, Vladislav Bolkhovitin wrote:
-> > Jeff Garzik wrote:
-> > >>> iSCSI is way, way too complicated. 
-> > >>
-> > >> I fully agree. From one side, all that complexity is unavoidable for 
-> > >> case of multiple connections per session, but for the regular case of 
-> > >> one connection per session it must be a lot simpler.
-> > > 
-> > > Actually, think about those multiple connections...  we already had to 
-> > > implement fast-failover (and load bal) SCSI multi-pathing at a higher 
-> > > level.  IMO that portion of the protocol is redundant:   You need the 
-> > > same capability elsewhere in the OS _anyway_, if you are to support 
-> > > multi-pathing.
-> > 
-> > I'm thinking about MC/S as about a way to improve performance using 
-> > several physical links. There's no other way, except MC/S, to keep 
-> > commands processing order in that case. So, it's really valuable 
-> > property of iSCSI, although with a limited application.
-> > 
-> > Vlad
-> > 
+Rafael J. Wysocki wrote:
+>> The asm() for making beeps really need to be moved to a function and 
+>> cleaned up (redone in C using inb()/outb()) if they are to be retained 
+>> at all.
 > 
-> Greetings,
-> 
-> I have always observed the case with LIO SE/iSCSI target mode (as well
-> as with other software initiators we can leave out of the discussion for
-> now, and congrats to the open/iscsi on folks recent release. :-) that
-> execution core hardware thread and inter-nexus per 1 Gb/sec ethernet
-> port performance scales up to 4x and 2x core x86_64 very well with
-> MC/S).  I have been seeing 450 MB/sec using 2x socket 4x core x86_64 for
-> a number of years with MC/S.  Using MC/S on 10 Gb/sec (on PCI-X v2.0
-> 266mhz as well, which was the first transport that LIO Target ran on
-> that was able to reach handle duplex ~1200 MB/sec with 3 initiators and
-> MC/S.  In the point to point 10 GB/sec tests on IBM p404 machines, the
-> initiators where able to reach ~910 MB/sec with MC/S.  Open/iSCSI was
-> able to go a bit faster (~950 MB/sec) because it uses struct sk_buff
-> directly. 
-> 
- 
-Sorry, these where IBM p505 express (not p404, duh) which had a 2x
-socket 2x core POWER5 setup.  These along with an IBM X-series machine)
-where the only ones available for PCI-X v2.0, and this probably is still
-the case. :-)
+> Yes, they are.  For some people they're the only tool to debug broken resume.
 
-Also, these numbers where with a ~9000 MTU (I don't recall what the
-hardware limit on the 10 Gb/sec switch lwas) doing direct struct iovec
-to preallocated struct page mapping for payload on the target side.
-This is known as RAMDISK_DR plugin in the LIO-SE.  On the initiator, LTP
-disktest and O_DIRECT where used for direct to SCSI block device access.
+That's fine, but they should get cleaned up.
 
-I can big up this paper if anyone is interested.
+/me is tempted to provide a version which can send messages in Morse Code ;)
 
---nab
-
+	-hpa
