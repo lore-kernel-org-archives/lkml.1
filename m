@@ -1,100 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbYBFUTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYBFUVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758071AbYBFUTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 15:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYBFUTJ
+	id S1757408AbYBFUVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 15:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbYBFUVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 15:19:09 -0500
-Received: from www17.your-server.de ([213.133.104.17]:44401 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754569AbYBFUTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 15:19:08 -0500
-Message-ID: <47AA1633.4000309@m3y3r.de>
-Date: Wed, 06 Feb 2008 21:18:59 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071118)
+	Wed, 6 Feb 2008 15:21:12 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:50624 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754448AbYBFUVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 15:21:10 -0500
+Date: Wed, 6 Feb 2008 14:21:10 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
+	"safe" property
+Message-ID: <20080206202110.GA20528@sergelap.ibm.com>
+References: <20080205213616.343721693@szeredi.hu> <20080205213705.120219893@szeredi.hu>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Latest kernel doesn't boot
-References: <1202249704.47a8dfe89a99c@213.133.104.17> <47A8E427.6040205@zytor.com>
-In-Reply-To: <47A8E427.6040205@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205213705.120219893@szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin schrieb:
-> thomas@m3y3r.de wrote:
->> The latest linux kernel doesn't boot on my computer
->> (h=21511abd0a248a3f225d3b611cfabb93124605a7).
->>
->> elilo hangs while booting this kernel. 2.6.24 works.
->
-> Wow, so we know it's affected with EFI, since you're using elilo.
->
-> You gave absolutely zero other information about your system or what 
-> "doesn't boot" mean.
-Here is an older bisection try:
-$ git bisect log
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> Add the following:
+> 
+>   /proc/sys/fs/types/${FS_TYPE}/usermount_safe
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-git-bisect start
-# bad: [dd430ca20c40ecccd6954a7efd13d4398f507728] Merge 
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86
-git-bisect bad dd430ca20c40ecccd6954a7efd13d4398f507728
-# good: [49914084e797530d9baaf51df9eda77babc98fa8] Linux 2.6.24
-git-bisect good 49914084e797530d9baaf51df9eda77babc98fa8
-# good: [f4d900a2cae94256f56be7769734100c7054bf00] [NETLINK]: Mark 
-attribute construction exception unlikely
-git-bisect good f4d900a2cae94256f56be7769734100c7054bf00
-# good: [85040bcb4643cba578839e953f25e2d1965d83d0] [IPV6] ADDRLABEL: Fix 
-double free on label deletion.
-git-bisect good 85040bcb4643cba578839e953f25e2d1965d83d0
-# good: [70fd93c9d9e07dd2ea4465df76a0ddd414fd21ac] x86: export cpu_gdt_descr
-git-bisect good 70fd93c9d9e07dd2ea4465df76a0ddd414fd21ac
-# bad: [306c142f99caef5a30a0d61a39a956c069941b63] x86: pat: e820 cleanup
-git-bisect bad 306c142f99caef5a30a0d61a39a956c069941b63
-# bad: [7271339347653f6d652bb47aaee1f57d936002f6] x86: 
-arch/x86/kernel/cpu/mcheck/k7.c checkpatch fixes
-git-bisect bad 7271339347653f6d652bb47aaee1f57d936002f6
-# bad: [7818a1e0294debee02d5135e17b89f28b8871887] x86: provide 64-bit 
-with a load_sp0 function.
-git-bisect bad 7818a1e0294debee02d5135e17b89f28b8871887
-# bad: [2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 
-memory map on EFI 32 platform
-git-bisect bad 2215e69d2cf5024647f9a034807990590d25dd4e
-# good: [26048d75e8d6c840742468667f4a7ab8c2df74c9] x86: use the same 
-data type for tls_array.
-git-bisect good 26048d75e8d6c840742468667f4a7ab8c2df74c9
-# good: [341d8854d38fe6e7655f7748babae5c25a51aa70] x86: remove fastcall 
-from include/asm-x86
-git-bisect good 341d8854d38fe6e7655f7748babae5c25a51aa70
-# good: [8c8b8859b64baf6d7c33900e8720c7bafe775b2c] mcheck mce_64: 
-mce_read_sem to mutex
-git-bisect good 8c8b8859b64baf6d7c33900e8720c7bafe775b2c
-# good: [de18c850af701ac9512b7239e88fa45e4c168771] x86: EFI runtime 
-service support: EFI runtime services
-git-bisect good de18c850af701ac9512b7239e88fa45e4c168771
-# bad: [e429795c68d3001ecae74f6465420c9f043b0ece] x86: EFI runtime 
-service support: remove duplicated code from efi_32.c
-git-bisect bad e429795c68d3001ecae74f6465420c9f043b0ece
-# good: [9ad65e4748f55e3159283d7fa9d54fb30c086113] x86: EFI runtime 
-service support: document for EFI runtime services
-git-bisect good 9ad65e4748f55e3159283d7fa9d54fb30c086113
+Thanks, Miklos, good explanations in the docs.
 
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-I can not revert the commit e429795c68d3001ecae74f6465420c9f043b0ece. it 
-gave me errors.
-but i'm also not sure what could be wrong with this commit!
+One comment inline, but not imo your problem :)
 
-my first idea was that the commit 
-"[2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 memory 
-map on EFI 32 platform" is the offender, because the macbook pro doesn't 
-provide a e820 memory map at all. but bisect showed that i'm wrong here?!
+> ---
+> 
+> Index: linux/fs/filesystems.c
+> ===================================================================
+> --- linux.orig/fs/filesystems.c	2008-02-04 23:47:46.000000000 +0100
+> +++ linux/fs/filesystems.c	2008-02-04 23:48:04.000000000 +0100
+> @@ -12,6 +12,7 @@
+>  #include <linux/kmod.h>
+>  #include <linux/init.h>
+>  #include <linux/module.h>
+> +#include <linux/sysctl.h>
+>  #include <asm/uaccess.h>
+> 
+>  /*
+> @@ -51,6 +52,57 @@ static struct file_system_type **find_fi
+>  	return p;
+>  }
+> 
+> +#define MAX_FILESYSTEM_VARS 1
+> +
+> +struct filesystem_sysctl_table {
+> +	struct ctl_table_header *header;
+> +	struct ctl_table table[MAX_FILESYSTEM_VARS + 1];
+> +};
+> +
+> +/*
+> + * Create /sys/fs/types/${FSNAME} directory with per fs-type tunables.
+> + */
+> +static int filesystem_sysctl_register(struct file_system_type *fs)
+> +{
+> +	struct filesystem_sysctl_table *t;
+> +	struct ctl_path path[] = {
+> +		{ .procname = "fs", .ctl_name = CTL_FS },
+> +		{ .procname = "types", .ctl_name = CTL_UNNUMBERED },
+> +		{ .procname = fs->name, .ctl_name = CTL_UNNUMBERED },
+> +		{ }
+> +	};
+> +
+> +	t = kzalloc(sizeof(*t), GFP_KERNEL);
+> +	if (!t)
+> +		return -ENOMEM;
+> +
+> +
+> +	t->table[0].ctl_name = CTL_UNNUMBERED;
+> +	t->table[0].procname = "usermount_safe";
+> +	t->table[0].maxlen = sizeof(int);
+> +	t->table[0].data = &fs->fs_safe;
+> +	t->table[0].mode = 0644;
 
-confused greeting
-thomas
+Yikes, this could be a problem for containers, as it's simply tied to
+uid 0, whereas tying it to a capability would let us solve it with
+capability bounds.
 
+This might mean more urgency to get user namespaces working at least
+with sysfs, else this is a quick way around having CAP_SYS_ADMIN taken
+out of a container's capability bounding set.
+
+> +	t->table[0].proc_handler = &proc_dointvec;
+> +
+> +	t->header = register_sysctl_paths(path, t->table);
+> +	if (!t->header) {
+> +		kfree(t);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	fs->sysctl_table = t;
+> +
+> +	return 0;
+> +}
+> +
+> +static void filesystem_sysctl_unregister(struct file_system_type *fs)
+> +{
+> +	struct filesystem_sysctl_table *t = fs->sysctl_table;
+> +
+> +	unregister_sysctl_table(t->header);
+> +	kfree(t);
+> +}
+> +
+>  /**
+>   *	register_filesystem - register a new filesystem
+>   *	@fs: the file system structure
+> @@ -80,6 +132,13 @@ int register_filesystem(struct file_syst
+>  	else
+>  		*p = fs;
+>  	write_unlock(&file_systems_lock);
+> +
+> +	if (res == 0) {
+> +		res = filesystem_sysctl_register(fs);
+> +		if (res != 0)
+> +			unregister_filesystem(fs);
+> +	}
+> +
+>  	return res;
+>  }
+> 
+> @@ -108,6 +167,7 @@ int unregister_filesystem(struct file_sy
+>  			*tmp = fs->next;
+>  			fs->next = NULL;
+>  			write_unlock(&file_systems_lock);
+> +			filesystem_sysctl_unregister(fs);
+>  			return 0;
+>  		}
+>  		tmp = &(*tmp)->next;
+> Index: linux/include/linux/fs.h
+> ===================================================================
+> --- linux.orig/include/linux/fs.h	2008-02-04 23:48:02.000000000 +0100
+> +++ linux/include/linux/fs.h	2008-02-04 23:48:04.000000000 +0100
+> @@ -1444,6 +1444,7 @@ struct file_system_type {
+>  	struct module *owner;
+>  	struct file_system_type * next;
+>  	struct list_head fs_supers;
+> +	struct filesystem_sysctl_table *sysctl_table;
+> 
+>  	struct lock_class_key s_lock_key;
+>  	struct lock_class_key s_umount_key;
+> Index: linux/Documentation/filesystems/proc.txt
+> ===================================================================
+> --- linux.orig/Documentation/filesystems/proc.txt	2008-02-04 23:47:58.000000000 +0100
+> +++ linux/Documentation/filesystems/proc.txt	2008-02-04 23:48:04.000000000 +0100
+> @@ -44,6 +44,7 @@ Table of Contents
+>    2.14	/proc/<pid>/io - Display the IO accounting fields
+>    2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
+>    2.16	/proc/<pid>/mountinfo - Information about mounts
+> +  2.17	/proc/sys/fs/types - File system type specific parameters
+> 
+>  ------------------------------------------------------------------------------
+>  Preface
+> @@ -2392,4 +2393,34 @@ For more information see:
+>    Documentation/filesystems/sharedsubtree.txt
+> 
+> 
+> +2.17 /proc/sys/fs/types/ - File system type specific parameters
+> +----------------------------------------------------------------
+> +
+> +There's a separate directory /proc/sys/fs/types/<type>/ for each
+> +filesystem type, containing the following files:
+> +
+> +usermount_safe
+> +--------------
+> +
+> +Setting this to non-zero will allow filesystems of this type to be
+> +mounted by unprivileged users (note, that there are other
+> +prerequisites as well).
+> +
+> +Fuse has been designed to be as safe as possible, and some
+> +distributions already ship with unprivileged fuse mounts enabled by
+> +default.  There are still some situations (multi-user systems with
+> +untrusted users in particular), where enabling this for fuse might not
+> +be appropriate.  For more details, see Documentation/filesystems/fuse.txt
+> +
+> +Procfs is also safe, but unprivileged mounting of it is not usually
+> +necessary (bind mounting is equivalent).
+> +
+> +Most other filesystems are unsafe.  Here are just some of the issues,
+> +that must be resolved before a filesystem can be declared safe:
+> +
+> + - no strict input checking (buffer overruns, directory loops, etc)
+> + - network filesystem deadlocks when mounting from localhost
+> + - no permission checking when opening the device
+> + - changing mount options when mounting a new instance of a filesystem
+> +
+>  ------------------------------------------------------------------------------
+> 
+> --
