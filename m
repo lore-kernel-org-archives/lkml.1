@@ -1,92 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763449AbYBFAwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbYBFA7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763449AbYBFAwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 19:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbYBFAwE
+	id S1762452AbYBFA7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 19:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbYBFA7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 19:52:04 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:43029 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751267AbYBFAwC (ORCPT
+	Tue, 5 Feb 2008 19:59:17 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36180 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750898AbYBFA7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 19:52:02 -0500
-X-YMail-OSG: UOLhG3sVM1ldgQ7cOtXAQDviRqaVGjVrrYuH_vQvsQ61b_Twkzr70mVU1EPiUI8EQLo69sPIcQ--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Julian Satran <Julian_Satran@il.ibm.com>
-In-Reply-To: <1202258902.2220.102.camel@haakon2.linux-iscsi.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>
-	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net>
-	 <1202258902.2220.102.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Tue, 05 Feb 2008 16:51:28 -0800
-Message-Id: <1202259088.2220.105.camel@haakon2.linux-iscsi.org>
+	Tue, 5 Feb 2008 19:59:16 -0500
+Date: Tue, 5 Feb 2008 16:58:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH,RESEND] Basic braille screen reader support
+Message-Id: <20080205165853.561d5f3d.akpm@linux-foundation.org>
+In-Reply-To: <20080205220054.GD4394@implementation>
+References: <20080204031842.GE4439@implementation>
+	<20080205220054.GD4394@implementation>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-05 at 16:48 -0800, Nicholas A. Bellinger wrote:
-> On Tue, 2008-02-05 at 22:01 +0300, Vladislav Bolkhovitin wrote:
-> > Jeff Garzik wrote:
-> > > Alan Cox wrote:
-> > > 
-> > >>>better. So for example, I personally suspect that ATA-over-ethernet is way 
-> > >>>better than some crazy SCSI-over-TCP crap, but I'm biased for simple and 
-> > >>>low-level, and against those crazy SCSI people to begin with.
-> > >>
-> > >>Current ATAoE isn't. It can't support NCQ. A variant that did NCQ and IP
-> > >>would probably trash iSCSI for latency if nothing else.
-> > > 
-> > > 
-> > > AoE is truly a thing of beauty.  It has a two/three page RFC (say no more!).
-> > > 
-> > > But quite so...  AoE is limited to MTU size, which really hurts.  Can't 
-> > > really do tagged queueing, etc.
-> > > 
-> > > 
-> > > iSCSI is way, way too complicated. 
-> > 
-> > I fully agree. From one side, all that complexity is unavoidable for 
-> > case of multiple connections per session, but for the regular case of 
-> > one connection per session it must be a lot simpler.
-> > 
-> > And now think about iSER, which brings iSCSI on the whole new complexity 
-> > level ;)
-> 
-> Actually, the iSER protocol wire protocol itself is quite simple,
-> because it builds on iSCSI and IPS fundamentals, and because traditional
-> iSCSI's recovery logic for CRC failures (and hence alot of
-> acknowledgement sequence PDUs that go missing, etc) and the RDMA
-> Capable
-> Protocol (RCaP).
+On Tue, 5 Feb 2008 22:00:54 +0000
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
 
-this should be:
+> This adds a minimalistic braille screen reader support.
+> This is meant to be used by blind people e.g. on boot failures or when /
+> cannot be mounted etc and thus the userland screen readers can not work.
 
-.. and instead the RDMA Capacle Protocol (RCaP) provides the 32-bit or
-greater data integrity.
+Could you feed it through scritps/checkpatch.pl please?  That finds a lot
+of trivial stuff which we'd prefer be fixed.
 
---nab
+> +#define beep(freq) do { if (sound) kd_mksound(freq, HZ/10); } while(0)
+
+This can (and hence should!) be impemented in a C function (I think?).
+
+> +
+> +/* mini console */
+> +#define WIDTH 40
+> +#define BRAILLE_KEY KEY_INSERT
+> +static u16 console_buf[WIDTH];
+> +static int console_cursor = 0;
+
+Unneeded initialisation (checkpatch will tell you about this)
+
+> +/* mini view of VC */
+> +static int vc_x, vc_y, lastvc_x, lastvc_y;
+> +
+> +/* show console ? (or show VC) */
+> +static int console_show = 1;
+> +/* pending newline ? */
+> +static int console_newline = 1;
+> +static int lastVC = -1;
+> +
+> +static struct console *braille_co;
+> +
+> +/* Very VisioBraille-specific */
+> +static void braille_write(u16 *buf)
+> +{
+> +	static u16 lastwrite[WIDTH];
+> +	unsigned char data[1 + 1 + 2*WIDTH + 2 + 1], csum = 0, *c;
+> +	u16 out;
+> +	int i;
+> +
+> +	if (!braille_co)
+> +		return;
+> +
+> +	if (!memcmp(lastwrite, buf, WIDTH * sizeof(*buf)))
+> +		return;
+> +	memcpy(lastwrite, buf, WIDTH * sizeof(*buf));
+
+`lastwrite' is a kernel-wide singleton and hence at least needs some
+locking protecting its consistency.
+
+If this is a single-opener-only device then I _guess_ this approach is OK. 
+If not, `lastwrite' really should be some dynamically-allocated, per-open thing,
+presumably accessed by file.private_data.
+
+> +#define SOH 1
+> +#define STX 2
+> +#define ETX 2
+> +#define EOT 4
+> +#define ENQ 5
+> +	data[0] = STX;
+> +	data[1] = '>';
+> +	csum ^= '>';
+> +	c = &data[2];
+> +	for (i=0; i<WIDTH; i++) {
+> +		out = buf[i];
+> +		if (out >= 0x100)
+> +			out = '?';
+> +		else if (out == 0x00)
+> +			out = ' ';
+> +		csum ^= out;
+> +		if (out <= 0x05) {
+> +			*c++ = SOH;
+> +			out |= 0x40;
+> +		}
+> +		*c++ = out;
+> +	}
+> +
+> +	if (csum <= 0x05) {
+> +		*c++ = SOH;
+> +		csum = 0x40;
+> +	}
+> +	*c++ = csum;
+> +	*c++ = ETX;
+> +
+> +	serial8250_console.write(braille_co, data, c - data);
+> +}
+
+hm.  Is it appropriate that this driver wire itself directly into
+serial8250?  What if the screen reader is attached to some other sort of
+uart, or a terminal server, or...
+
+Maybe this all should be implemented as a line discipline, or something
+like that?
+
+> +/*
+> + * Link to keyboard
+> + */
+> +
+> +static int keyboard_notifier_call(struct notifier_block *blk, unsigned long code, void *_param)
+> +{
+> +	struct keyboard_notifier_param *param = _param;
+> +	struct vc_data *vc = param->vc;
+> +	int ret = NOTIFY_OK;
+> +
+> +	if (!param->down)
+> +		return ret;
+> +
+> +	switch (code) {
+> +		case KBD_KEYCODE:
+
+Maybe Dmitry and Jiri would have time to review this code?
+
+> +static struct notifier_block keyboard_notifier_block = {
+> +	.notifier_call = keyboard_notifier_call,
+> +};
+> +
+> +static int vt_notifier_call(struct notifier_block *blk, unsigned long code, void *_param)
+> +{
+> +	struct vt_notifier_param *param = _param;
+> +	struct vc_data *vc = param->vc;
+> +	switch (code) {
+> +		case VT_ALLOCATE:
+> +			break;
+> +		case VT_DEALLOCATE:
+> +			break;
+> +		case VT_WRITE:
+> +		{
+> +			unsigned char c = param->c;
+> +			switch (c) {
+> +				case '\b':
+> +				case 127:
+> +					if (console_cursor > 0) {
+> +						console_cursor--;
+> +						console_buf[console_cursor] = ' ';
+> +					}
+> +					break;
+> +				case '\n':
+> +				case '\v':
+> +				case '\f':
+> +				case '\r':
+> +					console_newline = 1;
+> +					break;
+> +				case '\t':
+> +					c = ' ';
+> +					/* Fallthrough */
+> +				default:
+> +					if (c < 32)
+> +						/* Ignore other control sequences */
+> +						break;
+> +					if (console_newline) {
+> +						memset(console_buf, 0, sizeof(console_buf));
+> +						console_cursor = 0;
+> +						console_newline = 0;
+> +					}
+> +					if (console_cursor == WIDTH)
+> +						memmove(console_buf, &console_buf[1], (WIDTH-1) * sizeof(*console_buf));
+> +					else
+> +						console_cursor++;
+> +					console_buf[console_cursor-1] = c;
+> +					break;
+> +			}
+> +			if (console_show)
+> +				braille_write(console_buf);
+> +			else {
+> +				vc_maybe_cursor_moved(vc);
+> +				vc_refresh(vc);
+> +			}
+> +			break;
+> +		}
+> +		case VT_UPDATE:
+> +			/* Maybe a VT switch, flush */
+> +			if (console_show) {
+> +				if (vc->vc_num != lastVC) {
+> +					lastVC = vc->vc_num;
+> +					memset(console_buf, 0, sizeof(console_buf));
+> +					console_cursor = 0;
+> +					braille_write(console_buf);
+> +				}
+> +			} else {
+> +				vc_maybe_cursor_moved(vc);
+> +				vc_refresh(vc);
+> +			}
+> +			break;
+> +	}
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block vt_notifier_block = {
+> +	.notifier_call = vt_notifier_call,
+> +};
+> +
+> +/*
+> + * Link to serial console
+> + */
+> +
+> +static int __init braille_console_setup(struct console *co, char *options)
+> +{
+> +	int ret = 0;
+> +	if (co->index == -1)
+> +		co->index = 0;
+> +#ifndef MODULE
+> +	ret = serial8250_console.setup(co, options);
+> +	if (ret < 0)
+> +		return ret;
+> +#endif
+
+That's pretty ungainly.  Again, if we had some clear spearation between the
+protocol layer and the device-driver layer and some way of binding them
+under userspace control (like a line discipline), all this would get better.
+
+> +	braille_co = co;
+> +	return ret;
+> +}
+> +
+> +static struct console braille_console = {
+> +	.name		= "brl",
+> +	.setup		= braille_console_setup,
+> +	.flags		= CON_PRINTBUFFER,
+> +	.index		= -1,
+> +};
+> +
+>
+> ...
+>
+> diff -urN linux-2.6.24-orig/drivers/a11y/Kconfig linux-2.6.24-perso/drivers/a11y/Kconfig
+> --- linux-2.6.24-orig/drivers/a11y/Kconfig	1970-01-01 01:00:00.000000000 +0100
+> +++ linux-2.6.24-perso/drivers/a11y/Kconfig	2008-02-04 01:54:36.000000000 +0000
+> @@ -0,0 +1,22 @@
+> +menuconfig A11Y
+> +	bool "Accessibility support"
+
+That's cute, but perhaps we should be boring and call it
+CONFIG_ACCESSIBILITY.  That would be more accessible ;)
+
+> +	---help---
+> +	  Enable a submenu where accessibility items may be enabled.
+> +
+> +	  If unsure, say N.
+> +
+> +if A11Y
+> +config A11Y_BRAILLE_CONSOLE
+
+And that would get very lengthy.
+
+> +	tristate "Console on braille device"
+> +	depends on SERIAL_8250_CONSOLE
+> +	---help---
+> +	  Enables console output on a braille device connected to a 8250
+> +	  serial port. For now only the VisioBraille device is supported.
+> +
+> +	  To actually enable it, you need to pass option
+> +	  console=brl0
+> +	  to the kernel. Options are the same as for serial console.
+> +
+> +	  If unsure, say N.
+> +
+> +endif # A11Y
 
