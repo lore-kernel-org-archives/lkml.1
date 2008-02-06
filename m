@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbYBFITU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbYBFITy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760236AbYBFITU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 03:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYBFITE
+	id S1761012AbYBFITy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 03:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYBFITp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 03:19:04 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43314 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbYBFITD (ORCPT
+	Wed, 6 Feb 2008 03:19:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37068 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbYBFITo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 03:19:03 -0500
-Date: Wed, 6 Feb 2008 09:53:57 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ross Vandegrift <ross@kallisti.us>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080206085357.GA1402@one.firstfloor.org>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205192559.GA10573@kallisti.us> <20080205201106.GB26150@one.firstfloor.org> <20080205212335.GA11287@kallisti.us>
+	Wed, 6 Feb 2008 03:19:44 -0500
+Date: Wed, 6 Feb 2008 00:19:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: Support for statistics to help analyze allocator behavior
+Message-Id: <20080206001948.6f749aa8.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802042217460.6801@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080205212335.GA11287@kallisti.us>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I work at a hosting company and we see these kinds of issues in the
-> real world fairly frequently.  I would guess maybe a monthly basis.
-> The servers where we have seen this are typically running RHEL 4 or 5
-> kernels, so I can't really speak to how recent the kernel is in this
-> specific term.
+On Mon, 4 Feb 2008 22:20:04 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
 
-RHEL5 should be recent enough.
+> The statistics provided here allow the monitoring of allocator behavior
+> at the cost of some (minimal) loss of performance. Counters are placed in
+> SLUB's per cpu data structure that is already written to by other code.
 
-> 
-> If I can find a box that we could temporary get a kernel.org kernel
-> on, I'll see if I can get a real comparison together.  We have
-> collected a few of the more effective attack tools that have been left
-> on compromised systems, so it wouldn't be too difficult to get some
-> numbers.
+Seems sane.
 
-That would be useful yes -- for different bandwidths.
+> The per cpu structure may be extended by the statistics to be more than
+> one cacheline which will increase the cache footprint of SLUB.
+>
+> That is why there is a compile option to enable/disable the inclusion of
+> the statistics module. 
 
-If the young/old heuristics do not work well enough anymore most likely we should
-try readding RED to the syn queue again. That used to be pretty effective
-in the early days. I don't quite remember why Linux didn't end up using it
-in fact.
+The compile-time optionality is really sad.  But no obvious solution
+suggests itself.
 
--Andi
+> @@ -1357,17 +1366,22 @@ static struct page *get_partial(struct k
+>  static void unfreeze_slab(struct kmem_cache *s, struct page *page, int tail)
+>  {
+>  	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
+> +	struct kmem_cache_cpu *c = get_cpu_slab(s, smp_processor_id());
+
+So we're never running preemptibly here.
+
+>  	ClearSlabFrozen(page);
+>  	if (page->inuse) {
+>  
+> -		if (page->freelist != page->end)
+> +		if (page->freelist != page->end) {
+>  			add_partial(n, page, tail);
+> -		else if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
+> +			stat(c, tail ? DEACTIVATE_TO_TAIL : DEACTIVATE_TO_HEAD);
+> +		} else {
+> +			stat(c, DEACTIVATE_FULL);
+> +			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
+>  			add_full(n, page);
+
+missing a tab
+
+> +#ifdef CONFIG_SLUB_STATS
+> +
+> +#define STAT_ATTR(si, text) 					\
+> +static ssize_t text##_show(struct kmem_cache *s, char *buf)	\
+> +{								\
+> +	unsigned long sum  = 0;					\
+> +	int cpu;						\
+> +								\
+> +	for_each_online_cpu(cpu)				\
+> +		sum += get_cpu_slab(s, cpu)->stat[si];		\
+
+maybe cache the get_cpu_slab() result in a local?
+
+> +	return sprintf(buf, "%lu\n", sum);			\
+> +}								\
+> +SLAB_ATTR_RO(text);						\
+
+this is pretty broken after cpu hot-unplug, isn't it?
+
 
