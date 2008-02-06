@@ -1,41 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYBFT2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbYBFT21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYBFT2J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 14:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYBFT15
+	id S1758255AbYBFT21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 14:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757231AbYBFT2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 14:27:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44220 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753032AbYBFT14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 14:27:56 -0500
-Message-ID: <47AA0A2E.30701@zytor.com>
-Date: Wed, 06 Feb 2008 11:27:42 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 6 Feb 2008 14:28:13 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4383 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756857AbYBFT2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 14:28:11 -0500
+Date: Wed, 6 Feb 2008 14:25:55 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+Cc: nhorman@tuxdriver.com, kexec@lists.infradead.org
+Subject: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
+Message-ID: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Mika Lawando <rzryyvzy@trashmail.net>
-Subject: Re: What is the limit size of tmpfs /dev/shm ?
-References: <47A9CA0E.3030507@wpkg.org> <Pine.LNX.4.64.0802061517380.8470@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0802061517380.8470@blonde.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> 
-> Don't forget that tmpfs overflows into swap, so you could save money
-> by adding adding more swap and cutting down on the RAM: though of
-> course that will perform very poorly once it's actually using the
-> swap, probably not the direction you want to go in.
-> 
+Hey all-
+	A hang on kdump was reported to me awhile back, only when systems died
+via nmi watchdog panic.  The hang wouldn't always be in the same place, but it
+would usually be somewhere down in purgatory.  In looking at the code, it
+occured to me that since, during an nmi interrupt, we won't be able to handle
+additional interrupts, that we won't be able to halt the other processors on a
+system like we try to do in machine_crash_shutdown.  As such, it appears that
+leaving the other cpus running exposes us to the risk that another processor
+will encounter an error and halt the system while we are trying to boot the
+kdump kernel, and that can result in a hang.  I wrote the attached patch to end
+the nmi interrupt prior to calling crash_kexec from within die_nmi, and testing
+here has proven successfull.
 
-It can still outperform conventional disk filesystems, however, mostly 
-because it doesn't have to worry one iota about consistency.
+Regards
+Neil
 
-	-hpa
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ traps_32.c |    2 ++
+ traps_64.c |    5 ++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 3cf7297..4443e8e 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -751,6 +751,8 @@ void __kprobes die_nmi(struct pt_regs *regs, const char *msg)
+ 	 * and might aswell get out now while we still can.
+ 	*/
+ 	if (!user_mode_vm(regs)) {
++		nmi_exit();
++		local_irq_enable();
+ 		current->thread.trap_no = 2;
+ 		crash_kexec(regs);
+ 	}
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index efc66df..0a50e70 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -608,8 +608,11 @@ void __kprobes die_nmi(char *str, struct pt_regs *regs, int do_panic)
+ 	 */
+ 	printk(str, smp_processor_id());
+ 	show_registers(regs);
+-	if (kexec_should_crash(current))
++	if (kexec_should_crash(current)) {
++		nmi_exit();
++		local_irq_enable();
+ 		crash_kexec(regs);
++	}
+ 	if (do_panic || panic_on_oops)
+ 		panic("Non maskable interrupt");
+ 	oops_end(flags, NULL, SIGBUS);
+-- 
+/***************************************************
+ *Neil Horman
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
