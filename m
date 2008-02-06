@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbYBFOLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbYBFOTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752496AbYBFOLI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 09:11:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbYBFOK4
+	id S1752496AbYBFOTx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 09:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYBFOTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 09:10:56 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51988 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750797AbYBFOKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 09:10:55 -0500
-Date: Wed, 6 Feb 2008 14:00:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: ?????? ??????????? <penguinista@mail.net.mk>, Greg KH <greg@kroah.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
-Subject: Re: PCIE ASPM support hangs my laptop pretty often
-Message-ID: <20080206130004.GC26817@elf.ucw.cz>
-References: <200802051840.05237.penguinista@mail.net.mk> <20080205185100.GA4633@kroah.com> <47A8CE10.4010807@intel.com> <200802060105.45363.penguinista@mail.net.mk> <47A8FDDF.6080503@intel.com>
+	Wed, 6 Feb 2008 09:19:44 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:21876 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbYBFOTn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 09:19:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ky+ndmpHiwC2ACOo8xSsBJSLnkh2f2Aqd0j2nRPHe3EQ6caLFUzAmc7BmI48GsajPVTunucqIlkm01QjIhDSYiavY9EKUEoO8ziXS6F17S51G76fSp5BHTr6jJb8KURjXGA4XpdtsdRnLAB9nzGKa/a7Ja4PEXBS9HRv3+1Zucg=
+Date: Wed, 6 Feb 2008 09:19:39 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] Input updates for 2.6.25-rc0
+Message-ID: <20080206091744.ZZRA012@mailhub.coreip.homeip.net>
+References: <200802060108.31644.dtor@insightbb.com> <20080205223242.f444fad6.akpm@linux-foundation.org> <200802060149.50879.dtor@insightbb.com> <20080206075635.GA6354@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47A8FDDF.6080503@intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20080206075635.GA6354@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-02-05 16:22:55, Kok, Auke wrote:
-> ?????? ??????????? wrote:
-> >>>>> I've patched my kernel with the PCIe ASPM and after setting
-> >>>>> echo powersave > /sys/module/pcie_aspm/parameters/policy
-> >>>>>
-> >>>>> I started to experience random hangs of my laptop.
-> >>>>> Hardware info:
-> >>>>> Thinkpad x60s 1704-5UG
-> >>>> the x60's chipset doesn't support ASPM properly afaik... bad idea.
-> >>> Well, the code shouldn't then cause a crash of the machine :)
-> >> The user enabled it specifically (where it is disabled by default)
-> >>
-> >> ASPM has been crashing e1000(e), which is why I've recently merged a patch
-> >> to disable L1 ASPM for the onboard 82573 nic on those platforms.
-> >>
-> >> this new infrastructure should work in the default configuration - enabling
-> >> ASPM where this system leaves it disabled is expected to give problems
-> >> unless you know what you are doing.
+On Wed, Feb 06, 2008 at 08:56:35AM +0100, Sam Ravnborg wrote:
+> >  
+> > > 
+> > > 
+> > > 
+> > > i8042_platform_init():
+> > > 
+> > > +#if defined(__i386__) || defined(__x86_64__)
+> > > 
+> > > use #ifdef CONFIG_X86?
+> > > 
 > > 
-> > In my defense, the patch documentation didn't say it doesn't work with my 
-> > hardware, nor that it hangs the chipset :) and the promised 1.3w surelly 
-> > looked nice.
-> > 
-> > So, are there any benefits of ASPM if I have it in the kernel but it's set to 
-> > default? I got the impression that "default" means not much power savings?
+> > I considered it but above was tested and in line with the style of the
+> > rest of the file...
+> Then please change the rest of the file so it is consistent
+> with the usual style to use our CONFIG_ symbols for
+> conditionals like the above.
 > 
-> did the Kconfig not come with a big fat (EXPERIMENTAL) ?
 
-(EXPERIMENTAL) is something different from (KNOWN BROKEN).
+Will do in the next update. The #if defined(__i386__) code predates
+CONFIG_X86_32 and was not updated when this symbol became available.
 
-If we know about broken setups, we should probably be blacklisting
-them.
+Overall, do you want me to redo the pull or is it still acceptable?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dmitry
