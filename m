@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYBFPQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYBFPSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753341AbYBFPQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 10:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYBFPQF
+	id S1754635AbYBFPSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 10:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYBFPSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 10:16:05 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:56696 "EHLO smpt.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751465AbYBFPQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 10:16:04 -0500
-Message-ID: <47A9B8F5.3040500@gandalf.sssup.it>
-Date: Wed, 06 Feb 2008 14:41:09 +0100
-From: michael <trimarchi@gandalf.sssup.it>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 6 Feb 2008 10:18:23 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:59252 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751350AbYBFPSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 10:18:22 -0500
+Date: Wed, 6 Feb 2008 17:18:30 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Matt Mackall <mpm@selenic.com>, bryan.wu@analog.com
+Cc: linux-kernel@vger.kernel.org
+Subject: blackfin compile error
+Message-ID: <20080206151830.GI505@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-References: <20080129224316.GA23155@gandalf.sssup.it>	<479FB2D7.4020804@gandalf.sssup.it>	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>	<47A051A7.7030004@gandalf.sssup.it>	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>	<47A09723.7020000@gandalf.sssup.it>	<20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>	<47A12A2E.5040309@gandalf.sssup.it>	<20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>	<47A76106.3000103@gandalf.sssup.it>	<20080204212523.07a6da9e@siona>	<47A856AF.5010202@gandalf.sssup.it> <20080206133012.0a5df53e@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080206133012.0a5df53e@dhcp-252-066.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 698dd4ba6b12e34e1e432c944c01478c0b2cd773 broke blackfin:
 
-Hi,
-Haavard Skinnemoen wrote:
-> On Tue, 05 Feb 2008 13:29:35 +0100
-> michael <trimarchi@gandalf.sssup.it> wrote:
->
->   
->> Just one question:
->> Receiving with hardware handshake works without PDC?
->>     
->
-> I don't know...I haven't tried. These patches shouldn't change anything
-> though.
->
-> Haavard
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->   
-I refer to this part of documentation:
+<--  snip  -->
 
-"The USART behavior when hardware handshaking is enabled is the same as 
-the behavior in
-standard synchronous or asynchronous mode, except that the receiver 
-drives the RTS pin as
-described below and the level on the CTS pin modifies the behavior of 
-the transmitter as
-described below. Using this mode requires using the PDC channel for 
-reception. The transmitter
-can handle hardware handshaking in any case."
+...
+  CC      mm/vmscan.o
+In file included from 
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/vmscan.c:44:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h: In function 'is_swap_pte':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_none'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_present'
+make[2]: *** [mm/vmscan.o] Error 1
 
-Regards Michael
+<--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
