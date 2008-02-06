@@ -1,113 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbYBFNUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbYBFNZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932172AbYBFNUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 08:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761574AbYBFNU1
+	id S1763291AbYBFNZt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 08:25:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761232AbYBFNZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 08:20:27 -0500
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:61406 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754739AbYBFNU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 08:20:26 -0500
-Date: Wed, 6 Feb 2008 14:20:23 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <gregkh@suse.de>
-Cc: markus.rechberger@amd.com, "Matt_Domsch@dell.com" <Matt_Domsch@dell.com>,
-       Jos?? Luis Tall??n <jltallon@adv-solutions.net>,
-       "Douglas_Warzecha@dell.com" <Douglas_Warzecha@dell.com>,
-       "Abhay_Salunke@dell.com" <Abhay_Salunke@dell.com>,
-       linux-kernel@vger.kernel.org,
-       Michael E Brown <Michael_E_Brown@dell.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
-Message-ID: <20080206142023.743657c2@hyperion.delvare>
-In-Reply-To: <20080205234413.GA9386@suse.de>
-References: <20080129184129.GA23681@kroah.com>
-	<xJSmDwPr.1201644922.4322840.khali@gcu-squad.org>
-	<20080205064547.GA20384@suse.de>
-	<20080205211642.2c49e3d0@hyperion.delvare>
-	<20080205234413.GA9386@suse.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 08:25:42 -0500
+Received: from styx.suse.cz ([82.119.242.94]:58173 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755780AbYBFNZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 08:25:41 -0500
+Date: Wed, 6 Feb 2008 14:25:39 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/6] udf: convert udf_stamp_to_time to return struct
+	timespec
+Message-ID: <20080206132539.GG12547@duck.suse.cz>
+References: <1202063771-18172-1-git-send-email-marcin.slusarz@gmail.com> <1202063771-18172-4-git-send-email-marcin.slusarz@gmail.com> <20080205154831.GH25464@duck.suse.cz> <20080205191136.GA6234@joi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205191136.GA6234@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 15:44:13 -0800, Greg KH wrote:
-> On Tue, Feb 05, 2008 at 09:16:42PM +0100, Jean Delvare wrote:
-> > This is 2.6.24, CONFIG_SYSFS_DEPRECATED=y:
+On Tue 05-02-08 20:12:05, Marcin Slusarz wrote:
+> On Tue, Feb 05, 2008 at 04:48:31PM +0100, Jan Kara wrote:
 > > 
-> > # ls -l /sys/class/i2c-adapter/i2c-0
-> > total 0
-> > lrwxrwxrwx 1 root root    0 f?v  5 18:07 device -> ../../../devices/pci0000:00/0000:00:01.0/0000:01:00.0
-> > lrwxrwxrwx 1 root root    0 f?v  5 18:17 i2c-dev:i2c-0 -> ../../../class/i2c-dev/i2c-0
-> > -r--r--r-- 1 root root 4096 f?v  5 18:07 name
-> > drwxr-xr-x 2 root root    0 f?v  5 18:17 power
-> > lrwxrwxrwx 1 root root    0 f?v  5 18:07 subsystem -> ../../../class/i2c-adapter
-> > -rw-r--r-- 1 root root 4096 f?v  5  2008 uevent
+> >   Uh, oh. I guess you somehow mangled the ordering of patches. In this
+> > patch you revert what you've done in the previous patch. Otherwise I agree
+> > with the idea of the change...
+> No, the ordering is ok. Creation of udf_fill_inode_time was an intermediate
+> state in this cleanup. Every step is obvious and easy. When I tried to create
+> just one patch it didn't look so obvious, so I decided to send it in 4 parts.
+  Ah, OK then.
+
+									Honza
+
+> > On Sun 03-02-08 19:36:08, marcin.slusarz@gmail.com wrote:
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > > Cc: Jan Kara <jack@suse.cz>
+> > > ---
+> > >  fs/udf/inode.c   |   49 ++++++++++++++++++++++++++-----------------------
+> > >  fs/udf/super.c   |    9 ++-------
+> > >  fs/udf/udfdecl.h |    4 ++--
+> > >  fs/udf/udftime.c |   17 +++++++----------
+> > >  4 files changed, 37 insertions(+), 42 deletions(-)
+> > > 
+> > > diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+> > > index 2578677..252efe0 100644
+> > > --- a/fs/udf/inode.c
+> > > +++ b/fs/udf/inode.c
+> > > @@ -1151,20 +1151,6 @@ static void __udf_read_inode(struct inode *inode)
+> > >  	brelse(bh);
+> > >  }
+> > >  
+> > > -static void udf_fill_inode_time(struct timespec *tspec,
+> > > -				const timestamp *tstamp,
+> > > -				struct udf_sb_info *sbi)
+> > > -{
+> > > -	time_t convtime;
+> > > -	long convtime_usec;
+> > > -	if (udf_stamp_to_time(&convtime, &convtime_usec,
+> > > -				lets_to_cpu(*tstamp))) {
+> > > -		tspec->tv_sec = convtime;
+> > > -		tspec->tv_nsec = convtime_usec * 1000;
+> > > -	} else
+> > > -		*tspec = sbi->s_record_time;
+> > > -}
+> > > -
 > > 
-> > 2.6.24 rebuilt without CONFIG_SYSFS_DEPRECATED:
+> > >  static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+> > >  {
+> > >  	struct fileEntry *fe;
+> > > @@ -1256,10 +1242,17 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+> > >  		inode->i_blocks = le64_to_cpu(fe->logicalBlocksRecorded) <<
+> > >  			(inode->i_sb->s_blocksize_bits - 9);
+> > >  
+> > > -		udf_fill_inode_time(&inode->i_atime, &fe->accessTime, sbi);
+> > > -		udf_fill_inode_time(&inode->i_mtime, &fe->modificationTime,
+> > > -				    sbi);
+> > > -		udf_fill_inode_time(&inode->i_ctime, &fe->attrTime, sbi);
+> > > +		if (!udf_stamp_to_time(&inode->i_atime,
+> > > +					lets_to_cpu(fe->accessTime)))
+> > > +			inode->i_atime = sbi->s_record_time;
+> > > +
+> > > +		if (!udf_stamp_to_time(&inode->i_mtime,
+> > > +					lets_to_cpu(fe->modificationTime)))
+> > > +			inode->i_mtime = sbi->s_record_time;
+> > > +
+> > > +		if (!udf_stamp_to_time(&inode->i_ctime,
+> > > +					lets_to_cpu(fe->attrTime)))
+> > > +			inode->i_ctime = sbi->s_record_time;
+> > >  
+> > >  		iinfo->i_unique = le64_to_cpu(fe->uniqueID);
+> > >  		iinfo->i_lenEAttr = le32_to_cpu(fe->lengthExtendedAttr);
+> > > @@ -1269,11 +1262,21 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+> > >  		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
+> > >  		    (inode->i_sb->s_blocksize_bits - 9);
+> > >  
+> > > -		udf_fill_inode_time(&inode->i_atime, &efe->accessTime, sbi);
+> > > -		udf_fill_inode_time(&inode->i_mtime, &efe->modificationTime,
+> > > -				    sbi);
+> > > -		udf_fill_inode_time(&iinfo->i_crtime, &efe->createTime, sbi);
+> > > -		udf_fill_inode_time(&inode->i_ctime, &efe->attrTime, sbi);
+> > > +		if (!udf_stamp_to_time(&inode->i_atime,
+> > > +					lets_to_cpu(efe->accessTime)))
+> > > +			inode->i_atime = sbi->s_record_time;
+> > > +
+> > > +		if (!udf_stamp_to_time(&inode->i_mtime,
+> > > +					lets_to_cpu(efe->modificationTime)))
+> > > +			inode->i_mtime = sbi->s_record_time;
+> > > +
+> > > +		if (!udf_stamp_to_time(&iinfo->i_crtime,
+> > > +					lets_to_cpu(efe->createTime)))
+> > > +			iinfo->i_crtime = sbi->s_record_time;
+> > > +
+> > > +		if (!udf_stamp_to_time(&inode->i_ctime,
+> > > +					lets_to_cpu(efe->attrTime)))
+> > > +			inode->i_ctime = sbi->s_record_time;
+> > >  
+> > >  		iinfo->i_unique = le64_to_cpu(efe->uniqueID);
+> > >  		iinfo->i_lenEAttr = le32_to_cpu(efe->lengthExtendedAttr);
+> > > diff --git a/fs/udf/super.c b/fs/udf/super.c
+> > > index 0dcee12..9f565a9 100644
+> > > --- a/fs/udf/super.c
+> > > +++ b/fs/udf/super.c
+> > > @@ -909,24 +909,19 @@ static int udf_find_fileset(struct super_block *sb,
+> > >  static void udf_load_pvoldesc(struct super_block *sb, struct buffer_head *bh)
+> > >  {
+> > >  	struct primaryVolDesc *pvoldesc;
+> > > -	time_t recording;
+> > > -	long recording_usec;
+> > >  	struct ustr instr;
+> > >  	struct ustr outstr;
+> > >  
+> > >  	pvoldesc = (struct primaryVolDesc *)bh->b_data;
+> > >  
+> > > -	if (udf_stamp_to_time(&recording, &recording_usec,
+> > > +	if (udf_stamp_to_time(&UDF_SB(sb)->s_record_time,
+> > >  			      lets_to_cpu(pvoldesc->recordingDateAndTime))) {
+> > >  		kernel_timestamp ts;
+> > >  		ts = lets_to_cpu(pvoldesc->recordingDateAndTime);
+> > > -		udf_debug("recording time %ld/%ld, %04u/%02u/%02u"
+> > > +		udf_debug("recording time %04u/%02u/%02u"
+> > >  			  " %02u:%02u (%x)\n",
+> > > -			  recording, recording_usec,
+> > >  			  ts.year, ts.month, ts.day, ts.hour,
+> > >  			  ts.minute, ts.typeAndTimezone);
+> > > -		UDF_SB(sb)->s_record_time.tv_sec = recording;
+> > > -		UDF_SB(sb)->s_record_time.tv_nsec = recording_usec * 1000;
+> > >  	}
+> > >  
+> > >  	if (!udf_build_ustr(&instr, pvoldesc->volIdent, 32))
+> > > diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+> > > index 375be1b..508be85 100644
+> > > --- a/fs/udf/udfdecl.h
+> > > +++ b/fs/udf/udfdecl.h
+> > > @@ -204,7 +204,7 @@ extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
+> > >  extern uint16_t udf_crc(const uint8_t *, uint32_t, uint16_t);
+> > >  
+> > >  /* udftime.c */
+> > > -extern time_t *udf_stamp_to_time(time_t *, long *, kernel_timestamp);
+> > > -extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *, struct timespec);
+> > > +extern struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src);
+> > > +extern kernel_timestamp *udf_time_to_stamp(kernel_timestamp *dest, struct timespec src);
+> > >  
+> > >  #endif				/* __UDF_DECL_H */
+> > > diff --git a/fs/udf/udftime.c b/fs/udf/udftime.c
+> > > index ce59573..12fae6c 100644
+> > > --- a/fs/udf/udftime.c
+> > > +++ b/fs/udf/udftime.c
+> > > @@ -85,7 +85,7 @@ extern struct timezone sys_tz;
+> > >  #define SECS_PER_HOUR	(60 * 60)
+> > >  #define SECS_PER_DAY	(SECS_PER_HOUR * 24)
+> > >  
+> > > -time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
+> > > +struct timespec *udf_stamp_to_time(struct timespec *dest, kernel_timestamp src)
+> > >  {
+> > >  	int yday;
+> > >  	uint8_t type = src.typeAndTimezone >> 12;
+> > > @@ -97,23 +97,20 @@ time_t *udf_stamp_to_time(time_t *dest, long *dest_usec, kernel_timestamp src)
+> > >  		offset = (offset >> 4);
+> > >  		if (offset == -2047) /* unspecified offset */
+> > >  			offset = 0;
+> > > -	} else {
+> > > +	} else
+> > >  		offset = 0;
+> > > -	}
+> > >  
+> > >  	if ((src.year < EPOCH_YEAR) ||
+> > >  	    (src.year >= EPOCH_YEAR + MAX_YEAR_SECONDS)) {
+> > > -		*dest = -1;
+> > > -		*dest_usec = -1;
+> > >  		return NULL;
+> > >  	}
+> > > -	*dest = year_seconds[src.year - EPOCH_YEAR];
+> > > -	*dest -= offset * 60;
+> > > +	dest->tv_sec = year_seconds[src.year - EPOCH_YEAR];
+> > > +	dest->tv_sec -= offset * 60;
+> > >  
+> > >  	yday = ((__mon_yday[__isleap(src.year)][src.month - 1]) + src.day - 1);
+> > > -	*dest += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
+> > > -	*dest_usec = src.centiseconds * 10000 +
+> > > -			src.hundredsOfMicroseconds * 100 + src.microseconds;
+> > > +	dest->tv_sec += (((yday * 24) + src.hour) * 60 + src.minute) * 60 + src.second;
+> > > +	dest->tv_nsec = 1000 * (src.centiseconds * 10000 +
+> > > +			src.hundredsOfMicroseconds * 100 + src.microseconds);
+> > >  	return dest;
+> > >  }
+> > >  
+> > > -- 
+> > > 1.5.3.7
 > > 
-> > # ls -l /sys/class/i2c-adapter/i2c-0/
-> > total 0
-> > lrwxrwxrwx 1 root root    0 f?v  5 18:42 device -> ../../../../../../devices/pci0000:00/0000:00:01.0/0000:01:00.0
-> > drwxr-xr-x 3 root root    0 f?v  5 18:42 i2c-0
-> > -r--r--r-- 1 root root 4096 f?v  5 18:31 name
-> > drwxr-xr-x 2 root root    0 f?v  5 18:42 power
-> > lrwxrwxrwx 1 root root    0 f?v  5 18:31 subsystem -> ../../../../../../class/i2c-adapter
-> > -rw-r--r-- 1 root root 4096 f?v  5  2008 uevent
-> > 
-> > The latter corresponds to what older kernels had ("i2c-0"). This means
-> > that enabling CONFIG_SYSFS_DEPRECATED causes the i2c-dev class device
-> > names to change.
-> 
-> Yes.  Well, no, not really.  The class device names are the same, it's
-> just that it is a symlink in the DEPRECATED=Y name and a real directory
-> in the =N case.
->
-> > Isn't it supposed to be exactly the other way around, i.e. enabling
-> > CONFIG_SYSFS_DEPRECATED should preserve the names as they were in
-> > older kernels?
-> 
-> The real name is the same (look above, it's really called "i2c-0" in
-> both cases, just that the symlink in the =Y case has to have a different
-> name to handle the fact that there could be duplicate names in this
-> format.
-> 
-> Does that help?
-
-Not really. Why is =Y supposed to be a factor for duplicate names? The
-exact same collision can happen in the =N case. This is exactly the
-problem Markus and myself tried to address with
-109f0e93b6b728f03c1eb4af02bc25d71b646c59. The i2c-dev class names its
-class devices i2c-%d, and the firmware class as well (for i2c devices).
-If 109f0e93b6b728f03c1eb4af02bc25d71b646c59 is going to be reverted,
-then we will see the same collision again, but only for DEPRECATED=N.
-That's rather confusing.
-
-To add to the confusion, it seems that, in some cases, the potential
-name collision is addressed by inserting a directory (named after the
-class name) between the parent device and the class device. For example:
-
-/sys/bus/pci/devices/0000:00:11.0/i2c-adapter/i2c-0
-
-0000:00:11.0 is the PCI device, i2c-0 is the class device and
-i2c-adapter is the class name.
-
-So why isn't it done in all cases? This would solve the problem, as the
-colliding class devices would finally get their own namespace:
-
-/sys/bus/pci/devices/0000:00:11.0/i2c-adapter/i2c-0/i2c-dev/i2c-0
-/sys/bus/pci/devices/0000:00:11.0/i2c-adapter/i2c-0/firmware/i2c-0
-
-> It's really to keep older programs still work properly.  The =N case is
-> what you should pay attention to for all modern distros.
-
-Unfortunately the =N case is the one that will break when you revert
-109f0e93b6b728f03c1eb4af02bc25d71b646c59.
-
+> > 									Honza
+> > -- 
+> > Jan Kara <jack@suse.cz>
+> > SUSE Labs, CR
 -- 
-Jean Delvare
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
