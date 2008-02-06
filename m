@@ -1,117 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763878AbYBFXJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbYBFXKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763878AbYBFXJf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762206AbYBFXGI
+	id S1759762AbYBFXKO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762994AbYBFXGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:06:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:20974 "EHLO
+	Wed, 6 Feb 2008 18:06:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:20587 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763511AbYBFXGE convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1763483AbYBFXG2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:06:04 -0500
+	Wed, 6 Feb 2008 18:06:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jMR//DvMiKrcydyExEtKwYSqEnFT0tPiQONT3vA8gXdnc6MyVV4M+xjYUFtHcvAWpJMEYTsNF7uowuscLBYRGbzkwVJcfnpnpLKFVJyHGR6QAqkMc12ECER3Yp1rpl0MG1UbpzDgI8B3Va7ImKOiYpcsRzJ3UV5FPCwyXQGiEIU=
-Message-ID: <6101e8c40802061506h65f8b61cs1b894441277c0df4@mail.gmail.com>
-Date: Thu, 7 Feb 2008 00:06:03 +0100
+        b=IdYH8s7VKBLPucNeGCQvgx7HVK3uWTTTDJATdfQpckOtnUWDGGD/oZj4znJSNzEgdsPM89EPrciby0WR2JDI98d1EJFO3lDvzWiFfpWapXmr9BqepVR9jiaDVKCX0rMi0Xdx31ncPQmt0Mn1EsErH9v5qcDnhQ2UtDuMLoKgx58=
+Message-ID: <6101e8c40802061506y130c0529hed24e812e395f671@mail.gmail.com>
+Date: Thu, 7 Feb 2008 00:06:27 +0100
 From: "Oliver Pinter" <oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: Re: [2.6.22.y] {09/17} - sony-laptop-call-sonypi_compat_init-earlier - series for stable kernel #2
-In-Reply-To: <6101e8c40802011734r7b99c3q7d24bf5678b83a0b@mail.gmail.com>
+Subject: Re: [2.6.22.y] {08/17} - intel-agp-965gme-fix - series for stable kernel #2
+In-Reply-To: <6101e8c40802011734v149c3538m5d8c7bb8143c2541@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <6101e8c40802011734r7b99c3q7d24bf5678b83a0b@mail.gmail.com>
+References: <6101e8c40802011734v149c3538m5d8c7bb8143c2541@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mattia Dongili <malattia@linux.it>
-Date: Sun, 12 Aug 2007 07:20:27 +0000 (+0900)
-Subject: sony-laptop: call sonypi_compat_init earlier
-Patch-mainline: 2.6.23
-References: 350984
+From: Wang Zhenyu <zhenyu.z.wang@intel.com>
+Subject: Intel_agp: really fix 945/965GME
+Patch-mainline: 2.6.23-rc1
+References: 281277
 
-sony-laptop: call sonypi_compat_init earlier
+Intel_agp: really fix 945/965GME
 
-sonypi_compat uses a kfifo that needs to be present before _SRS is
-called to be able to cope with the IRQs triggered when setting
-resources.
+Fix some missing places to check with device id info, which
+should probe the device gart correctly.
 
-Signed-off-by: Mattia Dongili <malattia@linux.it>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Jeff Mahoney <jeffm@suse.com>
+Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
 ---
- drivers/misc/sony-laptop.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+commit dde4787642ee3cb85aef80bdade04b6f8ddc3df8
+tree e99908c8c61a08244b6bb03b87782999a5a3847d
+parent a51b34593f691a0837d752a1394dcee19483c607
+author Zhenyu Wang <zhenyu.z.wang@intel.com> Thu, 26 Jul 2007 09:18:09 +0800
+committer Dave Airlie <airlied@redhat.com> Fri, 27 Jul 2007 10:48:13 +1000
 
---- a/drivers/misc/sony-laptop.c	2007-11-28 10:52:13.000000000 -0500
-+++ b/drivers/misc/sony-laptop.c	2008-01-02 15:17:42.000000000 -0500
-@@ -2068,8 +2068,6 @@ static int sony_pic_remove(struct acpi_d
- 	struct sony_pic_ioport *io, *tmp_io;
- 	struct sony_pic_irq *irq, *tmp_irq;
+ drivers/char/agp/intel-agp.c |   17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
--	sonypi_compat_exit();
--
- 	if (sony_pic_disable(device)) {
- 		printk(KERN_ERR DRV_PFX "Couldn't disable device.\n");
- 		return -ENXIO;
-@@ -2079,6 +2077,8 @@ static int sony_pic_remove(struct acpi_d
- 	release_region(spic_dev.cur_ioport->io.minimum,
- 			spic_dev.cur_ioport->io.address_length);
+--- a/drivers/char/agp/intel-agp.c	2007-07-08 19:32:17.000000000 -0400
++++ b/drivers/char/agp/intel-agp.c	2007-08-27 14:01:47.000000000 -0400
+@@ -20,7 +20,9 @@
+ #define PCI_DEVICE_ID_INTEL_82965G_IG       0x29A2
+ #define PCI_DEVICE_ID_INTEL_82965GM_HB      0x2A00
+ #define PCI_DEVICE_ID_INTEL_82965GM_IG      0x2A02
++#define PCI_DEVICE_ID_INTEL_82965GME_HB     0x2A10
+ #define PCI_DEVICE_ID_INTEL_82965GME_IG     0x2A12
++#define PCI_DEVICE_ID_INTEL_82945GME_HB     0x27AC
+ #define PCI_DEVICE_ID_INTEL_82945GME_IG     0x27AE
+ #define PCI_DEVICE_ID_INTEL_G33_HB          0x29C0
+ #define PCI_DEVICE_ID_INTEL_G33_IG          0x29C2
+@@ -33,7 +35,8 @@
+                  agp_bridge->dev->device ==
+PCI_DEVICE_ID_INTEL_82965G_1_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
+-                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB)
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
 
-+	sonypi_compat_exit();
-+
- 	sony_laptop_remove_input();
-
- 	/* pf attrs */
-@@ -2144,6 +2144,9 @@ static int sony_pic_add(struct acpi_devi
- 		goto err_free_resources;
- 	}
-
-+	if (sonypi_compat_init())
-+		goto err_remove_input;
-+
- 	/* request io port */
- 	list_for_each_entry(io, &spic_dev.ioports, list) {
- 		if (request_region(io->io.minimum, io->io.address_length,
-@@ -2158,7 +2161,7 @@ static int sony_pic_add(struct acpi_devi
- 	if (!spic_dev.cur_ioport) {
- 		printk(KERN_ERR DRV_PFX "Failed to request_region.\n");
- 		result = -ENODEV;
--		goto err_remove_input;
-+		goto err_remove_compat;
- 	}
-
- 	/* request IRQ */
-@@ -2198,9 +2201,6 @@ static int sony_pic_add(struct acpi_devi
- 	if (result)
- 		goto err_remove_pf;
-
--	if (sonypi_compat_init())
--		goto err_remove_pf;
--
- 	return 0;
-
- err_remove_pf:
-@@ -2216,6 +2216,9 @@ err_release_region:
- 	release_region(spic_dev.cur_ioport->io.minimum,
- 			spic_dev.cur_ioport->io.address_length);
-
-+err_remove_compat:
-+	sonypi_compat_exit();
-+
- err_remove_input:
- 	sony_laptop_remove_input();
-
+ #define IS_G33 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
+ 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
+@@ -527,6 +530,7 @@ static void intel_i830_init_gtt_entries(
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
++			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB ||
+ 			    IS_I965 || IS_G33)
+ 				gtt_entries = MB(48) - KB(size);
+ 			else
+@@ -538,6 +542,7 @@ static void intel_i830_init_gtt_entries(
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
++			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB ||
+ 			    IS_I965 || IS_G33)
+ 				gtt_entries = MB(64) - KB(size);
+ 			else
+@@ -1848,9 +1853,9 @@ static const struct intel_driver_descrip
+ 		NULL, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82945G_HB, PCI_DEVICE_ID_INTEL_82945G_IG, 0, "945G",
+ 		NULL, &intel_915_driver },
+-	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 1, "945GM",
++	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 0, "945GM",
+ 		NULL, &intel_915_driver },
+-	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GME_IG,
+0, "945GME",
++	{ PCI_DEVICE_ID_INTEL_82945GME_HB, PCI_DEVICE_ID_INTEL_82945GME_IG,
+0, "945GME",
+ 		NULL, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, 0, "946GZ",
+ 		NULL, &intel_i965_driver },
+@@ -1860,9 +1865,9 @@ static const struct intel_driver_descrip
+ 		NULL, &intel_i965_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82965G_HB, PCI_DEVICE_ID_INTEL_82965G_IG, 0, "965G",
+ 		NULL, &intel_i965_driver },
+-	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 1, "965GM",
++	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 0, "965GM",
+ 		NULL, &intel_i965_driver },
+-	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GME_IG,
+0, "965GME/GLE",
++	{ PCI_DEVICE_ID_INTEL_82965GME_HB, PCI_DEVICE_ID_INTEL_82965GME_IG,
+0, "965GME/GLE",
+ 		NULL, &intel_i965_driver },
+ 	{ PCI_DEVICE_ID_INTEL_7505_0, 0, 0, "E7505", &intel_7505_driver, NULL },
+ 	{ PCI_DEVICE_ID_INTEL_7205_0, 0, 0, "E7205", &intel_7505_driver, NULL },
+@@ -2051,11 +2056,13 @@ static struct pci_device_id agp_intel_pc
+ 	ID(PCI_DEVICE_ID_INTEL_82915GM_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82945G_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82945GM_HB),
++	ID(PCI_DEVICE_ID_INTEL_82945GME_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82946GZ_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965G_1_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965Q_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965G_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965GM_HB),
++	ID(PCI_DEVICE_ID_INTEL_82965GME_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_G33_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
 
 
 On 2/2/08, Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
-> mainline: 015a916fbbf105bb15f4bbfd80c3b9b2f2e0d7db
+> mainline: dde4787642ee3cb85aef80bdade04b6f8ddc3df8
 >
 >
 > --
