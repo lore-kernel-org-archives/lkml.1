@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762003AbYBFKoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbYBFKsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762003AbYBFKoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 05:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbYBFKnx
+	id S1761572AbYBFKsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 05:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYBFKsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 05:43:53 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:6052 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752405AbYBFKnw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 05:43:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=F+t3mlcTsOHzJ3oL2bYk+dT3OznNj+bD3nQvX6khT1GkoAVSwJy7fzCmFvdaAVWjdSMgxL+n1ob8SiE53oZW0Kgzo12xb0U2n+BMOkKN/vp+llN2KvXbroNFeB6m9zUo5FPRIA4YO23lvLUD9z0G7LY5VStRElLA2pG3+iyTzvU=
-Message-ID: <b6a2187b0802060243u3d8187b8v878dddf9eb4d3cb0@mail.gmail.com>
-Date: Wed, 6 Feb 2008 18:43:51 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: where is the capset kernel module?
-In-Reply-To: <b6a2187b0802060013i2969a577x921be4d1a1202248@mail.gmail.com>
+	Wed, 6 Feb 2008 05:48:10 -0500
+Received: from ns1.suse.de ([195.135.220.2]:39293 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbYBFKsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 05:48:09 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Tino Keitel <tino.keitel@gmx.de>, <linux-kernel@vger.kernel.org>,
+       ath5k-devel@lists.ath5k.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [RFT 1/1] single_chip test
+References: <20080206014131.9d489a34.akpm@linux-foundation.org>
+	<1202294560-7313-1-git-send-email-jirislaby@gmail.com>
+X-Yow: I've read SEVEN MILLION books!!
+Date: Wed, 06 Feb 2008 11:48:06 +0100
+In-Reply-To: <1202294560-7313-1-git-send-email-jirislaby@gmail.com> (Jiri
+	Slaby's message of "Wed\, 6 Feb 2008 11\:42\:40 +0100")
+Message-ID: <jezluetl7d.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b6a2187b0802060013i2969a577x921be4d1a1202248@mail.gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 6, 2008 4:13 PM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> Latest linux git complained about this ...
->
-> named: capset failed: Operation not permitted: please ensure that the
-> capset kernel module is loaded.  see insmod(8)
+Jiri Slaby <jirislaby@gmail.com> writes:
 
-How this started was that with the latest git linux, I got this warning ...
+> @@ -210,12 +205,16 @@ struct ath5k_hw *ath5k_hw_attach(struct ath5k_softc *sc, u8 mac_version)
+>  	}
+>  
+>  	/* Identify single chip solutions */
+> -	if((srev <= AR5K_SREV_VER_AR5414) &&
+> -	(srev >= AR5K_SREV_VER_AR2424)) {
+> -		ah->ah_single_chip = true;
+> -	} else {
+> -		ah->ah_single_chip = false;
+> -	}
+> +	ah->ah_single_chip = !!(srev >= AR5K_SREV_VER_AR2424 &&
+                             ^^
 
-warning: `named' uses 32-bit capabilities (legacy support in use)
+This is useless.
 
-So, I recompile named and ended up with the "capset failed" problem. I
-tried compiling linux with LSM, but that didn't help.
+Andreas.
 
-Adding "--disable-linux-caps" to named compile solved the problem.
-
-Thanks,
-Jeff.
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
