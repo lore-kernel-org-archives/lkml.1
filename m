@@ -1,36 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762876AbYBFBHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbYBFBHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762876AbYBFBHB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:07:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbYBFBGw
+	id S1763472AbYBFBHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 20:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbYBFBHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:06:52 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43454 "EHLO gate.crashing.org"
+	Tue, 5 Feb 2008 20:07:18 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:56854 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758325AbYBFBGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:06:51 -0500
-Subject: Re: tg3 broken after "PCI: Fix bus resource assignment on 32 bits
-	with 64b resources"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080205091758.GB26618@localhost.sw.ru>
-References: <20080204151222.GB25790@localhost.sw.ru>
-	 <1202162073.7079.8.camel@pasglop>  <20080205091758.GB26618@localhost.sw.ru>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 12:05:58 +1100
-Message-Id: <1202259958.7079.78.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1757714AbYBFBHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 20:07:17 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: dwmw2@infradead.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] mtd maps: document MTD_PHYSMAP module name in kconfig
+Date: Tue, 5 Feb 2008 20:03:48 -0500
+User-Agent: KMail/1.9.7
+Cc: linux-mtd@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802052003.49527.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks like your attachment got currupted for some reason (got here as a
-corrupted bzip2 file that was encoded as plain text).
+Help out users by telling them the module name in the Kconfig help when using
+the MTD_PHYSMAP option.
 
-Ben.
-
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index a592fc0..2f15330 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -21,6 +21,9 @@ config MTD_PHYSMAP
+ 	  particular board as well as the bus width, either statically
+ 	  with config options or at run-time.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called physmap.
++
+ config MTD_PHYSMAP_START
+ 	hex "Physical start address of flash mapping"
+ 	depends on MTD_PHYSMAP
