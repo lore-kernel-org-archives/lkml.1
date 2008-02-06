@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbYBFIxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbYBFI4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760587AbYBFIxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 03:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbYBFIxO
+	id S1760782AbYBFI4R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 03:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbYBFI4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 03:53:14 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50263 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759068AbYBFIxN (ORCPT
+	Wed, 6 Feb 2008 03:56:07 -0500
+Received: from mail.dbd-breitband.de ([217.188.211.21]:2184 "EHLO
+	dbd-mpx01.dbd-breitband.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758719AbYBFI4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 03:53:13 -0500
-Date: Wed, 6 Feb 2008 00:53:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
-Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power_supply: Remove capacity_level from list of sysfs
- attributes
-Message-Id: <20080206005312.237d7336.akpm@linux-foundation.org>
-In-Reply-To: <20080205161327.GA8628@vespa.holoscopio.com>
-References: <20080205161327.GA8628@vespa.holoscopio.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Feb 2008 03:56:06 -0500
+From: Marc Donner <donner@dbd-breitband.de>
+Organization: DBD DeutscheBreitbandDienste
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: dma error on boot with cf card
+Date: Wed, 6 Feb 2008 09:54:53 +0100
+User-Agent: KMail/1.9.6
+References: <200802051852.29592.donner@dbd-breitband.de> <20080205185628.GF26259@csclub.uwaterloo.ca>
+In-Reply-To: <20080205185628.GF26259@csclub.uwaterloo.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802060954.53802.donner@dbd-breitband.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 14:13:36 -0200 Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org> wrote:
+On Tuesday 05 February 2008, you wrote:
+> On Tue, Feb 05, 2008 at 06:52:29PM +0100, Marc Donner wrote:
+> > hi,
+> >
+> > i have a problem using a cf card with an ide adapter.
+> > using debian kernel 2.6.18-5
+> >
+>
+> Adapter doesn't support DMA, but controller and CF cards do.  To fix,
+> tell the system NOT to use dma on that interface.
 
-> ---
->  drivers/power/power_supply_sysfs.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> index d482484..13399d1 100644
-> --- a/drivers/power/power_supply_sysfs.c
-> +++ b/drivers/power/power_supply_sysfs.c
-> @@ -106,7 +106,6 @@ static struct device_attribute power_supply_attrs[] = {
->  	POWER_SUPPLY_ATTR(energy_now),
->  	POWER_SUPPLY_ATTR(energy_avg),
->  	POWER_SUPPLY_ATTR(capacity),
-> -	POWER_SUPPLY_ATTR(capacity_level),
->  	POWER_SUPPLY_ATTR(temp),
->  	POWER_SUPPLY_ATTR(temp_ambient),
->  	POWER_SUPPLY_ATTR(time_to_empty_now),
+and how do i disable dma? it is the installer image, and no hdparm is 
+availible. and the ide=nodma boot parameter seems not to work. 
 
-What is the reason for making this change?
+Marc
