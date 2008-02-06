@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYBFWda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYBFWf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbYBFWda (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbYBFWdV
+	id S1759690AbYBFWf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYBFWfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:33:21 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:42045 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756777AbYBFWdV (ORCPT
+	Wed, 6 Feb 2008 17:35:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42959 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756934AbYBFWfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:33:21 -0500
-Message-ID: <15316561.post@talk.nabble.com>
-Date: Wed, 6 Feb 2008 14:33:19 -0800 (PST)
-From: ggriffin10 <ggriffin10-nab@yahoo.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: T61P sound issue
-In-Reply-To: <20080204194038.d8851b8d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Feb 2008 17:35:19 -0500
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
+	(bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <200802062318.28172.rjw@sisk.pl>
+References: <200802010237.59320.rjw@sisk.pl>
+	 <200802062250.07758.rjw@sisk.pl> <1202335261.6274.11.camel@lappy>
+	 <200802062318.28172.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 23:34:27 +0100
+Message-Id: <1202337267.6274.15.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: ggriffin10-nab@yahoo.com
-References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com> <20080204194038.d8851b8d.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> ooh, a fellow t61p owner.  How's suspend and resume working?
-I spent days getting it to work. I'm not an expert and don't know if made
-any poor decisions, I tested suspend to ram in a bunch of configurations and
-finally got it to work consistently. I think I have to restart the network
-after resume, but I'm okay with that. Some things that may be of interest:
+On Wed, 2008-02-06 at 23:18 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> > 
+> > On Wed, 2008-02-06 at 22:50 +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday, 6 of February 2008, Peter Zijlstra wrote:
+> > 
+> > > > Well, that whole queue.
+> > > 
+> > > It doesn't compile for me.
+> > 
+> > I did solve some compile issues since posting, Ingo should have the
+> > compiling version in sched-devel soonish (don't know if he pushed it
+> > already).
+> 
+> Can you point me to the cleaned up version, please?
 
-2.6.18-53.1.4.e15.centos.plus with native nvidia drivers
+http://programming.kicks-ass.net/kernel-patches/sched-rt-group/
 
-in /etc/grub.conf:
-kernel /vmlinuz-2.6.18-53.1.4.el5.centos.plus ro agp=off
-root=/dev/VolGroup00/LogVol00 rhgb quiet
+on top of sched-devel.
 
-in /ext/X11/xorg.conf:
-Section "Device"
-    Identifier     "Videocard0"
-    Driver         "nvidia"
-EndSection
+> > > > Your test program just failed to obtain realtime scheduling
+> > > 
+> > > Well, it shouldn't.  The expected result is to obtain realtime scheduling
+> > > or we will break existing setups.
+> > 
+> > Thats a case of wrong expectations in my book. You enabled group
+> > scheduling and hence behaviour changes.
+> 
+> So, I'd have to unset FAIR_GROUP_SCHED to obtain the previous behavior?
 
-Section "Screen"
-    Identifier     "Screen0"
-    Device         "Videocard0"
-    Monitor        "Monitor0"
-    DefaultDepth    24
-    Option         "NvAgp" "1"
-    Option         "NoLogo" "true"
-    Option         "ConnectedMonitor" "DFP"
-    Option         "TripleBuffer" "True"
-    Option         "FlatPanelProperties" "Scaling = Native"
-    SubSection     "Display"
-        Viewport    0 0
-        Depth       24
-        Modes      "800x600" "640x480"
-    EndSubSection
-EndSection
+With the mainline stuff, with the new stuff just ensure
+CONFIG_RT_GROUP_SCHED=n.
 
+> > There is just nothing much one can do about it, if you don't assign bandwidth
+> > to a group, it won't be able to run anything. Better to refuse to run, than to sit
+> > idle, right? 
+> 
+> As a general rule, probably yes.
+> 
+> > But I appreciate the situation, therefore I made the whole rt-group
+> > scheduling a separate .config option (which defaults to n)
+> 
+> Which is introduced by the new patches, isn't it?
 
--- 
-View this message in context: http://www.nabble.com/T61P-sound-issue-tp15119408p15316561.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
+Yes.
 
