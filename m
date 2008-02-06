@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933775AbYBGA3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbYBGAaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933775AbYBGA3n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763544AbYBGAAO
+	id S933297AbYBGAaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764215AbYBGAAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:00:14 -0500
-Received: from mail.suse.de ([195.135.220.2]:46689 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 19:00:18 -0500
+Received: from mail.suse.de ([195.135.220.2]:46703 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932697AbYBGAAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:00:11 -0500
-Date: Wed, 6 Feb 2008 15:54:30 -0800
+	id S1763937AbYBGAAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:00:15 -0500
+Date: Wed, 6 Feb 2008 15:54:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,104 +20,91 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 68/73] Netfilter: bridge-netfilter: fix net_device refcnt
-	leaks
-Message-ID: <20080206235430.GQ13121@suse.de>
+       B.Steinbrink@gmx.de, jack@suse.cz, Jan Kara <jack@ucw.cz>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Osterried <osterried@jesse.de>,
+       Kerin Millar <kerframil@gmail.com>
+Subject: [patch 69/73] Fix dirty page accounting leak with ext3 data=journal
+Message-ID: <20080206235432.GR13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-bridge-netfilter-fix-net_device-refcnt-leaks.patch"
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline; filename="fix-dirty-page-accounting-leak-with-ext3-data-journal.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Patrick McHardy <kaber@trash.net>
+From: Björn Steinbrink <B.Steinbrink@gmx.de>
 
-[NETFILTER]: bridge-netfilter: fix net_device refcnt leaks
+patch a2b345642f530054a92b8d2b5108436225a8093e in mainline.
 
-Upstream commit 2dc2f207fb251666d2396fe1a69272b307ecc333
+In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0, try_to_free_buffers was
+changed to bail out if the page was dirty. That caused
+truncate_complete_page to leak massive amounts of memory, because the
+dirty bit was only cleared after the call to try_to_free_buffers. So the
+call to cancel_dirty_page was moved up to have the dirty bit cleared
+early in 3e67c0987d7567ad666641164a153dca9a43b11d.
 
-When packets are flood-forwarded to multiple output devices, the
-bridge-netfilter code reuses skb->nf_bridge for each clone to store
-the bridge port. When queueing packets using NFQUEUE netfilter takes
-a reference to skb->nf_bridge->physoutdev, which is overwritten
-when the packet is forwarded to the second port. This causes
-refcount unterflows for the first device and refcount leaks for all
-others. Additionally this provides incorrect data to the iptables
-physdev match.
+The problem with that fix is, that the page can be redirtied after
+cancel_dirty_page was called, eg. like this:
 
-Unshare skb->nf_bridge by copying it if it is shared before assigning
-the physoutdev device.
+truncate_complete_page()
+  cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
+  do_invalidatepage()
+    ext3_invalidatepage()
+      journal_invalidatepage()
+        journal_unmap_buffer()
+          __dispose_buffer()
+            __journal_unfile_buffer()
+              __journal_temp_unlink_buffer()
+                mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
 
-Reported, tested and based on initial patch by
-Jan Christoph Nordholz <hesso@pool.math.tu-berlin.de>.
+And then we end up with dirty pages being wrongly accounted.
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+In ecdfc9787fe527491baefc22dce8b2dbd5b2908d the changes to
+try_to_free_buffers were reverted, so the original reason for the
+massive memory leak is gone, so we can also revert the move of
+the call to cancel_dirty_page from truncate_complete_page and get the
+accounting right again.
+
+Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
+Tested-by: Zaid D. <zaid.box@gmail.com>
+Cc: Jan Kara <jack@ucw.cz>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Osterried <osterried@jesse.de>
+Cc: Kerin Millar <kerframil@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- net/bridge/br_netfilter.c |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
 
---- a/net/bridge/br_netfilter.c
-+++ b/net/bridge/br_netfilter.c
-@@ -142,6 +142,23 @@ static inline struct nf_bridge_info *nf_
- 	return skb->nf_bridge;
- }
+---
+ mm/truncate.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -95,11 +95,11 @@ truncate_complete_page(struct address_sp
+ 	if (page->mapping != mapping)
+ 		return;
  
-+static inline struct nf_bridge_info *nf_bridge_unshare(struct sk_buff *skb)
-+{
-+	struct nf_bridge_info *nf_bridge = skb->nf_bridge;
-+
-+	if (atomic_read(&nf_bridge->use) > 1) {
-+		struct nf_bridge_info *tmp = nf_bridge_alloc(skb);
-+
-+		if (tmp) {
-+			memcpy(tmp, nf_bridge, sizeof(struct nf_bridge_info));
-+			atomic_set(&tmp->use, 1);
-+			nf_bridge_put(nf_bridge);
-+		}
-+		nf_bridge = tmp;
-+	}
-+	return nf_bridge;
-+}
-+
- static inline void nf_bridge_push_encap_header(struct sk_buff *skb)
- {
- 	unsigned int len = nf_bridge_encap_header_len(skb);
-@@ -644,6 +661,11 @@ static unsigned int br_nf_forward_ip(uns
- 	if (!skb->nf_bridge)
- 		return NF_ACCEPT;
+-	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+-
+ 	if (PagePrivate(page))
+ 		do_invalidatepage(page, 0);
  
-+	/* Need exclusive nf_bridge_info since we might have multiple
-+	 * different physoutdevs. */
-+	if (!nf_bridge_unshare(skb))
-+		return NF_DROP;
++	cancel_dirty_page(page, PAGE_CACHE_SIZE);
 +
- 	parent = bridge_parent(out);
- 	if (!parent)
- 		return NF_DROP;
-@@ -727,6 +749,11 @@ static unsigned int br_nf_local_out(unsi
- 	if (!skb->nf_bridge)
- 		return NF_ACCEPT;
- 
-+	/* Need exclusive nf_bridge_info since we might have multiple
-+	 * different physoutdevs. */
-+	if (!nf_bridge_unshare(skb))
-+		return NF_DROP;
-+
- 	nf_bridge = skb->nf_bridge;
- 	if (!(nf_bridge->mask & BRNF_BRIDGED_DNAT))
- 		return NF_ACCEPT;
+ 	remove_from_page_cache(page);
+ 	ClearPageUptodate(page);
+ 	ClearPageMappedToDisk(page);
 
 -- 
