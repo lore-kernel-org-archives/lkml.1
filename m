@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbYBFTpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbYBFTq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759010AbYBFTpi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 14:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYBFTp3
+	id S1759473AbYBFTq1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 14:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYBFTqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 14:45:29 -0500
-Received: from mail3.key-systems.net ([81.3.43.213]:46361 "HELO
-	mail3.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754702AbYBFTp2 (ORCPT
+	Wed, 6 Feb 2008 14:46:18 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45900 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755397AbYBFTqR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 14:45:28 -0500
-Subject: Re: kernel support for newer UDF versions (> 2.01)
-From: Christoph Anton Mitterer <calestyo@scientia.net>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080206163611.GB23382@atrey.karlin.mff.cuni.cz>
-References: <1201981141.3197.7.camel@fermat.scientia.net>
-	 <20080206163611.GB23382@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 20:45:21 +0100
-Message-Id: <1202327121.3236.17.camel@fermat.scientia.net>
+	Wed, 6 Feb 2008 14:46:17 -0500
+Date: Wed, 6 Feb 2008 19:45:57 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: Roel Kluin <12o3l@tiscali.nl>, rpurdie@openedhand.com,
+       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/HP7XX] - Add combined LCD / BL driver for platform HP Jornada 7xx handhelds
+Message-ID: <20080206194557.GF32245@flint.arm.linux.org.uk>
+References: <20080205195331.fa2ca02b.Kristoffer.ericson@gmail.com> <47A9A944.7090401@tiscali.nl> <47A9AA4F.80508@tiscali.nl> <20080206173341.619c52c8.Kristoffer.ericson@gmail.com> <20080206164435.GC32245@flint.arm.linux.org.uk> <20080206202128.06fbcafa.Kristoffer.ericson@gmail.com> <20080206193155.GE32245@flint.arm.linux.org.uk> <20080206204340.0711c4f6.Kristoffer.ericson@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206204340.0711c4f6.Kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, Feb 06, 2008 at 08:43:40PM +0100, Kristoffer Ericson wrote:
+> ATTEMPT #4.
+> -----------
+> Fixed issues as suggested by Russell below. 
 
-On Wed, 2008-02-06 at 17:36 +0100, Jan Kara wrote:
-> I think there's a patch for 2.50 support which is quite recent (2.6.24).
-> I plan to merge the support when Sebastian submits it (I'm already in
-> contact with him regarding this).
-Ah great, so 2.6.25 probably?!
+Great, I'm happy now.
 
-Best wishes,
-Chris.
+> Doh, right. Do you use a different checkpatch? I mean it doesn't react on
+> that for me.
 
+No, all of the comments I've given were spotted by merely reading the patch.
