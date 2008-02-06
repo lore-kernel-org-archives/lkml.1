@@ -1,47 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbYBFLkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762710AbYBFLm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762798AbYBFLkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 06:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbYBFLkW
+	id S1762710AbYBFLm2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 06:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758998AbYBFLmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 06:40:22 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43559 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754508AbYBFLkV (ORCPT
+	Wed, 6 Feb 2008 06:42:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57707
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753627AbYBFLmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 06:40:21 -0500
-Date: Wed, 6 Feb 2008 12:40:20 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: where is the capset kernel module?
-In-Reply-To: <b6a2187b0802060243u3d8187b8v878dddf9eb4d3cb0@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802061225240.23855@fbirervta.pbzchgretzou.qr>
-References: <b6a2187b0802060013i2969a577x921be4d1a1202248@mail.gmail.com>
- <b6a2187b0802060243u3d8187b8v878dddf9eb4d3cb0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Feb 2008 06:42:17 -0500
+Date: Wed, 06 Feb 2008 03:42:43 -0800 (PST)
+Message-Id: <20080206.034243.243568099.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [bug] networking broke, ssh: connect to port 22: Protocol error
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080206113829.GA14793@elte.hu>
+References: <20080206113829.GA14793@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 6 Feb 2008 12:38:29 +0100
 
-On Feb 6 2008 18:43, Jeff Chua wrote:
->On Feb 6, 2008 4:13 PM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
->> Latest linux git complained about this ...
->>
->> named: capset failed: Operation not permitted: please ensure that the
->> capset kernel module is loaded.  see insmod(8)
->
->How this started was that with the latest git linux, I got this warning ...
->
->warning: `named' uses 32-bit capabilities (legacy support in use)
+> 
+> randconfig qa on x86.git ran into the following new networking related 
+> problem on latest -git: with the attached .config the testbox comes up 
+> but cannot establish any TCP connections due to -ENOPROTO in 
+> sys_connect().
 
-Yes it is a really interesting case I have seen before,
-but did not bother to investigate.
-Is
+Make sure you have the following fix in your tree.
 
-CONFIG_SECURITY=y
-CONFIG_SECURITY_CAPABILITIES=m or y
+It might be the cause.
 
-working?
+commit 5d8c0aa9433b09387d9021358baef7939f9b32c4
+Author: Pavel Emelyanov <xemul@openvz.org>
+Date:   Tue Feb 5 03:14:44 2008 -0800
+
+    [INET]: Fix accidentally broken inet(6)_hash_connect's port offset calculations.
+    
+    The port offset calculations depend on the protocol family, but, as
+    Adrian noticed, I broke this logic with the commit
+    
+    	5ee31fc1ecdcbc234c8c56dcacef87c8e09909d8
+    	[INET]: Consolidate inet(6)_hash_connect.
+    
+    Return this logic back, by passing the port offset directly into the
+    consolidated function.
+    
+    Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+    Noticed-by: Adrian Bunk <bunk@kernel.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/include/net/inet_hashtables.h b/include/net/inet_hashtables.h
+index 48ac620..97dc35a 100644
+--- a/include/net/inet_hashtables.h
++++ b/include/net/inet_hashtables.h
+@@ -389,7 +389,7 @@ static inline struct sock *inet_lookup(struct net *net,
+ }
+ 
+ extern int __inet_hash_connect(struct inet_timewait_death_row *death_row,
+-		struct sock *sk,
++		struct sock *sk, u32 port_offset,
+ 		int (*check_established)(struct inet_timewait_death_row *,
+ 			struct sock *, __u16, struct inet_timewait_sock **),
+ 			       void (*hash)(struct sock *sk));
+diff --git a/net/ipv4/inet_hashtables.c b/net/ipv4/inet_hashtables.c
+index 90f422c..9cac6c0 100644
+--- a/net/ipv4/inet_hashtables.c
++++ b/net/ipv4/inet_hashtables.c
+@@ -398,7 +398,7 @@ out:
+ EXPORT_SYMBOL_GPL(inet_unhash);
+ 
+ int __inet_hash_connect(struct inet_timewait_death_row *death_row,
+-		struct sock *sk,
++		struct sock *sk, u32 port_offset,
+ 		int (*check_established)(struct inet_timewait_death_row *,
+ 			struct sock *, __u16, struct inet_timewait_sock **),
+ 		void (*hash)(struct sock *sk))
+@@ -413,7 +413,7 @@ int __inet_hash_connect(struct inet_timewait_death_row *death_row,
+ 	if (!snum) {
+ 		int i, remaining, low, high, port;
+ 		static u32 hint;
+-		u32 offset = hint + inet_sk_port_offset(sk);
++		u32 offset = hint + port_offset;
+ 		struct hlist_node *node;
+ 		struct inet_timewait_sock *tw = NULL;
+ 
+@@ -502,7 +502,7 @@ EXPORT_SYMBOL_GPL(__inet_hash_connect);
+ int inet_hash_connect(struct inet_timewait_death_row *death_row,
+ 		      struct sock *sk)
+ {
+-	return __inet_hash_connect(death_row, sk,
++	return __inet_hash_connect(death_row, sk, inet_sk_port_offset(sk),
+ 			__inet_check_established, __inet_hash_nolisten);
+ }
+ 
+diff --git a/net/ipv6/inet6_hashtables.c b/net/ipv6/inet6_hashtables.c
+index 43f3993..99fd25f 100644
+--- a/net/ipv6/inet6_hashtables.c
++++ b/net/ipv6/inet6_hashtables.c
+@@ -236,7 +236,7 @@ static inline u32 inet6_sk_port_offset(const struct sock *sk)
+ int inet6_hash_connect(struct inet_timewait_death_row *death_row,
+ 		       struct sock *sk)
+ {
+-	return __inet_hash_connect(death_row, sk,
++	return __inet_hash_connect(death_row, sk, inet6_sk_port_offset(sk),
+ 			__inet6_check_established, __inet6_hash);
+ }
+ 
