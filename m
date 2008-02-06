@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYBFXzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764197AbYBFX4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbYBFXzz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763807AbYBFXyG
+	id S1764197AbYBFX4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764030AbYBFXyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:54:06 -0500
-Received: from mx2.suse.de ([195.135.220.15]:59787 "EHLO mx2.suse.de"
+	Wed, 6 Feb 2008 18:54:10 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44976 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763710AbYBFXyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:54:03 -0500
-Date: Wed, 6 Feb 2008 15:50:58 -0800
+	id S1763720AbYBFXyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:54:07 -0500
+Date: Wed, 6 Feb 2008 15:51:01 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, dm-crypt@saout.de, dm-devel@redhat.com,
-       Milan Broz <mbroz@redhat.com>, Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 04/73] dm crypt: use bio_add_page
-Message-ID: <20080206235058.GE13121@suse.de>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       William Irwin <wli@holomorphy.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 05/73] ACPI: video_device_list corruption
+Message-ID: <20080206235101.GF13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dm-crypt-use-bio_add_page.patch"
+Content-Disposition: inline; filename="acpi-video_device_list-corruption.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,81 +37,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Milan Broz <mbroz@redhat.com>
+From: William Lee Irwin III <wli@holomorphy.com>
 
-patch 91e106259214b40e992a58fb9417da46868e19b2 in mainline.
+The ->cap fields of struct acpi_video_device and struct acpi_video_bus
+are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
+list_head fields. This resulted in silent corruption without
+CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
+the proper bounds to the memset() calls and thereby correct the bugs.
 
-Fix possible max_phys_segments violation in cloned dm-crypt bio.
+upstream commit 98934def70b48dac74fac3738b78ab2d1a28edda
 
-In write operation dm-crypt needs to allocate new bio request
-and run crypto operation on this clone. Cloned request has always
-the same size, but number of physical segments can be increased
-and violate max_phys_segments restriction.
-
-This can lead to data corruption and serious hardware malfunction.
-This was observed when using XFS over dm-crypt and at least
-two HBA controller drivers (arcmsr, cciss) recently.
-
-Fix it by using bio_add_page() call (which tests for other
-restrictions too) instead of constructing own biovec.
-
-All versions of dm-crypt are affected by this bug.
-
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Signed-off-by: William Irwin <wli@holomorphy.com>
+Acked-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-crypt.c |   24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/acpi/video.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/md/dm-crypt.c
-+++ b/drivers/md/dm-crypt.c
-@@ -399,7 +399,8 @@ static struct bio *crypt_alloc_buffer(st
- 	struct bio *clone;
- 	unsigned int nr_iovecs = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	gfp_t gfp_mask = GFP_NOIO | __GFP_HIGHMEM;
--	unsigned int i;
-+	unsigned i, len;
-+	struct page *page;
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -573,7 +573,7 @@ static void acpi_video_device_find_cap(s
+ 	struct acpi_video_device_brightness *br = NULL;
  
- 	clone = bio_alloc_bioset(GFP_NOIO, nr_iovecs, cc->bs);
- 	if (!clone)
-@@ -408,10 +409,8 @@ static struct bio *crypt_alloc_buffer(st
- 	clone_init(io, clone);
  
- 	for (i = 0; i < nr_iovecs; i++) {
--		struct bio_vec *bv = bio_iovec_idx(clone, i);
--
--		bv->bv_page = mempool_alloc(cc->page_pool, gfp_mask);
--		if (!bv->bv_page)
-+		page = mempool_alloc(cc->page_pool, gfp_mask);
-+		if (!page)
- 			break;
+-	memset(&device->cap, 0, 4);
++	memset(&device->cap, 0, sizeof(device->cap));
  
- 		/*
-@@ -422,15 +421,14 @@ static struct bio *crypt_alloc_buffer(st
- 		if (i == (MIN_BIO_PAGES - 1))
- 			gfp_mask = (gfp_mask | __GFP_NOWARN) & ~__GFP_WAIT;
+ 	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_ADR", &h_dummy1))) {
+ 		device->cap._ADR = 1;
+@@ -693,7 +693,7 @@ static void acpi_video_bus_find_cap(stru
+ {
+ 	acpi_handle h_dummy1;
  
--		bv->bv_offset = 0;
--		if (size > PAGE_SIZE)
--			bv->bv_len = PAGE_SIZE;
--		else
--			bv->bv_len = size;
-+		len = (size > PAGE_SIZE) ? PAGE_SIZE : size;
-+
-+		if (!bio_add_page(clone, page, len, 0)) {
-+			mempool_free(page, cc->page_pool);
-+			break;
-+		}
- 
--		clone->bi_size += bv->bv_len;
--		clone->bi_vcnt++;
--		size -= bv->bv_len;
-+		size -= len;
+-	memset(&video->cap, 0, 4);
++	memset(&video->cap, 0, sizeof(video->cap));
+ 	if (ACPI_SUCCESS(acpi_get_handle(video->device->handle, "_DOS", &h_dummy1))) {
+ 		video->cap._DOS = 1;
  	}
- 
- 	if (!clone->bi_size) {
 
 -- 
