@@ -1,50 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbYBFJVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbYBFJmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761453AbYBFJVH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 04:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbYBFJUx
+	id S1761489AbYBFJmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 04:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760920AbYBFJl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 04:20:53 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34433 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760165AbYBFJUv (ORCPT
+	Wed, 6 Feb 2008 04:41:59 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:50289 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760847AbYBFJl5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 04:20:51 -0500
-Date: Wed, 6 Feb 2008 04:20:40 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: feature-removal-schedule.txt is getting out of date again
-Message-ID: <alpine.LFD.1.00.0802060419140.17178@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 6 Feb 2008 04:41:57 -0500
+Date: Wed, 06 Feb 2008 01:49:25 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_32: fix regression caused by trim ram according to mtrr on
+ system with 4G more RAM
+In-reply-to: <47A97E28.1010400@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Emelyanov <xemul@openvz.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       jesse.brandeburg@intel.com, jeffrey.t.kirsher@intel.com,
+       john.ronciak@intel.com, David Miller <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net, Denis Lunev <den@openvz.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200802060149.26083.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+References: <47A89A77.1050608@openvz.org>
+ <200802060119.25278.yinghai.lu@sun.com> <47A97E28.1010400@openvz.org>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH] x86_32: fix regression caused by trim ram according to mtrr on system with 4G more RAM
 
-  yes, i realize i'm sounding like a broken record but, once again,
-Documentation/feature-removal-schedule.txt is slipping out of date WRT
-items that are now slightly, if not noticeably, behind schedule for
-removal.
+Pravel report:
+"
+The commit
 
-rday
---
+        093af8d7f0ba3c6be1485973508584ef081e9f93
+        x86_32: trim memory by updating e820
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+broke my e1000 card: on loading driver says that
 
-Home page:                                         http://crashcourse.ca
-Fedora Cookbook:    http://crashcourse.ca/wiki/index.php/Fedora_Cookbook
-========================================================================
+        e1000: probe of 0000:04:03.0 failed with error -5
+
+and the interface doesn't appear.
+"
+
+on 32 bit kernel, base will overflow when try to do PAGE_SHIFT.
+and highest_addr will always less 4G.
+
+so use pfn instead of address to avoid overflow when more than 4g
+ ram installed on 32bit kernel
+Many thanks for Pavel Emelyanov to report and test it.
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Tested-by: Pavel Emelyanov <xemul@openvz.org>
+
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 1e27b69..4e7490f 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -659,7 +659,7 @@ static __init int amd_special_default_mtrr(void)
+  */
+ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+ {
+-	unsigned long i, base, size, highest_addr = 0, def, dummy;
++	unsigned long i, base, size, highest_pfn = 0, def, dummy;
+ 	mtrr_type type;
+ 	u64 trim_start, trim_size;
+ 
+@@ -682,28 +682,27 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+ 		mtrr_if->get(i, &base, &size, &type);
+ 		if (type != MTRR_TYPE_WRBACK)
+ 			continue;
+-		base <<= PAGE_SHIFT;
+-		size <<= PAGE_SHIFT;
+-		if (highest_addr < base + size)
+-			highest_addr = base + size;
++		if (highest_pfn < base + size)
++			highest_pfn = base + size;
+ 	}
+ 
+ 	/* kvm/qemu doesn't have mtrr set right, don't trim them all */
+-	if (!highest_addr) {
++	if (!highest_pfn) {
+ 		printk(KERN_WARNING "WARNING: strange, CPU MTRRs all blank?\n");
+ 		WARN_ON(1);
+ 		return 0;
+ 	}
+ 
+-	if ((highest_addr >> PAGE_SHIFT) < end_pfn) {
++	if (highest_pfn < end_pfn) {
+ 		printk(KERN_WARNING "WARNING: BIOS bug: CPU MTRRs don't cover"
+ 			" all of memory, losing %LdMB of RAM.\n",
+-			(((u64)end_pfn << PAGE_SHIFT) - highest_addr) >> 20);
++			(end_pfn - highest_pfn) >> (20 - PAGE_SHIFT));
+ 
+ 		WARN_ON(1);
+ 
+ 		printk(KERN_INFO "update e820 for mtrr\n");
+-		trim_start = highest_addr;
++		trim_start = highest_pfn;
++		trim_start <<= PAGE_SHIFT;
+ 		trim_size = end_pfn;
+ 		trim_size <<= PAGE_SHIFT;
+ 		trim_size -= trim_start;
