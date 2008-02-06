@@ -1,70 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbYBFRBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYBFRE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbYBFRBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYBFRBQ
+	id S1756078AbYBFRE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYBFRET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:01:16 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:13514 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbYBFRBP (ORCPT
+	Wed, 6 Feb 2008 12:04:19 -0500
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:40090 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbYBFRES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:01:15 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       btrfs-devel@oss.oracle.com
-Subject: [ANNOUNCE] Btrfs v0.12 released
-Date: Wed, 6 Feb 2008 12:00:13 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+	Wed, 6 Feb 2008 12:04:18 -0500
+Message-ID: <47A9E883.2000806@tiscali.nl>
+Date: Wed, 06 Feb 2008 18:04:03 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+CC: Russell King <linux@arm.linux.org.uk>, rpurdie@openedhand.com,
+       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/HP7XX] - Add combined LCD / BL driver for platform HP
+ Jornada 7xx handhelds
+References: <20080205195331.fa2ca02b.Kristoffer.ericson@gmail.com>	<47A9A944.7090401@tiscali.nl>	<47A9AA4F.80508@tiscali.nl> <20080206173341.619c52c8.Kristoffer.ericson@gmail.com>
+In-Reply-To: <20080206173341.619c52c8.Kristoffer.ericson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802061200.14690.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Kristoffer Ericson wrote:
+> Oki, here is attempt #2 (btw, new mail or just keep thread?)
+> 
+> Tested to build and checkpatch.
+> 
+> diff --git a/drivers/video/backlight/jornada720_bllcd.c b/drivers/video/backlight/jornada720_bllcd.c
 
-I wasn't planning on releasing v0.12 yet, and it was supposed to have some 
-initial support for multiple devices.  But, I have made a number of 
-performance fixes and small bug fixes, and I wanted to get them out there 
-before the (destabilizing) work on multiple-devices took over.
+> +static int jornada_bl_update_status(struct backlight_device *dev)
+> +{
+> +	int ret = 0;
+> +
+> +	jornada_ssp_start();
+> +
+> +	if (dev->props.power != FB_BLANK_UNBLANK ||
+> +		dev->props.fb_blank != FB_BLANK_UNBLANK) {
+> +		ret = jornada_ssp_inout(BRIGHTNESSOFF);
+> +		if (ret == -ETIMEDOUT)
 
-So, here's v0.12.  It comes with a shiny new disk format (sorry), but the gain 
-is dramatically better random writes to existing files.  In testing here, the 
-random write phase of tiobench went from 1MB/s to 30MB/s.  The fix was to 
-change the way back references for file extents were hashed.
+since there is no curly bracket here...
 
-Other changes:
+> +			printk(KERN_ERR "jornada720_bl:	\
+> +				BrightnessOff timeout\n");
 
-Insert and delete multiple items at once in the btree where possible.  Back 
-references added more tree balances, and it showed up in a few benchmarks.  
-With v0.12, backrefs have no real impact on performance.
+...indentation is wrong in lines below
 
-Optimize bio end_io routines.  Btrfs was spending way too much CPU time in the 
-bio end_io routines, leading to lock contention and other problems.
+> +			/* backlight off */
+> +			PPSR &= ~PPC_LDD1;
+> +			PPDR |= PPC_LDD1;
+> +
+> +	} else	{	/* backlight on */
 
-Optimize read ahead during transaction commit.  The old code was trying to 
-read far too much at once, which made the end_io problems really stand out.
+too much indentation in lines below as well
 
-mount -o ssd option, which clusters file data writes together regardless of 
-the directory the files belong to.  There are a number of other performance 
-tweaks for SSD, aimed at clustering metadata and data writes to better take 
-advantage of the hardware.
+> +			PPSR |= PPC_LDD1;
+> +			if ((jornada_ssp_inout(SETBRIGHTNESS)) == TXDUMMY) {
+> +			    /* send brightness value (0 is max, 255 lowest) */
+> +				if (jornada_ssp_byte(JORNADA_BL_MAX_BRIGHTNESS -
+> +					 dev->props.brightness) != -ETIMEDOUT)
+> +				ret = (JORNADA_BL_MAX_BRIGHTNESS -
+> +					dev->props.brightness);
+> +			} else
+> +				printk(KERN_ERR "jornada720_bl:	\
+> +					SetBrightness timeout\n");
+> +		}
+> +	jornada_ssp_end();
+> +
+> +	return ret;
+> +}
 
-mount -o max_inline=size option, to override the default max inline file data 
-size (default is 8k).  Any value up to the leaf size is allowed (default 
-16k).
+> +static int jornada_lcd_set_contrast(struct lcd_device *pdev, int contrast)
+> +{
+> +	int ret = 0;
+> +
+> +	jornada_ssp_start();
+> +
+> +	ret = jornada_ssp_inout(SETCONTRAST);
+> +
+> +	if (ret == -ETIMEDOUT)
+> +		printk(KERN_ERR "jornada_lcd: failure to set contrast\n");
+> +	 else
 
-Simple -ENOSPC handling.  Emphasis on simple, but it prevents accidentally 
-filling the disk most of the time.  With enough threads/procs banging on 
-things, you can still easily crash the box.
+whitespace before else
 
--chris
+> +		ret = jornada_ssp_byte(contrast);
+> +
+> +	jornada_ssp_end();
+> +
+> +	return ret;
+> +}
+> +
+> +static int jornada_lcd_set_power(struct lcd_device  *pdev, int power)
+> +{
+> +	if (power != FB_BLANK_UNBLANK) {
+> +		/* turn off LCD */
+> +		PPSR &= ~PPC_LDD2;
+> +		PPDR |= PPC_LDD2;
+> +	} else {
+> +		/* turn on LCD */
+> +		PPSR |= PPC_LDD2;
+> +		}
+
+whitespace before curly bracket
+
+> +
+> +	return 0;
+> +}
