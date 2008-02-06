@@ -1,136 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765523AbYBGAMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbYBGAM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765523AbYBGAMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbYBFX54
+	id S932326AbYBGAM5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbYBFX55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:57:56 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60843 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764147AbYBFX5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:57:54 -0500
-Date: Wed, 6 Feb 2008 15:53:06 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 38/73] CRYPTO: padlock: Fix spurious ECB page fault
-Message-ID: <20080206235306.GM13121@suse.de>
-References: <20080206234302.769849277@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="crypto-padlock-fix-spurious-ecb-page-fault.patch"
-In-Reply-To: <20080206235015.GA13121@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 6 Feb 2008 18:57:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39322 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932074AbYBFX5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:57:55 -0500
+Date: Wed, 6 Feb 2008 15:57:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+Message-Id: <20080206155749.ce1fcd25.akpm@linux-foundation.org>
+In-Reply-To: <20080206233117.GA28931@suse.de>
+References: <20080206.152639.35541094.davem@davemloft.net>
+	<20080206233117.GA28931@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.23-stable review patch.  If anyone has any objections, please let us know.
-------------------
-From: Herbert Xu <herbert@gondor.apana.org.au>
+On Wed, 6 Feb 2008 15:31:17 -0800
+Greg KH <gregkh@suse.de> wrote:
 
-[CRYPTO] padlock: Fix spurious ECB page fault
+> On Wed, Feb 06, 2008 at 03:26:39PM -0800, David Miller wrote:
+> > 
+> > I get the following OOPS from udevd during bootup on
+> > sparc64:
+> > 
+> > [    0.982046]               \|/ ____ \|/
+> > [    0.982054]               "@'/ .. \`@"
+> > [    0.982058]               /_| \__/ |_\
+> > [    0.982063]                  \__U_/
+> > [    0.982482] udevd(1305): Kernel illegal instruction [#1]
+> > [    0.982550] TSTATE: 0000004411001602 TPC: 00000000007ddb80 TNPC: 00000000007ddb84 Y: 00000000    Not tainted
+> > [    0.982647] TPC: <0x7ddb88>
+> > [    0.982684] g0: 0000000000000000 g1: 00000000007ddb80 g2: 0000000000000000 g3: 0000000000000000
+> > [    0.982760] g4: fffff803fb332a00 g5: fffff8000f8a6000 g6: fffff803fb3a8000 g7: fffff803fc893724
+> > [    0.982831] o0: fffff803fc8bc010 o1: 00000000007ddb58 o2: fffff803fbba0000 o3: fffff803fb3abd48
+> > [    0.982907] o4: 0000000000040001 o5: 0000000000000000 sp: fffff803fb3ab391 ret_pc: 00000000005b7524
+> > [    0.982984] RPC: <dev_attr_show+0x24/0x30>
+> > [    0.983016] l0: 0000000000000000 l1: 0000000000000000 l2: fffff803fc9a5308 l3: 000000000005a000
+> > [    0.983074] l4: 0000000000000004 l5: fffff803fb340b00 l6: 0000000000000168 l7: fffff803fbd32700
+> > [    0.983133] i0: fffffffffffffffb i1: 00000000007ddb58 i2: fffff803fbba0000 i3: 0000000000000000
+> > [    0.983197] i4: 00000000005002a4 i5: 0000000000000008 i6: fffff803fb3ab451 i7: 0000000000500620
+> > [    0.983269] I7: <sysfs_read_file+0x80/0x104>
+> > [    0.983299] Caller[0000000000500620]: sysfs_read_file+0x80/0x104
+> > [    0.983368] Caller[00000000004bedc0]: vfs_read+0x78/0x10c
+> > [    0.983556] Caller[00000000004bf114]: sys_read+0x34/0x60
+> > [    0.983622] Caller[0000000000406294]: linux_sparc_syscall32+0x3c/0x40
+> > [    0.983707] Caller[0000000000016d90]: 0x16d98
+> > [    0.983873] Instruction DUMP: 007ddb80  00000000  00000000 <00000000> 00000000  00000000  00000000  00000000  007ddb98 
+> > 
+> > This is dev_attr_show() calling attr->show() which points to
+> > 'part_attr_group' struct instead of a function. :-)
+> 
+> Ick, that's not good :)
 
-[ Upstream commit: d4a7dd8e637b322faaa934ffcd6dd07711af831f ]
-[ Upstream commit: 490fe3f05be3f7c87d7932bcb6e6e53e3db2cd9c ]
+gregkh-driver-block-device.patch strikes again.
 
-The xcryptecb instruction always processes an even number of blocks so
-we need to ensure th existence of an extra block if we have to process
-an odd number of blocks.
+> How is it working for anyone else then?  sparc64 isn't doing anything
+> "odd" with it's block devices, is it?
+> 
+> > I'm pretty sure the following changeset is to blame:
+> > 
+> > commit edfaa7c36574f1bf09c65ad602412db9da5f96bf
+> > Author: Kay Sievers <kay.sievers@vrfy.org>
+> > Date:   Mon May 21 22:08:01 2007 +0200
+> > 
+> >     Driver core: convert block from raw kobjects to core devices
+> >     
+> >     This moves the block devices to /sys/class/block. It will create a
+> >     flat list of all block devices, with the disks and partitions in one
+> >     directory. For compatibility /sys/block is created and contains symlinks
+> >     to the disks.
+> 
+> So I'm guessing if you revert this it works?
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Going offtopic here...
 
----
- drivers/crypto/padlock-aes.c |   53 +++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 49 insertions(+), 4 deletions(-)
+The patch was committed to mainline last week and it has a git timestamp
+from eight months ago.  When you received the original email from Kay.
 
---- a/drivers/crypto/padlock-aes.c
-+++ b/drivers/crypto/padlock-aes.c
-@@ -419,13 +419,58 @@ static int aes_set_key(struct crypto_tfm
- /* ====== Encryption/decryption routines ====== */
- 
- /* These are the real call to PadLock. */
-+static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
-+				  void *control_word)
-+{
-+	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
-+		      : "+S"(input), "+D"(output)
-+		      : "d"(control_word), "b"(key), "c"(1));
-+}
-+
-+static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key, struct cword *cword)
-+{
-+	u8 buf[AES_BLOCK_SIZE * 2 + PADLOCK_ALIGNMENT - 1];
-+	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
-+
-+	memcpy(tmp, in, AES_BLOCK_SIZE);
-+	padlock_xcrypt(tmp, out, key, cword);
-+}
-+
-+static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
-+			     struct cword *cword)
-+{
-+	asm volatile ("pushfl; popfl");
-+
-+	/* padlock_xcrypt requires at least two blocks of data. */
-+	if (unlikely(!(((unsigned long)in ^ (PAGE_SIZE - AES_BLOCK_SIZE)) &
-+		       (PAGE_SIZE - 1)))) {
-+		aes_crypt_copy(in, out, key, cword);
-+		return;
-+	}
-+
-+	padlock_xcrypt(in, out, key, cword);
-+}
-+
- static inline void padlock_xcrypt_ecb(const u8 *input, u8 *output, void *key,
- 				      void *control_word, u32 count)
- {
-+	if (count == 1) {
-+		aes_crypt(input, output, key, control_word);
-+		return;
-+	}
-+
- 	asm volatile ("pushfl; popfl");		/* enforce key reload. */
--	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
-+	asm volatile ("test $1, %%cl;"
-+		      "je 1f;"
-+		      "lea -1(%%ecx), %%eax;"
-+		      "mov $1, %%ecx;"
-+		      ".byte 0xf3,0x0f,0xa7,0xc8;"	/* rep xcryptecb */
-+		      "mov %%eax, %%ecx;"
-+		      "1:"
-+		      ".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
- 		      : "+S"(input), "+D"(output)
--		      : "d"(control_word), "b"(key), "c"(count));
-+		      : "d"(control_word), "b"(key), "c"(count)
-+		      : "ax");
- }
- 
- static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void *key,
-@@ -443,13 +488,13 @@ static inline u8 *padlock_xcrypt_cbc(con
- static void aes_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
- {
- 	struct aes_ctx *ctx = aes_ctx(tfm);
--	padlock_xcrypt_ecb(in, out, ctx->E, &ctx->cword.encrypt, 1);
-+	aes_crypt(in, out, ctx->E, &ctx->cword.encrypt);
- }
- 
- static void aes_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
- {
- 	struct aes_ctx *ctx = aes_ctx(tfm);
--	padlock_xcrypt_ecb(in, out, ctx->D, &ctx->cword.decrypt, 1);
-+	aes_crypt(in, out, ctx->D, &ctx->cword.decrypt);
- }
- 
- static struct crypto_alg aes_alg = {
-
--- 
+But the patch changed in that time period.  This doesn't seem right?
