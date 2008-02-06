@@ -1,88 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762593AbYBFLQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761857AbYBFLUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762593AbYBFLQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 06:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYBFLQM
+	id S1761857AbYBFLUI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 06:20:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYBFLT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 06:16:12 -0500
-Received: from styx.suse.cz ([82.119.242.94]:39145 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761737AbYBFLQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 06:16:11 -0500
-From: David Sterba <dsterba@suse.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH][v4] ipwireless: driver for 3G PC Card
-Date: Wed, 6 Feb 2008 12:15:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jkosina@suse.cz, benm@symmetric.co.nz, stephen@symmetric.co.nz
-References: <20080201153707.GA24859@ds.suse.cz> <1201883579.15090.14.camel@violet>
-In-Reply-To: <1201883579.15090.14.camel@violet>
+	Wed, 6 Feb 2008 06:19:57 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:8417 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbYBFLT4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 06:19:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hXSKf2F6X0JKZCEYp6cFWg26/EUmAY5HE/wE1RKxp8zBh2zJ3msvpVOfOpdp04BRMPs+6HWHx8rMNnEHFpMkUCYg/nnX28Bq8RziMkDeBed+exwgeD4NfcH+dRcVV1SsJMb+b58otThzFKaNCBT8d56GTvg44SRNGxcn2bRsKwY=
+Message-ID: <2f11576a0802060319qcd3149bqd987ab7c6613f50a@mail.gmail.com>
+Date: Wed, 6 Feb 2008 20:19:55 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.24-mm1
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080206111524.GA13264@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802061215.58688.dsterba@suse.cz>
+References: <20080203171634.58ab668b.akpm@linux-foundation.org>
+	 <2f11576a0802060313k3f17547ev4d2643c3a130f59f@mail.gmail.com>
+	 <20080206111524.GA13264@elte.hu>
+X-Google-Sender-Auth: 7ea1cc617359f9c5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> > +irqreturn_t ipwireless_interrupt(int irq, void *dev_id, struct pt_regs
-> > *regs) +{
-> > +	struct ipw_hardware *hw = dev_id;
-> > +
-> > +	if (hw->hw_version == HW_VERSION_1)
-> > +		return ipwireless_handle_v1_interrupt(irq, hw);
-> > +	else
-> > +		return ipwireless_handle_v2_v3_interrupt(irq, hw);
-> > +}
+> should be fixed by the commit below. (already upstream)
 >
-> why is this not static? I think the interrupt routine should be in the
-> file where you actually claim the interrupt.
+>         Ingo
 
-This is due to current separation into files. hardware.c has many functions 
-for handler bodies, while main.c registers the pcmcia structs in module init 
-(and takes address of ipwireless_interrupt()). Long ago, the driver was one 
-large file, and I don't want to merge the files back just to make some funcs 
-static (and make the sources less readable).
-
->
-> > +/*
-> > + * Associate the specified network with this hardware, so it will
-> > receive events + * from it.
-> > + */
-> > +void ipwireless_associate_network(struct ipw_hardware *hw,
-> > +				  struct ipw_network *network)
-> > +{
-> > +	hw->network = network;
-> > +}
->
-> I think a #define would be simpler in this case.
-
-Same reason, the macro would be used in a file where the struct is not yet 
-defined.
-
-> > +module_param(tty_major, int, 0);
-> > +module_param_named(debug, ipwireless_debug, int, 0);
-> > +module_param_named(loopback, ipwireless_loopback, int, 0);
-> > +module_param_named(out_queue, ipwireless_out_queue, int, 0);
-> > +MODULE_PARM_DESC(tty_major, "ttyIPWp major number [0]");
->
-> Why is allowing to change the major still needed. I think we passed the
-> bridge of the need for static numbers a long long long time ago.
-
-Sounds reasonable. I personally haven't used this param (besides testing the 
-code) and don't know of any related problems.
-
-> > +static const char drv_name[] = IPWIRELESS_PCCARD_NAME;
->
-> This looks useless to. Do we need that?
-
-Removed. Used only in one place.
-
-Thanks for comments. Updated version 5 will follow.
-
-Dave
+Oops, sorry ;-)
