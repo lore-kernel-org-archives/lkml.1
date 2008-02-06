@@ -1,51 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762146AbYBFBtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbYBFBvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762146AbYBFBtw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 20:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbYBFBto
+	id S1763378AbYBFBvV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 20:51:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYBFBvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 20:49:44 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:31677 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755498AbYBFBtn (ORCPT
+	Tue, 5 Feb 2008 20:51:12 -0500
+Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:21911 "HELO
+	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753732AbYBFBvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 20:49:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=nqcIxoHJjDirJfO5V1fFxOByW6JDedsumRhQ1Lom7dFtBhvPgv5Gf4dtpkKFip7eGu15qHmqmp2WzbvH+oL+zhB0TeHte7Y7IYhZI+Cb8z4CUP4lrTDb9ZPNVjfYRGnc8d4b0ixqRrG52Iy6yjocoLaFAkOCTfqFQgMOYllE7j4=
-Message-ID: <ecb4efd10802051749n6a626e84k3ac8210aa2b5a446@mail.gmail.com>
-Date: Tue, 5 Feb 2008 20:49:42 -0500
-From: "Clem Taylor" <clem.taylor@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: inotify_add_watch() returning ENOSPC in 2.6.24 [watch descriptor leak?]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 5 Feb 2008 20:51:10 -0500
+X-YMail-OSG: rXgjoYEVM1kpT21ANVXAkYaHaZMnFyjvpuau6s1IaDepmL2ak8.gBoM7EG1CORtgNyEZFhGpW2o2r6nnDyOuu8B4bzBcDtKrHVdH6q2ddkHl_v65Ao8Ga2XCPmTHTasZvFzH0Iap9YTEiVI-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Julian Satran <Julian_Satran@il.ibm.com>
+In-Reply-To: <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1201639331.3069.58.camel@localhost.localdomain>
+	 <47A05CBD.5050803@vlnb.net>	<47A7049A.9000105@vlnb.net>
+	 <1202139015.3096.5.camel@localhost.localdomain>	<47A73C86.3060604@vlnb.net>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
+	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
+	 <47A8B757.10101@vlnb.net>
+	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 17:43:20 -0800
+Message-Id: <1202262200.2220.118.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to move a MIPS based embedded system from 2.6.16.16 to
-2.6.24. Most things seem to be working, but I'm having troubles with
-inotify. The code is using inotify to detect a file written to /tmp
-(tmpfs). The writer creates a file with a temporary name and then
-rename()s the tmp file over the file I'm monitoring.
+On Tue, 2008-02-05 at 16:11 -0800, Nicholas A. Bellinger wrote:
+> On Tue, 2008-02-05 at 22:21 +0300, Vladislav Bolkhovitin wrote:
+> > Jeff Garzik wrote:
+> > >>> iSCSI is way, way too complicated. 
+> > >>
+> > >> I fully agree. From one side, all that complexity is unavoidable for 
+> > >> case of multiple connections per session, but for the regular case of 
+> > >> one connection per session it must be a lot simpler.
+> > > 
+> > > Actually, think about those multiple connections...  we already had to 
+> > > implement fast-failover (and load bal) SCSI multi-pathing at a higher 
+> > > level.  IMO that portion of the protocol is redundant:   You need the 
+> > > same capability elsewhere in the OS _anyway_, if you are to support 
+> > > multi-pathing.
+> > 
+> > I'm thinking about MC/S as about a way to improve performance using 
+> > several physical links. There's no other way, except MC/S, to keep 
+> > commands processing order in that case. So, it's really valuable 
+> > property of iSCSI, although with a limited application.
+> > 
+> > Vlad
+> > 
+> 
+> Greetings,
+> 
+> I have always observed the case with LIO SE/iSCSI target mode (as well
+> as with other software initiators we can leave out of the discussion for
+> now, and congrats to the open/iscsi on folks recent release. :-) that
+> execution core hardware thread and inter-nexus per 1 Gb/sec ethernet
+> port performance scales up to 4x and 2x core x86_64 very well with
+> MC/S).  I have been seeing 450 MB/sec using 2x socket 4x core x86_64 for
+> a number of years with MC/S.  Using MC/S on 10 Gb/sec (on PCI-X v2.0
+> 266mhz as well, which was the first transport that LIO Target ran on
+> that was able to reach handle duplex ~1200 MB/sec with 3 initiators and
+> MC/S.  In the point to point 10 GB/sec tests on IBM p404 machines, the
+> initiators where able to reach ~910 MB/sec with MC/S.  Open/iSCSI was
+> able to go a bit faster (~950 MB/sec) because it uses struct sk_buff
+> directly. 
+> 
+ 
+Sorry, these where IBM p505 express (not p404, duh) which had a 2x
+socket 2x core POWER5 setup.  These along with an IBM X-series machine)
+where the only ones available for PCI-X v2.0, and this probably is still
+the case. :-)
 
-With 2.6.16.16, everything works fine, but with 2.6.24, the inotify
-process runs for a while (~100 events) and then inotify_add_watch()
-returns ENOSPC. Once this happens, I can't add new watches, even if I
-kill the process and restart it. fs.inotify.max_user_instances and
-fs.inotify.max_user_watches are both 128, so I'd imagine I'm hitting
-this limit. For some reason the watches aren't getting cleaned up
-(even after the process is killed).
+Also, these numbers where with a ~9000 MTU (I don't recall what the
+hardware limit on the 10 Gb/sec switch lwas) doing direct struct iovec
+to preallocated struct page mapping for payload on the target side.
+This is known as RAMDISK_DR plugin in the LIO-SE.  On the initiator, LTP
+disktest and O_DIRECT where used for direct to SCSI block device access.
 
-In a loop, the code is doing:
-    wd = inotify_add_watch(fd, file, IN_CLOSE_WRITE|IN_DELETE_SELF|IN_ONESHOT);
-    blocking read on notify fd
+I can big up this paper if anyone is interested.
 
-Has something changed in the inotify() API since 2.6.16.16, or could
-this be a leak?
+--nab
 
-                                      --Clem
