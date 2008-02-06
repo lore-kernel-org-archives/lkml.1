@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbYBGANq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbYBGAOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933124AbYBGANq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:13:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbYBFX6G
+	id S932709AbYBGAOX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbYBFX6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:58:06 -0500
-Received: from mail.suse.de ([195.135.220.2]:46158 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:58:08 -0500
+Received: from ns1.suse.de ([195.135.220.2]:46198 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932118AbYBFX6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:58:01 -0500
-Date: Wed, 6 Feb 2008 15:53:11 -0800
+	id S932144AbYBFX6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:58:06 -0500
+Date: Wed, 6 Feb 2008 15:53:21 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,14 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 40/73] clockevents: fix reprogramming decision in oneshot
-	broadcast
-Message-ID: <20080206235311.GO13121@suse.de>
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 41/73] Freezer: Fix APM emulation breakage
+Message-ID: <20080206235321.GP13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="clockevents-fix-reprogramming-decision-in-oneshot-broadcast.patch"
+Content-Disposition: inline; filename="freezer-fix-apm-emulation-breakage.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,123 +35,116 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-patch cdc6f27d9e3c2f7ca1a3e19c6eabb1ad6a2add5d in mainline.
+The APM emulation is currently broken as a result of commit
+831441862956fffa17b9801db37e6ea1650b0f69
+"Freezer: make kernel threads nonfreezable by default"
+that removed the PF_NOFREEZE annotations from apm_ioctl() without
+adding the appropriate freezer hooks.  Fix it and remove the
+unnecessary variable flags from apm_ioctl().
 
-A previous version of the code did the reprogramming of the broadcast
-device in the return from idle code. This was removed, but the logic in
-tick_handle_oneshot_broadcast() was kept the same.
+This problem has been fixed in the mainline by
+commit cb43c54ca05c01533c45e4d3abfe8f99b7acf624
+"Freezer: Fix APM emulation breakage".
 
-When a broadcast interrupt happens we signal the expiry to all CPUs
-which have an expired event. If none of the CPUs has an expired event,
-which can happen in dyntick mode, then we reprogram the broadcast
-device. We do not reprogram otherwise, but this is only correct if all
-CPUs, which are in the idle broadcast state have been woken up.
-
-The code ignores, that there might be pending not yet expired events on
-other CPUs, which are in the idle broadcast state. So the delivery of
-those events can be delayed for quite a time.
-
-Change the tick_handle_oneshot_broadcast() function to check for CPUs,
-which are in broadcast state and are not woken up by the current event,
-and enforce the rearming of the broadcast device for those CPUs.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-broadcast.c |   56 ++++++++++++++++---------------------------
- 1 file changed, 21 insertions(+), 35 deletions(-)
+ drivers/char/apm-emulation.c |   15 ++++++++-------
+ include/linux/freezer.h      |   23 +++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 7 deletions(-)
 
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -387,45 +387,19 @@ int tick_resume_broadcast_oneshot(struct
+--- a/drivers/char/apm-emulation.c
++++ b/drivers/char/apm-emulation.c
+@@ -295,7 +295,6 @@ static int
+ apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg)
+ {
+ 	struct apm_user *as = filp->private_data;
+-	unsigned long flags;
+ 	int err = -EINVAL;
+ 
+ 	if (!as->suser || !as->writer)
+@@ -331,10 +330,16 @@ apm_ioctl(struct inode * inode, struct f
+ 			 * Wait for the suspend/resume to complete.  If there
+ 			 * are pending acknowledges, we wait here for them.
+ 			 */
+-			flags = current->flags;
++			freezer_do_not_count();
+ 
+ 			wait_event(apm_suspend_waitqueue,
+ 				   as->suspend_state == SUSPEND_DONE);
++
++			/*
++			 * Since we are waiting until the suspend is done, the
++			 * try_to_freeze() in freezer_count() will not trigger
++			 */
++			freezer_count();
+ 		} else {
+ 			as->suspend_state = SUSPEND_WAIT;
+ 			mutex_unlock(&state_lock);
+@@ -362,14 +367,10 @@ apm_ioctl(struct inode * inode, struct f
+ 			 * Wait for the suspend/resume to complete.  If there
+ 			 * are pending acknowledges, we wait here for them.
+ 			 */
+-			flags = current->flags;
+-
+-			wait_event_interruptible(apm_suspend_waitqueue,
++			wait_event_freezable(apm_suspend_waitqueue,
+ 					 as->suspend_state == SUSPEND_DONE);
+ 		}
+ 
+-		current->flags = flags;
+-
+ 		mutex_lock(&state_lock);
+ 		err = as->suspend_result;
+ 		as->suspend_state = SUSPEND_NONE;
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -4,6 +4,7 @@
+ #define FREEZER_H_INCLUDED
+ 
+ #include <linux/sched.h>
++#include <linux/wait.h>
+ 
+ #ifdef CONFIG_PM_SLEEP
+ /*
+@@ -126,6 +127,24 @@ static inline void set_freezable(void)
+ 	current->flags &= ~PF_NOFREEZE;
  }
  
- /*
-- * Reprogram the broadcast device:
-- *
-- * Called with tick_broadcast_lock held and interrupts disabled.
-- */
--static int tick_broadcast_reprogram(void)
--{
--	ktime_t expires = { .tv64 = KTIME_MAX };
--	struct tick_device *td;
--	int cpu;
--
--	/*
--	 * Find the event which expires next:
--	 */
--	for (cpu = first_cpu(tick_broadcast_oneshot_mask); cpu != NR_CPUS;
--	     cpu = next_cpu(cpu, tick_broadcast_oneshot_mask)) {
--		td = &per_cpu(tick_cpu_device, cpu);
--		if (td->evtdev->next_event.tv64 < expires.tv64)
--			expires = td->evtdev->next_event;
--	}
--
--	if (expires.tv64 == KTIME_MAX)
--		return 0;
--
--	return tick_broadcast_set_event(expires, 0);
--}
--
--/*
-  * Handle oneshot mode broadcasting
-  */
- static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
- {
- 	struct tick_device *td;
- 	cpumask_t mask;
--	ktime_t now;
-+	ktime_t now, next_event;
- 	int cpu;
- 
- 	spin_lock(&tick_broadcast_lock);
- again:
- 	dev->next_event.tv64 = KTIME_MAX;
-+	next_event.tv64 = KTIME_MAX;
- 	mask = CPU_MASK_NONE;
- 	now = ktime_get();
- 	/* Find all expired events */
-@@ -434,19 +408,31 @@ again:
- 		td = &per_cpu(tick_cpu_device, cpu);
- 		if (td->evtdev->next_event.tv64 <= now.tv64)
- 			cpu_set(cpu, mask);
-+		else if (td->evtdev->next_event.tv64 < next_event.tv64)
-+			next_event.tv64 = td->evtdev->next_event.tv64;
- 	}
- 
- 	/*
--	 * Wakeup the cpus which have an expired event. The broadcast
--	 * device is reprogrammed in the return from idle code.
-+	 * Wakeup the cpus which have an expired event.
-+	 */
-+	tick_do_broadcast(mask);
++/*
++ * Freezer-friendly wrapper around wait_event_interruptible(), originally
++ * defined in <linux/wait.h>
++ */
 +
-+	/*
-+	 * Two reasons for reprogram:
-+	 *
-+	 * - The global event did not expire any CPU local
-+	 * events. This happens in dyntick mode, as the maximum PIT
-+	 * delta is quite small.
-+	 *
-+	 * - There are pending events on sleeping CPUs which were not
-+	 * in the event mask
- 	 */
--	if (!tick_do_broadcast(mask)) {
-+	if (next_event.tv64 != KTIME_MAX) {
- 		/*
--		 * The global event did not expire any CPU local
--		 * events. This happens in dyntick mode, as the
--		 * maximum PIT delta is quite small.
-+		 * Rearm the broadcast device. If event expired,
-+		 * repeat the above
- 		 */
--		if (tick_broadcast_reprogram())
-+		if (tick_broadcast_set_event(next_event, 0))
- 			goto again;
- 	}
- 	spin_unlock(&tick_broadcast_lock);
++#define wait_event_freezable(wq, condition)				\
++({									\
++	int __retval;							\
++	do {								\
++		__retval = wait_event_interruptible(wq, 		\
++				(condition) || freezing(current));	\
++		if (__retval && !freezing(current))			\
++			break;						\
++		else if (!(condition))					\
++			__retval = -ERESTARTSYS;			\
++	} while (try_to_freeze());					\
++	__retval;							\
++})
+ #else /* !CONFIG_PM_SLEEP */
+ static inline int frozen(struct task_struct *p) { return 0; }
+ static inline int freezing(struct task_struct *p) { return 0; }
+@@ -143,6 +162,10 @@ static inline void freezer_do_not_count(
+ static inline void freezer_count(void) {}
+ static inline int freezer_should_skip(struct task_struct *p) { return 0; }
+ static inline void set_freezable(void) {}
++
++#define wait_event_freezable(wq, condition)				\
++		wait_event_interruptible(wq, condition)
++
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+ #endif	/* FREEZER_H_INCLUDED */
 
 -- 
