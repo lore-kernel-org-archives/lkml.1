@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbYBFUPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbYBFUTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759429AbYBFUPF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 15:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbYBFUOw
+	id S1758071AbYBFUTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 15:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYBFUTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 15:14:52 -0500
-Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:37905 "EHLO
-	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756007AbYBFUOu (ORCPT
+	Wed, 6 Feb 2008 15:19:09 -0500
+Received: from www17.your-server.de ([213.133.104.17]:44401 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754569AbYBFUTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 15:14:50 -0500
-Date: Wed, 6 Feb 2008 21:14:48 +0100
-From: Christer Weinigel <christer@weinigel.se>
-To: Greg KH <greg@kroah.com>
-Cc: David Newall <davidn@davidnewall.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080206211448.78c1a23f@weinigel.se>
-In-Reply-To: <20080205203418.GA5819@kroah.com>
-References: <20080125180232.GA4613@kroah.com>
-	<20080202123710.42df1aa0@weinigel.se>
-	<20080202191930.GA19826@kroah.com>
-	<47A5D9CD.5070001@davidnewall.com>
-	<84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-	<47A5E67D.9040804@davidnewall.com>
-	<1202058820.15090.60.camel@violet>
-	<courier.47A84ADB.000047C1@hawking.rebel.net.au>
-	<20080205203418.GA5819@kroah.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Feb 2008 15:19:08 -0500
+Message-ID: <47AA1633.4000309@m3y3r.de>
+Date: Wed, 06 Feb 2008 21:18:59 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071118)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Latest kernel doesn't boot
+References: <1202249704.47a8dfe89a99c@213.133.104.17> <47A8E427.6040205@zytor.com>
+In-Reply-To: <47A8E427.6040205@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Feb 2008 12:34:18 -0800
-Greg KH <greg@kroah.com> wrote:
+H. Peter Anvin schrieb:
+> thomas@m3y3r.de wrote:
+>> The latest linux kernel doesn't boot on my computer
+>> (h=21511abd0a248a3f225d3b611cfabb93124605a7).
+>>
+>> elilo hangs while booting this kernel. 2.6.24 works.
+>
+> Wow, so we know it's affected with EFI, since you're using elilo.
+>
+> You gave absolutely zero other information about your system or what 
+> "doesn't boot" mean.
+Here is an older bisection try:
+$ git bisect log
 
-> In the end, it's up to the copyright holders to enforce the license.
-> And as I have stated in the past, a number of them have made public
-> statements as to what they think about this issue.  And it corresponds
-> exactly with what Marcel has stated above.
-> 
-> So if you wish to violate the copyright of others, you take the risk
-> that you might be caught and punished, something that you and your
-> legal council needs to take into account.
+git-bisect start
+# bad: [dd430ca20c40ecccd6954a7efd13d4398f507728] Merge 
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86
+git-bisect bad dd430ca20c40ecccd6954a7efd13d4398f507728
+# good: [49914084e797530d9baaf51df9eda77babc98fa8] Linux 2.6.24
+git-bisect good 49914084e797530d9baaf51df9eda77babc98fa8
+# good: [f4d900a2cae94256f56be7769734100c7054bf00] [NETLINK]: Mark 
+attribute construction exception unlikely
+git-bisect good f4d900a2cae94256f56be7769734100c7054bf00
+# good: [85040bcb4643cba578839e953f25e2d1965d83d0] [IPV6] ADDRLABEL: Fix 
+double free on label deletion.
+git-bisect good 85040bcb4643cba578839e953f25e2d1965d83d0
+# good: [70fd93c9d9e07dd2ea4465df76a0ddd414fd21ac] x86: export cpu_gdt_descr
+git-bisect good 70fd93c9d9e07dd2ea4465df76a0ddd414fd21ac
+# bad: [306c142f99caef5a30a0d61a39a956c069941b63] x86: pat: e820 cleanup
+git-bisect bad 306c142f99caef5a30a0d61a39a956c069941b63
+# bad: [7271339347653f6d652bb47aaee1f57d936002f6] x86: 
+arch/x86/kernel/cpu/mcheck/k7.c checkpatch fixes
+git-bisect bad 7271339347653f6d652bb47aaee1f57d936002f6
+# bad: [7818a1e0294debee02d5135e17b89f28b8871887] x86: provide 64-bit 
+with a load_sp0 function.
+git-bisect bad 7818a1e0294debee02d5135e17b89f28b8871887
+# bad: [2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 
+memory map on EFI 32 platform
+git-bisect bad 2215e69d2cf5024647f9a034807990590d25dd4e
+# good: [26048d75e8d6c840742468667f4a7ab8c2df74c9] x86: use the same 
+data type for tls_array.
+git-bisect good 26048d75e8d6c840742468667f4a7ab8c2df74c9
+# good: [341d8854d38fe6e7655f7748babae5c25a51aa70] x86: remove fastcall 
+from include/asm-x86
+git-bisect good 341d8854d38fe6e7655f7748babae5c25a51aa70
+# good: [8c8b8859b64baf6d7c33900e8720c7bafe775b2c] mcheck mce_64: 
+mce_read_sem to mutex
+git-bisect good 8c8b8859b64baf6d7c33900e8720c7bafe775b2c
+# good: [de18c850af701ac9512b7239e88fa45e4c168771] x86: EFI runtime 
+service support: EFI runtime services
+git-bisect good de18c850af701ac9512b7239e88fa45e4c168771
+# bad: [e429795c68d3001ecae74f6465420c9f043b0ece] x86: EFI runtime 
+service support: remove duplicated code from efi_32.c
+git-bisect bad e429795c68d3001ecae74f6465420c9f043b0ece
+# good: [9ad65e4748f55e3159283d7fa9d54fb30c086113] x86: EFI runtime 
+service support: document for EFI runtime services
+git-bisect good 9ad65e4748f55e3159283d7fa9d54fb30c086113
 
-So when do you sue Nvidia, ATI, Atheros, Broadcom[1],
-M-Systems/Sandisk[2] or Nokia? All those companies distribute binary
-drivers for Linux without providing source code?
 
- /Christer
+I can not revert the commit e429795c68d3001ecae74f6465420c9f043b0ece. it 
+gave me errors.
+but i'm also not sure what could be wrong with this commit!
 
-[1]  WIFI chips and drivers used by Cisco, Asus and a lot of other
-manufacturers.
+my first idea was that the commit 
+"[2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 memory 
+map on EFI 32 platform" is the offender, because the macbook pro doesn't 
+provide a e820 memory map at all. but bisect showed that i'm wrong here?!
 
-[2] DiskOnChip devices used in lots of embedded systems, among others
-the Troll Tech Greenphone.
+confused greeting
+thomas
 
