@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763503AbYBFNQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbYBFNRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763503AbYBFNQL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 08:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762775AbYBFNP5
+	id S1763622AbYBFNRF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 08:17:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762775AbYBFNQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 08:15:57 -0500
-Received: from h155.mvista.com ([63.81.120.155]:24883 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762774AbYBFNP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 08:15:56 -0500
-Message-ID: <47A9B340.2020603@ru.mvista.com>
-Date: Wed, 06 Feb 2008 16:16:48 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 6 Feb 2008 08:16:55 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:53972 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762780AbYBFNQy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 08:16:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=fIujoXQnvmQEHtFAFQ3E3NCysughI9F48kS5uHueOxNBnFN4J3VlOobdo/6AYuLk3wPXsrfh+QLn6voQHuCmo1anW/AIApdG3FeJTB6P4MKe9gBQRR/JzXpRiTFYkoFydo5F6SmAOfo/9deRbB37kl7dc4A/MuIn30hzJimRvbc=
+Date: Wed, 6 Feb 2008 22:10:26 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] module: fix __find_symbl() error checks
+Message-ID: <20080206131024.GA5057@APFDCB5C>
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       kgdb-bugreport@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Kgdb-bugreport] [PATCH 4/5] KGDB-8250: refactor configuration
-References: <479FBAE8.3070809@web.de> <479FC57D.5030104@web.de> <47A325BC.6030305@ru.mvista.com> <47A38AD9.1060305@web.de>
-In-Reply-To: <47A38AD9.1060305@web.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+The patch:
 
-Jan Kiszka wrote:
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24/2.6.24-mm1/broken-out/modules-handle-symbols-that-have-a-zero-value.patch
 
->>>Sorry, previous version was missing some __init[data] attributes which
->>>were dropped in an intermediate stage. Here comes an updated patch:
+changes the return value of __find_symbol() so that it can handle symbols
+that are zero and now it returns -errno for failure.
 
->>><---snip--->
+But some __find_symbl() error checks remain unchanged.
 
->>>This major refactoring of the quite complex kgdb8250 configuration does
->>>the following:
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+---
+ kernel/module.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
->>> - ensures that static configurations according to SERIAL_PORT_DFNS are
->>>   always loaded first
->>> - tries to pull more accurate configuration via serial8250_get_port_def
->>>   if simple-config is used
->>> - detects empty/invalid simple-configs
->>> - enforces KGDB_PORT_NUM <= SERIAL_8250_NR_UARTS at kconfig level
->>> - removes kgdb8250_add_port and its hook in serial_core (calling
->>>   serial8250_get_port_def in demand should provide us the same
->>>   information)
-
->>   You left powerpc-lite.patch broken with this change as it has
->>multiple calls to kgdb8250_add_port()...
-
-> I see. But I wonder if there ever was a real need for these hooks (in
-> 2.4 times?): If I look at bamboo_early_serial_map() e.g., I find it
-> calling into early_serial_setup() which fills serial8250_ports[] - and
-> that content is now retrieved via serial8250_get_port_def() when we
-> parse the runtime or build-time provided parameters (port number &
-> baudrate).
-
-    Of course. But now the kgdb8250_add_port() calls need to be removed.
-
->>>Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
-
-WBR, Sergei
+Index: 2.6.24-mm1/kernel/module.c
+===================================================================
+--- 2.6.24-mm1.orig/kernel/module.c
++++ 2.6.24-mm1/kernel/module.c
+@@ -977,7 +977,7 @@ static unsigned long resolve_symbol(Elf_
+ 
+ 	ret = __find_symbol(name, &owner, &crc,
+ 			!(mod->taints & TAINT_PROPRIETARY_MODULE));
+-	if (ret) {
++	if (!IS_ERR_VALUE(ret)) {
+ 		/* use_module can fail due to OOM,
+ 		   or module initialization or unloading */
+ 		if (!check_version(sechdrs, versindex, name, mod, crc) ||
+@@ -1370,7 +1370,9 @@ void *__symbol_get(const char *symbol)
+ 
+ 	preempt_disable();
+ 	value = __find_symbol(symbol, &owner, &crc, 1);
+-	if (value && strong_try_module_get(owner) != 0)
++	if (IS_ERR_VALUE(value))
++		value = 0;
++	else if (strong_try_module_get(owner))
+ 		value = 0;
+ 	preempt_enable();
+ 
