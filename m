@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763352AbYBFNIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763443AbYBFNLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763352AbYBFNIT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 08:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbYBFNIH
+	id S1763443AbYBFNLw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 08:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762749AbYBFNLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 08:08:07 -0500
-Received: from web52006.mail.re2.yahoo.com ([206.190.49.253]:43811 "HELO
-	web52006.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762651AbYBFNIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 08:08:06 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Feb 2008 08:08:06 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=RwpIet4/B02oZjT960oKUFYM7BF3q42qpvNXehg4yot5tI97erHmU4b/pU1dHqrXmw9dWkw02Fn7Yo+DsBCtZfj8BC6TNfs+Il5tPqWDwcXlTja0nNdE/3+d2o6fDXDAgbGMuIiPVmWf0SA9UfX1TpAm/1Us7T7EXM3IIdiQ5xQ=;
-X-YMail-OSG: JlJgqbQVM1kQ13op2dx9z3Xz1_4PLmFgBgOHSxXNerXWoLNmjlj8YDJL72cbym1fMGZ_bBAB0syYqNotqNSeUJdNDrj2ffr0lyEfJHuD6vpmJSim3Z6GnC4FZfI.xwgTfYWBBptvHv_W0Qc-
-Date: Wed, 6 Feb 2008 05:01:23 -0800 (PST)
-From: Doug Kehn <rdkehn@yahoo.com>
-Subject: Re: Soft lockup 2.6.23.14-uc0
-To: linux-kernel@vger.kernel.org, uClinux <uclinux-dev@uclinux.org>
-Cc: Mikael Pettersson <mikpe@it.uu.se>
-In-Reply-To: <18344.31682.388710.182172@harpo.it.uu.se>
+	Wed, 6 Feb 2008 08:11:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55829 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762725AbYBFNLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 08:11:41 -0500
+Date: Wed, 6 Feb 2008 14:11:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [bug] networking broke, ssh: connect to port 22: Protocol error
+Message-ID: <20080206131129.GB9950@elte.hu>
+References: <20080206113829.GA14793@elte.hu> <20080206.034243.243568099.davem@davemloft.net> <20080206122248.GA5233@elte.hu> <20080206.043246.63923682.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <478718.75314.qm@web52006.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206.043246.63923682.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mikael,
 
---- Mikael Pettersson wrote:
+* David Miller <davem@davemloft.net> wrote:
 
-
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Wed, 6 Feb 2008 13:22:48 +0100
 > 
-> Is this a new ixp4xx platform or one of the existing
-> ones in arch/arm/mach-ixp4xx?
+> > So no, it does not fix the problem. The config i sent is a rather 
+> > generic one, it should boot on most whitebox PCs. TCP connections 
+> > will fail immediately, all the time.
 > 
+> I suspect this got added recently with how often and how thoroughly 
+> you test things :-)
 
-The machine type (arch/arm/tools/mach-types) is
-ct_dfs.  However, the platform is a copy of the coyote
-platform in arch/arm/mach-ixp4xx.
+yeah, although various other upstream breakages prevented real long 
+randconfig series in the past 2-3 days. I'd say it's either in this pull 
+from your tree:
 
+  Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+  Date:   Tue Feb 5 10:09:07 2008 -0800
 
-> Anyway, I can think of two things:
-> 
-> 1. There was some very recent patches by Peter
-> Zijlstra
->    addressing hrtimer breakage on arm and some other
->    archs in 2.6.24-git. If uclinux has backported
-> some
->    of that stuff then it might explain this issue.
-> 
-> 2. There is a new native Linux driver for ixp4xx
->    ethernet. Patches for the 2.6.23.14 kernel can
->    be found in the nslu2-linux group's subversion
->    repository. (You'll need new firmware files
-> though.)
->    Replacing Intel's IXP400 drivers with this driver
->    should at least tell you if the lockups are
->    related to your use of the Intel drivers.
-> 
->    FWIW, I've never seen these lockups on my ixp4xx
->    boxes, with the Intel IXP400 drivers or with
->    the new native Linux drivers.
-> 
-> You should also Cc: the linux arm kernel mailing
-> list,
-> as the issue probably is platform specific.
-> 
+    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6: (21 commits)
 
-Thanks for the tips.  I'll check in to these.
+or perhaps in this one:
 
-Regards,
-...doug
+  Author: Linus Torvalds <torvalds@linux-foundation.org>
+  Date:   Mon Feb 4 07:43:36 2008 -0800
 
+    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
 
-      ____________________________________________________________________________________
-Never miss a thing.  Make Yahoo your home page. 
-http://www.yahoo.com/r/hs
+    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6: (77 commits)
+
+i'll figure it out, it's totally reproducible so it should be easy to 
+bisect. Just wanted to know whether you had anything queued up already 
+for something like this.
+
+	Ingo
