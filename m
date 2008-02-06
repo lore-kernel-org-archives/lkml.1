@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbYBGA2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764221AbYBGA3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934195AbYBGA2q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932686AbYBGAAG
+	id S1764221AbYBGA3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932693AbYBGAAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:00:06 -0500
-Received: from mail.suse.de ([195.135.220.2]:46639 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 19:00:11 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46665 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932679AbYBGAAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:00:03 -0500
-Date: Wed, 6 Feb 2008 15:54:23 -0800
+	id S932689AbYBGAAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:00:07 -0500
+Date: Wed, 6 Feb 2008 15:54:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Gerd v. Egidy" <gerd.von.egidy@intra2net.com>,
-       Karsten Keil <kkeil@suse.de>
-Subject: [patch 66/73] fix oops on rmmod capidrv
-Message-ID: <20080206235423.GO13121@suse.de>
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 67/73] Netfilter: bridge: fix double POST_ROUTING invocation
+Message-ID: <20080206235426.GP13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-oops-on-rmmod-capidrv.patch"
+Content-Disposition: inline; filename="netfilter-bridge-fix-double-post_routing-invocation.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,46 +38,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Karsten Keil <kkeil@suse.de>
+From: Patrick McHardy <kaber@trash.net>
 
-patch eb36f4fc019835cecf0788907f6cab774508087b in mainline.
+[NETFILTER]: bridge: fix double POST_ROUTING invocation
 
-Fix overwriting the stack with the version string
-(it is currently 10 bytes + zero) when unloading the
-capidrv module. Safeguard against overwriting it
-should the version string grow in the future.
+Upstream commit 2948d2ebbb98747b912ac6d0c864b4d02be8a6f5
 
-Should fix Kernel Bug Tracker Bug 9696.
+The bridge code incorrectly causes two POST_ROUTING hook invocations
+for DNATed packets that end up on the same bridge device. This
+happens because packets with a changed destination address are passed
+to dst_output() to make them go through the neighbour output function
+again to build a new destination MAC address, before they will continue
+through the IP hooks simulated by bridge netfilter.
 
-Signed-off-by: Gerd v. Egidy <gerd.von.egidy@intra2net.com>
-Acked-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The resulting hook order is:
+ PREROUTING (bridge netfilter)
+ POSTROUTING        (dst_output -> ip_output)
+ FORWARD    (bridge netfilter)
+ POSTROUTING        (bridge netfilter)
+
+The deferred hooks used to abort the first POST_ROUTING invocation,
+but since the only thing bridge netfilter actually really wants is
+a new MAC address, we can avoid going through the IP stack completely
+by simply calling the neighbour output function directly.
+
+Tested, reported and lots of data provided by: Damien Thebault <damien.thebault@gmail.com>
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/capi/capidrv.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ net/bridge/br_netfilter.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
---- a/drivers/isdn/capi/capidrv.c
-+++ b/drivers/isdn/capi/capidrv.c
-@@ -2306,13 +2306,14 @@ static int __init capidrv_init(void)
+--- a/net/bridge/br_netfilter.c
++++ b/net/bridge/br_netfilter.c
+@@ -247,8 +247,9 @@ static void __br_dnat_complain(void)
+  * Let us first consider the case that ip_route_input() succeeds:
+  *
+  * If skb->dst->dev equals the logical bridge device the packet
+- * came in on, we can consider this bridging. We then call
+- * skb->dst->output() which will make the packet enter br_nf_local_out()
++ * came in on, we can consider this bridging. The packet is passed
++ * through the neighbour output function to build a new destination
++ * MAC address, which will make the packet enter br_nf_local_out()
+  * not much later. In that function it is assured that the iptables
+  * FORWARD chain is traversed for the packet.
+  *
+@@ -285,12 +286,17 @@ static int br_nf_pre_routing_finish_brid
+ 	skb->nf_bridge->mask ^= BRNF_NF_BRIDGE_PREROUTING;
  
- static void __exit capidrv_exit(void)
- {
--	char rev[10];
-+	char rev[32];
- 	char *p;
- 
- 	if ((p = strchr(revision, ':')) != 0) {
--		strcpy(rev, p + 1);
--		p = strchr(rev, '$');
--		*p = 0;
-+		strncpy(rev, p + 1, sizeof(rev));
-+		rev[sizeof(rev)-1] = 0;
-+		if ((p = strchr(rev, '$')) != 0)
-+			*p = 0;
- 	} else {
- 		strcpy(rev, " ??? ");
+ 	skb->dev = bridge_parent(skb->dev);
+-	if (!skb->dev)
+-		kfree_skb(skb);
+-	else {
++	if (skb->dev) {
++		struct dst_entry *dst = skb->dst;
++
+ 		nf_bridge_pull_encap_header(skb);
+-		skb->dst->output(skb);
++
++		if (dst->hh)
++			return neigh_hh_output(dst->hh, skb);
++		else if (dst->neighbour)
++			return dst->neighbour->output(skb);
  	}
++	kfree_skb(skb);
+ 	return 0;
+ }
+ 
 
 -- 
