@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYBFRI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYBFRTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbYBFRI7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 12:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYBFRIv
+	id S1755292AbYBFRTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 12:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYBFRTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 12:08:51 -0500
-Received: from serenity.mcc.ac.uk ([130.88.200.93]:57027 "EHLO
-	serenity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbYBFRIu (ORCPT
+	Wed, 6 Feb 2008 12:19:10 -0500
+Received: from mga11.intel.com ([192.55.52.93]:19403 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752779AbYBFRTI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 12:08:50 -0500
-Message-ID: <47A9E9C6.4000802@gentoo.org>
-Date: Wed, 06 Feb 2008 17:09:26 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
+	Wed, 6 Feb 2008 12:19:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,313,1199692800"; 
+   d="scan'208";a="514288063"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Maarten Bressers <mbres@gentoo.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, axboe@kernel.dk, tasio@hierro.tasio.net
-Subject: Re: [PATCH] sr: update to follow tray status correctly
-References: <20071027225830.585C8657DB@smtp.gentoo.org>	 <1193801523.3321.138.camel@localhost.localdomain> <1199551191.3399.29.camel@localhost.localdomain>
-In-Reply-To: <1199551191.3399.29.camel@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------090006030005000304030208"
-X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: ipw3945: not only it periodically dies, it also BUG()s
+Date: Wed, 6 Feb 2008 09:13:34 -0800
+Message-ID: <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <20080206143218.GA16188@elf.ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ipw3945: not only it periodically dies, it also BUG()s
+Thread-Index: AchozWuMaZw4iKUQRQC7JPMNB4+UBgAFeKAA
+References: <20080205214441.GA1518@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982BB1@orsmsx416.amr.corp.intel.com> <20080206143218.GA16188@elf.ucw.cz>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: <ipw3945-devel@lists.sourceforge.net>, <linux-wireless@vger.kernel.org>,
+       "Zhu, Yi" <yi.zhu@intel.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 Feb 2008 17:13:35.0820 (UTC) FILETIME=[9BA4E8C0:01C868E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090006030005000304030208
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wednesday, February 06, 2008 6:32 AM, Pavel Machek wrote:
 
-Hi James,
+> On Tue 2008-02-05 18:20:58, Chatre, Reinette wrote:
+>> On Tuesday, February 05, 2008 1:45 PM, Pavel Machek  wrote:
+>> 
+>>> 
+>>> ...I've reported this before, with full debugging. Not sure if
+>>> anything happened.
+>> 
+>> Could you please point me to where you have reported it before?
+> 
+> From pavel@ucw.cz Wed Oct 31 01:52:02 2007
+> From: Pavel Machek <pavel@ucw.cz>
+> To: linux-wireless@vger.kernel.org,
+>        kernel list <linux-kernel@vger.kernel.org>,
+>        ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
+> Subject: iwl3945 in 2.6.24-rc1 dies under load
+> X-Warning: Reading this can be dangerous to your mental health.
+> 
+> ...and thread that resulted.
 
-James Bottomley wrote:
-> It's been a while with no status on this one, so I corrected the patch
-> based on my original input.  The attached is what I think is the best
-> way of doing this (I've replaced the home grown test_unit_ready routine
-> with the SCSI one and updated some of the sense check conditions).
+Could you please create a new bug in our bug tracking system
+(www.bughost.org) to enable us to track this problem? Please include the
+relevant information from the thread as well as the information you
+doscovered recently.
 
-Many thanks for following up on this. The user has not responded to my 
-request for him to test your patch, so I decided to try it myself. I'm 
-using Linus git as of today, I noticed the patch is merged.
+Thank you very much
 
-It doesn't work for me. On unpatched 2.6.24, I get the behaviour 
-previously described - the ioctl always gives CDS_TRAY_OPEN regardless 
-of tray status. On 2.6.24-git which includes your patch, I instead 
-always get CDS_DISC_OK. I have confirmed that on 2 systems this is 
-because scsi_test_unit_ready() is returning 0.
+Reinette
 
-Before I dig further, does this work for you? I have attached the test 
-program I am using.
-
-Thanks!
-Daniel
-
-
---------------090006030005000304030208
-Content-Type: text/plain;
- name="test.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="test.c"
-
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <linux/cdrom.h>
-#include <unistd.h>
-#include <stdio.h>
-
-int main(void)
-{
-	int fd = open("/dev/sr0", O_RDONLY | O_NONBLOCK);
-	int ret;
-	if (fd < 0) {
-		perror("open");
-		return 1;
-	}
-
-	ret = ioctl(fd, CDROM_DRIVE_STATUS, 0);
-	printf("ioctl result %d\n", ret);
-
-	switch(ret) {
-		case CDS_NO_INFO: printf("CDS_NO_INFO\n"); break;
-		case CDS_NO_DISC: printf("CDS_NO_DISC\n"); break;
-		case CDS_TRAY_OPEN: printf("CDS_TRAY_OPEN\n"); break;
-		case CDS_DRIVE_NOT_READY: printf("CDS_DRIVE_NOT_READY\n"); break;
-		case CDS_DISC_OK: printf("CDS_DISC_OK\n"); break;
-		default: printf("Unknown\n"); break;
-	}
-	return 0;
-}
-
---------------090006030005000304030208--
