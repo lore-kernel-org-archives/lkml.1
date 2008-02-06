@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759669AbYBFD36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbYBFEAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759669AbYBFD36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 22:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbYBFD3u
+	id S1759296AbYBFEAL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 23:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757256AbYBFD7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 22:29:50 -0500
-Received: from smtp.digitalpath.net ([65.164.104.14]:50290 "EHLO
-	smtp.digitalpath.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756123AbYBFD3t (ORCPT
+	Tue, 5 Feb 2008 22:59:54 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55335
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757157AbYBFD7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 22:29:49 -0500
-Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=default; d=digitalpath.net;
-  b=id5bKLzMiStro3M3SxCAmZ+na8jt5Z2HpMDI/dJoPHti2PyV+QTUP+jEPYNLYP3Gq+YFmT/PH7IFGYsVcRD6p0IvZkc7hhw64XnDyW9L5Dfjm9xZlNfGb/BSpKir18Ve  ;
-Message-ID: <3278.65.164.104.9.1202268587.squirrel@webmail.digitalpath.net>
-Date: Tue, 5 Feb 2008 19:29:47 -0800 (PST)
-Subject: Access MSR functions in userspace?
-From: "Hasan Rashid" <hasan@digitalpath.net>
-To: linux-kernel@vger.kernel.org
-Reply-To: hasan@digitalpath.net
-User-Agent: SquirrelMail/1.4.11
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Tue, 5 Feb 2008 22:59:53 -0500
+Date: Tue, 05 Feb 2008 20:00:22 -0800 (PST)
+Message-Id: <20080205.200022.79543549.davem@davemloft.net>
+To: horms@verge.net.au
+Cc: sven.wegener@stealer.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipvs: Make wrr "no available servers" error message
+ rate-limited
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080206021909.GA32678@verge.net.au>
+References: <1202243421-2774-1-git-send-email-sven.wegener@stealer.net>
+	<20080206021909.GA32678@verge.net.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there a way to use RDMSR and WRMSR in userspace? I only need to write
-to one register, writing a module with a userspace piece to handle that
-seems like an over kill.
+From: Simon Horman <horms@verge.net.au>
+Date: Wed, 6 Feb 2008 11:19:09 +0900
 
-TIA!
--- 
-Regards, Hasan R.
+> On Tue, Feb 05, 2008 at 09:30:21PM +0100, Sven Wegener wrote:
+> > No available servers is more an error message than something informational. It
+> > should also be rate-limited, else we're going to flood our logs on a busy
+> > director, if all real servers are out of order with a weight of zero.
+> > 
+> > Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+> 
+> Hi Sven,
+> 
+> this looks good to me.
+> 
+> Acked-by: Simon Horman <horms@verge.net.au>
 
+Applied, thanks.
