@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYBFENn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYBFEkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbYBFENn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 23:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757647AbYBFENe
+	id S1759541AbYBFEkp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 23:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbYBFEkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 23:13:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35231 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757342AbYBFENd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 23:13:33 -0500
-Date: Wed, 6 Feb 2008 04:13:18 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Denis V. Lunev" <den@sw.ru>
-Cc: Christoph Hellwig <hch@infradead.org>, "Denis V. Lunev" <den@openvz.org>,
-       trond.myklebust@fys.uio.no, linux-kernel@vger.kernel.org,
-       xemul@openvz.org, devel@openvz.org
-Subject: Re: [PATCH] [NFS]: Lock daemon start/stop rework.
-Message-ID: <20080206041318.GA6589@infradead.org>
-References: <1201693294-11460-1-git-send-email-den@openvz.org> <20080131033320.GA15067@infradead.org> <47A17D50.4000409@sw.ru>
+	Tue, 5 Feb 2008 23:40:36 -0500
+Received: from mail.windriver.com ([147.11.1.11]:64656 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064AbYBFEkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Feb 2008 23:40:35 -0500
+Message-ID: <47A93A35.3090001@windriver.com>
+Date: Tue, 05 Feb 2008 22:40:21 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A17D50.4000409@sw.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Jan Kiszka <jan.kiszka@web.de>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kgdb-bugreport@lists.sourceforge.net,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3] KGDB: Major refactoring
+References: <47A8F275.9090901@web.de>
+In-Reply-To: <47A8F275.9090901@web.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Feb 2008 04:40:01.0824 (UTC) FILETIME=[5600A200:01C8687A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2008 at 10:48:32AM +0300, Denis V. Lunev wrote:
-> Christoph Hellwig wrote:
-> > On Wed, Jan 30, 2008 at 02:41:34PM +0300, Denis V. Lunev wrote:
-> >> The pid of the locking daemon can be substituted with a task struct
-> >> without a problem. Namely, the value if filled in the context of the lockd
-> >> thread and used in lockd_up/lockd_down.
-> >>
-> >> It is possible to save task struct instead and use it to kill the process.
-> >> The safety of this operation is guaranteed by the RCU, i.e. task can't
-> >> disappear without passing a quiscent state.
-> > 
-> > We have a patch series pending on the nfs list that does this plus a lot
-> > more in the area.
-> > 
-> > 
-> where can I have to look them? :)
+Jan Kiszka wrote:
+> As most changes are tightly coupled, this refactoring patch for
+> KGDB_8250 as well as the core and the new KGDBOC driver comes as a
+> single chunk. The changes are:
+>  - Reorganized configuration: I/O drivers can be independently
+>    configured as module or built-in
+>  - Dynamic reconfiguration for KGDB_8250 (just like for KGDBOC)
+>  - Reworked KGDB_8250 configuration string format
+>  - attachwait removed, arming the debugger via assigning an I/O driver
+>    implies "attachwait"
+>  - Cleaned up I/O driver managment of the core
+>  - Matured the various boot-up, configure, unconfigure code paths for
+>    both I/O drivers
+>  - IRQ vs. KGDB_CONSOLE-output SMP race fixed for KGDB_8250
+>  - Reduced and cleaned up hooks into serial_core/8250
+>  - Kconfig cleanups
+>
+> What we no longer have:
+>  - Simple serial configuration for _early_ debugging, use the io/mem
+>    format instead or wait until the debugger is able to resolve "ttySx"
+>    during late-init
+>
+> To-do:
+>  - KGDBOC does not yet cleanly interacts with the TTY subsystem to
+>    attach to some console
+>
+> Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
+>   
 
-The lastest version was just posted on the linux-nfs list:
-http://marc.info/?l=linux-nfs&m=120224048613393&w=2
+Jan,
+
+I pulled in all your changes and made some minor white space fixes. 
+
+I started the 2.6.25 branch with all Ingo's changes, your changes and
+several additional patches I received.
+
+http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=summary
+
+Thanks,
+Jason.
