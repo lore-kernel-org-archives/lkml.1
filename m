@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbYBFX0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763937AbYBFX2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763627AbYBFX0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759722AbYBFX0d
+	id S1763937AbYBFX2c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbYBFX2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:26:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55384 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760524AbYBFX0b (ORCPT
+	Wed, 6 Feb 2008 18:28:23 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39165 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757027AbYBFX2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:26:31 -0500
-Date: Wed, 6 Feb 2008 15:23:49 -0800
-From: Greg KH <greg@kroah.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@users.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH 2/2] - SH/Dreamcast - fix maple bus bugs
-Message-ID: <20080206232349.GA15654@kroah.com>
-References: <1202337981.6162.8.camel@localhost.localdomain> <1202338431.6162.15.camel@localhost.localdomain> <20080206230127.GA9614@kroah.com> <1202339114.6162.17.camel@localhost.localdomain>
+	Wed, 6 Feb 2008 18:28:22 -0500
+Date: Wed, 6 Feb 2008 15:28:18 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Oliver Pinter <oliver.pntr@gmail.com>
+cc: Greg KH <greg@kroah.com>, "Justin M. Forbes" <jmforbes@linuxtx.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, torvalds@linux-foundation.org,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, dhaval@linux.vnet.ibm.com
+Subject: Re: [patch 22/27] quicklist: Set tlb->need_flush if pages are
+ remaining in quicklist 0
+In-Reply-To: <6101e8c40802061511k6356cd5cued8d9eb646a27bc9@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802061528160.22648@schroedinger.engr.sgi.com>
+References: <20080202001232.472591439@mini.kroah.org>  <20080202002103.GW8368@suse.de>
+  <Pine.LNX.4.64.0802011638330.21566@schroedinger.engr.sgi.com> 
+ <1201915720.3781.18.camel@turion.linuxtx.org> 
+ <Pine.LNX.4.64.0802011729560.21840@schroedinger.engr.sgi.com> 
+ <20080206224520.GA11045@kroah.com> <6101e8c40802061511k6356cd5cued8d9eb646a27bc9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202339114.6162.17.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 11:05:14PM +0000, Adrian McMenamin wrote:
-> 
-> On Wed, 2008-02-06 at 15:01 -0800, Greg KH wrote:
-> > On Wed, Feb 06, 2008 at 10:53:51PM +0000, Adrian McMenamin wrote:
-> > > -	dev->function = function;
-> > > -	dev->dev.bus = &maple_bus_type;
-> > > -	dev->dev.parent = &maple_bus;
-> > > -	dev->dev.release = &maple_release_device;
-> > > -	retval = device_register(&dev->dev);
-> > > -	if (retval) {
-> > > -		printk(KERN_INFO
-> > > -		       "Maple bus: Attempt to register device (%x, %x) failed.\n",
-> > > -		       dev->port, dev->unit);
-> > > -		maple_free_dev(dev);
-> > > +	mdev->function = function;
-> > > +	mdev->dev.release = &maple_release_device;
-> > > +	if (mdev->registered == 0) {
-> > > +		retval = device_register(&mdev->dev);
-> > > +		if (retval) {
-> > > +			printk(KERN_INFO
-> > > +			"Maple bus: Attempt to register device"
-> > > +			" (%x, %x) failed.\n",
-> > > +			mdev->port, mdev->unit);
-> > > +			maple_free_dev(mdev);
-> > > +			mdev = NULL;
-> > > +			return;
-> > > +		}
-> > > +		mdev->registered = 1;
-> > >  	}
-> > > -	dev->registered = 1;
-> > 
-> > I think you are still papering over the real problem here of trying to
-> > register a device twice.  That's something you should never be doing,
-> > and your bus walking logic must be incorrect...
-> > 
-> I just left that in as a sanity check. It should never be acted on. I
-> can remove it if you prefer.
+Correct
 
-Please do, that way, and real problems will show up with that warning
-you were getting that started all of this work :)
 
-thanks,
-
-greg k-h
