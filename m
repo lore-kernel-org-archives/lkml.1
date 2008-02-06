@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbYBFPWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYBFPYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbYBFPWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 10:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYBFPWP
+	id S1755330AbYBFPYK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 10:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYBFPX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 10:22:15 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:54063 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751466AbYBFPWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 10:22:15 -0500
-Date: Wed, 6 Feb 2008 16:22:10 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: michael <trimarchi@gandalf.sssup.it>
-Cc: Remy Bohmer <linux@bohmer.net>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-Message-ID: <20080206162210.7fcd5244@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <47A9B8F5.3040500@gandalf.sssup.it>
-References: <20080129224316.GA23155@gandalf.sssup.it>
-	<479FB2D7.4020804@gandalf.sssup.it>
-	<20080130104113.48ec376f@dhcp-252-066.norway.atmel.com>
-	<47A051A7.7030004@gandalf.sssup.it>
-	<20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>
-	<47A09723.7020000@gandalf.sssup.it>
-	<20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>
-	<47A12A2E.5040309@gandalf.sssup.it>
-	<20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>
-	<47A76106.3000103@gandalf.sssup.it>
-	<20080204212523.07a6da9e@siona>
-	<47A856AF.5010202@gandalf.sssup.it>
-	<20080206133012.0a5df53e@dhcp-252-066.norway.atmel.com>
-	<47A9B8F5.3040500@gandalf.sssup.it>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 10:23:57 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59426 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751718AbYBFPX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 10:23:57 -0500
+Date: Wed, 6 Feb 2008 10:23:56 -0500
+To: Marc Donner <donner@dbd-breitband.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: dma error on boot with cf card
+Message-ID: <20080206152356.GC26257@csclub.uwaterloo.ca>
+References: <200802051852.29592.donner@dbd-breitband.de> <20080205185628.GF26259@csclub.uwaterloo.ca> <200802060954.53802.donner@dbd-breitband.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802060954.53802.donner@dbd-breitband.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Feb 2008 14:41:09 +0100
-michael <trimarchi@gandalf.sssup.it> wrote:
+On Wed, Feb 06, 2008 at 09:54:53AM +0100, Marc Donner wrote:
+> and how do i disable dma? it is the installer image, and no hdparm is 
+> availible. and the ide=nodma boot parameter seems not to work. 
 
-> I refer to this part of documentation:
-> 
-> "The USART behavior when hardware handshaking is enabled is the same as 
-> the behavior in
-> standard synchronous or asynchronous mode, except that the receiver 
-> drives the RTS pin as
-> described below and the level on the CTS pin modifies the behavior of 
-> the transmitter as
-> described below. Using this mode requires using the PDC channel for 
-> reception. The transmitter
-> can handle hardware handshaking in any case."
+ide=nodma works for me on 2.6.18.  I think on newer kernels you need
+hda=nodma which is nice since you can control it per device rather than
+globally.
 
-Oh. I guess the answer is no, then.
-
-Haavard
+--
+Len Sorensen
