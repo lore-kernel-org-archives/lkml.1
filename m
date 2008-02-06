@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761853AbYBFKWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbYBFKf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761853AbYBFKWR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 05:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbYBFKWG
+	id S1760176AbYBFKf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 05:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYBFKfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 05:22:06 -0500
-Received: from wx-out-0506.google.com ([66.249.82.234]:43163 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758273AbYBFKWC (ORCPT
+	Wed, 6 Feb 2008 05:35:12 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:44782 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbYBFKfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 05:22:02 -0500
+	Wed, 6 Feb 2008 05:35:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sBREfVl7g81WDz9eEOtLqmWFlLNIcVv2+4r0/G8ugYYTS9rJyenFNdeek1e++EM9TRKDW8y1MLsqB0HuMMnFrJw2sUZ/8mhZJELET3c2gpRAdVEa3YgYG/BAUqmOjDtV3557+8cp8xPLsSJ9nCBAThgkfq7v/tmNHsu5JVR5uhg=
-Message-ID: <e2e108260802060222p294abff9kde72bbb04a115752@mail.gmail.com>
-Date: Wed, 6 Feb 2008 11:22:00 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Mike Christie" <michaelc@cs.wisc.edu>
-In-Reply-To: <47A8A1C8.2010407@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=mU9FICCmYRxT2flOQQmHI29metFliomUPGHGOOSOnohAFxzriEoFuokVSe1z7+bw5/Pf3CpTWI0xuGf4ofbjYiOh5UAUOrc6VJl3se7BAekn7CX5Ni7BXxvo/g8P2LOk7AdulKzAMasIWGAwBw9g5RMIt/bltwP1J6XA3MY3MRE=
+Date: Wed, 6 Feb 2008 11:35:10 +0100
+To: "Mader, Alexander (N-MSR)" <Alexander.Mader@niles.de>
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       "Stuge, Peter" <stuge-linux-pcmcia@cdy.org>
+Subject: Re: Resolved (sort of): Unable to access PCMCIA with O2 Micro
+ OZ711MP1/MS1
+Message-Id: <20080206113510.20f26299.Kristoffer.ericson@gmail.com>
+In-Reply-To: <47A96983.1090108@niles.de>
+References: <47A7F828.1010303@niles.de>
+	<20080205140622.bf41f3ce.Kristoffer.ericson@gmail.com>
+	<47A96983.1090108@niles.de>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47A05CBD.5050803@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204210121.GF18682@fieldses.org>
-	 <alpine.LFD.1.00.0802041317280.3034@hp.linux-foundation.org>
-	 <47A7986B.1070206@garzik.org>
-	 <e2e108260802050038v6648495ap13cf799727c00cfc@mail.gmail.com>
-	 <47A8A1C8.2010407@garzik.org>
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 5, 2008 6:50 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> For remotely accessing data, iSCSI+fs is quite simply more overhead than
-> a networked fs.  With iSCSI you are doing
->
->         local VFS -> local blkdev -> network
->
-> whereas a networked filesystem is
->
->         local VFS -> network
+On Wed, 06 Feb 2008 09:02:11 +0100
+"Mader, Alexander (N-MSR)" <Alexander.Mader@niles.de> wrote:
 
-There are use cases than can be solved better via iSCSI and a
-filesystem than via a network filesystem. One such use case is when
-deploying a virtual machine whose data is stored on a network server:
-in that case there is only one user of the data (so there are no
-locking issues) and filesystem and block device each run in another
-operating system: the filesystem runs inside the virtual machine and
-iSCSI either runs in the hypervisor or in the native OS.
+> Kristoffer Ericson schrieb:
+> > "Mader, Alexander (N-MSR)" wrote:
+> >> On a Fujitsu Siemens Celsius H240 a 2.6.22-3-amd64 kernel from Debian 
+> >> testing is in use. PCMCIA utilities for Linux 2.6 version 014-4 are 
+> >> installed. I could supply the output of lspci and lshal.
+> > 
+> > Assuming debian has alot of patches applied, it would be interesting to see
+> > if this bug exist on vanilla 2.6.24. Would probably get alot more attention from
+> > pcmcia guru's.
+> 
+> Hello,
+> 
+> obviously this is the case. This morning I tried a different non-cardbus 
+> PCMCIA card and it worked, which in turn was the case for the other test 
+> candidates, NICs and CF adapters: they all are accessible right now. In 
+> the moment I am trying to find out which update caused the improvement.
 
-Bart Van Assche.
+Glad to hear its working. If you are eager to see what patch caused the bug (debian or vanilla) you can
+always do a bisect. Or simply run through 2.6.20 -> 2.6.24 vanilla kernels and see where it worked and when it didn't.
+
+> 
+> Thank you very much for your attention and, please, excuse me for 
+> bothering you.
+> 
+
+no worries.
+
+> Best regards, Alexander.
