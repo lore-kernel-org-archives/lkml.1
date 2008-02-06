@@ -1,144 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759762AbYBFXKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbYBFXLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759762AbYBFXKO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762994AbYBFXGe
+	id S1759811AbYBFXLB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:11:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763570AbYBFXGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:06:34 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:20587 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763483AbYBFXG2 convert rfc822-to-8bit (ORCPT
+	Wed, 6 Feb 2008 18:06:50 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:1486 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763555AbYBFXGr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:06:28 -0500
+	Wed, 6 Feb 2008 18:06:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IdYH8s7VKBLPucNeGCQvgx7HVK3uWTTTDJATdfQpckOtnUWDGGD/oZj4znJSNzEgdsPM89EPrciby0WR2JDI98d1EJFO3lDvzWiFfpWapXmr9BqepVR9jiaDVKCX0rMi0Xdx31ncPQmt0Mn1EsErH9v5qcDnhQ2UtDuMLoKgx58=
-Message-ID: <6101e8c40802061506y130c0529hed24e812e395f671@mail.gmail.com>
-Date: Thu, 7 Feb 2008 00:06:27 +0100
+        b=hCtAdNF1gNe2NzGpEAWoa9vpLiG/Aqgx6UjWianl8yV8pRuAP4bgJlNVWhzOYZlGy8XNFIdCLg5WF4YLJpxyXV/vZrDHKfVddur9uCbfCeAOaUPOBaC/fYS9Upkg+jNLE03Ppeg5UBC7SX+zMAGQYwc9XPdx6fY2L48rh9BwLTg=
+Message-ID: <6101e8c40802061506x297eb52by6d4d30e1e406f97b@mail.gmail.com>
+Date: Thu, 7 Feb 2008 00:06:45 +0100
 From: "Oliver Pinter" <oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: Re: [2.6.22.y] {08/17} - intel-agp-965gme-fix - series for stable kernel #2
-In-Reply-To: <6101e8c40802011734v149c3538m5d8c7bb8143c2541@mail.gmail.com>
+Subject: Re: [2.6.22.y] {07/17} - i386-fixup-TRACE_IRQ-breakage - series for stable kernel #2
+In-Reply-To: <6101e8c40802011733hb478764lc118368d0ef24547@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <6101e8c40802011734v149c3538m5d8c7bb8143c2541@mail.gmail.com>
+References: <6101e8c40802011733hb478764lc118368d0ef24547@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-Subject: Intel_agp: really fix 945/965GME
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Wed, 18 Jul 2007 18:59:22 +0000 (+0200)
+Subject: i386: fixup TRACE_IRQ breakage
 Patch-mainline: 2.6.23-rc1
-References: 281277
+References: 326270, CVE-2007-3731
 
-Intel_agp: really fix 945/965GME
+i386: fixup TRACE_IRQ breakage
 
-Fix some missing places to check with device id info, which
-should probe the device gart correctly.
+The TRACE_IRQS_ON function in iret_exc: calls a C function without
+ensuring that the segments are set properly. Move the trace function and
+the enabling of interrupt into the C stub.
 
-Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
-Acked-by: Takashi Iwai <tiwai@suse.de>
-
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
 ---
-commit dde4787642ee3cb85aef80bdade04b6f8ddc3df8
-tree e99908c8c61a08244b6bb03b87782999a5a3847d
-parent a51b34593f691a0837d752a1394dcee19483c607
-author Zhenyu Wang <zhenyu.z.wang@intel.com> Thu, 26 Jul 2007 09:18:09 +0800
-committer Dave Airlie <airlied@redhat.com> Fri, 27 Jul 2007 10:48:13 +1000
 
- drivers/char/agp/intel-agp.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ arch/i386/kernel/entry.S |    2 --
+ arch/i386/kernel/traps.c |   10 ++++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/char/agp/intel-agp.c	2007-07-08 19:32:17.000000000 -0400
-+++ b/drivers/char/agp/intel-agp.c	2007-08-27 14:01:47.000000000 -0400
-@@ -20,7 +20,9 @@
- #define PCI_DEVICE_ID_INTEL_82965G_IG       0x29A2
- #define PCI_DEVICE_ID_INTEL_82965GM_HB      0x2A00
- #define PCI_DEVICE_ID_INTEL_82965GM_IG      0x2A02
-+#define PCI_DEVICE_ID_INTEL_82965GME_HB     0x2A10
- #define PCI_DEVICE_ID_INTEL_82965GME_IG     0x2A12
-+#define PCI_DEVICE_ID_INTEL_82945GME_HB     0x27AC
- #define PCI_DEVICE_ID_INTEL_82945GME_IG     0x27AE
- #define PCI_DEVICE_ID_INTEL_G33_HB          0x29C0
- #define PCI_DEVICE_ID_INTEL_G33_IG          0x29C2
-@@ -33,7 +35,8 @@
-                  agp_bridge->dev->device ==
-PCI_DEVICE_ID_INTEL_82965G_1_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
--                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB)
-+                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
-+                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
+--- linux-2.6.22.orig/arch/i386/kernel/entry.S
++++ linux-2.6.22/arch/i386/kernel/entry.S
+@@ -409,8 +409,6 @@ restore_nocheck_notrace:
+ 1:	INTERRUPT_RETURN
+ .section .fixup,"ax"
+ iret_exc:
+-	TRACE_IRQS_ON
+-	ENABLE_INTERRUPTS(CLBR_NONE)
+ 	pushl $0			# no error code
+ 	pushl $do_iret_error
+ 	jmp error_code
+--- linux-2.6.22.orig/arch/i386/kernel/traps.c
++++ linux-2.6.22/arch/i386/kernel/traps.c
+@@ -517,10 +517,12 @@ fastcall void do_##name(struct pt_regs *
+ 	do_trap(trapnr, signr, str, 0, regs, error_code, NULL); \
+ }
 
- #define IS_G33 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
- 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
-@@ -527,6 +530,7 @@ static void intel_i830_init_gtt_entries(
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
-+			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB ||
- 			    IS_I965 || IS_G33)
- 				gtt_entries = MB(48) - KB(size);
- 			else
-@@ -538,6 +542,7 @@ static void intel_i830_init_gtt_entries(
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
-+			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB ||
- 			    IS_I965 || IS_G33)
- 				gtt_entries = MB(64) - KB(size);
- 			else
-@@ -1848,9 +1853,9 @@ static const struct intel_driver_descrip
- 		NULL, &intel_915_driver },
- 	{ PCI_DEVICE_ID_INTEL_82945G_HB, PCI_DEVICE_ID_INTEL_82945G_IG, 0, "945G",
- 		NULL, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 1, "945GM",
-+	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 0, "945GM",
- 		NULL, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GME_IG,
-0, "945GME",
-+	{ PCI_DEVICE_ID_INTEL_82945GME_HB, PCI_DEVICE_ID_INTEL_82945GME_IG,
-0, "945GME",
- 		NULL, &intel_915_driver },
- 	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, 0, "946GZ",
- 		NULL, &intel_i965_driver },
-@@ -1860,9 +1865,9 @@ static const struct intel_driver_descrip
- 		NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_82965G_HB, PCI_DEVICE_ID_INTEL_82965G_IG, 0, "965G",
- 		NULL, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 1, "965GM",
-+	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 0, "965GM",
- 		NULL, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GME_IG,
-0, "965GME/GLE",
-+	{ PCI_DEVICE_ID_INTEL_82965GME_HB, PCI_DEVICE_ID_INTEL_82965GME_IG,
-0, "965GME/GLE",
- 		NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_7505_0, 0, 0, "E7505", &intel_7505_driver, NULL },
- 	{ PCI_DEVICE_ID_INTEL_7205_0, 0, 0, "E7205", &intel_7505_driver, NULL },
-@@ -2051,11 +2056,13 @@ static struct pci_device_id agp_intel_pc
- 	ID(PCI_DEVICE_ID_INTEL_82915GM_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82945G_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82945GM_HB),
-+	ID(PCI_DEVICE_ID_INTEL_82945GME_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82946GZ_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965G_1_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965Q_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965G_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965GM_HB),
-+	ID(PCI_DEVICE_ID_INTEL_82965GME_HB),
- 	ID(PCI_DEVICE_ID_INTEL_G33_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
+-#define DO_ERROR_INFO(trapnr, signr, str, name, sicode, siaddr) \
++#define DO_ERROR_INFO(trapnr, signr, str, name, sicode, siaddr, irq) \
+ fastcall void do_##name(struct pt_regs * regs, long error_code) \
+ { \
+ 	siginfo_t info; \
++	if (irq) \
++		local_irq_enable(); \
+ 	info.si_signo = signr; \
+ 	info.si_errno = 0; \
+ 	info.si_code = sicode; \
+@@ -560,13 +562,13 @@ DO_VM86_ERROR( 3, SIGTRAP, "int3", int3)
+ #endif
+ DO_VM86_ERROR( 4, SIGSEGV, "overflow", overflow)
+ DO_VM86_ERROR( 5, SIGSEGV, "bounds", bounds)
+-DO_ERROR_INFO( 6, SIGILL,  "invalid opcode", invalid_op, ILL_ILLOPN, regs->eip)
++DO_ERROR_INFO( 6, SIGILL,  "invalid opcode", invalid_op, ILL_ILLOPN,
+regs->eip, 0)
+ DO_ERROR( 9, SIGFPE,  "coprocessor segment overrun",
+coprocessor_segment_overrun)
+ DO_ERROR(10, SIGSEGV, "invalid TSS", invalid_TSS)
+ DO_ERROR(11, SIGBUS,  "segment not present", segment_not_present)
+ DO_ERROR(12, SIGBUS,  "stack segment", stack_segment)
+-DO_ERROR_INFO(17, SIGBUS, "alignment check", alignment_check, BUS_ADRALN, 0)
+-DO_ERROR_INFO(32, SIGSEGV, "iret exception", iret_error, ILL_BADSTK, 0)
++DO_ERROR_INFO(17, SIGBUS, "alignment check", alignment_check, BUS_ADRALN, 0, 0)
++DO_ERROR_INFO(32, SIGSEGV, "iret exception", iret_error, ILL_BADSTK, 0, 1)
+
+ fastcall void __kprobes do_general_protection(struct pt_regs * regs,
+ 					      long error_code)
 
 
 On 2/2/08, Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
-> mainline: dde4787642ee3cb85aef80bdade04b6f8ddc3df8
+> mainline: a10d9a71bafd3a283da240d2868e71346d2aef6f
 >
 >
 > --
