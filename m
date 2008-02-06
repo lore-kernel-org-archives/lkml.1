@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbYBFXSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbYBFXSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623AbYBFXSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 18:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932318AbYBFXPl
+	id S932733AbYBFXSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 18:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763582AbYBFXQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:15:41 -0500
-Received: from smtp1.stealer.net ([88.198.224.204]:43026 "EHLO
-	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764277AbYBFXNK (ORCPT
+	Wed, 6 Feb 2008 18:16:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36268 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763459AbYBFXQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:13:10 -0500
-Date: Thu, 7 Feb 2008 00:12:58 +0100 (CET)
-From: Sven Wegener <sven.wegener@stealer.net>
-To: David Rientjes <rientjes@google.com>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ipvs: Make the synchronization interval controllable
-In-Reply-To: <alpine.DEB.1.00.0802061409130.7879@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0802062329150.15729@titan.stealer.net>
-References: <1202333990-19359-1-git-send-email-sven.wegener@stealer.net>
- <alpine.DEB.1.00.0802061409130.7879@chino.kir.corp.google.com>
-Organization: STEALER.net
+	Wed, 6 Feb 2008 18:16:33 -0500
+Date: Wed, 6 Feb 2008 15:07:02 -0800
+From: Greg KH <greg@kroah.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Roland Dreier <rdreier@cisco.com>, len.brown@intel.com,
+       ibm-acpi-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test if (level
+	& TP_EC_FAN_FULLSPEED)
+Message-ID: <20080206230702.GA12395@kroah.com>
+References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl> <20080205050504.GB30670@khazad-dum.debian.net> <47A81FAE.2090709@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -1.0
-X-Spam-Bar: -
-X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Wed, 06 Feb 2008 23:13:08 +0000
-	Bayes: 0.0173 Tokens: new, 167; hammy, 4; neutral, 3; spammy, 0.
-	AutoLearn: no
-	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0173]
-X-Spam-Signature: b7de34a763dc7f54c85d00c01973086ce21c2cb5
-X-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47A81FAE.2090709@tiscali.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Feb 2008, David Rientjes wrote:
+On Tue, Feb 05, 2008 at 09:34:54AM +0100, Roel Kluin wrote:
+> Henrique de Moraes Holschuh wrote:
+> > On Tue, 05 Feb 2008, Roel Kluin wrote:
+> >> Roland Dreier wrote:
+> >>>  >                 /* safety net should the EC not support AUTO
+> >>>  >                  * or FULLSPEED mode bits and just ignore them */
+> >>>  >                 if (level & TP_EC_FAN_FULLSPEED)
+> >>>  >                         level |= 7;     /* safety min speed 7 */
+> >>>  >                 else if (level & TP_EC_FAN_FULLSPEED)
+> >>>  >                         level |= 4;     /* safety min speed 4 */
+> >>>  > 
+> >>>  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
+> >>>  > this be replaced by
+> >>>
+> >>> Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
+> >>> (based on the comment).
+> >> Thanks Roland, for your info
+> >>
+> >> based on the comments in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad,
+> >> I think this should be modified like below:
+> >>
+> >> ACPI: thinkpad-acpi: add a safety net for TPEC fan control mode
+> >> The Linux ThinkPad community is not positive that all ThinkPads that do
+> >> HFSP EC fan control do implement full-speed and auto modes, some of the
+> >> earlier ones supporting HFSP might not.
+> >>
+> >> If the EC ignores the AUTO or FULL-SPEED bits, it will pay attention to the
+> >> lower three bits that set the fan level. And as thinkpad-acpi was leaving
+> >> these set to zero, it would stop(!) the fan, which is Not A Good Thing.
+> >> So, as a safety net, we now make sure to also set the fan level part of the
+> >> HFSP register to speed 7 for full-speed, and a minimum of speed 4 for auto
+> >> mode.
+> >> --
+> >> second TP_EC_FAN_FULLSPEED should be P_EC_FAN_AUTO
+> >>
+> >>
+> >> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> >> ---
+> >> diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+> >> index cf56647..3c323fe 100644
+> >> --- a/drivers/misc/thinkpad_acpi.c
+> >> +++ b/drivers/misc/thinkpad_acpi.c
+> >> @@ -4138,7 +4138,7 @@ static int fan_set_level(int level)
+> >>  		 * or FULLSPEED mode bits and just ignore them */
+> >>  		if (level & TP_EC_FAN_FULLSPEED)
+> >>  			level |= 7;	/* safety min speed 7 */
+> >> -		else if (level & TP_EC_FAN_FULLSPEED)
+> >> +		else if (level & TP_EC_FAN_AUTO)
+> >>  			level |= 4;	/* safety min speed 4 */
+> >>  
+> >>  		if (!acpi_ec_write(fan_status_offset, level))
+> > 
+> > ACK.  This needs to be sent to stable as well.  I think both 2.6.22 and
+> > 2.6.23 need this patch.
+> > 
+> 
+> CC stable@kernel.org
 
-> On Wed, 6 Feb 2008, Sven Wegener wrote:
->
->> diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
->> index 948378d..9b57ad3 100644
->> --- a/net/ipv4/ipvs/ip_vs_sync.c
->> +++ b/net/ipv4/ipvs/ip_vs_sync.c
->> @@ -143,6 +143,8 @@ char ip_vs_backup_mcast_ifn[IP_VS_IFNAME_MAXLEN];
->>  /* multicast addr */
->>  static struct sockaddr_in mcast_addr;
->>
->> +/* milliseconds between synchronization runs */
->> +int sysctl_ip_vs_sync_interval = 1000;
->>
->>  static inline void sb_queue_tail(struct ip_vs_sync_buff *sb)
->>  {
->
-> How useful is a negative ip_vs_sync_interval?
+Please send us a real copy of the patch, when it goes into Linus's tree,
+so we know what to apply, and that it is safe to do so.
 
-Negative values will be converted to MAX_JIFFY_OFFSET by msecs_to_jiffies 
-and result in a very long interval. A too long interval will be a good way 
-to get your system OOM. We could use an unsigned int or even restrict the 
-value with proc_dointvec_minmax. I'd prefer the latter, that's what I 
-already had in my mind and it also protects from unintentionally choosing 
-a too long interval.
+thanks,
 
-Sven
+greg k-h
