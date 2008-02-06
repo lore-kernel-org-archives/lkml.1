@@ -1,88 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbYBFDVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbYBFDWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759438AbYBFDVV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Feb 2008 22:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbYBFDVL
+	id S1761353AbYBFDWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Feb 2008 22:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbYBFDWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 22:21:11 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49248 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756241AbYBFDVK (ORCPT
+	Tue, 5 Feb 2008 22:22:12 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57719 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750943AbYBFDWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 22:21:10 -0500
-From: akepner@sgi.com
-Date: Tue, 5 Feb 2008 19:19:43 -0800
-To: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3 v2] dma: dma_{un}map_{single|sg}_attrs() interface
-Message-ID: <20080206031943.GN9904@sgi.com>
+	Tue, 5 Feb 2008 22:22:11 -0500
+Date: Tue, 5 Feb 2008 19:22:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: Pull request: DMA pool updates
+Message-Id: <20080205192226.79ba9982.akpm@linux-foundation.org>
+In-Reply-To: <20080206025247.GA7705@parisc-linux.org>
+References: <20080206025247.GA7705@parisc-linux.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 5 Feb 2008 19:52:47 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
 
-Introduce a new interface for passing architecture-specific
-attributes when memory is mapped and unmapped for DMA. Give
-the interface a default implementation which ignores
-attributes.
+> Could I ask you to pull the DMA Pool changes detailed below?
+> 
+> All the patches have been posted to linux-kernel before, and various
+> comments (and acks) have been taken into account.  (see
+> http://thread.gmane.org/gmane.linux.kernel/609943)
+> 
+> It's a fairly nice performance improvement, so would be good to get in.
+> It's survived a few hours of *mumble* high-stress database benchmark,
+> so I have high confidence in its stability.
+> 
+> The following changes since commit 21511abd0a248a3f225d3b611cfabb93124605a7:
+>   Linus Torvalds (1):
+>         Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git dmapool
 
-Signed-off-by: Arthur Kepner <akepner@sgi.com>
+Looks OK to me - I think I reviewed these a while back?  We really should
+have had this tree in -mm for general tyre-kicking.
 
----
 
- dma-mapping.h |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+)
+What's with the #ifdef CONFIG_SLAB stuff in the dmapool code?  Are we just
+overloading a convenient Kconfig label here, or is it required for some
+reason?  Why not CONFIG_SLUB_DEBUG too?
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 101a2d4..4a49abe 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -116,4 +116,39 @@ static inline void dmam_release_declared_memory(struct device *dev)
- }
- #endif /* ARCH_HAS_DMA_DECLARE_COHERENT_MEMORY */
- 
-+#ifndef ARCH_USES_DMA_ATTRS
-+struct dma_attrs;
-+
-+static inline dma_addr_t dma_map_single_attrs(struct device *dev, 
-+					      void *cpu_addr, size_t size, 
-+					      enum dma_data_direction dir, 
-+					      struct dma_attrs* attrs)
+
+For the future:
+
+This code:
+
++struct dma_pool *dma_pool_create(const char *name, struct device *dev,
++				 size_t size, size_t align, size_t boundary)
 +{
-+	return dma_map_single(dev, cpu_addr, size, dir);
-+}
++	struct dma_pool *retval;
++	size_t allocation;
 +
-+static inline void dma_unmap_single_attrs(struct device *dev, 
-+					  dma_addr_t dma_addr, size_t size, 
-+					  enum dma_data_direction dir, 
-+					  struct dma_attrs* attrs)
-+{
-+	return dma_unmap_single(dev, dma_addr, size, dir);
-+}
++	if (align == 0) {
++		align = 1;
++	} else if (align & (align - 1)) {
++		return NULL;
++	}
 +
-+static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
-+				   int nents, enum dma_data_direction dir, 
-+				   struct dma_attrs *attrs)
-+{
-+	return dma_map_sg(dev, sgl, nents, dir);
-+}
++	if (size == 0) {
++		return NULL;
++	} else if (size < 4) {
++		size = 4;
++	}
 +
-+static inline void dma_unmap_sg_attrs(struct device *dev, 
-+				      struct scatterlist *sgl, int nents, 
-+				      enum dma_data_direction dir, 
-+				      struct dma_attrs *attrs)
-+{
-+	return dma_unmap_sg(dev, sgl, nents, dir);
-+}
-+#endif /* ARCH_USES_DMA_ATTRS */
++	if ((size % align) != 0)
++		size = ALIGN(size, align);
 +
- #endif
++	allocation = max_t(size_t, size, PAGE_SIZE);
++
++	if (!boundary) {
++		boundary = allocation;
++	} else if ((boundary < size) || (boundary & (boundary - 1))) {
++		return NULL;
++	}
+
+could do with some relief from its brace fetish and some education about
+is_power_of_2().  And the `if ((size % align) != 0)' can just go away,
+which will save code and is likely faster.
+
+It's a separate thing I guess, but I don't see any reason why
+dma_pool_alloc() _has_ to use GFP_ATOMIC.  Looks like it can do the
+allocation outside spin_lock_irqsave() and use mem_flags instead.  If that
+has __GFP_WAIT then we're in much better shape.
+
+I wish all this code wouldn't do
+
+	struct dma_page *page;
+
+because one very much expects a local variable called "page" to be of type
+`struct page *'.  
 
