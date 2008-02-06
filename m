@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbYBFQY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbYBFQ0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbYBFQY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 11:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYBFQYr
+	id S1754968AbYBFQ0r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 11:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYBFQ0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 11:24:47 -0500
-Received: from waste.org ([66.93.16.53]:53883 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbYBFQYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 11:24:47 -0500
-Subject: Re: blackfin compile error
-From: Matt Mackall <mpm@selenic.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: bryan.wu@analog.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080206151830.GI505@cs181133002.pp.htv.fi>
-References: <20080206151830.GI505@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 10:23:35 -0600
-Message-Id: <1202315015.17934.242.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 11:26:39 -0500
+Received: from styx.suse.cz ([82.119.242.94]:50120 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752041AbYBFQ0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 11:26:38 -0500
+Date: Wed, 6 Feb 2008 17:26:37 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Hugh Dickins <hugh@veritas.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Document randomize_va_space and CONFIG_COMPAT_BRK (was Re:
+ [PATCH 2/2] ASLR: add possibility for more fine-grained tweaking)
+In-Reply-To: <20080206134959.GA25689@elte.hu>
+Message-ID: <Pine.LNX.4.64.0802061650230.30955@jikos.suse.cz>
+References: <Pine.LNX.4.64.0802061438150.30955@jikos.suse.cz>
+ <Pine.LNX.4.64.0802061442300.30955@jikos.suse.cz> <20080206134959.GA25689@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 Feb 2008, Ingo Molnar wrote:
 
-On Wed, 2008-02-06 at 17:18 +0200, Adrian Bunk wrote:
-> Commit 698dd4ba6b12e34e1e432c944c01478c0b2cd773 broke blackfin:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      mm/vmscan.o
-> In file included from 
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/vmscan.c:44:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h: In function 'is_swap_pte':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_none'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_present'
-> make[2]: *** [mm/vmscan.o] Error 1
+> i've already added the patch below to x86.git.
 
-This suggests that no one's tried to compile -mm on Blackfin since
-before September, I think.
+OK, cool, thanks.
 
-Is there somewhere more appropriate to move it? I can't find one.
-Failing that, we can wrap it in CONFIG_MMU, I suppose.
+Still, I think that we want the Documentation/sysctl/kernel.txt part of my 
+patch probably. Updated patch below.
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-diff -r 50a6e531a9f2 include/linux/swapops.h
---- a/include/linux/swapops.h	Mon Feb 04 20:23:02 2008 -0600
-+++ b/include/linux/swapops.h	Wed Feb 06 10:21:32 2008 -0600
-@@ -42,11 +42,13 @@
- 	return entry.val & SWP_OFFSET_MASK(entry);
- }
+From: Jiri Kosina <jkosina@suse.cz>
+
+Document randomize_va_space and CONFIG_COMPAT_BRK
+
+diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+index 8984a53..dc8801d 100644
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -41,6 +41,7 @@ show up in /proc/sys/kernel:
+ - pid_max
+ - powersave-nap               [ PPC only ]
+ - printk
++- randomize_va_space
+ - real-root-dev               ==> Documentation/initrd.txt
+ - reboot-cmd                  [ SPARC only ]
+ - rtsig-max
+@@ -280,6 +281,34 @@ send before ratelimiting kicks in.
  
-+#ifdef CONFIG_MMU
- /* check whether a pte points to a swap entry */
- static inline int is_swap_pte(pte_t pte)
- {
- 	return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
- }
-+#endif
+ ==============================================================
  
- /*
-  * Convert the arch-dependent pte representation of a swp_entry_t into an
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
++randomize-va-space:
++
++This option can be used to select the type of process address
++space randomization that is used in the system, for architectures
++that support this feature.
++
++0 - Turn the process address space randomization off by default.
++
++1 - Make the addresses of mmap base, stack and VDSO page randomized.
++    This, among other things, implies that shared libraries will be
++    loaded to random addresses. Also for PIE-linked binaries, the location
++    of code start is randomized.
++
++    With heap randomization, the situation is a little bit more
++    complicated.
++    There a few legacy applications out there (such as some ancient
++    versions of libc.so.5 from 1996) that assume that brk area starts
++    just after the end of the code+bss. These applications break when
++    start of the brk area is randomized. There are however no known
++    non-legacy applications that would be broken this way, so for most
++    systems it is safe to choose full randomization. However there is
++    a CONFIG_COMPAT_BRK option for systems with ancient and/or broken
++    binaries, that makes heap non-randomized, but keeps all other
++    parts of process address space randomized if randomize_va_space
++    sysctl is turned on.
++
++==============================================================
++
+ reboot-cmd: (Sparc only)
+ 
+ ??? This seems to be a way to give an argument to the Sparc
