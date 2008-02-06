@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932364AbYBGABa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbYBGABx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932364AbYBGABa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764187AbYBFXys
+	id S932765AbYBGABx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764306AbYBFXyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 18:54:48 -0500
-Received: from mail.suse.de ([195.135.220.2]:45256 "EHLO mx1.suse.de"
+	Wed, 6 Feb 2008 18:54:52 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60052 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764270AbYBFXyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 18:54:47 -0500
-Date: Wed, 6 Feb 2008 15:51:31 -0800
+	id S1764300AbYBFXyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 18:54:51 -0500
+Date: Wed, 6 Feb 2008 15:51:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,16 +19,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick Mansfield <patmans@us.ibm.com>,
-       Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
-Subject: [patch 15/73] POWERPC: Change fallocate to match unistd.h on
-	powerpc
-Message-ID: <20080206235131.GP13121@suse.de>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
+       Julia Lawall <julia@diku.dk>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 16/73] X25: Add missing x25_neigh_put
+Message-ID: <20080206235146.GQ13121@suse.de>
 References: <20080206234302.769849277@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-change-fallocate-to-match-unistd.h-on-powerpc.patch"
+Content-Disposition: inline; filename="x25-add-missing-x25_neigh_put.patch"
 In-Reply-To: <20080206235015.GA13121@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,40 +35,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 2.6.23-stable review patch.  If anyone has any objections, please let us know.
 ------------------
-From: Patrick Mansfield <patmans@us.ibm.com>
+From: Julia Lawall <julia@diku.dk>
 
-patch f2205fbb5a8933514fd343cc329df631802b4543 in mainline.
+[X25]: Add missing x25_neigh_put
 
-Fix the fallocate system call on powerpc to match its unistd.h.
+[ Upstream commit: 76975f8a3186dae501584d0155ea410464f62815 ]
 
-This implies none of these system calls are currently working with the
-unistd.h sys call values:
-	fallocate
-	signalfd
-	timerfd
-	eventfd
-	sync_file_range2
+The function x25_get_neigh increments a reference count.  At the point of
+the second goto out, the result of calling x25_get_neigh is only stored in
+a local variable, and thus no one outside the function will be able to
+decrease the reference count.  Thus, x25_neigh_put should be called before
+the return in this case.
 
-Signed-off-by: Patrick Mansfield <patmans@us.ibm.com>
-Acked-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+The problem was found using the following semantic match.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+
+@@
+type T,T1,T2;
+identifier E;
+statement S;
+expression x1,x2,x3;
+int ret;
+@@
+
+  T E;
+  ...
+* if ((E = x25_get_neigh(...)) == NULL)
+  S
+  ... when != x25_neigh_put(...,(T1)E,...)
+      when != if (E != NULL) { ... x25_neigh_put(...,(T1)E,...); ...}
+      when != x1 = (T1)E
+      when != E = x3;
+      when any
+  if (...) {
+    ... when != x25_neigh_put(...,(T2)E,...)
+        when != if (E != NULL) { ... x25_neigh_put(...,(T2)E,...); ...}
+        when != x2 = (T2)E
+(
+*   return;
+|
+*   return ret;
+)
+  }
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-powerpc/systbl.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/x25/x25_forward.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/include/asm-powerpc/systbl.h
-+++ b/include/asm-powerpc/systbl.h
-@@ -308,8 +308,8 @@ COMPAT_SYS_SPU(move_pages)
- SYSCALL_SPU(getcpu)
- COMPAT_SYS(epoll_pwait)
- COMPAT_SYS_SPU(utimensat)
--COMPAT_SYS(fallocate)
- COMPAT_SYS_SPU(signalfd)
- COMPAT_SYS_SPU(timerfd)
- SYSCALL_SPU(eventfd)
- COMPAT_SYS_SPU(sync_file_range2)
-+COMPAT_SYS(fallocate)
+--- a/net/x25/x25_forward.c
++++ b/net/x25/x25_forward.c
+@@ -118,13 +118,14 @@ int x25_forward_data(int lci, struct x25
+ 		goto out;
+ 
+ 	if ( (skbn = pskb_copy(skb, GFP_ATOMIC)) == NULL){
+-		goto out;
++		goto output;
+ 
+ 	}
+ 	x25_transmit_link(skbn, nb);
+ 
+-	x25_neigh_put(nb);
+ 	rc = 1;
++output:
++	x25_neigh_put(nb);
+ out:
+ 	return rc;
+ }
 
 -- 
