@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbYBFJvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761574AbYBFKFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762383AbYBFJvl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 04:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762222AbYBFJvb
+	id S1761574AbYBFKFa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 05:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760663AbYBFKFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 04:51:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40479 "EHLO mx2.mail.elte.hu"
+	Wed, 6 Feb 2008 05:05:21 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:22665 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759014AbYBFJv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 04:51:29 -0500
-Date: Wed, 6 Feb 2008 10:51:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Pavel Emelyanov <xemul@openvz.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       jesse.brandeburg@intel.com, jeffrey.t.kirsher@intel.com,
-       john.ronciak@intel.com, David Miller <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       e1000-devel@lists.sourceforge.net, Denis Lunev <den@openvz.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_32: fix regression caused by trim ram according to
-	mtrr on system with 4G more RAM
-Message-ID: <20080206095107.GA30596@elte.hu>
-References: <47A89A77.1050608@openvz.org> <200802060119.25278.yinghai.lu@sun.com> <47A97E28.1010400@openvz.org> <200802060149.26083.yinghai.lu@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1760629AbYBFKFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 05:05:20 -0500
+Date: Wed, 6 Feb 2008 13:05:10 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: tg3 broken after "PCI: Fix bus resource assignment on 32 bits with 64b resources"
+Message-ID: <20080206100510.GA29127@localhost.sw.ru>
+References: <20080204151222.GB25790@localhost.sw.ru> <1202162073.7079.8.camel@pasglop> <20080205091758.GB26618@localhost.sw.ru> <86802c440802050207j60385efbif6f693dc0b1fd297@mail.gmail.com> <1202244592.7079.68.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200802060149.26083.yinghai.lu@sun.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1202244592.7079.68.camel@pasglop>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 06, 2008 at 07:49:52AM +1100, Benjamin Herrenschmidt wrote:
+> 
+> > so x86_64 will work well?
+> > 
+> > the problem is that BIOS does not assign one resource for you tg3. and
+> > kernel pcibios_assign_to_unassign (?) try
+> > to assign resource to your card.
+> 
+> But the kernel shouldn't try to assign a resource in the 64 bits space
+> to a card behind a bridge... at least not a non-prefetchable resource
+> since those can't be forwarded (P2P bridges only define a 32 bits window
+> for non-prefetchable resources).
+> 
+> So it does look to me like the kernel may be doing something wrong. I
+> haven't had a chance to look at the logs in details yet (just woke up).
+> 
+> > revert the patch happen to work, you only have 2g less RAM (?), so
+> > 0x8000000 still can be used.
+> > 
+> > sometime you could get hang if your MB have two HT chains. ...because
+> > BIOS already allocate two io range for the two chain.
+> > and kernel may assign resource from the range1 belong to HT1 to device
+> > under HT0.
+> > solution: need pci root bios to provide _CRS to replace...
+> > and i have one patch but it only take care of 64 bit kernel for this case.
+> > 
+> > 
+> > easy solution for you: try to get one updated BIOS.
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+BTW, "[PATCH] x86_32: fix regression caused by trim ram according to mtrr on system with 4G more RAM"
+http://marc.info/?l=linux-kernel&m=120229095121673&w=2
+fixes this box too and I have back all 4G of RAM as a bonus. :-)
 
-> [PATCH] x86_32: fix regression caused by trim ram according to mtrr on system with 4G more RAM
-> 
-> Pravel report:
-> "
-> The commit
-> 
->         093af8d7f0ba3c6be1485973508584ef081e9f93
->         x86_32: trim memory by updating e820
-> 
-> broke my e1000 card: on loading driver says that
-> 
->         e1000: probe of 0000:04:03.0 failed with error -5
-> 
-> and the interface doesn't appear.
-> "
-> 
-> on 32 bit kernel, base will overflow when try to do PAGE_SHIFT. and 
-> highest_addr will always less 4G.
-> 
-> so use pfn instead of address to avoid overflow when more than 4g
->  ram installed on 32bit kernel
-> Many thanks for Pavel Emelyanov to report and test it.
-
-thanks guys, applied.
-
-	Ingo
