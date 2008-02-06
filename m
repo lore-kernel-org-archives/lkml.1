@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbYBFWRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbYBFWU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbYBFWRy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 17:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYBFWRn
+	id S1759961AbYBFWU0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 17:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757124AbYBFWUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 17:17:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47922 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754635AbYBFWRl (ORCPT
+	Wed, 6 Feb 2008 17:20:15 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:53187 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754897AbYBFWUM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 17:17:41 -0500
-Date: Wed, 6 Feb 2008 14:16:36 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gianluca Alberici <gianluca@abinetworks.biz>
-Cc: chuck.lever@oracle.com, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
-Message-Id: <20080206141636.1001b1c5.akpm@linux-foundation.org>
-In-Reply-To: <47AA2CB6.9070908@abinetworks.biz>
-References: <476CEC5E.9070002@abinetworks.biz>
-	<838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>
-	<476E47F5.4090807@abinetworks.biz>
-	<20071225140431.9264970a.akpm@linux-foundation.org>
-	<199BEBA7-E46E-4B1F-9D36-91BB43331B75@oracle.com>
-	<4791EE99.3030802@abinetworks.biz>
-	<5FD6714F-EF9A-4F07-B2B6-D6F6CC911936@oracle.com>
-	<479C744A.6020207@abinetworks.biz>
-	<12964A18-350B-443F-B15A-D78B3723C89A@oracle.com>
-	<479F2463.2040704@abinetworks.biz>
-	<4AAA3DAF-898C-4ED5-BD07-4FD2B5CEEF16@oracle.com>
-	<Pine.LNX.4.64.0801291851110.4820@maggie.lkpg.cendio.se>
-	<7EE4B02B-3359-41C0-BFED-0947DF9F5F5A@oracle.com>
-	<479F8377.6090704@abinetworks.biz>
-	<1201638661.7969.7.camel@heimdal.trondhjem.org>
-	<F7BFE847-A3C3-44E5-A238-5C69ED3EE1C4@oracle.com>
-	<47A0704D.7080808@abinetworks.biz>
-	<AB6DF303-5C5B-453C-9992-DAF826FF02CE@oracle.com>
-	<47A9FB91.2040304@abinetworks.biz>
-	<C18DF7CB-3641-4A23-8BEB-63A161503DDD@oracle.com>
-	<47AA2CB6.9070908@abinetworks.biz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Feb 2008 17:20:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=G/q/tUuGpPT//vgWGAymhZuj9RbmqSTBJKOMx8RLG1g6U6y3l6XzAFalMJQAyaAQz05eq3SmjLc4FeyvDZ+w10KLa9X0Xs8Jv2EwWaA5bvAFrSnq5kVYnrgMUPFwYl+gY0FEK8H5RQVMrtMl39zQf0i+sPp2XjBewhSG1P3sE7I=
+Message-ID: <31e679430802061420m113f7fa9tdfe8fd24929ed4c6@mail.gmail.com>
+Date: Wed, 6 Feb 2008 17:20:09 -0500
+From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: T61P sound issue
+Cc: "Theodore Tso" <tytso@mit.edu>, tiwai@suse.de,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802061455110.30873@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <31e679430801270549u49e1c549qf602b36b07aabc2b@mail.gmail.com>
+	 <20080204194038.d8851b8d.akpm@linux-foundation.org>
+	 <20080205113633.GI27738@hjernemadsen.org>
+	 <20080205102219.83fe459d.akpm@linux-foundation.org>
+	 <31e679430802051304l7c1d68d8r153c753a5b96087a@mail.gmail.com>
+	 <Pine.LNX.4.64.0802052207330.30873@twin.jikos.cz>
+	 <20080206022517.GB27119@mit.edu>
+	 <Pine.LNX.4.64.0802060909420.30873@twin.jikos.cz>
+	 <20080206135306.GI27119@mit.edu>
+	 <Pine.LNX.4.64.0802061455110.30873@twin.jikos.cz>
+X-Google-Sender-Auth: 5088b25aad3b5208
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Feb 2008 22:55:02 +0100
-Gianluca Alberici <gianluca@abinetworks.biz> wrote:
+Hi all,
 
-> I finally got it. Problem and solution have been found from 6 month but 
-> nobody cared...up to now those servers have not been mantained, this 
-> problem is not discussed anywhere else than the following link.
-> The bug (userspace server side i would say at this point) is well 
-> described from the author of an nfs-user-server patch which has not been 
-> managed yet. The magic hint to find it on google was 'nfs server 
-> utimensat' :-)
-> 
-> http://marc.info/?l=linux-nfs&m=118724649406144&w=2
+On Feb 6, 2008 8:56 AM, Jiri Kosina <jikos@jikos.cz> wrote:
+> On Wed, 6 Feb 2008, Theodore Tso wrote:
+>
+> > > I have also seen sound working flawlessly on another X61s. Maybe they
+> > > changed some chipset revisions on the fly, or whatever.
+> > > What does lspci -v show for your soundcard please?
+> > Attached please find my lspci -v and dmidecode information.
+>
+> Thanks. As I have already written elsewhere in this thread, the problem
+> went away after I updated the BIOS to the latest version. So it was Lenovo
+> who was to blame, and I was just unlucky enough to hit the series with
+> broken BIOS.
+>
 
-This is pretty significant.  We have on several occasions in recent years
-tightened up the argument checking on long-standing system calls and it's
-always a concern that this will break previously-working applications.
+BIOS upgraded, now the sound works on consoles (beeps) but not even
+alsaplayer can play sounds.
 
-And now it has happened.
+I'll keep trying.
 
-If we put buggy code into the kernel then we're largely stuck with it: we
-need to be back-compatible with our bugs so we don't break things like
-this.
+In any case, I have other issues: Serial port is really laggy (on Dock
+of course), even if I use a usb-serial converter, still laggy (laptop
+or dock).
+USB is taking ages to enumerate.
 
-> I have already prepared a working patch for cfsd based upon the one ive 
-> listed. The nfs patch is of course waiting for commit since august, 
-> 2007. Ill submit it to debian cfsd mantainers, hoping to have more 
-> chance than my predecessor.
-> It doesnt seem to me that there was any kernel related issue.
-> 
-> Thanks a lot again, sorry for the lots of noise i have done. I will try 
-> to be more appropriate next time.
+If anyone has any clue about these... please shoot me :-p
 
-That wasn't noise - it was quite valuable.  Thanks for all the work you did
-on this.
+> Thanks,
+>
+> --
+> Jiri Kosina
+>
 
 
-Given that our broken-by-unbreaking code has been out there in several
-releases there isn't really any point in rebreaking it to fix this - the
-offending applications need to be repaired so they'll work on 2.6.22 and
-2.6.23 anyway.
 
+-- 
+Best Regards,
+
+Felipe Balbi
+felipebalbi@users.sourceforge.net
