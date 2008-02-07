@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYBGQhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbYBGQiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbYBGQhe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 11:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYBGQh0
+	id S1760251AbYBGQiU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 11:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbYBGQiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 11:37:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53153 "EHLO mx1.redhat.com"
+	Thu, 7 Feb 2008 11:38:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53188 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbYBGQhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 11:37:25 -0500
-Message-ID: <47AB3382.3030806@redhat.com>
-Date: Thu, 07 Feb 2008 11:36:18 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752281AbYBGQiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 11:38:05 -0500
+Date: Thu, 7 Feb 2008 11:37:52 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       Horms <horms@verge.net.au>
+Subject: Re: why kexec insists on syncing with recent kernels?
+Message-ID: <20080207163752.GD11969@redhat.com>
+References: <47AB120A.1000600@wpkg.org>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Greg KH <greg@kroah.com>, Grant Grundler <grundler@parisc-linux.org>,
-       Loic Prylli <loic@myri.com>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
-References: <20080114230448.GL9847@does.not.exist>	<20080115174643.GB28238@kroah.com>	<20080115175641.GE18741@parisc-linux.org>	<20080119165809.GB11553@colo.lackof.org>	<479E1FA6.1030708@redhat.com>	<20080128204431.GA15227@kroah.com>	<20080128223141.GA31101@parisc-linux.org>	<20080128225334.GD4720@kroah.com>	<20080129025615.GC20198@parisc-linux.org>	<20080129030340.GE20198@parisc-linux.org>	<86802c440802022330o771cf98btcf750c790668b6e9@mail.gmail.com>	<47AB299D.4000500@redhat.com> <20080207082827.2b4e6112@laptopd505.fenrus.org>
-In-Reply-To: <20080207082827.2b4e6112@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AB120A.1000600@wpkg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Thu, 07 Feb 2008 10:54:05 -0500
-> Tony Camuso <tcamuso@redhat.com> wrote:
-> 
->> Matthew,
->>
->> Perhaps I missed it, but did you address Yinghai's concerns?
->>
->> Yinghai Lu wrote:
->>> On Jan 28, 2008 7:03 PM, Matthew Wilcox <matthew@wil.cx> wrote:
->>>> -int pci_conf1_write(unsigned int seg, unsigned int bus,
->>>> +static int pci_conf1_write(unsigned int seg, unsigned int bus,
->>>>                            unsigned int devfn, int reg, int len,
->>>> u32 value)
->>> any reason to change pci_conf1_read/write to static?
->>>
-> 
-> nothing should use these directly. So static is the right answer ;)
+On Thu, Feb 07, 2008 at 03:13:30PM +0100, Tomasz Chmielewski wrote:
+> According to kernel/kexec.c:
+>
+>  * kexec does not sync, or unmount filesystems so if you need
+>  * that to happen you need to do that yourself.
+>
+>
 
-Agreed. Thanks, Arjan.
+In latest kexec code I do see it syncing. But it does not unmount the
+filesystems. So this comment looks like partially wrong.
 
-Matthew,
-What about the ATA_RAM addition to Kconfig? Was it accidental,
-or intended? If intended, how is it related?
+> I saw this was true with 2.6.18 kernel (i.e., it didn't sync), but kexec 
+> syncs with recent kernels (I checked 2.6.23.14 and 2.6.24):
+>
+> # kexec -e
+> md: stopping all md devices
+> sd 2:0:0:0: [sdb] Synchronizing SCSI cache
+
+Which kexec-tools you are using? 
+
+syncing is initiated by user space so changing kernel will not have
+any effect (as long as user space is same). I think just that message
+are spitted by kernel, so probably 2.6.18 did not spit any message and
+2.6.24 does.
+
+>
+>
+> With kexec on 2.6.18 it was executing a loaded kernel immediately.
+>
+>
+> Generally, it's a good thing to sync before jumping into a new kernel, but 
+> it breaks my setup here after upgrading from 2.6.18 to 2.6.24.
+>
+> Why?
+>
+> I have a couple of diskless (iSCSI-boot) machines with a buggy BIOS (old 
+> Supermicro P4SBR/P4SBE) which randomly freeze after rebooting (the machine 
+> shuts down just fine, but instead of booting again, showing BIOS bootup 
+> messages etc. you can just see blank screen).
+>
+> Therefore, I use kexec as a workaround for this rebooting problem.
+>
+> The way kexec works now makes rebooting unreliable again:
+> - network interfaces are brought down,
+> - kernel tries to sync - it never will, as we're booted off network, which 
+> is down
+>
+
+Kexec has got an option -x --no-ifdown, which will not bring the network
+down. Try that. "kexec- -e -x"
+
+
+> Any ideas why kexec insists on syncing?
+
+To me it makes sense. Just making sure that cache changes make to the file
+system before you boot into new kernel.
+
+In latest kexec-tools, I do see sync() is done first and then network
+interfaces are brought down. 
+
+Try latest kexec tools from:
+
+http://www.vergenet.net/~horms/linux/kexec/kexec-tools/testing/kexec-tools-testing-20071017-rc.tar.gz
+
+and see if it works fine for you.
+
+Thanks
+Vivek
