@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933417AbYBGUwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762737AbYBGUxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933417AbYBGUwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932874AbYBGUuh
+	id S1762737AbYBGUxI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:53:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932905AbYBGUun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:50:37 -0500
-Received: from ns2.suse.de ([195.135.220.15]:38054 "EHLO mx2.suse.de"
+	Thu, 7 Feb 2008 15:50:43 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45000 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932751AbYBGUuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:50:35 -0500
-Date: Thu, 7 Feb 2008 12:46:43 -0800
+	id S1759694AbYBGUul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:50:41 -0500
+Date: Thu, 7 Feb 2008 12:46:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, linux-usb@vger.kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@redhat.com>
-Subject: [patch 04/45] USB: keyspan: Fix oops
-Message-ID: <20080207204643.GE16389@suse.de>
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 05/45] usb gadget: fix fsl_usb2_udc potential OOPS
+Message-ID: <20080207204647.GF16389@suse.de>
 References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-keyspan-fix-oops.patch"
+Content-Disposition: inline; filename="usb-gadget-fix-fsl_usb2_udc-potential-oops.patch"
 In-Reply-To: <20080207204549.GA16389@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,29 +37,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Li Yang <leoli@freescale.com>
 
-If we get a data URB back from the hardware after we have put the tty to
-bed we go kaboom. Fortunately all we need to do is process the URB
-without trying to ram its contents down the throat of an ex-tty.
+For fsl_usb2_udc driver, ep0 also has a descriptor.  Current code is
+misleading and contains a logical mistake.  Here is the patch to fix it.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+ http://bugzilla.kernel.org/show_bug.cgi?id=9595
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/keyspan.c |    2 +-
+ drivers/usb/gadget/fsl_usb2_udc.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/serial/keyspan.c
-+++ b/drivers/usb/serial/keyspan.c
-@@ -838,7 +838,7 @@ static void	usa49_indat_callback(struct 
- 
- 	port = (struct usb_serial_port *) urb->context;
- 	tty = port->tty;
--	if (urb->actual_length) {
-+	if (tty && urb->actual_length) {
- 		/* 0x80 bit is error flag */
- 		if ((data[0] & 0x80) == 0) {
- 			/* no error on any byte */
+--- a/drivers/usb/gadget/fsl_usb2_udc.c
++++ b/drivers/usb/gadget/fsl_usb2_udc.c
+@@ -776,7 +776,7 @@ fsl_ep_queue(struct usb_ep *_ep, struct 
+ 		VDBG("%s, bad params\n", __FUNCTION__);
+ 		return -EINVAL;
+ 	}
+-	if (!_ep || (!ep->desc && ep_index(ep))) {
++	if (unlikely(!_ep || !ep->desc)) {
+ 		VDBG("%s, bad ep\n", __FUNCTION__);
+ 		return -EINVAL;
+ 	}
 
 -- 
