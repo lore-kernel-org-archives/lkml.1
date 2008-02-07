@@ -1,105 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYBGJ6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbYBGKCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbYBGJ6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 04:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYBGJ55
+	id S932110AbYBGKCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 05:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYBGKCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 04:57:57 -0500
-Received: from matups.math.u-psud.fr ([129.175.50.4]:40767 "EHLO
-	matups.math.u-psud.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839AbYBGJ5z convert rfc822-to-8bit (ORCPT
+	Thu, 7 Feb 2008 05:02:04 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42734 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751921AbYBGKCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 04:57:55 -0500
-From: Duncan Sands <baldrick.bulk@free.fr>
-To: Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
-Date: Thu, 7 Feb 2008 10:57:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
-Cc: linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <47A9DD30.5040604@openvz.org> <200802061820.54870.baldrick.bulk@free.fr> <47AACE2B.2040404@openvz.org>
-In-Reply-To: <47AACE2B.2040404@openvz.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802071057.41201.baldrick.bulk@free.fr>
+	Thu, 7 Feb 2008 05:02:00 -0500
+Date: Thu, 7 Feb 2008 02:02:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Harald Arnesen" <skogtun.linux@gmail.com>
+Cc: "FUJITA Tomonori" <tomof@acm.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matthew Wilcox" <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: Latest git oopses during boot
+Message-Id: <20080207020214.0f0cf1c7.akpm@linux-foundation.org>
+In-Reply-To: <8120cfd40802070144l79830c2cs6329c302697ecc8b@mail.gmail.com>
+References: <8120cfd40802060832w2dd3631foad324b3633427230@mail.gmail.com>
+	<20080206144732.5a1a2c3b.akpm@linux-foundation.org>
+	<8120cfd40802070144l79830c2cs6329c302697ecc8b@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
 
-> >> @@ -1014,11 +1015,7 @@ static int usbatm_do_heavy_init(void *arg)
-> >>  	struct usbatm_data *instance = arg;
-> >>  	int ret;
-> >>  
-> >> -	daemonize(instance->driver->driver_name);
-> >>  	allow_signal(SIGTERM);
-> >> -	instance->thread_pid = current->pid;
-> >> -
-> >> -	complete(&instance->thread_started);
-> > 
-> > One reason the completion existed to make sure that the thread was not
-> > sent SIGTERM before the above call to allow_signal(SIGTERM).  So I think
-> > you have opened up a (tiny) race by deleting it.
+(cc's restored, and expanded a bit)
+
+On Thu, 7 Feb 2008 10:44:29 +0100 "Harald Arnesen" <skogtun.linux@gmail.com> wrote:
+
+> On Feb 6, 2008 11:47 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Wed, 6 Feb 2008 17:32:22 +0100
+> > "Harald Arnesen" <skogtun.linux@gmail.com> wrote:
+> >
+> > > Photo of screen attached (no serial terminal, and alas, no decent
+> > > tripod either).
+> >
+> > Thanks, but you've disabled so many debug options that the trace isn't
+> > very useful.
+> >
+> >
+> > > git-bisect gives me this:
+> > >
+> > > 6b7b651055221127304a4e373ee9b762398d54d7 is first bad commit
+> > > commit 6b7b651055221127304a4e373ee9b762398d54d7
+> > > Author: FUJITA Tomonori <tomof@acm.org>
+> > > Date:   Mon Feb 4 22:27:55 2008 -0800
+> > >
+> > >     iommu sg merging: add device_dma_parameters structure
+> > >
+> > >     IOMMUs merges scatter/gather segments without considering a low level
+> > >     driver's restrictions. The problem is that IOMMUs can't access to the
+> > >     limitations because they are in request_queue.
+> > >
+> > >     This patchset introduces a new structure, device_dma_parameters,
+> > >     including dma information. A pointer to device_dma_parameters is added
+> > >     to struct device. The bus specific structures (like pci_dev) includes
+> > >     device_dma_parameters. Low level drivers can use dma_set_max_seg_size
+> > >     to tell IOMMUs about the restrictions.
+> > >
+> > >     We can move more dma stuff in struct device (like dma_mask) to struct
+> > >     device_dma_parameters later (needs some cleanups before that).
+> > >
+> > >     This includes patches for all the IOMMUs that could merge sg (x86_64,
+> > >     ppc, IA64, alpha, sparc64, and parisc) though only the ppc patch was
+> > >     tested. The patches for other IOMMUs are only compile tested.
+> > >
+> > > $ gcc -v
+> > > Using built-in specs.
+> > > Target: i686-pc-linux-gnu
+> > > Configured with: ../configure --prefix=/opt/gcc
+> > > Thread model: posix
+> > > gcc version 4.2.3
+> > >
+> > > Config:
+> > >
+> > > ...
+> > >
+> > > # CONFIG_DEBUG_BUGVERBOSE is not set
+> > >
+> >
+> > This one really should be enabled at all times, please.
+> >
+> > Can you please set it and retry?
+> >
 > 
-> Nope. See my answer below :)
+> I'm off to my day job now, but I did it earlier this morning. New
+> screenshot attached.
 > 
-> >>  static int usbatm_heavy_init(struct usbatm_data *instance)
-> >>  {
-> >> -	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_FS | CLONE_FILES);
-> >> -
-> >> -	if (ret < 0) {
-> >> -		usb_err(instance, "%s: failed to create kernel_thread (%d)!\n", __func__, ret);
-> > 
-> > Please don't delete this message.
-> > 
-> >> -		return ret;
-> >> -	}
-> >> +	struct task_struct *t;
-> >>  
-> >> -	wait_for_completion(&instance->thread_started);
-> >> +	t = kthread_create(usbatm_do_heavy_init, instance,
-> >> +			instance->driver->driver_name);
-> >> +	if (IS_ERR(t))
-> >> +		return PTR_ERR(t);
-> >>  
-> >> +	instance->thread = t;
-> >> +	wake_up_process(t);
-> > 
-> > Does the kthread API guarantee that the kthread is not running until you call
-> 
-> It does. That's why the race, you mentioned above is impossible.
+> Seems to be the advansys driver, so I tried to remove it - and indeed,
+> the kernel now boots. So I guess it's either that driver or my ancient
+> Nikon Coolscan II that is the only thing attached to the board.
 
-I don't see why it helps.  The race I mentioned occurs when the kthread creating thread
-runs too fast compared to the kthread.  Let C (creator) be the thread running
-usbatm_heavy_init, and K (kthread) be the created kthread.  When C calls wake_up_process,
-thread K starts running, however on an SMP system C may also be running.  Now suppose
-that for some reason K takes a long time to execute the command "allow_signal(SIGTERM);",
-but that C runs very fast and immediately executes the disconnect callback, and sends the
-signal to K before K manages to execute allow_signal.  This is the race, and it can only
-be fixed by making C run slower (thus the completion).  Of course this is fantastically
-unlikely which is why I described it as tiny, but as far as I can see it is a theoretical
-possibility.  I don't see that wake_up_process fixes it, it just makes it even less likely.
+Thanks.  I uploaded the oops picture to
+http://userweb.kernel.org/~akpm/oops.jpg
 
-> > By the way, the right thing to do is (I think) to replace the thread with
-> > a workqueue and have users of usbatm register a "shut_down" callback
-> > rather than using signals: the disconnect method would call shut_down
-> > rathering than trying to kill the thread.  That way all this mucking
-> > around with pids etc wouldn't be needed.  All users of usbatm would need
-> > to be modified.  I managed to convince myself once that they could all be
-> > fixed up in a fairly simple manner thanks to a few tricks and a
-> > completion or two, but I don't recall the details...
->
-> Well, that would be also great, since kill_proc will be gone - that's what
-> I'm trying to achieve.
+> Cc to the Matthew Wilcox added.
 
-I think your patch should go in, since I'm not likely to ever implement the
-scheme I suggested - I don't use this hardware anymore and have lost interest
-in the driver.
+mm...  looks like all Matthew's changes were in 2.6.23.  And 2.6.23 worked
+OK, yes?
 
-Best wishes,
 
-Duncan.
+The only recent changes to drivers/scsi/advansys.c are 
+
+commit b80ca4f7ee36c26d300c5a8f429e73372d153379
+Author: FUJITA Tomonori <tomof@acm.org>
+Date:   Sun Jan 13 15:46:13 2008 +0900
+
+    [SCSI] replace sizeof sense_buffer with SCSI_SENSE_BUFFERSIZE
+    
+    This replaces sizeof sense_buffer with SCSI_SENSE_BUFFERSIZE in
+    several LLDs. It's a preparation for the future changes to remove
+    sense_buffer array in scsi_cmnd structure.
+    
+    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+
+:100644 100644 9dd3952... 492702b... M  drivers/scsi/advansys.c
+
+commit 747d016e7e25e216b31022fe2b012508d99fb682
+Author: Randy Dunlap <randy.dunlap@oracle.com>
+Date:   Mon Jan 14 00:55:18 2008 -0800
+
+    advansys: fix section mismatch warning
+    
+    Fix section mismatch warning:
+    
+    WARNING: vmlinux.o(.exit.text+0x152a): Section mismatch: reference to .init.
+    
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    Cc: Matthew Wilcox <willy@debian.org>
+    Cc: James Bottomley <James.Bottomley@steeleye.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+which seem fairly benign.
+
+
+gcc inlining is going to make it rather a lot of work to find out which
+statement has actually oopsed there.
+
