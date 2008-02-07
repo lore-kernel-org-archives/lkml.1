@@ -1,198 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbYBGPhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbYBGPjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761147AbYBGPhm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYBGPhe
+	id S1758270AbYBGPjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbYBGPjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:37:34 -0500
-Received: from sacred.ru ([62.205.161.221]:34517 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755973AbYBGPhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:37:33 -0500
-Message-ID: <47AB25AD.30400@openvz.org>
-Date: Thu, 07 Feb 2008 18:37:17 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][DOCUMENTATION] Minimal controller code for a quick start
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Feb 2008 10:39:07 -0500
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:26645 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750921AbYBGPjF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 10:39:05 -0500
+X-YMail-OSG: JAz7pIcVM1kHs7wPv5jgRHFRBh2hfZEpv1NWwnL8HHSD8jGec2Hew4I1EcTlGluwj7Rg2JNL6LRmBrlb69W.CK7_yvnuD0GoIwptQI9fo3DKkNfRsVk-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ming Zhang <blackmagic02881@gmail.com>
+In-Reply-To: <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain> <47A751C5.60600@vlnb.net>
+	 <1202149322.3096.66.camel@localhost.localdomain>
+	 <47A75B8A.3020503@vlnb.net>
+	 <1202151293.3096.80.camel@localhost.localdomain>
+	 <47A8B210.8040202@vlnb.net>
+	 <1202238802.3133.71.camel@localhost.localdomain>
+	 <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 07:38:15 -0800
+Message-Id: <1202398695.1805.48.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 07 Feb 2008 18:37:01 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Documentation/cgroups.txt file contains the info on how
-to write some controller for cgroups subsystem, but even with
-this, one need to write quite a lot of code before developing
-the core (or copy-n-paste it from some other place).
+On Thu, 2008-02-07 at 14:13 +0100, Bart Van Assche wrote: 
+> Since the focus of this thread shifted somewhat in the last few
+> messages, I'll try to summarize what has been discussed so far:
+> - There was a number of participants who joined this discussion
+> spontaneously. This suggests that there is considerable interest in
+> networked storage and iSCSI.
+> - It has been motivated why iSCSI makes sense as a storage protocol
+> (compared to ATA over Ethernet and Fibre Channel over Ethernet).
+> - The direct I/O performance results for block transfer sizes below 64
+> KB are a meaningful benchmark for storage target implementations.
+> - It has been discussed whether an iSCSI target should be implemented
+> in user space or in kernel space. It is clear now that an
+> implementation in the kernel can be made faster than a user space
+> implementation (http://kerneltrap.org/mailarchive/linux-kernel/2008/2/4/714804).
+> Regarding existing implementations, measurements have a.o. shown that
+> SCST is faster than STGT (30% with the following setup: iSCSI via
+> IPoIB and direct I/O block transfers with a size of 512 bytes).
+> - It has been discussed which iSCSI target implementation should be in
+> the mainstream Linux kernel. There is no agreement on this subject
+> yet. The short-term options are as follows:
+> 1) Do not integrate any new iSCSI target implementation in the
+> mainstream Linux kernel.
+> 2) Add one of the existing in-kernel iSCSI target implementations to
+> the kernel, e.g. SCST or PyX/LIO.
+> 3) Create a new in-kernel iSCSI target implementation that combines
+> the advantages of the existing iSCSI kernel target implementations
+> (iETD, STGT, SCST and PyX/LIO).
+> 
+> As an iSCSI user, I prefer option (3). The big question is whether the
+> various storage target authors agree with this ?
+> 
 
-I propose to put this minimal controller into Documentation
-directory to let people copy-n-paste a) from a known place and 
-b) a small piece of code.
+I think the other data point here would be that final target design
+needs to be as generic as possible.  Generic in the sense that the
+engine eventually needs to be able to accept NDB and other ethernet
+based target mode storage configurations to an abstracted device object
+(struct scsi_device, struct block_device, or struct file) just as it
+would for an IP Storage based request.
 
-Besides, many people learn better reading an example rather
-than/along with a document.
+We know that NDB and *oE will have their own naming and discovery, and
+the first set of IO tasks to be completed would be those using
+(iscsi_cmd_t->cmd_flags & ICF_SCSI_DATA_SG_IO_CDB) in
+iscsi_target_transport.c in the current code.    These are single READ_*
+and WRITE_* codepaths that perform DMA memory pre-proceessing in v2.9
+LIO-SE. 
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Also, being able to tell the engine to accelerate to DMA ring operation
+(say to underlying struct scsi_device or struct block_device) instead of
+fileio in some cases you will see better performance when using hardware
+(ie: not a underlying kernel thread queueing IO into block).  But I have
+found FILEIO with sendpage with MD to be faster in single threaded tests
+than struct block_device.  I am currently using IBLOCK for LVM for core
+LIO operation (which actually sits on software MD raid6).  I do this
+because using submit_bio() with se_mem_t mapped arrays of struct
+scatterlist -> struct bio_vec can handle power failures properly, and
+not send back StatSN Acks to the Initiator who thinks that everything
+has already made it to disk.  This is the case with doing IO to struct
+file in the kernel today without a kernel level O_DIRECT.
 
----
+Also for proper kernel-level target mode support, using struct file with
+O_DIRECT for storage blocks and emulating control path CDBS is one of
+the work items.  This can be made generic or obtained from the
+underlying storage object (anything that can be exported from LIO
+Subsystem TPI) For real hardware (struct scsi_device in just about all
+the cases these days).  Last time I looked this was due to
+fs/direct-io.c:dio_refill_pages() using get_user_pages()...
 
-diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
-index 42d7c4c..66068dc 100644
---- a/Documentation/cgroups.txt
-+++ b/Documentation/cgroups.txt
-@@ -531,6 +531,9 @@ and root cgroup. Currently this will only involve movement between
- the default hierarchy (which never has sub-cgroups) and a hierarchy
- that is being created/destroyed (and hence has no sub-cgroups).
- 
-+For a quick start you may want to look at the
-+Documentation/controllers/example.c file.
-+
- 4. Questions
- ============
- 
-diff --git a/Documentation/controllers/example.c b/Documentation/controllers/example.c
-new file mode 100644
-index 0000000..4a73c77
---- /dev/null
-+++ b/Documentation/controllers/example.c
-@@ -0,0 +1,134 @@
-+/*
-+ * Documentation/controllers/example.c - A simple controller
-+ *
-+ * Copy and make s/foo/$SUBSYS_NAME/g in it to get a minimal
-+ * working code. Don't forget to add a SUBSYS(foo) line in the
-+ * include/linux/cgroup_subsys.h file.
-+ *
-+ */
-+
-+#include <linux/cgroup.h>
-+
-+/*
-+ * the foo main structure - it is used to store any info, that
-+ * is required from the group of tasks
-+ */
-+
-+struct foo_cgroup {
-+	/*
-+	 * put your fields here
-+	 */
-+
-+	struct cgroup_subsys_state css;
-+
-+	/*
-+	 * ... or/and here
-+	 */
-+};
-+
-+/*
-+ * helpers to get the foo_cgroup from a task and a control group
-+ */
-+
-+static inline struct foo_cgroup *foo_from_css(struct cgroup_subsys_state *css)
-+{
-+	return container_of(css, struct foo_cgroup, css);
-+}
-+
-+static inline struct foo_cgroup *foo_from_cgroup(struct cgroup *cg)
-+{
-+	return foo_from_css(cgroup_subsys_state(cg, foo_subsys_id));
-+}
-+
-+static inline struct foo_cgroup *foo_from_task(struct task_struct *p)
-+{
-+	return foo_from_css(task_subsys_state(p, foo_subsys_id));
-+}
-+
-+/*
-+ * foo files
-+ */
-+
-+static ssize_t foo_bar_read(struct cgroup *cg, struct cftype *cft,
-+		struct file *file, char __user *userbuf,
-+		size_t nbytes, loff_t *ppos)
-+{
-+	struct foo_cgroup *foo;
-+
-+	foo = foo_from_cgroup(cg);
-+
-+	/*
-+	 * produce some output
-+	 */
-+
-+	return nbytes;
-+}
-+
-+static ssize_t foo_bar_write(struct cgroup *cg, struct cftype *cft,
-+		struct file *file, const char __user *userbuf,
-+		size_t nbytes, loff_t *ppos)
-+{
-+	struct foo_cgroup *foo;
-+
-+	foo = foo_from_cgroup(cg);
-+
-+	/*
-+	 * read and tune the foo
-+	 */
-+
-+	return nbytes;
-+}
-+
-+static struct cftype foo_files[] = {
-+	{
-+		.name = "bar",
-+		.read = foo_bar_read,
-+		.write = foo_bar_write,
-+	},
-+};
-+
-+/*
-+ * foo subsystem basic callbacks
-+ */
-+
-+static struct cgroup_subsys_state *foo_create(struct cgroup_subsys *cs,
-+		struct cgroup *cg)
-+{
-+	struct foo_cgroup *foo;
-+
-+	foo = kmalloc(sizeof(struct foo_cgroup), GFP_KERNEL);
-+	if (foo == NULL)
-+		return NULL;
-+
-+	/*
-+	 * initialize your fields
-+	 */
-+
-+	return &foo->css;
-+}
-+
-+static void foo_destroy(struct cgroup_subsys *cs, struct cgroup *cg)
-+{
-+	struct foo_cgroup *foo;
-+
-+	foo = foo_from_cgroup(cg);
-+
-+	/*
-+	 * clean your fields
-+	 */
-+
-+	kfree(foo);
-+}
-+
-+static int foo_populate(struct cgroup_subsys *cs, struct cgroup *cg)
-+{
-+	return cgroup_add_files(cg, cs, foo_files, ARRAY_SIZE(foo_files));
-+}
-+
-+struct cgroup_subsys foo_subsys = {
-+	.name = "foo",
-+	.subsys_id = foo_subsys_id,
-+	.create = foo_create,
-+	.destroy = foo_destroy,
-+	.populate = foo_populate,
-+};
+For really transport specific CDB and control code, which in good amount
+of cases, we are going eventually be expected to emulate in software. 
+I really like how STGT breaks this up into per device type code
+segments; spc.c sbc.c mmc.c ssc.c smc.c etc.  Having all of these split
+out properly is one strong point of STGT IMHO, and really makes learning
+things much easier.  Also, being able to queue these IOs into a
+userspace and receive a asynchronous response back up the storage stack.
+I think this is actually a pretty interesting potential for passing
+storage protocol packets into userspace apps and leave the protocol
+state machines and recovery paths in the kernel with a generic target
+engine.
+
+Also, I know that the SCST folks have put alot of time into getting the
+very SCSI hardware specific target mode control modes to work.  I
+personally own a bunch of this adapters, and would really like to see
+better support for target mode on non iSCSI type adapters with a single
+target mode storage engine that abstracts storage subsystems and wire
+protocol fabrics.
+
+--nab
+
