@@ -1,170 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766016AbYBGAdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbYBGAdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766016AbYBGAdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764332AbYBGAAi
+	id S1764692AbYBGAdr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764468AbYBGAAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 6 Feb 2008 19:00:44 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:62157 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764299AbYBGAAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 Feb 2008 19:00:38 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33191 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763374AbYBGAAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:00:33 -0500
-Date: Wed, 6 Feb 2008 15:54:43 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-pci@atrey.karlin.mff.cuni.cz, Ian Abbott <abbotti@mev.co.uk>
-Subject: [patch 73/73] PCI: Fix fakephp deadlock
-Message-ID: <20080206235443.GV13121@suse.de>
-References: <20080206234302.769849277@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-fix-fakephp-deadlock.patch"
-In-Reply-To: <20080206235015.GA13121@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Date: Wed, 06 Feb 2008 19:00:20 -0500
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+In-reply-to: <200801260827.59675.a1426z@gawab.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Message-id: <20080207000020.GB3149@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <200801242336.00340.a1426z@gawab.com>
+ <20080125153634.GG28856@atrey.karlin.mff.cuni.cz>
+ <200801260827.59675.a1426z@gawab.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 26, 2008  08:27 +0300, Al Boldi wrote:
+> Jan Kara wrote:
+> > > data=ordered mode has proven reliable over the years, and it does this
+> > > by ordering filedata flushes before metadata flushes.  But this
+> > > sometimes causes contention in the order of a 10x slowdown for certain
+> > > apps, either due to the misuse of fsync or due to inherent behaviour
+> > > like db's, as well as inherent starvation issues exposed by the
+> > > data=ordered mode.
+> > >
+> > > data=writeback mode alleviates data=order mode slowdowns, but only works
+> > > per-mount and is too dangerous to run as a default mode.
+> > >
+> > > This RFC proposes to introduce a tunable which allows to disable fsync
+> > > and changes ordered into writeback writeout on a per-process basis like
+> > > this:
+> > >
+> > >       echo 1 > /proc/`pidof process`/softsync
+> >
+> >   I guess disabling fsync() was already commented on enough. Regarding
+> > switching to writeback mode on per-process basis - not easily possible
+> > because sometimes data is not written out by the process which stored
+> > them (think of mmaped file).
+> 
+> Do you mean there is a locking problem?
+> 
+> > And in case of DB, they use direct-io
+> > anyway most of the time so they don't care about journaling mode anyway.
+> 
+> Testing with sqlite3 and mysql4 shows that performance drastically improves 
+> with writeback writeout.
+> 
+> >  But as Diego wrote, there is definitely some room for improvement in
+> > current data=ordered mode so the difference shouldn't be as big in the
+> > end.
+> 
+> Yes, it would be nice to get to the bottom of this starvation problem, but 
+> even then, the proposed tunable remains useful for misbehaving apps.
 
-2.6.23-stable review patch.  If anyone has any objections, please let us know.
-------------------
-From: Ian Abbott <abbotti@mev.co.uk>
+Al, can you try a patch posted to linux-fsdevel and linux-ext4 from
+Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> to see if this improves
+your situation?  Dated Mon, 04 Feb 2008 19:15:25 +0900.
 
-This patch works around a problem in the fakephp driver when a process
-writing "0" to a "power" sysfs file to fake removal of a PCI device ends
-up deadlocking itself in the sysfs code.
+    [PATCH] ext3,4:fdatasync should skip metadata writeout when overwriting
 
-The patch is functionally identical to the one in Linus' tree post 2.6.24:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5c796ae7a7ebe56967ed9b9963d7c16d733635ff
+It may be that we already have a solution in that patch for database
+workloads where the pages are already allocated by avoiding the need
+for ordered mode journal flushing in that case.
 
-I have tested it on a 2.6.23 kernel.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/pci/hotplug/fakephp.c |   39 +++++++++++++++++++++++++++++++++++----
- 1 file changed, 35 insertions(+), 4 deletions(-)
-
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -39,6 +39,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- #include "../pci.h"
- 
- #if !defined(MODULE)
-@@ -63,10 +64,16 @@ struct dummy_slot {
- 	struct list_head node;
- 	struct hotplug_slot *slot;
- 	struct pci_dev *dev;
-+	struct work_struct remove_work;
-+	unsigned long removed;
- };
- 
- static int debug;
- static LIST_HEAD(slot_list);
-+static struct workqueue_struct *dummyphp_wq;
-+
-+static void pci_rescan_worker(struct work_struct *work);
-+static DECLARE_WORK(pci_rescan_work, pci_rescan_worker);
- 
- static int enable_slot (struct hotplug_slot *slot);
- static int disable_slot (struct hotplug_slot *slot);
-@@ -109,7 +116,7 @@ static int add_slot(struct pci_dev *dev)
- 	slot->name = &dev->dev.bus_id[0];
- 	dbg("slot->name = %s\n", slot->name);
- 
--	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
-+	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
- 	if (!dslot)
- 		goto error_info;
- 
-@@ -164,6 +171,14 @@ static void remove_slot(struct dummy_slo
- 		err("Problem unregistering a slot %s\n", dslot->slot->name);
- }
- 
-+/* called from the single-threaded workqueue handler to remove a slot */
-+static void remove_slot_worker(struct work_struct *work)
-+{
-+	struct dummy_slot *dslot =
-+		container_of(work, struct dummy_slot, remove_work);
-+	remove_slot(dslot);
-+}
-+
- /**
-  * Rescan slot.
-  * Tries hard not to re-enable already existing devices
-@@ -267,11 +282,17 @@ static inline void pci_rescan(void) {
- 	pci_rescan_buses(&pci_root_buses);
- }
- 
-+/* called from the single-threaded workqueue handler to rescan all pci buses */
-+static void pci_rescan_worker(struct work_struct *work)
-+{
-+	pci_rescan();
-+}
- 
- static int enable_slot(struct hotplug_slot *hotplug_slot)
- {
- 	/* mis-use enable_slot for rescanning of the pci bus */
--	pci_rescan();
-+	cancel_work_sync(&pci_rescan_work);
-+	queue_work(dummyphp_wq, &pci_rescan_work);
- 	return -ENODEV;
- }
- 
-@@ -306,6 +327,10 @@ static int disable_slot(struct hotplug_s
- 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
- 		return -ENODEV;
- 	}
-+	if (test_and_set_bit(0, &dslot->removed)) {
-+		dbg("Slot already scheduled for removal\n");
-+		return -ENODEV;
-+	}
- 	/* search for subfunctions and disable them first */
- 	if (!(dslot->dev->devfn & 7)) {
- 		for (func = 1; func < 8; func++) {
-@@ -328,8 +353,9 @@ static int disable_slot(struct hotplug_s
- 	/* remove the device from the pci core */
- 	pci_remove_bus_device(dslot->dev);
- 
--	/* blow away this sysfs entry and other parts. */
--	remove_slot(dslot);
-+	/* queue work item to blow away this sysfs entry and other parts. */
-+	INIT_WORK(&dslot->remove_work, remove_slot_worker);
-+	queue_work(dummyphp_wq, &dslot->remove_work);
- 
- 	return 0;
- }
-@@ -340,6 +366,7 @@ static void cleanup_slots (void)
- 	struct list_head *next;
- 	struct dummy_slot *dslot;
- 
-+	destroy_workqueue(dummyphp_wq);
- 	list_for_each_safe (tmp, next, &slot_list) {
- 		dslot = list_entry (tmp, struct dummy_slot, node);
- 		remove_slot(dslot);
-@@ -351,6 +378,10 @@ static int __init dummyphp_init(void)
- {
- 	info(DRIVER_DESC "\n");
- 
-+	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
-+	if (!dummyphp_wq)
-+		return -ENOMEM;
-+
- 	return pci_scan_buses();
- }
- 
-
--- 
