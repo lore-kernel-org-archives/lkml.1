@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbYBGXSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbYBGXUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934534AbYBGXSy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933967AbYBGXSd
+	id S934297AbYBGXUE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:20:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759908AbYBGXTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:18:33 -0500
-Received: from cyberslack.slackadelic.com ([216.23.240.152]:35636 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933377AbYBGXSb (ORCPT
+	Thu, 7 Feb 2008 18:19:53 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56877 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759054AbYBGXTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:18:31 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Thu, 7 Feb 2008 23:18:27 +0000
-User-Agent: KMail/1.9.7
-Cc: Len Brown <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       linux-acpi@vger.kernel.org
-References: <20080207214715.GA15211@elf.ucw.cz> <200802071727.38743.lenb@kernel.org> <20080207223455.GB6096@elf.ucw.cz>
-In-Reply-To: <20080207223455.GB6096@elf.ucw.cz>
+	Thu, 7 Feb 2008 18:19:51 -0500
+Date: Thu, 7 Feb 2008 15:17:41 -0800
+From: Greg KH <greg@kroah.com>
+To: Hannu Savolainen <hannu@opensound.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <davidn@davidnewall.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Christer Weinigel <christer@weinigel.se>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080207231741.GB19002@kroah.com>
+References: <20080202191930.GA19826@kroah.com> <20080203124849.0226560f@weinigel.se> <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com> <47A5F418.6030104@weinigel.se> <20080203231530.GB15692@kroah.com> <courier.47A8EDDC.0000785F@hawking.rebel.net.au> <47A8F27F.3060504@nortel.com> <47AB0238.5030400@davidnewall.com> <20080207141227.51193a12@core> <47AB8B6A.7020404@opensound.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802072318.28313.carlos@strangeworlds.co.uk>
+In-Reply-To: <47AB8B6A.7020404@opensound.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 February 2008 22:34:55 Pavel Machek wrote:
->  +3) What is the ACPI-WMI mapper
->  +
->  +The Linux ACPI-WMI driver is the implementation of this mapper for Linux.
+On Fri, Feb 08, 2008 at 12:51:22AM +0200, Hannu Savolainen wrote:
+> Alan Cox kirjoitti:
+>>> doesn't mean it's derived from Linux.  In the case of user-space code
+>>> it's widely understood that no licence restrictions are conferred.  The
+>>>     
+>>
+>> Actually that is also questionable. The only reason it is fairly certain
+>> in Linux is Linus went to the trouble of stating that interpretation was
+>> intended in the COPYING file and saying he sees it that way.
+>>
+>>   
+>>> No.  Holders of Linux copyrights would have to prove that the
+>>> proprietary code is derived from the kernel.  They have the burden of
+>>> proof, and defence needs merely show that their arguments are wrong.
+>>>     
+>>
+>> Wrong again. In civil law in the USA and most of europe the test is
+>> "balance of probability".
+>>   
+> What is the "propability" that drivers using the interfaces now declared as 
+> "EXPORT_SYMBOL_GPL" are derived from the Linux kernel source code instead 
+> of some definitive documentation?
 >
-> Yes, please. This needs translation into plain english.
+> As you all (should) know there is a book called "Linux Device Drivers, 3rd 
+> Edition" published by O'Reilly (ISBN 0-596-00590-3)". All the USB kernel 
+> interfaces are documented there. One of the authors is Greg Kroah-Hartman 
+> which makes this book "definite" source of information on Linux USB driver 
+> programming. I assume Greg is the author of the USB related sections.
 
-In plain English? ACPI-WMI is a nasty hack/ abuse of ACPI by Microsoft to 
-force their driver model into ACPI, and that should be thoroughly discouraged 
-from further use.
+Yes, I wrote that, and if you look at that chapter, it states it is
+based on the GPL licensed documentation that comes from the kernel
+itself, which was written by a lot of other people as well.
 
-However, since quite a few laptop vendors rely on it for basic functionality, 
-we have to implement it (or a part of it) as well.
+> The "legal" question is what is that which one is license the one that 
+> applies? Is it the licecense of the kernel (GPL) or is it the license of 
+> the documentation (no restrictions on usage)?
 
-Yes, WMI itself is supposed to be an instrumentation/ management thing, as 
-well as, if I understand, part of their driver model, and ACPI-WMI is a part 
-of that - by and of itself though, ACPI-WMI is _not_ the whole of WMI.
+There is no such license on that documentation.
 
-All that the Linux driver currently cares about is translating this crap into 
-something that we can actually use in Linux to make hardware work (kernel 
-space). So at the moment, ACPI-WMI is exactly what it says it is - not a lot. 
-It needs another driver on top to do something useful (e.g. acer-wmi, 
-tc1100-wmi).
+> The "moral" question is that why did Greg author a book that declares these 
+> USB interfaces as "free to use" and soon after that made a decision that 
+> they are no longer "free to use"?
 
-Later on, we will try and replicate the rest of the 'specification', which is 
-supposed to export all this rubbish (data, and direct access to various ACPI 
-methods defined in a WMI device) to userspace.
+Where did I ever declare these interfaces as "free to use in violation
+of the GPL" anywhere?  If you look at the examples that I wrote for that
+book, they are all licensed under the GPLv2 only.
 
-> What is WBEM, in plain terms? What is it good for?
+Same goes for the Windows Driver book.  You can use the Windows driver
+development kit and API, as long as you follow their license.  And that
+license explicitly forbids using it in code that is under an open source
+license.  Is describing those interfaces in a book somehow also
+"immoral"?
 
-If you can make heads or tails of WBEM, please feel free to let me know.
+geesh, this thread is just insane, time to just ignore it...
 
-AFAICT, it's supposed to be a means of providing some sort of web based 
-management/ instrumentation.
-
-So yes, I agree with you the documentation is crap - but it needs to be redone 
-anyway, and I've already had that pointed out to me.
-
-As for the Kconfig - I'm open to suggestions.
-
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+greg k-h
