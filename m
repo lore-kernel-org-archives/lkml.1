@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbYBGXuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbYBGXv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762314AbYBGXuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYBGXts
+	id S932785AbYBGXv7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYBGXvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:49:48 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:41895 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755375AbYBGXtr (ORCPT
+	Thu, 7 Feb 2008 18:51:49 -0500
+Received: from cyberslack.slackadelic.com ([216.23.240.152]:57862 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753318AbYBGXvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:49:47 -0500
-X-Sasl-enc: e5D0ECImHc86EjyEbw2kiI2cDfDrFv677NrntvvRbEWf 1202428182
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net,
+	Thu, 7 Feb 2008 18:51:48 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: ACPI_WMI: worst config description of all times
+Date: Thu, 7 Feb 2008 23:51:31 +0000
+User-Agent: KMail/1.9.7
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <lenb@kernel.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
        linux-acpi@vger.kernel.org
-Subject: [RFC] LED brightness_get and thinkpad-acpi led-class support
-Date: Thu,  7 Feb 2008 21:49:05 -0200
-Message-Id: <1202428145-6106-1-git-send-email-hmh@hmh.eng.br>
-X-Mailer: git-send-email 1.5.3.8
+References: <20080207214715.GA15211@elf.ucw.cz> <200802072318.28313.carlos@strangeworlds.co.uk> <2c0942db0802071533l5c3b98fel90946b73f8a9586b@mail.gmail.com>
+In-Reply-To: <2c0942db0802071533l5c3b98fel90946b73f8a9586b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802072351.32521.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 07 February 2008 23:33:54 Ray Lee wrote:
+> Do you have list of hardware/platforms that require this feature to
+> get the hardware to work? (acer abc123, tcm1100 xyz)
 
-Richard,
+I have a very long list of Acer laptops that are supported - which is far too 
+long, and changes on far too much of a regular basis to put in there.
 
-Would you accept the addition of brightness_get to the led class?  Please
-look at the first patch in this small patch set series.  I need it for
-thinkpad-acpi...
+Perhaps adding something like "This driver is also a required dependency to 
+build the firmware specific drivers needed for many laptops, including Acer 
+and HP machines"?
 
-The other two patches to thinkpad-acpi are included for reference on how I
-intend to useg the new brightness_get stuff, and also the hardware
-acceleration for led flashing.  While the thinkpad-acpi patches do work, it
-is unlikely to apply cleanly since it is from the tip of my thinkpad-acpi
-development tree :) They are NOT to be merged right now, I will submit them
-to Len Brown later, for 2.6.26.
+(There's currently another ACPI-WMI based driver in development related to 
+more HP laptops, and acer-wmi also supports a handful of non-Acer laptops).
 
+I don't think explaining what WMI is, and how ACPI-WMI is related to it is 
+that useful in Kconfig here; so I agree that further elaborating on the 'why' 
+this should be enabled is definitely worth doing.
+
+> Better, if there are kernel drivers that require this (and currently
+> only those drivers), then have those kernel drivers enable ACPI WMI,
+
+Wouldn't that require 'select' though, and I'm led to believe that's seriously 
+frowned upon these days?
+
+-Carlos
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
