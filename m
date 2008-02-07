@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbYBGUsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762499AbYBGUtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbYBGUsa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYBGUsV
+	id S1762499AbYBGUtl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYBGUtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:48:21 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45327 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753925AbYBGUsU (ORCPT
+	Thu, 7 Feb 2008 15:49:33 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:41300 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753275AbYBGUtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:48:20 -0500
-Date: Thu, 7 Feb 2008 12:47:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [git patches] ocfs2 update
-Message-Id: <20080207124745.4868e108.akpm@linux-foundation.org>
-In-Reply-To: <20080207200944.GQ22671@ca-server1.us.oracle.com>
-References: <20080207200944.GQ22671@ca-server1.us.oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Feb 2008 15:49:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ZJ8E/dTq7GnEq7sZ9KniOMcVKIcyNVVZo+1WRt0uPWAo+PJeZVSr/d8Kl8oTAwI2h
+	pv+A7b0IJVOoZs6DT+5RQ==
+Message-ID: <6599ad830802071249g45cb2d6eybd00c1bef07cf5aa@mail.gmail.com>
+Date: Thu, 7 Feb 2008 12:49:25 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH][DOCUMENTATION] Minimal controller code for a quick start
+Cc: "Pavel Emelyanov" <xemul@openvz.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1202416137.6274.42.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47AB25AD.30400@openvz.org> <1202416137.6274.42.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008 12:09:44 -0800
-Mark Fasheh <mark.fasheh@oracle.com> wrote:
+On Feb 7, 2008 12:28 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> While on the subject, could someone document struct cgroup_subsys.
 
->  /*
-> - * dlm_register_domain: one-time setup per "domain"
-> + * Compare a requested locking protocol version against the current one.
-> + *
-> + * If the major numbers are different, they are incompatible.
-> + * If the current minor is greater than the request, they are incompatible.
-> + * If the current minor is less than or equal to the request, they are
-> + * compatible, and the requester should run at the current minor version.
-> + */
-> +static int dlm_protocol_compare(struct dlm_protocol_version *existing,
-> +				struct dlm_protocol_version *request)
-> +{
-> +	if (existing->pv_major != request->pv_major)
-> +		return 1;
-> +
-> +	if (existing->pv_minor > request->pv_minor)
-> +		return 1;
-> +
-> +	if (existing->pv_minor < request->pv_minor)
-> +		request->pv_minor = existing->pv_minor;
-> +
-> +	return 0;
-> +}
-> +
+There's documentation for all the methods in Documentation/cgroup.txt
 
-It's somewhat obnoxious that what appears to be a straightforward
-compare-two-things-and-return-result function will actually modify one of
-the things which it is allegedly comparing.
+> particular, I've wondered why we have: cgroup_subsys::can_attach() and
+> not use a return value in cgroup_subsys::attach()?
 
-Please integrate checkpatch into your processes - this one had a few little
-glitches.
+We could do in theory do that, but it would make the recovery logic in
+cgroup.c:attach_task() more complex - it would have to be able to deal
+with undoing a partial attach. It seems simpler to just split it into
+two phases, given that most cgroups don't appear to have attachment
+conditions anyway.
 
+Paul
