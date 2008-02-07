@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbYBGNNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbYBGNPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759990AbYBGNNl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 08:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYBGNN1
+	id S1758909AbYBGNPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 08:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYBGNPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 08:13:27 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:43769 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757170AbYBGNNX (ORCPT
+	Thu, 7 Feb 2008 08:15:08 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34790 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbYBGNPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 08:13:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tXJSWxEfkqzBHVUET2eWdv/RL/65H+sOthE8qdUcLF6vB15zbG6K66h1YBPVVzDSPsRS8aQHKfXFiQyblp2v+QywkeaYEO7Sue+l2IyfA3+Lvvvz1bkpXMYjvkZ7490+7dKvGHdhKfyfR9Lh+go4YqBzVKyHfNJXQ/QMaoK+YCA=
-Message-ID: <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
-Date: Thu, 7 Feb 2008 14:13:20 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <1202238802.3133.71.camel@localhost.localdomain>
+	Thu, 7 Feb 2008 08:15:07 -0500
+Message-ID: <47AB0457.6040108@davidnewall.com>
+Date: Thu, 07 Feb 2008 23:45:03 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Christer Weinigel <christer@weinigel.se>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <47A5D9CD.5070001@davidnewall.com> <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com> <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet> <courier.47A84ADB.000047C1@hawking.rebel.net.au> <20080205203418.GA5819@kroah.com> <20080206211448.78c1a23f@weinigel.se> <20080206202810.GA16257@kroah.com>
+In-Reply-To: <20080206202810.GA16257@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain>
-	 <47A751C5.60600@vlnb.net>
-	 <1202149322.3096.66.camel@localhost.localdomain>
-	 <47A75B8A.3020503@vlnb.net>
-	 <1202151293.3096.80.camel@localhost.localdomain>
-	 <47A8B210.8040202@vlnb.net>
-	 <1202238802.3133.71.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the focus of this thread shifted somewhat in the last few
-messages, I'll try to summarize what has been discussed so far:
-- There was a number of participants who joined this discussion
-spontaneously. This suggests that there is considerable interest in
-networked storage and iSCSI.
-- It has been motivated why iSCSI makes sense as a storage protocol
-(compared to ATA over Ethernet and Fibre Channel over Ethernet).
-- The direct I/O performance results for block transfer sizes below 64
-KB are a meaningful benchmark for storage target implementations.
-- It has been discussed whether an iSCSI target should be implemented
-in user space or in kernel space. It is clear now that an
-implementation in the kernel can be made faster than a user space
-implementation (http://kerneltrap.org/mailarchive/linux-kernel/2008/2/4/714804).
-Regarding existing implementations, measurements have a.o. shown that
-SCST is faster than STGT (30% with the following setup: iSCSI via
-IPoIB and direct I/O block transfers with a size of 512 bytes).
-- It has been discussed which iSCSI target implementation should be in
-the mainstream Linux kernel. There is no agreement on this subject
-yet. The short-term options are as follows:
-1) Do not integrate any new iSCSI target implementation in the
-mainstream Linux kernel.
-2) Add one of the existing in-kernel iSCSI target implementations to
-the kernel, e.g. SCST or PyX/LIO.
-3) Create a new in-kernel iSCSI target implementation that combines
-the advantages of the existing iSCSI kernel target implementations
-(iETD, STGT, SCST and PyX/LIO).
+Greg KH wrote:
+> On Wed, Feb 06, 2008 at 09:14:48PM +0100, Christer Weinigel wrote:
+>   
+>> On Tue, 5 Feb 2008 12:34:18 -0800
+>> Greg KH <greg@kroah.com> wrote:
+>>
+>>     
+>>> In the end, it's up to the copyright holders to enforce the license.
+>>> And as I have stated in the past, a number of them have made public
+>>> statements as to what they think about this issue.  And it corresponds
+>>> exactly with what Marcel has stated above.
+>>>
+>>> So if you wish to violate the copyright of others, you take the risk
+>>> that you might be caught and punished, something that you and your
+>>> legal council needs to take into account.
+>>>       
+>> So when do you sue Nvidia, ATI, Atheros, Broadcom[1],
+>> M-Systems/Sandisk[2] or Nokia? All those companies distribute binary
+>> drivers for Linux without providing source code?
+>>     
+>
+> How do you know that such legal action isn't already happening?
 
-As an iSCSI user, I prefer option (3). The big question is whether the
-various storage target authors agree with this ?
-
-Bart Van Assche.
+Is it?  Or are you falsely implying that it is?  I hope it is; that will
+help add fact to an otherwise opinion-ridden topic.
