@@ -1,138 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932233AbYBGQ6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbYBGQ6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932233AbYBGQ6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 11:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757952AbYBGQ6B
+	id S1756615AbYBGQ6y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 11:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbYBGQ6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 11:58:01 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:52377 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbYBGQ6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 11:58:00 -0500
-Date: Thu, 7 Feb 2008 10:57:30 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
-	"safe" property
-Message-ID: <20080207165730.GA6360@sergelap.austin.ibm.com>
-References: <20080205213616.343721693@szeredi.hu> <20080205213705.120219893@szeredi.hu> <20080206202110.GA20528@sergelap.ibm.com> <E1JMrXw-0000qq-O9@pomaz-ex.szeredi.hu> <20080206224527.GB24246@sergelap.austin.ibm.com> <E1JN1p3-0001zF-4l@pomaz-ex.szeredi.hu> <20080207140521.GC4058@sergelap.austin.ibm.com> <E1JN7r7-0002sE-Be@pomaz-ex.szeredi.hu>
+	Thu, 7 Feb 2008 11:58:46 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:39425 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754870AbYBGQ6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 11:58:45 -0500
+Message-ID: <47AB38AB.8050001@qualcomm.com>
+Date: Thu, 07 Feb 2008 08:58:19 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JN7r7-0002sE-Be@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Pavel Machek <pavel@ucw.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net, john.ronciak@intel.com,
+       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       auke-jan.h.kok@intel.com
+Subject: Re: e1000 1sec latency problem
+References: <20080207141718.GA2030@elf.ucw.cz>
+In-Reply-To: <20080207141718.GA2030@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > > > Maybe sysctls just need to check capabilities, instead of uids.  I
-> > > > > think that would make a lot of sense anyway.
-> > > > 
-> > > > Would it be as simple as tagging the inodes with capability sets?  One
-> > > > set for writing, or one each for reading and writing?
-> > > 
-> > > Yes, or something even simpler, like mapping the owner permission bits
-> > > to CAP_SYS_ADMIN.  There seem to be very few different permissions
-> > > under /proc/sys:
-> > > 
-> > > --w-------
-> > > -r--r--r--
-> > > -rw-------
-> > > -rw-r--r--
-> > > 
-> > > As long as the group and other bits are always the same, and we accept
-> > > that the owner bits really mean CAP_SYS_ADMIN and not something else,
-> > 
-> > But I would assume some things under /proc/sys/net/ipv4 or
-> > /proc/sys/net/ath0 require CAP_NET_ADMIN rather than CAP_SYS_ADMIN?
+Pavel Machek wrote:
+> Hi!
 > 
-> I guess so.  I'm not very familiar with the different capabilities :)
+> I have the famous e1000 latency problems:
 > 
-> How about this patch then: a hybrid solution between just relying on
-> permission bits, and specifying separate capability sets for read and
-> write in addition to the permission bits.
+> 64 bytes from 195.113.31.123: icmp_seq=68 ttl=56 time=351.9 ms
+> 64 bytes from 195.113.31.123: icmp_seq=69 ttl=56 time=209.2 ms
+> 64 bytes from 195.113.31.123: icmp_seq=70 ttl=56 time=1004.1 ms
+> 64 bytes from 195.113.31.123: icmp_seq=71 ttl=56 time=308.9 ms
+> 64 bytes from 195.113.31.123: icmp_seq=72 ttl=56 time=305.4 ms
+> 64 bytes from 195.113.31.123: icmp_seq=73 ttl=56 time=9.8 ms
+> 64 bytes from 195.113.31.123: icmp_seq=74 ttl=56 time=3.7 ms
 > 
-> Untested, the 'cap' field obviously still needs to be filled in where
-> appropriate.
+> ...and they are still there in 2.6.25-git0. I had ethernet EEPROM
+> checksum problems, which I fixed by the update, but problems are not
+> gone.
 > 
-> Miklos
-> ----
+> irqpoll helps.
 > 
-> Index: linux/include/linux/sysctl.h
-> ===================================================================
-> --- linux.orig/include/linux/sysctl.h	2008-02-04 12:29:01.000000000 +0100
-> +++ linux/include/linux/sysctl.h	2008-02-07 15:19:06.000000000 +0100
-> @@ -1041,6 +1041,7 @@ struct ctl_table 
->  	void *data;
->  	int maxlen;
->  	mode_t mode;
-> +	int cap;			/* Capability needed to read/write */
->  	struct ctl_table *child;
->  	struct ctl_table *parent;	/* Automatically set */
->  	proc_handler *proc_handler;	/* Callback for text formatting */
-> Index: linux/kernel/sysctl.c
-> ===================================================================
-> --- linux.orig/kernel/sysctl.c	2008-02-05 22:17:05.000000000 +0100
-> +++ linux/kernel/sysctl.c	2008-02-07 15:30:45.000000000 +0100
-> @@ -1527,14 +1527,26 @@ out:
->   * some sysctl variables are readonly even to root.
->   */
+> nosmp (which implies XT-PIC is being used) does not help.
 > 
-> -static int test_perm(int mode, int op)
-> +static int test_perm(struct ctl_table *table, int op)
->  {
-> -	if (!current->euid)
-> -		mode >>= 6;
-> -	else if (in_egroup_p(0))
-> -		mode >>= 3;
-> +	int cap = table->cap;
-> +	mode_t mode = table->mode;
-> +
-> +	if (!cap)
-> +		cap = CAP_SYS_ADMIN;
-> +
-> +	if ((op & MAY_READ) && !(mode & S_IRUGO))
-> +		return -EACCES;
-> +
-> +	if ((op & MAY_WRITE) && !(mode & S_IWUGO))
-> +		return -EACCES;
-> +
-> +	if (capable(cap))
-> +		return 0;
-> +
->  	if ((mode & op & 0007) == op)
->  		return 0;
-> +
->  	return -EACCES;
+>  16:       1925          0   IO-APIC-fasteoi   ahci, yenta, uhci_hcd:usb2, eth0
+> 
+> Booting kernel with nosmp/ no yenta, no usb does not help.
+> 
+> Hmm, as expected, interrupt load on ahci (find /) makes latencies go
+> away.
+> 
+> It should be easily reproducible on x60 with latest bios, it is 100%
+> reproducible for me...
 
-I like how simple it appears to be :)
+So you don't think it's related to the interrupt coalescing by any chance ?
+I'd suggest to try and disable the coalescing and see if it makes any difference.
+We've had lots of issues with coalescing misbehavior. Not this bad (ie 1 second) though.
 
-At first I missed the fact that owning uid is always 0 so I thought the
-uid processing wasn't quite enough.  But since it's always 0, the only
-question is whether there are any /proc/sys files whose users currently
-depend on being setgid 0 and setgid non-0 with no capabilities.
+Add this to modprobe.conf and reload e1000 module
 
-On my laptop, 'find /proc/sys -type f -perm -020' gives me no results,
-so that is promising.
+options e1000 RxIntDelay=0,0 RxAbsIntDelay=0,0 InterruptThrottleRate=0,0 TxIntDelay=0,0 TxAbsIntDelay=0,0
 
-So this certainly seems like a good first step.  In fact, combined with
-/proc/sys/ being partially remounted per container like /proc/sys/net is
-doing, we may not even need to do anything with CAP_NS_OVERRIDE.
+Max
 
-thanks,
--serge
-
->  }
-> 
-> @@ -1544,7 +1556,7 @@ int sysctl_perm(struct ctl_table *table,
->  	error = security_sysctl(table, op);
->  	if (error)
->  		return error;
-> -	return test_perm(table->mode, op);
-> +	return test_perm(table, op);
->  }
-> 
->  #ifdef CONFIG_SYSCTL_SYSCALL
