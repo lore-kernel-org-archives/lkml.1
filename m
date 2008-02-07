@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbYBGGWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbYBGGXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbYBGGWl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYBGGSY
+	id S1760282AbYBGGXF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:23:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYBGGS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:18:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54027 "EHLO mx1.redhat.com"
+	Thu, 7 Feb 2008 01:18:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897AbYBGGSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752813AbYBGGSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Feb 2008 01:18:05 -0500
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 12/16] dlm: fix dlm_dir_lookup() handling of too long names
-Date: Thu,  7 Feb 2008 00:09:15 -0600
-Message-Id: <1202364559-9201-13-git-send-email-teigland@redhat.com>
+Subject: [PATCH 11/16] dlm: fix overflows when copying from ->m_extra to lvb
+Date: Thu,  7 Feb 2008 00:09:14 -0600
+Message-Id: <1202364559-9201-12-git-send-email-teigland@redhat.com>
 X-Mailer: git-send-email 1.5.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -22,29 +22,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Al Viro <viro@zeniv.linux.org.uk>
 
-... those can happen and BUG() from DLM_ASSERT() in allocate_direntry() is
-not a good way to handle them.
-
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/dir.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ fs/dlm/lock.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/fs/dlm/dir.c b/fs/dlm/dir.c
-index 831050e..85defeb 100644
---- a/fs/dlm/dir.c
-+++ b/fs/dlm/dir.c
-@@ -319,6 +319,9 @@ static int get_entry(struct dlm_ls *ls, int nodeid, char *name,
- 
- 	write_unlock(&ls->ls_dirtbl[bucket].lock);
- 
-+	if (namelen > DLM_RESNAME_MAXLEN)
-+		return -EINVAL;
-+
- 	de = kzalloc(sizeof(struct dlm_direntry) + namelen, GFP_KERNEL);
- 	if (!de)
- 		return -ENOMEM;
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index 6d98cf9..5b82187 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -1226,6 +1226,8 @@ static void set_lvb_lock_pc(struct dlm_rsb *r, struct dlm_lkb *lkb,
+ 	b = dlm_lvb_operations[lkb->lkb_grmode + 1][lkb->lkb_rqmode + 1];
+ 	if (b == 1) {
+ 		int len = receive_extralen(ms);
++		if (len > DLM_RESNAME_MAXLEN)
++			len = DLM_RESNAME_MAXLEN;
+ 		memcpy(lkb->lkb_lvbptr, ms->m_extra, len);
+ 		lkb->lkb_lvbseq = ms->m_lvbseq;
+ 	}
+@@ -2993,6 +2995,8 @@ static int receive_lvb(struct dlm_ls *ls, struct dlm_lkb *lkb,
+ 		if (!lkb->lkb_lvbptr)
+ 			return -ENOMEM;
+ 		len = receive_extralen(ms);
++		if (len > DLM_RESNAME_MAXLEN)
++			len = DLM_RESNAME_MAXLEN;
+ 		memcpy(lkb->lkb_lvbptr, ms->m_extra, len);
+ 	}
+ 	return 0;
 -- 
 1.5.3.3
 
