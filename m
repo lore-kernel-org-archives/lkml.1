@@ -1,87 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbYBGTm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbYBGTqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbYBGTm0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYBGTmS
+	id S1758279AbYBGTqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYBGTqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:42:18 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:36995 "EHLO smtp.drzeus.cx"
+	Thu, 7 Feb 2008 14:46:06 -0500
+Received: from kallisti.us ([67.59.168.233]:34932 "EHLO kallisti.us"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbYBGTmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:42:17 -0500
-Date: Thu, 7 Feb 2008 20:41:20 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Adam Wysocki <gophi-lkml@chmurka.net>, linux-kernel@vger.kernel.org,
-       giometti@enneenne.com
-Subject: Re: [semi-solved] Re: [sdhci] mmc0: unrecognised SCR structure
- version 1
-Message-ID: <20080207204120.5062ed2d@poseidon.drzeus.cx>
-In-Reply-To: <20080206231015.GA30507@rhlx01.hs-esslingen.de>
-References: <Pine.LNX.4.64.0709290538240.5571@news.chmurka.net>
-	<20070929103516.3eda9bd6@poseidon.drzeus.cx>
-	<20080206231015.GA30507@rhlx01.hs-esslingen.de>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751247AbYBGTqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 14:46:04 -0500
+From: Ross Vandegrift <ross@kallisti.us>
+Date: Thu, 7 Feb 2008 14:44:46 -0500
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+Message-ID: <20080207194446.GA25463@kallisti.us>
+References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205192559.GA10573@kallisti.us> <20080205201106.GB26150@one.firstfloor.org> <20080205212335.GA11287@kallisti.us> <20080206085357.GA1402@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206085357.GA1402@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008 00:10:16 +0100
-Andreas Mohr <andi@lisas.de> wrote:
+On Wed, Feb 06, 2008 at 09:53:57AM +0100, Andi Kleen wrote:
+> That would be useful yes -- for different bandwidths.
 
-> 
-> My Toshiba SD-512-T card (Toshiba-specific specs are available as
-> TOSHIBA_SD_Card_Specification.pdf) shows the same "SCR structure version 1"
-> error message with 2.6.24 on a Motorola E680 (PXAMCI), whereas
-> on 2.6.21 it did _NOT_ have it (and all SCR values there are a 1:1 match
-> with the values listed in the spec .pdf!).
-> 
-> For me at least it turned out that while on 2.6.21, raw_scr had
-> 0x00a50000 0x10011602
-> on 2.6.24 raw_scr had
-> 0x10011602 0x00000000
-> 
+My initial test is end-to-end 1000Mbps, but I've got a few different
+packet rates.
 
-Ouch. That would explain more or less any SCR related bug. :)
+> If the young/old heuristics do not work well enough anymore most
+> likely we should try readding RED to the syn queue again. That used
+> to be pretty effective in the early days. I don't quite remember why
+> Linux didn't end up using it in fact.
 
-> IOW, the whole thing is simply shifted by one unsigned int, rendering any
-> SCR interpretation fatally wrong (which, I believe, could be a
-> _permanent_ error in the SD stack itself which randomly -
-> depending on the exact bit content of a card's SCR dump -
-> causes the SCR version check to trigger for various cards).
-> Is this unsigned int shifting due to a transfer setup issue in the
-> highlevel SD stack or do you think it is due to a setup issue in the
-> lower-level pxamci driver in my case? If so, what setting could have
-> distorted it?
+I'm running juno-z with 2, 4, & 8 threads of syn flood to port 80.
+wireshark measures 2 threads at 350pps, 4 threads at 750pps, and 8
+threads at 1200pps.  Under no SYN flood, the server handles 750 HTTP
+requests per second, measured via httping in flood mode.
 
-I'm not seeing it on any controller here, so right now I'd guess a driver problem. No idea why though.
+With a default tcp_max_syn_backlog of 1024, I can trivially prevent
+any inbound client connections with 2 threads of syn flood.
+Enabling tcp_syncookies brings the connection handling back up to 725
+fetches per second.
 
-Are you seeing this effect on other cards?
+If I raise the backlog to 16384, 4 threads gives me about 650 legit
+requests per sec.  Going to 8 threads makes connections very unreliable - a
+handful will get through every 15 to 20 seconds.  Again,
+tcp_syncookies returns performance almost totally back to normal.
 
-> Weak voltage settings are not to blame, I believe (removed some configs to
-> increase a bit from minimum supported voltage).
-> If you don't have any specific ideas yet, any hints on how to proceed
-> with tracking this down?
+Cranking juno-z to the max generates me about 16kpps.  Any syn backlog
+is easily overwhelmed and nothing gets through.  tcp_syncookies gets
+me back to 650 requests per second.
 
-There's always bisecting the issue until you find the offending commit. Time consuming, but it gets the job done.
+At these levels the CPU impact of tcp_syncookies is nothing.  I can't
+measure a difference.  In the real world, a 16kpps syn flood is small.
+People with a distributed botnet can easily get to the hundreds of
+thousands, and I have seen over million packets per second of SYN flood.
 
-Other than that, try adding some printk() to pxamci's data transfer routines and dump the data when it is fresh.
 
-> 
-> I'd advise at least adding dumping the raw_scr values
-> in the SCR version error to be able to track such error postings better
-> in the future.
-> 
+BTW, I can trigger a soft lockup BUG when I restart apache to change the
+backlog during the 16kpps test-case:
 
-It's definitely something to remember in future bug reports.
+BUG: soft lockup detected on CPU#1!
+ [<c044d1ec>] softlockup_tick+0x96/0xa4
+ [<c042ddb0>] update_process_times+0x39/0x5c
+ [<c04196f7>] smp_apic_timer_interrupt+0x5b/0x6c
+ [<c04059bf>] apic_timer_interrupt+0x1f/0x24
+ [<c045007b>] taskstats_exit_send+0x152/0x371
+ [<c05c007b>] netlink_kernel_create+0x5/0x11c
+ [<c05a7415>] reqsk_queue_alloc+0x32/0x81
+ [<c05a5aca>] lock_sock+0x8e/0x96
+ [<c05ce8c4>] inet_csk_listen_start+0x17/0x106
+ [<c05e720f>] inet_listen+0x3c/0x5f
+ [<c05a3e55>] sys_listen+0x4a/0x66
+ [<c05a4f4d>] sys_socketcall+0x98/0x19e
+ [<c0407ef7>] do_syscall_trace+0xab/0xb1
+ [<c0404eff>] syscall_call+0x7/0xb
+ =======================
+BUG: soft lockup detected on CPU#3!
+ [<c044d1ec>] softlockup_tick+0x96/0xa4
+ [<c042ddb0>] update_process_times+0x39/0x5c
+ [<c04196f7>] smp_apic_timer_interrupt+0x5b/0x6c
+ [<c04059bf>] apic_timer_interrupt+0x1f/0x24
+ [<c045007b>] taskstats_exit_send+0x152/0x371
+ [<c05c007b>] netlink_kernel_create+0x5/0x11c
+ [<c05a7415>] reqsk_queue_alloc+0x32/0x81
+ [<c05a5aca>] lock_sock+0x8e/0x96
+ [<c05ce8c4>] inet_csk_listen_start+0x17/0x106
+ [<c05e720f>] inet_listen+0x3c/0x5f
+ [<c05a3e55>] sys_listen+0x4a/0x66
+ [<c05a4f4d>] sys_socketcall+0x98/0x19e
+ [<c0407ef7>] do_syscall_trace+0xab/0xb1
+ [<c0404eff>] syscall_call+0x7/0xb
+ =======================
 
-Rgds
+
+
+
+
+
+
 -- 
-     -- Pierre Ossman
+Ross Vandegrift
+ross@kallisti.us
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+"The good Christian should beware of mathematicians, and all those who
+make empty prophecies. The danger already exists that the mathematicians
+have made a covenant with the devil to darken the spirit and to confine
+man in the bonds of Hell."
+	--St. Augustine, De Genesi ad Litteram, Book II, xviii, 37
