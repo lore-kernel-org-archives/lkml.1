@@ -1,134 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbYBGPjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759108AbYBGPkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbYBGPjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbYBGPjH
+	id S1759108AbYBGPkJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYBGPjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:39:07 -0500
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:26645 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750921AbYBGPjF (ORCPT
+	Thu, 7 Feb 2008 10:39:55 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34922 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756579AbYBGPjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:39:05 -0500
-X-YMail-OSG: JAz7pIcVM1kHs7wPv5jgRHFRBh2hfZEpv1NWwnL8HHSD8jGec2Hew4I1EcTlGluwj7Rg2JNL6LRmBrlb69W.CK7_yvnuD0GoIwptQI9fo3DKkNfRsVk-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ming Zhang <blackmagic02881@gmail.com>
-In-Reply-To: <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1202144767.3096.38.camel@localhost.localdomain>
-	 <47A7488B.4080000@vlnb.net>
-	 <1202145901.3096.49.camel@localhost.localdomain> <47A751C5.60600@vlnb.net>
-	 <1202149322.3096.66.camel@localhost.localdomain>
-	 <47A75B8A.3020503@vlnb.net>
-	 <1202151293.3096.80.camel@localhost.localdomain>
-	 <47A8B210.8040202@vlnb.net>
-	 <1202238802.3133.71.camel@localhost.localdomain>
-	 <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 07:38:15 -0800
-Message-Id: <1202398695.1805.48.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Thu, 7 Feb 2008 10:39:54 -0500
+Message-ID: <47AB2647.4090000@davidnewall.com>
+Date: Fri, 08 Feb 2008 02:09:51 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Marcel Holtmann <marcel@holtmann.org>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D9CD.5070001@davidnewall.com>	<84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>	<47A5E67D.9040804@davidnewall.com>	<1202058820.15090.60.camel@violet>	<courier.47A84ADB.000047C1@hawking.rebel.net.au>	<1202241819.15090.133.camel@violet>	<47AB0B67.7060103@davidnewall.com> <20080207142812.0dafde98@core>
+In-Reply-To: <20080207142812.0dafde98@core>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-07 at 14:13 +0100, Bart Van Assche wrote: 
-> Since the focus of this thread shifted somewhat in the last few
-> messages, I'll try to summarize what has been discussed so far:
-> - There was a number of participants who joined this discussion
-> spontaneously. This suggests that there is considerable interest in
-> networked storage and iSCSI.
-> - It has been motivated why iSCSI makes sense as a storage protocol
-> (compared to ATA over Ethernet and Fibre Channel over Ethernet).
-> - The direct I/O performance results for block transfer sizes below 64
-> KB are a meaningful benchmark for storage target implementations.
-> - It has been discussed whether an iSCSI target should be implemented
-> in user space or in kernel space. It is clear now that an
-> implementation in the kernel can be made faster than a user space
-> implementation (http://kerneltrap.org/mailarchive/linux-kernel/2008/2/4/714804).
-> Regarding existing implementations, measurements have a.o. shown that
-> SCST is faster than STGT (30% with the following setup: iSCSI via
-> IPoIB and direct I/O block transfers with a size of 512 bytes).
-> - It has been discussed which iSCSI target implementation should be in
-> the mainstream Linux kernel. There is no agreement on this subject
-> yet. The short-term options are as follows:
-> 1) Do not integrate any new iSCSI target implementation in the
-> mainstream Linux kernel.
-> 2) Add one of the existing in-kernel iSCSI target implementations to
-> the kernel, e.g. SCST or PyX/LIO.
-> 3) Create a new in-kernel iSCSI target implementation that combines
-> the advantages of the existing iSCSI kernel target implementations
-> (iETD, STGT, SCST and PyX/LIO).
-> 
-> As an iSCSI user, I prefer option (3). The big question is whether the
-> various storage target authors agree with this ?
-> 
+Alan Cox wrote:
+>> It's nonsense, it's a reasonable reading of the GPL.  What I am doing is
+>> telling you what the GPL says, not what you wish it said.
+>>     
+>
+> In which case for each statement please give the case at appeal or higher
+> level which is the precedent for the interpretation.
+>   
 
-I think the other data point here would be that final target design
-needs to be as generic as possible.  Generic in the sense that the
-engine eventually needs to be able to accept NDB and other ethernet
-based target mode storage configurations to an abstracted device object
-(struct scsi_device, struct block_device, or struct file) just as it
-would for an IP Storage based request.
+I am giving my opinion.  By contrast, you have claimed to be giving the
+opinion of numerous lawyers.  I hate to be so blunt, but that is the
+naked truth.  You could improve that situation.
 
-We know that NDB and *oE will have their own naming and discovery, and
-the first set of IO tasks to be completed would be those using
-(iscsi_cmd_t->cmd_flags & ICF_SCSI_DATA_SG_IO_CDB) in
-iscsi_target_transport.c in the current code.    These are single READ_*
-and WRITE_* codepaths that perform DMA memory pre-proceessing in v2.9
-LIO-SE. 
 
-Also, being able to tell the engine to accelerate to DMA ring operation
-(say to underlying struct scsi_device or struct block_device) instead of
-fileio in some cases you will see better performance when using hardware
-(ie: not a underlying kernel thread queueing IO into block).  But I have
-found FILEIO with sendpage with MD to be faster in single threaded tests
-than struct block_device.  I am currently using IBLOCK for LVM for core
-LIO operation (which actually sits on software MD raid6).  I do this
-because using submit_bio() with se_mem_t mapped arrays of struct
-scatterlist -> struct bio_vec can handle power failures properly, and
-not send back StatSN Acks to the Initiator who thinks that everything
-has already made it to disk.  This is the case with doing IO to struct
-file in the kernel today without a kernel level O_DIRECT.
+>>> If the developers say that this symbol can only be used in GPL code (and
+>>> with EXPORT_SYMBOL_GPL it is quite clear) then you have to obey to that
+>>> license or don't use this symbol at all.
+>>>   
+>>>       
+>> EXPORT_SYMBOL_GPL is not a licence.  Only a licence is a licence.
+>>     
+>
+> Export symbol is a guide. There is no reason to think that EXPORT_SYMBOL
+> symbols alone mean your work is somehow not derivative.
 
-Also for proper kernel-level target mode support, using struct file with
-O_DIRECT for storage blocks and emulating control path CDBS is one of
-the work items.  This can be made generic or obtained from the
-underlying storage object (anything that can be exported from LIO
-Subsystem TPI) For real hardware (struct scsi_device in just about all
-the cases these days).  Last time I looked this was due to
-fs/direct-io.c:dio_refill_pages() using get_user_pages()...
-
-For really transport specific CDB and control code, which in good amount
-of cases, we are going eventually be expected to emulate in software. 
-I really like how STGT breaks this up into per device type code
-segments; spc.c sbc.c mmc.c ssc.c smc.c etc.  Having all of these split
-out properly is one strong point of STGT IMHO, and really makes learning
-things much easier.  Also, being able to queue these IOs into a
-userspace and receive a asynchronous response back up the storage stack.
-I think this is actually a pretty interesting potential for passing
-storage protocol packets into userspace apps and leave the protocol
-state machines and recovery paths in the kernel with a generic target
-engine.
-
-Also, I know that the SCST folks have put alot of time into getting the
-very SCSI hardware specific target mode control modes to work.  I
-personally own a bunch of this adapters, and would really like to see
-better support for target mode on non iSCSI type adapters with a single
-target mode storage engine that abstracts storage subsystems and wire
-protocol fabrics.
-
---nab
-
+No argument, other than with, "export symbol is a guide."   My argument
+with that is that one could mistakenly infer that "export symbol"
+includes "EXPORT_SYMBOL_GPL."   The latter is not a guide, is it?  It
+restricts a symbol from use by proprietary modules.
