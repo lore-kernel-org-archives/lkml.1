@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbYBGSOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbYBGSTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758663AbYBGSOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYBGSOi
+	id S932284AbYBGSTE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbYBGSSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:14:38 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:46064 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755975AbYBGSOi (ORCPT
+	Thu, 7 Feb 2008 13:18:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51732 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756075AbYBGSSu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:14:38 -0500
-Message-ID: <47AB4A78.70609@qualcomm.com>
-Date: Thu, 07 Feb 2008 10:14:16 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 7 Feb 2008 13:18:50 -0500
+Date: Thu, 7 Feb 2008 10:18:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Harald Arnesen <skogtun.linux@gmail.com>
+cc: FUJITA Tomonori <tomof@acm.org>, akpm@linux-foundation.org, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: Latest git oopses during boot
+In-Reply-To: <8120cfd40802070933r42a98537v78feb7ee8e748a94@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0802070956380.2883@woody.linux-foundation.org>
+References: <8120cfd40802070144l79830c2cs6329c302697ecc8b@mail.gmail.com>  <20080207020214.0f0cf1c7.akpm@linux-foundation.org>  <8120cfd40802070314x2799bcbatf42e3fe824a18c22@mail.gmail.com>  <20080207233239Z.tomof@acm.org>
+ <8120cfd40802070933r42a98537v78feb7ee8e748a94@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Jackson <pj@sgi.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] CPU isolation extensions
-References: <47AA9807.7090402@qualcomm.com>	<20080206215805.17a0c919.akpm@linux-foundation.org>	<20080207015954.92cd3878.pj@sgi.com> <20080207001235.a9baac90.akpm@linux-foundation.org>
-In-Reply-To: <20080207001235.a9baac90.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 7 Feb 2008 01:59:54 -0600 Paul Jackson <pj@sgi.com> wrote:
+
+
+On Thu, 7 Feb 2008, Harald Arnesen wrote:
 > 
->> but hard real time is not my expertise
-> 
-> Speaking of which..  there is the -rt tree.  Have those people had a look
-> at the feature, perhaps played with the code?
+> OK, tried it. Another screen shot attached
+> (I must really get another box to use as a serial terminal).
 
-Peter Z. and Steven R. sent me some comments, I believe I explained and addressed them.
-Ingo's been quite. Probably too busy.
+This oops decodes to
 
-btw It's not an RT feature per se. It certainly helps RT but removing all the latency
-sources from isolated CPUs. But in general it's just "reducing kernel overhead on some CPUs"
-kind of feature.
+     8b 44 24 10             mov    0x10(%esp),%eax
+     8b 90 7c 02 00 00       mov    0x27c(%eax),%edx
+     83 ea 54                sub    $0x54,%edx
+     24 18                   and    $0x18,%al
+     8b 4c 24 14             mov    0x14(%esp),%ecx
+     f6 41 04 04             testb  $0x4,0x4(%ecx)
+     75 57                   jne    0x70
+     ba d0 80 00 00          mov    $0x80d0,%edx
+     b8 68 bf 30 c0          mov    $0xc030bf68,%eax
+     e8 2f 8a 38 c7          call   0xc7388a57
+**   a3 14 00 00 00          mov    %eax,0x14	**
+     85 c0                   test   %eax,%eax
+     0f 84 b3 14 00 00       je     0x14c0
+     8b 44 24 14             mov    0x14(%esp),%eax
+     83 c0 0c                add    $0xc,%eax
 
-Max 
+and the oopsing instruction is literally an insane "store to absolute
+address 0x14" which will definitely oops unconditionally. 
+
+Quit frankly, that code makes no sense.  It smells like code corruption,
+especially as it is right at a return point of a function call (ie maybe
+the function screwed up the stack accesses somehow).
+
+Actually, it look slike the call address itself is screwed up too.  I
+don't think "0xc7388a57" is likely to be a valid address.
+
+The code *looks* like the test
+
+	if (ASC_NARROW_BOARD(boardp)) {
+		ASC_DBG(1, "narrow board\n");
+		asc_dvc_varp = &boardp->dvc_var.asc_dvc_var;
+		asc_dvc_varp->bus_type = bus_type;
+
+but with strange corruption. 
+
+Can you do a
+
+	make drivers/scsi/advansys.lst
+
+and see what it should be?
+
+		Linus
