@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYBGPT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbYBGPYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760790AbYBGPT2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757155AbYBGPTT
+	id S1760065AbYBGPYo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbYBGPYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:19:19 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38377 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756423AbYBGPTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:19:18 -0500
-Date: Thu, 7 Feb 2008 10:16:30 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: any cpu hotplug changes in 2.6.24-current-git?
-Message-ID: <20080207091630.GA1816@elf.ucw.cz>
-References: <20080206125807.GB26817@elf.ucw.cz> <47A9D14C.8000002@gmail.com> <20080206224441.GC1630@elf.ucw.cz> <47AA558F.7030006@gmail.com>
+	Thu, 7 Feb 2008 10:24:36 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45821 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755746AbYBGPYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 10:24:35 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/qtFdlBKvqcK+NYDFilGM9dafzCc+lHedd6TL0AA
+	8QeqBa0zyPkkkF
+Date: Thu, 7 Feb 2008 16:24:48 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: David Brownell <david-b@pacbell.net>
+cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+Subject: Re: [PATCH] Define a NO_GPIO macro to compare against and to use as
+ an invalid GPIO
+In-Reply-To: <Pine.LNX.4.64.0801311624370.8478@axis700.grange>
+Message-ID: <Pine.LNX.4.64.0802071622020.5383@axis700.grange>
+References: <Pine.LNX.4.64.0801311624370.8478@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AA558F.7030006@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-02-06 19:49:19, Gregory Haskins wrote:
-> Pavel Machek wrote:
->> Hi!
->>
->>   
->>>> Are there any recent changes in cpu hotplug? I have suspend (random)
->>>> problems, nosmp seems to fix it, and last messages in the "it hangs"
->>>> case are from cpu hotplug...
->>>>       
->>
->>   
->>>   Can you send along your cpuinfo?
->>>     
->>
->> It happened on more than one machine, one cpuinfo is:
->>   
-> Ah, ok.  This one is a C2D, correct?  The only reason I asked is that 
+On Thu, 31 Jan 2008, Guennadi Liakhovetski wrote:
 
-I don't know what "C2D" means... core2duo? Yes, this is core2duo.
+> As discussed on i2c mailing list with David Brownell, and number
+> outside of the 0...MAX_INT range is invalid as a GPIO number.
+> Define a macro, similar to NO_IRQ, to be used as a deliberate
+> invalid GPIO, rather than defining a is_valid_gpio() macro.
 
-> someone was reporting an s2ram problem on P4s on some of that root-domain 
-> logic I submitted a little while ago (and was merged in .25), whereas C2D 
-> seemed fine.  That doesn't mean anything here, really.  The problem could 
-> still be my code, or it might be unrelated.  I was just wondering if you 
-> also had a P4 on the troubled systems.
->
-> So is your problem on suspend or resume?  (or both?)  (I know you mentioned 
-> it was random problems, but I wasn't sure if you could qualify that 
-> further)
+David, I think, your ack is required on this one. Can we get it in, 
+please? My soc-camera patches are accepted by the v4l maintainer, and 
+without this one the series would be incomplete.
 
-It dies at suspend, always in same place, but not always.
+Thanks
+Guennadi
 
-OTOH last few suspends worked for me, not sure what changed...
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+> 
+> ---
+> 
+> As gpiolib doesn't seem to have an own mailing list, sending it directly 
+> to LKML.
+> 
+>  include/asm-generic/gpio.h |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+> index f29a502..806b86c 100644
+> --- a/include/asm-generic/gpio.h
+> +++ b/include/asm-generic/gpio.h
+> @@ -16,6 +16,10 @@
+>  #define ARCH_NR_GPIOS		256
+>  #endif
+>  
+> +#ifndef NO_GPIO
+> +#define NO_GPIO			((unsigned int)-1)
+> +#endif
+> +
+>  struct seq_file;
+>  
+>  /**
+> -- 
+> 1.5.3.4
+> 
 
-> Any info you can provide will be appreciated. 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+Guennadi Liakhovetski
