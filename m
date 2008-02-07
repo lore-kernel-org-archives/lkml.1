@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYBGTc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761264AbYBGTex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbYBGTc2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757515AbYBGTcU
+	id S1761264AbYBGTex (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYBGTeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:32:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36509 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756319AbYBGTcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:32:19 -0500
-Date: Thu, 7 Feb 2008 20:31:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com,
-       npiggin@suse.de, Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@gmail.com>
-Subject: Re: [patch] block layer: kmemcheck fixes
-Message-ID: <20080207193140.GA19949@elte.hu>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-5-git-send-email-jens.axboe@oracle.com> <20080207100738.GB7716@elte.hu> <20080207101727.GE15220@kernel.dk> <20080207102534.GB16735@elte.hu> <20080207103136.GG15220@kernel.dk> <20080207104901.GF16735@elte.hu> <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 7 Feb 2008 14:34:44 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:44434 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753740AbYBGTen (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 14:34:43 -0500
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Newall <davidn@davidnewall.com>
+Cc: Christer Weinigel <christer@weinigel.se>,
+       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <47AB05E7.7000700@davidnewall.com>
+References: <20080125180232.GA4613@kroah.com>
+	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
+	 <47A5D895.20300@davidnewall.com> <47A6E742.80408@otello.alma.unibo.it>
+	 <47A764ED.8030605@weinigel.se> <1202161091.15090.84.camel@violet>
+	 <20080206213449.6614efea@weinigel.se>
+	 <1202331345.15090.235.camel@violet.holtmann.net>
+	 <47AB05E7.7000700@davidnewall.com>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 20:35:22 +0100
+Message-Id: <1202412922.15090.279.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi David,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > I disagree here. They either play by the roles or they really do pay
+> > Microsoft or go with BSD. I really couldn't care less.
+> Then you should keep away from the kernel.  The last thing that Linux
+> needs is someone who doesn't care if Linux succeeds or fails.  "I don't
+> care" will lead to failure.
 
-> On Thu, 7 Feb 2008, Ingo Molnar wrote:
-> >  	INIT_HLIST_NODE(&rq->hash);
-> >  	RB_CLEAR_NODE(&rq->rb_node);
-> > -	rq->ioprio = 0;
-> > -	rq->buffer = NULL;
-> > -	rq->ref_count = 1;
-> > -	rq->q = q;
-> > -	rq->special = NULL;
-> > -	rq->data_len = 0;
-> > -	rq->data = NULL;
-> > -	rq->nr_phys_segments = 0;
-> > -	rq->sense = NULL;
-> > -	rq->end_io = NULL;
-> > -	rq->end_io_data = NULL;
-> > -	rq->completion_data = NULL;
-> > -	rq->next_rq = NULL;
-> > +	rq->completion_data		= NULL;
-> > +	/* rq->elevator_private			*/
-> > +	/* rq->elevator_private2		*/
-> > +	/* rq->rq_disk				*/
-> > +	/* rq->start_time			*/
-> > +	rq->nr_phys_segments		= 0;
-> > +	/* rq->nr_hw_segments			*/
-> > +	rq->ioprio			= 0;
-> > +	rq->special			= NULL;
-> > +	rq->buffer			= NULL;
-> ...
-> 
-> Can we please just stop doing these one-by-one assignments, and just do 
-> something like
-> 
-> 	memset(rq, 0, sizeof(*rq));
-> 	rq->q = q;
-> 	rq->ref_count = 1;
-> 	INIT_HLIST_NODE(&rq->hash);
-> 	RB_CLEAR_NODE(&rq->rb_node);
-> 
-> instead?
-> 
-> The memset() is likely faster and smaller than one-by-one assignments 
-> anyway, even if the one-by-ones can avoid initializing some field or 
-> there ends up being a double initialization..
+I actually care about Linux certainly more than you do. I care about the
+copyright of my kernel contributions and the contributions of others.
+Not caring about these things is what is the worst. It means you
+disrespect all the work that a lot of people and companies have put into
+Linux.
 
-i definitely agree and do that for all code i write.
+And don't quote we with "I don't care". Alan already complained about
+your quoting style. Don't put words in my mouth that I never said.
 
-But if someone does item by item initialization for some crazy 
-performance reason (networking folks tend to have such constructs), it 
-should be done i think how i've done it in the patch: by systematically 
-listing _every_ field in the structure, in the same order, and 
-indicating it clearly when it is not initialized and why.
+The Linux kernel is licensed under GPL. If you don't like, go and play
+with someone else. You can quote me on that one.
 
-and there it already shows that we do not initialize a few other members 
-that could cause problems later on:
+Regards
 
-+       rq->data_len                    = 0;
-+       /* rq->sense_len                        */
-+       rq->data                        = NULL;
-+       rq->sense                       = NULL;
+Marcel
 
-why is sense_len not initialized - while data_len is? In any case, these 
-days the memclear instructions are dirt cheap and we should just always 
-initialize everything to zero by default, especially if it's almost all 
-zero-initialized anyway.
 
-	Ingo
