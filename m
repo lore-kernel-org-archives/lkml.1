@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbYBGUbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYBGUe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761970AbYBGUbf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbYBGUb1
+	id S1758933AbYBGUe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYBGUer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:31:27 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:48087 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbYBGUb0 (ORCPT
+	Thu, 7 Feb 2008 15:34:47 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:16823 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622AbYBGUeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:31:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VXopNlKxRV89NWmk6uaAHkIcFnOEfO5IsLvk/W0N6M/zLMzpP1Lw1jmH7Dx4zbYSadSyCG6sT7U/mkyWQwP2SCxncbrPQg+2nxgt00elyPx9i5xAnkJYL7IkBkUv6NAqni2hGDQUeR93u1N6xNbbf4yZ7NU0EsRUIdymwDiAp88=
-Message-ID: <8bd0f97a0802071231n56c1ba3fs86f2aeb188f6a853@mail.gmail.com>
-Date: Thu, 7 Feb 2008 15:31:23 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <cooloney.lkml@gmail.com>
-Subject: Re: blackfin compile error
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Robin Getz" <rgetz@blackfin.uclinux.org>, mpm@selenic.com,
-       bunk@kernel.org, bryan.wu@analog.com, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com
-In-Reply-To: <386072610802071137i697897dcr2d1c6ecab50f4809@mail.gmail.com>
+	Thu, 7 Feb 2008 15:34:46 -0500
+Message-ID: <fa686aa40802071234r5736aec6h12d482b8a2c408c0@mail.gmail.com>
+Date: Thu, 7 Feb 2008 13:34:43 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: Xilinx: hwicap driver comments
+Cc: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <47AB6552.7040503@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080206151830.GI505@cs181133002.pp.htv.fi>
-	 <1202315015.17934.242.camel@cinder.waste.org>
-	 <200802061412.50675.rgetz@blackfin.uclinux.org>
-	 <20080206113734.511473b0.akpm@linux-foundation.org>
-	 <386072610802062326h4e41a351h28f1d93906784ed0@mail.gmail.com>
-	 <8bd0f97a0802070803x2497b783o516491ed6249a4fe@mail.gmail.com>
-	 <386072610802071137i697897dcr2d1c6ecab50f4809@mail.gmail.com>
+References: <47AB6552.7040503@gmail.com>
+X-Google-Sender-Auth: edfe5efbc99fcedf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 7, 2008 2:37 PM, Bryan Wu <cooloney.lkml@gmail.com> wrote:
-> On Feb 8, 2008 12:03 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > On Feb 7, 2008 2:26 AM, Bryan Wu <cooloney.lkml@gmail.com> wrote:
-> > > On Feb 7, 2008 3:37 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > The world would be a better place if arch maintainers (or their helpers)
-> > > > were to build and test -mm once a month or so.
-> > >
-> > > I will be here for Blackfin. Actually, we got some patches in -mm, it
-> > > is necessary to built and test -mm on Blackfin.
-> >
-> > ive setup one of our internal machines to auto build all the Blackfin
-> > defconfigs found in mainline git and the mm tree
+On 2/7/08, Jiri Slaby <jirislaby@gmail.com> wrote:
+> Hi,
 >
-> Thanks a lot, it makes life easier.
->
-> > just need to find a way to publish/notify people upon failure ...
->
-> Maybe Grace can help to setup some cruisecontrol auto test machine
-> with email notification.
+> first of all, I think that the driver should go through lkml before upstream
+> merge or at least be in -mm for a while (I think this used to be a rule some
+> time ago), correct me if I'm wrong, but none of it happened.
 
-i'm thinking i'll post the linux-2.6.git/blackfin-2.6.git/linux-mm
-tree results to the Blackfin kernel list
--mike
+Hmmm, if that's the rule then I apologize.  I had thought that arch
+specific drivers were okay (assuming not part of a common subsystem
+like USB, Eth, etc).  The driver went through a number of review
+cycles on the linuxppc mailing list and the comments had settled down.
+ I didn't see any problem in merging it as it is a platform specific
+driver only used by the Xilinx Virtex chips.  It is only used by
+arch/powerpc and only when CONFIG_XILINX_VIRTEX is selected.
+
+Linus has already pulled Paul's tree so the patch is already merged
+upstream.  Does it need to come back out?
+
+Stephen, can you please repost you patch to the LKML?  Even if the
+driver is allowed to stay in for the time being you can at least get
+feedback on what needs to be changed.
+
+Cheers,
+g.
+
+>
+> Few comments I have:
+> - release f_op retval is silently ignored, I guess you will get your device into
+> undefined state when the first function fails (esp. when you interrupt the sem)
+> - semaphores are deprecated
+> - class_device_create is deprecated
+> - module_init/exit functions should be __init, not __devinit/exit (not a bug,
+> it's subset)
+> - this piece:
+>          drvdata = kmalloc(sizeof(struct hwicap_drvdata), GFP_KERNEL);
+>          if (!drvdata) {
+>                  dev_err(dev, "Couldn't allocate device private record\n");
+>                  return -ENOMEM;
+>          }
+>   memset((void *)drvdata, 0, sizeof(struct hwicap_drvdata));
+>
+>   kmalloc + memset = kzalloc
+>   null probed_devices[id] on that fail path and on failed1 label
+>
+> - from/to (void *) casts are useless
+> - io resources are at least ulong
+> - don't understand this:
+>                  memcpy(kbuf, drvdata->read_buffer, bytes_remaining);
+>                  drvdata->read_buffer_in_use = bytes_remaining;
+>                  free_page((unsigned long)kbuf);
+> - can this overlap (=>memmove)?
+>                  memcpy(drvdata->read_buffer + bytes_to_read,
+>                                  drvdata->read_buffer, 4 - bytes_to_read);
+> - is platform probing function race-proof (like pci)?
+> - run sparse on it, you mix __user with non-__user at least
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
