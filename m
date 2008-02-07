@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932281AbYBGAvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbYBGAwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932281AbYBGAvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933562AbYBGAkM
+	id S933901AbYBGAwS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934424AbYBGAsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:40:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59487 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933533AbYBGAkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:40:09 -0500
-Date: Thu, 7 Feb 2008 01:39:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>, tglx@linutronix.de,
-       mingo@redhat.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in
-	die_nmi path
-Message-ID: <20080207003918.GA29943@elte.hu>
-References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com> <47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu> <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 6 Feb 2008 19:48:09 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41876 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934632AbYBGAsC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:48:02 -0500
+Date: Wed, 6 Feb 2008 16:47:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+Subject: Re: softlockup: automatically detect hung TASK_UNINTERRUPTIBLE
+ tasks
+Message-Id: <20080206164747.60944a00.akpm@linux-foundation.org>
+In-Reply-To: <20080206163111.54088622.akpm@linux-foundation.org>
+References: <200801252259.m0PMxHmD012059@hera.kernel.org>
+	<20080205164626.f9c920e0.akpm@linux-foundation.org>
+	<1202309402.6310.0.camel@lappy>
+	<20080206100513.133587fa.akpm@linux-foundation.org>
+	<20080207000425.GA21918@elte.hu>
+	<20080206163111.54088622.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 Feb 2008 16:31:11 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
-
-> Looking at the patch the local_irq_enable() is totally bogus.  As soon 
-> was we hit machine_crash_shutdown the first thing we do is disable 
-> irqs.
-
-yeah.
-
-> I'm wondering if someone was using the switch cpus on crash patch that 
-> was floating around.  That would require the ipis to work.
+> On Thu, 7 Feb 2008 01:04:25 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> I don't know if nmi_exit makes sense.  There are enough layers of 
-> abstraction in that piece of code I can't quickly spot the part that 
-> is banging the hardware.
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > > Does that kernel have:
+> > > > 
+> > > > commit ed50d6cbc394cd0966469d3e249353c9dd1d38b9
+> > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > Date:   Sat Feb 2 00:23:08 2008 +0100
+> > > > 
+> > > >     debug: softlockup looping fix
+> > > 
+> > > yup.  It was fetched less than 24 hours ago.
+> > 
+> > does the patch below improve the situation?
+> > 
 > 
-> The location of nmi_exit in the patch is clearly wrong.  crash_kexec 
-> is a noop if we don't have a crash kernel loaded (and if we are not 
-> the first cpu into it), so if we don't execute the crash code 
-> something weird may happen.  Further the code is just more 
-> maintainable if that kind of code lives in machine_crash_shutdown.
+> Nope.
+> 
+> But I tested it on mainline, and mainline exhibits the never-powers-off
+> symptom, whereas ed50d6cbc394cd0966469d3e249353c9dd1d38b9 demonstrates the
+> powers-off-after-20-seconds symptom.  
+> 
+> So we _may_ be dealing with two bugs here, and your patch might have fixed
+> the first, but that success is obscured by the second.  I guess I need to
+> prepare a tree which has ed50d6cbc394cd0966469d3e249353c9dd1d38b9 at its
+> tip.  (Wonders how to do that).  
 
-nmi_exit() has no hw effects - it's just our own bookeeping.
+OK, I did this (tested on a ed50d6cbc394cd0966469d3e249353c9dd1d38b9-tipped
+tree) and again, the patch made no difference: the machine still pauses
+20-odd seconds before (correctly) powering off.
 
-the hw knows that we finished the NMI when we do an iret. Perhaps that's 
-the bug or side-effect that made the difference: via enabling irqs we 
-get an irq entry, and that does an iret and clears the NMI nested state 
-- allowing the kexec context to proceed? I suspect kexec() will do an 
-iret eventually (at minimum in the booted up kernel's context) - all 
-NMIs are blocked up to that point and maybe the APIC doesnt really like 
-being frobbed in that state? In any case, the local_irq_enable() is just 
-wrong - it's the worst thing a crashing kernel can do. Perhaps doing an 
-intentional iret with a prepared stack-let that just restores to 
-still-irqs-off state and jumps to the next instruction could 'exit' the 
-NMI context without really having to exit it in the kernel code flow?
-
-	Ingo
