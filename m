@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbYBGWpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbYBGWqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbYBGWpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbYBGWpJ
+	id S933853AbYBGWqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755703AbYBGWqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:45:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36950 "EHLO
+	Thu, 7 Feb 2008 17:46:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36981 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758253AbYBGWpH (ORCPT
+	with ESMTP id S1755292AbYBGWqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:45:07 -0500
-Message-ID: <47AB89CB.7010908@zytor.com>
-Date: Thu, 07 Feb 2008 14:44:27 -0800
+	Thu, 7 Feb 2008 17:46:12 -0500
+Message-ID: <47AB8A0F.9@zytor.com>
+Date: Thu, 07 Feb 2008 14:45:35 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -28,14 +28,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Rafael J. Wysocki wrote:
-> -	rep; stosl
-> +	rep
-> +	stosl
 
-Yuck!
+>  ENTRY(wakeup_long64)
+>  wakeup_long64:
+> -	movq    saved_magic, %rax
+> -	movq    $0x123456789abcdef0, %rdx
+> -	cmpq    %rdx, %rax
+> -	jne     bogus_64_magic
+> +	movq	saved_magic, %rax
+> +	movq	$0x123456789abcdef0, %rdx
+> +	cmpq	%rdx, %rax
+> +	jne	bogus_64_magic
 
-Please don't perpetuate the braindamage that this is two instructions. 
-It's one instruction with a modifier; the fact that gas wants a 
-separator is broken enough as it is.
+A random magic is probably more likely to be unique than something like 
+that.
 
 	-hpa
