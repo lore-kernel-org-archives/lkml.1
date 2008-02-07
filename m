@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758391AbYBGJsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbYBGJtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758391AbYBGJsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 04:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYBGJsL
+	id S1758923AbYBGJtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 04:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYBGJtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 04:48:11 -0500
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:34473
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752679AbYBGJsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 04:48:09 -0500
-X-Authority-Analysis: v=1.0 c=1 a=mpDb_OsCwBSZZfC2BvIA:9
- a=ydNyLYV7TuR6P14BAcx3STDQ0CEA:4 a=jXk-Exju8_oA:10
-Subject: Re: 2.6.24-git15 Keyboard Issue?
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
-References: <1202302978.9058.13.camel@popeye>
-	 <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>
-	 <1202305740.9058.22.camel@popeye>
-	 <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
-	 <1202318666.6406.13.camel@popeye>
-	 <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 03:51:36 -0600
-Message-Id: <1202377896.6406.38.camel@popeye>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 04:49:32 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:3887 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbYBGJtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 04:49:31 -0500
+Date: Thu, 7 Feb 2008 10:49:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
+       dgc@sgi.com, npiggin@suse.de, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH 2/8] Add interface for queuing work on a specific CPU
+Message-ID: <20080207094928.GB15220@kernel.dk>
+References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-3-git-send-email-jens.axboe@oracle.com> <20080207014503.cf1853c2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080207014503.cf1853c2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Jiri - 
-
-I have just started the build on the 2.6.24-git16 product and when it is
-done I will come up with just the nohpet parameter - forgoing the
-previouosly used taskset command.
-
-Do you want me to do this using the git15 kernel I built yesterday, or
-the new git16 kernel?
-
-(I was not sure if you wanted me to introduce the variable of a new
-kernel into the process while you are trying to diagnose the failure)
-
-On the topic of doing a git bisect - I am recovering from heart surgery
-last week and other than keeping up with the never ending stream of
-email from the office, I am pretty much confined to the house - so I
-have nothing but time on my hands.
-
-However, I do my daily builds from the main tarball merged with the
-daily git patch and don't have the infrustructure set up to do a git
-bisect.  If you can point me to a "how to" on how to set up and use git
-I am more than willing to give it a shot.
-
-Chris
-
-
-
-On Thu, 2008-02-07 at 10:18 +0100, Jiri Kosina wrote:
-> On Wed, 6 Feb 2008, Chris Holvenstot wrote:
+On Thu, Feb 07 2008, Andrew Morton wrote:
+> On Thu,  7 Feb 2008 10:18:59 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> > I have several hours of running aith nohpet and X's affinity set to 2
-> > instead of 3 and so far everything is running flawlessly.
+> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > ---
+> >  include/linux/workqueue.h |    1 +
+> >  kernel/workqueue.c        |   15 +++++++++++++++
+> >  2 files changed, 16 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+> > index 7f28c32..4c46944 100644
+> > --- a/include/linux/workqueue.h
+> > +++ b/include/linux/workqueue.h
+> > @@ -179,6 +179,7 @@ __create_workqueue_key(const char *name, int singlethread,
+> >  extern void destroy_workqueue(struct workqueue_struct *wq);
+> >  
+> >  extern int FASTCALL(queue_work(struct workqueue_struct *wq, struct work_struct *work));
+> > +extern int FASTCALL(queue_work_on_cpu(struct workqueue_struct *wq, struct work_struct *work, int cpu));
 > 
-> Great, so this definitely is some kind of timing issue, thanks for 
-> verifying that.
+> -ETOOWIDE
 > 
-> > which has the same suggestion (taskset) as you made, for me this was 
-> > something new starting with 2.6.24-git15 - maybe something made a timing 
-> > issue fall a little closer to the edge.
+> please don't add fastcall - we're trying to remove it.
+
+Oops yes, I'll kill the fastcall and fix the > 80 char line!
+
+> >  extern int FASTCALL(queue_delayed_work(struct workqueue_struct *wq,
+> >  			struct delayed_work *work, unsigned long delay));
+> >  extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+> > diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> > index 52db48e..551ad7e 100644
+> > --- a/kernel/workqueue.c
+> > +++ b/kernel/workqueue.c
+> > @@ -175,6 +175,21 @@ int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
+> >  }
+> >  EXPORT_SYMBOL_GPL(queue_work);
+> >  
+> > +int fastcall queue_work_on_cpu(struct workqueue_struct *wq,
+> > +			       struct work_struct *work, int cpu)
+> > +{
+> > +	int ret = 0;
+> > +
+> > +	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+> > +		BUG_ON(!list_empty(&work->entry));
+> > +		__queue_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
+> > +		ret = 1;
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL_GPL(queue_work_on_cpu);
 > 
-> Yes, could be some scheduler update that made the problem more visible. If 
-> you'd had time to use git-bisect to find the exact commit that exposes 
-> your problem, that might be interesting. But as you said that this is not 
-> immediately reproducible, it might take ages.
+> Might as well change queue_work() to call this?
 > 
-> > Would you like me to try and further isolate things for you here by 
-> > either running with just nohpet OR just the taskset to change X's 
-> > affinity?
-> 
-> Yes, that would help. Especially knowing whether running with 'nohpet' 
-> fixes the problem would be nice.
-> 
+> Oleg cc'ed as queue_work() maintainer ;)
+
+Good point, I'll do that locally at least.
+
+-- 
+Jens Axboe
 
