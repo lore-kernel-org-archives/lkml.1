@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbYBGMwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYBGMwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760488AbYBGMwI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759554AbYBGMup
+	id S1756806AbYBGMwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbYBGMwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:50:45 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34767 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761086AbYBGMui (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:50:38 -0500
-Message-ID: <47AAFE91.1080104@davidnewall.com>
-Date: Thu, 07 Feb 2008 23:20:25 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 07:52:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42624 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754805AbYBGMwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 07:52:33 -0500
+Date: Thu, 7 Feb 2008 13:52:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] x86 mmiotrace: use lookup_address()
+Message-ID: <20080207125221.GA27234@elte.hu>
+References: <1201660102.8837.9.camel@brick> <1201660453.8837.13.camel@brick> <20080130200827.322c4f7d@daedalus.pq.iki.fi> <20080131150746.GB11996@elte.hu> <20080131180253.6c007852@daedalus.pq.iki.fi> <20080131081507.5edcde10@laptopd505.fenrus.org> <20080203085522.2b63e15b@daedalus.pq.iki.fi> <20080203070321.GA8293@elte.hu> <20080205222807.7b35ef2b@daedalus.pq.iki.fi> <20080206050028.GA18700@infradead.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<20080203124849.0226560f@weinigel.se>	<84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>	<47A5F418.6030104@weinigel.se>	<20080203231530.GB15692@kroah.com>	<courier.47A8EDDC.0000785F@hawking.rebel.net.au> <20080205231724.729a7a60@core>
-In-Reply-To: <20080205231724.729a7a60@core>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206050028.GA18700@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
 
->> If we're still talking about whether a kernel module is required to be 
->> released under GPL, then yes, this is not a gray area.  This is something 
->> that authors of original works can decide for themselves.  They have no 
->>     
-                     ^^^^^^^^^^^^^^^
+* Christoph Hellwig <hch@infradead.org> wrote:
 
->
-> Only if they are original works.
->   
-Yes.  That was stipulated.
+> On Tue, Feb 05, 2008 at 10:28:07PM +0200, Pekka Paalanen wrote:
+> > Use lookup_address() from pageattr.c instead of doing the same
+> > manually. Also had to EXPORT_SYMBOL(lookup_address) to make this
+> > work for modules. This also fixes "undefined symbol 'init_mm'"
+> > compile error for x86_32.
+> 
+> This should be a _GPL export for sure.
 
->   
->> obligation to release under GPL, however they must take special care to 
->> ensure that the module does not (statically) link with the kernel.  Richard 
->>     
->
-> Also wrong.
->
-> You really should investigate a beginners text on intellectual property
-> law.
+i've changed it to that.
 
-Perhaps you might read up on unfair trade practices and contract law. 
-The contract (GPL) doesn't prevent me from using GPL work, in fact it
-encourages me.  Neither can it impose conditions upon original work
-authored by a third party.
-
-You do realise, I suppose, that it's easily feasible to write a Linux
-kernel module on a non-Linux platform, and in fact without even using
-any GPL software in its production.  How could such a work possibly be
-derivative?  How could it be affected by GPL?
-
-And please, don't give wishy-washy "lawyers tell me it's so"
-non-answers.  Give something real.
+	Ingo
