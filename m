@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932218AbYBGAhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934672AbYBGAiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932218AbYBGAhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764090AbYBGAGP
+	id S934672AbYBGAiO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932721AbYBGAHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:06:15 -0500
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:56168 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763957AbYBGAGN (ORCPT
+	Wed, 6 Feb 2008 19:07:55 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:32424 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932711AbYBGAHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:06:13 -0500
-Message-ID: <47AA4B6F.20902@tiscali.nl>
-Date: Thu, 07 Feb 2008 01:06:07 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-usb@vger.kernel.org, ftdi-usb-sio-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH][drivers/usb/serial/ftdi_sio.c] add missing '|'
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Feb 2008 19:07:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=eN6iV+LN7UIBfHgH95wC2WNMA7vEofZxiqgn8HuKK1Blikur+6XrWnp1MVaC/tNK3BerUIWUPAi0CjFlIMPa62lzDuk4gRxjbJ0UGTigE9xNRlH+NNnaM7Qv/z7GhEwDKBdCnwvsg8COP+ZH62wDDLun8lNWTIDL9Y66IzEsp2g=
+Subject: [PATCH 1/3] x86: sparse warning in cpufreq/powernow-k8.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 16:07:47 -0800
+Message-Id: <1202342867.5820.89.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add missing '|'
+Nested per_cpu accessors will shadow the internal __ptr variable.  Use
+a temporary first_core variable.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1239:9: warning: symbol '__ptr' shadows an earlier one
+arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1239:9: originally declared here
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 90dcc62..2173561 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -394,7 +394,7 @@ static const char *ftdi_chip_name[] = {
- /* End TIOCMIWAIT */
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index 5affe91..e64eee0 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1234,9 +1234,10 @@ static unsigned int powernowk8_get (unsigned int cpu)
+ {
+ 	struct powernow_k8_data *data;
+ 	cpumask_t oldmask = current->cpus_allowed;
++	unsigned int first_core = first_cpu(per_cpu(cpu_core_map, cpu));
+ 	unsigned int khz = 0;
  
- #define FTDI_IMPL_ASYNC_FLAGS = ( ASYNC_SPD_HI | ASYNC_SPD_VHI \
-- ASYNC_SPD_CUST | ASYNC_SPD_SHI | ASYNC_SPD_WARP )
-+ | ASYNC_SPD_CUST | ASYNC_SPD_SHI | ASYNC_SPD_WARP )
+-	data = per_cpu(powernow_data, first_cpu(per_cpu(cpu_core_map, cpu)));
++	data = per_cpu(powernow_data, first_core);
  
- /* function prototypes for a FTDI serial converter */
- static int  ftdi_sio_probe	(struct usb_serial *serial, const struct usb_device_id *id);
+ 	if (!data)
+ 		return -EINVAL;
+-- 
+1.5.4.1189.g38fd5
+
 
