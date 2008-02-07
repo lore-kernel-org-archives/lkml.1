@@ -1,115 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763379AbYBGXOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbYBGXQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763379AbYBGXOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763652AbYBGXOZ
+	id S1763500AbYBGXQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYBGXQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:14:25 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56694 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763466AbYBGXOX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:14:23 -0500
-Message-ID: <47AB90C7.2070205@zytor.com>
-Date: Thu, 07 Feb 2008 15:14:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 7 Feb 2008 18:16:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40504 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755092AbYBGXQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 18:16:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Harkes <jaharkes@cs.cmu.edu>
+Subject: Re: [GIT PATCH] suspend patches for 2.6.25-rc0
+Date: Fri, 8 Feb 2008 00:14:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       stern@rowland.harvard.edu, pavel@ucw.cz
+References: <200802011820.56693.lenb@kernel.org> <20080207222713.GA20549@cs.cmu.edu>
+In-Reply-To: <20080207222713.GA20549@cs.cmu.edu>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-References: <20080205190600.GB11613@elf.ucw.cz> <20080207222845.GA6096@elf.ucw.cz> <47AB8A41.3040008@zytor.com> <200802072357.33293.rjw@sisk.pl>
-In-Reply-To: <200802072357.33293.rjw@sisk.pl>
-Content-Type: multipart/mixed;
- boundary="------------060101040700030303080000"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802080014.41638.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060101040700030303080000
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thursday, 7 of February 2008, Jan Harkes wrote:
+> On Fri, Feb 01, 2008 at 06:20:56PM -0500, Len Brown wrote:
+> > please pull from: 
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git suspend
+> > 
+> > This will update the files shown below.
+> 
+> The following patch,
+> 
+>     commit c3e94d899c864e558f938f9845ddb8c2e5d5ccd0
+>     Author: Alan Stern <stern@rowland.harvard.edu>
+>     Date:   Mon Nov 19 23:38:25 2007 +0100
+> 
+>     Hibernation: Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers (rev. 2)
+> 
+> Seems to have reverted some code related to the PM_HIBERNATION_PREPARE
+> notifiers in kernel/power/user.c that were added in 2.6.23 by the
+> following patch,
+> 
+>     commit b10d911749d37dccfa5873d2088aea3f074b9e45
+>     Author: Rafael J. Wysocki <rjw@sisk.pl>
+>     Date:   Thu Jul 19 01:47:36 2007 -0700
+> 
+>     PM: introduce hibernation and suspend notifiers
+> 
+> I'm pretty sure this was not the intent of the new patch because it only
+> tries to extend upon the former functionality and not replace it.
 
-Okay, this uses the iodelay as the timesource... here is the total 
-silliness (and totally untested, of course.)
+I haven't revert the changes.  It's only moved the notifier chain calls from
+the ioctls to open/release in user.c .
 
-	-hpa
-
-
---------------060101040700030303080000
-Content-Type: text/x-csrc;
- name="beep.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="beep.c"
-
-static inline void io_delay(void)
-{
-	outb(0, 0x80);
-}
-
-static void udelay(int loops)
-{
-	while (loops--)
-		io_delay();	/* Approximately 1 us */
-}
-
-static void beep(unsigned int hz)
-{
-	u8 enable;
-
-	if (!hz) {
-		enable = 0x00;		/* Turn off speaker */
-	} else {
-		u16 div = 1193181/hz;
-
-		outb(0xb6, 0x43);	/* Ctr 2, squarewave, load, binary */
-		io_delay();
-		outb(div, 0x42);	/* LSB of counter */
-		io_delay();
-		outb(div >> 8, 0x42);	/* MSB of counter */
-		io_delay();
-
-		enable = 0x03;		/* Turn on speaker */
-	}
-	inb(0x61);		/* Dummy read of System Control Port B */
-	io_delay();
-	outb(enable, 0x61);	/* Enable timer 2 output to speaker */
-	io_delay();
-}
-
-#define DOT_HZ		880
-#define DASH_HZ		587
-#define US_PER_DOT	125000
-
-/* Okay, this is totally silly, but it's kind of fun. */
-void send_morse(const char *pattern)
-{
-	char s;
-
-	while ((s = *pattern++)) {
-		switch (s) {
-		case '.':
-			beep(DOT_HZ);
-			udelay(US_PER_DOT);
-			beep(0);
-			udelay(US_PER_DOT);
-			break;
-		case '-':
-			beep(DASH_HZ);
-			udelay(US_PER_DOT*3);
-			beep(0);
-			udelay(US_PER_DOT);
-			break;
-		default:	/* Assume it's a space */
-			udelay(US_PER_DOT*3);
-			break;
-		}
-	}
-}
-
-
-
---------------060101040700030303080000--
+Thanks,
+Rafael
