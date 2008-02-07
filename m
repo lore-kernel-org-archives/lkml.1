@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbYBGMjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbYBGMkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbYBGMjw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbYBGMjn
+	id S1759677AbYBGMkO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:40:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbYBGMj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:39:43 -0500
-Received: from www.tglx.de ([62.245.132.106]:47403 "EHLO www.tglx.de"
+	Thu, 7 Feb 2008 07:39:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59074 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755861AbYBGMjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:39:42 -0500
-Date: Thu, 7 Feb 2008 13:38:05 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, Greg KH <greg@kroah.com>
-Subject: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-Message-ID: <20080207133805.13f092ff@dilbert.local>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1758223AbYBGMjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 07:39:53 -0500
+Date: Thu, 7 Feb 2008 13:39:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24 says "serial8250: too much work for irq4" a lot.
+Message-ID: <20080207123937.GC15647@elte.hu>
+References: <200802051455.10831.rob@landley.net> <47A8D00F.9040803@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47A8D00F.9040803@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hans J Koch <hjk@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: Greg KH <greg@kroah.com>
-Subject: arch/arm/Kconfig: Make UIO available on ARM architecture
 
-Source drivers/uio/Kconfig to make UIO available in menuconfig if ARCH=arm.
-I already posted this a few months ago, but it got lost somehow.
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-Signed-off-by: Hans J Koch <hjk@linutronix.de>
----
- arch/arm/Kconfig |    2 ++
- 1 file changed, 2 insertions(+)
+>> (If it's a qemu issue, I can go bother them.  It's possible that qemu 
+>> isn't delivering interrupts as often as it expects, since that's 
+>> limited by the granularity of the host timer; I know the clock in 
+>> qemu can run a bit slow because it only gets clock interrupts when 
+>> the host system isn't too busy to schedule the emulator.  But this 
+>> doesn't usually cause a problem.  I _think_ the message is just a 
+>> "this should never happen" type warning, which is happening to me.  
+>> But I break stuff. :)
+>
+> This is because Qemu spews data to the serial port without any rate 
+> limiting; this causes the in-kernel serial port driver to think the 
+> port is stuck.  The serial port emulation needs to make it possible to 
+> drain the virtual FIFO every now and then, as opposed to filling it 
+> again immediately.
 
-Index: linux-2.6/arch/arm/Kconfig
-===================================================================
---- linux-2.6.orig/arch/arm/Kconfig	2008-02-07 13:01:45.000000000 +0100
-+++ linux-2.6/arch/arm/Kconfig	2008-02-07 13:18:22.000000000 +0100
-@@ -1066,6 +1066,8 @@
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 
-+source "drivers/uio/Kconfig"
-+
- endmenu
- 
- source "net/Kconfig"
+actually, the way i solved it for qemu+KVM+paravirt was to just turn off 
+this rather silly check in the serial driver if inside a paravirt guest. 
+When we are emulated then the serial 'hardware' is totally reliable and 
+we should just trust it. That way i never dropped a single bit of kernel 
+log output again.
+
+	Ingo
