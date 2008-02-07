@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYBGGD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYBGGFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbYBGGD7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYBGGDt
+	id S1755270AbYBGGFZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYBGGFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:03:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45656 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbYBGGDs (ORCPT
+	Thu, 7 Feb 2008 01:05:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53633
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751958AbYBGGFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:03:48 -0500
-Date: Wed, 6 Feb 2008 21:55:07 -0800
-From: Greg KH <greg@kroah.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: len.brown@intel.com, ibm-acpi-devel@lists.sourceforge.net,
-       Roland Dreier <rdreier@cisco.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>, stable@kernel.org
-Subject: Re: [stable] [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test
-	if (level & TP_EC_FAN_FULLSPEED)
-Message-ID: <20080207055507.GA7212@kroah.com>
-References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl> <20080205050504.GB30670@khazad-dum.debian.net> <47A81FAE.2090709@tiscali.nl> <20080206230702.GA12395@kroah.com> <47AA4748.3040702@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AA4748.3040702@tiscali.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 7 Feb 2008 01:05:14 -0500
+Date: Wed, 06 Feb 2008 22:05:44 -0800 (PST)
+Message-Id: <20080206.220544.238067538.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080207054738.GB20902@suse.de>
+References: <20080207000959.GA16601@suse.de>
+	<20080206.200618.11213859.davem@davemloft.net>
+	<20080207054738.GB20902@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 12:48:24AM +0100, Roel Kluin wrote:
-> Greg KH wrote:
-> > On Tue, Feb 05, 2008 at 09:34:54AM +0100, Roel Kluin wrote:
-> >> Henrique de Moraes Holschuh wrote:
-> >>> On Tue, 05 Feb 2008, Roel Kluin wrote:
-> >>>> Roland Dreier wrote:
+From: Greg KH <gregkh@suse.de>
+Date: Wed, 6 Feb 2008 21:47:38 -0800
+
+> On Wed, Feb 06, 2008 at 08:06:18PM -0800, David Miller wrote:
+> > I redid the bisect to make sure it absolutely was that specific
+> > changeset, and it is.
 > 
-> >>>>>  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
-> >>>>>  > this be replaced by
-> >>>>>
-> >>>>> Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
-> >>>>> (based on the comment).
-> >>>> Thanks Roland, for your info
-> 
-> >>> ACK.  This needs to be sent to stable as well.  I think both 2.6.22 and
-> >>> 2.6.23 need this patch.
-> >>>
-> >> CC stable@kernel.org
-> > 
-> > Please send us a real copy of the patch, when it goes into Linus's tree,
-> > so we know what to apply, and that it is safe to do so.
-> 
-> It's a oneliner and the patch is from linus' tree.
-> ---
-> in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad, a safety net for TPEC
-> fan control mode was added. Quoting that patch:
+> Thanks for doing that, I'll let you know when I have a patch to test.
 
-I don't see this patch in Linus's tree, I see the patch you are
-patching, but not this one :)
+I found the problem, it's the "whole_disk" partition attribute.
 
-Can you tell me the git id of the patch you wish to go into the stable
-tree, and send the whole thing to us?
+Look in fs/partitions/check.c:add_partition() where it tests the
+ADDPART_FLAG_WHOLEDISK flag.
 
-thanks,
-
-greg k-h
+I think that code block needs to be updated to match the rest of the
+changes in the offending changeset we are discussing.
