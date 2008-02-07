@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbYBGQcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYBGQhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461AbYBGQcX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 11:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbYBGQcO
+	id S1758654AbYBGQhe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 11:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYBGQh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 11:32:14 -0500
-Received: from UKEmail.nice.com ([195.166.55.162]:1150 "EHLO
-	thebe.racal-recorders.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755876AbYBGQcM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 11:32:12 -0500
-X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Feb 2008 11:32:12 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 7 Feb 2008 11:37:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53153 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbYBGQhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 11:37:25 -0500
+Message-ID: <47AB3382.3030806@redhat.com>
+Date: Thu, 07 Feb 2008 11:36:18 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] USB: mark USB drivers as being GPL only
-Date: Thu, 7 Feb 2008 16:22:00 -0000
-Message-ID: <B710AFF518DE29459D5752E7B15256D75E39D7@souexc02.eu.nice.com>
-In-Reply-To: <20080207171322.40eb7c95@dilbert.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] USB: mark USB drivers as being GPL only
-thread-index: AchppQybflfsAurMQIO5S+6ggbpMhwAAFUHw
-References: <20080125180232.GA4613@kroah.com> 
-    <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> 
-    <47A5D895.20300@davidnewall.com> <47A6E742.80408@otello.alma.unibo.it> 
-    <47A764ED.8030605@weinigel.se> <1202161091.15090.84.camel@violet> 
-    <20080206213449.6614efea@weinigel.se> 
-    <20080206215442.63c94cf3@dilbert.local> <47AB056E.70802@davidnewall.com> 
-    <20080207150612.21ba60df@dilbert.local> 
-    <47AB163C.5070107@davidnewall.com> 
-    <20080207171322.40eb7c95@dilbert.local>
-From: "Dave Higton" <DAVE.HIGTON@nice.com>
-To: =?iso-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>,
-       "David Newall" <davidn@davidnewall.com>
-Cc: "Christer Weinigel" <christer@weinigel.se>,
-       "Marcel Holtmann" <marcel@holtmann.org>,
-       "Diego Zuccato" <diego@otello.alma.unibo.it>,
-       "Greg KH" <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Greg KH <greg@kroah.com>, Grant Grundler <grundler@parisc-linux.org>,
+       Loic Prylli <loic@myri.com>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
+Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
+References: <20080114230448.GL9847@does.not.exist>	<20080115174643.GB28238@kroah.com>	<20080115175641.GE18741@parisc-linux.org>	<20080119165809.GB11553@colo.lackof.org>	<479E1FA6.1030708@redhat.com>	<20080128204431.GA15227@kroah.com>	<20080128223141.GA31101@parisc-linux.org>	<20080128225334.GD4720@kroah.com>	<20080129025615.GC20198@parisc-linux.org>	<20080129030340.GE20198@parisc-linux.org>	<86802c440802022330o771cf98btcf750c790668b6e9@mail.gmail.com>	<47AB299D.4000500@redhat.com> <20080207082827.2b4e6112@laptopd505.fenrus.org>
+In-Reply-To: <20080207082827.2b4e6112@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-usb-owner@vger.kernel.org 
-> [mailto:linux-usb-owner@vger.kernel.org] On Behalf Of Hans-Jürgen Koch
-> Sent: 2008 February 07 16:13
-> To: David Newall
-> Cc: Christer Weinigel; Marcel Holtmann; Diego Zuccato; Greg 
-> KH; linux-usb@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Arjan van de Ven wrote:
+> On Thu, 07 Feb 2008 10:54:05 -0500
+> Tony Camuso <tcamuso@redhat.com> wrote:
 > 
-> Using a symbol from a library means linking to it, and that creates a
-> derived work. Why should it be different when using kernel symbols?
+>> Matthew,
+>>
+>> Perhaps I missed it, but did you address Yinghai's concerns?
+>>
+>> Yinghai Lu wrote:
+>>> On Jan 28, 2008 7:03 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+>>>> -int pci_conf1_write(unsigned int seg, unsigned int bus,
+>>>> +static int pci_conf1_write(unsigned int seg, unsigned int bus,
+>>>>                            unsigned int devfn, int reg, int len,
+>>>> u32 value)
+>>> any reason to change pci_conf1_read/write to static?
+>>>
+> 
+> nothing should use these directly. So static is the right answer ;)
 
-There's an interesting parallel in the SCO vs Novell case.
+Agreed. Thanks, Arjan.
 
-Dave
-
-
-*************************************************************************************************************************************************************************************************************************************************
-
-NICE CTI Systems UK Limited ("NICE") is registered in England under company number, 3403044.  The registered office of NICE is at Tollbar Way, Hedge End, Southampton, Hampshire SO30 2ZP.
-
-Confidentiality: This communication and any attachments are intended for the above-named persons only and may be confidential and/or legally privileged. Any opinions expressed in this communication are not necessarily those of NICE. If this communication has come to you in error you must take no action based on it, nor must you copy or show it to anyone; please delete/destroy and inform the sender by e-mail immediately.
-
-Monitoring: NICE may monitor incoming and outgoing e-mails.
-
-Viruses:  Although we have taken steps toward ensuring that this e-mail and attachments are free from any virus, we advise that in keeping with good computing practice the recipient should ensure they are actually virus free.
-
-****************************************************************************************************************************************************************************************************************************************************
-
- 
-
+Matthew,
+What about the ATA_RAM addition to Kconfig? Was it accidental,
+or intended? If intended, how is it related?
