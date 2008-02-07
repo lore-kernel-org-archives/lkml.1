@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbYBGGZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYBGG33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760535AbYBGGZx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932121AbYBGGXF
+	id S1756793AbYBGG33 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYBGG3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:23:05 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:13510 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932368AbYBGGXC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:23:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=s0PV6kYyLorS5rVXiC3GxdYyvE5kMTBxGQfPzx+n7W4aUurnPFStU5vc/h8Cu6bQwekpeu4HY2xnfhF7ufFKpVHOF+/R2x1CmCzwMQahI4rcQrH6N14CtsC+D3zyv1sJVQaIlr30fkZOYelOyDckreygsYuqCoQDZFjc8qUtJmA=
-Message-ID: <84144f020802062222s78533aa6qe352d5fe7b622e20@mail.gmail.com>
-Date: Thu, 7 Feb 2008 08:22:56 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christer Weinigel" <christer@weinigel.se>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Cc: "David Newall" <davidn@davidnewall.com>,
-       "Marcel Holtmann" <marcel@holtmann.org>, "Greg KH" <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080206221254.5780a862@weinigel.se>
+	Thu, 7 Feb 2008 01:29:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42709 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752654AbYBGG3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 01:29:19 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: nigel@nigel.suspend2.net
+Subject: Re: [linux-pm] Re: Small pm documentation cleanups
+Date: Thu, 7 Feb 2008 01:28:34 -0500
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+References: <20080204234700.GA1912@elf.ucw.cz> <20080205182712.GA9483@elf.ucw.cz> <47AA2627.4030509@nigel.suspend2.net>
+In-Reply-To: <47AA2627.4030509@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se>
-	 <20080202191930.GA19826@kroah.com> <47A5D9CD.5070001@davidnewall.com>
-	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-	 <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet>
-	 <courier.47A84ADB.000047C1@hawking.rebel.net.au>
-	 <84144f020802050346h2c26aac4v9841dd5bc98931a0@mail.gmail.com>
-	 <20080206221254.5780a862@weinigel.se>
-X-Google-Sender-Auth: 8d9142f611e7ffe6
+Message-Id: <200802070128.34838.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christer,
+applied
+(with nigel's last comment included)
 
-On Tue, 5 Feb 2008 13:46:08 +0200
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
-> > What makes you qualified to make that statement (without giving any
-> > evidence)? Are you're an expert on international copyright law?
+thanks,
+-len
 
-On Feb 6, 2008 11:12 PM, Christer Weinigel <christer@weinigel.se> wrote:
-> Are you?  You've made some very definite statements about copyright
-> law.  Things that I've been told are definitely in a gray area and not
-> at all as clear cut as you and the FSF likes to say.  FSF has a very
-> clear agenda, and taking what they say as the gospel is a big mistake.
-
-I have simply stated that (1) the problem boils down to what is
-derived work and what is no and (2) the developers use the
-EXPORT_SYMBOL_GPL as a hint of what they think to be derived work (not
-necessarily tested in court). The _logical conclusion_ of these two
-simple facts is, of course, to _not use_ functions marked as
-EXPORT_SYMBOL_GPL unless you're willing to test your belief in court.
-
-Now I see you really want to argue about this but could you please do
-it on some other list than the LKML? We use this list for real work
-too, you know, and right now you're only contributing noise. Thanks!
-
-                        Pekka
+On Wednesday 06 February 2008 16:27, Nigel Cunningham wrote:
+> Hi again.
+> 
+> Pavel Machek wrote:
+> > Hi!
+> > 
+> >>> On Tuesday, 5 of February 2008, Pavel Machek wrote:
+> >>>> Small documentation fixes/additions that accumulated in my tree.
+> >>>>
+> >>>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> >>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >>>
+> > ...
+> >>>> 0
+> >>>>   	acpi_sleep=	[HW,ACPI] Sleep options
+> >>>> -			Format: { s3_bios, s3_mode }
+> >>>> -			See Documentation/power/video.txt
+> >>>> +			Format: { s3_bios, s3_mode, s3_beep }
+> >>>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
+> >>>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
+> >>>> +			kernel's real-mode entry point is called.
+> >> s/kernel's/the kernel's/
+> > 
+> > Thanks for comments, I applied them.
+> 
+> You're welcome. Sorry for replying again, but I just noticed another one 
+> in the line above - it should be something like "it makes the PC's 
+> speaker beep as soon as" ('on PC speaker' isn't right).
+> 
+> Sorry for not getting that last time.
+> 
+> Nigel
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
