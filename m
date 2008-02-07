@@ -1,97 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbYBGQiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbYBGQie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760251AbYBGQiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 11:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbYBGQiG
+	id S1760972AbYBGQie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 11:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYBGQiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 11:38:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53188 "EHLO mx1.redhat.com"
+	Thu, 7 Feb 2008 11:38:10 -0500
+Received: from sacred.ru ([62.205.161.221]:36697 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752281AbYBGQiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 11:38:05 -0500
-Date: Thu, 7 Feb 2008 11:37:52 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Horms <horms@verge.net.au>
-Subject: Re: why kexec insists on syncing with recent kernels?
-Message-ID: <20080207163752.GD11969@redhat.com>
-References: <47AB120A.1000600@wpkg.org>
+	id S1752281AbYBGQiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 11:38:09 -0500
+Message-ID: <47AB33C4.7060501@openvz.org>
+Date: Thu, 07 Feb 2008 19:37:24 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AB120A.1000600@wpkg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Duncan Sands <baldrick.bulk@free.fr>, linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
+References: <Pine.LNX.4.44L0.0802071116360.4128-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802071116360.4128-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 07 Feb 2008 19:37:08 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 03:13:30PM +0100, Tomasz Chmielewski wrote:
-> According to kernel/kexec.c:
->
->  * kexec does not sync, or unmount filesystems so if you need
->  * that to happen you need to do that yourself.
->
->
+Alan Stern wrote:
+> On Thu, 7 Feb 2008, Pavel Emelyanov wrote:
+> 
+>>> Does the kthread API guarantee that the kthread is not running until you call
+>> It does. That's why the race, you mentioned above is impossible.
+> 
+> That is wrong.  The API guarantees only that the kthread is initially 
+> created in a non-running state.  It cannot guarantee that no other 
+> task will wake up the kthread before the caller does.
 
-In latest kexec code I do see it syncing. But it does not unmount the
-filesystems. So this comment looks like partially wrong.
+Other tasks cannot wake this thread up since they do not
+know the struct task_struct pointer.
 
-> I saw this was true with 2.6.18 kernel (i.e., it didn't sync), but kexec 
-> syncs with recent kernels (I checked 2.6.23.14 and 2.6.24):
->
-> # kexec -e
-> md: stopping all md devices
-> sd 2:0:0:0: [sdb] Synchronizing SCSI cache
+> Alan Stern
+> 
+> 
 
-Which kexec-tools you are using? 
-
-syncing is initiated by user space so changing kernel will not have
-any effect (as long as user space is same). I think just that message
-are spitted by kernel, so probably 2.6.18 did not spit any message and
-2.6.24 does.
-
->
->
-> With kexec on 2.6.18 it was executing a loaded kernel immediately.
->
->
-> Generally, it's a good thing to sync before jumping into a new kernel, but 
-> it breaks my setup here after upgrading from 2.6.18 to 2.6.24.
->
-> Why?
->
-> I have a couple of diskless (iSCSI-boot) machines with a buggy BIOS (old 
-> Supermicro P4SBR/P4SBE) which randomly freeze after rebooting (the machine 
-> shuts down just fine, but instead of booting again, showing BIOS bootup 
-> messages etc. you can just see blank screen).
->
-> Therefore, I use kexec as a workaround for this rebooting problem.
->
-> The way kexec works now makes rebooting unreliable again:
-> - network interfaces are brought down,
-> - kernel tries to sync - it never will, as we're booted off network, which 
-> is down
->
-
-Kexec has got an option -x --no-ifdown, which will not bring the network
-down. Try that. "kexec- -e -x"
-
-
-> Any ideas why kexec insists on syncing?
-
-To me it makes sense. Just making sure that cache changes make to the file
-system before you boot into new kernel.
-
-In latest kexec-tools, I do see sync() is done first and then network
-interfaces are brought down. 
-
-Try latest kexec tools from:
-
-http://www.vergenet.net/~horms/linux/kexec/kexec-tools/testing/kexec-tools-testing-20071017-rc.tar.gz
-
-and see if it works fine for you.
-
-Thanks
-Vivek
