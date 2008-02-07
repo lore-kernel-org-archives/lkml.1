@@ -1,169 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYBGTtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbYBGTwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758962AbYBGTtY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYBGTtR
+	id S1759069AbYBGTwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYBGTvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:49:17 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43930 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbYBGTtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:49:16 -0500
-Subject: Re: MM kernels 2.6.24-rc*-mm*, 2.6.24-mm1: gnome-terminal stuck in
-	tty_poll
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "J. K. Cliburn" <jacliburn@bellsouth.net>, Zan Lynx <zlynx@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080206182329.b0956b4a.akpm@linux-foundation.org>
-References: <1202326722.7488.46.camel@localhost>
-	 <47AA68AA.3090009@bellsouth.net>
-	 <20080206182329.b0956b4a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 20:49:04 +0100
-Message-Id: <1202413744.6274.26.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 14:51:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59955 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbYBGTvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 14:51:53 -0500
+Date: Thu, 7 Feb 2008 20:51:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Max Krasnyansky <maxk@qualcomm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] CPU isolation extensions
+Message-ID: <20080207195130.GA27482@elte.hu>
+References: <47AA9807.7090402@qualcomm.com> <alpine.LFD.1.00.0802070903190.2883@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802070903190.2883@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-02-06 at 18:23 -0800, Andrew Morton wrote:
-> On Wed, 06 Feb 2008 20:10:50 -0600 "J. K. Cliburn" <jacliburn@bellsouth.net> wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Wed, 6 Feb 2008, Max Krasnyansky wrote:
+> >
+> > Linus, please pull CPU isolation extensions from
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/maxk/cpuisol-2.6.git 
+> > for-linus
 > 
-> > Zan Lynx wrote:
-> > 
-> > > gnome-terminal gets stuck.
-> > 
-> > I began seeing this very thing around 2.6.24 time.  (Fedora 8, vanilla 
-> > kernel.)  I could usually cause the gnome terminal to hang if I rapidly 
-> > resized the window while executing make check-headers.
-> > 
-> > Over a couple of days I bisected it down to this commit:
-> > 
-> > Commit:     37bb6cb4097e29ffee970065b74499cbf10603a3
-> > Parent:     d3d74453c34f8fd87674a8cf5b8a327c68f22e99
-> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > AuthorDate: Fri Jan 25 21:08:32 2008 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Fri Jan 25 21:08:32 2008 +0100
-> > 
-> >      hrtimer: unlock hrtimer_wakeup
-> > 
-> >      hrtimer_wakeup creates a
-> > 
-> >        base->lock
-> >          rq->lock
-> > 
-> >      lock dependancy. Avoid this by switching to 
-> > HRTIMER_CB_IRQSAFE_NO_SOFTIRQ
-> >      which doesn't hold base->lock.
-> > 
-> >      This fully untangles hrtimer locks from the scheduler locks, and allows
-> >      hrtimer usage in the scheduler proper.
-> > 
-> >      Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >      Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >   kernel/hrtimer.c |    4 +++-
-> >   1 files changed, 3 insertions(+), 1 deletions(-)
-> > 
-> > 
-> > Reverting the commit seemed to fix the problem for me.
-> > 
-> > Then I went away on a business trip Monday morning and returned Tuesday 
-> > night to a dead computer (won't POST), so I can't do any further 
-> > troubleshooting until I get it fixed.
-> 
-> Useful, thanks.
-> 
-> > Try reverting that patch and see if your gnome-terminal freezes go away.
-> 
-> Here is a convenient patch against current mainline:
-> 
-> 
-> --- a/kernel/hrtimer.c~revert-1
-> +++ a/kernel/hrtimer.c
-> @@ -1292,7 +1292,7 @@ void hrtimer_init_sleeper(struct hrtimer
->  	sl->timer.function = hrtimer_wakeup;
->  	sl->task = task;
->  #ifdef CONFIG_HIGH_RES_TIMERS
-> -	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
-> +	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_RESTART;
->  #endif
->  }
->  
-> @@ -1303,8 +1303,6 @@ static int __sched do_nanosleep(struct h
->  	do {
->  		set_current_state(TASK_INTERRUPTIBLE);
->  		hrtimer_start(&t->timer, t->timer.expires, mode);
-> -		if (!hrtimer_active(&t->timer))
-> -			t->task = NULL;
->  
->  		if (likely(t->task))
->  			schedule();
+> Have these been in -mm and widely discussed etc? I'd like to start 
+> more carefully, and (a) have that controversial last patch not merged 
+> initially and (b) make sure everybody is on the same page wrt this 
+> all..
 
-Bugger, I thought I had it nailed with:
+no, they have not been under nearly enough testing and review - these 
+patches surfaced on lkml for the first time one week ago (!). I find the 
+pull request totally premature, this stuff has not been discussed and 
+agreed on _at all_. None of the people who maintain and have interest in 
+this code and participated in the (short) one-week discussion were 
+Cc:-ed to the pull request.
 
----
+I think these patches also need a buy-in from Peter Zijlstra and Paul 
+Jackson (or really good reasoning while any objections from them should 
+be overriden) - all of whom deal with the code affected by these changes 
+on a daily basis and have an interest in CPU isolation features.
 
-commit 3588a085cd52ef080bf72df772378e1ba6bb292f
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Fri Feb 1 17:45:13 2008 +0100
+Generally i think that cpusets is actually the feature and API that 
+should be used (and extended) for CPU isolation - and we already 
+extended it recently in the direction of CPU isolation. Most enterprise 
+distros have cpusets enabled so it's in use. Also, cpusets has the 
+appeal of being commonly used in the "big honking boxes" arena, so 
+reusing the same concept for RT and virtualization stuff would be the 
+natural approach. It already ties in to the scheduler domains code 
+dynamically and is flexible and scalable. I resisted ad-hoc CPU 
+isolation patches in -rt for that reason. Also, i'd not mind some 
+test-coverage in sched.git as well.
 
-    hrtimer: fix hrtimer_init_sleeper() users
-    
-    this patch:
-    
-     commit 37bb6cb4097e29ffee970065b74499cbf10603a3
-     Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-     Date:   Fri Jan 25 21:08:32 2008 +0100
-    
-         hrtimer: unlock hrtimer_wakeup
-    
-    Broke hrtimer_init_sleeper() users. It forgot to fix up the futex
-    caller of this function to detect the failed queueing and messed up
-    the do_nanosleep() caller in that it could leak a TASK_INTERRUPTIBLE
-    state.
-    
-    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index db9824d..0edd314 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1252,6 +1252,8 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
- 			t.timer.expires = *abs_time;
- 
- 			hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_ABS);
-+			if (!hrtimer_active(&t.timer))
-+				t.task = NULL;
- 
- 			/*
- 			 * the timer could have already expired, in which
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index bd5d6b5..1069998 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1315,6 +1315,8 @@ static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mod
- 
- 	} while (t->task && !signal_pending(current));
- 
-+	__set_current_state(TASK_RUNNING);
-+
- 	return t->task == NULL;
- }
- 
-
----
-
-But apparently that doesn't do the magic for gnome-terminal (as this
-patch is already in the .24-mm1 kernel reported broken). Any way I can
-'easily' reproduce this issue?
-
-
-
+	Ingo
