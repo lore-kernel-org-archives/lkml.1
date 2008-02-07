@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYBGKYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbYBGK0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbYBGKYS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 05:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYBGKYE
+	id S1757553AbYBGK0w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 05:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYBGK0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 05:24:04 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:38342 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753761AbYBGKYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 05:24:01 -0500
-Date: Thu, 7 Feb 2008 11:23:50 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Hugh Dickins <hugh@veritas.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ASLR: add possibility for more fine-grained tweaking
-In-Reply-To: <20080206134959.GA25689@elte.hu>
-Message-ID: <Pine.LNX.4.64.0802071120110.11914@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0802061438150.30955@jikos.suse.cz>
- <Pine.LNX.4.64.0802061442300.30955@jikos.suse.cz> <20080206134959.GA25689@elte.hu>
+	Thu, 7 Feb 2008 05:26:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39674 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754555AbYBGK0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 05:26:43 -0500
+Date: Thu, 7 Feb 2008 11:25:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
+       dgc@sgi.com, npiggin@suse.de
+Subject: Re: [PATCH 4/8] x86: add support for remotely triggering the block
+	softirq
+Message-ID: <20080207102534.GB16735@elte.hu>
+References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-5-git-send-email-jens.axboe@oracle.com> <20080207100738.GB7716@elte.hu> <20080207101727.GE15220@kernel.dk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-88531015-1202379830=:11914"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080207101727.GE15220@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-88531015-1202379830=:11914
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Wed, 6 Feb 2008, Ingo Molnar wrote:
-> @@ -541,6 +541,18 @@ config ELF_CORE
->  	help
->  	  Enable support for generating core dumps. Disabling saves about 4k.
->  
-> +config COMPAT_BRK
-> +	bool "Disable heap randomization"
-> +	default y
-> +	help
-> +	  Randomizing heap placement makes heap exploits harder, but it
-> +	  also breaks ancient binaries (including anything libc5 based).
-> +	  This option changes the bootup default to heap randomization
-> +	  disabled, and can be overriden runtime by setting
-> +	  /proc/sys/kernel/randomize_va_space to 2.
-> +
-> +	  On non-ancient distros (post-2000 ones) Y is usually a safe choice.
+> > on the more conceptual level, shouldnt we just move to threads 
+> > instead of softirqs? That way you can become affine to any CPU and 
+> > can do cross-CPU wakeups anytime - which will be nice and fast via 
+> > the smp_reschedule_interrupt() facility.
+> 
+> That would indeed be nicer and not require any arch changes. I was 
+> afraid it would be more costly than massaging the softirqs a bit 
+> though, perhaps that is unfounded.
 
-Somehow my belly feeling tells me something is wrong with this description...
+pick up the threaded softirq patches from -rt, those move all softirqs 
+processing into kernel threads. I'd suggest to extend those via 
+wakeup-from-remote functionality - it fits the construct quite 
+naturally. You should also be able to directly observe any performance 
+impact of threaded softirq handlers. (and if you find any, let me know 
+so that we can make it faster :-)
 
-Ah, a negative option (Y -> disable).  So Y is always safe.
-
-`non-ancient distros' really means `recent distros', and if you have one,
-then _N_ should be a safe choice, too?
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-88531015-1202379830=:11914--
+	Ingo
