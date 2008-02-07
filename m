@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYBGIZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbYBGIbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbYBGIZS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 03:25:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYBGIZD
+	id S1756843AbYBGIbz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 03:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYBGIbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 03:25:03 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:17005 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754209AbYBGIZA (ORCPT
+	Thu, 7 Feb 2008 03:31:45 -0500
+Received: from otello.alma.unibo.it ([137.204.24.163]:54738 "EHLO
+	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbYBGIbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 03:25:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=m05SZxXes//qfi0pREoy1JlvUXcD2ZDVaVLP+CvSWvIJLqOGMnSdTCqP/zmC35D5sXzzde35yw32aHRS94M9fi1W6YT2NcUmzgkO6G6fbvVYEAwm/FxTPjYeljm7liUJagZwNcAt4gwHzZwuimKmUSEwJOAlXRUkw/0Zwny6M78=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology, Karnataka
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][Regression] x86, 32-bit: trim memory not covered by wb mtrrs - FIX
-Date: Thu, 7 Feb 2008 13:51:02 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       jesse.barnes@intel.com, yhlu.kernel@gmail.com, ak@suse.de,
-       Yinghai Lu <yinghai.lu@sun.com>
-References: <200802071257.51893.balajirrao@gmail.com> <20080207080245.GA28631@elte.hu>
-In-Reply-To: <20080207080245.GA28631@elte.hu>
+	Thu, 7 Feb 2008 03:31:44 -0500
+Message-ID: <47AAC1EE.6060101@otello.alma.unibo.it>
+Date: Thu, 07 Feb 2008 09:31:42 +0100
+From: Diego Zuccato <diego@otello.alma.unibo.it>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080114)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Newall <davidn@davidnewall.com>
+Cc: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>            <20080202123710.42df1aa0@weinigel.se>            <20080202191930.GA19826@kroah.com>            <47A5D895.20300@davidnewall.com>            <47A6E742.80408@otello.alma.unibo.it> <courier.47A8F072.000079E4@hawking.rebel.net.au>
+In-Reply-To: <courier.47A8F072.000079E4@hawking.rebel.net.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802071351.02763.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 February 2008 01:32:45 pm Ingo Molnar wrote:
-> * Balaji Rao <balajirrao@gmail.com> wrote:
-> > Hello,
-> >
-> > The following commit caused my X server to stop working.
-> >
-> > commit 99fc8d424bc5d803fe92cad56c068fe64e73747a
-> > Author: Jesse Barnes <jesse.barnes@intel.com>
-> > Date:   Wed Jan 30 13:33:18 2008 +0100
-> >
-> >     x86, 32-bit: trim memory not covered by wb mtrrs
-> >
-> > This patch fixes the improper handling of addresses > 4G by
-> > mtrr_trim_uncached_memory. This, now brings up X on my system.
->
-> thanks. Incidentally this same bug was reported and fixed yesterday, and
-> that fix is upstream already. Could you please compare your solution to
-> Yinghai Lu's fix below, and send us a patch for any further improvements
-> (or cleanups) you might notice in that code? It seems to be almost the
-> same fix as yours. (and hopefully it fixes your X problem too)
+David Newall ha scritto:
 
-Cool! Yes, Yinghai Lu's patch indeed is the same as mine and its really 
-surprising that we've used the same variable name too! :)
+> "Of course", because in many parts of the world, a device who's 
+> manufacturer fails to take reasonable steps to prevent it from being 
+> used outside regulatory limits is illegal.  Providing source code not 
+> only is a failure to take those reasonable steps, but is quite the 
+> opposite.  It may even be viewed as encouraging users to use it 
+> inappropriately.
+If the device is well engineered, there's nothing the sw can do to make 
+it work outside regulatory limits.
+Sometimes there's simply NOTHING the SW can do to *avoid* it. Think 
+about a CB radio. International standard is 5W (well, somewhere it's 3, 
+IIRC, but that's another story: nobody produces a special model with a 
+final amplifier for only 3W, everyone produces the 5W and turns down 
+power in some other way). But linear amplifiers are commonly sold. And 
+(at least in Italy) it's not illegal to buy one, even if it can boost 
+antenna power to 1000W. It's illegal just to USE it.
+If a citizen of a country where only 3W are allowed opens his CB and 
+removes the limiter, it makes the use of THAT CB illegal, not the use of 
+that MODEL: untampered ones are still legal!
 
-regards,
-balaji rao
+And it's a logical problem, too: why should the *driver* enforce a 
+*technical* limit? It's up to the device. If the driver tells my WiFi 
+device to use 10W, should it fail? I think so! IMO there's no judge that 
+can rule out that an open source driver is encouraging users to use a 
+device over its regulatory limits: there are easier ways (like lying 
+about the configured country, to get more channels or more power) than 
+hacking a driver. Else it should be ruled "reasonable" having to sell 
+different drivers in different countries (no user-selectable country to 
+choose, no lying possible... as long as the user doesn't download an 
+updated driver...).
+
+The key is "reasonable". IMVHO enforcing a limit with a driver is not a 
+"reasonable step to prevent use outside regulatory limits". There are 
+more effective ways to enforce those limits that costs about the same.
+
+BYtE,
+  Diego.
+
