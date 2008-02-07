@@ -1,205 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbYBGMvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbYBGMwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761401AbYBGMvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759478AbYBGMs4
+	id S1760488AbYBGMwI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:52:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759554AbYBGMup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:48:56 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:25485 "EHLO
-	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755587AbYBGMsx (ORCPT
+	Thu, 7 Feb 2008 07:50:45 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34767 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761086AbYBGMui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:48:53 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Avi Kivity" <avi@qumranet.com>
-cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Joerg Roedel" <joerg.roedel@amd.com>
-Subject: [PATCH 8/8] SVM: add support for Nested Paging
-Date: Thu,  7 Feb 2008 13:47:45 +0100
-Message-ID: <1202388465-8657-9-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com>
-References: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 07 Feb 2008 12:47:45.0782 (UTC)
- FILETIME=[A3180160:01C86987]
+	Thu, 7 Feb 2008 07:50:38 -0500
+Message-ID: <47AAFE91.1080104@davidnewall.com>
+Date: Thu, 07 Feb 2008 23:20:25 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-X-WSS-ID: 6BB4219A2IW10730683-01-01
-Content-Type: text/plain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<20080203124849.0226560f@weinigel.se>	<84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>	<47A5F418.6030104@weinigel.se>	<20080203231530.GB15692@kroah.com>	<courier.47A8EDDC.0000785F@hawking.rebel.net.au> <20080205231724.729a7a60@core>
+In-Reply-To: <20080205231724.729a7a60@core>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the SVM architecture dependent changes for KVM to enable
-support for the Nested Paging feature of AMD Barcelona and Phenom processors.
+Alan Cox wrote:
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm.c |   72 ++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 67 insertions(+), 5 deletions(-)
+>> If we're still talking about whether a kernel module is required to be 
+>> released under GPL, then yes, this is not a gray area.  This is something 
+>> that authors of original works can decide for themselves.  They have no 
+>>     
+                     ^^^^^^^^^^^^^^^
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index f400499..9b9d838 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -47,7 +47,12 @@ MODULE_LICENSE("GPL");
- #define SVM_FEATURE_LBRV (1 << 1)
- #define SVM_DEATURE_SVML (1 << 2)
- 
-+/* enable NPT for AMD64 and X86 with PAE */
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+static bool npt_enabled = true;
-+#else
- static bool npt_enabled = false;
-+#endif
- static int npt = 1;
- 
- module_param(npt, int, S_IRUGO);
-@@ -187,7 +192,7 @@ static inline void flush_guest_tlb(struct kvm_vcpu *vcpu)
- 
- static void svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
- {
--	if (!(efer & EFER_LMA))
-+	if (!npt_enabled && !(efer & EFER_LMA))
- 		efer &= ~EFER_LME;
- 
- 	to_svm(vcpu)->vmcb->save.efer = efer | MSR_EFER_SVME_MASK;
-@@ -570,6 +575,22 @@ static void init_vmcb(struct vmcb *vmcb)
- 	save->cr0 = 0x00000010 | X86_CR0_PG | X86_CR0_WP;
- 	save->cr4 = X86_CR4_PAE;
- 	/* rdx = ?? */
-+
-+	if (npt_enabled) {
-+		/* Setup VMCB for Nested Paging */
-+		control->nested_ctl = 1;
-+		control->intercept_exceptions &= ~(1 << PF_VECTOR);
-+		control->intercept_cr_read &= ~(INTERCEPT_CR0_MASK|
-+						INTERCEPT_CR3_MASK);
-+		control->intercept_cr_write &= ~(INTERCEPT_CR0_MASK|
-+						 INTERCEPT_CR3_MASK);
-+		save->g_pat = 0x0007040600070406ULL;
-+		/* enable caching because the QEMU Bios doesn't enable it */
-+		save->cr0 = X86_CR0_ET;
-+		save->cr3 = 0;
-+		save->cr4 = 0;
-+	}
-+
- }
- 
- static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
-@@ -804,6 +825,9 @@ static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 		}
- 	}
- #endif
-+	if (npt_enabled)
-+		goto set;
-+
- 	if ((vcpu->arch.cr0 & X86_CR0_TS) && !(cr0 & X86_CR0_TS)) {
- 		svm->vmcb->control.intercept_exceptions &= ~(1 << NM_VECTOR);
- 		vcpu->fpu_active = 1;
-@@ -811,18 +835,26 @@ static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 
- 	vcpu->arch.cr0 = cr0;
- 	cr0 |= X86_CR0_PG | X86_CR0_WP;
--	cr0 &= ~(X86_CR0_CD | X86_CR0_NW);
- 	if (!vcpu->fpu_active) {
- 		svm->vmcb->control.intercept_exceptions |= (1 << NM_VECTOR);
- 		cr0 |= X86_CR0_TS;
- 	}
-+set:
-+	/*
-+	 * re-enable caching here because the QEMU bios
-+	 * does not do it - this results in some delay at
-+	 * reboot
-+	 */
-+	cr0 &= ~(X86_CR0_CD | X86_CR0_NW);
- 	svm->vmcb->save.cr0 = cr0;
- }
- 
- static void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
- {
-        vcpu->arch.cr4 = cr4;
--       to_svm(vcpu)->vmcb->save.cr4 = cr4 | X86_CR4_PAE;
-+       if (!npt_enabled)
-+	       cr4 |= X86_CR4_PAE;
-+       to_svm(vcpu)->vmcb->save.cr4 = cr4;
- }
- 
- static void svm_set_segment(struct kvm_vcpu *vcpu,
-@@ -1288,14 +1320,34 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_WBINVD]                       = emulate_on_interception,
- 	[SVM_EXIT_MONITOR]			= invalid_op_interception,
- 	[SVM_EXIT_MWAIT]			= invalid_op_interception,
-+	[SVM_EXIT_NPF]				= pf_interception,
- };
- 
--
- static int handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 	u32 exit_code = svm->vmcb->control.exit_code;
- 
-+	if (npt_enabled) {
-+		int mmu_reload = 0;
-+		if ((vcpu->arch.cr0 ^ svm->vmcb->save.cr0) & X86_CR0_PG) {
-+			svm_set_cr0(vcpu, svm->vmcb->save.cr0);
-+			mmu_reload = 1;
-+		}
-+		vcpu->arch.cr0 = svm->vmcb->save.cr0;
-+		vcpu->arch.cr3 = svm->vmcb->save.cr3;
-+		if (is_paging(vcpu) && is_pae(vcpu) && !is_long_mode(vcpu)) {
-+			if (!load_pdptrs(vcpu, vcpu->arch.cr3)) {
-+				kvm_inject_gp(vcpu, 0);
-+				return 1;
-+			}
-+		}
-+		if (mmu_reload) {
-+			kvm_mmu_reset_context(vcpu);
-+			kvm_mmu_load(vcpu);
-+		}
-+	}
-+
- 	kvm_reput_irq(svm);
- 
- 	if (svm->vmcb->control.exit_code == SVM_EXIT_ERR) {
-@@ -1306,7 +1358,8 @@ static int handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	}
- 
- 	if (is_external_interrupt(svm->vmcb->control.exit_int_info) &&
--	    exit_code != SVM_EXIT_EXCP_BASE + PF_VECTOR)
-+	    exit_code != SVM_EXIT_EXCP_BASE + PF_VECTOR &&
-+	    exit_code != SVM_EXIT_NPF)
- 		printk(KERN_ERR "%s: unexpected exit_ini_info 0x%x "
- 		       "exit_code 0x%x\n",
- 		       __FUNCTION__, svm->vmcb->control.exit_int_info,
-@@ -1497,6 +1550,9 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	svm->host_dr6 = read_dr6();
- 	svm->host_dr7 = read_dr7();
- 	svm->vmcb->save.cr2 = vcpu->arch.cr2;
-+	/* required for live migration with NPT */
-+	if (npt_enabled)
-+		svm->vmcb->save.cr3 = vcpu->arch.cr3;
- 
- 	if (svm->vmcb->save.dr7 & 0xff) {
- 		write_dr7(0);
-@@ -1640,6 +1696,12 @@ static void svm_set_cr3(struct kvm_vcpu *vcpu, unsigned long root)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
-+	if (npt_enabled) {
-+		svm->vmcb->control.nested_cr3 = root;
-+		force_new_asid(vcpu);
-+		return;
-+	}
-+
- 	svm->vmcb->save.cr3 = root;
- 	force_new_asid(vcpu);
- 
--- 
-1.5.3.7
+>
+> Only if they are original works.
+>   
+Yes.  That was stipulated.
 
+>   
+>> obligation to release under GPL, however they must take special care to 
+>> ensure that the module does not (statically) link with the kernel.  Richard 
+>>     
+>
+> Also wrong.
+>
+> You really should investigate a beginners text on intellectual property
+> law.
 
+Perhaps you might read up on unfair trade practices and contract law. 
+The contract (GPL) doesn't prevent me from using GPL work, in fact it
+encourages me.  Neither can it impose conditions upon original work
+authored by a third party.
 
+You do realise, I suppose, that it's easily feasible to write a Linux
+kernel module on a non-Linux platform, and in fact without even using
+any GPL software in its production.  How could such a work possibly be
+derivative?  How could it be affected by GPL?
+
+And please, don't give wishy-washy "lawyers tell me it's so"
+non-answers.  Give something real.
