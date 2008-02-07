@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYBGNNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbYBGNNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbYBGNNT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 08:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYBGNNF
+	id S1759990AbYBGNNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 08:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYBGNN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 08:13:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:58916 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbYBGNND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 08:13:03 -0500
-Date: Thu, 7 Feb 2008 14:12:36 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM
- architecture
-Message-ID: <20080207141236.00940d09@dilbert.local>
-In-Reply-To: <20080207130222.GA8587@flint.arm.linux.org.uk>
-References: <20080207133805.13f092ff@dilbert.local>
-	<20080207130222.GA8587@flint.arm.linux.org.uk>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Feb 2008 08:13:27 -0500
+Received: from wr-out-0506.google.com ([64.233.184.226]:43769 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757170AbYBGNNX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 08:13:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tXJSWxEfkqzBHVUET2eWdv/RL/65H+sOthE8qdUcLF6vB15zbG6K66h1YBPVVzDSPsRS8aQHKfXFiQyblp2v+QywkeaYEO7Sue+l2IyfA3+Lvvvz1bkpXMYjvkZ7490+7dKvGHdhKfyfR9Lh+go4YqBzVKyHfNJXQ/QMaoK+YCA=
+Message-ID: <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
+Date: Thu, 7 Feb 2008 14:13:20 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <1202238802.3133.71.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <47A751C5.60600@vlnb.net>
+	 <1202149322.3096.66.camel@localhost.localdomain>
+	 <47A75B8A.3020503@vlnb.net>
+	 <1202151293.3096.80.camel@localhost.localdomain>
+	 <47A8B210.8040202@vlnb.net>
+	 <1202238802.3133.71.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thu, 7 Feb 2008 13:02:23 +0000
-schrieb Russell King - ARM Linux <linux@arm.linux.org.uk>:
+Since the focus of this thread shifted somewhat in the last few
+messages, I'll try to summarize what has been discussed so far:
+- There was a number of participants who joined this discussion
+spontaneously. This suggests that there is considerable interest in
+networked storage and iSCSI.
+- It has been motivated why iSCSI makes sense as a storage protocol
+(compared to ATA over Ethernet and Fibre Channel over Ethernet).
+- The direct I/O performance results for block transfer sizes below 64
+KB are a meaningful benchmark for storage target implementations.
+- It has been discussed whether an iSCSI target should be implemented
+in user space or in kernel space. It is clear now that an
+implementation in the kernel can be made faster than a user space
+implementation (http://kerneltrap.org/mailarchive/linux-kernel/2008/2/4/714804).
+Regarding existing implementations, measurements have a.o. shown that
+SCST is faster than STGT (30% with the following setup: iSCSI via
+IPoIB and direct I/O block transfers with a size of 512 bytes).
+- It has been discussed which iSCSI target implementation should be in
+the mainstream Linux kernel. There is no agreement on this subject
+yet. The short-term options are as follows:
+1) Do not integrate any new iSCSI target implementation in the
+mainstream Linux kernel.
+2) Add one of the existing in-kernel iSCSI target implementations to
+the kernel, e.g. SCST or PyX/LIO.
+3) Create a new in-kernel iSCSI target implementation that combines
+the advantages of the existing iSCSI kernel target implementations
+(iETD, STGT, SCST and PyX/LIO).
 
-> 
-> Please place it in the same relative position in arch/arm/Kconfig as
-> it is found in drivers/Kconfig.
+As an iSCSI user, I prefer option (3). The big question is whether the
+various storage target authors agree with this ?
 
-Argh, sorry. Here's the correct version:
-============
-From: Hans J Koch <hjk@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: Greg KH <greg@kroah.com>
-Subject: arch/arm/Kconfig: Make UIO available on ARM architecture
-
-Source drivers/uio/Kconfig to make UIO available in menuconfig if ARCH=arm.
-
-Signed-off-by: Hans J Koch <hjk@linutronix.de>
----
- arch/arm/Kconfig |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6/arch/arm/Kconfig
-===================================================================
---- linux-2.6.orig/arch/arm/Kconfig	2008-02-07 13:57:58.000000000 +0100
-+++ linux-2.6/arch/arm/Kconfig	2008-02-07 14:08:46.000000000 +0100
-@@ -1159,6 +1159,8 @@
- 
- source "drivers/dca/Kconfig"
- 
-+source "drivers/uio/Kconfig"
-+
- endmenu
- 
- source "fs/Kconfig"
-
+Bart Van Assche.
