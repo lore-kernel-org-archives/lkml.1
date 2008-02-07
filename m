@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbYBGUwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933417AbYBGUwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933266AbYBGUwQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762523AbYBGUud
+	id S933417AbYBGUwn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932874AbYBGUuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:50:33 -0500
-Received: from mx1.suse.de ([195.135.220.2]:44937 "EHLO mx1.suse.de"
+	Thu, 7 Feb 2008 15:50:37 -0500
+Received: from ns2.suse.de ([195.135.220.15]:38054 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762503AbYBGUub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:50:31 -0500
-Date: Thu, 7 Feb 2008 12:46:25 -0800
+	id S932751AbYBGUuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:50:35 -0500
+Date: Thu, 7 Feb 2008 12:46:43 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, linux-usb@vger.kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,161 +20,46 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Nick Piggin <npiggin@suse.de>
-Subject: [patch 03/45] vm audit: add VM_DONTEXPAND to mmap for drivers that
-	need it (CVE-2008-0007)
-Message-ID: <20080207204625.GD16389@suse.de>
+       Alan Cox <alan@redhat.com>
+Subject: [patch 04/45] USB: keyspan: Fix oops
+Message-ID: <20080207204643.GE16389@suse.de>
 References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="vm-audit-add-vm_dontexpand-to-mmap-for-drivers-that-need-it.patch"
+Content-Disposition: inline; filename="usb-keyspan-fix-oops.patch"
 In-Reply-To: <20080207204549.GA16389@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Nick Piggin <npiggin@suse.de>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-Drivers that register a ->fault handler, but do not range-check the
-offset argument, must set VM_DONTEXPAND in the vm_flags in order to
-prevent an expanding mremap from overflowing the resource.
+If we get a data URB back from the hardware after we have put the tty to
+bed we go kaboom. Fortunately all we need to do is process the URB
+without trying to ram its contents down the throat of an ex-tty.
 
-I've audited the tree and attempted to fix these problems (usually by
-adding VM_DONTEXPAND where it is not obvious).
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Alan Cox <alan@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/drm/drm_vm.c       |    2 ++
- drivers/char/mspec.c            |    2 +-
- fs/ncpfs/mmap.c                 |    4 ----
- kernel/relay.c                  |    1 +
- mm/mmap.c                       |    2 +-
- sound/oss/via82cxxx_audio.c     |   14 ++++++--------
- sound/usb/usx2y/usX2Yhwdep.c    |    2 +-
- sound/usb/usx2y/usx2yhwdeppcm.c |    2 +-
- 8 files changed, 13 insertions(+), 16 deletions(-)
+ drivers/usb/serial/keyspan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/char/drm/drm_vm.c
-+++ b/drivers/char/drm/drm_vm.c
-@@ -506,6 +506,7 @@ static int drm_mmap_dma(struct file *fil
- 	vma->vm_ops = &drm_vm_dma_ops;
+--- a/drivers/usb/serial/keyspan.c
++++ b/drivers/usb/serial/keyspan.c
+@@ -838,7 +838,7 @@ static void	usa49_indat_callback(struct 
  
- 	vma->vm_flags |= VM_RESERVED;	/* Don't swap */
-+	vma->vm_flags |= VM_DONTEXPAND;
- 
- 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
- 	drm_vm_open_locked(vma);
-@@ -655,6 +656,7 @@ static int drm_mmap_locked(struct file *
- 		return -EINVAL;	/* This should never happen. */
- 	}
- 	vma->vm_flags |= VM_RESERVED;	/* Don't swap */
-+	vma->vm_flags |= VM_DONTEXPAND;
- 
- 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
- 	drm_vm_open_locked(vma);
---- a/drivers/char/mspec.c
-+++ b/drivers/char/mspec.c
-@@ -283,7 +283,7 @@ mspec_mmap(struct file *file, struct vm_
- 	vdata->refcnt = ATOMIC_INIT(1);
- 	vma->vm_private_data = vdata;
- 
--	vma->vm_flags |= (VM_IO | VM_RESERVED | VM_PFNMAP);
-+	vma->vm_flags |= (VM_IO | VM_RESERVED | VM_PFNMAP | VM_DONTEXPAND);
- 	if (vdata->type == MSPEC_FETCHOP || vdata->type == MSPEC_UNCACHED)
- 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 	vma->vm_ops = &mspec_vm_ops;
---- a/fs/ncpfs/mmap.c
-+++ b/fs/ncpfs/mmap.c
-@@ -50,10 +50,6 @@ static int ncp_file_mmap_fault(struct vm
- 	pos = vmf->pgoff << PAGE_SHIFT;
- 
- 	count = PAGE_SIZE;
--	if ((unsigned long)vmf->virtual_address + PAGE_SIZE > area->vm_end) {
--		WARN_ON(1); /* shouldn't happen? */
--		count = area->vm_end - (unsigned long)vmf->virtual_address;
--	}
- 	/* what we can read in one go */
- 	bufsize = NCP_SERVER(inode)->buffer_size;
- 
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -92,6 +92,7 @@ static int relay_mmap_buf(struct rchan_b
- 		return -EINVAL;
- 
- 	vma->vm_ops = &relay_file_mmap_ops;
-+	vma->vm_flags |= VM_DONTEXPAND;
- 	vma->vm_private_data = buf;
- 	buf->chan->cb->buf_mapped(buf, filp);
- 
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -2215,7 +2215,7 @@ int install_special_mapping(struct mm_st
- 	vma->vm_start = addr;
- 	vma->vm_end = addr + len;
- 
--	vma->vm_flags = vm_flags | mm->def_flags;
-+	vma->vm_flags = vm_flags | mm->def_flags | VM_DONTEXPAND;
- 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
- 
- 	vma->vm_ops = &special_mapping_vmops;
---- a/sound/oss/via82cxxx_audio.c
-+++ b/sound/oss/via82cxxx_audio.c
-@@ -2104,6 +2104,7 @@ static struct page * via_mm_nopage (stru
- {
- 	struct via_info *card = vma->vm_private_data;
- 	struct via_channel *chan = &card->ch_out;
-+	unsigned long max_bufs;
- 	struct page *dmapage;
- 	unsigned long pgoff;
- 	int rd, wr;
-@@ -2127,14 +2128,11 @@ static struct page * via_mm_nopage (stru
- 	rd = card->ch_in.is_mapped;
- 	wr = card->ch_out.is_mapped;
- 
--#ifndef VIA_NDEBUG
--	{
--	unsigned long max_bufs = chan->frag_number;
--	if (rd && wr) max_bufs *= 2;
--	/* via_dsp_mmap() should ensure this */
--	assert (pgoff < max_bufs);
--	}
--#endif
-+	max_bufs = chan->frag_number;
-+	if (rd && wr)
-+		max_bufs *= 2;
-+	if (pgoff >= max_bufs)
-+		return NOPAGE_SIGBUS;
- 
- 	/* if full-duplex (read+write) and we have two sets of bufs,
- 	 * then the playback buffers come first, sez soundcard.c */
---- a/sound/usb/usx2y/usX2Yhwdep.c
-+++ b/sound/usb/usx2y/usX2Yhwdep.c
-@@ -88,7 +88,7 @@ static int snd_us428ctls_mmap(struct snd
- 		us428->us428ctls_sharedmem->CtlSnapShotLast = -2;
- 	}
- 	area->vm_ops = &us428ctls_vm_ops;
--	area->vm_flags |= VM_RESERVED;
-+	area->vm_flags |= VM_RESERVED | VM_DONTEXPAND;
- 	area->vm_private_data = hw->private_data;
- 	return 0;
- }
---- a/sound/usb/usx2y/usx2yhwdeppcm.c
-+++ b/sound/usb/usx2y/usx2yhwdeppcm.c
-@@ -728,7 +728,7 @@ static int snd_usX2Y_hwdep_pcm_mmap(stru
- 		return -ENODEV;
- 	}
- 	area->vm_ops = &snd_usX2Y_hwdep_pcm_vm_ops;
--	area->vm_flags |= VM_RESERVED;
-+	area->vm_flags |= VM_RESERVED | VM_DONTEXPAND;
- 	area->vm_private_data = hw->private_data;
- 	return 0;
- }
+ 	port = (struct usb_serial_port *) urb->context;
+ 	tty = port->tty;
+-	if (urb->actual_length) {
++	if (tty && urb->actual_length) {
+ 		/* 0x80 bit is error flag */
+ 		if ((data[0] & 0x80) == 0) {
+ 			/* no error on any byte */
 
 -- 
