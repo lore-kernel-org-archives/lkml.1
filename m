@@ -1,117 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933511AbYBGWvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934914AbYBGWxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933511AbYBGWvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbYBGWvK
+	id S934914AbYBGWxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbYBGWxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:51:10 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55729 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754630AbYBGWvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:51:07 -0500
-Date: Thu, 7 Feb 2008 23:51:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Message-ID: <20080207225121.GE6096@elf.ucw.cz>
-References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl> <200802070049.00461.rjw@sisk.pl> <200802072312.31430.rjw@sisk.pl> <20080207222845.GA6096@elf.ucw.cz> <47AB8A41.3040008@zytor.com>
+	Thu, 7 Feb 2008 17:53:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55345 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754948AbYBGWxE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 17:53:04 -0500
+Date: Thu, 7 Feb 2008 14:53:02 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andi Kleen <andi@firstfloor.org>,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Subject: Re: [PATCH 1/2] kmemcheck v3
+In-Reply-To: <19f34abd0802071412m569e4993kffb4a3af163fa16c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802071443440.3289@schroedinger.engr.sgi.com>
+References: <47AB79D4.2070605@gmail.com>  <Pine.LNX.4.64.0802071341500.2544@schroedinger.engr.sgi.com>
+ <19f34abd0802071412m569e4993kffb4a3af163fa16c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AB8A41.3040008@zytor.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-02-07 14:46:25, H. Peter Anvin wrote:
-> Pavel Machek wrote:
->>
->> This is probably more acceptable version of beep; but there are
->> probably even better ways to clean it...
->>
->>         if (wakeup_header.realmode_flags & 4) {
->>                 inb(97);
->>                 outb(0, 0x80);
->>                 outb(3, 97);
->>                 outb(0, 0x80);
->>                 outb(-74, 67);
->>                 outb(0, 0x80);
->>                 outb(-119, 66);
->>                 outb(0, 0x80);
->>                 outb(15, 66);
->>         }
->>
->
-> What is available at this point -- are BIOS calls still accessible; are 
-> interrupts running?
+On Thu, 7 Feb 2008, Vegard Nossum wrote:
 
-No interrupts. BIOS calls work on some machines, but I'd like this to
-work when bios does not.
+> > > */
+> > > +#define SLAB_NOTRACK         0x00400000UL    /* Don't track use of
+> > > uninitialized memory */
+> >
+> > Ok new exception for tracking.
+> 
+> New exception? Please explain.
 
-Actually, matthieu's code is probably better to start from:
+SLABs can be excepted from tracking?
 
-+/* one ISA cycle @8Mhz */
-+#define PAUSE outb %al, $0x80
-+#define WAIT_100MS \
-+       movl $800000, %eax; \
-+       2: \
-+       PAUSE; \
-+       dec %eax; \
-+       jne 2b
-+
-+/* What's the PIT rate */
-+#define COUNT 0xf89
- #define BEEP \
--       inb     $97, %al;       \
--       outb    %al, $0x80;     \
--       movb    $3, %al;        \
--       outb    %al, $97;       \
--       outb    %al, $0x80;     \
--       movb    $-74, %al;      \
--       outb    %al, $67;       \
--       outb    %al, $0x80;     \
--       movb    $-119, %al;     \
--       outb    %al, $66;       \
--       outb    %al, $0x80;     \
--       movb    $15, %al;       \
--       outb    %al, $66;
-+       /* enable counter 2 */ \
-+       inb             $0x61, %al;     \
-+       PAUSE;  \
-+       orb     $3, %al; \
-+       outb    %al, $0x61;     \
-+       PAUSE;  \
-+       /* set command for counter 2, 2 byte write */ \
-+       movb    $0xB6, %al;     \
-+       outb    %al, $0x43;     \
-+       PAUSE;  \
-+       /* select desired HZ */ \
-+       movb    $(COUNT & 0xff), %al; \
-+       outb    %al, $0x42;     \
-+       PAUSE;  \
-+       movb    $(COUNT >> 8), %al;     \
-+       outb    %al, $0x42; \
-+       WAIT_100MS; \
-+       /* disable counter 2 */ \
-+       inb             $0x61, %al;     \
-+       PAUSE;  \
-+       andb    $0xFC, %al; \
-+       outb    %al, $0x61; \
-+       WAIT_100MS
-+
-+#define CBEEP \
-+       testl   $4, realmode_flags - wakeup_code; \
-+       jz      1f; \
-+       BEEP; \
-+1:
+> > Hmmmm... You seem to assume that __GFP_NOTRACK can be passed to slab
+> > function calls like kmalloc. That is pretty unreliable. Could we add
+> > __GFP_NOTRACK to the flags on which the slab allocators BUG?
+> 
+> I don't understand. This is the point, __GFP_NOTRACK _can_ be passed
+> to slab functions like kmalloc. By default, when kmemcheck is enabled
+> in the config, all other allocations will be tracked implicitly. The
+> notrack flag exists to exempt certain (critical) allocations from this
+> feature.
 
-...because it allows user to compute number of beeps.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ok. Then the allocator manages the gfp flag. Then we need to make sure 
+to clear that flag at some point. The flag needs to be consistently set 
+or cleared for allocations for a certain slab cache.
+
+> > > @@ -2344,6 +2393,8 @@ EXPORT_SYMBOL(kmem_cache_destroy);
+> > >  struct kmem_cache kmalloc_caches[PAGE_SHIFT] __cacheline_aligned;
+> > >  EXPORT_SYMBOL(kmalloc_caches);
+> > >
+> > > +struct kmem_cache cache_cache;
+> > > +
+> >
+> > Why do we need a cache_cache?
+> 
+> The cache_cache is needed so that we have somewhere to allocate
+> kmem_cache objects from. These objects are accessed from kmemcheck in
+> the page fault handler. If the caches are allocated from tracked
+> memory, we get a recursive page fault, which is not nice, to say the
+> least :-)
+
+So it breaks recursion. But this adds a new cache that is rarely 
+used. There will be only about 50-100 kmem_cache objects in the system. I 
+thought you could control the tracking on an per object level? Would not a 
+kmalloc with __GFP_NOTRACK work?
+
+> > >       if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
+> > >                       flags, NULL))
+> >
+> > Drop this one. create_kmalloc_cache is done only during bootstrap and
+> > kmalloc caches either all have SLAB_NOTRACK set or all do not have it
+> > set.
+> 
+> No. Exactly one kmalloc_cache is created with the NOTRACK flag set,
+> namely the cache_cache.
+
+More reasons to drop cache_cache. cache_cache is not a kmalloc array 
+cache by the way since it does not support power of two allocs. Its a 
+regular kmem_cache element.
+
+> > > @@ -2445,14 +2499,18 @@ static noinline struct kmem_cache
+> > > *dma_kmalloc_cache(int index, gfp_t flags)
+> > >       if (kmalloc_caches_dma[index])
+> > >               goto unlock_out;
+> > >
+> > > +#ifdef CONFIG_KMEMCHECK
+> > > +     flags |= __GFP_NOTRACK;
+> > > +#endif
+> > > +
+> >
+> > Same here.
+> 
+> No. This is dma_kmalloc_cache(). No DMA memory should ever be tracked
+> by kmemcheck, because DMA doesn't cause page faults. (So in fact,
+> tracking DMA is by definition not possible.)
+
+All slab memory allocations never cause page faults regardless from where 
+they are allocated. Only user space pages can be handled by page faults 
+and those are not allocated via the slab allocator.
+
+> Are you sure you are not confusing tracking with tracing? It's only
+> one letter different in spelling, but makes a huge difference in
+> meaning :-)
+
+No I am quite sure what tracking is since the slab allocators have their 
+own tracking. 
+
+But you may want to explain things better.
