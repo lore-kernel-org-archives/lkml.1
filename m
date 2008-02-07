@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936030AbYBGV0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935584AbYBGV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936030AbYBGV0u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934971AbYBGV0R
+	id S935584AbYBGV1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760329AbYBGV1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:26:17 -0500
-Received: from gate.crashing.org ([63.228.1.57]:56303 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933693AbYBGV0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:26:15 -0500
-Subject: Re: Xilinx: hwicap driver comments
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>, stephen.neuendorffer@xilinx.com,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Kumar Gala <galak@gate.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com>
-References: <47AB6552.7040503@gmail.com>
-	 <20080207124203.147ce300.akpm@linux-foundation.org>
-	 <fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 08:25:45 +1100
-Message-Id: <1202419545.7079.136.camel@pasglop>
+	Thu, 7 Feb 2008 16:27:36 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:43457 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754992AbYBGV1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:27:35 -0500
+Date: Thu, 7 Feb 2008 13:26:04 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: mathieu.desnoyers@polymtl.ca, akpm@linux-foundation.org, mingo@elte.hu,
+       fche@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/4] make pr_debug() dynamic - update docs
+Message-Id: <20080207132604.ff93b028.randy.dunlap@oracle.com>
+In-Reply-To: <20080207211349.GF14732@redhat.com>
+References: <20080207211349.GF14732@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 Feb 2008 16:13:49 -0500 Jason Baron wrote:
 
-On Thu, 2008-02-07 at 13:54 -0700, Grant Likely wrote:
-> On 2/7/08, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Thu, 07 Feb 2008 21:08:50 +0100
-> > How it got from there into Linux is also a mystery.  I see a batch of
-> > powerpc updates just went into mainline but I don't know whose tree was
-> > pulled - I wasn't copied on any pull request and I can't find one on the
-> > kernel mailing list.
-> >
-> > Perhaps Paul has just done a stealth merge, but the patch to which you
-> > refer doesn't have his signoff.  Very confused.
 > 
-> It went through my tree.  Paul pulls from Josh Boyer's tree for
-> powerpc-4xx patches, and Josh pulls from mine for xilinx virtex
-> powerpc 405 patches.
+> -add documentation about pr_debug kernel-parameters.txt
 > 
-> My screw up, sorry I broke the rules.  What is the best way to resolve this?
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> ---
+> 
+>  Documentation/kernel-parameters.txt |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index cf38689..6d524bb 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1494,6 +1494,11 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			autoconfiguration.
+>  			Ranges are in pairs (memory base and size).
+>  
+> +	pr_debug
+> +			Enables pr_debug() calls if the immediate
+> +			infrastructure has been enabled. These can also be
+> +			switched on/off via /proc/sys/debug/pr_debug.
 
-It's unclear to me whether you did anything wrong here.
+Is this actually Enables/disables?
+I.e., is this actually pr_debug=<int> ?
+If so, please document that also.  If not, why not?
 
-This driver is totally platform specific (it's not like it was a
-wireless driver or something like that) and has been reviewed on the
-platform mailing list (even if, apprently, not enough).
-
-If those problems haven't been spotted, then too bad, and thanks Jiri
-for picking them up later on, that's much welcome, but I don't think we
-should start having all of the platform bits go through lkml, it
-wouldn't be practical at all.
-
-As far as -mm is concerned, that depends how long this has been in
-paulus tree before the merge window I suppose. I suspect that while
-paulus for-2.6.25 has been around getting ready for merge for some time
-now (we've been good citizen in that regard, getting everything together
-way before the actual merge window), we haven't necessarily yet totally
-sorted out the timing with out own sub-maintainer and sub-sub-maintainer
-trees (powerpc is a complicated architecture !).
-
-So while I would have expected this to show up at least for a little
-while in -mm via paulus for-2.6.25, it's possible that it didn't happen,
-or that paulus didn't include for-2.6.25 in powerpc.git or something
-like that....
-
-So we can try to improve in this area, but I don't think Grant himself
-did anything wrong including that driver in his tree and having paul
-merge it, except maybe for a bit more in depth review (but we all do
-miss things sometimes).
-
-Cheers,
-Ben.
+>  	print-fatal-signals=
+>  			[KNL] debug: print fatal signals
+>  			print-fatal-signals=1: print segfault info to
 
 
+
+---
+~Randy
