@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbYBGXv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934621AbYBGXwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbYBGXv7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYBGXvt
+	id S934621AbYBGXwn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYBGXwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:51:49 -0500
-Received: from cyberslack.slackadelic.com ([216.23.240.152]:57862 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbYBGXvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:51:48 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Thu, 7 Feb 2008 23:51:31 +0000
-User-Agent: KMail/1.9.7
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <lenb@kernel.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       linux-acpi@vger.kernel.org
-References: <20080207214715.GA15211@elf.ucw.cz> <200802072318.28313.carlos@strangeworlds.co.uk> <2c0942db0802071533l5c3b98fel90946b73f8a9586b@mail.gmail.com>
-In-Reply-To: <2c0942db0802071533l5c3b98fel90946b73f8a9586b@mail.gmail.com>
+	Thu, 7 Feb 2008 18:52:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42430 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756884AbYBGXwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 18:52:31 -0500
+Message-ID: <47AB994A.1010802@redhat.com>
+Date: Thu, 07 Feb 2008 18:50:34 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/45] 2.6.24-stable review
+References: <20080207204549.GA16389@suse.de>
+In-Reply-To: <20080207204549.GA16389@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802072351.32521.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 February 2008 23:33:54 Ray Lee wrote:
-> Do you have list of hardware/platforms that require this feature to
-> get the hardware to work? (acer abc123, tcm1100 xyz)
+On 02/07/2008 03:45 PM, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.24.1 release.
+> There are 45 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
+> 
+> These patches are sent out with a number of different people on the Cc:
+> line.  If you wish to be a reviewer, please email stable@kernel.org to
+> add your name to the list.  If you want to be off the reviewer list,
+> also email us.
+> 
+> Responses should be made by Friday, Feb 8 2008, 21:00:00 UTC@.
+> Anything received after that time might be too late.
+> 
+> thanks,
+> 
+> the -stable release team
 
-I have a very long list of Acer laptops that are supported - which is far too 
-long, and changes on far too much of a regular basis to put in there.
+Is there an -rc1 patch somewhere on kernel.org? (and also for 2.6.23?)
 
-Perhaps adding something like "This driver is also a required dependency to 
-build the firmware specific drivers needed for many laptops, including Acer 
-and HP machines"?
-
-(There's currently another ACPI-WMI based driver in development related to 
-more HP laptops, and acer-wmi also supports a handful of non-Acer laptops).
-
-I don't think explaining what WMI is, and how ACPI-WMI is related to it is 
-that useful in Kconfig here; so I agree that further elaborating on the 'why' 
-this should be enabled is definitely worth doing.
-
-> Better, if there are kernel drivers that require this (and currently
-> only those drivers), then have those kernel drivers enable ACPI WMI,
-
-Wouldn't that require 'select' though, and I'm led to believe that's seriously 
-frowned upon these days?
-
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
