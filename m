@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYBGGYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbYBGGZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759727AbYBGGYw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:24:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYBGGSa
+	id S932181AbYBGGZa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:25:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760099AbYBGGV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:18:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57597 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753298AbYBGGSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:18:10 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test if (level & TP_EC_FAN_FULLSPEED)
-Date: Thu, 7 Feb 2008 01:17:44 -0500
-User-Agent: KMail/1.9.5
-Cc: Roland Dreier <rdreier@cisco.com>, len.brown@intel.com,
-       ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl>
-In-Reply-To: <47A79EC8.6060700@tiscali.nl>
+	Thu, 7 Feb 2008 01:21:56 -0500
+Received: from outbound-mail-07.bluehost.com ([69.89.17.207]:38625 "HELO
+	outbound-mail-07.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761713AbYBGGVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 01:21:54 -0500
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Dave Airlie <airlied@linux.ie>
+Subject: Re: [git pull] drm patches for 2.6.25
+Date: Wed, 6 Feb 2008 22:21:45 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.82.0802070534290.26136@skynet.skynet.ie>
+In-Reply-To: <alpine.DEB.0.82.0802070534290.26136@skynet.skynet.ie>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802070117.45119.lenb@kernel.org>
+Message-Id: <200802062221.46268.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
+On Wednesday, February 06, 2008 9:37 pm Dave Airlie wrote:
+> Hi Linus,
+>
+> Please pull the 'drm-patches' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+> drm-patches
+>
+> Sorry this is so late, after much talking at LCA we decided to pull TTM
+> from this round and I had to re-order a lot of things, so highlights of
+> this bunch are
+>
+> intel driver suspend/resume support - can bring back text mode now.
 
-thanks,
--Len
+Just FYI, given some of the weirdness we've seen in 8xx chipsets in the 2D 
+driver, this new suspend/resume code may still need a few tweaks.  Please 
+test it out and report any bugs you find asap (preferably w/o X running as 
+that makes things easier to debug).
 
-On Monday 04 February 2008 18:24, Roel Kluin wrote:
-> Roland Dreier wrote:
-> >  >                 /* safety net should the EC not support AUTO
-> >  >                  * or FULLSPEED mode bits and just ignore them */
-> >  >                 if (level & TP_EC_FAN_FULLSPEED)
-> >  >                         level |= 7;     /* safety min speed 7 */
-> >  >                 else if (level & TP_EC_FAN_FULLSPEED)
-> >  >                         level |= 4;     /* safety min speed 4 */
-> >  > 
-> >  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
-> >  > this be replaced by
-> > 
-> > Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
-> > (based on the comment).
-> > 
-> 
-> Thanks Roland, for your info
-> 
-> based on the comments in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad,
-> I think this should be modified like below:
-> 
-> ACPI: thinkpad-acpi: add a safety net for TPEC fan control mode
-> The Linux ThinkPad community is not positive that all ThinkPads that do
-> HFSP EC fan control do implement full-speed and auto modes, some of the
-> earlier ones supporting HFSP might not.
-> 
-> If the EC ignores the AUTO or FULL-SPEED bits, it will pay attention to the
-> lower three bits that set the fan level. And as thinkpad-acpi was leaving
-> these set to zero, it would stop(!) the fan, which is Not A Good Thing.
-> So, as a safety net, we now make sure to also set the fan level part of the
-> HFSP register to speed 7 for full-speed, and a minimum of speed 4 for auto
-> mode.
-> --
-> second TP_EC_FAN_FULLSPEED should be P_EC_FAN_AUTO
-> 
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-> index cf56647..3c323fe 100644
-> --- a/drivers/misc/thinkpad_acpi.c
-> +++ b/drivers/misc/thinkpad_acpi.c
-> @@ -4138,7 +4138,7 @@ static int fan_set_level(int level)
->  		 * or FULLSPEED mode bits and just ignore them */
->  		if (level & TP_EC_FAN_FULLSPEED)
->  			level |= 7;	/* safety min speed 7 */
-> -		else if (level & TP_EC_FAN_FULLSPEED)
-> +		else if (level & TP_EC_FAN_AUTO)
->  			level |= 4;	/* safety min speed 4 */
->  
->  		if (!acpi_ec_write(fan_status_offset, level))
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Also, if you find that your outputs don't come back, I've got an experimental 
+patch at https://bugs.freedesktop.org/show_bug.cgi?id=14249 that may work for 
+you (this one in particular is the one I'm worried may break 855).
+
+Thanks,
+Jesse
