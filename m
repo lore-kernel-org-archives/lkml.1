@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbYBGT07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbYBGT11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbYBGT07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbYBGT0t
+	id S1761682AbYBGT11 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbYBGT1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:26:49 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:48517 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756173AbYBGT0s (ORCPT
+	Thu, 7 Feb 2008 14:27:16 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34933 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752174AbYBGT1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:26:48 -0500
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Diego Zuccato <diego@otello.alma.unibo.it>
-Cc: Christer Weinigel <christer@weinigel.se>,
-       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47AABC4A.7010105@otello.alma.unibo.it>
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>
-	 <47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>
-	 <47A764ED.8030605@weinigel.se>	<1202161091.15090.84.camel@violet>
-	 <20080206213449.6614efea@weinigel.se>
-	 <1202331345.15090.235.camel@violet.holtmann.net>
-	 <20080206222937.2aa69a2e@weinigel.se>
-	 <47AABC4A.7010105@otello.alma.unibo.it>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 20:27:26 +0100
-Message-Id: <1202412446.15090.271.camel@violet>
+	Thu, 7 Feb 2008 14:27:14 -0500
+Date: Thu, 7 Feb 2008 11:26:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] CPU isolation extensions
+Message-Id: <20080207112652.07296f48.akpm@linux-foundation.org>
+In-Reply-To: <47AB3E5A.4060107@qualcomm.com>
+References: <47AA9807.7090402@qualcomm.com>
+	<20080206215805.17a0c919.akpm@linux-foundation.org>
+	<47AB3E5A.4060107@qualcomm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Diego,
+On Thu, 07 Feb 2008 09:22:34 -0800 Max Krasnyansky <maxk@qualcomm.com> wrote:
 
-> > I think it is perfectly within their rights to do so.  I think it's
-> > kind of silly to try to hide it, if someone wants to boost the maximum
-> > transmit power, they're going to hack the firmware anyway.  But if it
-> > makes Intel happy, well... :-)
-> And break the HW :-) Actually, they could be happier, since then you 
-> have to buy another...
+> > - There are two separate and identical implementations of
+> >   cpu_unusable(cpu).  Please do it once, in a header, preferably with C
+> >   function, not macros.
 > 
-> [...]
-> > preliminary go ahead from the bosses to provide documentation under an
-> > NDA to Linux developers that would like to write GPL drivers for it.  I
-> [...]
-> Urgh... I don't think NDAs and Open Source mix well... Are you sure your 
-> bosses KNOW Linux and the OS in general? :-)
+> Those are local versions that depend whether a feature is enabled or not.
+> If CONFIG_CPUISOL_WORKQUEUE is disabled we want to cpu_unusable()
+> in the workqueue.c to be a noop, and if it's enabled that macro resolve to 
+> cpu_isolated(). 
+> Same thing for the stopmachine.c. If CONFIG_CPUISOL_STOPMACHIN is disabled
+> cpu_unusable() is a noop. 
+> In other words cpu_isolated() is the one common macro that subsystem may
+> want to stub out. 
+> Do you see another way of doing this ?
 
-talk to Greg KH about this. Have NDAs and open source work together is
-really simple. Have the NDA say that you can use all provided
-documentation to write an open source driver and publish it under GPL. A
-lot of companies are okay with this these days. The Linux Foundation
-should have NDA template texts for this.
-
-Regards
-
-Marcel
-
-
+ah, I missed that.  Yup, the implementation you have there looks OK.
