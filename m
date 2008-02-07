@@ -1,62 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYBGN0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYBGN1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbYBGN0a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 08:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbYBGN0V
+	id S1758180AbYBGN1M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 08:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbYBGN04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 08:26:21 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34811 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753636AbYBGN0U (ORCPT
+	Thu, 7 Feb 2008 08:26:56 -0500
+Received: from mail.lippert-at.com ([62.80.22.186]:20802 "EHLO
+	domex.lippertembedded.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753264AbYBGN0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 08:26:20 -0500
-Message-ID: <47AB06F9.30201@davidnewall.com>
-Date: Thu, 07 Feb 2008 23:56:17 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 08:26:55 -0500
+X-Greylist: delayed 978 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Feb 2008 08:26:55 EST
+Message-ID: <47AB034D.9030100@LiPPERT-AT.de>
+Date: Thu, 07 Feb 2008 14:10:37 +0100
+From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Chris Friesen <cfriesen@nortel.com>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <20080203124849.0226560f@weinigel.se> <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com> <47A5F418.6030104@weinigel.se> <20080203231530.GB15692@kroah.com> <courier.47A8EDDC.0000785F@hawking.rebel.net.au> <47A8F27F.3060504@nortel.com> <20080206210452.GB7198@cs181133002.pp.htv.fi>
-In-Reply-To: <20080206210452.GB7198@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org
+CC: Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH] lxfb: extend PLL table to support dotclocks below 25 MHz
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Feb 2008 13:10:50.0140 (UTC) FILETIME=[DC3C45C0:01C8698A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Feb 05, 2008 at 05:34:23PM -0600, Chris Friesen wrote:
->   
->> David Newall wrote:
->>     
->>> That being said, a module can be written such that it only dynamically 
->>> links with the kernel.  Ndiswrapper is an example of how this can be 
->>> done: None of the drivers that work under ndiswrapper make any direct 
->>> use of the kernel, not in any way, indeed a wrapper could be written 
->>> for a different operating system.
->>>       
->> The issue is all about "derivative works" in copyright law.
->>
->> Ndiswrapper is in a good position because the closed-source drivers were  
->> originally written for another OS so it's pretty well impossible to  
->> argue that they are derived from linux.
->> ...
->>     
->
-> IANAL, but when looking at the "But when you distribute the same 
-> sections as part of a whole which is a work based on the Program, the 
-> distribution of the whole must be on the terms of this License" of the 
-> GPLv2 I would still consult a lawyer before e.g. selling a laptop with a 
-> closed-source driver loaded through ndiswrapper.
->   
+From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
 
-Don't ignore, "mere aggregation of another work not based on the Program
-with the Program (or with a work based on the Program) on a volume of a
-storage or distribution medium does not bring the other work under the
-scope of this License."  Static linking certainly makes something part
-of the whole; dynamic linking doesn't.
+Extends the PLL frequency table of the AMD Geode-LX frame buffer
+driver to make use of the DIV4 bit, thus adding support for
+dotclocks between 6 and 25 MHz. These are needed for small LCDs
+(e.g. 320x240). Also inserts some intermediate steps between
+pre-existing frequencies.
+
+Signed-off-by: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+---
+
+--- linux-2.6.24/drivers/video/geode/lxfb_ops.c
++++ lxfb_clocks_added/drivers/video/geode/lxfb_ops.c
+@@ -34,35 +34,85 @@ static const struct {
+   unsigned int pllval;
+   unsigned int freq;
+ } pll_table[] = {
+-  { 0x000031AC, 24923 },
+-  { 0x0000215D, 25175 },
+-  { 0x00001087, 27000 },
+-  { 0x0000216C, 28322 },
+-  { 0x0000218D, 28560 },
+-  { 0x000010C9, 31200 },
+-  { 0x00003147, 31500 },
+-  { 0x000010A7, 33032 },
+-  { 0x00002159, 35112 },
+-  { 0x00004249, 35500 },
+-  { 0x00000057, 36000 },
+-  { 0x0000219A, 37889 },
+-  { 0x00002158, 39168 },
+-  { 0x00000045, 40000 },
+-  { 0x00000089, 43163 },
+-  { 0x000010E7, 44900 },
+-  { 0x00002136, 45720 },
+-  { 0x00003207, 49500 },
+-  { 0x00002187, 50000 },
+-  { 0x00004286, 56250 },
+-  { 0x000010E5, 60065 },
+-  { 0x00004214, 65000 },
+-  { 0x00001105, 68179 },
+-  { 0x000031E4, 74250 },
+-  { 0x00003183, 75000 },
+-  { 0x00004284, 78750 },
+-  { 0x00001104, 81600 },
+-  { 0x00006363, 94500 },
+-  { 0x00005303, 97520 },
++  { 0x000131AC,   6231 },
++  { 0x0001215D,   6294 },
++  { 0x00011087,   6750 },
++  { 0x0001216C,   7081 },
++  { 0x0001218D,   7140 },
++  { 0x000110C9,   7800 },
++  { 0x00013147,   7875 },
++  { 0x000110A7,   8258 },
++  { 0x00012159,   8778 },
++  { 0x00014249,   8875 },
++  { 0x00010057,   9000 },
++  { 0x0001219A,   9472 },
++  { 0x00012158,   9792 },
++  { 0x00010045,  10000 },
++  { 0x00010089,  10791 },
++  { 0x000110E7,  11225 },
++  { 0x00012136,  11430 },
++  { 0x00013207,  12375 },
++  { 0x00012187,  12500 },
++  { 0x00014286,  14063 },
++  { 0x000110E5,  15016 },
++  { 0x00014214,  16250 },
++  { 0x00011105,  17045 },
++  { 0x000131E4,  18563 },
++  { 0x00013183,  18750 },
++  { 0x00014284,  19688 },
++  { 0x00011104,  20400 },
++  { 0x00016363,  23625 },
++  { 0x00015303,  24380 },
++  { 0x000031AC,  24923 },
++  { 0x0000215D,  25175 },
++  { 0x00001087,  27000 },
++  { 0x0000216C,  28322 },
++  { 0x0000218D,  28560 },
++  { 0x00010041,  29913 },
++  { 0x000010C9,  31200 },
++  { 0x00003147,  31500 },
++  { 0x000141A1,  32400 },
++  { 0x000010A7,  33032 },
++  { 0x00012182,  33375 },
++  { 0x000141B1,  33750 },
++  { 0x00002159,  35112 },
++  { 0x00004249,  35500 },
++  { 0x00000057,  36000 },
++  { 0x000141E1,  37125 },
++  { 0x0000219A,  37889 },
++  { 0x00002158,  39168 },
++  { 0x00000045,  40000 },
++  { 0x000131A1,  40500 },
++  { 0x00010061,  42301 },
++  { 0x00000089,  43163 },
++  { 0x00012151,  43875 },
++  { 0x000010E7,  44900 },
++  { 0x00002136,  45720 },
++  { 0x000152E1,  47250 },
++  { 0x00010071,  48000 },
++  { 0x00003207,  49500 },
++  { 0x00002187,  50000 },
++  { 0x00014291,  50625 },
++  { 0x00011101,  51188 },
++  { 0x00017481,  54563 },
++  { 0x00004286,  56250 },
++  { 0x00014170,  57375 },
++  { 0x00016210,  58500 },
++  { 0x000010E5,  60065 },
++  { 0x00013140,  62796 },
++  { 0x00004214,  65000 },
++  { 0x00016250,  65250 },
++  { 0x00001105,  68179 },
++  { 0x000141C0,  69600 },
++  { 0x00015220,  70160 },
++  { 0x00010050,  72000 },
++  { 0x000031E4,  74250 },
++  { 0x00003183,  75000 },
++  { 0x00004284,  78750 },
++  { 0x00012130,  80052 },
++  { 0x00001104,  81600 },
++  { 0x00006363,  94500 },
++  { 0x00005303,  97520 },
+   { 0x00002183, 100187 },
+   { 0x00002122, 101420 },
+   { 0x00001081, 108000 },
+@@ -137,7 +187,7 @@ static void lx_set_clock(struct fb_info
+ 	unsigned int diff, min, best = 0;
+ 	unsigned int freq, i;
+
+-	freq = (unsigned int) (0x3b9aca00 / info->var.pixclock);
++	freq = (unsigned int) (1000000000 / info->var.pixclock);
+
+ 	min = abs(pll_table[0].freq - freq);
+
+@@ -149,7 +199,7 @@ static void lx_set_clock(struct fb_info
+ 		}
+ 	}
+
+-	lx_set_dotpll(pll_table[best].pllval & 0x7FFF);
++	lx_set_dotpll(pll_table[best].pllval & 0x00017FFF);
+ }
+
+ static void lx_graphics_disable(struct fb_info *info)
+
