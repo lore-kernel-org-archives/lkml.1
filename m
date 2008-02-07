@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933141AbYBGV7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933512AbYBGWAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933141AbYBGV7l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbYBGV7V
+	id S933512AbYBGWAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760163AbYBGWAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:59:21 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:20932 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760551AbYBGV7T (ORCPT
+	Thu, 7 Feb 2008 17:00:31 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:11114 "EHLO
+	mail4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759694AbYBGWAa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:59:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ap7SUdcwTGpUT9WnYCmcp72Rkh7hIguHjx952K0tR9ir/pJoyt98OAPdDSEDUv/DBn+3Ugf2xfd2gaUrATCYTlddBzvQWjk2NrmhM3UIy5U6pm5inI/IX2b/43A/GvpvJetqR9y8cUf7JlogX3asMQ0MLM/EB86rNpa3MDjSy2c=
-Date: Thu, 7 Feb 2008 16:59:07 -0500
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Alfred E. Heggestad" <aeh@db.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset
-Message-ID: <20080207165144.ZZRA012@mailhub.coreip.homeip.net>
-References: <47AB5012.20509@db.org>
+	Thu, 7 Feb 2008 17:00:30 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AB5012.20509@db.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Xilinx: hwicap driver comments
+Date: Thu, 7 Feb 2008 14:00:22 -0800
+In-Reply-To: <20080207135341.04e5652a.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Xilinx: hwicap driver comments
+Thread-Index: Achp0/LQQYyEJJyoQmOBrpA9mpTbNwAAES6g
+References: <47AB6552.7040503@gmail.com><20080207124203.147ce300.akpm@linux-foundation.org><fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com><20080207132106.ec5ebf1d.akpm@linux-foundation.org><fa686aa40802071331l16b40bacm4a7ca01a7219f1fb@mail.gmail.com><20080207213512.36FA991807D@mail185-dub.bigfish.com> <20080207135341.04e5652a.akpm@linux-foundation.org>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <grant.likely@secretlab.ca>, <jirislaby@gmail.com>,
+       <linux-kernel@vger.kernel.org>, <paulus@samba.org>,
+       <galak@gate.crashing.org>, <benh@kernel.crashing.org>,
+       <torvalds@linux-foundation.org>
+X-OriginalArrivalTime: 07 Feb 2008 22:00:22.0798 (UTC) FILETIME=[D63722E0:01C869D4]
+Message-Id: <20080207220024.C172B1C38015@mail4-dub.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alfred,
 
-On Thu, Feb 07, 2008 at 07:38:10PM +0100, Alfred E. Heggestad wrote:
-> From: Alfred E. Heggestad <aeh@db.org>
->
-> This driver adds support for USB VoIP phones using the CM109 chipset,
-> such as Komunikate KIP-1000 and Genius G-talk. Keypad is scanned and
-> events are reported to the input subsystem. The buzzer can be activated
-> by sending SND_TONE or SND_BELL to the input device. The phone keymap
-> can be selected in run-time by using the "phone" module parameter.
-> The driver has been tested with linux 2.6.24 on i386, and also tested
-> to build cleanly on AMD64.
-> More testing and code review is welcome..
->
+> > I'm rather new to all this and still (to some extent) trying to
+figure
+> > out what is expected.
+> 
+> We're all still trying to figure it out, really.  We've gone and made
+it
+> awfully easy to get code into the kernel nowadays.  Perhaps too easy.
+I'm
+> presently having a little campaign of watching what's going on a bit
+more
+> closely, and ecouraging people to make it easier for others to see
+what's
+> going on, should they choose to do so.
+> 
+> I'm hoping that by the time we're developing 2.6.26 there will be a
+unified
+> git tree (aka linux-next) (basically all the git and quilt trees from
+-mm)
+> for people to look at and play with.  That'll improve our pre-merge
+test
+> coverage, but won't do much to improve review.  And it won't do
+anything to
+> improve our post-merge bugfixing.
 
-For a long time I was sitting on the patch not sure what to do about
-the pound key, but I think we need to allocate separate keycodes for
-remote controls and phones that work regardless of users keymap.
+All of them are good, but I trust testing and sparse more than review..
+:)
 
-Another item is keymap for different devices - the best way to handle
-it I think it to implement getkeycodes and setkeycodes methods for
-the input device and have alternative keymaps loaded from userspace
-instead of adding module parameters.
+> > Maybe what is needed is git pull --ack?
+> 
+> I'm also hoping/expecting/planning that if someone tries to merge a
+patch
+> into mainline, and that patch hasn't been in linux-next for "long
+enough",
+> flags will wave and lights will flash and we can get to take a closer
+look
+> at why it was so late and whether it's OK.
 
-The rest of the driver looks great and I am sorry I was ignoring it
-for so long.
+Hmm...  what if git told you what time the original git commit happened?
+That can't be that hard to add (if it's not already there!)
 
--- 
-Dmitry
+Steve
+
+
