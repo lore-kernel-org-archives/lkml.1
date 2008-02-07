@@ -1,106 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759768AbYBGKP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbYBGKRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759768AbYBGKP6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 05:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbYBGKPh
+	id S1758780AbYBGKRS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 05:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbYBGKRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 05:15:37 -0500
-Received: from sacred.ru ([62.205.161.221]:34751 "EHLO sacred.ru"
+	Thu, 7 Feb 2008 05:17:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49768 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118AbYBGKPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 05:15:35 -0500
-Message-ID: <47AAD886.2000606@openvz.org>
-Date: Thu, 07 Feb 2008 13:08:06 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1754230AbYBGKRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 05:17:08 -0500
+Date: Thu, 7 Feb 2008 11:16:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, jesse.barnes@intel.com,
+       ak@suse.de, Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH][Regression] x86, 32-bit: trim memory not covered by wb
+	mtrrs - FIX
+Message-ID: <20080207101642.GC7716@elte.hu>
+References: <200802071257.51893.balajirrao@gmail.com> <20080207080245.GA28631@elte.hu> <200802071351.02763.balajirrao@gmail.com> <86802c440802070050t2566a261t50cccd649912a4a9@mail.gmail.com> <20080207090452.GB12884@elte.hu> <86802c440802070111o5a4bc700g75a0693f8307d766@mail.gmail.com>
 MIME-Version: 1.0
-To: Duncan Sands <baldrick.bulk@free.fr>
-CC: linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
-References: <47A9DD30.5040604@openvz.org> <200802061820.54870.baldrick.bulk@free.fr> <47AACE2B.2040404@openvz.org> <200802071057.41201.baldrick.bulk@free.fr>
-In-Reply-To: <200802071057.41201.baldrick.bulk@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 07 Feb 2008 13:07:52 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440802070111o5a4bc700g75a0693f8307d766@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duncan Sands wrote:
-> Hi Pavel,
-> 
->>>> @@ -1014,11 +1015,7 @@ static int usbatm_do_heavy_init(void *arg)
->>>>  	struct usbatm_data *instance = arg;
->>>>  	int ret;
->>>>  
->>>> -	daemonize(instance->driver->driver_name);
->>>>  	allow_signal(SIGTERM);
->>>> -	instance->thread_pid = current->pid;
->>>> -
->>>> -	complete(&instance->thread_started);
->>> One reason the completion existed to make sure that the thread was not
->>> sent SIGTERM before the above call to allow_signal(SIGTERM).  So I think
->>> you have opened up a (tiny) race by deleting it.
->> Nope. See my answer below :)
->>
->>>>  static int usbatm_heavy_init(struct usbatm_data *instance)
->>>>  {
->>>> -	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_FS | CLONE_FILES);
->>>> -
->>>> -	if (ret < 0) {
->>>> -		usb_err(instance, "%s: failed to create kernel_thread (%d)!\n", __func__, ret);
->>> Please don't delete this message.
->>>
->>>> -		return ret;
->>>> -	}
->>>> +	struct task_struct *t;
->>>>  
->>>> -	wait_for_completion(&instance->thread_started);
->>>> +	t = kthread_create(usbatm_do_heavy_init, instance,
->>>> +			instance->driver->driver_name);
->>>> +	if (IS_ERR(t))
->>>> +		return PTR_ERR(t);
->>>>  
->>>> +	instance->thread = t;
->>>> +	wake_up_process(t);
->>> Does the kthread API guarantee that the kthread is not running until you call
->> It does. That's why the race, you mentioned above is impossible.
-> 
-> I don't see why it helps.  The race I mentioned occurs when the kthread creating thread
-> runs too fast compared to the kthread.  Let C (creator) be the thread running
-> usbatm_heavy_init, and K (kthread) be the created kthread.  When C calls wake_up_process,
-> thread K starts running, however on an SMP system C may also be running.  Now suppose
-> that for some reason K takes a long time to execute the command "allow_signal(SIGTERM);",
-> but that C runs very fast and immediately executes the disconnect callback, and sends the
-> signal to K before K manages to execute allow_signal.  This is the race, and it can only
-> be fixed by making C run slower (thus the completion).  Of course this is fantastically
-> unlikely which is why I described it as tiny, but as far as I can see it is a theoretical
-> possibility.  I don't see that wake_up_process fixes it, it just makes it even less likely.
 
-Oh, I see. You're right - this race is possible... I'll fix that up
-if this patch works.
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
->>> By the way, the right thing to do is (I think) to replace the thread with
->>> a workqueue and have users of usbatm register a "shut_down" callback
->>> rather than using signals: the disconnect method would call shut_down
->>> rathering than trying to kill the thread.  That way all this mucking
->>> around with pids etc wouldn't be needed.  All users of usbatm would need
->>> to be modified.  I managed to convince myself once that they could all be
->>> fixed up in a fairly simple manner thanks to a few tricks and a
->>> completion or two, but I don't recall the details...
->> Well, that would be also great, since kill_proc will be gone - that's what
->> I'm trying to achieve.
+> On Feb 7, 2008 1:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >
+> > > minor difference
+> > > +               trim_start = highest_pfn << PAGE_SHIFT;
+> > > +               trim_size = end_pfn << PAGE_SHIFT;
+> > >
+> > > could cause some problem with 32 bit kernel when mem > 4g. becase
+> > > highest_pfn and end_pfn is unsigned long aka 32 bit ...could overflow.
+> > >
+> > > so need to assign thtem to tr, 32-bitim_start/trim_end at first
+> > > or
+> > > +               trim_start = (u64)highest_pfn << PAGE_SHIFT;
+> > > +               trim_size = (u64)end_pfn << PAGE_SHIFT;
+> >
+> > indeed ...
+> >
+> > i think the 64-bit behavior of gcc is inherently dangerous, we had
+> > numerous subtle bugs in that area.
+> >
+> > i think perhaps Sparse should be extended to warn about this. I think
+> > any case where on _32-bit_ we have an 'unsigned long' that is shifted to
+> > the left by any significant amount is clearly in danger of overflowing.
+> > _Especially_ when the lvalue is 64-bit!
+> >
+> > or in other words, on any such construct:
+> >
+> >    64-bit lvalue = ... 32-bit value
+> >
+> > we should enforce _explicit_ (u64) conversions.
 > 
-> I think your patch should go in, since I'm not likely to ever implement the
-> scheme I suggested - I don't use this hardware anymore and have lost interest
-> in the driver.
+> so you mean gcc will do some optimization to make
+> 
+> +               trim_start = highest_pfn;
+> +               trim_start <<= PAGE_SHIFT;
+> 
+> to be
+> 
+> +               trim_start = highest_pfn << PAGE_SHIFT;
+> 
+> looks scary...
 
-:)
+no, that would not be valid.
 
-> Best wishes,
-> 
-> Duncan.
-> 
-> 
+I mean the simple example you offered:
 
+  +               trim_start = highest_pfn << PAGE_SHIFT;
+
+it _looks_ good but is inherently unsafe if 'highest_pfn' is 32-bit and 
+PAGE_SHIFT is 32-bit (which they are).
+
+Or another, user-space example, on a 32-bit box:
+
+ int main (void)
+ {
+         unsigned long long a;
+         unsigned long b = 0x80000000, c = 2;
+
+         a = b << c;
+
+         printf("%Ld\n", a);
+
+         return 0;
+ }
+
+gcc will print "0" and emits no warning - so we silently lost 
+information and truncated bits. I'm sure this is somewhere specified in 
+some language standard, but it's causing bugs left and right when we use 
+u64.
+
+So if there's no helpful gcc warning that already exists, i think we 
+should extend the Sparse static checker to flag all such instances of:
+
+    u64 = u32 << u32;
+
+arithmetics, because in 100% of the cases i've seen so far they cause 
+nasty bugs. We've had such bugs in the scheduler, and we've had them in 
+arch/x86 as well. It's a royal PITA.
+
+	Ingo
