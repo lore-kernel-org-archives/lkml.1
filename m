@@ -1,93 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbYBGAmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbYBGAmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762034AbYBGAmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933920AbYBGAUz
+	id S933811AbYBGAmq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933697AbYBGA2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:20:55 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:9113 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933916AbYBGAUx (ORCPT
+	Wed, 6 Feb 2008 19:28:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59906
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933686AbYBGA2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:20:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ndiukI0s9wVhV5NSoQvfBYoTgRj0Ga0iKOosnft0GF8QQLmEcQbagNYaHUG8y3UxeazMmZlYi5nBtRiL22t9lqYzjvigGb3VYpjNwVdnUF49kmh9W+WpkMOdKm9xgDIve4ZEF88Br5C/diuto2McY+Lxv75iEenDxEOecnOQAtg=
-Date: Thu, 7 Feb 2008 03:02:06 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       Andres Salomon <dilinger@debian.org>
-Subject: Re: [PATCH] power_supply: Remove capacity_level from list of sysfs
-	attributes
-Message-ID: <20080207000206.GA19739@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20080205161327.GA8628@vespa.holoscopio.com> <20080206005312.237d7336.akpm@linux-foundation.org> <20080206105018.GB4232@vespa.holoscopio.com> <20080206135604.5473552c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080206135604.5473552c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 6 Feb 2008 19:28:35 -0500
+Date: Wed, 06 Feb 2008 16:29:04 -0800 (PST)
+Message-Id: <20080206.162904.187464710.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080207000959.GA16601@suse.de>
+References: <20080206235902.GA15719@suse.de>
+	<20080206.160231.45881964.davem@davemloft.net>
+	<20080207000959.GA16601@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 01:56:04PM -0800, Andrew Morton wrote:
-> On Wed, 6 Feb 2008 08:50:18 -0200
-> Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org> wrote:
-> 
-> > On Wed, Feb 06, 2008 at 12:53:12AM -0800, Andrew Morton wrote:
-> > > On Tue, 5 Feb 2008 14:13:36 -0200 Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org> wrote:
-> > > 
-> > > > ---
-> > > >  drivers/power/power_supply_sysfs.c |    1 -
-> > > >  1 files changed, 0 insertions(+), 1 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> > > > index d482484..13399d1 100644
-> > > > --- a/drivers/power/power_supply_sysfs.c
-> > > > +++ b/drivers/power/power_supply_sysfs.c
-> > > > @@ -106,7 +106,6 @@ static struct device_attribute power_supply_attrs[] = {
-> > > >  	POWER_SUPPLY_ATTR(energy_now),
-> > > >  	POWER_SUPPLY_ATTR(energy_avg),
-> > > >  	POWER_SUPPLY_ATTR(capacity),
-> > > > -	POWER_SUPPLY_ATTR(capacity_level),
-> > > >  	POWER_SUPPLY_ATTR(temp),
-> > > >  	POWER_SUPPLY_ATTR(temp_ambient),
-> > > >  	POWER_SUPPLY_ATTR(time_to_empty_now),
-> > > 
-> > > What is the reason for making this change?
+From: Greg KH <gregkh@suse.de>
+Date: Wed, 6 Feb 2008 16:09:59 -0800
+
+> On Wed, Feb 06, 2008 at 04:02:31PM -0800, David Miller wrote:
+> > From: Greg KH <gregkh@suse.de>
+> > Date: Wed, 6 Feb 2008 15:59:02 -0800
 > > 
-> > Sorry. The following commit is the reason for this patch.
+> > > What block drivers are you using for sparc?  Scsi?  Or something else?
+> > > What could make sparc64 different from x86 in regards to block device
+> > > structure, odd...
 > > 
-> > It removes CAPACITY_LEVEL from every other code, leaving the array with
-> > sysfs attributes with one more entry than the number of enums in
-> > power_supply.h. This leads to some attributes containing the value of
-> > the attribute right after it. For example, temp_ambient would have the
-> > value of time_to_empty_now. In my case, I had time_to_full_avg have the
-> > value which should be in model_name, when the former was usually empty.
-> > 
+> > Only Fusion SAS on this system, therefore scsi.
 > 
-> OK, thanks, I think I have enough material there to put together the final
-> patch.
+> Can you send me the output of 'tree /sys/block/' on 2.6.24?
 > 
-> Next time, please do cc the author of the change which you're fixing.  And
-> please do reply-to-all when working with kernel people, thanks.
-> 
-> I tagged this fix as needed-in-2.6.24.x as well.
+> Are there a lot of partitions here?  Anything different you can think of
+> from x86 that I can have a chance to try to narrow things down with?  :)
 
-Nope, I don't think 2.6.24.x needs this fix. Commit 8efe444038a205e79b,
-wasn't been in 2.6.24. Only 2.6.25-rc0 affected.
+It's a pretty simple partitioning scheme.
 
-If applied to 2.6.24.x, it will break things.
+[    0.307823]  sda: sda1 sda2 sda3 sda4
 
+> I don't know if you can boot without udev, but if you could, can you
+> send the 'tree' output of the offending kernel too?
 
-Thanks,
+It actually is able to continue booting after udevd gets
+killed off by the OOPS.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+I'm going to run a bisect again and get some other info
+for you...
+
+Here is the tree output with current GIT:
+
+/sys/block/
+|-- loop0 -> ../devices/virtual/block/loop0
+|-- loop1 -> ../devices/virtual/block/loop1
+|-- loop2 -> ../devices/virtual/block/loop2
+|-- loop3 -> ../devices/virtual/block/loop3
+|-- loop4 -> ../devices/virtual/block/loop4
+|-- loop5 -> ../devices/virtual/block/loop5
+|-- loop6 -> ../devices/virtual/block/loop6
+|-- loop7 -> ../devices/virtual/block/loop7
+|-- ram0 -> ../devices/virtual/block/ram0
+|-- ram1 -> ../devices/virtual/block/ram1
+|-- ram10 -> ../devices/virtual/block/ram10
+|-- ram11 -> ../devices/virtual/block/ram11
+|-- ram12 -> ../devices/virtual/block/ram12
+|-- ram13 -> ../devices/virtual/block/ram13
+|-- ram14 -> ../devices/virtual/block/ram14
+|-- ram15 -> ../devices/virtual/block/ram15
+|-- ram2 -> ../devices/virtual/block/ram2
+|-- ram3 -> ../devices/virtual/block/ram3
+|-- ram4 -> ../devices/virtual/block/ram4
+|-- ram5 -> ../devices/virtual/block/ram5
+|-- ram6 -> ../devices/virtual/block/ram6
+|-- ram7 -> ../devices/virtual/block/ram7
+|-- ram8 -> ../devices/virtual/block/ram8
+|-- ram9 -> ../devices/virtual/block/ram9
+|-- sda -> ../devices/pci0000:02/0000:02:00.0/0000:03:02.0/0000:0a:00.0/host0/port-0:0/end_device-0:0/target0:0:0/0:0:0:0/block/sda
+`-- sr0 -> ../devices/pci0000:02/0000:02:00.0/0000:03:01.0/0000:04:00.0/0000:05:01.0/0000:06:00.0/0000:07:00.2/usb3/3-2/3-2:1.0/host1/target1:0:0/1:0:0:0/block/sr0
+
+26 directories, 0 files
