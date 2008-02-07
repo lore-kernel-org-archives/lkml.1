@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbYBGXQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763775AbYBGXRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763500AbYBGXQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYBGXQV
+	id S1763775AbYBGXRO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbYBGXQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:16:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40504 "EHLO ogre.sisk.pl"
+	Thu, 7 Feb 2008 18:16:57 -0500
+Received: from mga11.intel.com ([192.55.52.93]:44069 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbYBGXQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:16:20 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jan Harkes <jaharkes@cs.cmu.edu>
-Subject: Re: [GIT PATCH] suspend patches for 2.6.25-rc0
-Date: Fri, 8 Feb 2008 00:14:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       stern@rowland.harvard.edu, pavel@ucw.cz
-References: <200802011820.56693.lenb@kernel.org> <20080207222713.GA20549@cs.cmu.edu>
-In-Reply-To: <20080207222713.GA20549@cs.cmu.edu>
+	id S1757620AbYBGXQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 18:16:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,318,1199692800"; 
+   d="scan'208";a="296694738"
+Message-ID: <47AB9077.9000007@intel.com>
+Date: Thu, 07 Feb 2008 15:12:55 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Pavel Machek <pavel@ucw.cz>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net, john.ronciak@intel.com,
+       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [E1000-devel] e1000 1sec latency problem
+References: <20080207141718.GA2030@elf.ucw.cz> <47AB4B2E.1030801@intel.com> <20080207222411.GA1917@elf.ucw.cz> <47AB86F0.9060601@intel.com> <20080207223709.GC6096@elf.ucw.cz>
+In-Reply-To: <20080207223709.GC6096@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802080014.41638.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 7 of February 2008, Jan Harkes wrote:
-> On Fri, Feb 01, 2008 at 06:20:56PM -0500, Len Brown wrote:
-> > please pull from: 
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git suspend
-> > 
-> > This will update the files shown below.
+Pavel Machek wrote:
+> On Thu 2008-02-07 14:32:16, Kok, Auke wrote:
+>> Pavel Machek wrote:
+>>> Hi!
+>>>
+>>>>> I have the famous e1000 latency problems:
+>>>>>
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=68 ttl=56 time=351.9 ms
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=69 ttl=56 time=209.2 ms
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=70 ttl=56 time=1004.1 ms
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=71 ttl=56 time=308.9 ms
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=72 ttl=56 time=305.4 ms
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=73 ttl=56 time=9.8 ms
+>>>>> 64 bytes from 195.113.31.123: icmp_seq=74 ttl=56 time=3.7 ms
+>>>>>
+>>>>> ...and they are still there in 2.6.25-git0. I had ethernet EEPROM
+>>>>> checksum problems, which I fixed by the update, but problems are not
+>>>>> gone.
+>>>> pavel, start using "e1000e" instead - this driver replaces e1000 for all the
+>>>> pci-express devices and has the infamous L1 ASPM disable patch to
+>>>> fix this issue.
+>>> Ok, e1000e seems to work for me.
+>>>
+>>> In another email, you asked for lspci -vvvv of failing e1000
+>>> case. Should I still provide it?
+>> well, if you do it you should see that L1 ASPM is now disabled (with e1000e)
+>> whereas with e1000 it is still enabled. That's the fix that you need...
 > 
-> The following patch,
-> 
->     commit c3e94d899c864e558f938f9845ddb8c2e5d5ccd0
->     Author: Alan Stern <stern@rowland.harvard.edu>
->     Date:   Mon Nov 19 23:38:25 2007 +0100
-> 
->     Hibernation: Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers (rev. 2)
-> 
-> Seems to have reverted some code related to the PM_HIBERNATION_PREPARE
-> notifiers in kernel/power/user.c that were added in 2.6.23 by the
-> following patch,
-> 
->     commit b10d911749d37dccfa5873d2088aea3f074b9e45
->     Author: Rafael J. Wysocki <rjw@sisk.pl>
->     Date:   Thu Jul 19 01:47:36 2007 -0700
-> 
->     PM: introduce hibernation and suspend notifiers
-> 
-> I'm pretty sure this was not the intent of the new patch because it only
-> tries to extend upon the former functionality and not replace it.
+> Is there easy way to push that fix to e1000, too? Or print "use e1000e
+> instead" and refuse to load?
 
-I haven't revert the changes.  It's only moved the notifier chain calls from
-the ioctls to open/release in user.c .
+well we're going to delete all pci-e related code from this driver soon anyway,
+but I am indeed writing a patch right now that prints out this warning...
 
-Thanks,
-Rafael
+Auke
