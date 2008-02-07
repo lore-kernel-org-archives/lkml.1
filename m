@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbYBGSfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbYBGShq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933095AbYBGSfe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbYBGSfY
+	id S932404AbYBGShq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYBGShi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:35:24 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:48255 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758165AbYBGSfX (ORCPT
+	Thu, 7 Feb 2008 13:37:38 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47241 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750998AbYBGShh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:35:23 -0500
-Message-ID: <47AB4E30.3060409@qualcomm.com>
-Date: Thu, 07 Feb 2008 10:30:08 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Pavel Machek <pavel@ucw.cz>, e1000-devel@lists.sourceforge.net,
-       jesse.brandeburg@intel.com, kernel list <linux-kernel@vger.kernel.org>,
-       john.ronciak@intel.com, jeffrey.t.kirsher@intel.com
-Subject: Re: [E1000-devel] e1000 1sec latency problem
-References: <20080207141718.GA2030@elf.ucw.cz> <47AB38AB.8050001@qualcomm.com> <47AB3EEF.6050005@intel.com> <47AB48B0.10403@qualcomm.com> <47AB49F3.301@intel.com>
-In-Reply-To: <47AB49F3.301@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Feb 2008 13:37:37 -0500
+Date: Thu, 7 Feb 2008 10:36:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Michael Tokarev <mjt@tls.msk.ru>,
+       stable@kernel.org
+Subject: Re: [PATCH] quota: Turn quotas off when remounting read-only
+Message-Id: <20080207103655.14ce8512.akpm@linux-foundation.org>
+In-Reply-To: <20080207143721.GH6140@duck.suse.cz>
+References: <20080207143721.GH6140@duck.suse.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 Feb 2008 15:37:21 +0100 Jan Kara <jack@suse.cz> wrote:
 
-
-Kok, Auke wrote:
-> Max Krasnyansky wrote:
->> Kok, Auke wrote:
->>> Max Krasnyansky wrote:
->>>> So you don't think it's related to the interrupt coalescing by any chance ?
->>>> I'd suggest to try and disable the coalescing and see if it makes any difference.
->>>> We've had lots of issues with coalescing misbehavior. Not this bad (ie 1 second) though.
->>>>
->>>> Add this to modprobe.conf and reload e1000 module
->>>>
->>>> options e1000 RxIntDelay=0,0 RxAbsIntDelay=0,0 InterruptThrottleRate=0,0 TxIntDelay=0,0 TxAbsIntDelay=0,0
->>> that can't be the problem. irq moderation would only account for 2-3ms variance
->>> maximum.
->> Oh, I've definitely seen worse than that. Not as bad as a 1second though. Plus you're talking
->> about the case when coalescing logic is working as designed ;-). What if there is some kind of 
->> bug where timer did not expire or something.
+> Turn off quotas before filesystem is remounted read only. Otherwise quota will
+> try to write to read-only filesystem which does no good... We could also just
+> refuse to remount ro when quota is enabled but turning quota off is consistent
+> with what we do on umount.
 > 
-> we don't use a software timer in e1000 irq coalescing/moderation, it's all in
-> hardware, so we don't have that problem at all. And I certainly have never seen
-> anything you are referring to with e1000 hardware, and I do not know of any bug
-> related to this.
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+> Andrew, this should fix the hang reported... Please apply. Thanks.
 > 
-> are you maybe confused with other hardware ?
-> 
-> feel free to demonstrate an example...
+> diff --git a/fs/super.c b/fs/super.c
+> index ceaf2e3..945c322 100644
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -603,6 +603,7 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
+>  			mark_files_ro(sb);
+>  		else if (!fs_may_remount_ro(sb))
+>  			return -EBUSY;
+> +		DQUOT_OFF(sb);
+>  	}
+>  
+>  	if (sb->s_op->remount_fs) {
 
-Just to give you a background. I wrote and maintain http://libe1000.sf.net
-So I know E1000 HW and SW in and out. And no I'm not confused with other HW and I know that we're 
-not using SW timers for the coalescing. HW can be buggy as well. Note that I'm not saying that I
-know for sure that the problem is coalescing, I'm just suggesting to take it out of the equation
-while Pavel is investigating.
-
-Unfortunately I cannot demonstrate an example but I've seen unexplained packet delays in the range 
-of 1-20 milliseconds on E1000 HW (and boy ... I do have a lot of it in my labs). Once coalescing 
-was disabled those problems have gone away.
-
-Max
+Cool.  And this is applicable to 2.6.23, 2.6.22 and even earlier, isn't it?
