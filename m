@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbYBGNhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbYBGNjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760053AbYBGNhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 08:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYBGNhK
+	id S1760133AbYBGNjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 08:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbYBGNjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 08:37:10 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34829 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbYBGNhI (ORCPT
+	Thu, 7 Feb 2008 08:39:07 -0500
+Received: from s131.mittwaldmedien.de ([62.216.178.31]:11625 "EHLO
+	s131.mittwaldmedien.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753142AbYBGNjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 08:37:08 -0500
-Message-ID: <47AB0981.3090907@davidnewall.com>
-Date: Fri, 08 Feb 2008 00:07:05 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 08:39:06 -0500
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+Subject: [PATCH] sysctl: allow embedded targets to disable sysctl_check.c
+Date: Thu, 7 Feb 2008 14:38:58 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Marcel Holtmann <marcel@holtmann.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <47A5D9CD.5070001@davidnewall.com> <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com> <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet> <courier.47A84ADB.000047C1@hawking.rebel.net.au> <1202241819.15090.133.camel@violet> <47A8C893.6000103@nortel.com>
-In-Reply-To: <47A8C893.6000103@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802071438.58497.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Marcel Holtmann wrote:
->
->> If the developers say that this symbol can only be used in GPL code (and
->> with EXPORT_SYMBOL_GPL it is quite clear) then you have to obey to that
->> license or don't use this symbol at all.
->>
->> If you use that symbol inside non-GPL (meaning you link at runtime) then
->> you are in violation of the GPL license. We can't make it much clearer.
->
-> Not necessarily so.  The developers feel that any code using that
-> symbol is necessarily a derivative work,
+Disable sysctl_check.c for embedded targets. This saves about about 11 kB
+in .text and another 11 kB in .data on a PXA255 embedded platform.
 
-The problem with that is this: To be derivative, a work has to be
-derived from another work.  That's what "derivative" means.  Is it by
-prescience that those marking symbols as EXPORT_SYMBOL_GPL know that
-only things derived from something else are capable of using them? 
-Derived from what?  The use of a separate module does not make something
-derivative.  It makes it a client.  Any binding between the two modules
-occurs only at runtime, and is purely ephemeral.
+Signed-off-by: Holger Schurig <hs4233@mail.mn-solutions.de>
 
-I make this charge: Some, perhaps much, of the GPL-exported symbols have
-been mislabelled.  There is no prescience, and those who labelled them
-such are really trying (and failing) to claim an additional licence
-condition.
-
-I further make this claim: an attempt to add a licence condition in that
-fashion is illegal, at least it is under various Australian laws, but I
-expect it's a similar story elsewhere.  For a start, it's an attempt to
-vary licence conditions after the contract is made, and also without due
-notice.  It also attempts to unfairly restrict trade.  It's probably
-fraud, in that it purports to be a work provided under GPL, while
-silently claiming a different (and largely unstated) licence.
-
-The EXPORT_SYMBOL_GPL should be removed, because it's based on a lie. 
-You cannot know that only GPL works are capable of using the symbol; you
-cannot know that all works that do use it are derivative of something;
-you cannot even say, a priori, what they are derived from.
+--- linux.orig/init/Kconfig
++++ linux/init/Kconfig
+@@ -475,6 +475,17 @@
+ 
+ 	  If unsure say Y here.
+ 
++config SYSCTL_SYSCALL_CHECK
++	bool "Sysctl checks" if EMBEDDED
++	depends on SYSCTL_SYSCALL
++	default y
++	---help---
++	  sys_sysctl uses binary paths that have been found challenging
++	  to properly maintain and use. This enables checks that help
++	  you to keep things correct.
++
++	  If unsure say Y here.
++
+ config KALLSYMS
+ 	 bool "Load all symbols for debugging/ksymoops" if EMBEDDED
+ 	 default y
+--- linux.orig/kernel/Makefile
++++ linux/kernel/Makefile
+@@ -11,7 +11,7 @@
+ 	    hrtimer.o rwsem.o nsproxy.o srcu.o \
+ 	    utsname.o notifier.o ksysfs.o pm_qos_params.o
+ 
+-obj-$(CONFIG_SYSCTL) += sysctl_check.o
++obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
+ obj-$(CONFIG_STACKTRACE) += stacktrace.o
+ obj-y += time/
+ obj-$(CONFIG_DEBUG_MUTEXES) += mutex-debug.o
+--- linux.orig/kernel/sysctl.c
++++ linux/kernel/sysctl.c
+@@ -1604,9 +1604,13 @@
+ 
+ static __init int sysctl_init(void)
+ {
+-	int err;
+ 	sysctl_set_parent(NULL, root_table);
+-	err = sysctl_check_table(current->nsproxy, root_table);
++#ifdef CONFIG_SYSCTL_SYSCALL_CHECK
++	{
++		int err;
++		err = sysctl_check_table(current->nsproxy, root_table);
++	}
++#endif
+ 	return 0;
+ }
+ 
+@@ -1733,10 +1737,12 @@
+ 	header->unregistering = NULL;
+ 	header->root = root;
+ 	sysctl_set_parent(NULL, header->ctl_table);
++#ifdef CONFIG_SYSCTL_SYSCALL_CHECK
+ 	if (sysctl_check_table(namespaces, header->ctl_table)) {
+ 		kfree(header);
+ 		return NULL;
+ 	}
++#endif
+ 	spin_lock(&sysctl_lock);
+ 	header_list = lookup_header_list(root, namespaces);
+ 	list_add_tail(&header->ctl_entry, header_list);
