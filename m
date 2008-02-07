@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbYBGQ3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbYBGQbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758171AbYBGQ3d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 11:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbYBGQ3Z
+	id S1759421AbYBGQbB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 11:31:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbYBGQav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 11:29:25 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39225 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755093AbYBGQ3Y (ORCPT
+	Thu, 7 Feb 2008 11:30:51 -0500
+Received: from smtp23.orange.fr ([193.252.22.126]:4447 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755399AbYBGQau convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 11:29:24 -0500
-Date: Thu, 7 Feb 2008 08:28:27 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: tcamuso@redhat.com
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Greg KH <greg@kroah.com>, Grant Grundler <grundler@parisc-linux.org>,
-       Loic Prylli <loic@myri.com>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
-Message-ID: <20080207082827.2b4e6112@laptopd505.fenrus.org>
-In-Reply-To: <47AB299D.4000500@redhat.com>
-References: <20080114230448.GL9847@does.not.exist>
-	<20080115174643.GB28238@kroah.com>
-	<20080115175641.GE18741@parisc-linux.org>
-	<20080119165809.GB11553@colo.lackof.org>
-	<479E1FA6.1030708@redhat.com>
-	<20080128204431.GA15227@kroah.com>
-	<20080128223141.GA31101@parisc-linux.org>
-	<20080128225334.GD4720@kroah.com>
-	<20080129025615.GC20198@parisc-linux.org>
-	<20080129030340.GE20198@parisc-linux.org>
-	<86802c440802022330o771cf98btcf750c790668b6e9@mail.gmail.com>
-	<47AB299D.4000500@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 7 Feb 2008 11:30:50 -0500
+X-ME-UUID: 20080207163029826.1419D701799B@mwinf2327.orange.fr
+Message-ID: <47AB321E.5080908@cosmosbay.com>
+Date: Thu, 07 Feb 2008 17:30:22 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: Marcin Koziej <marcinkoziej@o2.pl>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Bug? Kernels 2.6.2x drops TCP packets over wireless (independent
+ of card used)
+References: <56de948.2f1b076b.47aac980.bfd66@o2.pl> <6101e8c40802070623t55115dc3h4cf508e432b9296f@mail.gmail.com> <776aaa6c.68622465.47ab2df0.78e4b@o2.pl>
+In-Reply-To: <776aaa6c.68622465.47ab2df0.78e4b@o2.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 10:54:05 -0500
-Tony Camuso <tcamuso@redhat.com> wrote:
+Marcin Koziej a écrit :
+>> hmm, i think, the site is broken (193.219.28.140), and not the card or
+>> the driver is wrong. when it does, then other sites are auch
+>> reproductable ..
+>>
+>> /* is use auch madwifi-0.9.3.3, but it think, it is not driver problem */
+>>     
+>
+> Unfortunately, this is not the case :(  This happens to all TCP connections, inside and outside LAN,
+> also with the telnet session with the router. I also tried to manipulate MTU, but without any positive effect.
+> I also tried to change things like net.ipv4.tcp_congestion_control -- which i figured out might affect TCP traffic, but also didn't get any results.
+> I'm afraid this can have something to do with IRQ, because the PCMCIA cards (my Atheros wireless card is such) are visible only with irqpoll kernel option.
+>
+> Of course, as I mentioned, everything works fine with kernel 2.6.19; with the same servers etc.
+>
+>   
+Very strange, as the tcpdump you gave shows that the remote peer only 
+sent "220-\r\n"
 
-> Matthew,
-> 
-> Perhaps I missed it, but did you address Yinghai's concerns?
-> 
-> Yinghai Lu wrote:
-> > On Jan 28, 2008 7:03 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> >>
-> >> -int pci_conf1_write(unsigned int seg, unsigned int bus,
-> >> +static int pci_conf1_write(unsigned int seg, unsigned int bus,
-> >>                            unsigned int devfn, int reg, int len,
-> >> u32 value)
-> > 
-> > any reason to change pci_conf1_read/write to static?
-> > 
-> 
+This was ACKed, and then nothing but timeout. We can conclude remote 
+peer is *very* slow or a firewall is blocking trafic after 6 bytes sent :)
 
-nothing should use these directly. So static is the right answer ;)
+Could you give a tcpdump for the same destination, on 2.6.19 this time ?
+
+
+
+
+
