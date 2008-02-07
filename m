@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYBGAkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932547AbYBGAlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbYBGAkr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933139AbYBGANw
+	id S932547AbYBGAlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbYBGAQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:13:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38347 "EHLO mx2.mail.elte.hu"
+	Wed, 6 Feb 2008 19:16:46 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49848 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932144AbYBGANt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:13:49 -0500
-Date: Thu, 7 Feb 2008 01:13:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kgdb-bugreport@lists.sourceforge.net,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/3] KGDB: Major refactoring
-Message-ID: <20080207001336.GA22986@elte.hu>
-References: <47A8F275.9090901@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A8F275.9090901@web.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1763802AbYBGAQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:16:44 -0500
+Subject: Re: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <mszeredi@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0802062023100.32204@blonde.site>
+References: <20080130142014.GA2164@tv-sign.ru>
+	 <1201712101.31222.22.camel@tucsk.pomaz.szeredi.hu>
+	 <20080130172646.GA2355@tv-sign.ru>
+	 <1201987065.9062.6.camel@localhost.localdomain>
+	 <20080203182135.GA5827@tv-sign.ru>
+	 <Pine.LNX.4.64.0802062023100.32204@blonde.site>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 06 Feb 2008 16:16:38 -0800
+Message-Id: <1202343398.9062.253.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Kiszka <jan.kiszka@web.de> wrote:
+On Wed, 2008-02-06 at 20:33 +0000, Hugh Dickins wrote:
+> On Sun, 3 Feb 2008, Oleg Nesterov wrote:
+> > 
+> > So I have to try to find another bug ;) Suppose that ->load_binary() does
+> > a series of do_mmap(MAP_EXECUTABLE). It is possible that mmap_region() can
+> > merge 2 vmas. In that case we "leak" ->num_exe_file_vmas. Unless I missed
+> > something, mmap_region() should do removed_exe_file_vma() when vma_merge()
+> > succeds (near fput(file)).
+> 
+> Or there's the complementary case of a VM_EXECUTABLE vma being
+> split in two, for example by an mprotect of a part of it.
+> 
+> Sorry, Matt, I don't like your patch at all.  It seems to add a fair
+> amount of ugliness and unmaintainablity, all for a peculiar MVFS case
 
-> As most changes are tightly coupled, this refactoring patch for
-> KGDB_8250 as well as the core and the new KGDBOC driver comes as a
-> single chunk. The changes are:
->  - Reorganized configuration: I/O drivers can be independently
->    configured as module or built-in
->  - Dynamic reconfiguration for KGDB_8250 (just like for KGDBOC)
->  - Reworked KGDB_8250 configuration string format
->  - attachwait removed, arming the debugger via assigning an I/O driver
->    implies "attachwait"
->  - Cleaned up I/O driver managment of the core
->  - Matured the various boot-up, configure, unconfigure code paths for
->    both I/O drivers
->  - IRQ vs. KGDB_CONSOLE-output SMP race fixed for KGDB_8250
->  - Reduced and cleaned up hooks into serial_core/8250
->  - Kconfig cleanups
+I thought that getting rid of the separate versions of proc_exe_link()
+improved maintainability. Do you have any specific details on what you
+think makes the code introduced by the patch unmaintainable?
 
-great stuff! I've picked these cleanups up into x86.git. (will pick up 
-Jason's commits too)
+> (you've tried to argue other advantages, but not always convinced!).
 
-Could you try something else too perhaps, which would be way useful for 
-me: to add a sysctl flag (or something like that) to change kgdboc to 
-accept a Ctrl-C and break into kgdb mode? [this means a simple Ctrl-C on 
-a kgdboc line would break into KGDB as well - but that would be an 
-acceptable price.] Right now kgdboc just hangs when gdb attaches - i 
-have to generate a SysRq sequence via a terminal emulator to break it 
-into KGDB mode.
+Yup -- looking at how the VM_EXECUTABLE flag affects the vma walk it's
+clear one of my arguments was wrong. So I can't blame you for being
+unconvinced by that. :)
 
-This would make kgdboc way more practical without having to resort to a 
-protocol splitting proxy, etc.
+I still think it would help any stacking filesystems that can't use the
+solution adopted by unionfs.
 
-	Ingo
+> And I found it quite hard to see where the crucial difference comes.
+> I guess it's that MVFS changes vma->vm_file in its ->mmap?  Well, if
+
+Yup.
+
+> MVFS does that, maybe something else does that too, but precisely to
+> rely on the present behaviour of /proc/pid/exe - so in fixing for
+> MVFS, we'd be breaking that hypothetical other?
+
+	I'm not completely certain that I understand your point. Are you
+suggesting that some hypothetical code would want to use this "quirk"
+of /proc/pid/exe for a legitimate purpose?
+
+	Assuming that is your point, I thought my non-hypothetical java example
+clearly demonstrated that at least one non-hypothetical program doesn't
+expect the "quirk" and breaks because of it. Frankly,
+given /proc/pid/exe's output in the non-stacking case, I can't see how
+its output in the stacking case we're discussing could be considered
+anything but buggy.
+
+Cheers,
+	-Matt Helsley
+
