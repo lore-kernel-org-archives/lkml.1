@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934479AbYBGVf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935248AbYBGVfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934479AbYBGVf2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759187AbYBGVfK
+	id S935248AbYBGVfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762854AbYBGVfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:35:10 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:46496 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758448AbYBGVfH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:35:07 -0500
-Message-ID: <fa686aa40802071335l681cf0dfs97b8fe828427fa4a@mail.gmail.com>
-Date: Thu, 7 Feb 2008 14:35:05 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: benh@kernel.crashing.org
-Subject: Re: Xilinx: hwicap driver comments
-Cc: "Jiri Slaby" <jirislaby@gmail.com>,
-       "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1202420016.7079.138.camel@pasglop>
+	Thu, 7 Feb 2008 16:35:18 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:41657 "EHLO
+	outbound2-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762782AbYBGVfQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:35:16 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47AB6552.7040503@gmail.com> <1202419066.7079.130.camel@pasglop>
-	 <47AB7813.7050807@gmail.com> <1202420016.7079.138.camel@pasglop>
-X-Google-Sender-Auth: dabf74e1e016876d
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Xilinx: hwicap driver comments
+Date: Thu, 7 Feb 2008 13:35:09 -0800
+In-Reply-To: <fa686aa40802071331l16b40bacm4a7ca01a7219f1fb@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Xilinx: hwicap driver comments
+Thread-Index: Achp0Mkzxomx4DDlQbCTY+aSXhjRRgAAEirg
+References: <47AB6552.7040503@gmail.com> <20080207124203.147ce300.akpm@linux-foundation.org> <fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com> <20080207132106.ec5ebf1d.akpm@linux-foundation.org> <fa686aa40802071331l16b40bacm4a7ca01a7219f1fb@mail.gmail.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <jirislaby@gmail.com>, <linux-kernel@vger.kernel.org>, <paulus@samba.org>,
+       <galak@gate.crashing.org>, <benh@kernel.crashing.org>,
+       <torvalds@linux-foundation.org>
+X-OriginalArrivalTime: 07 Feb 2008 21:35:10.0697 (UTC) FILETIME=[50EED590:01C869D1]
+Message-Id: <20080207213512.36FA991807D@mail185-dub.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/7/08, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> On Thu, 2008-02-07 at 22:28 +0100, Jiri Slaby wrote:
-> > Yup, should... [I don't know how ofter people have 64bit resources on 32 bit
-> > this becomes a problem.]
->
-> For MMIO it's becoming more and more common actually in the embedded
-> space. Xilinx uses 405 cores which I think still only have a 32 bits
-> physical bus though, but if they ever extend it or switch to 440 they'll
-> have a 36 bits bus.
+> > It seems wrong that the signoff trail for that patch didn't actually
+> > reflect reality - it should have had both Josh's and Paul's
+signoffs.  That
+> > would require that the changelog be altered during git->git
+transfers which
+> > I expect is just incompatible with the way git works (as far as I
+dimly
+> > understand it).
 
-The Virtex5 has a 440.  It's going to be released "real soon now"
+I'm rather new to all this and still (to some extent) trying to figure
+out what is expected.
 
-g.
+Maybe what is needed is git pull --ack?
 
+Steve
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
