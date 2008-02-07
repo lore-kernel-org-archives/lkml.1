@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758327AbYBGTDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760819AbYBGTEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758327AbYBGTDP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:03:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYBGTC4
+	id S1760819AbYBGTEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbYBGTEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:02:56 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:57613 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755686AbYBGTCy (ORCPT
+	Thu, 7 Feb 2008 14:04:37 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:51730 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756615AbYBGTEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:02:54 -0500
-Date: Thu, 7 Feb 2008 20:02:41 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: mingo@elte.hu, davej@codemonkey.org.uk, tglx@linutronix.de,
+	Thu, 7 Feb 2008 14:04:35 -0500
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Newall <davidn@davidnewall.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] Use global TLB flushes in MTRR code
-Message-ID: <20080207190241.GA9449@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 07 Feb 2008 18:56:22.0376 (UTC) FILETIME=[219C6E80:01C869BB]
+In-Reply-To: <47AB0A76.3000404@davidnewall.com>
+References: <20080125180232.GA4613@kroah.com>
+	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
+	 <47A5D9CD.5070001@davidnewall.com>
+	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
+	 <47A5E67D.9040804@davidnewall.com>
+	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>
+	 <courier.47A8497B.0000472E@hawking.rebel.net.au>
+	 <1202240590.15090.119.camel@violet>  <47AB0A76.3000404@davidnewall.com>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 20:05:13 +0100
+Message-Id: <1202411113.15090.263.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[probably stable material too]
+Hi David,
 
-Use global TLB flushes in MTRR code
+> >>> I think you're missing my point: as long as the license stays the way
+> >>> it is now, you can never distribute proprietary code unless you've
+> >>> consulted a lawyer and even then you run the risk of being sued for
+> >>> infringement if the copyright holder thinks what you have is derived
+> >>> work.
+> >>>       
+> >> Yes I can, if the proprietary code is not linked with GPL code (and the 
+> >> proprietary code is original).  Loadable modules are not linked.  This is a 
+> >> very clear-cut case.
+> >>     
+> >
+> > that is not clear-cut case. You link at run-time. Otherwise the module
+> > would do nothing.
+> 
+> That's why it's allowed.  The module isn't linked when it's distributed,
+> and the author doesn't do or cause the linking; the user does.  And the
+> user never distributes in the linked state.  Distribution is key to GPL.
 
-Obviously kernel mappings should be flushed here too.
+so how do you build this module that is not linked without using the
+Linux kernel. Hence derivative work. Hence dynamic linking at runtime of
+binary only code is violating the GPL.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+Same goes for dynamic linking at runtime against GPL libraries. Nobody
+thinks that is possible and ships binary applications that link against
+GPL libaries. So why do you think you can distribute a binary only
+kernel module.
 
----
- arch/x86/kernel/cpu/mtrr/generic.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Regards
 
-Index: linux/arch/x86/kernel/cpu/mtrr/generic.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mtrr/generic.c
-+++ linux/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -356,7 +356,7 @@ static void prepare_set(void) __acquires
- 	}
- 
- 	/* Flush all TLBs via a mov %cr3, %reg; mov %reg, %cr3 */
--	__flush_tlb();
-+	__flush_tlb_all();
- 
- 	/*  Save MTRR state */
- 	rdmsr(MTRRdefType_MSR, deftype_lo, deftype_hi);
-@@ -368,7 +368,7 @@ static void prepare_set(void) __acquires
- static void post_set(void) __releases(set_atomicity_lock)
- {
- 	/*  Flush TLBs (no need to flush caches - they are disabled)  */
--	__flush_tlb();
-+	__flush_tlb_all();
- 
- 	/* Intel (P6) standard MTRRs */
- 	mtrr_wrmsr(MTRRdefType_MSR, deftype_lo, deftype_hi);
+Marcel
+
+
