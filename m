@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYBGONA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbYBGONv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbYBGONA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 09:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbYBGOMw
+	id S1759822AbYBGONv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 09:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYBGONk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 09:12:52 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45924 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754458AbYBGOMu (ORCPT
+	Thu, 7 Feb 2008 09:13:40 -0500
+Received: from mail.syneticon.net ([213.239.212.131]:54670 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbYBGONj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 09:12:50 -0500
-Date: Thu, 7 Feb 2008 14:06:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080207140629.309c2a3f@core>
-In-Reply-To: <47AAFE91.1080104@davidnewall.com>
-References: <20080125180232.GA4613@kroah.com>
-	<20080202123710.42df1aa0@weinigel.se>
-	<20080202191930.GA19826@kroah.com>
-	<20080203124849.0226560f@weinigel.se>
-	<84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>
-	<47A5F418.6030104@weinigel.se>
-	<20080203231530.GB15692@kroah.com>
-	<courier.47A8EDDC.0000785F@hawking.rebel.net.au>
-	<20080205231724.729a7a60@core>
-	<47AAFE91.1080104@davidnewall.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Feb 2008 09:13:39 -0500
+Message-ID: <47AB120A.1000600@wpkg.org>
+Date: Thu, 07 Feb 2008 15:13:30 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: why kexec insists on syncing with recent kernels?
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Perhaps you might read up on unfair trade practices and contract law. 
+According to kernel/kexec.c:
 
-I'm familiar with them to some extent because I have run companies in the
-past and continue to do so as a sideline to my Red Hat work. I also spend
-more time than I'd like talking to lawyers about licencing.
+  * kexec does not sync, or unmount filesystems so if you need
+  * that to happen you need to do that yourself.
 
-> The contract (GPL) doesn't prevent me from using GPL work, in fact it
-> encourages me.  Neither can it impose conditions upon original work
-> authored by a third party.
 
-First mistake: The GPL is not a contract it is a license.
+I saw this was true with 2.6.18 kernel (i.e., it didn't sync), but kexec 
+syncs with recent kernels (I checked 2.6.23.14 and 2.6.24):
 
-If the GPL was a contract it could most certainly impose conditions upon
-original works. Contract law permits to write things like "If you buy the
-source for this package you agree not to write a competing product for
-three years even if an origina work". 
+# kexec -e
+md: stopping all md devices
+sd 2:0:0:0: [sdb] Synchronizing SCSI cache
 
-Alan
+
+With kexec on 2.6.18 it was executing a loaded kernel immediately.
+
+
+Generally, it's a good thing to sync before jumping into a new kernel, 
+but it breaks my setup here after upgrading from 2.6.18 to 2.6.24.
+
+Why?
+
+I have a couple of diskless (iSCSI-boot) machines with a buggy BIOS (old 
+Supermicro P4SBR/P4SBE) which randomly freeze after rebooting (the 
+machine shuts down just fine, but instead of booting again, showing BIOS 
+bootup messages etc. you can just see blank screen).
+
+Therefore, I use kexec as a workaround for this rebooting problem.
+
+The way kexec works now makes rebooting unreliable again:
+- network interfaces are brought down,
+- kernel tries to sync - it never will, as we're booted off network, 
+which is down
+
+Any ideas why kexec insists on syncing?
+
+
+-- 
+Tomasz Chmielewski
+http://blog.wpkg.org
