@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbYBGTwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbYBGTwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759069AbYBGTwD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYBGTvy
+	id S1760907AbYBGTwm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYBGTwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:51:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59955 "EHLO mx3.mail.elte.hu"
+	Thu, 7 Feb 2008 14:52:33 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:56601 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbYBGTvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:51:53 -0500
-Date: Thu, 7 Feb 2008 20:51:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Max Krasnyansky <maxk@qualcomm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] CPU isolation extensions
-Message-ID: <20080207195130.GA27482@elte.hu>
-References: <47AA9807.7090402@qualcomm.com> <alpine.LFD.1.00.0802070903190.2883@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802070903190.2883@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752318AbYBGTwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 14:52:32 -0500
+Date: Thu, 7 Feb 2008 20:51:36 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Farbod Nejati <farbodn@g2microsystems.com>
+Cc: Philip Ryan <Philip.Ryan@g2microsystems.com>, linux-kernel@vger.kernel.org,
+       "Chad O'Neill" <chad@g2microsystems.com>,
+       Tom McDermott <tom.mcdermott@g2microsystems.com>
+Subject: Re: SDIO driver not receiving responses
+Message-ID: <20080207205136.1a38f4fe@poseidon.drzeus.cx>
+In-Reply-To: <47A16C47.5090703@g2microsystems.com>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
+	<47A16C47.5090703@g2microsystems.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Don't hijack threads, it completely messes up everyone's mail box and makes your mail very difficult to find.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 31 Jan 2008 17:35:51 +1100
+Farbod Nejati <farbodn@g2microsystems.com> wrote:
 
-> On Wed, 6 Feb 2008, Max Krasnyansky wrote:
-> >
-> > Linus, please pull CPU isolation extensions from
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/maxk/cpuisol-2.6.git 
-> > for-linus
+> The mmc_send_io_op_cond() function call in core.c::mmc_rescan() is 
+> returning with a -110 (a timeout error). I traced this deeper and 
+> noticed that CMD5 is being sent out via sdhci.c::sdhci_send_command() (I 
+> verified this using a logic analyser, the host *is* transmitting a CMD5 
+> [IO_SEND_OP_COND] packet in the correct format). However, when the 
+> client responds with the IO_SEND_OP_COND Response R4 (SD mode), it does 
+> not seem to be received by the host. Again, I verified using the logic 
+> analyser that the response is as would be expected. An IRQ *is* 
+> triggered, however it is 0x00018000 (SDHCI_INT_TIMEOUT|SDHCI_INT_ERROR). 
+> I'm not too familiar with Linux kernel programming but I suspect that 
+> whatever is waiting for a valid response is giving up instead and 
+> triggering the above-mentioned interrupt instead.
+
+That would be the hardware. We don't do any software timeout handling.
+
+Have you checked the time from command to reply with the logic analyser? The chip might simply be out of spec.
+
 > 
-> Have these been in -mm and widely discussed etc? I'd like to start 
-> more carefully, and (a) have that controversial last patch not merged 
-> initially and (b) make sure everybody is on the same page wrt this 
-> all..
+> Why would the output of the above code differ from the one produced by 
+> lspci -xxx. Could this have something to do with this issue???
+> 
 
-no, they have not been under nearly enough testing and review - these 
-patches surfaced on lkml for the first time one week ago (!). I find the 
-pull request totally premature, this stuff has not been discussed and 
-agreed on _at all_. None of the people who maintain and have interest in 
-this code and participated in the (short) one-week discussion were 
-Cc:-ed to the pull request.
+lspci shows you the PCI config space, not the device io space, which is what your code dumped. ;)
 
-I think these patches also need a buy-in from Peter Zijlstra and Paul 
-Jackson (or really good reasoning while any objections from them should 
-be overriden) - all of whom deal with the code affected by these changes 
-on a daily basis and have an interest in CPU isolation features.
+> 
+> I'm fresh out of ideas on this one and would greatly appreciate some 
+> hints or assistance. I'm happy to provide any further information if needed.
+> 
 
-Generally i think that cpusets is actually the feature and API that 
-should be used (and extended) for CPU isolation - and we already 
-extended it recently in the direction of CPU isolation. Most enterprise 
-distros have cpusets enabled so it's in use. Also, cpusets has the 
-appeal of being commonly used in the "big honking boxes" arena, so 
-reusing the same concept for RT and virtualization stuff would be the 
-natural approach. It already ties in to the scheduler domains code 
-dynamically and is flexible and scalable. I resisted ad-hoc CPU 
-isolation patches in -rt for that reason. Also, i'd not mind some 
-test-coverage in sched.git as well.
+I can only see one of two options here. Either there is some miscalculation of the timeout, or you have a hardware bug. And to determine that we need to check what is actually going over the wire. As you've checked the data contents, that isn't the problem. So the only remaining thing is checking the timing.
 
-	Ingo
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
