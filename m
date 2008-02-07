@@ -1,157 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbYBGIcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYBGIga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758549AbYBGIcZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 03:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYBGIcO
+	id S1756232AbYBGIga (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 03:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYBGIgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 03:32:14 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45597 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756905AbYBGIcN (ORCPT
+	Thu, 7 Feb 2008 03:36:22 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:35422 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753206AbYBGIgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 03:32:13 -0500
-Date: Thu, 07 Feb 2008 17:31:37 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [2.6.24 regression][BUGFIX] numactl --interleave=all doesn't works on memoryless node.
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
-       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
-       torvalds@linux-foundation.org, Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <1202319495.5453.64.camel@localhost>
-References: <20080205163406.270B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1202319495.5453.64.camel@localhost>
-Message-Id: <20080207172045.4AED.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 7 Feb 2008 03:36:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HMd29x4lVrt9Yi0+M5Ge54LnL3VKv6SPPRbpCLsNjbEPXdvF4zzl9ipnOnsF0G5PNJ9pYfyQiuzttT1ChkmNsQAxTSncNT8kO0+W6Xxm33M2HeR4ycCK09k1/kuSCMkhIGdaYRg7FIXfnslAOQikV7ey/AOdEK5zq3UHTYQhfnk=
+Message-ID: <86802c440802070036w1aced44ft8ab880e8ddeedc85@mail.gmail.com>
+Date: Thu, 7 Feb 2008 00:36:18 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86_64: fix page table size
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080207080930.GB28631@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+References: <200802061246.43413.yinghai.lu@sun.com>
+	 <200802061501.26533.yinghai.lu@sun.com>
+	 <20080206231226.GA6417@elte.hu>
+	 <200802062022.44069.yinghai.lu@sun.com>
+	 <20080207080930.GB28631@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lee-san
+On Feb 7, 2008 12:09 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+>
+> > [PATCH] x86_64: fix page table size
+>
+> > Entering add_active_range(0, 1048576, 67239936) 2 entries of 3200 used
+> > end_pfn_map = 67239936
+> > Kernel panic - not syncing: Overlapping early reservations 8000-109fff
+> > PGTABLE to 9bc00-9dbff EBDA
+> >
+> > change back the logic. we DO need extra space for pmds when
+> > direct_gbpages is not there.
+>
+> > @@ -370,7 +370,7 @@ static void __init find_early_table_space(unsigned long end)
+> >
+> >       puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
+> >       tables = round_up(puds * sizeof(pud_t), PAGE_SIZE);
+> > -     if (direct_gbpages) {
+> > +     if (!direct_gbpages) {
+>
+> thanks Yinghai, applied!
+>
+> I'm wondering why this bug didnt trigger more widely. It seems to me it
+> needs some serious amount of RAM to trigger this bug - correct?
 
-Unfortunately, 2.6.24-mm1 can't boot on fujitsu machine.
-(hmm, origin.patch cause regression to pci initialization ;-)
+yes.  need 256g.
+128g without patch it still work. because round_up(.., PAGE_SIZE) get
+some extra.
 
-instead, I tested 2.6.24 + your patch.
-it seem work good :)
+>
+> btw., it would be nice to have some "lots of RAM simulation" debugging
+> code which would just _fake_ a really large e820 map and would in the
+> end throw away the 'fake' pages later during bootup. Perhaps tell the
+> early allocator to never allocate into these fake areas [via an struct
+> e820 entry flag], but all our sizing code and the boot bitmaps, etc.
+> would be sized accordingly, as if we had this much RAM - and we'd
+> trigger these nuances. We could put this into a new "fakemem=128GB" boot
+> option and hence we could boot with fakemem=128GB on a 2GB box and could
+> at least hope to be able to boot [with some serious amount of RAM wasted
+> on over-sized pagetables, allocator bitmaps and mem_map[]]. Hm?
 
-Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+sound interesting. but need some variable to prevent using non exist page.
 
-and, I have a bit comment.
-
-
->  /* Do sanity checking on a policy */
-> -static int mpol_check_policy(int mode, nodemask_t *nodes)
-> +static int mpol_check_policy(int mode, nodemask_t *nodes, int was_empty)
-
-was_empty argument is a bit ugly.
-Could we unify mpol_check_policy and contextualize_policy?
-mpol_check_policy only called from contextualize_policy.
-
-> - 	return nodes_subset(*nodes, node_states[N_HIGH_MEMORY]) ? 0 : -EINVAL;
-> + 	return 0;
-
-Could we N_POSSIBLE check?
-
-I attached the patch for my idea explain.
-on my test environment, your patch and mine works good both.
-
-- kosaki
-
-
----
- mm/mempolicy.c |   47 +++++++++++++++++++++--------------------------
- 1 file changed, 21 insertions(+), 26 deletions(-)
-
-Index: b/mm/mempolicy.c
-===================================================================
---- a/mm/mempolicy.c	2008-02-07 17:19:09.000000000 +0900
-+++ b/mm/mempolicy.c	2008-02-07 17:24:28.000000000 +0900
-@@ -114,9 +114,25 @@ static void mpol_rebind_policy(struct me
-                                const nodemask_t *newmask);
- 
- /* Do sanity checking on a policy */
--static int mpol_check_policy(int mode, nodemask_t *nodes, int was_empty)
-+static int mpol_check_policy(int mode, nodemask_t *nodes)
- {
--	int is_empty = nodes_empty(*nodes);
-+	int was_empty;
-+	int is_empty;
-+
-+	if (!nodes)
-+		return 0;
-+
-+	/*
-+	 * Remember whether in coming nodemask was empty,  If not,
-+	 * restrict the nodes to the allowed nodes in the cpuset.
-+	 * This is guaranteed to be a subset of nodes with memory.
-+	 */
-+	cpuset_update_task_memory_state();
-+	was_empty = nodes_empty(*nodes);
-+	if (!was_empty)
-+		nodes_and(*nodes, *nodes, cpuset_current_mems_allowed);
-+
-+	is_empty = nodes_empty(*nodes);
- 
- 	switch (mode) {
- 	case MPOL_DEFAULT:
-@@ -144,7 +160,7 @@ static int mpol_check_policy(int mode, n
- 			return -EINVAL;
- 		break;
- 	}
-- 	return 0;
-+ 	return nodes_subset(*nodes, node_states[N_POSSIBLE]) ? 0 : -EINVAL;
- }
- 
- /* Generate a custom zonelist for the BIND policy. */
-@@ -432,27 +448,6 @@ static int mbind_range(struct vm_area_st
- 	return err;
- }
- 
--static int contextualize_policy(int mode, nodemask_t *nodes)
--{
--	int was_empty;
--
--	if (!nodes)
--		return 0;
--
--	/*
--	 * Remember whether in coming nodemask was empty,  If not,
--	 * restrict the nodes to the allowed nodes in the cpuset.
--	 * This is guaranteed to be a subset of nodes with memory.
--	 */
--	cpuset_update_task_memory_state();
--	was_empty = nodes_empty(*nodes);
--	if (!was_empty)
--		nodes_and(*nodes, *nodes, cpuset_current_mems_allowed);
--
--	return mpol_check_policy(mode, nodes, was_empty);
--}
--
--
- /*
-  * Update task->flags PF_MEMPOLICY bit: set iff non-default
-  * mempolicy.  Allows more rapid checking of this (combined perhaps
-@@ -488,7 +483,7 @@ static long do_set_mempolicy(int mode, n
- {
- 	struct mempolicy *new;
- 
--	if (contextualize_policy(mode, nodes))
-+	if (mpol_check_policy(mode, nodes))
- 		return -EINVAL;
- 	new = mpol_new(mode, nodes);
- 	if (IS_ERR(new))
-@@ -817,7 +812,7 @@ static long do_mbind(unsigned long start
- 	if (end == start)
- 		return 0;
- 
--	if (contextualize_policy(mode, nmask))
-+	if (mpol_check_policy(mode, nmask))
- 		return -EINVAL;
- 
- 	new = mpol_new(mode, nmask);
-
-
+YH
