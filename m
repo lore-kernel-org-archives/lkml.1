@@ -1,219 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbYBGMRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbYBGMTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbYBGMRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbYBGMRN
+	id S1758974AbYBGMTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbYBGMTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:17:13 -0500
-Received: from www.tglx.de ([62.245.132.106]:52181 "EHLO www.tglx.de"
+	Thu, 7 Feb 2008 07:19:10 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2357 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755475AbYBGMRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:17:12 -0500
-Date: Thu, 7 Feb 2008 13:16:04 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Greg KH <greg@kroah.com>
-cc: Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [stable] The SMP alternatives code breaks exception fixup?
-In-Reply-To: <20080206231020.GB12395@kroah.com>
-Message-ID: <alpine.LFD.1.00.0802071254590.9204@apollo.tec.linutronix.de>
-References: <479504F6.4080005@redhat.com> <p73zluymnx0.fsf@crumb.suse.de> <alpine.LFD.1.00.0801221312200.3199@apollo.tec.linutronix.de> <47964FD5.6020801@redhat.com> <20080206231020.GB12395@kroah.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1755572AbYBGMTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 07:19:09 -0500
+Date: Thu, 7 Feb 2008 07:17:19 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Vivek Goyal <vgoyal@redhat.com>, tglx@linutronix.de, mingo@redhat.com,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in
+	die_nmi path
+Message-ID: <20080207121719.GA29279@hmsreliant.think-freely.org>
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com> <47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu> <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1756878557-1202386566=:9204"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-1756878557-1202386566=:9204
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-
-On Wed, 6 Feb 2008, Greg KH wrote:
-
-> On Tue, Jan 22, 2008 at 03:19:33PM -0500, Chuck Ebbert wrote:
-> > On 01/22/2008 07:35 AM, Thomas Gleixner wrote:
-> > > 
-> > > That's a long standing bug in both the PI futex and the standard futex
-> > > code. Needs to go to stable as well.
-> > > 
-> > 
-> > Here's the 2.6.23 version:
-> > 
-> > 
-> > Subject: x86: fix missing exception entry for SMP alternatives in futex macros
-> > From: Thomas Gleixner <tglx@linutronix.de>
+On Wed, Feb 06, 2008 at 05:31:11PM -0700, Eric W. Biederman wrote:
+> Ingo Molnar <mingo@elte.hu> writes:
 > 
-> I don't see this in Linus's tree, am I just missing it?  Do you have a
-> git commit id?
+> > * H. Peter Anvin <hpa@zytor.com> wrote:
+> >
+> >>> I am wondering if interrupts are disabled on crashing cpu or if 
+> >>> crashing cpu is inside die_nmi(), how would it stop/prevent delivery 
+> >>> of NMI IPI to other cpus.
+> >>
+> >> I don't see how it would.
+> >
+> > cross-CPU IPIs are a bit fragile on some PC platforms. So if the kexec 
+> > code relies on getting IPIs to all other CPUs, it might not be able to 
+> > do it reliably. There might be limitations on how many APIC irqs there 
+> > can be queued at a time, and if those slots are used up and the CPU is 
+> > not servicing irqs then stuff gets retried. This might even affect NMIs 
+> > sent via APIC messages - not sure about that.
+> 
+> 
+> 
+> The design was as follows:
+> - Doing anything in the crashing kernel is unreliable.
+> - We do not have the information to do anything useful in the recovery/target
+>   kernel.
+> - Having the other cpus stopped is very nice as it reduces the amount of
+>   weirdness happening.  We do not share the same text or data addresses
+>   so stopping the other cpus is not mandatory.  On some other architectures
+>   there are cpu tables that must live at a fixed address but this is not
+>   the case on x86.
+> - Having the location the other cpus were running at is potentially very
+>   interesting debugging information.
+> 
+> Therefore the intent of the code is to send an NMI to each other cpu.  With
+> a timeout of a second or so.  So that if the NMI do not get sent we continue
+> on.
+> 
+> There is certainly still room for improving the robustness by not shutting
+> down the ioapics and using less general infrastructure code on that path.
+> That said I would be a little surprised if that is what is biting us.
+> 
+> Looking at the patch the local_irq_enable() is totally bogus.  As soon
+> was we hit machine_crash_shutdown the first thing we do is disable irqs.
+> 
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9d55b9923a1b7ea8193b8875c57ec940dc2ff027
- 
-I did a simpler version by just replacing LOCK_PREFIX with lock. The
-reason is, that we would need a separate implementation for
-__futex_atomic_op1() as well, due to:
+Ingo noted a few posts down the nmi_exit doesn't actually write to the APIC EOI
+register, so yeah, I agree, its bogus (and I apologize, I should have checked
+that more carefully).  Nevertheless, this patch consistently allowed a hangning
+machine to boot through an Nmi lockup.  So I'm forced to wonder whats going on
+then that this patch helps with.  perhaps its a just a very fragile timing
+issue, I'll need to look more closely.
 
-case FUTEX_OP_ADD:
-	__futex_atomic_op1(LOCK_PREFIX "xaddl %0, %2", ret, oldval,
+> I'm wondering if someone was using the switch cpus on crash patch that was
+> floating around.  That would require the ipis to work.
+> 
+Definately not the case, I did a clean build from a cvs tree to test this and
+can verify that the switch cpu patch was not in place.
 
-And it's not really worth the trouble.
+> I don't know if nmi_exit makes sense.  There are enough layers of abstraction
+> in that piece of code I can't quickly spot the part that is banging the hardware.
+> 
+As ingo mentioned this does seem to be bogus.
 
-Backport to 2.6.24 and 2.6.23 attached.
+> The location of nmi_exit in the patch is clearly wrong.  crash_kexec is a noop
+> if we don't have a crash kernel loaded (and if we are not the first cpu into it),
+> so if we don't execute the crash code something weird may happen.  Further the
+> code is just more maintainable if that kind of code lives in machine_crash_shutdown.
+> 
+> 
+> 
+> Eric
 
-Thanks,
-	tglx
---8323328-1756878557-1202386566=:9204
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=futex-2-6-23.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.LFD.1.00.0802071316040.9204@apollo.tec.linutronix.de>
-Content-Description: 
-Content-Disposition: attachment; filename=futex-2-6-23.patch
-
-U3ViamVjdDogeDg2OiByZXBsYWNlIExPQ0tfUFJFRklYIGluIGZ1dGV4LmgN
-CkZyb206IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPg0K
-RGF0ZTogVGh1LCAwNyBGZWIgMjAwOCAxMzowNToxOSArMDEwMA0KDQpUaGUg
-ZXhjZXB0aW9uIGZpeHVwIGZvciB0aGUgZnV0ZXggbWFjcm9zIF9fZnV0ZXhf
-YXRvbWljX29wMS8yIGFuZA0KZnV0ZXhfYXRvbWljX2NtcHhjaGdfaW5hdG9t
-aWMoKSBpcyBtaXNzaW5nIGFuIGVudHJ5IHdoZW4gdGhlIGxvY2sNCnByZWZp
-eCBpcyByZXBsYWNlZCBieSBhIE5PUCB2aWEgU01QIGFsdGVybmF0aXZlcy4N
-Cg0KQ2h1Y2sgRWJlcnQgdHJhY2tlZCB0aGlzIGRvd24gZnJvbSB0aGUgaW5m
-b3JtYXRpb24gcHJvdmlkZWQgaW46DQpodHRwczovL2J1Z3ppbGxhLnJlZGhh
-dC5jb20vc2hvd19idWcuY2dpP2lkPTQyOTQxMg0KDQpBIHBvc3NpYmxlIHNv
-bHV0aW9uIHdvdWxkIGJlIHRvIGFkZCBhbm90aGVyIGZpeHVwIGFmdGVyIHRo
-ZQ0KTE9DS19QUkVGSVgsIHNvIGJvdGggdGhlIExPQ0sgYW5kIE5PUCBjYXNl
-IGhhdmUgdGhlaXIgb3duIGVudHJ5IGluIHRoZQ0KZXhjZXB0aW9uIHRhYmxl
-LCBidXQgaXQncyBub3QgcmVhbGx5IHdvcnRoIHRoZSB0cm91YmxlLg0KDQpT
-aW1wbHkgcmVwbGFjZSBMT0NLX1BSRUZJWCB3aXRoIGxvY2sgYW5kIGtlZXAg
-dGhvc2UgdW50b3VjaGVkIGJ5IFNNUA0KYWx0ZXJuYXRpdmVzLg0KDQpTaWdu
-ZWQtb2ZmLWJ5OiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25peC5k
-ZT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICANCkluZGV4OiBsaW51eC0yLjYuMjMv
-aW5jbHVkZS9hc20taTM4Ni9mdXRleC5oDQo9PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09DQotLS0gbGludXgtMi42LjIzLm9yaWcvaW5jbHVkZS9hc20taTM4Ni9m
-dXRleC5oCTIwMDgtMDItMDcgMTM6MDg6MDMuMDAwMDAwMDAwICswMTAwDQor
-KysgbGludXgtMi42LjIzL2luY2x1ZGUvYXNtLWkzODYvZnV0ZXguaAkyMDA4
-LTAyLTA3IDEzOjA5OjM5LjAwMDAwMDAwMCArMDEwMA0KQEAgLTI4LDcgKzI4
-LDcgQEANCiAiMToJbW92bAklMiwgJTBcblwNCiAJbW92bAklMCwgJTNcbiIJ
-CQkJCVwNCiAJaW5zbiAiXG4iCQkJCQkJXA0KLSIyOgkiIExPQ0tfUFJFRklY
-ICJjbXB4Y2hnbCAlMywgJTJcblwNCisiMjoJbG9jayBjbXB4Y2hnbCAlMywg
-JTJcblwNCiAJam56CTFiXG5cDQogMzoJLnNlY3Rpb24gLmZpeHVwLFwiYXhc
-IlxuXA0KIDQ6CW1vdgklNSwgJTFcblwNCkBAIC02OCw3ICs2OCw3IEBAIGZ1
-dGV4X2F0b21pY19vcF9pbnVzZXIgKGludCBlbmNvZGVkX29wLCANCiAjZW5k
-aWYNCiAJCXN3aXRjaCAob3ApIHsNCiAJCWNhc2UgRlVURVhfT1BfQUREOg0K
-LQkJCV9fZnV0ZXhfYXRvbWljX29wMShMT0NLX1BSRUZJWCAieGFkZGwgJTAs
-ICUyIiwgcmV0LA0KKwkJCV9fZnV0ZXhfYXRvbWljX29wMSgibG9jayB4YWRk
-bCAlMCwgJTIiLCByZXQsDQogCQkJCQkgICBvbGR2YWwsIHVhZGRyLCBvcGFy
-Zyk7DQogCQkJYnJlYWs7DQogCQljYXNlIEZVVEVYX09QX09SOg0KQEAgLTEx
-MSw3ICsxMTEsNyBAQCBmdXRleF9hdG9taWNfY21weGNoZ19pbmF0b21pYyhp
-bnQgX191c2VyDQogCQlyZXR1cm4gLUVGQVVMVDsNCiANCiAJX19hc21fXyBf
-X3ZvbGF0aWxlX18oDQotCQkiMToJIiBMT0NLX1BSRUZJWCAiY21weGNoZ2wg
-JTMsICUxCQlcbiINCisJCSIxOglsb2NrIGNtcHhjaGdsICUzLCAlMQkJCVxu
-Ig0KIA0KIAkJIjI6CS5zZWN0aW9uIC5maXh1cCwgXCJheFwiCQkJXG4iDQog
-CQkiMzoJbW92ICAgICAlMiwgJTAJCQkJXG4iDQpJbmRleDogbGludXgtMi42
-LjIzL2luY2x1ZGUvYXNtLXg4Nl82NC9mdXRleC5oDQo9PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09DQotLS0gbGludXgtMi42LjIzLm9yaWcvaW5jbHVkZS9hc20t
-eDg2XzY0L2Z1dGV4LmgJMjAwOC0wMi0wNyAxMzowODowMy4wMDAwMDAwMDAg
-KzAxMDANCisrKyBsaW51eC0yLjYuMjMvaW5jbHVkZS9hc20teDg2XzY0L2Z1
-dGV4LmgJMjAwOC0wMi0wNyAxMzowOTozOS4wMDAwMDAwMDAgKzAxMDANCkBA
-IC0yNyw3ICsyNyw3IEBADQogIjE6CW1vdmwJJTIsICUwXG5cDQogCW1vdmwJ
-JTAsICUzXG4iCQkJCQlcDQogCWluc24gIlxuIgkJCQkJCVwNCi0iMjoJIiBM
-T0NLX1BSRUZJWCAiY21weGNoZ2wgJTMsICUyXG5cDQorIjI6CSJsb2NrIGNt
-cHhjaGdsICUzLCAlMlxuXA0KIAlqbnoJMWJcblwNCiAzOgkuc2VjdGlvbiAu
-Zml4dXAsXCJheFwiXG5cDQogNDoJbW92CSU1LCAlMVxuXA0KQEAgLTYyLDcg
-KzYyLDcgQEAgZnV0ZXhfYXRvbWljX29wX2ludXNlciAoaW50IGVuY29kZWRf
-b3AsIA0KIAkJX19mdXRleF9hdG9taWNfb3AxKCJ4Y2hnbCAlMCwgJTIiLCBy
-ZXQsIG9sZHZhbCwgdWFkZHIsIG9wYXJnKTsNCiAJCWJyZWFrOw0KIAljYXNl
-IEZVVEVYX09QX0FERDoNCi0JCV9fZnV0ZXhfYXRvbWljX29wMShMT0NLX1BS
-RUZJWCAieGFkZGwgJTAsICUyIiwgcmV0LCBvbGR2YWwsDQorCQlfX2Z1dGV4
-X2F0b21pY19vcDEoImxvY2sgeGFkZGwgJTAsICUyIiwgcmV0LCBvbGR2YWws
-DQogCQkJCSAgIHVhZGRyLCBvcGFyZyk7DQogCQlicmVhazsNCiAJY2FzZSBG
-VVRFWF9PUF9PUjoNCkBAIC0xMDEsNyArMTAxLDcgQEAgZnV0ZXhfYXRvbWlj
-X2NtcHhjaGdfaW5hdG9taWMoaW50IF9fdXNlcg0KIAkJcmV0dXJuIC1FRkFV
-TFQ7DQogDQogCV9fYXNtX18gX192b2xhdGlsZV9fKA0KLQkJIjE6CSIgTE9D
-S19QUkVGSVggImNtcHhjaGdsICUzLCAlMQkJXG4iDQorCQkiMToJbG9jayBj
-bXB4Y2hnbCAlMywgJTEJCQlcbiINCiANCiAJCSIyOgkuc2VjdGlvbiAuZml4
-dXAsIFwiYXhcIgkJCVxuIg0KIAkJIjM6CW1vdiAgICAgJTIsICUwCQkJCVxu
-Ig0K
-
---8323328-1756878557-1202386566=:9204
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=futex-2-6-24.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.LFD.1.00.0802071316041.9204@apollo.tec.linutronix.de>
-Content-Description: 
-Content-Disposition: attachment; filename=futex-2-6-24.patch
-
-U3ViamVjdDogeDg2OiByZXBsYWNlIExPQ0tfUFJFRklYIGluIGZ1dGV4LmgN
-CkZyb206IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPg0K
-RGF0ZTogVGh1LCAwNyBGZWIgMjAwOCAxMzowNjowMiArMDEwMA0KDQpUaGUg
-ZXhjZXB0aW9uIGZpeHVwIGZvciB0aGUgZnV0ZXggbWFjcm9zIF9fZnV0ZXhf
-YXRvbWljX29wMS8yIGFuZA0KZnV0ZXhfYXRvbWljX2NtcHhjaGdfaW5hdG9t
-aWMoKSBpcyBtaXNzaW5nIGFuIGVudHJ5IHdoZW4gdGhlIGxvY2sNCnByZWZp
-eCBpcyByZXBsYWNlZCBieSBhIE5PUCB2aWEgU01QIGFsdGVybmF0aXZlcy4N
-Cg0KQ2h1Y2sgRWJlcnQgdHJhY2tlZCB0aGlzIGRvd24gZnJvbSB0aGUgaW5m
-b3JtYXRpb24gcHJvdmlkZWQgaW46DQpodHRwczovL2J1Z3ppbGxhLnJlZGhh
-dC5jb20vc2hvd19idWcuY2dpP2lkPTQyOTQxMg0KDQpBIHBvc3NpYmxlIHNv
-bHV0aW9uIHdvdWxkIGJlIHRvIGFkZCBhbm90aGVyIGZpeHVwIGFmdGVyIHRo
-ZQ0KTE9DS19QUkVGSVgsIHNvIGJvdGggdGhlIExPQ0sgYW5kIE5PUCBjYXNl
-IGhhdmUgdGhlaXIgb3duIGVudHJ5IGluIHRoZQ0KZXhjZXB0aW9uIHRhYmxl
-LCBidXQgaXQncyBub3QgcmVhbGx5IHdvcnRoIHRoZSB0cm91YmxlLg0KDQpT
-aW1wbHkgcmVwbGFjZSBMT0NLX1BSRUZJWCB3aXRoIGxvY2sgYW5kIGtlZXAg
-dGhvc2UgdW50b3VjaGVkIGJ5IFNNUA0KYWx0ZXJuYXRpdmVzLg0KDQpTaWdu
-ZWQtb2ZmLWJ5OiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25peC5k
-ZT4NCkluZGV4OiBsaW51eC0yLjYuMjQvaW5jbHVkZS9hc20teDg2L2Z1dGV4
-XzMyLmgNCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCi0tLSBsaW51eC0yLjYu
-MjQub3JpZy9pbmNsdWRlL2FzbS14ODYvZnV0ZXhfMzIuaAkyMDA4LTAyLTA3
-IDEzOjA1OjM5LjAwMDAwMDAwMCArMDEwMA0KKysrIGxpbnV4LTIuNi4yNC9p
-bmNsdWRlL2FzbS14ODYvZnV0ZXhfMzIuaAkyMDA4LTAyLTA3IDEzOjA3OjIw
-LjAwMDAwMDAwMCArMDEwMA0KQEAgLTI4LDcgKzI4LDcgQEANCiAiMToJbW92
-bAklMiwgJTBcblwNCiAJbW92bAklMCwgJTNcbiIJCQkJCVwNCiAJaW5zbiAi
-XG4iCQkJCQkJXA0KLSIyOgkiIExPQ0tfUFJFRklYICJjbXB4Y2hnbCAlMywg
-JTJcblwNCisiMjoJbG9jayBjbXB4Y2hnbCAlMywgJTJcblwNCiAJam56CTFi
-XG5cDQogMzoJLnNlY3Rpb24gLmZpeHVwLFwiYXhcIlxuXA0KIDQ6CW1vdgkl
-NSwgJTFcblwNCkBAIC02OCw3ICs2OCw3IEBAIGZ1dGV4X2F0b21pY19vcF9p
-bnVzZXIgKGludCBlbmNvZGVkX29wLCANCiAjZW5kaWYNCiAJCXN3aXRjaCAo
-b3ApIHsNCiAJCWNhc2UgRlVURVhfT1BfQUREOg0KLQkJCV9fZnV0ZXhfYXRv
-bWljX29wMShMT0NLX1BSRUZJWCAieGFkZGwgJTAsICUyIiwgcmV0LA0KKwkJ
-CV9fZnV0ZXhfYXRvbWljX29wMSgibG9jayB4YWRkbCAlMCwgJTIiLCByZXQs
-DQogCQkJCQkgICBvbGR2YWwsIHVhZGRyLCBvcGFyZyk7DQogCQkJYnJlYWs7
-DQogCQljYXNlIEZVVEVYX09QX09SOg0KQEAgLTExMSw3ICsxMTEsNyBAQCBm
-dXRleF9hdG9taWNfY21weGNoZ19pbmF0b21pYyhpbnQgX191c2VyDQogCQly
-ZXR1cm4gLUVGQVVMVDsNCiANCiAJX19hc21fXyBfX3ZvbGF0aWxlX18oDQot
-CQkiMToJIiBMT0NLX1BSRUZJWCAiY21weGNoZ2wgJTMsICUxCQlcbiINCisJ
-CSIxOglsb2NrIGNtcHhjaGdsICUzLCAlMQkJCVxuIg0KIA0KIAkJIjI6CS5z
-ZWN0aW9uIC5maXh1cCwgXCJheFwiCQkJXG4iDQogCQkiMzoJbW92ICAgICAl
-MiwgJTAJCQkJXG4iDQpJbmRleDogbGludXgtMi42LjI0L2luY2x1ZGUvYXNt
-LXg4Ni9mdXRleF82NC5oDQo9PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQotLS0g
-bGludXgtMi42LjI0Lm9yaWcvaW5jbHVkZS9hc20teDg2L2Z1dGV4XzY0LmgJ
-MjAwOC0wMi0wNyAxMzowNTozOS4wMDAwMDAwMDAgKzAxMDANCisrKyBsaW51
-eC0yLjYuMjQvaW5jbHVkZS9hc20teDg2L2Z1dGV4XzY0LmgJMjAwOC0wMi0w
-NyAxMzowNjo0NS4wMDAwMDAwMDAgKzAxMDANCkBAIC0yNyw3ICsyNyw3IEBA
-DQogIjE6CW1vdmwJJTIsICUwXG5cDQogCW1vdmwJJTAsICUzXG4iCQkJCQlc
-DQogCWluc24gIlxuIgkJCQkJCVwNCi0iMjoJIiBMT0NLX1BSRUZJWCAiY21w
-eGNoZ2wgJTMsICUyXG5cDQorIjI6CSJsb2NrIGNtcHhjaGdsICUzLCAlMlxu
-XA0KIAlqbnoJMWJcblwNCiAzOgkuc2VjdGlvbiAuZml4dXAsXCJheFwiXG5c
-DQogNDoJbW92CSU1LCAlMVxuXA0KQEAgLTYyLDcgKzYyLDcgQEAgZnV0ZXhf
-YXRvbWljX29wX2ludXNlciAoaW50IGVuY29kZWRfb3AsIA0KIAkJX19mdXRl
-eF9hdG9taWNfb3AxKCJ4Y2hnbCAlMCwgJTIiLCByZXQsIG9sZHZhbCwgdWFk
-ZHIsIG9wYXJnKTsNCiAJCWJyZWFrOw0KIAljYXNlIEZVVEVYX09QX0FERDoN
-Ci0JCV9fZnV0ZXhfYXRvbWljX29wMShMT0NLX1BSRUZJWCAieGFkZGwgJTAs
-ICUyIiwgcmV0LCBvbGR2YWwsDQorCQlfX2Z1dGV4X2F0b21pY19vcDEoImxv
-Y2sgeGFkZGwgJTAsICUyIiwgcmV0LCBvbGR2YWwsDQogCQkJCSAgIHVhZGRy
-LCBvcGFyZyk7DQogCQlicmVhazsNCiAJY2FzZSBGVVRFWF9PUF9PUjoNCkBA
-IC0xMDEsNyArMTAxLDcgQEAgZnV0ZXhfYXRvbWljX2NtcHhjaGdfaW5hdG9t
-aWMoaW50IF9fdXNlcg0KIAkJcmV0dXJuIC1FRkFVTFQ7DQogDQogCV9fYXNt
-X18gX192b2xhdGlsZV9fKA0KLQkJIjE6CSIgTE9DS19QUkVGSVggImNtcHhj
-aGdsICUzLCAlMQkJXG4iDQorCQkiMToJbG9jayBjbXB4Y2hnbCAlMywgJTEJ
-CQlcbiINCiANCiAJCSIyOgkuc2VjdGlvbiAuZml4dXAsIFwiYXhcIgkJCVxu
-Ig0KIAkJIjM6CW1vdiAgICAgJTIsICUwCQkJCVxuIg0K
-
---8323328-1756878557-1202386566=:9204--
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
