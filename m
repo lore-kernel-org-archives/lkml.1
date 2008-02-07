@@ -1,48 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbYBGBTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbYBGBVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbYBGBTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 20:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYBGBS4
+	id S1760786AbYBGBVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 20:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbYBGBVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 20:18:56 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:33366 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750977AbYBGBSz (ORCPT
+	Wed, 6 Feb 2008 20:21:08 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57687 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758152AbYBGBVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 20:18:55 -0500
-X-Sasl-enc: GH90rZ5Oh20AK0P0ynnqanv21c31QMoDPmE5H3BYfWu3 1202347134
-Date: Wed, 6 Feb 2008 23:18:50 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Greg KH <greg@kroah.com>, Roland Dreier <rdreier@cisco.com>,
-       len.brown@intel.com, ibm-acpi-devel@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test if (level
-	& TP_EC_FAN_FULLSPEED)
-Message-ID: <20080207011850.GC10122@khazad-dum.debian.net>
-References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl> <20080205050504.GB30670@khazad-dum.debian.net> <47A81FAE.2090709@tiscali.nl> <20080206230702.GA12395@kroah.com> <47AA4748.3040702@tiscali.nl>
+	Wed, 6 Feb 2008 20:21:07 -0500
+Date: Thu, 07 Feb 2008 10:20:39 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [patch 05/19] split LRU lists into anon & file sets
+Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20080206193512.77b5f21f@bree.surriel.com>
+References: <20080130175439.1AFD.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080206193512.77b5f21f@bree.surriel.com>
+Message-Id: <20080207101634.4AC7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AA4748.3040702@tiscali.nl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008, Roel Kluin wrote:
-> It's a oneliner and the patch is from linus' tree.
+Hi Rik
 
-Roel, better to just let me and Len Brown handle it.  I will add your patch
-to my thinkpad-acpi queue and send it to Len soon, along with other simple
-patches that are pending.  Either I or Len will notify stable@k.o when it
-hits mainline.
+Welcome back :)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> > I found number of scan pages calculation bug.
+> 
+> My latest version of get_scan_ratio() works differently, with the
+> percentages always adding up to 100.  However, your patch gave me
+> the inspiration to (hopefully) find the bug in my version of the
+> code.
+
+OK.
+
+
+> > 2. wrong fraction omission
+> > 
+> > 	nr[l] = zone->nr_scan[l] * percent[file] / 100;
+> > 
+> > 	when percent is very small,
+> > 	nr[l] become 0.
+> 
+> This is probably where the problem is.  Kind of.
+> 
+> I believe that the problem is that we scale nr[l] by the percentage,
+> instead of scaling the amount we add to zone->nr_scan[l] by the
+> percentage!
+
+Aahh,
+you are right.
+
+
+> Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-02-06 19:23:16.000000000 -0500
+> +++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-02-06 19:22:55.000000000 -0500
+> @@ -1275,13 +1275,17 @@ static unsigned long shrink_zone(int pri
+>  	for_each_lru(l) {
+>  		if (scan_global_lru(sc)) {
+>  			int file = is_file_lru(l);
+> +			int scan;
+>  			/*
+>  			 * Add one to nr_to_scan just to make sure that the
+> -			 * kernel will slowly sift through the active list.
+> +			 * kernel will slowly sift through each list.
+>  			 */
+> -			zone->nr_scan[l] += (zone_page_state(zone,
+> -				NR_INACTIVE_ANON + l) >> priority) + 1;
+> -			nr[l] = zone->nr_scan[l] * percent[file] / 100;
+> +			scan = zone_page_state(zone, NR_INACTIVE_ANON + l);
+> +			scan >>= priority;
+> +			scan = (scan * percent[file]) / 100;
+> +
+> +			zone->nr_scan[l] += scan + 1;
+> +			nr[l] = zone->nr_scan[l];
+>  			if (nr[l] >= sc->swap_cluster_max)
+>  				zone->nr_scan[l] = 0;
+>  			else
+
+looks good.
+thank you clean up code.
+
+
+- kosaki
+
+
