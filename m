@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYBGP4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbYBGP60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbYBGP4k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbYBGP4d
+	id S1757784AbYBGP60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYBGP6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:56:33 -0500
-Received: from el-out-1112.google.com ([209.85.162.183]:14336 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbYBGP4b (ORCPT
+	Thu, 7 Feb 2008 10:58:15 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:41160 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYBGP6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:56:31 -0500
+	Thu, 7 Feb 2008 10:58:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type;
-        b=kQOamtU9POPy7gExEFSRJWRf4nCEdj/QLTEbZfrytXCfCAcTsQ5F4w7DBIiyG7qWXk1V6qyuDJaCzWHQdIHGEJc19LnWfj9cgOfHqItiTFcGGwAHF6khd4mj/tsDdMMqVMHns3lfl62SOWOcLgMLjXCgPtN7kbYpa+mktJl2nk4=
-Date: Thu, 7 Feb 2008 10:56:16 -0500 (EST)
-From: Parag Warudkar <parag.warudkar@gmail.com>
-X-X-Sender: parag@mini.warudkars.net
-Reply-To: parag.warudkar@gmail.com
-To: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
-	<ariveira@gmail.com>
-cc: Frank Mayhar <fmayhar@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [Bugme-new] [Bug 9906] New: Weird hang with NPTL and SIGPROF.
-In-Reply-To: <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-Message-ID: <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-References: <bug-9906-10286@http.bugzilla.kernel.org/> <20080206165045.89b809cc.akpm@linux-foundation.org> <1202345893.8525.33.camel@peace.smo.corp.google.com> <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net> <20080207162203.3e3cf5ab@Varda>
- <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-User-Agent: Alpine 1.00 (LRH 882 2007-12-20)
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=UntV3giTs72rKjF+w5r+dPD9UFjTl0T/YtSLOr+flBi9lizmA7PXDXzQpQrBYpfTEHZGDXbyn0FehnCfICOTM4ukC8vVvInTs1zGiIsuKmHDxLIqnbkFkwMfc+T5oZ+hsEdThozSSqEVogGnaFRHKl3jAaswcT8zOAmlW+5/Xqk=
+Message-ID: <eb3ff54b0802070758j21299257m19e04fffdedd914@mail.gmail.com>
+Date: Thu, 7 Feb 2008 17:58:07 +0200
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH] [IPV6] Minor clenup: remove two unused definitions in net/ip6_route.h
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_12902_26217834.1202399887642"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_12902_26217834.1202399887642
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,
+Remove IP6_RT_PRIO_FW and IP6_RT_FLOW_MASK definitions in
+include/net/ip6_route.h, as they are not used in the kernel.
+
+Regards,
+Rami Rosen
 
 
-On Thu, 7 Feb 2008, Parag Warudkar wrote:
+Signed-off-by: Rami Rosen <ramirose@gmail.com>
 
->    x86_64+SMP+PREEMPT+GnuC-4.1.2+Glibc-2.5 = Reproducible.	
-> 
-That should of course be   
- x86_64+SMP+PREEMPT+GnuC-4.1.3+Glibc-2.6.1 = Reproducible.	
+------=_Part_12902_26217834.1202399887642
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fcdhrl4l0
+Content-Disposition: attachment; filename=patch.txt
 
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2lwNl9yb3V0ZS5oIGIvaW5jbHVkZS9uZXQvaXA2X3Jv
+dXRlLmgKaW5kZXggZmFhYzBlZS4uZjk5ZTRmMCAxMDA2NDQKLS0tIGEvaW5jbHVkZS9uZXQvaXA2
+X3JvdXRlLmgKKysrIGIvaW5jbHVkZS9uZXQvaXA2X3JvdXRlLmgKQEAgLTEsMTEgKzEsOSBAQAog
+I2lmbmRlZiBfTkVUX0lQNl9ST1VURV9ICiAjZGVmaW5lIF9ORVRfSVA2X1JPVVRFX0gKIAotI2Rl
+ZmluZSBJUDZfUlRfUFJJT19GVwkJMTYKICNkZWZpbmUgSVA2X1JUX1BSSU9fVVNFUgkxMDI0CiAj
+ZGVmaW5lIElQNl9SVF9QUklPX0FERFJDT05GCTI1NgogI2RlZmluZSBJUDZfUlRfUFJJT19LRVJO
+CTUxMgotI2RlZmluZSBJUDZfUlRfRkxPV19NQVNLCTB4MDBmZgogCiBzdHJ1Y3Qgcm91dGVfaW5m
+byB7CiAJX191OAkJCXR5cGU7Cg==
+------=_Part_12902_26217834.1202399887642--
