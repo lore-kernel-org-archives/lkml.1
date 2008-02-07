@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935554AbYBGVPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935040AbYBGVPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935554AbYBGVPG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933731AbYBGUyl
+	id S935040AbYBGVPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbYBGUys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:54:41 -0500
-Received: from mail.suse.de ([195.135.220.2]:46122 "EHLO mx1.suse.de"
+	Thu, 7 Feb 2008 15:54:48 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38925 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933718AbYBGUyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:54:39 -0500
-Date: Thu, 7 Feb 2008 12:48:21 -0800
+	id S1762804AbYBGUyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:54:44 -0500
+Date: Thu, 7 Feb 2008 12:48:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 43/45] x86: replace LOCK_PREFIX in futex.h
-Message-ID: <20080207204821.GR16389@suse.de>
+       Michael E Brown <michael_e_brown@dell.com>
+Subject: [patch 44/45] Driver core: Revert "Fix Firmware class name
+	collision"
+Message-ID: <20080207204824.GS16389@suse.de>
 References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-replace-lock_prefix-in-futex.h.patch"
+Content-Disposition: inline; filename="driver-core-revert-fix-firmware-class-name-collision.patch"
 In-Reply-To: <20080207204549.GA16389@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,87 +37,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Michael E Brown <Michael_E_Brown@dell.com>
 
-The exception fixup for the futex macros __futex_atomic_op1/2 and
-futex_atomic_cmpxchg_inatomic() is missing an entry when the lock
-prefix is replaced by a NOP via SMP alternatives.
+patch 7d640c4a5b36c4733460065db1554da924044511 in mainline.
 
-Chuck Ebert tracked this down from the information provided in:
-https://bugzilla.redhat.com/show_bug.cgi?id=429412
+This reverts commit 109f0e93b6b728f03c1eb4af02bc25d71b646c59.
 
-A possible solution would be to add another fixup after the
-LOCK_PREFIX, so both the LOCK and NOP case have their own entry in the
-exception table, but it's not really worth the trouble.
+The original patch breaks BIOS updates on all Dell machines. The path to
+the firmware file for the dell_rbu driver changes, which breaks all of
+the userspace tools which rely on it.
 
-Simply replace LOCK_PREFIX with lock and keep those untouched by SMP
-alternatives.
+Note that this patch re-introduces a problem with i2c name collision
+that was previously fixed by this patch.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Michael E Brown <michael_e_brown@dell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- include/asm-x86/futex_32.h |    6 +++---
- include/asm-x86/futex_64.h |    6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/include/asm-x86/futex_32.h
-+++ b/include/asm-x86/futex_32.h
-@@ -28,7 +28,7 @@
- "1:	movl	%2, %0\n\
- 	movl	%0, %3\n"					\
- 	insn "\n"						\
--"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n\
-+"2:	lock cmpxchgl %3, %2\n\
- 	jnz	1b\n\
- 3:	.section .fixup,\"ax\"\n\
- 4:	mov	%5, %1\n\
-@@ -68,7 +68,7 @@ futex_atomic_op_inuser (int encoded_op, 
- #endif
- 		switch (op) {
- 		case FUTEX_OP_ADD:
--			__futex_atomic_op1(LOCK_PREFIX "xaddl %0, %2", ret,
-+			__futex_atomic_op1("lock xaddl %0, %2", ret,
- 					   oldval, uaddr, oparg);
- 			break;
- 		case FUTEX_OP_OR:
-@@ -111,7 +111,7 @@ futex_atomic_cmpxchg_inatomic(int __user
- 		return -EFAULT;
+---
+ drivers/base/firmware_class.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -292,7 +292,8 @@ firmware_class_timeout(u_long data)
  
- 	__asm__ __volatile__(
--		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
-+		"1:	lock cmpxchgl %3, %1			\n"
+ static inline void fw_setup_device_id(struct device *f_dev, struct device *dev)
+ {
+-	snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s", dev->bus_id);
++	/* XXX warning we should watch out for name collisions */
++	strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
+ }
  
- 		"2:	.section .fixup, \"ax\"			\n"
- 		"3:	mov     %2, %0				\n"
---- a/include/asm-x86/futex_64.h
-+++ b/include/asm-x86/futex_64.h
-@@ -27,7 +27,7 @@
- "1:	movl	%2, %0\n\
- 	movl	%0, %3\n"					\
- 	insn "\n"						\
--"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n\
-+"2:	"lock cmpxchgl %3, %2\n\
- 	jnz	1b\n\
- 3:	.section .fixup,\"ax\"\n\
- 4:	mov	%5, %1\n\
-@@ -62,7 +62,7 @@ futex_atomic_op_inuser (int encoded_op, 
- 		__futex_atomic_op1("xchgl %0, %2", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ADD:
--		__futex_atomic_op1(LOCK_PREFIX "xaddl %0, %2", ret, oldval,
-+		__futex_atomic_op1("lock xaddl %0, %2", ret, oldval,
- 				   uaddr, oparg);
- 		break;
- 	case FUTEX_OP_OR:
-@@ -101,7 +101,7 @@ futex_atomic_cmpxchg_inatomic(int __user
- 		return -EFAULT;
- 
- 	__asm__ __volatile__(
--		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
-+		"1:	lock cmpxchgl %3, %1			\n"
- 
- 		"2:	.section .fixup, \"ax\"			\n"
- 		"3:	mov     %2, %0				\n"
+ static int fw_register_device(struct device **dev_p, const char *fw_name,
 
 -- 
