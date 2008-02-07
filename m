@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762499AbYBGUtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932740AbYBGUuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762499AbYBGUtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYBGUtd
+	id S932740AbYBGUuf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbYBGUuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:49:33 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:41300 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753275AbYBGUtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:49:32 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ZJ8E/dTq7GnEq7sZ9KniOMcVKIcyNVVZo+1WRt0uPWAo+PJeZVSr/d8Kl8oTAwI2h
-	pv+A7b0IJVOoZs6DT+5RQ==
-Message-ID: <6599ad830802071249g45cb2d6eybd00c1bef07cf5aa@mail.gmail.com>
-Date: Thu, 7 Feb 2008 12:49:25 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH][DOCUMENTATION] Minimal controller code for a quick start
-Cc: "Pavel Emelyanov" <xemul@openvz.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1202416137.6274.42.camel@lappy>
+	Thu, 7 Feb 2008 15:50:24 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44864 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753622AbYBGUuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:50:23 -0500
+Date: Thu, 7 Feb 2008 12:46:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       mkrufky@hauppauge.com, Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 01/45] DVB: cx23885: add missing subsystem ID for Hauppauge
+	HVR1800 Retail
+Message-ID: <20080207204618.GB16389@suse.de>
+References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47AB25AD.30400@openvz.org> <1202416137.6274.42.camel@lappy>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="dvb-cx23885-add-missing-subsystem-id-for-hauppauge-hvr1800-retail.patch"
+In-Reply-To: <20080207204549.GA16389@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 7, 2008 12:28 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
-> While on the subject, could someone document struct cgroup_subsys.
+2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
-There's documentation for all the methods in Documentation/cgroup.txt
+------------------
+From: Michael Krufky <mkrufky@linuxtv.org>
 
-> particular, I've wondered why we have: cgroup_subsys::can_attach() and
-> not use a return value in cgroup_subsys::attach()?
+[PATCH] DVB: cx23885: add missing subsystem ID for Hauppauge HVR1800 Retail
 
-We could do in theory do that, but it would make the recovery logic in
-cgroup.c:attach_task() more complex - it would have to be able to deal
-with undoing a partial attach. It seems simpler to just split it into
-two phases, given that most cgroups don't appear to have attachment
-conditions anyway.
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
 
-Paul
+---
+ Documentation/video4linux/CARDLIST.cx23885  |    2 +-
+ drivers/media/video/cx23885/cx23885-cards.c |    4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+--- linux-2.6.24.1.orig/Documentation/video4linux/CARDLIST.cx23885
++++ linux-2.6.24.1/Documentation/video4linux/CARDLIST.cx23885
+@@ -1,5 +1,5 @@
+   0 -> UNKNOWN/GENERIC                                     [0070:3400]
+   1 -> Hauppauge WinTV-HVR1800lp                           [0070:7600]
+-  2 -> Hauppauge WinTV-HVR1800                             [0070:7800,0070:7801]
++  2 -> Hauppauge WinTV-HVR1800                             [0070:7800,0070:7801,0070:7809]
+   3 -> Hauppauge WinTV-HVR1250                             [0070:7911]
+   4 -> DViCO FusionHDTV5 Express                           [18ac:d500]
+--- linux-2.6.24.1.orig/drivers/media/video/cx23885/cx23885-cards.c
++++ linux-2.6.24.1/drivers/media/video/cx23885/cx23885-cards.c
+@@ -138,6 +138,10 @@ struct cx23885_subid cx23885_subids[] = 
+ 		.card      = CX23885_BOARD_HAUPPAUGE_HVR1800,
+ 	},{
+ 		.subvendor = 0x0070,
++		.subdevice = 0x7809,
++		.card      = CX23885_BOARD_HAUPPAUGE_HVR1800,
++	},{
++		.subvendor = 0x0070,
+ 		.subdevice = 0x7911,
+ 		.card      = CX23885_BOARD_HAUPPAUGE_HVR1250,
+ 	},{
+
+-- 
