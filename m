@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbYBGLkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYBGLpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbYBGLkM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 06:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYBGLj5
+	id S1756733AbYBGLpV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 06:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYBGLpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 06:39:57 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:18163 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753963AbYBGLj4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 06:39:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=oYIltZogUS5LCVkOqqLcwq2KeRoJE+UutXaNDFmd17YJp/EEYAHT1sNuXaOxlcwKhD9qIo4aqcZNU+cE8EhA9zd8SphrlfuPKEwLa6ew39U77WwFkDWI5Q7iWjhxADjfZ1DoWh8FD9bvaH9DDZz7lA7dhGoZq3Z5FGo/VjB98Pc=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology, Karnataka
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH][Regression] x86, 32-bit: trim memory not covered by wb mtrrs - FIX
-Date: Thu, 7 Feb 2008 17:05:59 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>, jesse.barnes@intel.com,
-       ak@suse.de
-References: <200802071257.51893.balajirrao@gmail.com> <200802071351.02763.balajirrao@gmail.com> <86802c440802070050t2566a261t50cccd649912a4a9@mail.gmail.com>
-In-Reply-To: <86802c440802070050t2566a261t50cccd649912a4a9@mail.gmail.com>
+	Thu, 7 Feb 2008 06:45:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60392 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754293AbYBGLpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 06:45:03 -0500
+Date: Thu, 7 Feb 2008 12:44:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [bisected] Re: [bug] networking broke, ssh: connect to port
+	22: Protocol error
+Message-ID: <20080207114444.GA387@elte.hu>
+References: <20080206133506.GA21202@elte.hu> <657224.72762.qm@web36615.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802071705.59601.balajirrao@gmail.com>
+In-Reply-To: <657224.72762.qm@web36615.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 February 2008 02:20:35 pm Yinghai Lu wrote:
-<snip>
-> > Cool! Yes, Yinghai Lu's patch indeed is the same as mine and its really
-> > surprising that we've used the same variable name too! :)
->
-> minor difference
-> +               trim_start = highest_pfn << PAGE_SHIFT;
-> +               trim_size = end_pfn << PAGE_SHIFT;
->
-> could cause some problem with 32 bit kernel when mem > 4g.
-> becase highest_pfn and end_pfn is unsigned long aka 32 bit ...could
-> overflow.
->
-> so need to assign thtem to trim_start/trim_end at first
-> or
-> +               trim_start = (u64)highest_pfn << PAGE_SHIFT;
-> +               trim_size = (u64)end_pfn << PAGE_SHIFT;
->
 
-Yea right.. Thanks for pointing that out.
+* Casey Schaufler <casey@schaufler-ca.com> wrote:
 
--- 
-regards,
-balaji rao
+> > So unlike some other security modules like SELINUX, enabling SMACK 
+> > breaks un-aware userspace and breaks TCP networking?
+> > 
+> > I dont think that's expected behavior - and i'd definitely like to 
+> > enable SMACK in automated tests to check for regressions, etc.
+> 
+> As Stephen mentions later, Smack uses CIPSO. sshd does not like any IP 
+> options because of traceroute, and must be built with that check 
+> disabled with the current Smack version. I have been looking at using 
+> unlabeled packets for the "ambient" label, it appears that doing so 
+> would make life simpler. I will get right on it.
+
+ok - feel free to send me any patches to test.
+
+	Ingo
