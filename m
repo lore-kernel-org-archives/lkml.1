@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbYBGA4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbYBGA5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933055AbYBGA4y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934660AbYBGAw6
+	id S933965AbYBGA5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbYBGAyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:52:58 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39207 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934653AbYBGAw4 (ORCPT
+	Wed, 6 Feb 2008 19:54:03 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:18661 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934548AbYBGAx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:52:56 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Holger Schurig <hs4233@mail.mn-solutions.de>,
+	Wed, 6 Feb 2008 19:53:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=fEoceINA04a14wJxz+iO3m0HhdlZgunkHGtICiJ0OnihsNaxNzwJ1cqBf0kP4X8AGEBeM7ftZyRPLot4cNVTGJtHmdNCVVcEcliMOOtPF8ef5zoRhtKYnILOVoc8vvJPhsdAA3B5qkmmWXx6FCgK/trjb4SHy1GiCbw3T33yaY4=
+Date: Thu, 7 Feb 2008 02:51:20 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russel <rusty@rustcorp.com.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: Re: OOPS in sysctl.c
-References: <200802050845.58691.hs4233@mail.mn-solutions.de>
-	<200802051224.56413.hs4233@mail.mn-solutions.de>
-	<20080206002420.91124dab.akpm@linux-foundation.org>
-	<20080206190353.GB1732@martell.zuzino.mipt.ru>
-Date: Wed, 06 Feb 2008 17:51:43 -0700
-In-Reply-To: <20080206190353.GB1732@martell.zuzino.mipt.ru> (Alexey Dobriyan's
-	message of "Wed, 6 Feb 2008 22:03:53 +0300")
-Message-ID: <m1myqdd1wg.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Subject: [PATCH] lguest: Accept guest _PAGE_PWT page table entries
+Message-ID: <20080207005120.GA5751@ubuntu>
+References: <20080206232134.GB6450@ubuntu> <20080206235923.GA19843@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080206235923.GA19843@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@gmail.com> writes:
+On Thu, Feb 07, 2008 at 12:59:23AM +0100, Ingo Molnar wrote:
+> 
+> * Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> 
+> > Hi all,
+> > 
+> > Beginning from commit 4138cc3418f5, ioremap_nocache() sets the _PAGE_PWT
+> > flag. 
+> > 
+> > Lguest doesn't accept a guest pte with a _PWT flag and reports a "bad 
+> > page table entry" in that case.
+> > 
+> > I've removed check from lguest code and everything worked fine. Is 
+> > this safe from the Lguest side ?
+> 
+> yes, should be safe. Could you send a patch so that others can apply it 
+> too?
+> 
 
-> On Wed, Feb 06, 2008 at 12:24:20AM -0800, Andrew Morton wrote:
->> On Tue, 5 Feb 2008 12:24:56 +0100 Holger Schurig <hs4233@mail.mn-solutions.de>
-> wrote:
->> 
->> > > I have an embedded target (PXA255 based) where I have a nice
->> > > running kernel 2.6.15. Today I'm trying to get 2.6.24 running
->> > > on it.
->> > 
->> 
->> Backtrace:
->> [<c0038bbc>] (sysctl_head_next+0x0/0x64) from [<c00a4b80>]
-> (proc_sys_readdir+0x360/0x394)
->>  r4:00000000
->> [<c00a4820>] (proc_sys_readdir+0x0/0x394) from [<c007c860>]
-> (vfs_readdir+0x70/0x98)
->> [<c007c7f0>] (vfs_readdir+0x0/0x98) from [<c007cdf0>]
-> (sys_getdents64+0x6c/0xc0)
->> [<c007cd84>] (sys_getdents64+0x0/0xc0) from [<c0023e60>]
-> (ret_fast_syscall+0x0/0x2c)
->
-> Please, post .config and "ls -lR /proc/sys" output _before_ suspend/resume.
+Ofcourse :) :
 
-Just to keep this on track.  It sounds like his suspend/resume backport was
-incomplete and something there is smashing the list sysctl_head_next follows.
+Accept guest _PAGE_PWT page table entries, otherwise lguest will
+always fail with a "bad page table entry" message.
 
-This would both cause files to disappear, and an oops.
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
 
-Possibly it isn't an incomplete backport but instead a memory smash that hits
-different places in different kernels.
+diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
+index 74b4cf2..952160b 100644
+--- a/drivers/lguest/page_tables.c
++++ b/drivers/lguest/page_tables.c
+@@ -178,8 +178,8 @@ static void release_pte(pte_t pte)
+ 
+ static void check_gpte(struct lg_cpu *cpu, pte_t gpte)
+ {
+-	if ((pte_flags(gpte) & (_PAGE_PWT|_PAGE_PSE))
+-	    || pte_pfn(gpte) >= cpu->lg->pfn_limit)
++	if ((pte_flags(gpte) & _PAGE_PSE) || 
++	    pte_pfn(gpte) >= cpu->lg->pfn_limit)
+ 		kill_guest(cpu, "bad page table entry");
+ }
+ 
 
-Eric
+Regards,
 
-
+--
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
