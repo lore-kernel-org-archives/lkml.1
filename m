@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbYBGU4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933848AbYBGU40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932921AbYBGU4E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:56:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbYBGUvH
+	id S933848AbYBGU40 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYBGUvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:51:07 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45125 "EHLO mx1.suse.de"
+	Thu, 7 Feb 2008 15:51:11 -0500
+Received: from mx1.suse.de ([195.135.220.2]:45161 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762449AbYBGUvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:51:04 -0500
-Date: Thu, 7 Feb 2008 12:47:00 -0800
+	id S1758289AbYBGUvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:51:08 -0500
+Date: Thu, 7 Feb 2008 12:47:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, linux-usb@vger.kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kevin Lloyd <linux@sierrawireless.com>
-Subject: [patch 10/45] USB: sierra driver - add devices
-Message-ID: <20080207204700.GK16389@suse.de>
+       Peter Stark <peter.stark@t-online.de>
+Subject: [patch 11/45] USB: ftdi_sio - enabling multiple ELV devices,
+	adding EM1010PC
+Message-ID: <20080207204704.GL16389@suse.de>
 References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-sierra-driver-add-devices.patch"
+Content-Disposition: inline; filename="usb-ftdi_sio-enabling-multiple-elv-devices-adding-em1010pc.patch"
 In-Reply-To: <20080207204549.GA16389@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,59 +38,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kevin Lloyd <linux@sierrawireless.com>
+From: Peter Stark <Peter.Stark@t-online.de>
 
-The following improvements were made:
- - Added new product support: MC5725, AC 880 U, MP 3G (UMTS & CDMA)
+I work with a group of people on a free home automation tool called
+FHEM.  Some of the users own more than one USB-serial device by ELV. The
+ftdi_sio driver has most of the ELV devices disabled by default and
+needs to be re-enabled every time you get a new kernel. Additionally a
+new device (EM 1010 PC - enegry monitor) is missing in the list.
+Currently our users have to follow the instructions we provide at
+http://www.koeniglich.de/fhem/linux.html ... However, to some users it
+is too complicated to compile their own kernel module.
 
-Signed-off-by: Kevin Lloyd <linux@sierrawireless.com>
+We are aware that you can specify one additional device using the
+vendor/product option of the module. But lot's of users own more than
+one device.
+
+Signed-off-by: Peter Stark <peter.stark@t-online.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/sierra.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/usb/serial/ftdi_sio.c |   44 ++++++++++++++++++++----------------------
+ drivers/usb/serial/ftdi_sio.h |    1 
+ 2 files changed, 22 insertions(+), 23 deletions(-)
 
---- a/drivers/usb/serial/sierra.c
-+++ b/drivers/usb/serial/sierra.c
-@@ -104,6 +104,7 @@ static struct usb_device_id id_table [] 
- 	{ USB_DEVICE(0x1199, 0x0019) },	/* Sierra Wireless AirCard 595 */
- 	{ USB_DEVICE(0x1199, 0x0021) },	/* Sierra Wireless AirCard 597E */
- 	{ USB_DEVICE(0x1199, 0x0120) },	/* Sierra Wireless USB Dongle 595U */
-+	{ USB_DEVICE(0x1199, 0x0023) },	/* Sierra Wireless AirCard */
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -471,30 +471,28 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(FTDI_VID, FTDI_IBS_PEDO_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_IBS_PROD_PID) },
+ 	/*
+-	 * These will probably use user-space drivers.  Uncomment them if
+-	 * you need them or use the user-specified vendor/product module
+-	 * parameters (see ftdi_sio.h for the numbers).  Make a fuss if
+-	 * you think the driver should recognize any of them by default.
++	 * Due to many user requests for multiple ELV devices we enable
++	 * them by default.
+ 	 */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_CLI7000_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_PPS7330_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_TFM100_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_UDF77_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_UIO88_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_UAD8_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_UDA7_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_USI2_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_T1100_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_PCD200_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_ULA200_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_CSI8_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_EM1000DL_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_PCK100_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_RFP500_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_FS20SIG_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_WS300PC_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_FHZ1300PC_PID) }, */
+-	/* { USB_DEVICE(FTDI_VID, FTDI_ELV_WS500_PID) }, */
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_CLI7000_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_PPS7330_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_TFM100_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_UDF77_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_UIO88_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_UAD8_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_UDA7_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_USI2_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_T1100_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_PCD200_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_ULA200_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_CSI8_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_EM1000DL_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_PCK100_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_RFP500_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FS20SIG_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS300PC_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FHZ1300PC_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS500_PID) },
+ 	{ USB_DEVICE(FTDI_VID, LINX_SDMUSBQSS_PID) },
+ 	{ USB_DEVICE(FTDI_VID, LINX_MASTERDEVEL2_PID) },
+ 	{ USB_DEVICE(FTDI_VID, LINX_FUTURE_0_PID) },
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -245,6 +245,7 @@
+ #define FTDI_ELV_WS300PC_PID	0xE0F6	/* PC-Wetterstation (WS 300 PC) */
+ #define FTDI_ELV_FHZ1300PC_PID	0xE0E8	/* FHZ 1300 PC */
+ #define FTDI_ELV_WS500_PID	0xE0E9	/* PC-Wetterstation (WS 500) */
++#define FTDI_ELV_EM1010PC_PID	0xE0EF	/* Engery monitor EM 1010 PC */
  
- 	{ USB_DEVICE(0x1199, 0x6802) },	/* Sierra Wireless MC8755 */
- 	{ USB_DEVICE(0x1199, 0x6804) },	/* Sierra Wireless MC8755 */
-@@ -117,8 +118,12 @@ static struct usb_device_id id_table [] 
- 	{ USB_DEVICE(0x1199, 0x6851) },	/* Sierra Wireless AirCard 881 */
- 	{ USB_DEVICE(0x1199, 0x6852) },	/* Sierra Wireless AirCard 880 E */
- 	{ USB_DEVICE(0x1199, 0x6853) },	/* Sierra Wireless AirCard 881 E */
-+	{ USB_DEVICE(0x1199, 0x6855) },	/* Sierra Wireless AirCard 880 U */
- 	{ USB_DEVICE(0x1199, 0x6856) },	/* Sierra Wireless AirCard 881 U */
- 
-+	{ USB_DEVICE(0x1199, 0x6468) }, /* Sierra Wireless MP3G - EVDO */
-+	{ USB_DEVICE(0x1199, 0x6469) }, /* Sierra Wireless MP3G - UMTS/HSPA */
-+
- 	{ USB_DEVICE(0x1199, 0x0112), .driver_info = DEVICE_1_PORT }, /* Sierra Wireless AirCard 580 */
- 	{ USB_DEVICE(0x0F3D, 0x0112), .driver_info = DEVICE_1_PORT }, /* Airprime/Sierra PC 5220 */
- 
-@@ -143,6 +148,7 @@ static struct usb_device_id id_table_3po
- 	{ USB_DEVICE(0x1199, 0x0019) },	/* Sierra Wireless AirCard 595 */
- 	{ USB_DEVICE(0x1199, 0x0021) },	/* Sierra Wireless AirCard 597E */
- 	{ USB_DEVICE(0x1199, 0x0120) },	/* Sierra Wireless USB Dongle 595U*/
-+	{ USB_DEVICE(0x1199, 0x0023) },	/* Sierra Wireless AirCard */
- 
- 	{ USB_DEVICE(0x1199, 0x6802) },	/* Sierra Wireless MC8755 */
- 	{ USB_DEVICE(0x1199, 0x6804) },	/* Sierra Wireless MC8755 */
-@@ -156,7 +162,10 @@ static struct usb_device_id id_table_3po
- 	{ USB_DEVICE(0x1199, 0x6851) },	/* Sierra Wireless AirCard 881 */
- 	{ USB_DEVICE(0x1199, 0x6852) },	/* Sierra Wireless AirCard 880E */
- 	{ USB_DEVICE(0x1199, 0x6853) },	/* Sierra Wireless AirCard 881E */
-+	{ USB_DEVICE(0x1199, 0x6855) },	/* Sierra Wireless AirCard 880 U */
- 	{ USB_DEVICE(0x1199, 0x6856) },	/* Sierra Wireless AirCard 881U */
-+	{ USB_DEVICE(0x1199, 0x6468) }, /* Sierra Wireless MP3G - EVDO */
-+	{ USB_DEVICE(0x1199, 0x6469) }, /* Sierra Wireless MP3G - UMTS/HSPA */
- 	{ }
- };
- 
+ /*
+  * Definitions for ID TECH (www.idt-net.com) devices
 
 -- 
