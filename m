@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbYBGPQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbYBGPQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760019AbYBGPQk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756336AbYBGPQa
+	id S932562AbYBGPQz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbYBGPQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:16:30 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34912 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755746AbYBGPQ3 (ORCPT
+	Thu, 7 Feb 2008 10:16:34 -0500
+Received: from v813.rev.tld.pl ([195.149.226.213]:32912 "EHLO
+	smtp.host4.kei.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757118AbYBGPQd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:16:29 -0500
-Message-ID: <47AB20CA.2000903@davidnewall.com>
-Date: Fri, 08 Feb 2008 01:46:26 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 10:16:33 -0500
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Feb 2008 10:16:32 EST
+X-clamdmail: clamdmail 0.18a
+From: Marcin Juszkiewicz <openembedded@haerwu.biz>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Date: Thu, 7 Feb 2008 16:09:34 +0100
+User-Agent: KMail/1.9.7
+Cc: Sam Ravnborg <sam@ravnborg.org>, Christoph Hellwig <hch@infradead.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <20080207133805.13f092ff@dilbert.local> <20080207125824.GB7111@infradead.org> <20080207130117.GA18750@uranus.ravnborg.org>
+In-Reply-To: <20080207130117.GA18750@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Marcel Holtmann <marcel@holtmann.org>,
-       Christer Weinigel <christer@weinigel.se>,
-       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<47A764ED.8030605@weinigel.se>	<1202161091.15090.84.camel@violet>	<20080206213449.6614efea@weinigel.se>	<1202331345.15090.235.camel@violet.holtmann.net>	<20080206205233.24d0760e@core>	<47AB0BF1.4090509@davidnewall.com> <20080207142619.1d34d4fe@core>
-In-Reply-To: <20080207142619.1d34d4fe@core>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802071609.36960.openembedded@haerwu.biz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Again, I missed who wrote the above.  I'm reminded of Apple computer,
->> who explaining some engineering decisions in the Apple ][ pointed out
->> that an additional 10c in components adds $10 to the retail price (or
->> something rather like that.)   Cheap, cheap, cheap helps market share
->> far more than quality.
->>     
->
-> That depends on the market. Also the software cost is dominant not the
-> hardware cost so saving 10c on licensing by not using Windows kind of
-> wipes out any questions.
+Dnia Thursday, 7 of February 2008, Sam Ravnborg napisa³:
+> On Thu, Feb 07, 2008 at 07:58:24AM -0500, Christoph Hellwig wrote:
 
-Software cost is fixed, whereas hardware is per-unit, so saving 10c in
-production at an expense of $1,000,000 in development can be an easy win.
+> > Any chance to make arm finally use drivers/Kconfig?  It's a bit silly
+> > that arm still is crapping around while even s390 uses it.
+
+> rmk said that it should be easy to check the amount of work needed to
+> do so. But I have not had time to look into it yet - hopefully someone
+> in ARM land could fix it.
+
+I looked at it and 'arch/arm/Kconfig' does not source few entries: 
+
+- of - does not appear on ARM if enabled
+- macintosh - does not appear on ARM if enabled
+- telephony - drivers for ISA/PCI/PCMCIA so can probably be used on some
+              ARM platforms
+- infiniband - like above(?)
+- edac - does not appear on ARM if enabled
+- auxdisplay - basically it is for one LCD controller connected to x86
+               parallel port - safe to have it sourced on ARM
+- uio
+
+Including of 'drivers/mtd' depends on "ALIGNMENT_TRAP || !CPU_CP15_MMU".
+
+Including of 'drivers/ide' depends on "PCMCIA || ARCH_CLPS7500 || 
+ARCH_IOP32X || ARCH_IOP33X || ARCH_IXP4XX || ARCH_L7200 || 
+ARCH_LH7A40X || ARCH_PXA || ARCH_RPC || ARCH_S3C2410 || ARCH_SA1100 || 
+ARCH_SHARK || FOOTBRIDGE || ARCH_IXP23XX" but 'drivers/ata' (which can be 
+used instead on PCMCIA enabled platforms) does not depend on such set.
+
+Does it look like 'drivers/mtd' require extra check 'if ARM then check for 
+ALIGNMENT_TRAP || !CPU_CP15_MMU' and probably extra check 
+in 'drivers/ide'?
+
+I hope this info will help (test in 2.6.24-git 
+488b5ec871191359b9b79262a3d48456dae7ea5f).
+
+-- 
+JID: hrw-jabber.org
+OpenEmbedded developer/consultant
+
+        "To be or not to be that is the question.":
+         every programmer knows the answer $2b or (not $2b) is $ff.
+
+
