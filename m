@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764151AbYBGBHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764876AbYBGBJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764151AbYBGBHY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 20:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbYBGBHB
+	id S1764876AbYBGBJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 20:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758396AbYBGBJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 20:07:01 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:52921 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754686AbYBGBG7 (ORCPT
+	Wed, 6 Feb 2008 20:09:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60327 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758349AbYBGBJX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 20:06:59 -0500
-Message-Id: <004901c86925$7e3d1d60$41a8400a@bsd.tnes.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Theodore Tso" <tytso@MIT.EDU>
-Cc: <linux-ext4@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu>
-Subject: Re: [RFC] ext3 freeze feature
-Date: Thu, 7 Feb 2008 10:05:12 +0900
+	Wed, 6 Feb 2008 20:09:23 -0500
+Message-ID: <47AA5A3D.9070707@zytor.com>
+Date: Wed, 06 Feb 2008 17:09:17 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+To: Hasan Rashid <hasan@digitalpath.net>
+CC: "'Maxim Levitsky'" <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Access MSR functions in userspace?
+References: <200802070059.m170xqHv008164@terminus.zytor.com>
+In-Reply-To: <200802070059.m170xqHv008164@terminus.zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> What you *could* do is to start putting processes to sleep if they
-> attempt to write to the frozen filesystem, and then detect the
-> deadlock case where the process holding the file descriptor used to
-> freeze the filesystem gets frozen because it attempted to write to the
-> filesystem --- at which point it gets some kind of signal (which
-> defaults to killing the process), and the filesystem is unfrozen and
-> as part of the unfreeze you wake up all of the processes that were put
-> to sleep for touching the frozen filesystem.
+Hasan Rashid wrote:
+> I am using kernel 2.4.32. Inside msr.c it is trying to register cpu/msr as
+> shown here.
 > 
-> The other approach would be to say, "oh well, the freeze ioctl is
-> inherently dangerous, and root is allowed to himself in the foot, so
-> who cares".  :-)
+> int __init msr_init(void)
+> {
+>   if (register_chrdev(MSR_MAJOR, "cpu/msr", &msr_fops)) {
+>     printk(KERN_ERR "msr: unable to get major %d for msr\n",
+> 	   MSR_MAJOR);
+>     return -EBUSY;
+>   }
+>   
+>   return 0;
+> }
+> 
+> I did use the MAKEDEV script with the tools but since the msr module isn't
+> trying to register at any of those locations, they don't work. 
 
-Currently the XFS freezer doesn't solve a deadlock automatically
-and we rely on administrators for ensuring that the freezer will not
-access the filesystem.
-And even if the wrong freezer causes a deadlock, it can be solved
-by other unfreeze process(unfreeze command).
+Nonsense.  All that matters is major:minor.
 
-So I don't think the freezer itself needs to solve the deadlock.
-I think the timeout is effective for a unexpected deadlock
-and the timeout extending feature is very useful
-as Dmitri proposed.
+> There is only one processor on my board, I am going to register device under
+> cpu/0/msr and see if that solves the issue.
 
-Cheers, Takashi
+It's irrelevant where it "registers" (on your kernel it only affects 
+/proc/devices, nothing else, unless you're using devfs, in which case, 
+well, don't.)  The MAKEDEV script with the tools creates the appropriate 
+device entries.
+
+	-hpa
