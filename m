@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbYBGVSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934264AbYBGVSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762807AbYBGVSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762651AbYBGVCx
+	id S934264AbYBGVSy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762485AbYBGVDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:02:53 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:62163 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934798AbYBGVCu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:02:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=FHPK99gXFamG5B5vcA1vD2x8q0olqBjbHQhT26gNbPLwajWICTUsLKAn33KaTSj8BfZNtgDA4jZowWpgA2Q8HA5xwaSIw1Hc7kspwSDyc+bh0IiqI3xHO4EkwCjpl7tDlsJOWHr54GkW8cOJsw79VGP7RvCtimC+S08M/cy1pYg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ide: remove stale version number
-Date: Thu, 7 Feb 2008 22:15:54 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802072215.54384.bzolnier@gmail.com>
+	Thu, 7 Feb 2008 16:03:15 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56093 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933381AbYBGVDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:03:12 -0500
+To: torvalds@linux-foundation.org
+Subject: [git pull] jfs update
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-Id: <20080207210254.245A94C9B7A@norville.austin.ibm.com>
+Date: Thu,  7 Feb 2008 15:02:54 -0600 (CST)
+From: shaggy@linux.vnet.ibm.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from
 
-On Thursday 03 January 2008, Robert Hancock wrote:
+git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
 
-[...]
+This will update the following files:
 
-> How about getting rid of this stupid thing in drivers/ide/ide.c:
-> 
-> #define       REVISION        "Revision: 7.00alpha2"
-> 
-> which is used in:
-> 
-> printk(KERN_INFO "Uniform Multi-Platform E-IDE driver " REVISION "\n");
-> 
-> It's been 7.00alpha2 for god knows how long, so clearly this version 
-> number is not useful..
+ fs/jfs/file.c       |    5 ++++-
+ fs/jfs/ioctl.c      |   31 ++++++++++++++++++++++++++++---
+ fs/jfs/jfs_dinode.h |    2 ++
+ fs/jfs/jfs_inode.h  |    4 ++--
+ fs/jfs/namei.c      |    5 ++++-
+ 5 files changed, 40 insertions(+), 7 deletions(-)
 
-Cc: Robert Hancock <hancockr@shaw.ca>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+through these ChangeSets:
 
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -44,8 +44,6 @@
-  *  inspiration from lots of linux users, esp.  hamish@zot.apana.org.au
-  */
- 
--#define	REVISION	"Revision: 7.00alpha2"
--
- #define _IDE_C			/* Tell ide.h it's really us */
- 
- #include <linux/module.h>
-@@ -1618,7 +1616,7 @@ static int __init ide_init(void)
- {
- 	int ret;
- 
--	printk(KERN_INFO "Uniform Multi-Platform E-IDE driver " REVISION "\n");
-+	printk(KERN_INFO "Uniform Multi-Platform E-IDE driver\n");
- 	system_bus_speed = ide_system_bus_speed();
- 
- 	printk(KERN_INFO "ide: Assuming %dMHz system bus speed "
+Commit: ef1fc2f01e02951a0d8520ec3aa0b38606d74b55 
+Author: Andi Kleen <ak@suse.de> Sun, 27 Jan 2008 17:02:02 -0600 
+
+    BKL-removal: Implement a compat_ioctl handler for JFS
+    
+    The ioctls were already compatible except for the actual values so this
+    was fairly easy to do.
+    
+    Signed-off-by: Andi Kleen <ak@suse.de>
+    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+Commit: baab81fa518ecfac597402b462631f5593926623 
+Author: Andi Kleen <ak@suse.de> Sun, 27 Jan 2008 16:58:51 -0600 
+
+    BKL-removal: Use unlocked_ioctl for jfs
+    
+    Convert jfs_ioctl over to not use the BKL. The only potential race
+    I could see was with two ioctls in parallel changing the flags
+    and losing the updates. Use the i_mutex to protect against this.
+    
+    Signed-off-by: Andi Kleen <ak@suse.de>
+    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
