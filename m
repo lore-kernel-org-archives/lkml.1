@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbYBGWKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbYBGWKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932931AbYBGWKM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756982AbYBGWJ7
+	id S933700AbYBGWKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932975AbYBGWKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:09:59 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:31014 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755393AbYBGWJ6 (ORCPT
+	Thu, 7 Feb 2008 17:10:34 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:46721 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756982AbYBGWKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:09:58 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix CONFIG_COMPAT_BRK help text
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 07 Feb 2008 14:09:54 -0800
-Message-ID: <ada8x1wa05p.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Thu, 7 Feb 2008 17:10:32 -0500
+Date: Thu, 7 Feb 2008 23:10:28 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] m68k: correct setting of struct user.u_ar0
+Message-ID: <Pine.LNX.4.64.0802072309460.1833@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Feb 2008 22:09:55.0385 (UTC) FILETIME=[2B80FA90:01C869D6]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_COMPAT_BRK=y means that heap randomization is turned off, so
-it's *always* a safe choice.  I assume the help text is trying to say
-that if one does not run ancient binaries, then enabling heap
-randomization is safe.
+Commit 6e16d89bcd668a95eb22add24c02d80890232b66
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+    Sanitize the type of struct user.u_ar0
+    
+    struct user.u_ar0 is defined to contain a pointer offset on all
+    architectures in which it is defined (all architectures which define an
+    a.out format except SPARC.) However, it has a pointer type in the headers,
+    which is pointless -- <asm/user.h> is not exported to userspace, and it
+    just makes the code messy.
+    
+    Redefine the field as "unsigned long" (which is the same size as a pointer
+    on all Linux architectures) and change the setting code to user offsetof()
+    instead of hand-coded arithmetic.
+
+forgot to change the m68k setting code, causing the following compiler warning:
+
+    arch/m68k/kernel/process.c:338: warning: assignment makes integer from pointer without a cast
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-diff --git a/init/Kconfig b/init/Kconfig
-index 95ac265..242ce32 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -565,7 +565,7 @@ config COMPAT_BRK
- 	  disabled, and can be overriden runtime by setting
- 	  /proc/sys/kernel/randomize_va_space to 2.
+ arch/m68k/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/m68k/kernel/process.c
++++ b/arch/m68k/kernel/process.c
+@@ -335,7 +335,7 @@ void dump_thread(struct pt_regs * regs, 
+ 	if (dump->start_stack < TASK_SIZE)
+ 		dump->u_ssize = ((unsigned long) (TASK_SIZE - dump->start_stack)) >> PAGE_SHIFT;
  
--	  On non-ancient distros (post-2000 ones) Y is usually a safe choice.
-+	  On non-ancient distros (post-2000 ones) N is usually a safe choice.
- 
- config BASE_FULL
- 	default y
+-	dump->u_ar0 = (struct user_regs_struct *)((int)&dump->regs - (int)dump);
++	dump->u_ar0 = offsetof(struct user, regs);
+ 	sw = ((struct switch_stack *)regs) - 1;
+ 	dump->regs.d1 = regs->d1;
+ 	dump->regs.d2 = regs->d2;
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
