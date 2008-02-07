@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYBGLzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbYBGMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbYBGLzK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 06:55:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbYBGLzA
+	id S1756762AbYBGMHT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbYBGMHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 06:55:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47202 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbYBGLzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 06:55:00 -0500
-Date: Thu, 7 Feb 2008 12:54:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: fix page table size
-Message-ID: <20080207115442.GB387@elte.hu>
-References: <200802061246.43413.yinghai.lu@sun.com> <200802061501.26533.yinghai.lu@sun.com> <20080206231226.GA6417@elte.hu> <200802062022.44069.yinghai.lu@sun.com> <p73wsph2pry.fsf@bingen.suse.de>
+	Thu, 7 Feb 2008 07:07:09 -0500
+Received: from lopsy-lu.misterjones.org ([62.4.18.26]:53447 "EHLO
+	young-lust.wild-wind.fr.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754180AbYBGMHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 07:07:07 -0500
+X-Greylist: delayed 947 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Feb 2008 07:07:06 EST
+From: Marc Zyngier <maz@misterjones.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v3
+Organization: Metropolis -- Nowhere
+References: <200801312012.43447.linux@rainbow-software.org>
+	<200802021925.36552.linux@rainbow-software.org>
+	<47A4D791.3050700@garzik.org>
+	<200802061909.37452.linux@rainbow-software.org>
+X-Attribution: maz
+Reply-to: maz@misterjones.org
+Date: Thu, 07 Feb 2008 12:51:11 +0100
+Message-ID: <wrphcglx9w0.fsf@hina.wild-wind.fr.eu.org>
+In-Reply-To: <200802061909.37452.linux@rainbow-software.org> (Ondrej Zary's
+	message of "Wed, 6 Feb 2008 19:09:35 +0100")
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73wsph2pry.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 192.168.70.139
+X-SA-Exim-Rcpt-To: linux@rainbow-software.org, jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: maz@misterjones.org
+X-SA-Exim-Scanned: No (on young-lust.wild-wind.fr.eu.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Ondrej" == Ondrej Zary <linux@rainbow-software.org> writes:
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+Ondrej> Tested using 3 ISA cards in various combinations of PnP and non-PnP modes.
 
-> Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
-> >
-> > diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> > index eb376b5..31f0e82 100644
-> > --- a/arch/x86/mm/init_64.c
-> > +++ b/arch/x86/mm/init_64.c
-> > @@ -370,7 +370,7 @@ static void __init find_early_table_space(unsigned long end)
-> >  
-> >  	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
-> >  	tables = round_up(puds * sizeof(pud_t), PAGE_SIZE);
-> > -	if (direct_gbpages) {
-> > +	if (!direct_gbpages) {
-> 
-> What tree did you use? The patch I submitted had 
-> 
->      if (direct_gbpages == GBP_ON) { 
+Ondrej>  #ifdef CONFIG_EISA
+Ondrej>  	ret = eisa_driver_register(&el3_eisa_driver);
+Ondrej> +	if (!ret)
+Ondrej> +		eisa_registeted = 1;
+Ondrej>  #endif
+                        ^^^^^^^^^^^^^^^
 
-yes, the bug was introduced in your original submission of gbpages.
+You probably should at least test-compile this driver with CONFIG_EISA
+enabled...
 
-	Ingo
+Regards,
+
+	M.
+-- 
+And if you don't know where you're going, any road will take you there...
