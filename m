@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbYBGHZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYBGHZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760084AbYBGHZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 02:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYBGHY6
+	id S932093AbYBGHZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 02:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760149AbYBGHZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 02:24:58 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:45159 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754537AbYBGHY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 02:24:57 -0500
-Date: Thu, 7 Feb 2008 10:24:15 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Glenn Griffin <ggriffin.kernel@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080207072415.GA13782@2ka.mipt.ru>
-References: <20080206091353.GA12927@2ka.mipt.ru> <47a9fb13.01538c0a.3b80.ffff9328@mx.google.com>
-Mime-Version: 1.0
+	Thu, 7 Feb 2008 02:25:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42858 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760119AbYBGHZR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 02:25:17 -0500
+Date: Wed, 6 Feb 2008 23:28:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Roel Kluin <12o3l@tiscali.nl>, len.brown@intel.com,
+       linux-acpi@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       ibm-acpi-devel@lists.sourceforge.net, stable@kernel.org
+Subject: Re: [stable] [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test
+	if (level & TP_EC_FAN_FULLSPEED)
+Message-ID: <20080207072838.GA24592@kroah.com>
+References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl> <20080205050504.GB30670@khazad-dum.debian.net> <47A81FAE.2090709@tiscali.nl> <20080206230702.GA12395@kroah.com> <47AA4748.3040702@tiscali.nl> <20080207011850.GC10122@khazad-dum.debian.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47a9fb13.01538c0a.3b80.ffff9328@mx.google.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080207011850.GC10122@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 10:30:24AM -0800, Glenn Griffin (ggriffin.kernel@gmail.com) wrote:
-> > > +static u32 cookie_hash(struct in6_addr *saddr, struct in6_addr *daddr,
-> > > +		       __be16 sport, __be16 dport, u32 count, int c)
-> > > +{
-> > > +	__u32 tmp[16 + 5 + SHA_WORKSPACE_WORDS];
-> > 
-> > This huge buffer should not be allocated on stack.
+On Wed, Feb 06, 2008 at 11:18:50PM -0200, Henrique de Moraes Holschuh wrote:
+> On Thu, 07 Feb 2008, Roel Kluin wrote:
+> > It's a oneliner and the patch is from linus' tree.
 > 
-> I can replace it will a kmalloc, but for my benefit what's the practical
-> size we try and limit the stack to?  It seemed at first glance to me
-> that 404 bytes plus the arguments, etc. was not such a large buffer for
-> a non-recursive function.  Plus the alternative with a kmalloc requires
+> Roel, better to just let me and Len Brown handle it.  I will add your patch
+> to my thinkpad-acpi queue and send it to Len soon, along with other simple
+> patches that are pending.  Either I or Len will notify stable@k.o when it
+> hits mainline.
 
-Well, maybe for connection establishment path it is not, but it is
-absolutely the case in the sending and sometimes receiving pathes for 4k
-stacks. The main problem is that bugs which happen because of stack
-overflow are so much obscure, that it is virtually impossible to detect
-where overflow happend. 'Debug stack overflow' somehow does not help to
-detect it.
+Sounds good, I've dropped it from my queue, so please resend it when it
+hits Linus's tree to stable@kernel.org if you want it there.
 
-Usually there is about 1-1.5 kb of free stack for each process, so this
-change will cut one third of the free stack, getting into account that
-something can store ipv6 addresses on stack too, this can end up badly.
+thanks,
 
-> propogating the possible error status back up to tcp_ipv6.c in the event
-> we are unable to allocate enough memory, so it can simply drop the
-> connection.  Not an impossible task by any means but it does
-> significantly complicate things and I would like to know it's worth the
-> effort.  Also would it be worth it to provide a supplemental patch for
-> the ipv4 implementation as it allocates the same buffer?
-
-One can reorganize syncookie support to work with request hash tables
-too, so that we could allocate per hash-bucket space and use it as a
-scratchpad for cookies.
-
-> --Glenn
-
--- 
-	Evgeniy Polyakov
+greg k-h
