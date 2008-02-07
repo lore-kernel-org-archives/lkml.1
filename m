@@ -1,35 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933890AbYBGWop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbYBGWpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933890AbYBGWop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758253AbYBGWoh
+	id S932785AbYBGWpY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbYBGWpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:44:37 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2574 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757344AbYBGWog (ORCPT
+	Thu, 7 Feb 2008 17:45:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36950 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758253AbYBGWpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:44:36 -0500
-Subject: Re: [patch 0/4] make pr_debug() dynamic
-From: Joe Perches <joe@perches.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mathieu.desnoyers@polymtl.ca, akpm@linux-foundation.org, mingo@elte.hu,
-       fche@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080207210320.GA14732@redhat.com>
-References: <20080207210320.GA14732@redhat.com>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 14:42:14 -0800
-Message-Id: <1202424134.27394.42.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Thu, 7 Feb 2008 17:45:07 -0500
+Message-ID: <47AB89CB.7010908@zytor.com>
+Date: Thu, 07 Feb 2008 14:44:27 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <20080207222845.GA6096@elf.ucw.cz> <200802072340.06138.rjw@sisk.pl>
+In-Reply-To: <200802072340.06138.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-07 at 16:03 -0500, Jason Baron wrote:
-> make the pr_debug() function dependent upon the new immediate infrastruture.
+Rafael J. Wysocki wrote:
+> -	rep; stosl
+> +	rep
+> +	stosl
 
-What's wrong with klogd -c 8 or equivalent?
+Yuck!
 
+Please don't perpetuate the braindamage that this is two instructions. 
+It's one instruction with a modifier; the fact that gas wants a 
+separator is broken enough as it is.
 
+	-hpa
