@@ -1,71 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760819AbYBGTEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbYBGTFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760819AbYBGTEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbYBGTEh
+	id S1761227AbYBGTFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbYBGTEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:04:37 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:51730 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756615AbYBGTEf (ORCPT
+	Thu, 7 Feb 2008 14:04:55 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:49292 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756811AbYBGTEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:04:35 -0500
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Newall <davidn@davidnewall.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47AB0A76.3000404@davidnewall.com>
-References: <20080125180232.GA4613@kroah.com>
-	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
-	 <47A5D9CD.5070001@davidnewall.com>
-	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-	 <47A5E67D.9040804@davidnewall.com>
-	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>
-	 <courier.47A8497B.0000472E@hawking.rebel.net.au>
-	 <1202240590.15090.119.camel@violet>  <47AB0A76.3000404@davidnewall.com>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 20:05:13 +0100
-Message-Id: <1202411113.15090.263.camel@violet>
+	Thu, 7 Feb 2008 14:04:54 -0500
+Date: Thu, 7 Feb 2008 11:04:12 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, shemminger@linux-foundation.org,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] apanel: fix kconfig dependencies
+Message-Id: <20080207110412.792db623.randy.dunlap@oracle.com>
+In-Reply-To: <20080207174251.1b895234@hyperion.delvare>
+References: <20080206162754.73114579.randy.dunlap@oracle.com>
+	<20080207174251.1b895234@hyperion.delvare>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Thu, 7 Feb 2008 17:42:51 +0100 Jean Delvare wrote:
 
-> >>> I think you're missing my point: as long as the license stays the way
-> >>> it is now, you can never distribute proprietary code unless you've
-> >>> consulted a lawyer and even then you run the risk of being sued for
-> >>> infringement if the copyright holder thinks what you have is derived
-> >>> work.
-> >>>       
-> >> Yes I can, if the proprietary code is not linked with GPL code (and the 
-> >> proprietary code is original).  Loadable modules are not linked.  This is a 
-> >> very clear-cut case.
-> >>     
-> >
-> > that is not clear-cut case. You link at run-time. Otherwise the module
-> > would do nothing.
+> Hi Randy,
 > 
-> That's why it's allowed.  The module isn't linked when it's distributed,
-> and the author doesn't do or cause the linking; the user does.  And the
-> user never distributes in the linked state.  Distribution is key to GPL.
+> On Wed, 6 Feb 2008 16:27:54 -0800, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Add I2C to config since the driver makes several i2c*() calls.
+> 
+> Correct.
+> 
+> > 
+> > Add PCI to config because the config selects I2C_I801, which depends
+> > on PCI, but currently config* does not follow dependency chains,
+> > so randconfig can enable INPUT_APANEL even when PCI is not enabled,
+> > which leads to these warnings:
+> > linux-2.6.24-mm1/drivers/i2c/busses/i2c-i801.c:641: error: implicit declaration of function 'pci_request_region'
+> > /linux-2.6.24-mm1/drivers/i2c/busses/i2c-i801.c:681: error: implicit declaration of function 'pci_release_region'
+> 
+> I'd rather drop the "select I2C_I801" if the config system can't handle
+> it properly. It's not strictly needed (not a build-time dependency), an
+> addition to the help text would work as well. Adding dependencies to
+> make our selections happy is a bit confusing and likely to cause
+> trouble in the future (as dependencies can change...)
 
-so how do you build this module that is not linked without using the
-Linux kernel. Hence derivative work. Hence dynamic linking at runtime of
-binary only code is violating the GPL.
+OK.  What did you have in mind for the help text.  I changed it
+a small bit.
 
-Same goes for dynamic linking at runtime against GPL libraries. Nobody
-thinks that is possible and ships binary applications that link against
-GPL libaries. So why do you think you can distribute a binary only
-kernel module.
+I also added "depends on LEDS_CLASS" since defconfig didn't have that
+set, but the build failed with wanting symbols that it provides.
 
-Regards
+Updated patch:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Marcel
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Add I2C to config since the driver makes several i2c*() calls.
 
+Add to help text that the Intel I2C ICH (i801) driver is also needed
+for this kernel.
+
+Add LEDS_CLASS to config since the driver makes les_classdev_*() calls:
+ERROR: "led_classdev_register" [drivers/input/misc/apanel.ko] undefined!
+ERROR: "__led_classdev_unregister" [drivers/input/misc/apanel.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/input/misc/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- linux-2.6.24-mm1.orig/drivers/input/misc/Kconfig
++++ linux-2.6.24-mm1/drivers/input/misc/Kconfig
+@@ -42,14 +42,14 @@ config INPUT_M68K_BEEP
+ 
+ config INPUT_APANEL
+ 	tristate "Fujitsu Lifebook Application Panel buttons"
+-	depends on X86
+-	select I2C_I801
++	depends on X86 && I2C && LEDS_CLASS
+ 	select INPUT_POLLDEV
+ 	select CHECK_SIGNATURE
+ 	help
+ 	 Say Y here for support of the Application Panel buttons, used on
+ 	 Fujitsu Lifebook. These are attached to the mainboard through
+-	 an SMBus interface managed by the I2C Intel ICH (i801) driver.
++	 an SMBus interface managed by the I2C Intel ICH (i801) driver,
++	 which you should also build for this kernel.
+ 
+ 	 To compile this driver as a module, choose M here: the module will
+ 	 be called apanel.
