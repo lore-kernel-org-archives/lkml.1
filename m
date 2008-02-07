@@ -1,62 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934695AbYBGWe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935052AbYBGWeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934695AbYBGWe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758826AbYBGWeF
+	id S935052AbYBGWeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbYBGWeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:34:05 -0500
-Received: from mga02.intel.com ([134.134.136.20]:36232 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757015AbYBGWeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:34:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,318,1199692800"; 
-   d="scan'208";a="257050588"
-Message-ID: <47AB86F0.9060601@intel.com>
-Date: Thu, 07 Feb 2008 14:32:16 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Thu, 7 Feb 2008 17:34:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59958 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933204AbYBGWeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 17:34:13 -0500
+Date: Thu, 7 Feb 2008 14:17:12 -0800
+From: Greg KH <greg@kroah.com>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+Cc: akpm@linux-foundation.org, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+       linux-kernel@vger.kernel.org, Nathan Lynch <ntl@pobox.com>,
+       ossthema@linux.vnet.ibm.com, sam@ravnborg.org,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       Joachim Fenkes <FENKES@de.ibm.com>
+Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
+Message-ID: <20080207221712.GC19310@kroah.com>
+References: <20080108163305.GB10026@in.ibm.com> <20080128182423.GC28861@kroah.com> <20080128192204.GO14201@localdomain> <200801291112.41337.ossthema@de.ibm.com> <20080129132309.GA10898@kroah.com> <OFB2A9433F.35E00CA4-ONC12573DF.0049FB58-C12573DF.005988BA@de.ibm.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-       e1000-devel@lists.sourceforge.net, john.ronciak@intel.com,
-       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [E1000-devel] e1000 1sec latency problem
-References: <20080207141718.GA2030@elf.ucw.cz> <47AB4B2E.1030801@intel.com> <20080207222411.GA1917@elf.ucw.cz>
-In-Reply-To: <20080207222411.GA1917@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OFB2A9433F.35E00CA4-ONC12573DF.0049FB58-C12573DF.005988BA@de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+On Tue, Jan 29, 2008 at 03:20:20PM +0100, Christoph Raisch wrote:
+> Greg KH <greg@kroah.com> wrote on 29.01.2008 14:23:09:
 > 
->>> I have the famous e1000 latency problems:
->>>
->>> 64 bytes from 195.113.31.123: icmp_seq=68 ttl=56 time=351.9 ms
->>> 64 bytes from 195.113.31.123: icmp_seq=69 ttl=56 time=209.2 ms
->>> 64 bytes from 195.113.31.123: icmp_seq=70 ttl=56 time=1004.1 ms
->>> 64 bytes from 195.113.31.123: icmp_seq=71 ttl=56 time=308.9 ms
->>> 64 bytes from 195.113.31.123: icmp_seq=72 ttl=56 time=305.4 ms
->>> 64 bytes from 195.113.31.123: icmp_seq=73 ttl=56 time=9.8 ms
->>> 64 bytes from 195.113.31.123: icmp_seq=74 ttl=56 time=3.7 ms
->>>
->>> ...and they are still there in 2.6.25-git0. I had ethernet EEPROM
->>> checksum problems, which I fixed by the update, but problems are not
->>> gone.
->> pavel, start using "e1000e" instead - this driver replaces e1000 for all the
->> pci-express devices and has the infamous L1 ASPM disable patch to
->> fix this issue.
+> > On Tue, Jan 29, 2008 at 11:12:40AM +0100, Jan-Bernd Themann wrote:
+> ...
+> > > The sym-link is not gereated automatically as the device for portX is
+> added
+> > > to the eHEA device (as subnode) where the eHEA device is not a bus.
+> >
+> > Then please fix that, no other driver has this kind of problem, right?
+> > Are you just passing the wrong "device" to the networking subsystem?
+> >
+> > > If this sym-link is of interest (which I guess is the case as most
+> devices
+> > > have it) we have to create it somehow.
+> >
+> > Why would you have to do this by hand?  What makes this driver so unique
+> > in the kernel that it would have to do this?  We have lots of other
+> > multi-port ethernet drivers today without this issue, right?
+> >
+> > confused,
+> >
+> > greg k-h
 > 
-> Ok, e1000e seems to work for me.
-> 
-> In another email, you asked for lspci -vvvv of failing e1000
-> case. Should I still provide it?
+> well, the major difference is hea is not PCI.
 
-well, if you do it you should see that L1 ASPM is now disabled (with e1000e)
-whereas with e1000 it is still enabled. That's the fix that you need...
+What is it?  It has to live on some kind of bus, right?
 
-Auke
+> All PCI cards we checked have a 1:1 relationship between PCI function (PCI
+> config space) and a single ethernet port.
+> Even if the same Ethernet chip has two ports, it shows up as two separate
+> adapters from the PCI perspective (two PCI entries in /sys/bus/pci/devices
+> 
+> host:/ # ls -l /sys/bus/pci/devices/0000\:c8\:01.0/
+> total 0
+> lrwxrwxrwx 1 root root      0 2008-01-28 14:59 bus -> ../../../../bus/pci
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 class
+> -rw-r--r-- 1 root root    256 2008-01-28 14:59 config
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 device
+> -r--r--r-- 1 root root   4096 2008-01-29 14:26 devspec
+> lrwxrwxrwx 1 root root      0 2008-01-28 14:59 driver ->
+> ../../../../bus/pci/drivers/e1000
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 irq
+> -r--r--r-- 1 root root   4096 2008-01-29 14:26 local_cpus
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 modalias
+> lrwxrwxrwx 1 root root      0 2008-01-29 14:26 net:eth1 ->
+> ../../../../class/net/eth1
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 resource
+> ....
+> host:/ # ls -l /sys/bus/pci/devices/0000\:c8\:01.1/
+> total 0
+> lrwxrwxrwx 1 root root      0 2008-01-28 14:59 bus -> ../../../../bus/pci
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 class
+> -rw-r--r-- 1 root root    256 2008-01-28 14:59 config
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 device
+> -r--r--r-- 1 root root   4096 2008-01-29 14:29 devspec
+> lrwxrwxrwx 1 root root      0 2008-01-28 14:59 driver ->
+> ../../../../bus/pci/drivers/e1000
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 irq
+> -r--r--r-- 1 root root   4096 2008-01-29 14:29 local_cpus
+> -r--r--r-- 1 root root   4096 2008-01-28 14:59 modalias
+> lrwxrwxrwx 1 root root      0 2008-01-29 14:29 net:eth2 ->
+> ../../../../class/net/eth2
+> ...
+> 
+> These pci functions corresponds to a
+> /sys/bus/ibmebus/devices/789D.001.XXXXXX-P1/port0
+> and
+> /sys/bus/ibmebus/devices/789D.001.XXXXXX-P1/port1
+> 
+> The busdriver currently does not find out, how many ports are in a
+> /sys/bus/ibmebus/devices/789D.001.XXXXXX-P1.
+> This is up to the hardware specific driver responsible for ehea or ehca.
+> Think of a PCI card where the PCI busdriver
+> can not determine how many ports are implemented on the card.
+> 
+> How should this be mapped to /sys ?
+> 
+> Should we try to "flatten" the ports to something like
+> /sys/bus/ibmebus/devices/789D.001.XXXXXX-P1
+> /sys/bus/ibmebus/devices/789D.001.XXXXXX-P1_port0
+> /sys/bus/ibmebus/devices/789D.001.XXXXXX-P1_port1
+> ...which means physical hierarchy information would look a bit strange,
+> but could be the simpler one.
+
+No.  Why have a separate "port" device for every ethernet port?  What
+keeps you from just creating the different network devices for your
+device, and pointing the parent to the same 789D.001.XXXXXX-P1 device?
+
+Lots of PCI devices hang "class devices" off of them all the time, why
+would this be any different from that?
+
+I think you all are trying to make this more complex than it really is
+:)
+
+thanks,
+
+greg k-h
