@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbYBGF6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYBGGD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbYBGF6K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 00:58:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYBGF5z
+	id S1754565AbYBGGD7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYBGGDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 00:57:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56417 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752106AbYBGF5y (ORCPT
+	Thu, 7 Feb 2008 01:03:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45656 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751858AbYBGGDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 00:57:54 -0500
-Date: Wed, 6 Feb 2008 21:58:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] CPU isolation extensions
-Message-Id: <20080206215805.17a0c919.akpm@linux-foundation.org>
-In-Reply-To: <47AA9807.7090402@qualcomm.com>
-References: <47AA9807.7090402@qualcomm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 01:03:48 -0500
+Date: Wed, 6 Feb 2008 21:55:07 -0800
+From: Greg KH <greg@kroah.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: len.brown@intel.com, ibm-acpi-devel@lists.sourceforge.net,
+       Roland Dreier <rdreier@cisco.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>, stable@kernel.org
+Subject: Re: [stable] [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test
+	if (level & TP_EC_FAN_FULLSPEED)
+Message-ID: <20080207055507.GA7212@kroah.com>
+References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl> <20080205050504.GB30670@khazad-dum.debian.net> <47A81FAE.2090709@tiscali.nl> <20080206230702.GA12395@kroah.com> <47AA4748.3040702@tiscali.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AA4748.3040702@tiscali.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Feb 2008 21:32:55 -0800 Max Krasnyansky <maxk@qualcomm.com> wrote:
-
-> Linus, please pull CPU isolation extensions from
+On Thu, Feb 07, 2008 at 12:48:24AM +0100, Roel Kluin wrote:
+> Greg KH wrote:
+> > On Tue, Feb 05, 2008 at 09:34:54AM +0100, Roel Kluin wrote:
+> >> Henrique de Moraes Holschuh wrote:
+> >>> On Tue, 05 Feb 2008, Roel Kluin wrote:
+> >>>> Roland Dreier wrote:
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/maxk/cpuisol-2.6.git for-linus
+> >>>>>  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
+> >>>>>  > this be replaced by
+> >>>>>
+> >>>>> Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
+> >>>>> (based on the comment).
+> >>>> Thanks Roland, for your info
+> 
+> >>> ACK.  This needs to be sent to stable as well.  I think both 2.6.22 and
+> >>> 2.6.23 need this patch.
+> >>>
+> >> CC stable@kernel.org
+> > 
+> > Please send us a real copy of the patch, when it goes into Linus's tree,
+> > so we know what to apply, and that it is safe to do so.
+> 
+> It's a oneliner and the patch is from linus' tree.
+> ---
+> in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad, a safety net for TPEC
+> fan control mode was added. Quoting that patch:
 
-The feature as a whole seems useful, and I don't actually oppose the merge
-based on what I see here.  As long as you're really sure that cpusets are
-inappropriate (and bear in mind that Paul has a track record of being wrong
-on this :)).  But I see a few glitches
+I don't see this patch in Linus's tree, I see the patch you are
+patching, but not this one :)
 
+Can you tell me the git id of the patch you wish to go into the stable
+tree, and send the whole thing to us?
 
-- There are two separate and identical implementations of
-  cpu_unusable(cpu).  Please do it once, in a header, preferably with C
-  function, not macros.
+thanks,
 
-- The Kconfig help is a bit scraggly:
-
-+config CPUISOL_STOPMACHINE
-+	bool "Do not halt isolated CPUs with Stop Machine (HIGHLY EXPERIMENTAL)"
-+	depends on CPUISOL && STOP_MACHINE && EXPERIMENTAL
-+	help
-+          If this option is enabled kernel will not halt isolated CPUs when Stop Machine
-
-"the kernel"
-
-text is too wide
-
-+          is triggered.
-+          Stop Machine is currently only used by the module insertion and removal logic.
-+          Please note that at this point this feature is highly experimental and maybe
-+          dangerous. It is not known to really brake anything but can potentially 
-+          introduce an instability.
-
-s/maybe/may be/
-s/brake/break/
-
-
-Neither this text, nor the changelog nor the code comments tell us what the
-potential instability with stopmachine *is*?  Or maybe I missed it.
-
-- Adding new sysfs files without updating Documentation/ABI/ makes Greg
-  cry.
-
-- Why is cpu_isolated_map exported to modules?  Just for api consistency,
-  it appears?
-
-
-pre-existing problems:
-
-- isolated_cpu_setup() has an on-stack array of NR_CPUS integers.  This
-  will consume 4k of stack on ia64 (at least).  We'll just squeak through
-  for a ittle while, but this needs to be fixed.  Just move it into
-  __initdata.
-
-- isolated_cpu_setup() expects that the user can provide an up-to-1024
-  character kernel boot parameter.  Is this reasonable given cpu command
-  line limits, and given that NR_CPUS will surely grow beyond 1024 in the
-  future?
-
-
+greg k-h
