@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYBGMxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbYBGMx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbYBGMxN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:53:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760868AbYBGMwn
+	id S932336AbYBGMx5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYBGMxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:52:43 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34774 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756942AbYBGMwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:52:42 -0500
-Message-ID: <47AAFF17.9070106@davidnewall.com>
-Date: Thu, 07 Feb 2008 23:22:39 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 07:53:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42911 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756079AbYBGMxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 07:53:45 -0500
+Date: Thu, 7 Feb 2008 13:53:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 4/4] x86 mmiotrace: move files into arch/x86/mm/
+Message-ID: <20080207125327.GB27234@elte.hu>
+References: <1201660102.8837.9.camel@brick> <1201660453.8837.13.camel@brick> <20080130200827.322c4f7d@daedalus.pq.iki.fi> <20080131150746.GB11996@elte.hu> <20080131180253.6c007852@daedalus.pq.iki.fi> <20080131081507.5edcde10@laptopd505.fenrus.org> <20080203085522.2b63e15b@daedalus.pq.iki.fi> <20080203070321.GA8293@elte.hu> <20080205222807.7b35ef2b@daedalus.pq.iki.fi> <20080205223958.2cab8ce3@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <20080203124849.0226560f@weinigel.se> <84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com> <47A5F418.6030104@weinigel.se> <20080203231530.GB15692@kroah.com> <courier.47A8EDDC.0000785F@hawking.rebel.net.au> <20080205232916.GA9040@kroah.com>
-In-Reply-To: <20080205232916.GA9040@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205223958.2cab8ce3@daedalus.pq.iki.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2107]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Feb 06, 2008 at 09:44:36AM +1030, David Newall wrote:
->   
->> A kernel module is akin to a process.  It uses services of the kernel 
->> without being part of the kernel.
->>     
->
-> No Linux does not work like this at all.
-> ...
-> Also see the various issues surrounding "loadable modules" and Samba,
-> and how they have successfully enforced the "linking" and other type
-> issues that are being discussed here (shims, "GPL condoms", etc.) with
-> regards to the GPLv2 and derivative works.
 
-If you know of something relevant, give pointers.
+Pekka,
+
+i've picked up your latest cleanups, but a fundamental worry still 
+remains: all the ugly 'custom pagefault handlers' stuff. Lets just have 
+one clean direct callback to mmiotrace, ok?
+
+	Ingo
