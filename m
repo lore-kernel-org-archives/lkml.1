@@ -1,106 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbYBGK7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbYBGLDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbYBGK7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 05:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYBGK66
+	id S1759262AbYBGLDE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 06:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbYBGLCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 05:58:58 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:39257 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759156AbYBGK6z (ORCPT
+	Thu, 7 Feb 2008 06:02:54 -0500
+Received: from s131.mittwaldmedien.de ([62.216.178.31]:17332 "EHLO
+	s131.mittwaldmedien.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbYBGLCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 05:58:55 -0500
-Date: Thu, 7 Feb 2008 11:58:54 +0100
-From: Jan Kara <jack@suse.cz>
-To: Neil Brown <neilb@suse.de>
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext3 can fail badly when device stops accepting BIO_RW_BARRIER requests.
-Message-ID: <20080207105853.GC26403@atrey.karlin.mff.cuni.cz>
-References: <18346.24466.83745.944149@notabene.brown>
+	Thu, 7 Feb 2008 06:02:53 -0500
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: OOPS in sysctl.c
+Date: Thu, 7 Feb 2008 12:02:45 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+References: <200802050845.58691.hs4233@mail.mn-solutions.de> <200802051224.56413.hs4233@mail.mn-solutions.de> <20080206002420.91124dab.akpm@linux-foundation.org>
+In-Reply-To: <20080206002420.91124dab.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <18346.24466.83745.944149@notabene.brown>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200802071202.45814.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Neil,
+> erp.  We'd really like to know what we did to fix it, and then
+> get that fix back into 2.6.24.x.
 
-> Some devices - notably dm and md - can change their behaviour in
-> response to BIO_RW_BARRIER requests.  They might start out accepting
-> such requests but on reconfiguration, they find out that they cannot
-> any more.
-> 
-> ext3 (and other filesystems) deal with this by always testing if
-> BIO_RW_BARRIER requests fail with EOPNOTSUPP, and retrying the write
-> requests without the barrier (probably after waiting for any pending
-> writes to complete).
-> 
-> However there is a bug in the handling for this for ext3.
-> 
-> When ext3 (jbd actually) decides to submit a BIO_RW_BARRIER request,
-> it sets the buffer_ordered flag on the buffer head.
-> If the request completes successfully, the flag STAYS SET.
-  Yes, I've recently noted this as well :) 
-
-> Other code might then write the same buffer_head after the device has
-> been reconfigured to not accept barriers.  This write will then fail,
-> but the "other code" is not ready to handle EOPNOTSUPP errors and the
-> error will be treated as fatal.
-> 
-> This can be seen without having to reconfigure a device at exactly the
-> wrong time by putting:
-> 
-> 		if (buffer_ordered(bh))
-> 			printk("OH DEAR, and ordered buffer\n");
-> 
-> 
-> in the while loop in "commit phase 5" of journal_commit_transaction.
-> 
-> If it ever prints the "OH DEAR ..." message (as it does sometimes for
-> me), then that request could (in different circumstances) have failed
-> with EOPNOTSUPP, but that isn't tested for.
-> 
-> My proposed fix is to clear the buffer_ordered flag after it has been
-> used, as in the following patch.
-  Yes. Actually, I think there's another bug in there as well - at least
-I have bugreport where we obviously miss that writing ordered buffer
-failed (I see completion function of the buffer return with eopnotsupp
-bit set but barriers aren't disabled). I think someone starts writing
-out the buffer before we call sync_dirty_buffer(bh) but I'm not completely
-sure who can do this when we just do set_buffer_dirty(bh)... Anyway
-before I check that it is indeed happening what I think is happening,
-your fix is fine :).
-  You can add: Acked-by: Jan Kara <jack@suse.cz>
-
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> diff .prev/fs/jbd/commit.c ./fs/jbd/commit.c
-> --- .prev/fs/jbd/commit.c	2008-02-07 10:01:57.000000000 +1100
-> +++ ./fs/jbd/commit.c	2008-02-07 10:04:58.000000000 +1100
-> @@ -131,6 +131,8 @@ static int journal_write_commit_record(j
->  		barrier_done = 1;
->  	}
->  	ret = sync_dirty_buffer(bh);
-> +	if (barrier_done)
-> +		clear_buffer_ordered(bh);
->  	/* is it possible for another commit to fail at roughly
->  	 * the same time as this one?  If so, we don't want to
->  	 * trust the barrier flag in the super, but instead want
-> @@ -148,7 +150,6 @@ static int journal_write_commit_record(j
->  		spin_unlock(&journal->j_state_lock);
->  
->  		/* And try again, without the barrier */
-> -		clear_buffer_ordered(bh);
->  		set_buffer_uptodate(bh);
->  		set_buffer_dirty(bh);
->  		ret = sync_dirty_buffer(bh);
+Agreed :-)
 
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+One more finding: after turning off CONFIG_SLUB and usng 
+CONFIG_SLAB instead, I cannot reproduce the bug.
+
+Also, a quite bit Qt-Embedded 3.x programm survives without any 
+trouble the suspend/resume. So I think that I don't have a 
+general memory corruption problem. This is however just a 
+feeling, not an evidence.
+
