@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYBGJVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbYBGJWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbYBGJVe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 04:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbYBGJUL
+	id S1755058AbYBGJWB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 04:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYBGJUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 04:20:11 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:18496 "EHLO kernel.dk"
+	Thu, 7 Feb 2008 04:20:12 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:18501 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753494AbYBGJUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753619AbYBGJUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Feb 2008 04:20:01 -0500
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com, npiggin@suse.de,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 4/8] x86: add support for remotely triggering the block softirq
-Date: Thu,  7 Feb 2008 10:19:01 +0100
-Message-Id: <1202375945-29525-5-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 5/8] x86-64: add support for remotely triggering the block softirq
+Date: Thu,  7 Feb 2008 10:19:02 +0100
+Message-Id: <1202375945-29525-6-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.4.22.g7a20
 In-Reply-To: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com>
 References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com>
@@ -25,22 +25,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/x86/kernel/smp_32.c                   |   15 +++++++++++++++
- arch/x86/kernel/smpboot_32.c               |    3 +++
- include/asm-x86/hw_irq_32.h                |    1 +
- include/asm-x86/mach-default/entry_arch.h  |    1 +
- include/asm-x86/mach-default/irq_vectors.h |    1 +
- 5 files changed, 21 insertions(+), 0 deletions(-)
+ arch/x86/kernel/entry_64.S  |    3 +++
+ arch/x86/kernel/i8259_64.c  |    3 +++
+ arch/x86/kernel/smp_64.c    |   15 +++++++++++++++
+ include/asm-x86/hw_irq_64.h |    2 ++
+ 4 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/smp_32.c b/arch/x86/kernel/smp_32.c
-index dc0cde9..668b8a4 100644
---- a/arch/x86/kernel/smp_32.c
-+++ b/arch/x86/kernel/smp_32.c
-@@ -672,6 +672,21 @@ void smp_call_function_interrupt(struct pt_regs *regs)
- 	}
- }
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index c7341e8..753834b 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -704,6 +704,9 @@ END(invalidate_interrupt\num)
+ ENTRY(call_function_interrupt)
+ 	apicinterrupt CALL_FUNCTION_VECTOR,smp_call_function_interrupt
+ END(call_function_interrupt)
++ENTRY(raise_block_softirq)
++	apicinterrupt BLOCK_SOFTIRQ_VECTOR,smp_raise_block_softirq
++END(raise_block_softirq);
+ ENTRY(irq_move_cleanup_interrupt)
+ 	apicinterrupt IRQ_MOVE_CLEANUP_VECTOR,smp_irq_move_cleanup_interrupt
+ END(irq_move_cleanup_interrupt)
+diff --git a/arch/x86/kernel/i8259_64.c b/arch/x86/kernel/i8259_64.c
+index fa57a15..cd7675b 100644
+--- a/arch/x86/kernel/i8259_64.c
++++ b/arch/x86/kernel/i8259_64.c
+@@ -494,6 +494,9 @@ void __init native_init_IRQ(void)
+ 	/* IPI for generic function call */
+ 	set_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
  
-+fastcall void smp_raise_block_softirq(struct pt_regs *regs)
++	/* IPI for raising block softirq on another CPU */
++	set_intr_gate(BLOCK_SOFTIRQ_VECTOR, raise_block_softirq);
++
+ 	/* Low priority IPI to cleanup after moving an irq */
+ 	set_intr_gate(IRQ_MOVE_CLEANUP_VECTOR, irq_move_cleanup_interrupt);
+ #endif
+diff --git a/arch/x86/kernel/smp_64.c b/arch/x86/kernel/smp_64.c
+index 2fd74b0..fe4c2bf 100644
+--- a/arch/x86/kernel/smp_64.c
++++ b/arch/x86/kernel/smp_64.c
+@@ -460,6 +460,21 @@ int smp_call_function (void (*func) (void *info), void *info, int nonatomic,
+ }
+ EXPORT_SYMBOL(smp_call_function);
+ 
++asmlinkage void smp_raise_block_softirq(void)
 +{
 +	unsigned long flags;
 +
@@ -55,59 +82,29 @@ index dc0cde9..668b8a4 100644
 +	send_IPI_mask(cpumask_of_cpu(cpu), BLOCK_SOFTIRQ_VECTOR);
 +}
 +
- static int convert_apicid_to_cpu(int apic_id)
+ static void stop_this_cpu(void *dummy)
  {
- 	int i;
-diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index 579b9b7..ca35697 100644
---- a/arch/x86/kernel/smpboot_32.c
-+++ b/arch/x86/kernel/smpboot_32.c
-@@ -1304,6 +1304,9 @@ void __init smp_intr_init(void)
- 
- 	/* IPI for generic function call */
- 	set_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
-+
-+	/* IPI for scheduling block softirq */
-+	set_intr_gate(BLOCK_SOFTIRQ_VECTOR, raise_block_softirq);
- }
- 
- /*
-diff --git a/include/asm-x86/hw_irq_32.h b/include/asm-x86/hw_irq_32.h
-index ea88054..0a053d8 100644
---- a/include/asm-x86/hw_irq_32.h
-+++ b/include/asm-x86/hw_irq_32.h
-@@ -32,6 +32,7 @@ extern void (*const interrupt[NR_IRQS])(void);
+ 	local_irq_disable();
+diff --git a/include/asm-x86/hw_irq_64.h b/include/asm-x86/hw_irq_64.h
+index 312a58d..98ed167 100644
+--- a/include/asm-x86/hw_irq_64.h
++++ b/include/asm-x86/hw_irq_64.h
+@@ -68,6 +68,7 @@
+ #define ERROR_APIC_VECTOR	0xfe
+ #define RESCHEDULE_VECTOR	0xfd
+ #define CALL_FUNCTION_VECTOR	0xfc
++#define BLOCK_SOFTIRQ_VECTOR	0xfb
+ /* fb free - please don't readd KDB here because it's useless
+    (hint - think what a NMI bit does to a vector) */
+ #define THERMAL_APIC_VECTOR	0xfa
+@@ -102,6 +103,7 @@ void spurious_interrupt(void);
+ void error_interrupt(void);
  void reschedule_interrupt(void);
- void invalidate_interrupt(void);
  void call_function_interrupt(void);
 +void raise_block_softirq(void);
- #endif
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-diff --git a/include/asm-x86/mach-default/entry_arch.h b/include/asm-x86/mach-default/entry_arch.h
-index bc86146..e96ed61 100644
---- a/include/asm-x86/mach-default/entry_arch.h
-+++ b/include/asm-x86/mach-default/entry_arch.h
-@@ -13,6 +13,7 @@
- BUILD_INTERRUPT(reschedule_interrupt,RESCHEDULE_VECTOR)
- BUILD_INTERRUPT(invalidate_interrupt,INVALIDATE_TLB_VECTOR)
- BUILD_INTERRUPT(call_function_interrupt,CALL_FUNCTION_VECTOR)
-+BUILD_INTERRUPT(raise_block_softirq,BLOCK_SOFTIRQ_VECTOR);
- #endif
- 
- /*
-diff --git a/include/asm-x86/mach-default/irq_vectors.h b/include/asm-x86/mach-default/irq_vectors.h
-index 881c63c..f7535a3 100644
---- a/include/asm-x86/mach-default/irq_vectors.h
-+++ b/include/asm-x86/mach-default/irq_vectors.h
-@@ -48,6 +48,7 @@
- #define INVALIDATE_TLB_VECTOR	0xfd
- #define RESCHEDULE_VECTOR	0xfc
- #define CALL_FUNCTION_VECTOR	0xfb
-+#define BLOCK_SOFTIRQ_VECTOR	0xfa
- 
- #define THERMAL_APIC_VECTOR	0xf0
- /*
+ void irq_move_cleanup_interrupt(void);
+ void invalidate_interrupt0(void);
+ void invalidate_interrupt1(void);
 -- 
 1.5.4.22.g7a20
 
