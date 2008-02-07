@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760525AbYBGKiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbYBGKlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760525AbYBGKiu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 05:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYBGKik
+	id S1759058AbYBGKlf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 05:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYBGKl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 05:38:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38665 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755645AbYBGKij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 05:38:39 -0500
-Date: Thu, 7 Feb 2008 11:38:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
-       dgc@sgi.com, npiggin@suse.de
-Subject: Re: [PATCH 4/8] x86: add support for remotely triggering the block
-	softirq
-Message-ID: <20080207103804.GE16735@elte.hu>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-5-git-send-email-jens.axboe@oracle.com> <20080207100738.GB7716@elte.hu> <20080207101727.GE15220@kernel.dk> <20080207102534.GB16735@elte.hu> <20080207103136.GG15220@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080207103136.GG15220@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 7 Feb 2008 05:41:28 -0500
+Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:57172 "EHLO
+	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754760AbYBGKl1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 05:41:27 -0500
+X-Authority-Analysis: v=1.0 c=1 a=yfaj0FAMEn1KDdGR7eIA:9
+ a=W5IOY979deS4bXy4zesA:7 a=5AVYvaYdAlAS_HsLGYb1dwoLy18A:4 a=uv1ck3d6JtEA:10
+Subject: Re: 2.6.24-git15 Keyboard Issue?
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
+References: <1202302978.9058.13.camel@popeye>
+	 <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>
+	 <1202305740.9058.22.camel@popeye>
+	 <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
+	 <1202318666.6406.13.camel@popeye>
+	 <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 07 Feb 2008 04:44:54 -0600
+Message-Id: <1202381094.6179.0.camel@popeye>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri - 
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> > pick up the threaded softirq patches from -rt, those move all 
-> > softirqs processing into kernel threads. I'd suggest to extend those 
-> > via wakeup-from-remote functionality - it fits the construct quite 
-> > naturally. You should also be able to directly observe any 
-> > performance impact of threaded softirq handlers. (and if you find 
-> > any, let me know so that we can make it faster :-)
+I have been up and running now for about a half hour – since I did not
+hear your preference I stayed with git15 instead of jumping up to git16
+in an attempt to avoid introducing any unwanted changes.
+
+
+The only non-standard thing I did was to use the nohpet directive at
+boot time - I did NOT enter the previously used taskset command to alter
+X's affinity. 
+
+
+I have been banging away on my keyboard for about a half hour now with
+no problems. While this is not conclusive on a 'soft' problem, from what
+I experienced yesterday I would have expected to have seen the problem
+by now.
+
+
+Please let me know if there are any other items you would like to do or
+options you would like me to try.
+
+
+Chris
+
+
+
+On Thu, 2008-02-07 at 10:18 +0100, Jiri Kosina wrote:
+> On Wed, 6 Feb 2008, Chris Holvenstot wrote:
 > 
-> I was just considering that, since I knew -rt moved the softirqs into 
-> threads. I'll look into it, but may not post anything until after my 
-> vacation.
+> > I have several hours of running aith nohpet and X's affinity set to 2
+> > instead of 3 and so far everything is running flawlessly.
+> 
+> Great, so this definitely is some kind of timing issue, thanks for 
+> verifying that.
+> 
+> > which has the same suggestion (taskset) as you made, for me this was 
+> > something new starting with 2.6.24-git15 - maybe something made a timing 
+> > issue fall a little closer to the edge.
+> 
+> Yes, could be some scheduler update that made the problem more visible. If 
+> you'd had time to use git-bisect to find the exact commit that exposes 
+> your problem, that might be interesting. But as you said that this is not 
+> immediately reproducible, it might take ages.
+> 
+> > Would you like me to try and further isolate things for you here by 
+> > either running with just nohpet OR just the taskset to change X's 
+> > affinity?
+> 
+> Yes, that would help. Especially knowing whether running with 'nohpet' 
+> fixes the problem would be nice.
+> 
 
-we should more seriously investigate kernel thread scalability for 
-another reason as well: besides -rt, any generic async IO facility we 
-pick up will likely heavily rely on them. Kernel thread scheduling is 
-quite a bit lighter than user task scheduling [no TLB flushes, etc.] - 
-and if it is still not good enough we could probably accelerate them 
-some more. (and everyone will benefit) irq-context softirqs on the other 
-hand are quite rigid and bring in many atomicity assumptions so they are 
-not as natural to program for.
-
-	Ingo
