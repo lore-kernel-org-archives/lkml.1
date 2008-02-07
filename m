@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbYBGKgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYBGKiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760081AbYBGKgP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 05:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932237AbYBGKfx
+	id S1759916AbYBGKiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 05:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYBGKiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 05:35:53 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:36412 "EHLO tim.rpsys.net"
+	Thu, 7 Feb 2008 05:38:08 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:36442 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932277AbYBGKfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 05:35:50 -0500
-Subject: [GIT PULL] LED updates
+	id S1754230AbYBGKiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 05:38:07 -0500
+Subject: [GIT PULL] Backlight updates
 From: Richard Purdie <rpurdie@rpsys.net>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 07 Feb 2008 10:35:03 +0000
-Message-Id: <1202380503.9519.21.camel@dax.rpnet.com>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 10:37:49 +0000
+Message-Id: <1202380670.9519.24.camel@dax.rpnet.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,59 +27,24 @@ Linus,
 
 Could you please pull from:
 
-git://git.o-hand.com/linux-rpurdie-leds for-linus
+git://git.o-hand.com/linux-rpurdie-backlight for-linus
 
-for the LED tree updates for 2.6.25. This includes a couple of new
-drivers, removal of a now superseded driver, some extensions to some
-existing drivers and some LED class enhancements/bugfixes. Most of this
-has been testing in -mm for quite a while.
+for the backlight tree updates for 2.6.25. This includes a new driver
+and an optimisation for the class. Both changes have been testing in -mm
+for quite a while.
 
 Thanks, Richard
 
- Documentation/leds-class.txt         |   29 +++-
- arch/arm/mach-ixp4xx/dsmg600-setup.c |    4 
- arch/arm/mach-ixp4xx/nas100d-setup.c |    6 
- arch/arm/mach-ixp4xx/nslu2-setup.c   |    8 -
- drivers/hwmon/applesmc.c             |    2 
- drivers/input/misc/wistron_btns.c    |    4 
- drivers/leds/Kconfig                 |   48 ++++++-
- drivers/leds/Makefile                |    3 
- drivers/leds/leds-ams-delta.c        |   12 -
- drivers/leds/leds-clevo-mail.c       |  219 +++++++++++++++++++++++++++++++++++
- drivers/leds/leds-corgi.c            |    4 
- drivers/leds/leds-gpio.c             |    2 
- drivers/leds/leds-hp6xx.c            |  120 +++++++++++++++++++
- drivers/leds/leds-ixp4xx-gpio.c      |  214 ----------------------------------
- drivers/leds/leds-locomo.c           |    4 
- drivers/leds/leds-net48xx.c          |    2 
- drivers/leds/leds-spitz.c            |    8 -
- drivers/leds/leds-tosa.c             |    4 
- drivers/leds/leds-wrap.c             |   47 ++++++-
- drivers/leds/ledtrig-timer.c         |   41 +++++-
- drivers/misc/asus-laptop.c           |    2 
- drivers/net/wireless/b43/leds.c      |    8 -
- include/linux/leds.h                 |    5 
- 23 files changed, 519 insertions(+), 277 deletions(-)
+ drivers/video/backlight/Kconfig     |    9 +
+ drivers/video/backlight/Makefile    |    1 
+ drivers/video/backlight/backlight.c |   12 +-
+ drivers/video/backlight/omap1_bl.c  |  210 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 228 insertions(+), 4 deletions(-)
 
-Kristoffer Ericson (1):
-      leds: Add HP Jornada 6xx driver
+Andrzej Zaborowski (1):
+      backlight: Add OMAP1 PWL backlight driver
 
-Michael Loeffler (1):
-      leds: Add power LED to the wrap driver
-
-Márton Németh (3):
-      leds: Add clevo notebook LED driver
-      leds: Add support for hardware accelerated LED flashing
-      leds: hw acceleration for Clevo mail LED driver
-
-Raphael Assenat (1):
-      leds: Fix led-gpio active_low default brightness
-
-Richard Purdie (1):
-      leds: Standardise LED naming scheme
-
-Rod Whitby (1):
-      leds: Remove the now uneeded ixp4xx driver
-
+Helge Deller (1):
+      backlight: Avoid unecessary driver callbacks
 
 
