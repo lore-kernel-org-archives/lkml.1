@@ -1,52 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934830AbYBGXUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbYBGXYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934830AbYBGXUm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760297AbYBGXUT
+	id S933189AbYBGXYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbYBGXYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:20:19 -0500
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:37806 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757049AbYBGXUR (ORCPT
+	Thu, 7 Feb 2008 18:24:09 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:56146 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756471AbYBGXYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:20:17 -0500
-Date: Thu, 7 Feb 2008 18:20:15 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Christoph Lameter <clameter@sgi.com>, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: parisc compile error
-Message-ID: <20080207232015.GA11653@phobos.i.cabal.ca>
-References: <20080207231232.GF7198@cs181133002.pp.htv.fi>
+	Thu, 7 Feb 2008 18:24:08 -0500
+X-Sasl-enc: GWlN8ryqdttUxi0YA1hm/7arHRqnlj/QNm6n1DVr5mNX 1202426635
+Date: Thu, 7 Feb 2008 21:23:09 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: =?iso-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] leds: disable triggers on brightness set
+Message-ID: <20080207232309.GA2041@khazad-dum.debian.net>
+References: <1202380503.9519.21.camel@dax.rpnet.com> <20080207213845.GA27862@khazad-dum.debian.net> <1202422388.9519.123.camel@dax.rpnet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080207231232.GF7198@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1202422388.9519.123.camel@dax.rpnet.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 01:12:32AM +0200, Adrian Bunk wrote:
-> Commit 9e2779fa281cfda13ac060753d674bbcaa23367e broke parisc:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/parisc/kernel/asm-offsets.s
-> In file included from include/asm/pgtable.h:13,
->                  from arch/parisc/kernel/asm-offsets.c:36:
-> include/linux/mm.h: In function 'is_vmalloc_addr':
-> include/linux/mm.h:243: error: 'VMALLOC_START' undeclared (first use in this function)
-> include/linux/mm.h:243: error: (Each undeclared identifier is reported only once
-> include/linux/mm.h:243: error: for each function it appears in.)
-> include/linux/mm.h:243: error: 'VMALLOC_END' undeclared (first use in this function)
-> make[1]: *** [arch/parisc/kernel/asm-offsets.s] Error 1
-> 
+Disable any active triggers when someone writes to the brightness attribute.
+This fixes also a misbehaviour with hardware accelerated flashing.
 
-yes, it's in my batch of fixes.
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Márton Németh <nm127@freemail.hu>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
+ drivers/leds/led-class.c    |    2 ++
+ drivers/leds/led-triggers.c |   12 +++++++++---
+ drivers/leds/leds.h         |    2 ++
+ 3 files changed, 13 insertions(+), 3 deletions(-)
 
-thanks for the reminder.
+The led class is not even close to checkpath-clean, so I have followed the
+led class style instead of the kernel style.  You'll probably have to fix
+the style of the entire stuff under drivers/leds/ eventually.
 
-cheers, kyle
+diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+index 64c66b3..835f939 100644
+--- a/drivers/leds/led-class.c
++++ b/drivers/leds/led-class.c
+@@ -51,6 +51,8 @@ static ssize_t led_brightness_store(struct device *dev,
+ 
+ 	if (count == size) {
+ 		ret = count;
++
++		led_trigger_remove(led_cdev);
+ 		led_set_brightness(led_cdev, state);
+ 	}
+ 
+diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
+index 13c9026..21dd969 100644
+--- a/drivers/leds/led-triggers.c
++++ b/drivers/leds/led-triggers.c
+@@ -45,9 +45,7 @@ ssize_t led_trigger_store(struct device *dev, struct device_attribute *attr,
+ 		trigger_name[len - 1] = '\0';
+ 
+ 	if (!strcmp(trigger_name, "none")) {
+-		down_write(&led_cdev->trigger_lock);
+-		led_trigger_set(led_cdev, NULL);
+-		up_write(&led_cdev->trigger_lock);
++		led_trigger_remove(led_cdev);
+ 		return count;
+ 	}
+ 
+@@ -139,6 +137,13 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
+ 	led_cdev->trigger = trigger;
+ }
+ 
++void led_trigger_remove(struct led_classdev *led_cdev)
++{
++	down_write(&led_cdev->trigger_lock);
++	led_trigger_set(led_cdev, NULL);
++	up_write(&led_cdev->trigger_lock);
++}
++
+ void led_trigger_set_default(struct led_classdev *led_cdev)
+ {
+ 	struct led_trigger *trig;
+@@ -231,6 +236,7 @@ void led_trigger_unregister_simple(struct led_trigger *trigger)
+ 
+ /* Used by LED Class */
+ EXPORT_SYMBOL_GPL(led_trigger_set);
++EXPORT_SYMBOL_GPL(led_trigger_remove);
+ EXPORT_SYMBOL_GPL(led_trigger_set_default);
+ EXPORT_SYMBOL_GPL(led_trigger_show);
+ EXPORT_SYMBOL_GPL(led_trigger_store);
+diff --git a/drivers/leds/leds.h b/drivers/leds/leds.h
+index 12b6fe9..b618256 100644
+--- a/drivers/leds/leds.h
++++ b/drivers/leds/leds.h
+@@ -34,9 +34,11 @@ extern struct list_head leds_list;
+ void led_trigger_set_default(struct led_classdev *led_cdev);
+ void led_trigger_set(struct led_classdev *led_cdev,
+ 			struct led_trigger *trigger);
++void led_trigger_remove(struct led_classdev *led_cdev);
+ #else
+ #define led_trigger_set_default(x) do {} while(0)
+ #define led_trigger_set(x, y) do {} while(0)
++#define led_trigger_remove(x) do {} while(0)
+ #endif
+ 
+ ssize_t led_trigger_store(struct device *dev, struct device_attribute *attr,
+-- 
+1.5.3.8
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
