@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934908AbYBGV0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936030AbYBGV0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934908AbYBGV0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964916AbYBGVZg
+	id S936030AbYBGV0u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934971AbYBGV0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:25:36 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:33135 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964907AbYBGVZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:25:32 -0500
-Date: Thu, 7 Feb 2008 22:25:29 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       ath5k-devel@lists.ath5k.org, linux-wireless@vger.kernel.org
-Subject: Re: [RFT 1/1] single_chip test
-Message-ID: <20080207212529.GA5975@dose.home.local>
-Mail-Followup-To: Bob Copeland <me@bobcopeland.com>,
-	Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-	ath5k-devel@lists.ath5k.org, linux-wireless@vger.kernel.org
-References: <20080206014131.9d489a34.akpm@linux-foundation.org> <1202294560-7313-1-git-send-email-jirislaby@gmail.com> <20080206150043.GA6921@nineveh.local> <b6c5339f0802060746m3a5f87edj4465797564430292@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6c5339f0802060746m3a5f87edj4465797564430292@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 7 Feb 2008 16:26:17 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56303 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933693AbYBGV0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:26:15 -0500
+Subject: Re: Xilinx: hwicap driver comments
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, stephen.neuendorffer@xilinx.com,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Kumar Gala <galak@gate.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com>
+References: <47AB6552.7040503@gmail.com>
+	 <20080207124203.147ce300.akpm@linux-foundation.org>
+	 <fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 08:25:45 +1100
+Message-Id: <1202419545.7079.136.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 10:46:39 -0500, Bob Copeland wrote:
-> > > We failed to resume after a hardware reset here for a whole second. Is there any
-> > > version of ath5k which worked for you (is this a regression)?
+
+On Thu, 2008-02-07 at 13:54 -0700, Grant Likely wrote:
+> On 2/7/08, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Thu, 07 Feb 2008 21:08:50 +0100
+> > How it got from there into Linux is also a mystery.  I see a batch of
+> > powerpc updates just went into mainline but I don't know whose tree was
+> > pulled - I wasn't copied on any pull request and I can't find one on the
+> > kernel mailing list.
 > >
-> > I cannot speak for Tino, but my ath5k never worked in MacBook -- it
-> > failed the same way, and I believe the hardware was the same.  My
-> > understanding was that it was a known bug with PCIE devices, but I got
-> > that out of reading list archives.
+> > Perhaps Paul has just done a stealth merge, but the patch to which you
+> > refer doesn't have his signoff.  Very confused.
 > 
-> Nick Kossifidis and I are in the process of debugging this -- we
-> determined that AR5K_RESET_CTL_PCI hangs the card in hw_nic_wakeup.
-> It doesn't look like there is any general support for 5424 cards yet.
+> It went through my tree.  Paul pulls from Josh Boyer's tree for
+> powerpc-4xx patches, and Josh pulls from mine for xilinx virtex
+> powerpc 405 patches.
+> 
+> My screw up, sorry I broke the rules.  What is the best way to resolve this?
 
-I tried the patch, and the card was detected. I was able to associate
-with an WPA2 AP and send/receive some traffic. But after a while the
-interface broke:
+It's unclear to me whether you did anything wrong here.
 
-ath0: No ProbeResp from current AP 00:14:bf:16:25:87 - assume out of
-range
-ath5k_hw_get_isr: 0x00000020
-...
-ath0: failed to set channel 165 (5825 MHz) for scan
-ath0: failed to restore operational channel after scan
-printk: 19 messages suppressed.
-ath5k phy0: calibration timeout (2447MHz)
-printk: 1 messages suppressed.
-ath5k phy0: calibration timeout (2447MHz)
-ath5k phy0: unable to reset hardware: -11
+This driver is totally platform specific (it's not like it was a
+wireless driver or something like that) and has been reviewed on the
+platform mailing list (even if, apprently, not enough).
 
-Regards,
-Tino
+If those problems haven't been spotted, then too bad, and thanks Jiri
+for picking them up later on, that's much welcome, but I don't think we
+should start having all of the platform bits go through lkml, it
+wouldn't be practical at all.
+
+As far as -mm is concerned, that depends how long this has been in
+paulus tree before the merge window I suppose. I suspect that while
+paulus for-2.6.25 has been around getting ready for merge for some time
+now (we've been good citizen in that regard, getting everything together
+way before the actual merge window), we haven't necessarily yet totally
+sorted out the timing with out own sub-maintainer and sub-sub-maintainer
+trees (powerpc is a complicated architecture !).
+
+So while I would have expected this to show up at least for a little
+while in -mm via paulus for-2.6.25, it's possible that it didn't happen,
+or that paulus didn't include for-2.6.25 in powerpc.git or something
+like that....
+
+So we can try to improve in this area, but I don't think Grant himself
+did anything wrong including that driver in his tree and having paul
+merge it, except maybe for a bit more in depth review (but we all do
+miss things sometimes).
+
+Cheers,
+Ben.
+
+
