@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935378AbYBGVYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935519AbYBGVZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935378AbYBGVYg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935388AbYBGVVQ
+	id S935519AbYBGVZA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935787AbYBGVV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:21:16 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37643 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935793AbYBGVVO (ORCPT
+	Thu, 7 Feb 2008 16:21:26 -0500
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:48328 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934837AbYBGVVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:21:14 -0500
-Date: Thu, 7 Feb 2008 13:21:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: jirislaby@gmail.com, stephen.neuendorffer@xilinx.com,
-       linux-kernel@vger.kernel.org, paulus@samba.org, galak@gate.crashing.org,
-       benh@kernel.crashing.org, torvalds@linux-foundation.org
-Subject: Re: Xilinx: hwicap driver comments
-Message-Id: <20080207132106.ec5ebf1d.akpm@linux-foundation.org>
-In-Reply-To: <fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com>
-References: <47AB6552.7040503@gmail.com>
-	<20080207124203.147ce300.akpm@linux-foundation.org>
-	<fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Feb 2008 16:21:24 -0500
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
+Date: Thu, 7 Feb 2008 22:21:18 +0100
+User-Agent: KMail/1.9.7
+Cc: mingo@elte.hu, tglx@linutronix.de, lenb@kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080207195519.GA21772@basil.nowhere.org>
+In-Reply-To: <20080207195519.GA21772@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart9395819.Ub6Rb7MlLC";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200802072221.19099.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008 13:54:06 -0700
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+--nextPart9395819.Ub6Rb7MlLC
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On 2/7/08, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Thu, 07 Feb 2008 21:08:50 +0100
-> > How it got from there into Linux is also a mystery.  I see a batch of
-> > powerpc updates just went into mainline but I don't know whose tree was
-> > pulled - I wasn't copied on any pull request and I can't find one on the
-> > kernel mailing list.
-> >
-> > Perhaps Paul has just done a stealth merge, but the patch to which you
-> > refer doesn't have his signoff.  Very confused.
-> 
-> It went through my tree.  Paul pulls from Josh Boyer's tree for
-> powerpc-4xx patches, and Josh pulls from mine for xilinx virtex
-> powerpc 405 patches.
-> 
-> My screw up, sorry I broke the rules.  What is the best way to resolve this?
-> 
+On the day of Thursday 07 February 2008 Andi Kleen hast written:
 
-Well I think we'd like to see the patches appear in Paul's tree well before
-the merge window if poss - that way they'll get a little bit of tyre-kicking
-and perhaps review via -mm.  Kamalesh and I (at least) do perform build-
-and runtime testing of powerpc.
+> Replace the old "for all of nvidia" quirk with a quirk containing pci
+> device ID. I goobled this list together from pci.ids and googling and it
+> may be incomplete, but so far I haven't had complaints.
 
-I would request that Paul copy myself and the main mailing list on pull
-requests.
+> +	QBRIDGE(PCI_VENDOR_ID_NVIDIA, 0x02f0, nvidia_timer), /* mcp 51/nf4 ? */
 
-It seems wrong that the signoff trail for that patch didn't actually
-reflect reality - it should have had both Josh's and Paul's signoffs.  That
-would require that the changelog be altered during git->git transfers which
-I expect is just incompatible with the way git works (as far as I dimly
-understand it).
+If you want to skip timer override on this board, this is a *NAK* from me. =
+I=20
+told you the last time, it only works reliably here on MCP51 with timer=20
+override working. Even before Asus released a bios which had an option to=20
+enable the hpet, I needed the override or I got irratic behaviour. Since I=
+=20
+got hpet enabled I gave up on arguing as the wrongly triggered quirk didn't=
+=20
+bug me anymore.
 
-It never hurts to send a patch to lkml even if you believe it isn't of
-general interest.  People will pass an idle eye across it, and things might
-get picked up, yielding improvements.  Plus more people know about its
-existence.  Probably this is more the case for something which resides
-under drivers/char/ than with something which resides in arch/powerpc/...
+IIRC my nforce2 needed the override. I didn't see that in the list.
+
+00:00.0 RAM memory: nVidia Corporation C51 Host Bridge (rev a2)
+00: de 10 f0 02 06 00 b0 00 a2 00 00 05 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 c0 81
+30: 00 00 00 00 44 00 00 00 00 00 00 00 ff 00 00 00
+
+bye,
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
+
+--nextPart9395819.Ub6Rb7MlLC
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHq3ZPxU2n/+9+t5gRAgZFAKC0rw3CI+MxOxVSExYlEQmCrPmdwgCgoUa9
+8R948cPJ4KW4QB4PsS2MiLw=
+=rgQi
+-----END PGP SIGNATURE-----
+
+--nextPart9395819.Ub6Rb7MlLC--
