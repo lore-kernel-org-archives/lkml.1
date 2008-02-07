@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbYBGXMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbYBGXMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbYBGXMb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbYBGXMQ
+	id S1763414AbYBGXMv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYBGXMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:12:16 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55324 "EHLO smtp4.pp.htv.fi"
+	Thu, 7 Feb 2008 18:12:20 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59474 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753651AbYBGXMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:12:14 -0500
-Date: Fri, 8 Feb 2008 01:12:26 +0200
+	id S1757351AbYBGXMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 18:12:18 -0500
+Date: Fri, 8 Feb 2008 01:12:30 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, geert@linux-m68k.org
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: [2.6 patch] fix ide/legacy/gayle.c compilation
-Message-ID: <20080207231226.GD7198@cs181133002.pp.htv.fi>
+To: David Rientjes <rientjes@google.com>, wli@holomorphy.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: sparc compile error
+Message-ID: <20080207231230.GE7198@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,20 +23,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Commit 3062fc67dad01b1d2a15d58c709eff946389eca4 broke sparc:
 
----
-deb88131c2fcc3076121597463153979aba9062d diff --git a/drivers/ide/legacy/gayle.c b/drivers/ide/legacy/gayle.c
-index 9d3851d..b7d8109 100644
---- a/drivers/ide/legacy/gayle.c
-+++ b/drivers/ide/legacy/gayle.c
-@@ -94,7 +94,7 @@ static int gayle_ack_intr_a1200(ide_hwif_t *hwif)
- 
- static void __init gayle_setup_ports(hw_regs_t *hw, unsigned long base,
- 				     unsigned long ctl, unsigned long irq_port,
--				     ide_ack_intr_t *ack_intr);
-+				     ide_ack_intr_t *ack_intr)
- {
- 	int i;
- 
+<--  snip  -->
+
+...
+  CC      init/do_mounts.o
+In file included from include/linux/mm.h:39,
+                 from include/linux/memcontrol.h:24,
+                 from include/linux/swap.h:8,
+                 from include/linux/suspend.h:7,
+                 from init/do_mounts.c:6:
+include/asm/pgtable.h:344: warning: parameter names (without types) in function declaration
+include/asm/pgtable.h:345: warning: parameter names (without types) in function declaration
+include/asm/pgtable.h:346: error: expected '=', ',', ';', 'asm' or '__attribute__' before '___f___swp_entry'
+make[1]: *** [init/do_mounts.o] Error 1
+
+<--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
