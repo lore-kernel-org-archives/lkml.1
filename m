@@ -1,89 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbYBGAsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935190AbYBGAtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932252AbYBGAsJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:48:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932383AbYBGAgj
+	id S935190AbYBGAtM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934671AbYBGAiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:36:39 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55833 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932172AbYBGAgh (ORCPT
+	Wed, 6 Feb 2008 19:38:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39303 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933246AbYBGAiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:36:37 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>, tglx@linutronix.de,
-       mingo@redhat.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
-References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com>
-	<20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com>
-	<47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu>
-Date: Wed, 06 Feb 2008 17:31:11 -0700
-In-Reply-To: <20080206233657.GB12393@elte.hu> (Ingo Molnar's message of "Thu,
-	7 Feb 2008 00:36:57 +0100")
-Message-ID: <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Feb 2008 19:38:12 -0500
+Date: Wed, 6 Feb 2008 16:36:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cbouatmailru@gmail.com
+Cc: cascardo@minaslivre.org, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       dilinger@debian.org
+Subject: Re: [PATCH] power_supply: Remove capacity_level from list of sysfs
+ attributes
+Message-Id: <20080206163656.02cfd170.akpm@linux-foundation.org>
+In-Reply-To: <20080207000206.GA19739@zarina>
+References: <20080205161327.GA8628@vespa.holoscopio.com>
+	<20080206005312.237d7336.akpm@linux-foundation.org>
+	<20080206105018.GB4232@vespa.holoscopio.com>
+	<20080206135604.5473552c.akpm@linux-foundation.org>
+	<20080207000206.GA19739@zarina>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Thu, 7 Feb 2008 03:02:06 +0300
+Anton Vorontsov <cbouatmailru@gmail.com> wrote:
 
-> * H. Peter Anvin <hpa@zytor.com> wrote:
->
->>> I am wondering if interrupts are disabled on crashing cpu or if 
->>> crashing cpu is inside die_nmi(), how would it stop/prevent delivery 
->>> of NMI IPI to other cpus.
->>
->> I don't see how it would.
->
-> cross-CPU IPIs are a bit fragile on some PC platforms. So if the kexec 
-> code relies on getting IPIs to all other CPUs, it might not be able to 
-> do it reliably. There might be limitations on how many APIC irqs there 
-> can be queued at a time, and if those slots are used up and the CPU is 
-> not servicing irqs then stuff gets retried. This might even affect NMIs 
-> sent via APIC messages - not sure about that.
+> On Wed, Feb 06, 2008 at 01:56:04PM -0800, Andrew Morton wrote:
+> > On Wed, 6 Feb 2008 08:50:18 -0200
+> > Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org> wrote:
+> > 
+> > > On Wed, Feb 06, 2008 at 12:53:12AM -0800, Andrew Morton wrote:
+> > > > On Tue, 5 Feb 2008 14:13:36 -0200 Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org> wrote:
+> > > > 
+> > > > > ---
+> > > > >  drivers/power/power_supply_sysfs.c |    1 -
+> > > > >  1 files changed, 0 insertions(+), 1 deletions(-)
+> > > > > 
+> > > > > diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+> > > > > index d482484..13399d1 100644
+> > > > > --- a/drivers/power/power_supply_sysfs.c
+> > > > > +++ b/drivers/power/power_supply_sysfs.c
+> > > > > @@ -106,7 +106,6 @@ static struct device_attribute power_supply_attrs[] = {
+> > > > >  	POWER_SUPPLY_ATTR(energy_now),
+> > > > >  	POWER_SUPPLY_ATTR(energy_avg),
+> > > > >  	POWER_SUPPLY_ATTR(capacity),
+> > > > > -	POWER_SUPPLY_ATTR(capacity_level),
+> > > > >  	POWER_SUPPLY_ATTR(temp),
+> > > > >  	POWER_SUPPLY_ATTR(temp_ambient),
+> > > > >  	POWER_SUPPLY_ATTR(time_to_empty_now),
+> > > > 
+> > > > What is the reason for making this change?
+> > > 
+> > > Sorry. The following commit is the reason for this patch.
+> > > 
+> > > It removes CAPACITY_LEVEL from every other code, leaving the array with
+> > > sysfs attributes with one more entry than the number of enums in
+> > > power_supply.h. This leads to some attributes containing the value of
+> > > the attribute right after it. For example, temp_ambient would have the
+> > > value of time_to_empty_now. In my case, I had time_to_full_avg have the
+> > > value which should be in model_name, when the former was usually empty.
+> > > 
+> > 
+> > OK, thanks, I think I have enough material there to put together the final
+> > patch.
+> > 
+> > Next time, please do cc the author of the change which you're fixing.  And
+> > please do reply-to-all when working with kernel people, thanks.
+> > 
+> > I tagged this fix as needed-in-2.6.24.x as well.
+> 
+> Nope, I don't think 2.6.24.x needs this fix. Commit 8efe444038a205e79b,
+> wasn't been in 2.6.24. Only 2.6.25-rc0 affected.
+> 
+> If applied to 2.6.24.x, it will break things.
+> 
 
-
-
-The design was as follows:
-- Doing anything in the crashing kernel is unreliable.
-- We do not have the information to do anything useful in the recovery/target
-  kernel.
-- Having the other cpus stopped is very nice as it reduces the amount of
-  weirdness happening.  We do not share the same text or data addresses
-  so stopping the other cpus is not mandatory.  On some other architectures
-  there are cpu tables that must live at a fixed address but this is not
-  the case on x86.
-- Having the location the other cpus were running at is potentially very
-  interesting debugging information.
-
-Therefore the intent of the code is to send an NMI to each other cpu.  With
-a timeout of a second or so.  So that if the NMI do not get sent we continue
-on.
-
-There is certainly still room for improving the robustness by not shutting
-down the ioapics and using less general infrastructure code on that path.
-That said I would be a little surprised if that is what is biting us.
-
-Looking at the patch the local_irq_enable() is totally bogus.  As soon
-was we hit machine_crash_shutdown the first thing we do is disable irqs.
-
-I'm wondering if someone was using the switch cpus on crash patch that was
-floating around.  That would require the ipis to work.
-
-I don't know if nmi_exit makes sense.  There are enough layers of abstraction
-in that piece of code I can't quickly spot the part that is banging the hardware.
-
-The location of nmi_exit in the patch is clearly wrong.  crash_kexec is a noop
-if we don't have a crash kernel loaded (and if we are not the first cpu into it),
-so if we don't execute the crash code something weird may happen.  Further the
-code is just more maintainable if that kind of code lives in machine_crash_shutdown.
-
-
-
-Eric
+ah, OK, thanks.  git timestamps considered harmful.
