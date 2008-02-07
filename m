@@ -1,73 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761587AbYBGVkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965197AbYBGVkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761587AbYBGVkK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964870AbYBGVi4
+	id S965197AbYBGVkv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965072AbYBGVj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:38:56 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:56417 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964858AbYBGViy (ORCPT
+	Thu, 7 Feb 2008 16:39:26 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:49675 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760369AbYBGVjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:38:54 -0500
-X-Sasl-enc: A7kzf6DNHyZrVY5u+Lb0W81gLf9S8HN/mCnB4hvCWNBn 1202420333
-Date: Thu, 7 Feb 2008 19:38:45 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>,
-       =?iso-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] LED updates
-Message-ID: <20080207213845.GA27862@khazad-dum.debian.net>
-References: <1202380503.9519.21.camel@dax.rpnet.com>
+	Thu, 7 Feb 2008 16:39:20 -0500
+Date: Thu, 7 Feb 2008 13:37:15 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, Joel Becker <Joel.Becker@oracle.com>
+Subject: Re: [git patches] ocfs2 update
+Message-ID: <20080207213714.GR22671@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20080207200944.GQ22671@ca-server1.us.oracle.com> <20080207124745.4868e108.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1202380503.9519.21.camel@dax.rpnet.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080207124745.4868e108.akpm@linux-foundation.org>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008, Richard Purdie wrote:
-> Márton Németh:
->       leds: Add support for hardware accelerated LED flashing
->       leds: hw acceleration for Clevo mail LED driver
+On Thu, Feb 07, 2008 at 12:47:45PM -0800, Andrew Morton wrote:
+> On Thu, 7 Feb 2008 12:09:44 -0800
+> Mark Fasheh <mark.fasheh@oracle.com> wrote:
+> 
+> >  /*
+> > - * dlm_register_domain: one-time setup per "domain"
+> > + * Compare a requested locking protocol version against the current one.
+> > + *
+> > + * If the major numbers are different, they are incompatible.
+> > + * If the current minor is greater than the request, they are incompatible.
+> > + * If the current minor is less than or equal to the request, they are
+> > + * compatible, and the requester should run at the current minor version.
+> > + */
+> > +static int dlm_protocol_compare(struct dlm_protocol_version *existing,
+> > +				struct dlm_protocol_version *request)
+> > +{
+> > +	if (existing->pv_major != request->pv_major)
+> > +		return 1;
+> > +
+> > +	if (existing->pv_minor > request->pv_minor)
+> > +		return 1;
+> > +
+> > +	if (existing->pv_minor < request->pv_minor)
+> > +		request->pv_minor = existing->pv_minor;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> 
+> It's somewhat obnoxious that what appears to be a straightforward
+> compare-two-things-and-return-result function will actually modify one of
+> the things which it is allegedly comparing.
 
-This one has a loose end: when you call brightness_set on a led with
-hardware flash acceleration, you will leave the trigger armed, BUT the led
-won't blink anymore.  That's just wrong.
+Yeah, a better name would probably help with readability. Joel, how about
+dlm_protocol_compare_and_set()?
 
-Either we should always remove *any* (hardware accelerated or not!) active
-trigger when a write to brightness_set is done, or the stuff about "calling
-brightness_set will disable the hardware accelerated blink" has to go.
 
-I personally prefer that we would always remove any active trigger if
-brightness_set is to be called.  IMHO, it is neater, and it is also the
-least-surprise-behaviour from an user perspective with the LED_OFF:LED_FULL
-triggers we have right now.
+> Please integrate checkpatch into your processes - this one had a few little
+> glitches.
 
-Which one will be?  If it is "remove any active trigger", I'd not mind
-writing the patch.
+FWIW - I've run all patches through checkpatch.pl since your last review.
+This one went through a couple cycles of checkpatch actually :) There's
+three warnings that I get:
 
-> Richard Purdie:
->       leds: Standardise LED naming scheme
+ERROR: "foo * bar" should be "foo *bar"
+#70: FILE: fs/ocfs2/dlm/dlmapi.h:200:
++struct dlm_ctxt * dlm_register_domain(const char *domain, u32 key,
 
-This one causes trouble (at least on 2.6.23 -- I backported the patch) due
-to the 20-byte length limit on sysfs names.  I had to use "tp::<somecrap>"
-instead of "thinkpad::<somecrap>" to name LEDs, and still had to reduce
-ultrabase_battery to ultrabase_batt :-)
+WARNING: line over 80 characters
+#269: FILE: fs/ocfs2/dlm/dlmdomain.c:813:
++
+#&dlm->fs_locking_proto,
 
-Anyway, IMHO, the LED function should come first, and we should not even
-need the led driver name anywhere.  In case of clashes in the class sysfs
-dir, just tack a .# to the end or somesuch.  The device the LED is tied to
-already differentiates them.  That would save a lot of chars for something
-much more useful (the function).
+WARNING: line over 80 characters
+#270: FILE: fs/ocfs2/dlm/dlmdomain.c:814:
++
+#&query->fs_proto)) {
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+total: 1 errors, 2 warnings, 569 lines checked
+
+
+The "foo * bar" one is from existing code which got moved, and I felt that
+leaving them unmodified was cleaner from a patch-reading perspective.
+
+The over 80 characters warnings were ignored as the code seemed more
+readable as-is.
+
+
+I guess a lot of this can be subjective though, so I can be super strict if
+you really feel it's necessary.
+
+
+Thanks,
+	--Mark
+
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
