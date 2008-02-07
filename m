@@ -1,110 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYBGJ3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbYBGJ3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYBGJ3Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 04:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYBGJ3A
+	id S1758896AbYBGJ3w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 04:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbYBGJ3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 04:29:00 -0500
-Received: from sacred.ru ([62.205.161.221]:41597 "EHLO sacred.ru"
+	Thu, 7 Feb 2008 04:29:44 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:54693 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbYBGJ25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 04:28:57 -0500
-Message-ID: <47AACE2B.2040404@openvz.org>
-Date: Thu, 07 Feb 2008 12:23:55 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Duncan Sands <baldrick.bulk@free.fr>
-CC: linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
-References: <47A9DD30.5040604@openvz.org> <200802061820.54870.baldrick.bulk@free.fr>
-In-Reply-To: <200802061820.54870.baldrick.bulk@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752646AbYBGJ3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 04:29:42 -0500
+Subject: Re: [PATH] misc,acpi,backlight: Compal Laptop Extras (2nd try)
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080205183820.65dcf111@debian>
+References: <20080205183820.65dcf111@debian>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 09:29:23 +0000
+Message-Id: <1202376563.9519.12.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 07 Feb 2008 12:23:42 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duncan Sands wrote:
-> Hi,
+On Tue, 2008-02-05 at 18:38 +0100, Cezary Jackiewicz wrote:
+> From: Cezary Jackiewicz <cezary.jackiewicz@gmail.com>
 > 
->> The problem is that I couldn't find the maintainer for the code 
->> in drivers/usb/atm/.
+> This is driver for Compal Laptop: FL90/IFL90, based on MSI
+> driver.
 > 
-> that would be me (though since I haven't used this modem in years I would
-> be more than happy to hand it off to someone else).
+> This driver exports a few files in /sys/devices/platform/compal-laptop/:
+>  lcd_level - screen brightness: contains a single integer in the range 0..7 (rw)
+>  wlan - wlan subsystem state: contains 0 or 1 (rw)
+>  bluetooth - bluetooth subsystem state: contains 0 or 1 (rw)
+>  raw - raw value taken from embedded controller register (ro)
 > 
->> Besides, I don't have a proper hardware to test this.
+> In addition to these platform device attributes the driver registers itself
+> in the Linux backlight control subsystem and is available to userspace under
+> /sys/class/backlight/compal-laptop/.
 > 
-> I will try to find where I put my old modem and test your patch this weekend.
+> Based on 2.6.24
 
-Oh, that would be great :)
+If you use the backlight class do we really need to duplicate the
+lcd_level file under sysfs too?
 
->> @@ -1014,11 +1015,7 @@ static int usbatm_do_heavy_init(void *arg)
->>  	struct usbatm_data *instance = arg;
->>  	int ret;
->>  
->> -	daemonize(instance->driver->driver_name);
->>  	allow_signal(SIGTERM);
->> -	instance->thread_pid = current->pid;
->> -
->> -	complete(&instance->thread_started);
-> 
-> One reason the completion existed to make sure that the thread was not
-> sent SIGTERM before the above call to allow_signal(SIGTERM).  So I think
-> you have opened up a (tiny) race by deleting it.
+Richard
 
-Nope. See my answer below :)
-
->>  static int usbatm_heavy_init(struct usbatm_data *instance)
->>  {
->> -	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_FS | CLONE_FILES);
->> -
->> -	if (ret < 0) {
->> -		usb_err(instance, "%s: failed to create kernel_thread (%d)!\n", __func__, ret);
-> 
-> Please don't delete this message.
-> 
->> -		return ret;
->> -	}
->> +	struct task_struct *t;
->>  
->> -	wait_for_completion(&instance->thread_started);
->> +	t = kthread_create(usbatm_do_heavy_init, instance,
->> +			instance->driver->driver_name);
->> +	if (IS_ERR(t))
->> +		return PTR_ERR(t);
->>  
->> +	instance->thread = t;
->> +	wake_up_process(t);
-> 
-> Does the kthread API guarantee that the kthread is not running until you call
-
-It does. That's why the race, you mentioned above is impossible.
-
-> wake_up_process?  Because if not then what is to stop the kthread finishing before
-> this thread does "instance->thread = t", resulting in an attempt to send a signal
-> to a dead process later on in disconnect?
-> 
-> Otherwise it looks fine - thanks!
-> 
-> By the way, the right thing to do is (I think) to replace the thread with a workqueue
-> and have users of usbatm register a "shut_down" callback rather than using signals: the
-> disconnect method would call shut_down rathering than trying to kill the thread.  That
-> way all this mucking around with pids etc wouldn't be needed.  All users of usbatm would
-> need to be modified.  I managed to convince myself once that they could all be fixed up
-> in a fairly simple manner thanks to a few tricks and a completion or two, but I don't
-> recall the details...
-
-Well, that would be also great, since kill_proc will be gone - that's what
-I'm trying to achieve.
-
-> Best wishes,
-> 
-> Duncan.
-> 
-
-Thanks,
-Pavel
