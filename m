@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761657AbYBGX2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933808AbYBGXcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761657AbYBGX2y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932355AbYBGX2o
+	id S933808AbYBGXcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbYBGXcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:28:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49970 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932292AbYBGX2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:28:42 -0500
-Message-ID: <47AB9416.2030508@redhat.com>
-Date: Thu, 07 Feb 2008 18:28:22 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Thu, 7 Feb 2008 18:32:31 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45363 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756946AbYBGXca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 18:32:30 -0500
+Date: Thu, 7 Feb 2008 15:32:29 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andi Kleen <andi@firstfloor.org>,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Subject: Re: [PATCH 1/2] kmemcheck v3
+In-Reply-To: <19f34abd0802071518j1ffc3dafp46fcbd8d36d36f17@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802071530040.3845@schroedinger.engr.sgi.com>
+References: <47AB79D4.2070605@gmail.com>  <Pine.LNX.4.64.0802071341500.2544@schroedinger.engr.sgi.com>
+  <19f34abd0802071412m569e4993kffb4a3af163fa16c@mail.gmail.com> 
+ <Pine.LNX.4.64.0802071443440.3289@schroedinger.engr.sgi.com>
+ <19f34abd0802071518j1ffc3dafp46fcbd8d36d36f17@mail.gmail.com>
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] x86_64: make traps on 'iret' be debuggable in user	space
-References: <20080205075137.617012701A8@magilla.localdomain>	<20080205080149.GA16929@elte.hu>	<20080205081506.655CB2701A8@magilla.localdomain>	<47AB6652.3010600@redhat.com> <20080207203032.5BF392701AB@magilla.localdomain>
-In-Reply-To: <20080207203032.5BF392701AB@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/2008 03:30 PM, Roland McGrath wrote:
->> Did you test without CONFIG_PARAVIRT, and CONFIG_PARAVIRT booted both with and
->> without the "noreplace-paravirt" parameter?
-> 
-> I did not test CONFIG_PARAVIRT at all.  I just fixed what its introduction
-> had done to break generic x86-64.
-> 
-> 
+On Fri, 8 Feb 2008, Vegard Nossum wrote:
 
-It looks you may have broken paravirt (if even that case worked) because
-the iret is actually at the iret_label you removed (after the instruction
-is patched.) And most likely neither version worked with "noreplace-paravirt',
-because then the iret instruction is out-of-line and the INTERRUPT_RETURN
-jumps to it.
+> The tracking that kmemcheck does is actually a byte-for-byte tracking
+> of whether memory has been initialized or not. Think of it as valgrind
+> for the kernel. We do this by "hiding" pages (marking them non-present
+> for for MMU) and taking the page faults, which effectively tells us
+> what memory is being attempted to be read from or written to.
 
+Ahh. Okay. But ZONE_DMA pages are exempt from that scheme? You know 
+that ZONE_NORMAL pages can undergo dma?
 
+> I chose to implement this in the slab layer because this is probably
+> where most of the interesting allocations are coming from, and this
+> gives us a better control over what most users/callers care about,
+> namely the specific objects.
+
+But the slab layer allocates pages < PAGE_SIZE. You need to take a fault 
+right? So each object would need its own page?
