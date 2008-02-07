@@ -1,56 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbYBGNsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758160AbYBGNv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761038AbYBGNsV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 08:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760530AbYBGNsC
+	id S1758160AbYBGNv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 08:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYBGNvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 08:48:02 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:35199 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760300AbYBGNsA (ORCPT
+	Thu, 7 Feb 2008 08:51:22 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:3235 "EHLO
+	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752874AbYBGNvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 08:48:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=LzlUdGcNPN6/AoqGQURvXoD8ziy6YuBbEZQmJLrtwdvNka+ztwD+w4znKBAA4SdRCkmESf/0oGxnWwzSKpCgtp+podAiViSykyYHIh0QiGfJEEdGdEb7YW+pTKWlpnnOLOCVj1f2C7Q/7yxp2oXnyMXgttPHEZOM0xJysJxQk/0=
-Message-ID: <84144f020802070547s1b268ff4tf16809d084e1c35c@mail.gmail.com>
-Date: Thu, 7 Feb 2008 15:47:51 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Cc: "Christer Weinigel" <christer@weinigel.se>,
-       "Marcel Holtmann" <marcel@holtmann.org>, "Greg KH" <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47AB0834.7000201@davidnewall.com>
+	Thu, 7 Feb 2008 08:51:21 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+Date: Thu, 7 Feb 2008 14:50:48 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Izik Eidus" <izike@qumranet.com>
+cc: "Avi Kivity" <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 7/8] MMU: add TDP support to the KVM MMU
+Message-ID: <20080207135048.GF6960@amd.com>
+References: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com>
+ <1202388465-8657-8-git-send-email-joerg.roedel@amd.com>
+ <47AB0737.2000206@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <47AB0737.2000206@qumranet.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 07 Feb 2008 13:50:49.0050 (UTC)
+ FILETIME=[7218E3A0:01C86990]
+X-WSS-ID: 6BB5D3472IW10735031-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-References: <20080125180232.GA4613@kroah.com>
-	 <47A5D9CD.5070001@davidnewall.com>
-	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
-	 <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet>
-	 <courier.47A84ADB.000047C1@hawking.rebel.net.au>
-	 <84144f020802050346h2c26aac4v9841dd5bc98931a0@mail.gmail.com>
-	 <20080206221254.5780a862@weinigel.se>
-	 <84144f020802062222s78533aa6qe352d5fe7b622e20@mail.gmail.com>
-	 <47AB0834.7000201@davidnewall.com>
-X-Google-Sender-Auth: ec1b94fbbef9d425
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Thu, Feb 07, 2008 at 03:27:19PM +0200, Izik Eidus wrote:
+> Joerg Roedel wrote:
+> >This patch contains the changes to the KVM MMU necessary for support of the
+> >Nested Paging feature in AMD Barcelona and Phenom Processors.
+> >  
+> 
+> good patch, it look like things will be very fixable with it
+> 
+> >Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> >---
+> > arch/x86/kvm/mmu.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+> > arch/x86/kvm/mmu.h |    6 ++++
+> > 2 files changed, 82 insertions(+), 3 deletions(-)
+> >
+> >diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+> >index 5e76963..5304d55 100644
+> >--- a/arch/x86/kvm/mmu.c
+> >+++ b/arch/x86/kvm/mmu.c
+> >@@ -1081,6 +1081,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+> > 	int i;
+> > 	gfn_t root_gfn;
+> > 	struct kvm_mmu_page *sp;
+> >+	int metaphysical = 0;
+> >  	root_gfn = vcpu->arch.cr3 >> PAGE_SHIFT;
+> > @@ -1089,14 +1090,20 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+> > 		hpa_t root = vcpu->arch.mmu.root_hpa;
+> >  		ASSERT(!VALID_PAGE(root));
+> >+		if (tdp_enabled)
+> >+			metaphysical = 1;
+> > 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
+> >-				      PT64_ROOT_LEVEL, 0, ACC_ALL, NULL, NULL);
+> >+				      PT64_ROOT_LEVEL, metaphysical,
+> >+				      ACC_ALL, NULL, NULL);
+> > 		root = __pa(sp->spt);
+> > 		++sp->root_count;
+> > 		vcpu->arch.mmu.root_hpa = root;
+> > 		return;
+> > 	}
+> > #endif
+> >+	metaphysical = !is_paging(vcpu);
+> >+	if (tdp_enabled)
+> >+		metaphysical = 1;
+> > 	for (i = 0; i < 4; ++i) {
+> > 		hpa_t root = vcpu->arch.mmu.pae_root[i];
+> > @@ -1110,7 +1117,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+> > 		} else if (vcpu->arch.mmu.root_level == 0)
+> > 			root_gfn = 0;
+> > 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
+> >-				      PT32_ROOT_LEVEL, !is_paging(vcpu),
+> >+				      PT32_ROOT_LEVEL, metaphysical,
+> > 				      ACC_ALL, NULL, NULL);
+> > 		root = __pa(sp->spt);
+> > 		++sp->root_count;
+> >@@ -1144,6 +1151,36 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+> > 			     error_code & PFERR_WRITE_MASK, gfn);
+> > }
+> > +static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
+> >+				u32 error_code)
+> >  
+> 
+> you probably mean gpa_t ?
 
-On Feb 7, 2008 3:31 PM, David Newall <davidn@davidnewall.com> wrote:
-> This *is* real work.  You have blinded yourself to the fact that this
-> discussion is preliminary to a proposed change.
->
-> Or put another way, if you want to kill the discussion then the answer
-> to "shall we" is "no."
+Yes. But the function is assigned to a function pointer. And the type of
+that pointer expects gva_t there. So I named the parameter gpa to
+describe that a guest physical address is meant there.
 
-Ok. I am not interested in continuing this discussion so please remove
-from the cc. Thanks.
+> >+{
+> >+	struct page *page;
+> >+	int r;
+> >+
+> >+	ASSERT(vcpu);
+> >+	ASSERT(VALID_PAGE(vcpu->arch.mmu.root_hpa));
+> >+
+> >+	r = mmu_topup_memory_caches(vcpu);
+> >+	if (r)
+> >+		return r;
+> >+
+> >+	down_read(&current->mm->mmap_sem);
+> >+	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
+> >+	if (is_error_page(page)) {
+> >+		kvm_release_page_clean(page);
+> >+		up_read(&current->mm->mmap_sem);
+> >+		return 1;
+> >+	}
+> >  
+> 
+> i dont know if it worth checking it here,
+> in the worth case we will map the error page and the host will be safe
 
-                        Pekka
+Looking at the nonpaging_map function it is the right place to check for
+the error page.
+
+Joerg Roedel
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
