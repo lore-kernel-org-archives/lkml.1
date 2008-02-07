@@ -1,214 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYBGIYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYBGIZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYBGIYF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 03:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbYBGIXz
+	id S1758251AbYBGIZS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 03:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYBGIZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 03:23:55 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:47998 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754641AbYBGIXw (ORCPT
+	Thu, 7 Feb 2008 03:25:03 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:17005 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754209AbYBGIZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 03:23:52 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
+	Thu, 7 Feb 2008 03:25:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=m05SZxXes//qfi0pREoy1JlvUXcD2ZDVaVLP+CvSWvIJLqOGMnSdTCqP/zmC35D5sXzzde35yw32aHRS94M9fi1W6YT2NcUmzgkO6G6fbvVYEAwm/FxTPjYeljm7liUJagZwNcAt4gwHzZwuimKmUSEwJOAlXRUkw/0Zwny6M78=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology, Karnataka
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][Regression] x86, 32-bit: trim memory not covered by wb mtrrs - FIX
+Date: Thu, 7 Feb 2008 13:51:02 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <47AA2148.3010408@zytor.com>
-References: <1202331640-15610-1-git-send-email-ijc@hellion.org.uk>
-	 <1202331640-15610-2-git-send-email-ijc@hellion.org.uk>
-	 <1202331640-15610-3-git-send-email-ijc@hellion.org.uk>
-	 <47AA2148.3010408@zytor.com>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 08:23:31 +0000
-Message-Id: <1202372611.7333.12.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+       jesse.barnes@intel.com, yhlu.kernel@gmail.com, ak@suse.de,
+       Yinghai Lu <yinghai.lu@sun.com>
+References: <200802071257.51893.balajirrao@gmail.com> <20080207080245.GA28631@elte.hu>
+In-Reply-To: <20080207080245.GA28631@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.181
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCHv2 2/3] x86: add a crc32 checksum to the kernel image.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=dbapvBVlNrUA:10 a=frweXNZgSzYHrrxySyutIQ==:17 a=UYTG6VnX2GkQsb0OJvkA:9 a=WWImr5UilemaGT56aAgA:7 a=hR68VV_PBvEQIyb33--WMnyFDasA:4 a=jEp0ucaQiEUA:10 a=CY6gl2JlH4YA:10 a=WuK_CZDBSqoA:10
+Content-Disposition: inline
+Message-Id: <200802071351.02763.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 07 February 2008 01:32:45 pm Ingo Molnar wrote:
+> * Balaji Rao <balajirrao@gmail.com> wrote:
+> > Hello,
+> >
+> > The following commit caused my X server to stop working.
+> >
+> > commit 99fc8d424bc5d803fe92cad56c068fe64e73747a
+> > Author: Jesse Barnes <jesse.barnes@intel.com>
+> > Date:   Wed Jan 30 13:33:18 2008 +0100
+> >
+> >     x86, 32-bit: trim memory not covered by wb mtrrs
+> >
+> > This patch fixes the improper handling of addresses > 4G by
+> > mtrr_trim_uncached_memory. This, now brings up X on my system.
+>
+> thanks. Incidentally this same bug was reported and fixed yesterday, and
+> that fix is upstream already. Could you please compare your solution to
+> Yinghai Lu's fix below, and send us a patch for any further improvements
+> (or cleanups) you might notice in that code? It seems to be almost the
+> same fix as yours. (and hopefully it fixes your X problem too)
 
-On Wed, 2008-02-06 at 13:06 -0800, H. Peter Anvin wrote:
-[...some comments...]
+Cool! Yes, Yinghai Lu's patch indeed is the same as mine and its really 
+surprising that we've used the same variable name too! :)
 
-I fixed all of those up.
-
-Thanks,
-Ian.
-
----
-
-x86: add a crc32 checksum to the kernel image.
-
-Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
----
- Documentation/i386/boot.txt |    8 ++++
- arch/x86/boot/tools/build.c |   88 ++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 95 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
-index b5f5ba1..05c24df 100644
---- a/Documentation/i386/boot.txt
-+++ b/Documentation/i386/boot.txt
-@@ -531,6 +531,14 @@ Protocol:	2.08+
- 
-   The length of the compressed payload.
- 
-+**** THE IMAGE CHECKSUM
-+
-+From boot protocol version 2.08 onwards the CRC-32 is calculated over
-+the entire file using the characteristic polynomial 0x04C11DB7 and an
-+initial remainder of 0xffffffff.  The checksum is appended to the
-+file; therefore the CRC of the file up to the limit specified in the
-+syssize field of the header is always 0.
-+
- **** THE KERNEL COMMAND LINE
- 
- The kernel command line has become an important way for the boot
-diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
-index b424874..44dc192 100644
---- a/arch/x86/boot/tools/build.c
-+++ b/arch/x86/boot/tools/build.c
-@@ -50,6 +50,75 @@ typedef unsigned long  u32;
- u8 buf[SETUP_SECT_MAX*512];
- int is_big_kernel;
- 
-+/*----------------------------------------------------------------------*/
-+
-+static const u32 crctab32[] = {
-+	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
-+	0x706af48f, 0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4,
-+	0xe0d5e91e, 0x97d2d988, 0x09b64c2b, 0x7eb17cbd, 0xe7b82d07,
-+	0x90bf1d91, 0x1db71064, 0x6ab020f2, 0xf3b97148, 0x84be41de,
-+	0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7, 0x136c9856,
-+	0x646ba8c0, 0xfd62f97a, 0x8a65c9ec, 0x14015c4f, 0x63066cd9,
-+	0xfa0f3d63, 0x8d080df5, 0x3b6e20c8, 0x4c69105e, 0xd56041e4,
-+	0xa2677172, 0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b,
-+	0x35b5a8fa, 0x42b2986c, 0xdbbbc9d6, 0xacbcf940, 0x32d86ce3,
-+	0x45df5c75, 0xdcd60dcf, 0xabd13d59, 0x26d930ac, 0x51de003a,
-+	0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423, 0xcfba9599,
-+	0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
-+	0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d, 0x76dc4190,
-+	0x01db7106, 0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f,
-+	0x9fbfe4a5, 0xe8b8d433, 0x7807c9a2, 0x0f00f934, 0x9609a88e,
-+	0xe10e9818, 0x7f6a0dbb, 0x086d3d2d, 0x91646c97, 0xe6635c01,
-+	0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e, 0x6c0695ed,
-+	0x1b01a57b, 0x8208f4c1, 0xf50fc457, 0x65b0d9c6, 0x12b7e950,
-+	0x8bbeb8ea, 0xfcb9887c, 0x62dd1ddf, 0x15da2d49, 0x8cd37cf3,
-+	0xfbd44c65, 0x4db26158, 0x3ab551ce, 0xa3bc0074, 0xd4bb30e2,
-+	0x4adfa541, 0x3dd895d7, 0xa4d1c46d, 0xd3d6f4fb, 0x4369e96a,
-+	0x346ed9fc, 0xad678846, 0xda60b8d0, 0x44042d73, 0x33031de5,
-+	0xaa0a4c5f, 0xdd0d7cc9, 0x5005713c, 0x270241aa, 0xbe0b1010,
-+	0xc90c2086, 0x5768b525, 0x206f85b3, 0xb966d409, 0xce61e49f,
-+	0x5edef90e, 0x29d9c998, 0xb0d09822, 0xc7d7a8b4, 0x59b33d17,
-+	0x2eb40d81, 0xb7bd5c3b, 0xc0ba6cad, 0xedb88320, 0x9abfb3b6,
-+	0x03b6e20c, 0x74b1d29a, 0xead54739, 0x9dd277af, 0x04db2615,
-+	0x73dc1683, 0xe3630b12, 0x94643b84, 0x0d6d6a3e, 0x7a6a5aa8,
-+	0xe40ecf0b, 0x9309ff9d, 0x0a00ae27, 0x7d079eb1, 0xf00f9344,
-+	0x8708a3d2, 0x1e01f268, 0x6906c2fe, 0xf762575d, 0x806567cb,
-+	0x196c3671, 0x6e6b06e7, 0xfed41b76, 0x89d32be0, 0x10da7a5a,
-+	0x67dd4acc, 0xf9b9df6f, 0x8ebeeff9, 0x17b7be43, 0x60b08ed5,
-+	0xd6d6a3e8, 0xa1d1937e, 0x38d8c2c4, 0x4fdff252, 0xd1bb67f1,
-+	0xa6bc5767, 0x3fb506dd, 0x48b2364b, 0xd80d2bda, 0xaf0a1b4c,
-+	0x36034af6, 0x41047a60, 0xdf60efc3, 0xa867df55, 0x316e8eef,
-+	0x4669be79, 0xcb61b38c, 0xbc66831a, 0x256fd2a0, 0x5268e236,
-+	0xcc0c7795, 0xbb0b4703, 0x220216b9, 0x5505262f, 0xc5ba3bbe,
-+	0xb2bd0b28, 0x2bb45a92, 0x5cb36a04, 0xc2d7ffa7, 0xb5d0cf31,
-+	0x2cd99e8b, 0x5bdeae1d, 0x9b64c2b0, 0xec63f226, 0x756aa39c,
-+	0x026d930a, 0x9c0906a9, 0xeb0e363f, 0x72076785, 0x05005713,
-+	0x95bf4a82, 0xe2b87a14, 0x7bb12bae, 0x0cb61b38, 0x92d28e9b,
-+	0xe5d5be0d, 0x7cdcefb7, 0x0bdbdf21, 0x86d3d2d4, 0xf1d4e242,
-+	0x68ddb3f8, 0x1fda836e, 0x81be16cd, 0xf6b9265b, 0x6fb077e1,
-+	0x18b74777, 0x88085ae6, 0xff0f6a70, 0x66063bca, 0x11010b5c,
-+	0x8f659eff, 0xf862ae69, 0x616bffd3, 0x166ccf45, 0xa00ae278,
-+	0xd70dd2ee, 0x4e048354, 0x3903b3c2, 0xa7672661, 0xd06016f7,
-+	0x4969474d, 0x3e6e77db, 0xaed16a4a, 0xd9d65adc, 0x40df0b66,
-+	0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
-+	0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605,
-+	0xcdd70693, 0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8,
-+	0x5d681b02, 0x2a6f2b94, 0xb40bbe37, 0xc30c8ea1, 0x5a05df1b,
-+	0x2d02ef8d
-+};
-+
-+static u32 partial_crc32_one(u8 c, u32 crc)
-+{
-+	return crctab32[(crc ^ c) & 0xff] ^ (crc >> 8);
-+}
-+
-+static u32 partial_crc32(const u8 *s, int len, u32 crc)
-+{
-+	while (len--)
-+		crc = partial_crc32_one(*s++, crc);
-+	return crc;
-+}
-+
- static void die(const char * str, ...)
- {
- 	va_list args;
-@@ -74,6 +143,7 @@ int main(int argc, char ** argv)
- 	FILE *file;
- 	int fd;
- 	void *kernel;
-+	u32 crc = 0xffffffffUL;
- 
- 	if (argc > 2 && !strcmp(argv[1], "-b"))
- 	  {
-@@ -144,7 +214,8 @@ int main(int argc, char ** argv)
- 	kernel = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
- 	if (kernel == MAP_FAILED)
- 		die("Unable to mmap '%s': %m", argv[2]);
--	sys_size = (sz + 15) / 16;
-+	/* Number of 16-byte paragraphs, including space for a 4-byte CRC */
-+	sys_size = (sz + 15 + 4) / 16;
- 	if (!is_big_kernel && sys_size > DEF_SYSSIZE)
- 		die("System is too big. Try using bzImage or modules.");
- 
-@@ -155,12 +226,27 @@ int main(int argc, char ** argv)
- 	buf[0x1f6] = sys_size >> 16;
- 	buf[0x1f7] = sys_size >> 24;
- 
-+	crc = partial_crc32(buf, i, crc);
- 	if (fwrite(buf, 1, i, stdout) != i)
- 		die("Writing setup failed");
- 
- 	/* Copy the kernel code */
-+	crc = partial_crc32(kernel, sz, crc);
- 	if (fwrite(kernel, 1, sz, stdout) != sz)
- 		die("Writing kernel failed");
-+
-+	/* Add padding leaving 4 bytes for the checksum */
-+	while (sz++ < (sys_size*16) - 4) {
-+		crc = partial_crc32_one('\0', crc);
-+		if (fwrite("\0", 1, 1, stdout) != 1)
-+			die("Writing padding failed");
-+	}
-+
-+	/* Write the CRC */
-+	fprintf(stderr, "CRC %lx\n", crc);
-+	if (fwrite(&crc, 1, 4, stdout) != 4)
-+		die("Writing CRC failed");
-+
- 	close(fd);
- 
- 	/* Everything is OK */
--- 
-1.5.4
-
-
--- 
-Ian Campbell
-
-Hempstone's Question:
-	If you have to travel on the Titanic, why not go first class?
-
+regards,
+balaji rao
