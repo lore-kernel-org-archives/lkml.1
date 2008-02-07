@@ -1,141 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYBGOFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYBGOFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbYBGOFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 09:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbYBGOFO
+	id S1760224AbYBGOFr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 09:05:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbYBGOF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 09:05:14 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:49879
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756664AbYBGOEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 09:04:55 -0500
-Message-ID: <47AB1006.3040502@qumranet.com>
-Date: Thu, 07 Feb 2008 16:04:54 +0200
-From: Izik Eidus <izike@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 7 Feb 2008 09:05:28 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53547 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758211AbYBGOFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 09:05:25 -0500
+Date: Thu, 7 Feb 2008 08:05:21 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
+	"safe" property
+Message-ID: <20080207140521.GC4058@sergelap.austin.ibm.com>
+References: <20080205213616.343721693@szeredi.hu> <20080205213705.120219893@szeredi.hu> <20080206202110.GA20528@sergelap.ibm.com> <E1JMrXw-0000qq-O9@pomaz-ex.szeredi.hu> <20080206224527.GB24246@sergelap.austin.ibm.com> <E1JN1p3-0001zF-4l@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 7/8] MMU: add TDP support to the KVM MMU
-References: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com> <1202388465-8657-8-git-send-email-joerg.roedel@amd.com> <47AB0737.2000206@qumranet.com> <20080207135048.GF6960@amd.com>
-In-Reply-To: <20080207135048.GF6960@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JN1p3-0001zF-4l@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> On Thu, Feb 07, 2008 at 03:27:19PM +0200, Izik Eidus wrote:
->   
->> Joerg Roedel wrote:
->>     
->>> This patch contains the changes to the KVM MMU necessary for support of the
->>> Nested Paging feature in AMD Barcelona and Phenom Processors.
->>>  
->>>       
->> good patch, it look like things will be very fixable with it
->>
->>     
->>> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
->>> ---
->>> arch/x86/kvm/mmu.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++--
->>> arch/x86/kvm/mmu.h |    6 ++++
->>> 2 files changed, 82 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
->>> index 5e76963..5304d55 100644
->>> --- a/arch/x86/kvm/mmu.c
->>> +++ b/arch/x86/kvm/mmu.c
->>> @@ -1081,6 +1081,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
->>> 	int i;
->>> 	gfn_t root_gfn;
->>> 	struct kvm_mmu_page *sp;
->>> +	int metaphysical = 0;
->>>  	root_gfn = vcpu->arch.cr3 >> PAGE_SHIFT;
->>> @@ -1089,14 +1090,20 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
->>> 		hpa_t root = vcpu->arch.mmu.root_hpa;
->>>  		ASSERT(!VALID_PAGE(root));
->>> +		if (tdp_enabled)
->>> +			metaphysical = 1;
->>> 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
->>> -				      PT64_ROOT_LEVEL, 0, ACC_ALL, NULL, NULL);
->>> +				      PT64_ROOT_LEVEL, metaphysical,
->>> +				      ACC_ALL, NULL, NULL);
->>> 		root = __pa(sp->spt);
->>> 		++sp->root_count;
->>> 		vcpu->arch.mmu.root_hpa = root;
->>> 		return;
->>> 	}
->>> #endif
->>> +	metaphysical = !is_paging(vcpu);
->>> +	if (tdp_enabled)
->>> +		metaphysical = 1;
->>> 	for (i = 0; i < 4; ++i) {
->>> 		hpa_t root = vcpu->arch.mmu.pae_root[i];
->>> @@ -1110,7 +1117,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
->>> 		} else if (vcpu->arch.mmu.root_level == 0)
->>> 			root_gfn = 0;
->>> 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
->>> -				      PT32_ROOT_LEVEL, !is_paging(vcpu),
->>> +				      PT32_ROOT_LEVEL, metaphysical,
->>> 				      ACC_ALL, NULL, NULL);
->>> 		root = __pa(sp->spt);
->>> 		++sp->root_count;
->>> @@ -1144,6 +1151,36 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
->>> 			     error_code & PFERR_WRITE_MASK, gfn);
->>> }
->>> +static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
->>> +				u32 error_code)
->>>  
->>>       
->> you probably mean gpa_t ?
->>     
->
-> Yes. But the function is assigned to a function pointer. And the type of
-> that pointer expects gva_t there. So I named the parameter gpa to
-> describe that a guest physical address is meant there.
->
->   
->>> +{
->>> +	struct page *page;
->>> +	int r;
->>> +
->>> +	ASSERT(vcpu);
->>> +	ASSERT(VALID_PAGE(vcpu->arch.mmu.root_hpa));
->>> +
->>> +	r = mmu_topup_memory_caches(vcpu);
->>> +	if (r)
->>> +		return r;
->>> +
->>> +	down_read(&current->mm->mmap_sem);
->>> +	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
->>> +	if (is_error_page(page)) {
->>> +		kvm_release_page_clean(page);
->>> +		up_read(&current->mm->mmap_sem);
->>> +		return 1;
->>> +	}
->>>  
->>>       
->> i dont know if it worth checking it here,
->> in the worth case we will map the error page and the host will be safe
->>     
->
-> Looking at the nonpaging_map function it is the right place to check for
-> the error page.
->   
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > Maybe sysctls just need to check capabilities, instead of uids.  I
+> > > think that would make a lot of sense anyway.
+> > 
+> > Would it be as simple as tagging the inodes with capability sets?  One
+> > set for writing, or one each for reading and writing?
+> 
+> Yes, or something even simpler, like mapping the owner permission bits
+> to CAP_SYS_ADMIN.  There seem to be very few different permissions
+> under /proc/sys:
+> 
+> --w-------
+> -r--r--r--
+> -rw-------
+> -rw-r--r--
+> 
+> As long as the group and other bits are always the same, and we accept
+> that the owner bits really mean CAP_SYS_ADMIN and not something else,
 
-thinking about it again you are right, (for some reason i was thinking 
-about old kvm code that was replace already)
-the is_error_page should be here.
+But I would assume some things under /proc/sys/net/ipv4 or
+/proc/sys/net/ath0 require CAP_NET_ADMIN rather than CAP_SYS_ADMIN?
 
-> Joerg Roedel
->
->   
-
-
--- 
-woof.
-
+> then the permission check would not need to look at uids or gids at
+> all.
+> 
+> Miklos
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
