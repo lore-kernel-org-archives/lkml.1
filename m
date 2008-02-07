@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762035AbYBGBgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761480AbYBGBi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762035AbYBGBgy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 20:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761255AbYBGBgk
+	id S1761480AbYBGBi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 20:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbYBGBiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 20:36:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46770 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761144AbYBGBgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 20:36:39 -0500
-Date: Wed, 6 Feb 2008 20:36:20 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Message-ID: <20080206203620.1a4e5b48@bree.surriel.com>
-In-Reply-To: <20080207101634.4AC7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080130175439.1AFD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080206193512.77b5f21f@bree.surriel.com>
-	<20080207101634.4AC7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Wed, 6 Feb 2008 20:38:19 -0500
+Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:34085 "EHLO
+	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbYBGBiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 20:38:18 -0500
+To: davem@davemloft.net
+Cc: fujita.tomonori@lab.ntt.co.jp, tomof@acm.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: more iommu sg merging fallout
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080206.160147.25411834.davem@davemloft.net>
+References: <20080206.151855.136436571.davem@davemloft.net>
+	<20080207085333Q.fujita.tomonori@lab.ntt.co.jp>
+	<20080206.160147.25411834.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080207103801T.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 07 Feb 2008 10:38:01 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 10:20:39 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, 06 Feb 2008 16:01:47 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-> looks good.
-> thank you clean up code.
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date: Thu, 07 Feb 2008 08:53:33 +0900
+> 
+> > On Wed, 06 Feb 2008 15:18:55 -0800 (PST)
+> > David Miller <davem@davemloft.net> wrote:
+> > 
+> > > I intend to put merging back in, perhaps something similar to
+> > > powerpc's merging logic but without the expensive (in my opinion)
+> > > IOMMU allocation every loop.  I think it is better to determine the
+> > > segment breaks in one pass, allocate that many IOMMU entries in one
+> > > allocation, then fill them all in.
+> > 
+> > I thought about asking you if I can modify the SPARC IOMMUs to do
+> > allocation in every loop.
+> > 
+> > The reason why I need the allocation in every loop is that I also need
+> > to fix the problem that IOMMUs allocate memory areas without
+> > considering a low level driver's segment boundary limits.
+> > 
+> > http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg07616.html
+> > http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-12/msg02286.html
+> > 
+> > As far as I know, all the IOMMUs except for SPARC allocate a free area
+> > in every loop but if it's too expensive for SPARC, then we need to
+> > find a different way to handle segment boundary limits.
+> 
+> Ok then what I'll do is adopt some version of powerpc's merging
+> allocator into the sparc64 code.
 
-Yeah, it looks good.
-
-Too bad it still does not work :)
-
-Oh well, I'll look at that tomorrow.  Jet lag is catching up
-with me, so I should get some rest first...
-
--- 
-All rights reversed.
+Great, thanks! SPARC IOMMUs use bitmap for the free area management
+like POWER IOMMUs so it could use lib/iommu-helper as POWER does.
