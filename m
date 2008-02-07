@@ -1,134 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbYBGRuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYBGRxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbYBGRuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 12:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYBGRuH
+	id S1759337AbYBGRxP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 12:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbYBGRxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 12:50:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:52335 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753363AbYBGRuF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 12:50:05 -0500
-Date: Thu, 7 Feb 2008 18:49:39 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: David Newall <davidn@davidnewall.com>
-Cc: Christer Weinigel <christer@weinigel.se>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Message-ID: <20080207184939.17030887@dilbert.local>
-In-Reply-To: <47AB36D2.5050602@davidnewall.com>
-References: <20080125180232.GA4613@kroah.com>
-	<20080202123710.42df1aa0@weinigel.se>
-	<20080202191930.GA19826@kroah.com>
-	<47A5D895.20300@davidnewall.com>
-	<47A6E742.80408@otello.alma.unibo.it>
-	<47A764ED.8030605@weinigel.se>
-	<1202161091.15090.84.camel@violet>
-	<20080206213449.6614efea@weinigel.se>
-	<20080206215442.63c94cf3@dilbert.local>
-	<47AB056E.70802@davidnewall.com>
-	<20080207150612.21ba60df@dilbert.local>
-	<47AB163C.5070107@davidnewall.com>
-	<20080207171322.40eb7c95@dilbert.local>
-	<47AB36D2.5050602@davidnewall.com>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+	Thu, 7 Feb 2008 12:53:00 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:53670 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755664AbYBGRw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 12:52:59 -0500
+Date: Thu, 7 Feb 2008 18:52:52 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       "Shannon Nelson" <shannon.nelson@intel.com>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>
+Subject: Re: [RFC v2 0/5] dmaengine: Slave DMA interface and example users
+Message-ID: <20080207185252.398eb171@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <e9c3a7c20802061046r2d939947m97883c3fbef6e016@mail.gmail.com>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+	<20080129215453.1e3758ab@siona>
+	<200801292256.14553.david-b@pacbell.net>
+	<20080130095641.39eaad13@dhcp-252-066.norway.atmel.com>
+	<e9c3a7c20801300939w7b73f5a6ld73bde8c3fada569@mail.gmail.com>
+	<20080204163200.550481a7@dhcp-252-066.norway.atmel.com>
+	<e9c3a7c20802061046r2d939947m97883c3fbef6e016@mail.gmail.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Fri, 08 Feb 2008 03:20:26 +1030
-schrieb David Newall <davidn@davidnewall.com>:
+On Wed, 6 Feb 2008 11:46:43 -0700
+"Dan Williams" <dan.j.williams@intel.com> wrote:
 
-> Hans-Jürgen Koch wrote:
-> > Am Fri, 08 Feb 2008 01:01:24 +1030
-> > schrieb David Newall <davidn@davidnewall.com>:
-> >   
-> >>> It is not legally meaningless if copyright holders publicly state
-> >>> how they interpret the license and what they consider a license
-> >>> violation. 
-> >>>       
-> >> Copyright-holders' opinions mean nothing.  In the particular case
-> >> of EXPORT_SYMBOL_GPL, copyright-holders' opinions are clearly
-> >> flawed because they make a statement about code that they do not
-> >> even know of. 
-> >>     
-> >
-> > What are you talking about? That's what every GPL-licensed library
-> > does. By putting a library under the GPL, the copyright-holder
-> > clearly states that he considers all programs that link against
-> > that library a derived work. And that he therefor requires these
-> > programs to be GPL, too, no matter if these programs already exist
-> > or not. 
+> > The client must somehow know when the transfer is complete -- after
+> > all, it has to call async_tx_ack() at some point. So additional
+> > callbacks shouldn't be needed.
+> >  
 > 
-> Your last sentence, above: That is what EXPORT_SYMBOL_GPL attempts to
-> do.  The place to state such a requirement is in the licence, not in
-> the source code.  That is what I am talking about.  I can't provide
-> you with software under a licence that says, "you are free to use
-> this software in any way you want," and later say, "oh, but in the
-> source code is tells you that you must take a break every two hours
-> of use."
+> The 'ack' only signifies that the client is done with this descriptor,
+> it tells the api "this descriptor can be freed/reused, no dependent
+> operations will be submitted against it".  This can and does happen
+> before the operation actually completes.
 
-The license says that derivative work has to be GPL. Naturally, every
-sensible and practically usable license has gray areas. We know that
-and we live with that. But if there's room for interpretation, it's
-perfectly OK and helpful, if the copyright holder states what his
-interpretation is. If you use an EXPORT_SYMBOL_GPL symbol in non-GPL
-code, you know that the owner of the work doesn't agree with you
-license-wise. You had to cheat, e.g. by setting your MODULE_LICENCE to
-"GPL", and deliberately acted against the wishes of the copyright
-holder. Here in Germany, the GPL is enforceable, and such evidence
-will at least weaken your position. You won't get away with just
-saying you didn't know the copyright holder's position. Even
-printouts of some mails in this thread could be used to prove that
-you knew.   
-IANAL, there hasn't been such a case AFAIK, and you might well leave
-the court unharmed. But can you (or anyone else) be sure? That's what
-it's all about.
+Hmm...ok. But at some point, the client must know that the buffer is
+completely filled with valid data so that it can call some kind of
+operation_foo_finish() function to do the necessary unmapping...
 
+> > This requires three additional fields in the dma_async_tx_descriptor
+> > structure, but in many cases the driver needs these fields in its own
+> > private descriptor wrapper anyway.
+> >  
 > 
-> 
-> >> Less there be further confusion: I am not an advocate for binary
-> >> drivers.  
-> >>     
-> >
-> > Nice to hear. So, if you're an advocate for open source drivers,
-> > why do you have problems making them GPL?
-> >   
-> 
-> I don't, but EXPORT_SYMBOL_GPL doesn't do that.  It makes an ambit
-> claim, that might coerce an author into making a driver GPL, but might
-> also cause them to exit the Linux market.  I have a problem with
-> driving manufacturers away from Linux.
-> 
-> > Using a symbol from a library means linking to it, and that creates
-> > a derived work. Why should it be different when using kernel
-> > symbols?
-> I don't agree with your claim, but I'm going to explain something
-> else: The GPL doesn't require software that *uses* GPL code to itself
-> be GPL. 
+> I agree this should be moved up to the common descriptor.  The unmap
+> routines are fairly symmetric, so it may not be that bad to also have
+> an "unmap type" that the cleanup routines could key off of, one of the
+> options being "do not unmap" for clients that know what they are
+> doing.
 
-Yes it does. Chapter 2b requires any part that is derived from a GPL
-work to be GPL, too. As you well know.
-Just to help you a bit: The only argument you could use is that a
-kernel module, even if it uses GPL'ed kernel code, is not a derivative work.
-You _might_ succeed with that interpretation, even before a German
-court, and even if it can be proven that you knew that the original
-author doesn't agree with you. Come on, try it!
+I'd prefer that all clients know what they are doing ;-)
 
-> It requires software that is *distributed* as part of a GPL
-> work to itself be GPL.  At time of distribution, a kernel module is
-> neither using nor linked to the kernel.
-
-Oh, come on! You cannot turn a derived work into an original work just
-by distributing them seperately.
-
-Thanks,
-Hans
-
+Haavard
