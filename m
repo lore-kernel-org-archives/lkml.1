@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYBGHSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbYBGHTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbYBGHSa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 02:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYBGHSU
+	id S1757648AbYBGHTz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 02:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbYBGHTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 02:18:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:36679 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752935AbYBGHST (ORCPT
+	Thu, 7 Feb 2008 02:19:47 -0500
+Received: from mail29.messagelabs.com ([216.82.249.147]:57090 "HELO
+	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752935AbYBGHTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 02:18:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XIyyWS9AfXl+dOLt0m3iqv7SxmRzDs9X6gfz0J8dQ6o28GS+WGW3DpvpsCV9xgmBVOIIaBAt7MybGRzDvE2q02t1wah/Cnor1M3swhbpgTNcycxMStD5BPxgvYuHPfomhBuPmgFYDAijeN33WWXoSXHhI02z0AJ4jmi730ZvvlA=
-Subject: Re: [PATCH 1/3] x86: sparse warning in cpufreq/powernow-k8.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080207043547.GA10078@codemonkey.org.uk>
-References: <1202342867.5820.89.camel@brick>
-	 <20080207043547.GA10078@codemonkey.org.uk>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 23:18:16 -0800
-Message-Id: <1202368696.22452.4.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 02:19:46 -0500
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-11.tower-29.messagelabs.com!1202368786!5413171!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+Date: Thu, 7 Feb 2008 08:19:42 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>, rpurdie@openedhand.com,
+       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/HP7XX] - Add combined LCD / BL driver for platform HP Jornada 7xx handhelds
+Message-ID: <20080207071942.GC5235@digi.com>
+References: <20080205195331.fa2ca02b.Kristoffer.ericson@gmail.com> <47A9A944.7090401@tiscali.nl> <47A9AA4F.80508@tiscali.nl> <20080206173341.619c52c8.Kristoffer.ericson@gmail.com> <20080206164435.GC32245@flint.arm.linux.org.uk> <20080206202128.06fbcafa.Kristoffer.ericson@gmail.com> <20080206193155.GE32245@flint.arm.linux.org.uk> <20080206204340.0711c4f6.Kristoffer.ericson@gmail.com> <20080206194557.GF32245@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080206194557.GF32245@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 07 Feb 2008 07:19:42.0697 (UTC) FILETIME=[CF0F9590:01C86959]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15714.002
+X-TM-AS-Result: No--11.409100-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-06 at 23:35 -0500, Dave Jones wrote:
-> On Wed, Feb 06, 2008 at 04:07:47PM -0800, Harvey Harrison wrote:
->  > Nested per_cpu accessors will shadow the internal __ptr variable.  Use
->  > a temporary first_core variable.
->  > 
->  > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1239:9: warning: symbol '__ptr' shadows an earlier one
->  > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1239:9: originally declared here
->  > 
->  > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> 
-> Already fixed in cpufreq.git
-> 
-> (Please also Cc me on cpufreq patches, thanks)
-> 
+Hello Russell,
 
-Sorry about that, I've been sending Ingo a bunch of x86 patches, didn't
-think to look further than that.  Will keep in mind.
+> > Doh, right. Do you use a different checkpatch? I mean it doesn't react on
+> > that for me.
+> 
+> No, all of the comments I've given were spotted by merely reading the patch.
+May I ask how you spot tab vs. 8 space problems?  Do you apply the patch
+and check in an editor?
 
-Harvey
+Best regards
+Uwe
 
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
