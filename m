@@ -1,115 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbYBGTqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYBGTtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758279AbYBGTqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYBGTqG
+	id S1758962AbYBGTtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYBGTtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:46:06 -0500
-Received: from kallisti.us ([67.59.168.233]:34932 "EHLO kallisti.us"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbYBGTqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:46:04 -0500
-From: Ross Vandegrift <ross@kallisti.us>
-Date: Thu, 7 Feb 2008 14:44:46 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080207194446.GA25463@kallisti.us>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205192559.GA10573@kallisti.us> <20080205201106.GB26150@one.firstfloor.org> <20080205212335.GA11287@kallisti.us> <20080206085357.GA1402@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080206085357.GA1402@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 7 Feb 2008 14:49:17 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43930 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbYBGTtQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 14:49:16 -0500
+Subject: Re: MM kernels 2.6.24-rc*-mm*, 2.6.24-mm1: gnome-terminal stuck in
+	tty_poll
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "J. K. Cliburn" <jacliburn@bellsouth.net>, Zan Lynx <zlynx@acm.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080206182329.b0956b4a.akpm@linux-foundation.org>
+References: <1202326722.7488.46.camel@localhost>
+	 <47AA68AA.3090009@bellsouth.net>
+	 <20080206182329.b0956b4a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 20:49:04 +0100
+Message-Id: <1202413744.6274.26.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 09:53:57AM +0100, Andi Kleen wrote:
-> That would be useful yes -- for different bandwidths.
 
-My initial test is end-to-end 1000Mbps, but I've got a few different
-packet rates.
+On Wed, 2008-02-06 at 18:23 -0800, Andrew Morton wrote:
+> On Wed, 06 Feb 2008 20:10:50 -0600 "J. K. Cliburn" <jacliburn@bellsouth.net> wrote:
+> 
+> > Zan Lynx wrote:
+> > 
+> > > gnome-terminal gets stuck.
+> > 
+> > I began seeing this very thing around 2.6.24 time.  (Fedora 8, vanilla 
+> > kernel.)  I could usually cause the gnome terminal to hang if I rapidly 
+> > resized the window while executing make check-headers.
+> > 
+> > Over a couple of days I bisected it down to this commit:
+> > 
+> > Commit:     37bb6cb4097e29ffee970065b74499cbf10603a3
+> > Parent:     d3d74453c34f8fd87674a8cf5b8a327c68f22e99
+> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > AuthorDate: Fri Jan 25 21:08:32 2008 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Fri Jan 25 21:08:32 2008 +0100
+> > 
+> >      hrtimer: unlock hrtimer_wakeup
+> > 
+> >      hrtimer_wakeup creates a
+> > 
+> >        base->lock
+> >          rq->lock
+> > 
+> >      lock dependancy. Avoid this by switching to 
+> > HRTIMER_CB_IRQSAFE_NO_SOFTIRQ
+> >      which doesn't hold base->lock.
+> > 
+> >      This fully untangles hrtimer locks from the scheduler locks, and allows
+> >      hrtimer usage in the scheduler proper.
+> > 
+> >      Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >      Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >   kernel/hrtimer.c |    4 +++-
+> >   1 files changed, 3 insertions(+), 1 deletions(-)
+> > 
+> > 
+> > Reverting the commit seemed to fix the problem for me.
+> > 
+> > Then I went away on a business trip Monday morning and returned Tuesday 
+> > night to a dead computer (won't POST), so I can't do any further 
+> > troubleshooting until I get it fixed.
+> 
+> Useful, thanks.
+> 
+> > Try reverting that patch and see if your gnome-terminal freezes go away.
+> 
+> Here is a convenient patch against current mainline:
+> 
+> 
+> --- a/kernel/hrtimer.c~revert-1
+> +++ a/kernel/hrtimer.c
+> @@ -1292,7 +1292,7 @@ void hrtimer_init_sleeper(struct hrtimer
+>  	sl->timer.function = hrtimer_wakeup;
+>  	sl->task = task;
+>  #ifdef CONFIG_HIGH_RES_TIMERS
+> -	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
+> +	sl->timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_RESTART;
+>  #endif
+>  }
+>  
+> @@ -1303,8 +1303,6 @@ static int __sched do_nanosleep(struct h
+>  	do {
+>  		set_current_state(TASK_INTERRUPTIBLE);
+>  		hrtimer_start(&t->timer, t->timer.expires, mode);
+> -		if (!hrtimer_active(&t->timer))
+> -			t->task = NULL;
+>  
+>  		if (likely(t->task))
+>  			schedule();
 
-> If the young/old heuristics do not work well enough anymore most
-> likely we should try readding RED to the syn queue again. That used
-> to be pretty effective in the early days. I don't quite remember why
-> Linux didn't end up using it in fact.
+Bugger, I thought I had it nailed with:
 
-I'm running juno-z with 2, 4, & 8 threads of syn flood to port 80.
-wireshark measures 2 threads at 350pps, 4 threads at 750pps, and 8
-threads at 1200pps.  Under no SYN flood, the server handles 750 HTTP
-requests per second, measured via httping in flood mode.
+---
 
-With a default tcp_max_syn_backlog of 1024, I can trivially prevent
-any inbound client connections with 2 threads of syn flood.
-Enabling tcp_syncookies brings the connection handling back up to 725
-fetches per second.
+commit 3588a085cd52ef080bf72df772378e1ba6bb292f
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Fri Feb 1 17:45:13 2008 +0100
 
-If I raise the backlog to 16384, 4 threads gives me about 650 legit
-requests per sec.  Going to 8 threads makes connections very unreliable - a
-handful will get through every 15 to 20 seconds.  Again,
-tcp_syncookies returns performance almost totally back to normal.
+    hrtimer: fix hrtimer_init_sleeper() users
+    
+    this patch:
+    
+     commit 37bb6cb4097e29ffee970065b74499cbf10603a3
+     Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+     Date:   Fri Jan 25 21:08:32 2008 +0100
+    
+         hrtimer: unlock hrtimer_wakeup
+    
+    Broke hrtimer_init_sleeper() users. It forgot to fix up the futex
+    caller of this function to detect the failed queueing and messed up
+    the do_nanosleep() caller in that it could leak a TASK_INTERRUPTIBLE
+    state.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Cranking juno-z to the max generates me about 16kpps.  Any syn backlog
-is easily overwhelmed and nothing gets through.  tcp_syncookies gets
-me back to 650 requests per second.
+diff --git a/kernel/futex.c b/kernel/futex.c
+index db9824d..0edd314 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1252,6 +1252,8 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
+ 			t.timer.expires = *abs_time;
+ 
+ 			hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_ABS);
++			if (!hrtimer_active(&t.timer))
++				t.task = NULL;
+ 
+ 			/*
+ 			 * the timer could have already expired, in which
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index bd5d6b5..1069998 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1315,6 +1315,8 @@ static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mod
+ 
+ 	} while (t->task && !signal_pending(current));
+ 
++	__set_current_state(TASK_RUNNING);
++
+ 	return t->task == NULL;
+ }
+ 
 
-At these levels the CPU impact of tcp_syncookies is nothing.  I can't
-measure a difference.  In the real world, a 16kpps syn flood is small.
-People with a distributed botnet can easily get to the hundreds of
-thousands, and I have seen over million packets per second of SYN flood.
+---
 
-
-BTW, I can trigger a soft lockup BUG when I restart apache to change the
-backlog during the 16kpps test-case:
-
-BUG: soft lockup detected on CPU#1!
- [<c044d1ec>] softlockup_tick+0x96/0xa4
- [<c042ddb0>] update_process_times+0x39/0x5c
- [<c04196f7>] smp_apic_timer_interrupt+0x5b/0x6c
- [<c04059bf>] apic_timer_interrupt+0x1f/0x24
- [<c045007b>] taskstats_exit_send+0x152/0x371
- [<c05c007b>] netlink_kernel_create+0x5/0x11c
- [<c05a7415>] reqsk_queue_alloc+0x32/0x81
- [<c05a5aca>] lock_sock+0x8e/0x96
- [<c05ce8c4>] inet_csk_listen_start+0x17/0x106
- [<c05e720f>] inet_listen+0x3c/0x5f
- [<c05a3e55>] sys_listen+0x4a/0x66
- [<c05a4f4d>] sys_socketcall+0x98/0x19e
- [<c0407ef7>] do_syscall_trace+0xab/0xb1
- [<c0404eff>] syscall_call+0x7/0xb
- =======================
-BUG: soft lockup detected on CPU#3!
- [<c044d1ec>] softlockup_tick+0x96/0xa4
- [<c042ddb0>] update_process_times+0x39/0x5c
- [<c04196f7>] smp_apic_timer_interrupt+0x5b/0x6c
- [<c04059bf>] apic_timer_interrupt+0x1f/0x24
- [<c045007b>] taskstats_exit_send+0x152/0x371
- [<c05c007b>] netlink_kernel_create+0x5/0x11c
- [<c05a7415>] reqsk_queue_alloc+0x32/0x81
- [<c05a5aca>] lock_sock+0x8e/0x96
- [<c05ce8c4>] inet_csk_listen_start+0x17/0x106
- [<c05e720f>] inet_listen+0x3c/0x5f
- [<c05a3e55>] sys_listen+0x4a/0x66
- [<c05a4f4d>] sys_socketcall+0x98/0x19e
- [<c0407ef7>] do_syscall_trace+0xab/0xb1
- [<c0404eff>] syscall_call+0x7/0xb
- =======================
+But apparently that doesn't do the magic for gnome-terminal (as this
+patch is already in the .24-mm1 kernel reported broken). Any way I can
+'easily' reproduce this issue?
 
 
 
-
-
-
-
--- 
-Ross Vandegrift
-ross@kallisti.us
-
-"The good Christian should beware of mathematicians, and all those who
-make empty prophecies. The danger already exists that the mathematicians
-have made a covenant with the devil to darken the spirit and to confine
-man in the bonds of Hell."
-	--St. Augustine, De Genesi ad Litteram, Book II, xviii, 37
