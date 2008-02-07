@@ -1,57 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYBGOEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYBGOFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbYBGOEx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 09:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbYBGOEn
+	id S1758825AbYBGOFb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 09:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbYBGOFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 09:04:43 -0500
-Received: from styx.suse.cz ([82.119.242.94]:55089 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752680AbYBGOEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 09:04:43 -0500
-Date: Thu, 7 Feb 2008 15:04:41 +0100
-From: Jan Kara <jack@suse.cz>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: remount-ro & umount & quota interaction
-Message-ID: <20080207140441.GF6140@duck.suse.cz>
-References: <47A9F495.8060400@msgid.tls.msk.ru> <20080207102815.GB26403@atrey.karlin.mff.cuni.cz> <47AAE250.8040702@msgid.tls.msk.ru>
+	Thu, 7 Feb 2008 09:05:14 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:49879
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756664AbYBGOEz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 09:04:55 -0500
+Message-ID: <47AB1006.3040502@qumranet.com>
+Date: Thu, 07 Feb 2008 16:04:54 +0200
+From: Izik Eidus <izike@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AAE250.8040702@msgid.tls.msk.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 7/8] MMU: add TDP support to the KVM MMU
+References: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com> <1202388465-8657-8-git-send-email-joerg.roedel@amd.com> <47AB0737.2000206@qumranet.com> <20080207135048.GF6960@amd.com>
+In-Reply-To: <20080207135048.GF6960@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 07-02-08 13:49:52, Michael Tokarev wrote:
-> Jan Kara wrote:
-> [deadlock after remount-ro followed with umount when
->  quota is enabled]
-> 
-> >   Of course, thanks for report :). The problem is we allow remounting
-> > read only which we should refuse when quota is enabled. I'll fix that in
-> > a minute.
-> 
-> Hmm.  While that will prevent the lockup, maybe it's better to
-> perform an equivalent of quotaoff on mount-ro instead?  Or even
-> do something more useful, like flush the quota stuff like the
-> rest of the filesystem is flushed to disk, so that on umount,
-> quota will not stay on the way...
-  We couldn't leave quota on when filesystem is remounted ro because we
-need to modify quotafile when quota is being turned off. We could turn off
-quotas when remounting read-only. As we turn them off during umount, it
-probably makes sence to turn them off on remount-ro as well.
- 
-> I mean, why it locks in the first place?  Quota subsystem trying
-> to write something into an read-only filesystem?  If so, WHY it
-> is trying to do that on umount instead on a remount-ro?
-  Actually, I couldn't reproduce the hang on my testing machine so I don't
-know exactly why it hangs. But my guess is that it's because we try to
-write to the filesystem...
+Joerg Roedel wrote:
+> On Thu, Feb 07, 2008 at 03:27:19PM +0200, Izik Eidus wrote:
+>   
+>> Joerg Roedel wrote:
+>>     
+>>> This patch contains the changes to the KVM MMU necessary for support of the
+>>> Nested Paging feature in AMD Barcelona and Phenom Processors.
+>>>  
+>>>       
+>> good patch, it look like things will be very fixable with it
+>>
+>>     
+>>> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+>>> ---
+>>> arch/x86/kvm/mmu.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+>>> arch/x86/kvm/mmu.h |    6 ++++
+>>> 2 files changed, 82 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+>>> index 5e76963..5304d55 100644
+>>> --- a/arch/x86/kvm/mmu.c
+>>> +++ b/arch/x86/kvm/mmu.c
+>>> @@ -1081,6 +1081,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+>>> 	int i;
+>>> 	gfn_t root_gfn;
+>>> 	struct kvm_mmu_page *sp;
+>>> +	int metaphysical = 0;
+>>>  	root_gfn = vcpu->arch.cr3 >> PAGE_SHIFT;
+>>> @@ -1089,14 +1090,20 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+>>> 		hpa_t root = vcpu->arch.mmu.root_hpa;
+>>>  		ASSERT(!VALID_PAGE(root));
+>>> +		if (tdp_enabled)
+>>> +			metaphysical = 1;
+>>> 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
+>>> -				      PT64_ROOT_LEVEL, 0, ACC_ALL, NULL, NULL);
+>>> +				      PT64_ROOT_LEVEL, metaphysical,
+>>> +				      ACC_ALL, NULL, NULL);
+>>> 		root = __pa(sp->spt);
+>>> 		++sp->root_count;
+>>> 		vcpu->arch.mmu.root_hpa = root;
+>>> 		return;
+>>> 	}
+>>> #endif
+>>> +	metaphysical = !is_paging(vcpu);
+>>> +	if (tdp_enabled)
+>>> +		metaphysical = 1;
+>>> 	for (i = 0; i < 4; ++i) {
+>>> 		hpa_t root = vcpu->arch.mmu.pae_root[i];
+>>> @@ -1110,7 +1117,7 @@ static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
+>>> 		} else if (vcpu->arch.mmu.root_level == 0)
+>>> 			root_gfn = 0;
+>>> 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
+>>> -				      PT32_ROOT_LEVEL, !is_paging(vcpu),
+>>> +				      PT32_ROOT_LEVEL, metaphysical,
+>>> 				      ACC_ALL, NULL, NULL);
+>>> 		root = __pa(sp->spt);
+>>> 		++sp->root_count;
+>>> @@ -1144,6 +1151,36 @@ static int nonpaging_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+>>> 			     error_code & PFERR_WRITE_MASK, gfn);
+>>> }
+>>> +static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
+>>> +				u32 error_code)
+>>>  
+>>>       
+>> you probably mean gpa_t ?
+>>     
+>
+> Yes. But the function is assigned to a function pointer. And the type of
+> that pointer expects gva_t there. So I named the parameter gpa to
+> describe that a guest physical address is meant there.
+>
+>   
+>>> +{
+>>> +	struct page *page;
+>>> +	int r;
+>>> +
+>>> +	ASSERT(vcpu);
+>>> +	ASSERT(VALID_PAGE(vcpu->arch.mmu.root_hpa));
+>>> +
+>>> +	r = mmu_topup_memory_caches(vcpu);
+>>> +	if (r)
+>>> +		return r;
+>>> +
+>>> +	down_read(&current->mm->mmap_sem);
+>>> +	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
+>>> +	if (is_error_page(page)) {
+>>> +		kvm_release_page_clean(page);
+>>> +		up_read(&current->mm->mmap_sem);
+>>> +		return 1;
+>>> +	}
+>>>  
+>>>       
+>> i dont know if it worth checking it here,
+>> in the worth case we will map the error page and the host will be safe
+>>     
+>
+> Looking at the nonpaging_map function it is the right place to check for
+> the error page.
+>   
 
-								Honza
+thinking about it again you are right, (for some reason i was thinking 
+about old kvm code that was replace already)
+the is_error_page should be here.
+
+> Joerg Roedel
+>
+>   
+
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+woof.
+
