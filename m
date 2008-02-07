@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbYBGWKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbYBGWMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933700AbYBGWKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932975AbYBGWKe
+	id S933805AbYBGWMA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:12:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbYBGWLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:10:34 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:46721 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756982AbYBGWKc (ORCPT
+	Thu, 7 Feb 2008 17:11:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59007 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754004AbYBGWLw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:10:32 -0500
-Date: Thu, 7 Feb 2008 23:10:28 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m68k: correct setting of struct user.u_ar0
-Message-ID: <Pine.LNX.4.64.0802072309460.1833@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Feb 2008 17:11:52 -0500
+Date: Thu, 7 Feb 2008 14:11:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: jirislaby@gmail.com, stephen.neuendorffer@xilinx.com,
+       grant.likely@secretlab.ca, linux-kernel@vger.kernel.org,
+       paulus@samba.org, galak@gate.crashing.org, benh@kernel.crashing.org,
+       torvalds@linux-foundation.org
+Subject: Re: Xilinx: hwicap driver comments
+Message-Id: <20080207141143.618cc173.akpm@linux-foundation.org>
+In-Reply-To: <20080207153545.14a9c8ed@weaponx>
+References: <47AB6552.7040503@gmail.com>
+	<20080207124203.147ce300.akpm@linux-foundation.org>
+	<20080207153545.14a9c8ed@weaponx>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 6e16d89bcd668a95eb22add24c02d80890232b66
+On Thu, 7 Feb 2008 15:35:45 -0600
+Josh Boyer <jwboyer@gmail.com> wrote:
 
-    Sanitize the type of struct user.u_ar0
-    
-    struct user.u_ar0 is defined to contain a pointer offset on all
-    architectures in which it is defined (all architectures which define an
-    a.out format except SPARC.) However, it has a pointer type in the headers,
-    which is pointless -- <asm/user.h> is not exported to userspace, and it
-    just makes the code messy.
-    
-    Redefine the field as "unsigned long" (which is the same size as a pointer
-    on all Linux architectures) and change the setting code to user offsetof()
-    instead of hand-coded arithmetic.
+> > Guys, can we all play too?
+> 
+> Sure.  You could add my tree to -mm if you want.  Though I'd really
+> rather if we all sync up with Paul sooner so you don't have to track 5
+> or 6 "powerpc" trees.
 
-forgot to change the m68k setting code, causing the following compiler warning:
+Yes, I was trying to pull Kumar's tree for a while.  I still am doing so,
+but it's presently 6.5MB of conflicts, so I'll give up on that ;)
 
-    arch/m68k/kernel/process.c:338: warning: assignment makes integer from pointer without a cast
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/kernel/process.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -335,7 +335,7 @@ void dump_thread(struct pt_regs * regs, 
- 	if (dump->start_stack < TASK_SIZE)
- 		dump->u_ssize = ((unsigned long) (TASK_SIZE - dump->start_stack)) >> PAGE_SHIFT;
- 
--	dump->u_ar0 = (struct user_regs_struct *)((int)&dump->regs - (int)dump);
-+	dump->u_ar0 = offsetof(struct user, regs);
- 	sw = ((struct switch_stack *)regs) - 1;
- 	dump->regs.d1 = regs->d1;
- 	dump->regs.d2 = regs->d2;
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+In theory, your 2.6.x+1 material shold be ready to go well in advance of
+the 2.6.x release day (hah), so it'd be good if it could be in Paul's tree
+during 2.6.x's late -rc's.
