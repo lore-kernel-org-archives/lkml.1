@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932797AbYBGSOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbYBGSOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932797AbYBGSOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYBGSOQ
+	id S1758663AbYBGSOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYBGSOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:14:16 -0500
-Received: from mga02.intel.com ([134.134.136.20]:56496 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798AbYBGSOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:14:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,316,1199692800"; 
-   d="scan'208";a="257023518"
-Message-ID: <47AB49F3.301@intel.com>
-Date: Thu, 07 Feb 2008 10:12:03 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Thu, 7 Feb 2008 13:14:38 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:46064 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755975AbYBGSOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 13:14:38 -0500
+Message-ID: <47AB4A78.70609@qualcomm.com>
+Date: Thu, 07 Feb 2008 10:14:16 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Max Krasnyansky <maxk@qualcomm.com>
-CC: Pavel Machek <pavel@ucw.cz>, e1000-devel@lists.sourceforge.net,
-       jesse.brandeburg@intel.com, kernel list <linux-kernel@vger.kernel.org>,
-       john.ronciak@intel.com, jeffrey.t.kirsher@intel.com
-Subject: Re: [E1000-devel] e1000 1sec latency problem
-References: <20080207141718.GA2030@elf.ucw.cz> <47AB38AB.8050001@qualcomm.com> <47AB3EEF.6050005@intel.com> <47AB48B0.10403@qualcomm.com>
-In-Reply-To: <47AB48B0.10403@qualcomm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Jackson <pj@sgi.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] CPU isolation extensions
+References: <47AA9807.7090402@qualcomm.com>	<20080206215805.17a0c919.akpm@linux-foundation.org>	<20080207015954.92cd3878.pj@sgi.com> <20080207001235.a9baac90.akpm@linux-foundation.org>
+In-Reply-To: <20080207001235.a9baac90.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Krasnyansky wrote:
-> Kok, Auke wrote:
->> Max Krasnyansky wrote:
->>> So you don't think it's related to the interrupt coalescing by any chance ?
->>> I'd suggest to try and disable the coalescing and see if it makes any difference.
->>> We've had lots of issues with coalescing misbehavior. Not this bad (ie 1 second) though.
->>>
->>> Add this to modprobe.conf and reload e1000 module
->>>
->>> options e1000 RxIntDelay=0,0 RxAbsIntDelay=0,0 InterruptThrottleRate=0,0 TxIntDelay=0,0 TxAbsIntDelay=0,0
->> that can't be the problem. irq moderation would only account for 2-3ms variance
->> maximum.
-> Oh, I've definitely seen worse than that. Not as bad as a 1second though. Plus you're talking
-> about the case when coalescing logic is working as designed ;-). What if there is some kind of 
-> bug where timer did not expire or something.
+Andrew Morton wrote:
+> On Thu, 7 Feb 2008 01:59:54 -0600 Paul Jackson <pj@sgi.com> wrote:
+> 
+>> but hard real time is not my expertise
+> 
+> Speaking of which..  there is the -rt tree.  Have those people had a look
+> at the feature, perhaps played with the code?
 
-we don't use a software timer in e1000 irq coalescing/moderation, it's all in
-hardware, so we don't have that problem at all. And I certainly have never seen
-anything you are referring to with e1000 hardware, and I do not know of any bug
-related to this.
+Peter Z. and Steven R. sent me some comments, I believe I explained and addressed them.
+Ingo's been quite. Probably too busy.
 
-are you maybe confused with other hardware?
+btw It's not an RT feature per se. It certainly helps RT but removing all the latency
+sources from isolated CPUs. But in general it's just "reducing kernel overhead on some CPUs"
+kind of feature.
 
-feel free to demonstrate an example...
-
-Cheers,
-
-Auke
+Max 
