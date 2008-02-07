@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbYBGRJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbYBGRLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759733AbYBGRJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 12:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYBGRJf
+	id S1760297AbYBGRLZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 12:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbYBGRLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 12:09:35 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:42383 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753094AbYBGRJe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 12:09:34 -0500
-X-IronPort-AV: E=Sophos;i="4.25,316,1199692800"; 
-   d="scan'208";a="5364882"
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Plans for d0049e71 ("x86: make io_delay=0xed the default")
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 07 Feb 2008 09:09:24 -0800
-Message-ID: <ada8x1wbsmz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Feb 2008 17:09:24.0651 (UTC) FILETIME=[30594FB0:01C869AC]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Thu, 7 Feb 2008 12:11:18 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:40736 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753094AbYBGRLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 12:11:17 -0500
+Date: Thu, 7 Feb 2008 18:10:22 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Andrew Victor <linux@maxim.org.za>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] at91_mci:  use generic GPIO calls
+Message-ID: <20080207181022.5ba37443@poseidon.drzeus.cx>
+In-Reply-To: <47A74790.50207@atmel.com>
+References: <200802011901.27532.david-b@pacbell.net>
+	<47A74790.50207@atmel.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Mon, 04 Feb 2008 18:12:48 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-What are your plans for handling the x86 io_delay stuff?  The current
-situation is pretty confusing to someone updating their config from a
-2.6.24 kernel, since arch/x86/Kconfig.debug has:
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> Update the AT91 MMC driver to use the generic GPIO calls instead of the
+> AT91-specific calls; and to request (and release) those GPIO signals.
+> 
+> That required updating the probe() fault cleanup codepaths.  Now there
+> is a single sequence for freeing resources, in reverse order of their
+> allocation.  Also that code uses use dev_*() for messaging, and has less
+> abuse of KERN_ERR.
+> 
+> Likewise with updating remove() cleanup.  This had to free the GPIOs,
+> and while adding that code I noticed and fixed two other problems:  it
+> was poking at a workqueue owned by the mmc core; and in one (rare)
+> case would try freeing an IRQ that it didn't allocate.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
 
-config IO_DELAY_0X80
-	bool "port 0x80 based port-IO delay [recommended]"
+Applied thanks.
 
-but also
+-- 
+     -- Pierre Ossman
 
-choice
-	prompt "IO delay type"
-	default IO_DELAY_0XED
-
-so the IO delay type defaults to something different than the
-recommended value.
-
- - R.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
