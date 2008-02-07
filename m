@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbYBGXSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbYBGXSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbYBGXSf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbYBGXSY
+	id S934534AbYBGXSy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933967AbYBGXSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:18:24 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:48966 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYBGXSX (ORCPT
+	Thu, 7 Feb 2008 18:18:33 -0500
+Received: from cyberslack.slackadelic.com ([216.23.240.152]:35636 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933377AbYBGXSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:18:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ls9I7r/sK3G5TodrSIMFly5MHf+QjNR+AHfUULE1UAyUkCrnFx3sS5M+1FX2JCHiS/hxytFbKsjHAXT5jMAn8bWlqMjRuMOyGoxOIq/Wa3iE4LVPfx8gqW2MdEXKf8DqAzWf+ppTrTvt50xJmfMZHj+YBrXJBuTFxSqfK8XR/0c=
-Message-ID: <19f34abd0802071518j1ffc3dafp46fcbd8d36d36f17@mail.gmail.com>
-Date: Fri, 8 Feb 2008 00:18:21 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH 1/2] kmemcheck v3
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Richard Knutsson" <ricknu-0@student.ltu.se>
-In-Reply-To: <Pine.LNX.4.64.0802071443440.3289@schroedinger.engr.sgi.com>
+	Thu, 7 Feb 2008 18:18:31 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: ACPI_WMI: worst config description of all times
+Date: Thu, 7 Feb 2008 23:18:27 +0000
+User-Agent: KMail/1.9.7
+Cc: Len Brown <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       linux-acpi@vger.kernel.org
+References: <20080207214715.GA15211@elf.ucw.cz> <200802071727.38743.lenb@kernel.org> <20080207223455.GB6096@elf.ucw.cz>
+In-Reply-To: <20080207223455.GB6096@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <47AB79D4.2070605@gmail.com>
-	 <Pine.LNX.4.64.0802071341500.2544@schroedinger.engr.sgi.com>
-	 <19f34abd0802071412m569e4993kffb4a3af163fa16c@mail.gmail.com>
-	 <Pine.LNX.4.64.0802071443440.3289@schroedinger.engr.sgi.com>
+Message-Id: <200802072318.28313.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 7, 2008 11:53 PM, Christoph Lameter <clameter@sgi.com> wrote:
-> > Are you sure you are not confusing tracking with tracing? It's only
-> > one letter different in spelling, but makes a huge difference in
-> > meaning :-)
+On Thursday 07 February 2008 22:34:55 Pavel Machek wrote:
+>  +3) What is the ACPI-WMI mapper
+>  +
+>  +The Linux ACPI-WMI driver is the implementation of this mapper for Linux.
 >
-> No I am quite sure what tracking is since the slab allocators have their
-> own tracking.
->
-> But you may want to explain things better.
+> Yes, please. This needs translation into plain english.
 
-Ok, then I think we are still talking about different things :-)
+In plain English? ACPI-WMI is a nasty hack/ abuse of ACPI by Microsoft to 
+force their driver model into ACPI, and that should be thoroughly discouraged 
+from further use.
 
-The tracking that kmemcheck does is actually a byte-for-byte tracking
-of whether memory has been initialized or not. Think of it as valgrind
-for the kernel. We do this by "hiding" pages (marking them non-present
-for for MMU) and taking the page faults, which effectively tells us
-what memory is being attempted to be read from or written to.
+However, since quite a few laptop vendors rely on it for basic functionality, 
+we have to implement it (or a part of it) as well.
 
-(This generally means that the tracking that kmemcheck does is
-page-granular, but we can help this by making entire caches tracked or
-non-tracked.)
+Yes, WMI itself is supposed to be an instrumentation/ management thing, as 
+well as, if I understand, part of their driver model, and ACPI-WMI is a part 
+of that - by and of itself though, ACPI-WMI is _not_ the whole of WMI.
 
-(This also means that *all* tracked memory allocations require twice
-the amount of memory that was requested -- but this is luckily
-configurable by disabling kmemcheck entirely :-)).
+All that the Linux driver currently cares about is translating this crap into 
+something that we can actually use in Linux to make hardware work (kernel 
+space). So at the moment, ACPI-WMI is exactly what it says it is - not a lot. 
+It needs another driver on top to do something useful (e.g. acer-wmi, 
+tc1100-wmi).
 
-I chose to implement this in the slab layer because this is probably
-where most of the interesting allocations are coming from, and this
-gives us a better control over what most users/callers care about,
-namely the specific objects.
+Later on, we will try and replicate the rest of the 'specification', which is 
+supposed to export all this rubbish (data, and direct access to various ACPI 
+methods defined in a WMI device) to userspace.
 
-In a way, kmemcheck is similar to slab poisoning, since that can also
-be used to detect the cases where memory is used before it is
-initialized. This is a heavier-weight approach, however, and more
-precise, as it gives you the exact location of the error.
+> What is WBEM, in plain terms? What is it good for?
 
-I hope this clears it up.
+If you can make heads or tails of WBEM, please feel free to let me know.
 
+AFAICT, it's supposed to be a means of providing some sort of web based 
+management/ instrumentation.
 
-Kind regards,
-Vegard Nossum
+So yes, I agree with you the documentation is crap - but it needs to be redone 
+anyway, and I've already had that pointed out to me.
+
+As for the Kconfig - I'm open to suggestions.
+
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
