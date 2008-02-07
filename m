@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYBGPCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbYBGPC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758560AbYBGPCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYBGPC0
+	id S932287AbYBGPC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbYBGPCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:02:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45619 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755987AbYBGPCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:02:25 -0500
-Date: Thu, 7 Feb 2008 16:01:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Hugh Dickins <hugh@veritas.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document randomize_va_space and CONFIG_COMPAT_BRK (was
-	Re: [PATCH 2/2] ASLR: add possibility for more fine-grained tweaking)
-Message-ID: <20080207150122.GA10346@elte.hu>
-References: <Pine.LNX.4.64.0802061438150.30955@jikos.suse.cz> <Pine.LNX.4.64.0802061442300.30955@jikos.suse.cz> <20080206134959.GA25689@elte.hu> <Pine.LNX.4.64.0802061650230.30955@jikos.suse.cz> <20080206231040.GA6225@elte.hu> <Pine.LNX.4.64.0802071525520.30955@jikos.suse.cz>
+	Thu, 7 Feb 2008 10:02:46 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34899 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756032AbYBGPCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 10:02:44 -0500
+Message-ID: <47AB1D91.6090609@davidnewall.com>
+Date: Fri, 08 Feb 2008 01:32:41 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802071525520.30955@jikos.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Adrian Bunk <bunk@kernel.org>, Chris Friesen <cfriesen@nortel.com>,
+       Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<20080203124849.0226560f@weinigel.se>	<84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>	<47A5F418.6030104@weinigel.se>	<20080203231530.GB15692@kroah.com>	<courier.47A8EDDC.0000785F@hawking.rebel.net.au>	<47A8F27F.3060504@nortel.com>	<20080206210452.GB7198@cs181133002.pp.htv.fi>	<47AB06F9.30201@davidnewall.com> <20080207141557.5fcf3b2d@core>
+In-Reply-To: <20080207141557.5fcf3b2d@core>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+>>> IANAL, but when looking at the "But when you distribute the same 
+>>> sections as part of a whole which is a work based on the Program, the 
+>>> distribution of the whole must be on the terms of this License" of the 
+>>> GPLv2 I would still consult a lawyer before e.g. selling a laptop with a 
+>>> closed-source driver loaded through ndiswrapper.
+>>>       
+>> Don't ignore, "mere aggregation of another work not based on the Program
+>> with the Program (or with a work based on the Program) on a volume of a
+>> storage or distribution medium does not bring the other work under the
+>> scope of this License."  Static linking certainly makes something part
+>> of the whole; dynamic linking doesn't.
+>>     
+>
+> Wrong again. You really are quite amusing.
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
+I'm glad to entertain.  It's a pity you refuse to be educated.  Closed
+mind on the topic, perhaps?
 
-> On Thu, 7 Feb 2008, Ingo Molnar wrote:
-> 
-> > i'm wondering about the following detail: i guess on 64-bit x86 
-> > kernels we could default to !CONFIG_COMPAT_BRK? In 1997 there was no 
-> > 64-bit x86. Maybe for compat 32-bit binaries we could keep it off, 
-> > but always do it for 64-bit binaries.
-> 
-> So what do you think is proper behavior in situation when 
-> CONFIG_COMPAT_BRK=N on 64bit kernel, and 32bit-binary is loaded in 
-> 32bit emulation?
-> 
-> We can either leave the brk as-is, but that is in contradiction to 
-> user explictly specifying CONFIG_COMPAT_BRK=N. Is this what you 
-> propose?
-> 
-> Or we can randomize brk start in such situation, but that is the 
-> behavior we currently automatically have due to CONFIG_COMPAT_BRK=N, 
-> so no change is needed.
 
-thinking about it ... i think we should just keep this simple, and when 
-COMPAT_BRK=y then we disable brk randomization globally. If !COMPAT_BRK 
-then we do brk randomization globally as well. (and that is probably 
-what users want the sysctl to do anyway - users wont necessarily know 
-whether the app breakage they want to solve is due to 32-bit or 64-bit.)
+> The test is "derivative works" not linking.
 
-	Ingo
+That is one of the terms used.  Another, which I pointed out to your
+apparent glee, is "aggregation."  Both terms are relevant only because
+they were chosen for use in GPL.
+
+
+> Linking is a meaningless (in law) computing term with no
+> place. Legal precedent for combining of works is drawn from things like
+> shipping a book and a commentary on the book together, putting music to
+> films, putting photos in a book. These are not "linking"
+>   
+Whatever the precedent is, and I'll take your word on it even though
+it's more hearsay, it's explicitly covered by that part of the licence
+referring to "mere aggregation."
+
+> And I know what the lawyers I've talked to have said about the case of
+> shipping proprietary modules with the OS. Its a pretty definite "bad idea"
+
+Now, that's more like it.  It sounds somewhat believable, unlike your
+previous statements which seemed to say, "you've spoken to numerous
+lawyers and they've all said that proprietary modules violate GPL."  I
+paraphrased you, and if that's not what you meant then please take the
+opportunity to refine your claims.  "Bad idea" is legal speak for, "I'll
+fight it for you, but you can lose."  That's a big step away from
+"dynamic modules must be governed by GPL."
