@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760234AbYBGSWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbYBGSWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760234AbYBGSWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYBGSWJ
+	id S932931AbYBGSWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbYBGSWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:22:09 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46511 "EHLO mx2.suse.de"
+	Thu, 7 Feb 2008 13:22:24 -0500
+Received: from mga01.intel.com ([192.55.52.88]:44885 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756144AbYBGSWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:22:08 -0500
-Subject: patch usb-ftdi_sio.c-add-missing.patch added to gregkh-2.6 tree
-To: 12o3l@tiscali.nl, gregkh@suse.de, linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 07 Feb 2008 10:19:52 -0800
-In-Reply-To: <47AA4B6F.20902@tiscali.nl>
-Message-ID: <12024083921590@kroah.org>
+	id S1755907AbYBGSWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 13:22:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,316,1199692800"; 
+   d="scan'208";a="514924157"
+Message-ID: <47AB4B2E.1030801@intel.com>
+Date: Thu, 07 Feb 2008 10:17:18 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net, john.ronciak@intel.com,
+       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [E1000-devel] e1000 1sec latency problem
+References: <20080207141718.GA2030@elf.ucw.cz>
+In-Reply-To: <20080207141718.GA2030@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek wrote:
+> Hi!
+> 
+> I have the famous e1000 latency problems:
+> 
+> 64 bytes from 195.113.31.123: icmp_seq=68 ttl=56 time=351.9 ms
+> 64 bytes from 195.113.31.123: icmp_seq=69 ttl=56 time=209.2 ms
+> 64 bytes from 195.113.31.123: icmp_seq=70 ttl=56 time=1004.1 ms
+> 64 bytes from 195.113.31.123: icmp_seq=71 ttl=56 time=308.9 ms
+> 64 bytes from 195.113.31.123: icmp_seq=72 ttl=56 time=305.4 ms
+> 64 bytes from 195.113.31.123: icmp_seq=73 ttl=56 time=9.8 ms
+> 64 bytes from 195.113.31.123: icmp_seq=74 ttl=56 time=3.7 ms
+> 
+> ...and they are still there in 2.6.25-git0. I had ethernet EEPROM
+> checksum problems, which I fixed by the update, but problems are not
+> gone.
 
-This is a note to let you know that I've just added the patch titled
+pavel, start using "e1000e" instead - this driver replaces e1000 for all the
+pci-express devices and has the infamous L1 ASPM disable patch to fix this issue.
 
-     Subject: USB: ftdi_sio.c add missing '|'
+make sure you have CONFIG_E1000E=m/y in your .config, otherwise the old e1000 code
+will drive your card, and that driver does not have the fix.
 
-to my gregkh-2.6 tree.  Its filename is
+BAH, this is a good example how Linus' patch can wreak havoc - a lot of people
+will now not see fixes since they only go into e1000e, but people can unnoticed
+now go and use e1000 for too long...
 
-     usb-ftdi_sio.c-add-missing.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From 12o3l@tiscali.nl  Thu Feb  7 10:05:29 2008
-From: Roel Kluin <12o3l@tiscali.nl>
-Date: Thu, 07 Feb 2008 01:06:07 +0100
-Subject: USB: ftdi_sio.c add missing '|'
-To: Greg KH <gregkh@suse.de>
-Cc: linux-usb@vger.kernel.org, ftdi-usb-sio-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
-Message-ID: <47AA4B6F.20902@tiscali.nl>
-
-
-add missing '|'
-
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/serial/ftdi_sio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -394,7 +394,7 @@ static const char *ftdi_chip_name[] = {
- /* End TIOCMIWAIT */
- 
- #define FTDI_IMPL_ASYNC_FLAGS = ( ASYNC_SPD_HI | ASYNC_SPD_VHI \
-- ASYNC_SPD_CUST | ASYNC_SPD_SHI | ASYNC_SPD_WARP )
-+ | ASYNC_SPD_CUST | ASYNC_SPD_SHI | ASYNC_SPD_WARP )
- 
- /* function prototypes for a FTDI serial converter */
- static int  ftdi_sio_probe	(struct usb_serial *serial, const struct usb_device_id *id);
-
-
-Patches currently in gregkh-2.6 which might be from 12o3l@tiscali.nl are
-
-usb/usb-ftdi_sio.c-add-missing.patch
+Auke
