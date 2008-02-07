@@ -1,90 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932547AbYBGAlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933276AbYBGAlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932547AbYBGAlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbYBGAQq
+	id S933276AbYBGAlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:41:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933683AbYBGAS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:16:46 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49848 "EHLO e1.ny.us.ibm.com"
+	Wed, 6 Feb 2008 19:18:28 -0500
+Received: from ns2.suse.de ([195.135.220.15]:35238 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763802AbYBGAQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:16:44 -0500
-Subject: Re: [PATCH] sys_remap_file_pages: fix ->vm_file accounting
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <mszeredi@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <Pine.LNX.4.64.0802062023100.32204@blonde.site>
-References: <20080130142014.GA2164@tv-sign.ru>
-	 <1201712101.31222.22.camel@tucsk.pomaz.szeredi.hu>
-	 <20080130172646.GA2355@tv-sign.ru>
-	 <1201987065.9062.6.camel@localhost.localdomain>
-	 <20080203182135.GA5827@tv-sign.ru>
-	 <Pine.LNX.4.64.0802062023100.32204@blonde.site>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 06 Feb 2008 16:16:38 -0800
-Message-Id: <1202343398.9062.253.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	id S1760942AbYBGAS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:18:26 -0500
+Date: Wed, 6 Feb 2008 16:16:21 -0800
+From: Greg KH <gregkh@suse.de>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: create /sys/firmware/acpi/interrupts/ (v2)
+Message-ID: <20080207001621.GB16728@suse.de>
+References: <200802050230.10873.lenb@kernel.org> <20080206024349.GA10883@suse.de> <200802060133.25863.lenb@kernel.org> <200802060140.27116.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802060140.27116.lenb@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-06 at 20:33 +0000, Hugh Dickins wrote:
-> On Sun, 3 Feb 2008, Oleg Nesterov wrote:
-> > 
-> > So I have to try to find another bug ;) Suppose that ->load_binary() does
-> > a series of do_mmap(MAP_EXECUTABLE). It is possible that mmap_region() can
-> > merge 2 vmas. In that case we "leak" ->num_exe_file_vmas. Unless I missed
-> > something, mmap_region() should do removed_exe_file_vma() when vma_merge()
-> > succeds (near fput(file)).
+On Wed, Feb 06, 2008 at 01:40:26AM -0500, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
 > 
-> Or there's the complementary case of a VM_EXECUTABLE vma being
-> split in two, for example by an mprotect of a part of it.
+> See Documentation/ABI/testing/sysfs-firmware-acpi
 > 
-> Sorry, Matt, I don't like your patch at all.  It seems to add a fair
-> amount of ugliness and unmaintainablity, all for a peculiar MVFS case
+> Inspired-by: Luming Yu <luming.yu@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
 
-I thought that getting rid of the separate versions of proc_exe_link()
-improved maintainability. Do you have any specific details on what you
-think makes the code introduced by the patch unmaintainable?
+Looks good to me, nice job.  And thanks for the documentation file.
 
-> (you've tried to argue other advantages, but not always convinced!).
-
-Yup -- looking at how the VM_EXECUTABLE flag affects the vma walk it's
-clear one of my arguments was wrong. So I can't blame you for being
-unconvinced by that. :)
-
-I still think it would help any stacking filesystems that can't use the
-solution adopted by unionfs.
-
-> And I found it quite hard to see where the crucial difference comes.
-> I guess it's that MVFS changes vma->vm_file in its ->mmap?  Well, if
-
-Yup.
-
-> MVFS does that, maybe something else does that too, but precisely to
-> rely on the present behaviour of /proc/pid/exe - so in fixing for
-> MVFS, we'd be breaking that hypothetical other?
-
-	I'm not completely certain that I understand your point. Are you
-suggesting that some hypothetical code would want to use this "quirk"
-of /proc/pid/exe for a legitimate purpose?
-
-	Assuming that is your point, I thought my non-hypothetical java example
-clearly demonstrated that at least one non-hypothetical program doesn't
-expect the "quirk" and breaks because of it. Frankly,
-given /proc/pid/exe's output in the non-stacking case, I can't see how
-its output in the stacking case we're discussing could be considered
-anything but buggy.
-
-Cheers,
-	-Matt Helsley
-
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
