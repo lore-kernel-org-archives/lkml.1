@@ -1,60 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbYBGE22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbYBGE6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759651AbYBGE22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 23:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbYBGE2S
+	id S1758269AbYBGE6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 23:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbYBGE6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 23:28:18 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:34137 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755490AbYBGE2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 23:28:17 -0500
-Date: Thu, 7 Feb 2008 13:28:09 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Sven Wegener <sven.wegener@stealer.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ipvs: Make the synchronization interval controllable
-Message-ID: <20080207042808.GA6211@verge.net.au>
-References: <Pine.LNX.4.64.0802062329150.15729@titan.stealer.net> <1202342263-25176-1-git-send-email-sven.wegener@stealer.net>
+	Wed, 6 Feb 2008 23:58:06 -0500
+Received: from mail.velocitynet.com.au ([203.17.154.25]:37631 "EHLO
+	m0.velocity.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbYBGE6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 23:58:05 -0500
+X-Greylist: delayed 1731 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Feb 2008 23:58:05 EST
+Message-ID: <47AA8909.3040706@niasdigital.com>
+Date: Thu, 07 Feb 2008 15:28:57 +1100
+From: Ben Nizette <bn@niasdigital.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202342263-25176-1-git-send-email-sven.wegener@stealer.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+CC: kernel@avr32linux.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] AVR32: pass i2c board info through at32_add_device_twi
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 12:57:43AM +0100, Sven Wegener wrote:
-> The default synchronization interval of 1000 milliseconds is too high for a
-> heavily loaded director. Collecting the connection information from one second
-> and then sending it out in a burst will overflow the socket buffer and lead to
-> synchronization information being dropped. Make the interval controllable by a
-> sysctl variable so that users can tune it. We enforce a lower limit of 0 and an
-> upper limit of 2000 ms on the interval. A too large interval can make the
-> synchronization buffer consume too much memory and will also delay the exit of
-> the kernel threads.
-> 
-> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
 
-Hi Sven,
+New-style I2C drivers require that motherboard-mounted I2C devices are
+registered with the I2C core, typically at arch_initcall time.  This can be
+done nice and neat by passing the struct i2c_board_info[] through
+at32_add_device_twi just like we do for the SPI board info.
 
-I have no problems with the spirit of this patch, and the range checking
-seems good to me.  Though I wonder if 2000 might not be an exessively
-low maximum.  I can't think of a usage case off-hand, but I'm not sure I
-understand why a user shouldn't be able to set it to much (rediculously)
-higher values.
+While we've got the hood up, remove a duplicate declaration of
+at32_add_device_twi() in board.h.
 
-In any case, thats not a big deal.
+Signed-Off-By: Ben Nizette <bn@niasdigital.com>
 
-Acked-by: Simon Horman <horms@verge.net.au>
 
-> ---
-> 
-> Changes from the last version include the addition of the range enforcement.
-> Also place the definitions of the variables where all other ipvs sysctl
-> variables are.
+---
+Index: linux-2.6.23.atmel.4/arch/avr32/boards/atngw100/setup.c
+===================================================================
+--- linux-2.6.23.atmel.4.orig/arch/avr32/boards/atngw100/setup.c
++++ linux-2.6.23.atmel.4/arch/avr32/boards/atngw100/setup.c
+@@ -180,7 +180,7 @@
+ 		AT32_GPIOF_MULTIDRV | AT32_GPIOF_OUTPUT | AT32_GPIOF_HIGH);
+ 	platform_device_register(&i2c_gpio_device);
+ #else
+-	at32_add_device_twi(0);
++	at32_add_device_twi(0, NULL, 0);
+ #endif
 
--- 
-Horms
+ 	return 0;
+Index: linux-2.6.23.atmel.4/arch/avr32/mach-at32ap/at32ap700x.c
+===================================================================
+--- linux-2.6.23.atmel.4.orig/arch/avr32/mach-at32ap/at32ap700x.c
++++ linux-2.6.23.atmel.4/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -988,7 +988,9 @@
+ 	.index		= 2,
+ };
 
+-struct platform_device *__init at32_add_device_twi(unsigned int id)
++struct platform_device *__init at32_add_device_twi(unsigned int id,
++						    struct i2c_board_info *b,
++						    unsigned int n)
+ {
+ 	struct platform_device *pdev;
+
+@@ -1008,6 +1010,9 @@
+
+ 	atmel_twi0_pclk.dev = &pdev->dev;
+
++	if (b)
++		i2c_register_board_info(id, b, n);
++
+ 	platform_device_add(pdev);
+ 	return pdev;
+
+Index: linux-2.6.23.atmel.4/arch/avr32/boards/atstk1000/atstk1002.c
+===================================================================
+--- linux-2.6.23.atmel.4.orig/arch/avr32/boards/atstk1000/atstk1002.c
++++ linux-2.6.23.atmel.4/arch/avr32/boards/atstk1000/atstk1002.c
+@@ -245,7 +245,7 @@
+ #ifdef CONFIG_BOARD_ATSTK100X_SPI1
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ #endif
+-	at32_add_device_twi(0);
++	at32_add_device_twi(0, NULL, 0);
+ #ifndef CONFIG_BOARD_ATSTK100X_SW2_CUSTOM
+ 	at32_add_device_mci(0, &mci0_data);
+ #endif
+Index: linux-2.6.23.atmel.4/include/asm-avr32/arch-at32ap/board.h
+===================================================================
+--- linux-2.6.23.atmel.4.orig/include/asm-avr32/arch-at32ap/board.h
++++ linux-2.6.23.atmel.4/include/asm-avr32/arch-at32ap/board.h
+@@ -33,7 +33,9 @@
+ struct platform_device *
+ at32_add_device_spi(unsigned int id, struct spi_board_info *b, unsigned int n);
+
+-struct platform_device *at32_add_device_twi(unsigned int id);
++struct platform_device *at32_add_device_twi(unsigned int id,
++					     struct i2c_board_info *b,
++					     unsigned int n);
+
+ struct atmel_lcdfb_info;
+ struct platform_device *
+@@ -67,8 +69,6 @@
+ struct platform_device *
+ at32_add_device_ssc(unsigned int id, unsigned int flags);
+
+-struct platform_device *at32_add_device_twi(unsigned int id);
+-
+ struct mci_platform_data {
+ 	int detect_pin;
+ 	int wp_pin;
