@@ -1,66 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbYBGT1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbYBGT2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759983AbYBGT1n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYBGT1b
+	id S932905AbYBGT2X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbYBGT2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:27:31 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:20403 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761788AbYBGT1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:27:30 -0500
-Message-ID: <47AB5B9F.8090302@msgid.tls.msk.ru>
-Date: Thu, 07 Feb 2008 22:27:27 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] quota: Turn quotas off when remounting read-only
-References: <20080207143721.GH6140@duck.suse.cz> <20080207103655.14ce8512.akpm@linux-foundation.org>
-In-Reply-To: <20080207103655.14ce8512.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 14:28:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44185 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756709AbYBGT2H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 14:28:07 -0500
+Date: Thu, 7 Feb 2008 21:03:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, davej@codemonkey.org.uk,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Use global TLB flushes in MTRR code
+Message-ID: <20080207200308.GA26555@one.firstfloor.org>
+References: <20080207190241.GA9449@basil.nowhere.org> <20080207191337.GA13111@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080207191337.GA13111@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 7 Feb 2008 15:37:21 +0100 Jan Kara <jack@suse.cz> wrote:
+On Thu, Feb 07, 2008 at 08:13:37PM +0100, Ingo Molnar wrote:
 > 
->> Turn off quotas before filesystem is remounted read only. Otherwise quota will
->> try to write to read-only filesystem which does no good... We could also just
->> refuse to remount ro when quota is enabled but turning quota off is consistent
->> with what we do on umount.
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > [probably stable material too]
+> > 
+> > Use global TLB flushes in MTRR code
+> > 
+> > Obviously kernel mappings should be flushed here too.
+> 
+> no, your patch is not needed:
 
-[a nice one-liner snipped]
+Yes you're right.  Thanks makes more sense.  The weird style
+fooled me.
 
-> Cool.  And this is applicable to 2.6.23, 2.6.22 and even earlier, isn't it?
+It seems to come from the pseudo code in the Intel manual,
+but I think it would be still cleaner/more idiomatic to use two
+__flush_tlb_all() and remove the explicit code. The only drawback would 
+be some more cr4 accesses, which does not seem like a big issue.
 
-Provided the amount of time this issue exists, I don't think it's worth
-to push it to -stable.  It's an oooooooold, issue, which happens quite
-rarely, and no one bothered to report it so far...  But it's not my
-call... ;)
+Updated patch follows.
 
-But...  I'm thinking about this scenario:
+-Andi
 
- # mount /data
- # quotaon /data
- (some maintenance stuff to be planned)
- # mount -o remount,ro /data
- (do backup etc)
- # mount -r remount,rw /data
+---
 
-at this point, it's expected that quota on /data is enabled.
-After this patch, it's not anymore...
+Use standard global TLB flushes in MTRR code
 
-I think it's more usual scenario than mine (umount instead of
-remount-rw).  And this change will break it.  So I'm not sure
-what really to do here.  Probably refusing remount-ro if quota
-is on is better...  it's annoying for sure, but at least it's
-explicit, and avoids the handg too.
+This is more idiomatic and it does not really make sense for this 
+code to implement a own TLB flushing variant.
 
-/mjt
+The control registers will be read/written a few times more, but 
+that should not really matter for this code.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux/arch/x86/kernel/cpu/mtrr/generic.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ linux/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -349,14 +349,8 @@ static void prepare_set(void) __acquires
+ 	write_cr0(cr0);
+ 	wbinvd();
+ 
+-	/*  Save value of CR4 and clear Page Global Enable (bit 7)  */
+-	if ( cpu_has_pge ) {
+-		cr4 = read_cr4();
+-		write_cr4(cr4 & ~X86_CR4_PGE);
+-	}
+-
+-	/* Flush all TLBs via a mov %cr3, %reg; mov %reg, %cr3 */
+-	__flush_tlb();
++	/* Flush all TLBs */
++	__flush_tlb_all();
+ 
+ 	/*  Save MTRR state */
+ 	rdmsr(MTRRdefType_MSR, deftype_lo, deftype_hi);
+@@ -368,7 +362,7 @@ static void prepare_set(void) __acquires
+ static void post_set(void) __releases(set_atomicity_lock)
+ {
+ 	/*  Flush TLBs (no need to flush caches - they are disabled)  */
+-	__flush_tlb();
++	__flush_tlb_all();
+ 
+ 	/* Intel (P6) standard MTRRs */
+ 	mtrr_wrmsr(MTRRdefType_MSR, deftype_lo, deftype_hi);
+@@ -376,9 +370,9 @@ static void post_set(void) __releases(se
+ 	/*  Enable caches  */
+ 	write_cr0(read_cr0() & 0xbfffffff);
+ 
+-	/*  Restore value of CR4  */
+-	if ( cpu_has_pge )
+-		write_cr4(cr4);
++	/* Flush TLBs again to handle prefetches etc. */
++	__flush_tlb_all();
++
+ 	spin_unlock(&set_atomicity_lock);
+ }
+ 
