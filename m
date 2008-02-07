@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934057AbYBGUL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934132AbYBGULo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934057AbYBGUL1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759812AbYBGUEQ
+	id S934132AbYBGULo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762057AbYBGUFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:04:16 -0500
-Received: from ns2.suse.de ([195.135.220.15]:59568 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761735AbYBGUEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:04:14 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Roland Dreier <rdreier@cisco.com>,
-       Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 3/3] sysfs: remove BUG_ON() from sysfs_remove_group()
-Date: Thu,  7 Feb 2008 12:02:19 -0800
-Message-Id: <1202414539-4672-3-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.4
-In-Reply-To: <20080207200140.GA4572@suse.de>
-References: <20080207200140.GA4572@suse.de>
+	Thu, 7 Feb 2008 15:05:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:32794 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762035AbYBGUFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:05:41 -0500
+Date: Thu, 7 Feb 2008 12:04:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Moore <paul.moore@hp.com>
+Cc: casey@schaufler-ca.com, davem@davemloft.net, jmorris@namei.org,
+       mingo@elte.hu, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: + smack-unlabeled-outgoing-ambient-packets.patch added to -mm
+ tree
+Message-Id: <20080207120459.d4994f44.akpm@linux-foundation.org>
+In-Reply-To: <200802071450.41529.paul.moore@hp.com>
+References: <200802071901.m17J1lAY016751@imap1.linux-foundation.org>
+	<200802071450.41529.paul.moore@hp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's possible that the caller of sysfs_remove_group messed up and passed in an attribute group that was not really registered to this kobject.  But don't panic for such a foolish error, spit out a warning about what happened, and continue on our way safely.
+On Thu, 7 Feb 2008 14:50:41 -0500
+Paul Moore <paul.moore@hp.com> wrote:
 
-Cc: Roland Dreier <rdreier@cisco.com>
-Cc: Tejun Heo <htejun@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- fs/sysfs/group.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+> On Thursday 07 February 2008 2:02:06 pm akpm@linux-foundation.org wrote:
+> > The patch titled
+> >      Smack: unlabeled outgoing ambient packets
+> > has been added to the -mm tree.  Its filename is
+> >      smack-unlabeled-outgoing-ambient-packets.patch
+> >
+> > Before you just go and hit "reply", please:
+> >    a) Consider who else should be cc'ed
+> >    b) Prefer to cc a suitable mailing list as well
+> >    c) Ideally: find the original patch on the mailing list and do a
+> >       reply-to-all to that, adding suitable additional cc's
+> 
+> I didn't see this patch hit any of the relevant mailing lists (am I missing 
+> one somewhere?) so I'm just CC'ing everyone on the To/CC line, minus 
+> mm-commits.
 
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 0871c3d..4779049 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -77,7 +77,12 @@ void sysfs_remove_group(struct kobject * kobj,
- 
- 	if (grp->name) {
- 		sd = sysfs_get_dirent(dir_sd, grp->name);
--		BUG_ON(!sd);
-+		if (!sd) {
-+			printk(KERN_WARNING "sysfs group %p not found for "
-+				"kobject '%s'\n", grp, kobject_name(kobj));
-+			WARN_ON(!sd);
-+			return;
-+		}
- 	} else
- 		sd = sysfs_get(dir_sd);
- 
--- 
-1.5.4
+It was on linux-kernel and netdev.  I've restored those cc's.
+
+> > ------------------------------------------------------
+> > Subject: Smack: unlabeled outgoing ambient packets
+> > From: Casey Schaufler <casey@schaufler-ca.com>
+> >
+> > Smack uses CIPSO labeling, but allows for unlabeled packets by specifying
+> > an "ambient" label that is applied to incoming unlabeled packets.  Because
+> > the other end of the connection may dislike IP options, and ssh is one know
+> > application that behaves thus, it is prudent to respond in kind.  This
+> > patch changes the network labeling behavior such that an outgoing packet
+> > that would be given a CIPSO label that matches the ambient label is left
+> > unlabeled.
+> 
+> I suppose you are entitled to use NetLabel however you want, so long as it 
+> works and doesn't cause problems for other users, but I think you are 
+> starting down a rather ugly road with this patch.  In my mind a cleaner 
+> solution would be to make of use of the built-in NetLabel/LSM domain mapping 
+> functionality to accomplish the same thing.  In other words, there is already 
+> a mechanism to do what you want, it's probably a good idea to make use of it 
+> instead of recreating it.
+> 
+> I would suggest that when you set the NetLabel security attributes for a 
+> socket you set the domain field to the smack label (see the SELinux code for 
+> an example, if you are unsure see selinux_netlbl_sock_setsid() and 
+> security_netlbl_sid_to_secattr()).  Once you do that you should continue to 
+> set the default NetLabel domain mapping to send CIPSO tagged packets but also 
+> create a new NetLabel domain mapping so that the ambient smack label causes 
+> packets to be sent "unlabeled".  The only other change you would have to make 
+> is to ensure that the NetLabel domain mappings are kept in sync with any 
+> ambient label changes (should be easy enough and a rather infrequent 
+> operation in practice).
+> 
+> This also should have the advantage of making your life easier if/when more 
+> advanced labeled network controls are added to Smack (see the SELinux changes 
+> made in 2.6.25 and our previous discussions).
+> 
 
