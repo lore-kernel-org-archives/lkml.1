@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbYBGAwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933108AbYBGAxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933901AbYBGAwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934424AbYBGAsJ
+	id S933108AbYBGAxI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:53:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934936AbYBGAsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:48:09 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41876 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934632AbYBGAsC (ORCPT
+	Wed, 6 Feb 2008 19:48:55 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51889 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934433AbYBGAs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:48:02 -0500
-Date: Wed, 6 Feb 2008 16:47:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-Subject: Re: softlockup: automatically detect hung TASK_UNINTERRUPTIBLE
- tasks
-Message-Id: <20080206164747.60944a00.akpm@linux-foundation.org>
-In-Reply-To: <20080206163111.54088622.akpm@linux-foundation.org>
-References: <200801252259.m0PMxHmD012059@hera.kernel.org>
-	<20080205164626.f9c920e0.akpm@linux-foundation.org>
-	<1202309402.6310.0.camel@lappy>
-	<20080206100513.133587fa.akpm@linux-foundation.org>
-	<20080207000425.GA21918@elte.hu>
-	<20080206163111.54088622.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Feb 2008 19:48:26 -0500
+Message-ID: <47AA554E.7050405@zytor.com>
+Date: Wed, 06 Feb 2008 16:48:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Hasan Rashid <hasan@digitalpath.net>
+CC: "'Maxim Levitsky'" <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Access MSR functions in userspace?
+References: <200802070037.m170b4Bb000579@terminus.zytor.com>
+In-Reply-To: <200802070037.m170b4Bb000579@terminus.zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Feb 2008 16:31:11 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hasan Rashid wrote:
+> Maxim, HPA,
+> 
+>  I loaded the module msr.o and when I try to use wrmsr or rdmsr from the msr
+> tools I get rdmsr: open: No such device. It seems like device doesn't
+> register upon module load. I have created the devices on the system using
+> mknod. Meaning /dev/cpu/msr is there and I changed the appropriate path in
+> the msr.c(module) and wrmsr.c (utlity) file. 
+> 
+> What would prompt this error message?
+> 
 
-> On Thu, 7 Feb 2008 01:04:25 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > > Does that kernel have:
-> > > > 
-> > > > commit ed50d6cbc394cd0966469d3e249353c9dd1d38b9
-> > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > Date:   Sat Feb 2 00:23:08 2008 +0100
-> > > > 
-> > > >     debug: softlockup looping fix
-> > > 
-> > > yup.  It was fetched less than 24 hours ago.
-> > 
-> > does the patch below improve the situation?
-> > 
-> 
-> Nope.
-> 
-> But I tested it on mainline, and mainline exhibits the never-powers-off
-> symptom, whereas ed50d6cbc394cd0966469d3e249353c9dd1d38b9 demonstrates the
-> powers-off-after-20-seconds symptom.  
-> 
-> So we _may_ be dealing with two bugs here, and your patch might have fixed
-> the first, but that success is obscured by the second.  I guess I need to
-> prepare a tree which has ed50d6cbc394cd0966469d3e249353c9dd1d38b9 at its
-> tip.  (Wonders how to do that).  
+/dev/cpu/msr is bogus.  It should be /dev/cpu/0/msr etc.
 
-OK, I did this (tested on a ed50d6cbc394cd0966469d3e249353c9dd1d38b9-tipped
-tree) and again, the patch made no difference: the machine still pauses
-20-odd seconds before (correctly) powering off.
+Sounds like your version of udev might be out of date, or you're using 
+an old kernel which doesn't communicate /dev/cpu/* to udev properly.
 
+Revert your hacks and, if you have to create the nodes manually, use the 
+MAKEDEV script included with the msr-tools.
+
+	-hpa
