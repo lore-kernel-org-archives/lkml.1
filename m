@@ -1,95 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbYBGMt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbYBGMuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760955AbYBGMt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:49:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759412AbYBGMsm
+	id S932085AbYBGMuY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759416AbYBGMsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:48:42 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:40695 "EHLO
-	outbound6-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755989AbYBGMs1 (ORCPT
+	Thu, 7 Feb 2008 07:48:43 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:40685 "EHLO
+	outbound5-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755987AbYBGMs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:48:27 -0500
+	Thu, 7 Feb 2008 07:48:26 -0500
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
 From: "Joerg Roedel" <joerg.roedel@amd.com>
 To: "Avi Kivity" <avi@qumranet.com>
-cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: KVM: add support for SVM Nested Paging
-Date: Thu,  7 Feb 2008 13:47:37 +0100
-Message-ID: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com>
+cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Joerg Roedel" <joerg.roedel@amd.com>
+Subject: [PATCH 4/8] X86: export information about NPT to generic x86
+ code
+Date: Thu,  7 Feb 2008 13:47:41 +0100
+Message-ID: <1202388465-8657-5-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.3.7
-X-OriginalArrivalTime: 07 Feb 2008 12:47:45.0642 (UTC)
- FILETIME=[A302A4A0:01C86987]
+In-Reply-To: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com>
+References: <1202388465-8657-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 07 Feb 2008 12:47:45.0720 (UTC)
+ FILETIME=[A30E8B80:01C86987]
 MIME-Version: 1.0
-X-WSS-ID: 6BB421850QK10781141-01-01
+X-WSS-ID: 6BB421852IW10730680-01-01
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The generic x86 code has to know if the specific implementation uses Nested
+Paging. In the generic code Nested Paging is called Two Dimensional Paging
+(TDP) to avoid confusion with (future) TDP implementations of other vendors.
+This patch exports the availability of TDP to the generic x86 code.
 
-here is the improved patchset which adds support for the Nested Paging
-feature of the AMD Barcelona and Phenom processors to KVM. The patch set
-was successfully install- and runtime-tested with various guest
-operating systems (64 bit, 32 bit legacy and 32 bit PAE Linux,
-Windows 64 bit and 32 bit versions too).
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/mmu.c         |   15 +++++++++++++++
+ arch/x86/kvm/svm.c         |    4 +++-
+ include/asm-x86/kvm_host.h |    2 ++
+ 3 files changed, 20 insertions(+), 1 deletions(-)
 
-To the previous post of these patches they were extended with support
-for KVM on 32 bit PAE hosts. Live migration is also implemented and
-tested in various situations (migration between 32 bit and 64 bit host,
-Non-NPT to/from NPT migration, NPT to NPT migration, all with various
-kinds of guests, including Windows).  After all these tests I am pretty
-sure that these patches don't introduce any regression to KVM and
-therefore the NPT feature is enabled per default.
-
-Some new performance numbers are also available. For this test I started
-an Ubuntu 7.10 guest with 4 vcpus and 3G of RAM on a dual socket Opteron
-box and ran kernbench -M in it with a 2.6.24 kernel as the source tree.
-The test was done with traditional Shadow Paging and using Nested
-Paging. The tests ran on the text console with GDM stopped. Here are the
-results:
-
------------------------------------------------------------------------
-Average Half load -j 3 Run:
------------------+-------------------------+---------------------------
-                 | Nested Paging           | Shadow Paging
------------------+-------------------------+---------------------------
-                 | Time    (std deviation) | Time    (std deviation)
------------------+-------------------------+---------------------------
-Elapsed Time     |   147.574 (0.642168)    |   211.73  (0.802963)
-User Time        |   382.036 (1.14742)     |   416.254 (1.91732)
-System Time      |    48.29  (0.261151)    |   221.608 (0.706307)
-Percent CPU      |   291     (0.707107)    |   300.8   (0.447214)
-Context Switches | 33605.4   (148.788)     | 34901     (434.318)
-Sleeps           | 47351     (98.2395)     | 47017.8   (378.582)
------------------+-------------------------+---------------------------
-Average Half load -j 16 Run:
------------------+-------------------------+---------------------------
-                 | Nested Paging           | Shadow Paging
------------------+-------------------------+---------------------------
-                 | Time    (std deviation) | Time    (std deviation)
------------------+-------------------------+---------------------------
-Elapsed Time     |   120.156 (0.337757)    |   179.162 (1.49999)
-User Time        |   385.318 (3.57206)     |   421.624 (5.82785)
-System Time      |    48.959 (0.811411)    |   230.8   (9.70806)
-Percent CPU      |   327.6   (38.5982)     |   336.2   (37.3655)
-Context Switches | 42435.5   (9312.09)     | 46190.7   (11909.6)
-Sleeps           | 50297.5   (3111.73)     | 50688     (3882.49)
------------------+-------------------------+---------------------------
-
-In other words, Nested Paging gave 30% performance improvement in the
-'make -j 3' run and a 33% improvement in the 'make -j 16' run for this
-benchmark.
-
-I think these patches are ready for merging into the KVM tree. Please
-consider for inclusion.
-
-Joerg Roedel
-
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 635e70c..3477395 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -32,6 +32,15 @@
+ #include <asm/cmpxchg.h>
+ #include <asm/io.h>
+ 
++/*
++ * When setting this variable to true it enables Two-Dimensional-Paging
++ * where the hardware walks 2 page tables:
++ * 1. the guest-virtual to guest-physical
++ * 2. while doing 1. it walks guest-physical to host-physical
++ * If the hardware supports that we don't need to do shadow paging.
++ */
++static bool tdp_enabled = false;
++
+ #undef MMU_DEBUG
+ 
+ #undef AUDIT
+@@ -1562,6 +1571,12 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(kvm_mmu_page_fault);
+ 
++void kvm_enable_tdp(void)
++{
++	tdp_enabled = true;
++}
++EXPORT_SYMBOL_GPL(kvm_enable_tdp);
++
+ static void free_mmu_pages(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_mmu_page *sp;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 8173ba6..f400499 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -423,8 +423,10 @@ static __init int svm_hardware_setup(void)
+ 		npt_enabled = false;
+ 	}
+ 
+-	if (npt_enabled)
++	if (npt_enabled) {
+ 		printk(KERN_INFO "kvm: Nested Paging enabled\n");
++		kvm_enable_tdp();
++	}
+ 
+ 	return 0;
+ 
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index 67ae307..7661da0 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -491,6 +491,8 @@ int kvm_fix_hypercall(struct kvm_vcpu *vcpu);
+ 
+ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code);
+ 
++void kvm_enable_tdp(void);
++
+ int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3);
+ int complete_pio(struct kvm_vcpu *vcpu);
+ 
+-- 
+1.5.3.7
 
 
 
