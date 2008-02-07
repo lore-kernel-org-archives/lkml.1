@@ -1,91 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbYBGBcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbYBGBfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbYBGBcU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 20:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYBGBcI
+	id S1760526AbYBGBfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 20:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYBGBfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 20:32:08 -0500
-Received: from mx2.suse.de ([195.135.220.15]:43050 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751121AbYBGBcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 20:32:06 -0500
-From: Neil Brown <neilb@suse.de>
-To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
-Date: Thu, 7 Feb 2008 12:32:02 +1100
+	Wed, 6 Feb 2008 20:35:04 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51337 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYBGBfD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 20:35:03 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>, tglx@linutronix.de,
+       mingo@redhat.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com>
+	<20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com>
+	<47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu>
+	<m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
+	<20080207003918.GA29943@elte.hu>
+Date: Wed, 06 Feb 2008 18:30:21 -0700
+In-Reply-To: <20080207003918.GA29943@elte.hu> (Ingo Molnar's message of "Thu,
+	7 Feb 2008 01:39:18 +0100")
+Message-ID: <m1bq6td042.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18346.24466.83745.944149@notabene.brown>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ext3 can fail badly when device stops accepting BIO_RW_BARRIER requests. 
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
 
-Some devices - notably dm and md - can change their behaviour in
-response to BIO_RW_BARRIER requests.  They might start out accepting
-such requests but on reconfiguration, they find out that they cannot
-any more.
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> Looking at the patch the local_irq_enable() is totally bogus.  As soon 
+>> was we hit machine_crash_shutdown the first thing we do is disable 
+>> irqs.
+>
+> yeah.
+>
+>> I'm wondering if someone was using the switch cpus on crash patch that 
+>> was floating around.  That would require the ipis to work.
+>> 
+>> I don't know if nmi_exit makes sense.  There are enough layers of 
+>> abstraction in that piece of code I can't quickly spot the part that 
+>> is banging the hardware.
+>> 
+>> The location of nmi_exit in the patch is clearly wrong.  crash_kexec 
+>> is a noop if we don't have a crash kernel loaded (and if we are not 
+>> the first cpu into it), so if we don't execute the crash code 
+>> something weird may happen.  Further the code is just more 
+>> maintainable if that kind of code lives in machine_crash_shutdown.
+>
+> nmi_exit() has no hw effects - it's just our own bookeeping.
 
-ext3 (and other filesystems) deal with this by always testing if
-BIO_RW_BARRIER requests fail with EOPNOTSUPP, and retrying the write
-requests without the barrier (probably after waiting for any pending
-writes to complete).
+Alright so that should have no hardware effect then.
 
-However there is a bug in the handling for this for ext3.
+> the hw knows that we finished the NMI when we do an iret. Perhaps that's 
+> the bug or side-effect that made the difference: via enabling irqs we 
+> get an irq entry, and that does an iret and clears the NMI nested state 
+> - allowing the kexec context to proceed? I suspect kexec() will do an 
+> iret eventually (at minimum in the booted up kernel's context) - all 
+> NMIs are blocked up to that point and maybe the APIC doesnt really like 
+> being frobbed in that state? In any case, the local_irq_enable() is just 
+> wrong - it's the worst thing a crashing kernel can do. Perhaps doing an 
+> intentional iret with a prepared stack-let that just restores to 
+> still-irqs-off state and jumps to the next instruction could 'exit' the 
+> NMI context without really having to exit it in the kernel code flow?
 
-When ext3 (jbd actually) decides to submit a BIO_RW_BARRIER request,
-it sets the buffer_ordered flag on the buffer head.
-If the request completes successfully, the flag STAYS SET.
+Well I think this is slightly on the wrong track.  The original patch description
+said  we get as far as purgatory.  Purgatory is the bit of C code form
+/sbin/kexec that runs just before our second kernel.  It sets up
+arguments and verify the target kernel has a valid sha256sum.  If
+purgatory detects data corruption it spins, to prevent a corrupt
+recovery kernel from doing something nasty.
 
-Other code might then write the same buffer_head after the device has
-been reconfigured to not accept barriers.  This write will then fail,
-but the "other code" is not ready to handle EOPNOTSUPP errors and the
-error will be treated as fatal.
+It appears that the primary crash_kexec path is working fine.
 
-This can be seen without having to reconfigure a device at exactly the
-wrong time by putting:
+The original description speculated that we had non-stopped cpus that
+were telling the hardware to shut off.
 
-		if (buffer_ordered(bh))
-			printk("OH DEAR, and ordered buffer\n");
+I don't see what the hang is.  However the goal apparently is to make
+the kexec on panic path more robust so that we can take crash dumps in
+more strange cases.
 
+We can get NMI from the nmi watchdogs so it is possible this happens
+on legitimate hardware so there is a chance this is deterministic and
+that we can get enough information to debug and fix the original
+error.
 
-in the while loop in "commit phase 5" of journal_commit_transaction.
+If part of the problem is getting to crash_kexec my inclination is to
+move the call to crash_kexec up as early as possible in die_nmi.  As
+we may simply be hanging in printk or something stupid like that.
 
-If it ever prints the "OH DEAR ..." message (as it does sometimes for
-me), then that request could (in different circumstances) have failed
-with EOPNOTSUPP, but that isn't tested for.
+It is weird that only the 32bit die_nmi path calls bust_spinlocks.
 
-My proposed fix is to clear the buffer_ordered flag after it has been
-used, as in the following patch.
+I'm not really happy with the secondary cpus taking whole notify_die
+path as that is more general purpose infrastructure that might go
+bad.  However it doesn't appear broken, and it should not be critical
+to the crash dump process.
 
-Thanks,
-NeilBrown
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-diff .prev/fs/jbd/commit.c ./fs/jbd/commit.c
---- .prev/fs/jbd/commit.c	2008-02-07 10:01:57.000000000 +1100
-+++ ./fs/jbd/commit.c	2008-02-07 10:04:58.000000000 +1100
-@@ -131,6 +131,8 @@ static int journal_write_commit_record(j
- 		barrier_done = 1;
- 	}
- 	ret = sync_dirty_buffer(bh);
-+	if (barrier_done)
-+		clear_buffer_ordered(bh);
- 	/* is it possible for another commit to fail at roughly
- 	 * the same time as this one?  If so, we don't want to
- 	 * trust the barrier flag in the super, but instead want
-@@ -148,7 +150,6 @@ static int journal_write_commit_record(j
- 		spin_unlock(&journal->j_state_lock);
- 
- 		/* And try again, without the barrier */
--		clear_buffer_ordered(bh);
- 		set_buffer_uptodate(bh);
- 		set_buffer_dirty(bh);
- 		ret = sync_dirty_buffer(bh);
+Eric
