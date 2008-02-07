@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbYBGVDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934196AbYBGVDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbYBGVDb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933270AbYBGUwS
+	id S934196AbYBGVDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762572AbYBGUw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:52:18 -0500
-Received: from mx1.suse.de ([195.135.220.2]:45634 "EHLO mx1.suse.de"
+	Thu, 7 Feb 2008 15:52:27 -0500
+Received: from mail.suse.de ([195.135.220.2]:45692 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933249AbYBGUwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:52:13 -0500
-Date: Thu, 7 Feb 2008 12:47:39 -0800
+	id S932768AbYBGUwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:52:24 -0500
+Date: Thu, 7 Feb 2008 12:47:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-pci@atrey.karlin.mff.cuni.cz, Ian Abbott <abbotti@mev.co.uk>
-Subject: [patch 26/45] PCI: Fix fakephp deadlock
-Message-ID: <20080207204739.GA16389@suse.de>
+       Len Brown <len.brown@intel.com>
+Subject: [patch 27/45] ACPI: update ACPI blacklist
+Message-ID: <20080207204742.GB16389@suse.de>
 References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-fix-fakephp-deadlock.patch"
+Content-Disposition: inline; filename="acpi-update-acpi-blacklist.patch"
 In-Reply-To: <20080207204549.GA16389@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,133 +37,154 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ian Abbott <abbotti@mev.co.uk>
+From: Len Brown <len.brown@intel.com>
 
-This patch works around a problem in the fakephp driver when a process
-writing "0" to a "power" sysfs file to fake removal of a PCI device ends
-up deadlocking itself in the sysfs code.
+These minor changes sync the latest ACPI blacklist into 2.6.24.
+The main benefit of this patch is to make any future
+changes easier to apply.  The immediate benefit is one less
+dmesg line on Acer systems.
 
-The patch was recently accepted into Linus' tree after the 2.6.24 release:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5c796ae7a7ebe56967ed9b9963d7c16d733635ff
-
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/hotplug/fakephp.c |   39 +++++++++++++++++++++++++++++++++++----
- 1 file changed, 35 insertions(+), 4 deletions(-)
+ drivers/acpi/blacklist.c    |   23 ++++++++++++++---------
+ drivers/acpi/osl.c          |   16 ++++++++--------
+ drivers/firmware/dmi_scan.c |    9 ---------
+ include/linux/dmi.h         |    2 --
+ 4 files changed, 22 insertions(+), 28 deletions(-)
 
---- a/drivers/pci/hotplug/fakephp.c
-+++ b/drivers/pci/hotplug/fakephp.c
-@@ -39,6 +39,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- #include "../pci.h"
+--- a/drivers/acpi/blacklist.c
++++ b/drivers/acpi/blacklist.c
+@@ -208,24 +208,24 @@ static struct dmi_system_id acpi_osi_dmi
+ 	 * Disable OSI(Linux) warnings on all "Acer, inc."
+ 	 *
+ 	 * _OSI(Linux) disables the latest Windows BIOS code:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 3100"),
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5050"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5100"),
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5580"),
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 3010"),
+ 	 * _OSI(Linux) effect unknown:
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "Ferrari 5000"),
+ 	 */
+-	{
+-	.callback = dmi_disable_osi_linux,
+-	.ident = "Acer, inc.",
+-	.matches = {
+-		     DMI_MATCH(DMI_SYS_VENDOR, "Acer, inc."),
+-		},
+-	},
++	/*
++	 * note that dmi_check_system() uses strstr()
++	 * to match sub-strings rather than !strcmp(),
++	 * so "Acer" below matches "Acer, inc." above.
++	 */
+ 	/*
+ 	 * Disable OSI(Linux) warnings on all "Acer"
+ 	 *
+ 	 * _OSI(Linux) effect unknown:
+-	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5100"),
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5315"),
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 5610"),
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 7720Z"),
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 5520"),
+@@ -300,7 +300,7 @@ static struct dmi_system_id acpi_osi_dmi
+ 		     DMI_MATCH(DMI_BIOS_VENDOR, "COMPAL"),
+ 		},
+ 	},
+-	{ /* OSI(Linux) touches USB, breaks suspend to disk */
++	{ /* OSI(Linux) touches USB, unknown side-effect */
+ 	.callback = dmi_disable_osi_linux,
+ 	.ident = "Dell Dimension 5150",
+ 	.matches = {
+@@ -474,6 +474,11 @@ static struct dmi_system_id acpi_osi_dmi
+ 	 *
+ 	 * _OSI(Linux) confirmed to be a NOP:
+ 	 * DMI_MATCH(DMI_PRODUCT_NAME, "P1-J150B"),
++	 * with DMI_MATCH(DMI_BOARD_NAME, "ROCKY"),
++	 *
++	 * unknown:
++	 * DMI_MATCH(DMI_PRODUCT_NAME, "S1-MDGDG"),
++	 * with DMI_MATCH(DMI_BOARD_NAME, "ROCKY"),
+ 	 */
+ 	{
+ 	.callback = dmi_disable_osi_linux,
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -120,7 +120,7 @@ static char osi_additional_string[OSI_ST
+  */
+ #define OSI_LINUX_ENABLE 0
  
- #if !defined(MODULE)
-@@ -63,10 +64,16 @@ struct dummy_slot {
- 	struct list_head node;
- 	struct hotplug_slot *slot;
- 	struct pci_dev *dev;
-+	struct work_struct remove_work;
-+	unsigned long removed;
- };
- 
- static int debug;
- static LIST_HEAD(slot_list);
-+static struct workqueue_struct *dummyphp_wq;
-+
-+static void pci_rescan_worker(struct work_struct *work);
-+static DECLARE_WORK(pci_rescan_work, pci_rescan_worker);
- 
- static int enable_slot (struct hotplug_slot *slot);
- static int disable_slot (struct hotplug_slot *slot);
-@@ -109,7 +116,7 @@ static int add_slot(struct pci_dev *dev)
- 	slot->name = &dev->dev.bus_id[0];
- 	dbg("slot->name = %s\n", slot->name);
- 
--	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
-+	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
- 	if (!dslot)
- 		goto error_info;
- 
-@@ -164,6 +171,14 @@ static void remove_slot(struct dummy_slo
- 		err("Problem unregistering a slot %s\n", dslot->slot->name);
- }
- 
-+/* called from the single-threaded workqueue handler to remove a slot */
-+static void remove_slot_worker(struct work_struct *work)
-+{
-+	struct dummy_slot *dslot =
-+		container_of(work, struct dummy_slot, remove_work);
-+	remove_slot(dslot);
-+}
-+
- /**
-  * pci_rescan_slot - Rescan slot
-  * @temp: Device template. Should be set: bus and devfn.
-@@ -267,11 +282,17 @@ static inline void pci_rescan(void) {
- 	pci_rescan_buses(&pci_root_buses);
- }
- 
-+/* called from the single-threaded workqueue handler to rescan all pci buses */
-+static void pci_rescan_worker(struct work_struct *work)
-+{
-+	pci_rescan();
-+}
- 
- static int enable_slot(struct hotplug_slot *hotplug_slot)
+-struct osi_linux {
++static struct osi_linux {
+ 	unsigned int	enable:1;
+ 	unsigned int	dmi:1;
+ 	unsigned int	cmdline:1;
+@@ -1213,24 +1213,24 @@ acpi_status acpi_os_release_object(acpi_
+  *
+  *	Returns 0 on success
+  */
+-int acpi_dmi_dump(void)
++static int acpi_dmi_dump(void)
  {
- 	/* mis-use enable_slot for rescanning of the pci bus */
--	pci_rescan();
-+	cancel_work_sync(&pci_rescan_work);
-+	queue_work(dummyphp_wq, &pci_rescan_work);
- 	return -ENODEV;
- }
  
-@@ -306,6 +327,10 @@ static int disable_slot(struct hotplug_s
- 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
- 		return -ENODEV;
- 	}
-+	if (test_and_set_bit(0, &dslot->removed)) {
-+		dbg("Slot already scheduled for removal\n");
-+		return -ENODEV;
-+	}
- 	/* search for subfunctions and disable them first */
- 	if (!(dslot->dev->devfn & 7)) {
- 		for (func = 1; func < 8; func++) {
-@@ -328,8 +353,9 @@ static int disable_slot(struct hotplug_s
- 	/* remove the device from the pci core */
- 	pci_remove_bus_device(dslot->dev);
+ 	if (!dmi_available)
+ 		return -1;
  
--	/* blow away this sysfs entry and other parts. */
--	remove_slot(dslot);
-+	/* queue work item to blow away this sysfs entry and other parts. */
-+	INIT_WORK(&dslot->remove_work, remove_slot_worker);
-+	queue_work(dummyphp_wq, &dslot->remove_work);
+ 	printk(KERN_NOTICE PREFIX "DMI System Vendor: %s\n",
+-		dmi_get_slot(DMI_SYS_VENDOR));
++		dmi_get_system_info(DMI_SYS_VENDOR));
+ 	printk(KERN_NOTICE PREFIX "DMI Product Name: %s\n",
+-		dmi_get_slot(DMI_PRODUCT_NAME));
++		dmi_get_system_info(DMI_PRODUCT_NAME));
+ 	printk(KERN_NOTICE PREFIX "DMI Product Version: %s\n",
+-		dmi_get_slot(DMI_PRODUCT_VERSION));
++		dmi_get_system_info(DMI_PRODUCT_VERSION));
+ 	printk(KERN_NOTICE PREFIX "DMI Board Name: %s\n",
+-		dmi_get_slot(DMI_BOARD_NAME));
++		dmi_get_system_info(DMI_BOARD_NAME));
+ 	printk(KERN_NOTICE PREFIX "DMI BIOS Vendor: %s\n",
+-		dmi_get_slot(DMI_BIOS_VENDOR));
++		dmi_get_system_info(DMI_BIOS_VENDOR));
+ 	printk(KERN_NOTICE PREFIX "DMI BIOS Date: %s\n",
+-		dmi_get_slot(DMI_BIOS_DATE));
++		dmi_get_system_info(DMI_BIOS_DATE));
  
  	return 0;
  }
-@@ -340,6 +366,7 @@ static void cleanup_slots (void)
- 	struct list_head *next;
- 	struct dummy_slot *dslot;
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -469,12 +469,3 @@ int dmi_get_year(int field)
  
-+	destroy_workqueue(dummyphp_wq);
- 	list_for_each_safe (tmp, next, &slot_list) {
- 		dslot = list_entry (tmp, struct dummy_slot, node);
- 		remove_slot(dslot);
-@@ -351,6 +378,10 @@ static int __init dummyphp_init(void)
- {
- 	info(DRIVER_DESC "\n");
- 
-+	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
-+	if (!dummyphp_wq)
-+		return -ENOMEM;
-+
- 	return pci_scan_buses();
+ 	return year;
  }
+-
+-/**
+- *	dmi_get_slot - return dmi_ident[slot]
+- *	@slot:	index into dmi_ident[]
+- */
+-char *dmi_get_slot(int slot)
+-{
+-	return(dmi_ident[slot]);
+-}
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -79,7 +79,6 @@ extern void dmi_scan_machine(void);
+ extern int dmi_get_year(int field);
+ extern int dmi_name_in_vendors(const char *str);
+ extern int dmi_available;
+-extern char *dmi_get_slot(int slot);
+ 
+ #else
+ 
+@@ -90,7 +89,6 @@ static inline const struct dmi_device * 
+ static inline int dmi_get_year(int year) { return 0; }
+ static inline int dmi_name_in_vendors(const char *s) { return 0; }
+ #define dmi_available 0
+-static inline char *dmi_get_slot(int slot) { return NULL; }
+ 
+ #endif
  
 
 -- 
