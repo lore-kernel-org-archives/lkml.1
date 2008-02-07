@@ -1,74 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935665AbYBGVTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbYBGVUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935665AbYBGVTl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762854AbYBGVF3
+	id S933846AbYBGVUN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932448AbYBGVK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:05:29 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:53159 "EHLO pasmtpA.tele.dk"
+	Thu, 7 Feb 2008 16:10:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38349 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934935AbYBGVFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:05:25 -0500
-Date: Thu, 7 Feb 2008 22:05:30 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Marcin Juszkiewicz <openembedded@haerwu.biz>,
-       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-Message-ID: <20080207210530.GA22357@uranus.ravnborg.org>
-References: <20080207133805.13f092ff@dilbert.local> <20080207125824.GB7111@infradead.org> <20080207130117.GA18750@uranus.ravnborg.org> <200802071609.36960.openembedded@haerwu.biz> <20080207160557.GB28435@flint.arm.linux.org.uk> <20080207202329.GA21949@uranus.ravnborg.org> <20080207202940.GI28435@flint.arm.linux.org.uk>
+	id S933470AbYBGVKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:10:25 -0500
+Date: Thu, 7 Feb 2008 16:09:33 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: mathieu.desnoyers@polymtl.ca
+Cc: akpm@linux-foundation.org, mingo@elte.hu, fche@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [patch 1/4] make pr_debug() dynamic
+Message-ID: <20080207210929.GC14732@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080207202940.GI28435@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 08:29:40PM +0000, Russell King - ARM Linux wrote:
-> On Thu, Feb 07, 2008 at 09:23:29PM +0100, Sam Ravnborg wrote:
-> > +# if PCMCIA is selected then we need IDE
-> > +config ARM_PCMCIA
-> > +	depends on PCMCIA
-> 
-> Shouldn't this be:
-> 
-> 	def_bool PCMCIA
-yes - thanks.
 
-> 
-> ?
-> 
-> > +	select HAVE_IDE
-> 
-> Also, should this be something ARM specific - if you have PCMCIA you could
-> have a CF card plugged in, so...  There's nothing ARM specific about that.
+-make pr_debug() dynamic so it can be switched on/off. The off state
+ is implemented on top of the immediate infrastructure, so as to promote
+ more dynamic printing and debugging. depends on CONFIG_HAVE_IMMEDIATE 
+ and CONFIG_PRINTK
+ 
 
-So we can replace the above with this:
-diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-index 519b4ff..8b22281 100644
---- a/drivers/pcmcia/Kconfig
-+++ b/drivers/pcmcia/Kconfig
-@@ -38,6 +38,7 @@ config PCMCIA_DEBUG
- config PCMCIA
-        tristate "16-bit PCMCIA support"
-        select CRC32
-+       select HAVE_IDE
-        default y
-        ---help---
-           This option enables support for 16-bit PCMCIA cards. Most older
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+---
 
-Makes sense.
+ include/linux/kernel.h |   10 ++++++++++
+ init/Kconfig           |    5 +++++
+ kernel/printk.c        |   17 +++++++++++++++++
+ 3 files changed, 32 insertions(+), 0 deletions(-)
 
-> 
-> > +
-> > +# select MTD except in a few corner configuration cases
-> > +config ARM_MTD
-> > +	depends on ALIGNMENT_TRAP || !CPU_CP15_MMU
-> 
-> Ditto.
-Yes.
 
-	Sam
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index ff356b2..d69430a 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -14,6 +14,7 @@
+ #include <linux/compiler.h>
+ #include <linux/bitops.h>
+ #include <linux/log2.h>
++#include <linux/immediate.h>
+ #include <asm/byteorder.h>
+ #include <asm/bug.h>
+ 
+@@ -276,6 +277,14 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ #define pr_info(fmt, arg...) \
+ 	printk(KERN_INFO fmt, ##arg)
+ 
++#ifdef CONFIG_PR_DEBUG_DYNAMIC
++DECLARE_IMV(char, pr_debug_on);
++#define pr_debug(fmt, ...)						\
++     do {								\
++	if (unlikely(imv_read(pr_debug_on)))				\
++		printk(KERN_DEBUG fmt, ##__VA_ARGS__);			\
++     } while (0)
++#else
+ #ifdef DEBUG
+ /* If you are writing a driver, please use dev_dbg instead */
+ #define pr_debug(fmt, arg...) \
+@@ -286,6 +295,7 @@ static inline int __attribute__ ((format (printf, 1, 2))) pr_debug(const char *
+ 	return 0;
+ }
+ #endif
++#endif
+ 
+ /*
+  *      Display an IP address in readable format.
+diff --git a/init/Kconfig b/init/Kconfig
+index 3918c2d..0bed605 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -539,6 +539,11 @@ config PRINTK
+ 	  very difficult to diagnose system problems, saying N here is
+ 	  strongly discouraged.
+ 
++config PR_DEBUG_DYNAMIC
++	bool
++	depends on PRINTK && HAVE_IMMEDIATE
++	default y
++
+ config BUG
+ 	bool "BUG() support" if EMBEDDED
+ 	default y
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 29ae1e9..1bc4fdb 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -33,6 +33,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
+ #include <linux/jiffies.h>
++#include <linux/immediate.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -1334,3 +1335,19 @@ bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ 	return false;
+ }
+ EXPORT_SYMBOL(printk_timed_ratelimit);
++
++#ifdef CONFIG_PR_DEBUG_DYNAMIC
++
++DEFINE_IMV(char, pr_debug_on) = 0;
++EXPORT_IMV_SYMBOL_GPL(pr_debug_on);
++
++static int __init pr_debug_setup(char *str)
++{
++	if (str)
++		return -ENOENT;
++	imv_set(pr_debug_on, 1);
++	return 0;
++}
++early_param("pr_debug", pr_debug_setup);
++
++#endif
