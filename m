@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935423AbYBGVWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935487AbYBGVWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935423AbYBGVWA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932295AbYBGVOO
+	id S935487AbYBGVWd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934965AbYBGVOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:14:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56427 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763327AbYBGVOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:14:12 -0500
-Date: Thu, 7 Feb 2008 16:13:49 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: mathieu.desnoyers@polymtl.ca
-Cc: akpm@linux-foundation.org, mingo@elte.hu, fche@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [patch 4/4] make pr_debug() dynamic - update docs
-Message-ID: <20080207211349.GF14732@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Thu, 7 Feb 2008 16:14:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38271 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935502AbYBGVOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:14:34 -0500
+Date: Thu, 7 Feb 2008 13:14:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Harald Arnesen <skogtun.linux@gmail.com>
+cc: FUJITA Tomonori <tomof@acm.org>, akpm@linux-foundation.org, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: Latest git oopses during boot
+In-Reply-To: <8120cfd40802071248x20ed938dh52cd9e314219613b@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0802071304420.2896@woody.linux-foundation.org>
+References: <8120cfd40802070144l79830c2cs6329c302697ecc8b@mail.gmail.com>  <20080207020214.0f0cf1c7.akpm@linux-foundation.org>  <8120cfd40802070314x2799bcbatf42e3fe824a18c22@mail.gmail.com>  <20080207233239Z.tomof@acm.org>  <8120cfd40802070933r42a98537v78feb7ee8e748a94@mail.gmail.com>
+  <alpine.LFD.1.00.0802070956380.2883@woody.linux-foundation.org> <8120cfd40802071248x20ed938dh52cd9e314219613b@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
--add documentation about pr_debug kernel-parameters.txt
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
----
+On Thu, 7 Feb 2008, Harald Arnesen wrote:
+> >
+> > Can you do a
+> >
+> >         make drivers/scsi/advansys.lst
+> >
+> > and see what it should be?
+> 
+> Anyway, here it is, as an attachment.
 
- Documentation/kernel-parameters.txt |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+Ok, I was wrong. The code really *does* compile to that insane
 
+	a3 14 00 00 00          mov    %eax,0x14
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index cf38689..6d524bb 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1494,6 +1494,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 			autoconfiguration.
- 			Ranges are in pairs (memory base and size).
- 
-+	pr_debug
-+			Enables pr_debug() calls if the immediate
-+			infrastructure has been enabled. These can also be
-+			switched on/off via /proc/sys/debug/pr_debug.
-+
- 	print-fatal-signals=
- 			[KNL] debug: print fatal signals
- 			print-fatal-signals=1: print segfault info to
+by your compiler.
+
+That's the
+
+	asc_dvc_varp->overrun_buf = kzalloc(ASC_OVERRUN_BSIZE, GFP_KERNEL);
+
+thing, and gcc seems to have decided that it can statically prove that 
+asc_dvc_varp is NULL.
+
+Quite frankly, I don't see that being true. But you have some patches in 
+your tree that I haven't followed, so.. Are you sure the patches applied 
+to the right spot? The patch I saw added that kzalloc() to the _end_ of 
+the function (long after asc_dvc_varp was initialized), maybe that one got 
+mis-applied?
+
+Or maybe your compiler version is simply totally broken.
+
+			Linus
