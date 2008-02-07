@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbYBGSyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbYBGSzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758256AbYBGSyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbYBGSyS
+	id S1758747AbYBGSzi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYBGSzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:54:18 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:30035 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622AbYBGSyP (ORCPT
+	Thu, 7 Feb 2008 13:55:22 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:33164 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbYBGSzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:54:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=ujsGYO+kyqlm7A5HdLZKq5KGSw1rVEtSqXq8YWECdxJlZx5pm2o3USYeLscYtITSnjd+/8/OeaDLgJfDoAYpT4JkhBWEzAYQJbL0RbCs7yypPpl3+N4HgpaaGosOOPR9a1JCOzdtZ+GY9D7aGl7U9fQfnNxxFCzxELzC8fBg8Tg=
-Message-ID: <d23110170802071054s6fef54c9q182a9ed2e180052@mail.gmail.com>
-Date: Thu, 7 Feb 2008 15:54:12 -0300
-From: "Ulisses Furquim" <ulissesf@gmail.com>
-To: "Clem Taylor" <clem.taylor@gmail.com>
-Subject: Re: inotify_add_watch() returning ENOSPC in 2.6.24 [watch descriptor leak?]
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Amy Griffis" <amy.griffis@hp.com>
-In-Reply-To: <ecb4efd10802061140g929e699y8d79f1317c30478d@mail.gmail.com>
+	Thu, 7 Feb 2008 13:55:20 -0500
+X-IronPort-AV: E=Sophos;i="4.25,316,1199682000"; 
+   d="scan'208";a="48104147"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: linux-usb@vger.kernel.org, "LKML" <linux-kernel@vger.kernel.org>
+Subject: Re: Gadget driver repository?
+Date: Thu, 7 Feb 2008 13:56:36 -0500
+User-Agent: KMail/1.9.5
+References: <200802051456.07442.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200802051456.07442.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_24987_5072641.1202410452610"
-References: <ecb4efd10802051749n6a626e84k3ac8210aa2b5a446@mail.gmail.com>
-	 <20080206015103.9a0f4069.akpm@linux-foundation.org>
-	 <ecb4efd10802061140g929e699y8d79f1317c30478d@mail.gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802071356.36380.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 07 Feb 2008 18:55:09.0902 (UTC) FILETIME=[F669C6E0:01C869BA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_24987_5072641.1202410452610
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue 5 Feb 2008 14:56, Robin Getz pondered:
+> I was wondering where (or if) there were any non-mainlined gadget
+> drivers that 
+> were kept anywhere?
+> 
+> According to (2005)
+> http://www.linux-usb.org/gadget/
+> 
+> >  Other controller and gadget drivers are in development, but are
+> >  unreleased or not published here. Examples that have seen some 
+> >  degree of light include:
+> >
+> >     * HID driver (userspace, with gadgetfs),
+> >     * "MTP" (Media Transfer Protocol, PTP++) driver (userspace, 
+> >        with gadgetfs), * two different printer class drivers (used
+> >        in various products),
+> >     * audio class driver (very experimental). 
+> >     * video class driver (very experimental).
+> 
+> I'm actually looking for the gadget side of HID and Audio and anyone has
+> any pointers?
 
-Hi,
+OK - so that got nothing.
 
-On Feb 6, 2008 4:40 PM, Clem Taylor <clem.taylor@gmail.com> wrote:
-> I also tested on a 2.6.20 x86 desktop machine. It took ~8k iterations
-> to fail, which matched max_user_watches. Once the program fails, it
-> will fail right away if it is re-run.
 
-Yeah, I had the same results, and it fails afterwards because it
-reaches the maximum number of watches per user.
-
-> Attached is a simple example that shows off the problem. On a system
-> with a problem, it will only run for about
-> fs.inotify.max_user_watches iterations. If everything is working, it
-> should run forever.
-
-Ok, I had a go with it and found the problem. We weren't releasing
-one-shot watches because the test for them was wrong. We're using the
-event's mask to test for one-shot watches when we should've been using
-the watch's mask.
-
-Patch against latest Linus git repo attached.
-
-Regards,
-
--- Ulisses
-
-------=_Part_24987_5072641.1202410452610
-Content-Type: application/octet-stream; name=patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fcdo0vjl0
-Content-Disposition: attachment; filename=patch
-
-RnJvbSA2ZmNmM2JiNjIyN2E0OTQ5YWVlZTI3NDFkYzczZWIzYzU1YTNiZmVmIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBVbGlzc2VzIEZ1cnF1aW0gPHVsaXNzZXNmQGdtYWlsLmNvbT4K
-RGF0ZTogVGh1LCA3IEZlYiAyMDA4IDE1OjE5OjE5IC0wMzAwClN1YmplY3Q6IFtQQVRDSF0gaW5v
-dGlmeTogZml4IGNoZWNrIGZvciBvbmUtc2hvdCB3YXRjaGVzIGJlZm9yZSBkZXN0cm95aW5nIHRo
-ZW0KCkFzIHRoZSBJTl9PTkVTSE9UIGJpdCBpcyBuZXZlciBzZXQgd2hlbiBhbiBldmVudCBpcyBz
-ZW50IHdlIG11c3QgY2hlY2sgaXQKaW4gdGhlIHdhdGNoJ3MgbWFzayBhbmQgbm90IGluIHRoZSBl
-dmVudCdzIG1hc2suCgpTaWduZWQtb2ZmLWJ5OiBVbGlzc2VzIEZ1cnF1aW0gPHVsaXNzZXNmQGdt
-YWlsLmNvbT4KLS0tCiBmcy9pbm90aWZ5X3VzZXIuYyB8ICAgIDIgKy0KIDEgZmlsZXMgY2hhbmdl
-ZCwgMSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2ZzL2lub3Rp
-ZnlfdXNlci5jIGIvZnMvaW5vdGlmeV91c2VyLmMKaW5kZXggYTMzNmM5Ny4uM2FiMDlhNiAxMDA2
-NDQKLS0tIGEvZnMvaW5vdGlmeV91c2VyLmMKKysrIGIvZnMvaW5vdGlmeV91c2VyLmMKQEAgLTI4
-Myw3ICsyODMsNyBAQCBzdGF0aWMgdm9pZCBpbm90aWZ5X2Rldl9xdWV1ZV9ldmVudChzdHJ1Y3Qg
-aW5vdGlmeV93YXRjaCAqdywgdTMyIHdkLCB1MzIgbWFzaywKIAkvKiB3ZSBjYW4gc2FmZWx5IHB1
-dCB0aGUgd2F0Y2ggYXMgd2UgZG9uJ3QgcmVmZXJlbmNlIGl0IHdoaWxlCiAJICogZ2VuZXJhdGlu
-ZyB0aGUgZXZlbnQKIAkgKi8KLQlpZiAobWFzayAmIElOX0lHTk9SRUQgfHwgbWFzayAmIElOX09O
-RVNIT1QpCisJaWYgKG1hc2sgJiBJTl9JR05PUkVEIHx8IHctPm1hc2sgJiBJTl9PTkVTSE9UKQog
-CQlwdXRfaW5vdGlmeV93YXRjaCh3KTsgLyogZmluYWwgcHV0ICovCiAKIAkvKiBjb2FsZXNjaW5n
-OiBkcm9wIHRoaXMgZXZlbnQgaWYgaXQgaXMgYSBkdXBlIG9mIHRoZSBwcmV2aW91cyAqLwotLSAK
-MS41LjQKCg==
-------=_Part_24987_5072641.1202410452610--
+Is anyone interested in helping develop them, so a reference open source 
+implementation exists?
