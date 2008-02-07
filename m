@@ -1,49 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935415AbYBGVVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935830AbYBGVVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935415AbYBGVVG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:21:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934834AbYBGVLw
+	id S935830AbYBGVVf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762892AbYBGVNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:11:52 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:36037 "EHLO
-	outbound6-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935445AbYBGVLt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:11:49 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Xilinx: hwicap driver comments
-Date: Thu, 7 Feb 2008 13:10:46 -0800
-In-Reply-To: <fa686aa40802071234r5736aec6h12d482b8a2c408c0@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Xilinx: hwicap driver comments
-Thread-Index: AchpyOA1P2FMz+kNTUOGqI2/B9+2+wABPfqw
-References: <47AB6552.7040503@gmail.com> <fa686aa40802071234r5736aec6h12d482b8a2c408c0@mail.gmail.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-       "Jiri Slaby" <jirislaby@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 07 Feb 2008 21:10:48.0115 (UTC) FILETIME=[E92A8830:01C869CD]
-Message-Id: <20080207211049.5A5E0CC0068@mail110-sin.bigfish.com>
+	Thu, 7 Feb 2008 16:13:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56348 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934271AbYBGVM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:12:58 -0500
+Date: Thu, 7 Feb 2008 16:12:29 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: mathieu.desnoyers@polymtl.ca
+Cc: akpm@linux-foundation.org, mingo@elte.hu, fche@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [patch 3/4] make pr_debug() dynamic - sysctl support
+Message-ID: <20080207211229.GE14732@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Stephen, can you please repost you patch to the LKML?  Even if the
-> driver is allowed to stay in for the time being you can at least get
-> feedback on what needs to be changed.
+-add /proc/sys/debug/pr_debug, to toggle pr_debug() on/off
 
-Certainly...  I'll try to address some of Jiri's issues first.
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+---
 
-Steve
+ kernel/sysctl.c |   41 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 41 insertions(+), 0 deletions(-)
 
 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 7cb1ac3..73508d7 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -155,6 +155,11 @@ static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp
+ static int proc_dointvec_taint(struct ctl_table *table, int write, struct file *filp,
+ 			       void __user *buffer, size_t *lenp, loff_t *ppos);
+ #endif
++#ifdef CONFIG_PR_DEBUG_DYNAMIC
++static int proc_pr_debug_handler(struct ctl_table *table, int write,
++				 struct file *filp, void __user *buffer,
++				 size_t *lenp, loff_t *ppos);
++#endif
+ 
+ static struct ctl_table root_table[];
+ static struct ctl_table_root sysctl_table_root;
+@@ -1312,6 +1317,16 @@ static struct ctl_table debug_table[] = {
+ 		.proc_handler	= proc_dointvec
+ 	},
+ #endif
++#ifdef CONFIG_PR_DEBUG_DYNAMIC
++	{
++		.ctl_name       = CTL_UNNUMBERED,
++		.procname       = "pr_debug",
++		.data           = NULL,
++		.maxlen         = sizeof(int),
++		.mode           = 0644,
++		.proc_handler   = &proc_pr_debug_handler
++	},
++#endif
+ 	{ .ctl_name = 0 }
+ };
+ 
+@@ -2499,6 +2514,32 @@ static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PR_DEBUG_DYNAMIC
++
++static int proc_pr_debug_handler(struct ctl_table *table, int write,
++				 struct file *filp, void __user *buffer,
++				 size_t *lenp, loff_t *ppos)
++{
++	int tmp, r;
++
++	if (!write)
++		tmp = imv_read(pr_debug_on);
++	r = __do_proc_dointvec(&tmp, table, write, filp, buffer,
++				lenp, ppos, NULL, NULL);
++	if (r)
++		return r;
++
++	if (write) {
++		if (tmp)
++			imv_set(pr_debug_on, 1);
++		else
++			imv_set(pr_debug_on, 0);
++	}
++	return 0;
++}
++
++#endif
++
+ #else /* CONFIG_PROC_FS */
+ 
+ int proc_dostring(struct ctl_table *table, int write, struct file *filp,
