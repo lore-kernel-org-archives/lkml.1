@@ -1,89 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934132AbYBGULo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933324AbYBGUMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934132AbYBGULo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762057AbYBGUFq
+	id S933324AbYBGUMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933493AbYBGUG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:05:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32794 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762035AbYBGUFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:05:41 -0500
-Date: Thu, 7 Feb 2008 12:04:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Moore <paul.moore@hp.com>
-Cc: casey@schaufler-ca.com, davem@davemloft.net, jmorris@namei.org,
-       mingo@elte.hu, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: + smack-unlabeled-outgoing-ambient-packets.patch added to -mm
- tree
-Message-Id: <20080207120459.d4994f44.akpm@linux-foundation.org>
-In-Reply-To: <200802071450.41529.paul.moore@hp.com>
-References: <200802071901.m17J1lAY016751@imap1.linux-foundation.org>
-	<200802071450.41529.paul.moore@hp.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 15:06:28 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:18747 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933485AbYBGUG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:06:26 -0500
+Date: Thu, 7 Feb 2008 21:06:22 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com,
+       arjan@linux.intel.com, dgc@sgi.com, npiggin@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Pekka Enberg <penberg@gmail.com>
+Subject: Re: [patch] block layer: kmemcheck fixes
+Message-ID: <20080207200622.GP15220@kernel.dk>
+References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-5-git-send-email-jens.axboe@oracle.com> <20080207100738.GB7716@elte.hu> <20080207101727.GE15220@kernel.dk> <20080207102534.GB16735@elte.hu> <20080207103136.GG15220@kernel.dk> <20080207104901.GF16735@elte.hu> <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org> <20080207193140.GA19949@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080207193140.GA19949@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008 14:50:41 -0500
-Paul Moore <paul.moore@hp.com> wrote:
+On Thu, Feb 07 2008, Ingo Molnar wrote:
+> 
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > On Thu, 7 Feb 2008, Ingo Molnar wrote:
+> > >  	INIT_HLIST_NODE(&rq->hash);
+> > >  	RB_CLEAR_NODE(&rq->rb_node);
+> > > -	rq->ioprio = 0;
+> > > -	rq->buffer = NULL;
+> > > -	rq->ref_count = 1;
+> > > -	rq->q = q;
+> > > -	rq->special = NULL;
+> > > -	rq->data_len = 0;
+> > > -	rq->data = NULL;
+> > > -	rq->nr_phys_segments = 0;
+> > > -	rq->sense = NULL;
+> > > -	rq->end_io = NULL;
+> > > -	rq->end_io_data = NULL;
+> > > -	rq->completion_data = NULL;
+> > > -	rq->next_rq = NULL;
+> > > +	rq->completion_data		= NULL;
+> > > +	/* rq->elevator_private			*/
+> > > +	/* rq->elevator_private2		*/
+> > > +	/* rq->rq_disk				*/
+> > > +	/* rq->start_time			*/
+> > > +	rq->nr_phys_segments		= 0;
+> > > +	/* rq->nr_hw_segments			*/
+> > > +	rq->ioprio			= 0;
+> > > +	rq->special			= NULL;
+> > > +	rq->buffer			= NULL;
+> > ...
+> > 
+> > Can we please just stop doing these one-by-one assignments, and just do 
+> > something like
+> > 
+> > 	memset(rq, 0, sizeof(*rq));
+> > 	rq->q = q;
+> > 	rq->ref_count = 1;
+> > 	INIT_HLIST_NODE(&rq->hash);
+> > 	RB_CLEAR_NODE(&rq->rb_node);
+> > 
+> > instead?
+> > 
+> > The memset() is likely faster and smaller than one-by-one assignments 
+> > anyway, even if the one-by-ones can avoid initializing some field or 
+> > there ends up being a double initialization..
+> 
+> i definitely agree and do that for all code i write.
+> 
+> But if someone does item by item initialization for some crazy 
+> performance reason (networking folks tend to have such constructs), it 
+> should be done i think how i've done it in the patch: by systematically 
+> listing _every_ field in the structure, in the same order, and 
+> indicating it clearly when it is not initialized and why.
 
-> On Thursday 07 February 2008 2:02:06 pm akpm@linux-foundation.org wrote:
-> > The patch titled
-> >      Smack: unlabeled outgoing ambient packets
-> > has been added to the -mm tree.  Its filename is
-> >      smack-unlabeled-outgoing-ambient-packets.patch
-> >
-> > Before you just go and hit "reply", please:
-> >    a) Consider who else should be cc'ed
-> >    b) Prefer to cc a suitable mailing list as well
-> >    c) Ideally: find the original patch on the mailing list and do a
-> >       reply-to-all to that, adding suitable additional cc's
-> 
-> I didn't see this patch hit any of the relevant mailing lists (am I missing 
-> one somewhere?) so I'm just CC'ing everyone on the To/CC line, minus 
-> mm-commits.
+That assumes that people find the references in two places when adding
+members to a structure, not very likely (people are lazy!).
 
-It was on linux-kernel and netdev.  I've restored those cc's.
+> and there it already shows that we do not initialize a few other members 
+> that could cause problems later on:
+> 
+> +       rq->data_len                    = 0;
+> +       /* rq->sense_len                        */
+> +       rq->data                        = NULL;
+> +       rq->sense                       = NULL;
+> 
+> why is sense_len not initialized - while data_len is? In any case, these 
 
-> > ------------------------------------------------------
-> > Subject: Smack: unlabeled outgoing ambient packets
-> > From: Casey Schaufler <casey@schaufler-ca.com>
-> >
-> > Smack uses CIPSO labeling, but allows for unlabeled packets by specifying
-> > an "ambient" label that is applied to incoming unlabeled packets.  Because
-> > the other end of the connection may dislike IP options, and ssh is one know
-> > application that behaves thus, it is prudent to respond in kind.  This
-> > patch changes the network labeling behavior such that an outgoing packet
-> > that would be given a CIPSO label that matches the ambient label is left
-> > unlabeled.
-> 
-> I suppose you are entitled to use NetLabel however you want, so long as it 
-> works and doesn't cause problems for other users, but I think you are 
-> starting down a rather ugly road with this patch.  In my mind a cleaner 
-> solution would be to make of use of the built-in NetLabel/LSM domain mapping 
-> functionality to accomplish the same thing.  In other words, there is already 
-> a mechanism to do what you want, it's probably a good idea to make use of it 
-> instead of recreating it.
-> 
-> I would suggest that when you set the NetLabel security attributes for a 
-> socket you set the domain field to the smack label (see the SELinux code for 
-> an example, if you are unsure see selinux_netlbl_sock_setsid() and 
-> security_netlbl_sid_to_secattr()).  Once you do that you should continue to 
-> set the default NetLabel domain mapping to send CIPSO tagged packets but also 
-> create a new NetLabel domain mapping so that the ambient smack label causes 
-> packets to be sent "unlabeled".  The only other change you would have to make 
-> is to ensure that the NetLabel domain mappings are kept in sync with any 
-> ambient label changes (should be easy enough and a rather infrequent 
-> operation in practice).
-> 
-> This also should have the advantage of making your life easier if/when more 
-> advanced labeled network controls are added to Smack (see the SELinux changes 
-> made in 2.6.25 and our previous discussions).
-> 
+because sense isn't set, when someone sets ->sense they should set
+sense_len as well.
+
+> days the memclear instructions are dirt cheap and we should just always 
+> initialize everything to zero by default, especially if it's almost all 
+> zero-initialized anyway.
+
+Completely agree, some of these are just dormant bugs waiting to happen.
+Clearing everything is the sanest approach.
+
+-- 
+Jens Axboe
 
