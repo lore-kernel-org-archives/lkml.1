@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbYBGSTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760234AbYBGSWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284AbYBGSTE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:19:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbYBGSSw
+	id S1760234AbYBGSWS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYBGSWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:18:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51732 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756075AbYBGSSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:18:50 -0500
-Date: Thu, 7 Feb 2008 10:18:43 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Harald Arnesen <skogtun.linux@gmail.com>
-cc: FUJITA Tomonori <tomof@acm.org>, akpm@linux-foundation.org, matthew@wil.cx,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: Latest git oopses during boot
-In-Reply-To: <8120cfd40802070933r42a98537v78feb7ee8e748a94@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0802070956380.2883@woody.linux-foundation.org>
-References: <8120cfd40802070144l79830c2cs6329c302697ecc8b@mail.gmail.com>  <20080207020214.0f0cf1c7.akpm@linux-foundation.org>  <8120cfd40802070314x2799bcbatf42e3fe824a18c22@mail.gmail.com>  <20080207233239Z.tomof@acm.org>
- <8120cfd40802070933r42a98537v78feb7ee8e748a94@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Feb 2008 13:22:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46511 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756144AbYBGSWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 13:22:08 -0500
+Subject: patch usb-ftdi_sio.c-add-missing.patch added to gregkh-2.6 tree
+To: 12o3l@tiscali.nl, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Thu, 07 Feb 2008 10:19:52 -0800
+In-Reply-To: <47AA4B6F.20902@tiscali.nl>
+Message-ID: <12024083921590@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+This is a note to let you know that I've just added the patch titled
 
-On Thu, 7 Feb 2008, Harald Arnesen wrote:
-> 
-> OK, tried it. Another screen shot attached
-> (I must really get another box to use as a serial terminal).
+     Subject: USB: ftdi_sio.c add missing '|'
 
-This oops decodes to
+to my gregkh-2.6 tree.  Its filename is
 
-     8b 44 24 10             mov    0x10(%esp),%eax
-     8b 90 7c 02 00 00       mov    0x27c(%eax),%edx
-     83 ea 54                sub    $0x54,%edx
-     24 18                   and    $0x18,%al
-     8b 4c 24 14             mov    0x14(%esp),%ecx
-     f6 41 04 04             testb  $0x4,0x4(%ecx)
-     75 57                   jne    0x70
-     ba d0 80 00 00          mov    $0x80d0,%edx
-     b8 68 bf 30 c0          mov    $0xc030bf68,%eax
-     e8 2f 8a 38 c7          call   0xc7388a57
-**   a3 14 00 00 00          mov    %eax,0x14	**
-     85 c0                   test   %eax,%eax
-     0f 84 b3 14 00 00       je     0x14c0
-     8b 44 24 14             mov    0x14(%esp),%eax
-     83 c0 0c                add    $0xc,%eax
+     usb-ftdi_sio.c-add-missing.patch
 
-and the oopsing instruction is literally an insane "store to absolute
-address 0x14" which will definitely oops unconditionally. 
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-Quit frankly, that code makes no sense.  It smells like code corruption,
-especially as it is right at a return point of a function call (ie maybe
-the function screwed up the stack accesses somehow).
 
-Actually, it look slike the call address itself is screwed up too.  I
-don't think "0xc7388a57" is likely to be a valid address.
+>From 12o3l@tiscali.nl  Thu Feb  7 10:05:29 2008
+From: Roel Kluin <12o3l@tiscali.nl>
+Date: Thu, 07 Feb 2008 01:06:07 +0100
+Subject: USB: ftdi_sio.c add missing '|'
+To: Greg KH <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org, ftdi-usb-sio-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
+Message-ID: <47AA4B6F.20902@tiscali.nl>
 
-The code *looks* like the test
 
-	if (ASC_NARROW_BOARD(boardp)) {
-		ASC_DBG(1, "narrow board\n");
-		asc_dvc_varp = &boardp->dvc_var.asc_dvc_var;
-		asc_dvc_varp->bus_type = bus_type;
+add missing '|'
 
-but with strange corruption. 
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Can you do a
+---
+ drivers/usb/serial/ftdi_sio.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-	make drivers/scsi/advansys.lst
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -394,7 +394,7 @@ static const char *ftdi_chip_name[] = {
+ /* End TIOCMIWAIT */
+ 
+ #define FTDI_IMPL_ASYNC_FLAGS = ( ASYNC_SPD_HI | ASYNC_SPD_VHI \
+- ASYNC_SPD_CUST | ASYNC_SPD_SHI | ASYNC_SPD_WARP )
++ | ASYNC_SPD_CUST | ASYNC_SPD_SHI | ASYNC_SPD_WARP )
+ 
+ /* function prototypes for a FTDI serial converter */
+ static int  ftdi_sio_probe	(struct usb_serial *serial, const struct usb_device_id *id);
 
-and see what it should be?
 
-		Linus
+Patches currently in gregkh-2.6 which might be from 12o3l@tiscali.nl are
+
+usb/usb-ftdi_sio.c-add-missing.patch
