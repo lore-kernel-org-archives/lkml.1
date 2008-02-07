@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759108AbYBGPkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbYBGPxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759108AbYBGPkJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYBGPjz
+	id S1757249AbYBGPxt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbYBGPxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:39:55 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34922 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756579AbYBGPjy (ORCPT
+	Thu, 7 Feb 2008 10:53:39 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:14589 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753230AbYBGPxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:39:54 -0500
-Message-ID: <47AB2647.4090000@davidnewall.com>
-Date: Fri, 08 Feb 2008 02:09:51 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 10:53:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type;
+        b=beMDBKK22T20ONcDpW7OUk8QUamd49On4oLHRi1QOc6yDqB7L7iF0iirj0gsNpoK8v1RQmdrorjasEYVb7D3zX8vPo+6s3nmwpxK9/JlAoV6QJ+w2OVrYOTFDCXDzR/vNhQYQlVvS3ZoptRkVrai6d720ahN4UVKOUJS0odWxJg=
+Date: Thu, 7 Feb 2008 10:53:19 -0500 (EST)
+From: Parag Warudkar <parag.warudkar@gmail.com>
+X-X-Sender: parag@mini.warudkars.net
+Reply-To: parag.warudkar@gmail.com
+To: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
+	<ariveira@gmail.com>
+cc: parag.warudkar@gmail.com, Frank Mayhar <fmayhar@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [Bugme-new] [Bug 9906] New: Weird hang with NPTL and SIGPROF.
+In-Reply-To: <20080207162203.3e3cf5ab@Varda>
+Message-ID: <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+References: <bug-9906-10286@http.bugzilla.kernel.org/> <20080206165045.89b809cc.akpm@linux-foundation.org> <1202345893.8525.33.camel@peace.smo.corp.google.com> <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net> <20080207162203.3e3cf5ab@Varda>
+User-Agent: Alpine 1.00 (LRH 882 2007-12-20)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Marcel Holtmann <marcel@holtmann.org>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D9CD.5070001@davidnewall.com>	<84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>	<47A5E67D.9040804@davidnewall.com>	<1202058820.15090.60.camel@violet>	<courier.47A84ADB.000047C1@hawking.rebel.net.au>	<1202241819.15090.133.camel@violet>	<47AB0B67.7060103@davidnewall.com> <20080207142812.0dafde98@core>
-In-Reply-To: <20080207142812.0dafde98@core>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463781375-474341409-1202399607=:29320"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> It's nonsense, it's a reasonable reading of the GPL.  What I am doing is
->> telling you what the GPL says, not what you wish it said.
->>     
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463781375-474341409-1202399607=:29320
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+
+
+On Thu, 7 Feb 2008, Alejandro Riveira Fernández wrote:
+
+> gcc --version
+> 
+> gcc-4.2 (GCC) 4.2.1 (Ubuntu 4.2.1-5ubuntu4)
+>  
+> If some fields are empty or look unusual you may have an old version.
+> Compare to the current minimal requirements in Documentation/Changes.
+>  
+> Linux Varda 2.6.24 #2 SMP PREEMPT Fri Jan 25 01:05:47 CET 2008 x86_64 GNU/Linux
 >
-> In which case for each statement please give the case at appeal or higher
-> level which is the precedent for the interpretation.
->   
+So x86+SMP+GnuC-4.1.2+Glibc-2.5 = Not reproducible.
 
-I am giving my opinion.  By contrast, you have claimed to be giving the
-opinion of numerous lawyers.  I hate to be so blunt, but that is the
-naked truth.  You could improve that situation.
+   x86_64+SMP+PREEMPT+GnuC-4.1.2+Glibc-2.5 = Reproducible.	
 
+Not sure what the original reporter's $ARCH was.
 
->>> If the developers say that this symbol can only be used in GPL code (and
->>> with EXPORT_SYMBOL_GPL it is quite clear) then you have to obey to that
->>> license or don't use this symbol at all.
->>>   
->>>       
->> EXPORT_SYMBOL_GPL is not a licence.  Only a licence is a licence.
->>     
->
-> Export symbol is a guide. There is no reason to think that EXPORT_SYMBOL
-> symbols alone mean your work is somehow not derivative.
+So next thing worthwhile to try might be to disable PREEMPT and see if 
+that cures it.
 
-No argument, other than with, "export symbol is a guide."   My argument
-with that is that one could mistakenly infer that "export symbol"
-includes "EXPORT_SYMBOL_GPL."   The latter is not a guide, is it?  It
-restricts a symbol from use by proprietary modules.
+Parag 
+---1463781375-474341409-1202399607=:29320--
