@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbYBGA5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934309AbYBGA6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933965AbYBGA5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbYBGAyD
+	id S934309AbYBGA6H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:58:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933932AbYBGAyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:54:03 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:18661 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934548AbYBGAx7 (ORCPT
+	Wed, 6 Feb 2008 19:54:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48887 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935018AbYBGAns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:53:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=fEoceINA04a14wJxz+iO3m0HhdlZgunkHGtICiJ0OnihsNaxNzwJ1cqBf0kP4X8AGEBeM7ftZyRPLot4cNVTGJtHmdNCVVcEcliMOOtPF8ef5zoRhtKYnILOVoc8vvJPhsdAA3B5qkmmWXx6FCgK/trjb4SHy1GiCbw3T33yaY4=
-Date: Thu, 7 Feb 2008 02:51:20 +0200
+	Wed, 6 Feb 2008 19:43:48 -0500
+Date: Wed, 6 Feb 2008 16:31:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Rusty Russel <rusty@rustcorp.com.au>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] lguest: Accept guest _PAGE_PWT page table entries
-Message-ID: <20080207005120.GA5751@ubuntu>
-References: <20080206232134.GB6450@ubuntu> <20080206235923.GA19843@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080206235923.GA19843@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+Subject: Re: softlockup: automatically detect hung TASK_UNINTERRUPTIBLE
+ tasks
+Message-Id: <20080206163111.54088622.akpm@linux-foundation.org>
+In-Reply-To: <20080207000425.GA21918@elte.hu>
+References: <200801252259.m0PMxHmD012059@hera.kernel.org>
+	<20080205164626.f9c920e0.akpm@linux-foundation.org>
+	<1202309402.6310.0.camel@lappy>
+	<20080206100513.133587fa.akpm@linux-foundation.org>
+	<20080207000425.GA21918@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 12:59:23AM +0100, Ingo Molnar wrote:
+On Thu, 7 Feb 2008 01:04:25 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> * Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > Hi all,
+> > > Does that kernel have:
+> > > 
+> > > commit ed50d6cbc394cd0966469d3e249353c9dd1d38b9
+> > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > Date:   Sat Feb 2 00:23:08 2008 +0100
+> > > 
+> > >     debug: softlockup looping fix
 > > 
-> > Beginning from commit 4138cc3418f5, ioremap_nocache() sets the _PAGE_PWT
-> > flag. 
-> > 
-> > Lguest doesn't accept a guest pte with a _PWT flag and reports a "bad 
-> > page table entry" in that case.
-> > 
-> > I've removed check from lguest code and everything worked fine. Is 
-> > this safe from the Lguest side ?
+> > yup.  It was fetched less than 24 hours ago.
 > 
-> yes, should be safe. Could you send a patch so that others can apply it 
-> too?
+> does the patch below improve the situation?
 > 
 
-Ofcourse :) :
+Nope.
 
-Accept guest _PAGE_PWT page table entries, otherwise lguest will
-always fail with a "bad page table entry" message.
+But I tested it on mainline, and mainline exhibits the never-powers-off
+symptom, whereas ed50d6cbc394cd0966469d3e249353c9dd1d38b9 demonstrates the
+powers-off-after-20-seconds symptom.  
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
+So we _may_ be dealing with two bugs here, and your patch might have fixed
+the first, but that success is obscured by the second.  I guess I need to
+prepare a tree which has ed50d6cbc394cd0966469d3e249353c9dd1d38b9 at its
+tip.  (Wonders how to do that).  
 
-diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
-index 74b4cf2..952160b 100644
---- a/drivers/lguest/page_tables.c
-+++ b/drivers/lguest/page_tables.c
-@@ -178,8 +178,8 @@ static void release_pte(pte_t pte)
- 
- static void check_gpte(struct lg_cpu *cpu, pte_t gpte)
- {
--	if ((pte_flags(gpte) & (_PAGE_PWT|_PAGE_PSE))
--	    || pte_pfn(gpte) >= cpu->lg->pfn_limit)
-+	if ((pte_flags(gpte) & _PAGE_PSE) || 
-+	    pte_pfn(gpte) >= cpu->lg->pfn_limit)
- 		kill_guest(cpu, "bad page table entry");
- }
- 
+btw, mainline (plus this patch, not that it changed anything) prints
 
-Regards,
+<stopping disk stuff>
+Disabling non-boot CPUs
+CPU 1 is now offline
 
---
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+and that's it.   This machine has eight cpus.  Might be a hint?
+
