@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934309AbYBGA6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765863AbYBGBAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934309AbYBGA6H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:58:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933932AbYBGAyp
+	id S1765863AbYBGBAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 20:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759207AbYBGBAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:54:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48887 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935018AbYBGAns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:43:48 -0500
-Date: Wed, 6 Feb 2008 16:31:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-Subject: Re: softlockup: automatically detect hung TASK_UNINTERRUPTIBLE
- tasks
-Message-Id: <20080206163111.54088622.akpm@linux-foundation.org>
-In-Reply-To: <20080207000425.GA21918@elte.hu>
-References: <200801252259.m0PMxHmD012059@hera.kernel.org>
-	<20080205164626.f9c920e0.akpm@linux-foundation.org>
-	<1202309402.6310.0.camel@lappy>
-	<20080206100513.133587fa.akpm@linux-foundation.org>
-	<20080207000425.GA21918@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 20:00:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33821 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759193AbYBGBAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 20:00:37 -0500
+Date: Thu, 7 Feb 2008 02:00:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: Rusty Russel <rusty@rustcorp.com.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lguest: Accept guest _PAGE_PWT page table entries
+Message-ID: <20080207010006.GA5842@elte.hu>
+References: <20080206232134.GB6450@ubuntu> <20080206235923.GA19843@elte.hu> <20080207005120.GA5751@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080207005120.GA5751@ubuntu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008 01:04:25 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
 
+* Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+
+> Ofcourse :) :
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > Does that kernel have:
-> > > 
-> > > commit ed50d6cbc394cd0966469d3e249353c9dd1d38b9
-> > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Date:   Sat Feb 2 00:23:08 2008 +0100
-> > > 
-> > >     debug: softlockup looping fix
-> > 
-> > yup.  It was fetched less than 24 hours ago.
-> 
-> does the patch below improve the situation?
-> 
+> Accept guest _PAGE_PWT page table entries, otherwise lguest will 
+> always fail with a "bad page table entry" message.
 
-Nope.
+thanks - i've queued this up into x86.git. Rusty, is this fine to you, 
+and should we nurse this fix upstream?
 
-But I tested it on mainline, and mainline exhibits the never-powers-off
-symptom, whereas ed50d6cbc394cd0966469d3e249353c9dd1d38b9 demonstrates the
-powers-off-after-20-seconds symptom.  
-
-So we _may_ be dealing with two bugs here, and your patch might have fixed
-the first, but that success is obscured by the second.  I guess I need to
-prepare a tree which has ed50d6cbc394cd0966469d3e249353c9dd1d38b9 at its
-tip.  (Wonders how to do that).  
-
-btw, mainline (plus this patch, not that it changed anything) prints
-
-<stopping disk stuff>
-Disabling non-boot CPUs
-CPU 1 is now offline
-
-and that's it.   This machine has eight cpus.  Might be a hint?
-
+	Ingo
