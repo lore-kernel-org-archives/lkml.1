@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964808AbYBGVE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934317AbYBGVEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964808AbYBGVE1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:04:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933301AbYBGUwc
+	id S934317AbYBGVEv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933328AbYBGUwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 7 Feb 2008 15:52:34 -0500
+Received: from mx2.suse.de ([195.135.220.15]:38614 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933311AbYBGUwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Feb 2008 15:52:32 -0500
-Received: from wx-out-0506.google.com ([66.249.82.234]:21486 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933286AbYBGUw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:52:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VHMj2h5eE3xoeNYmFKd6rUWap2t5LhS86cSBZBLMWQYrq9cI8XuQInyJLCPe6LP1H2TpNrkdAv8uy2AcdbEKQgIqMTQVdCZYkzfM420j4n0ItwDlcKbV2Z8kIp4/XSgBRQEzPuwvc9tUWAPFSAmSp4BW+dG30LzK2MrsYugDuNw=
-Subject: [PATCH] fix sparse warning from include/linux/mmzone.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 12:52:23 -0800
-Message-Id: <1202417543.31361.5.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Date: Thu, 7 Feb 2008 12:47:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Sam Ravnborg <sam@ravnborg.org>, "Cc: Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "A.E.Lawrence" <lawrence_a_e@ntlworld.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 28/45] x86: restore correct module name for apm
+Message-ID: <20080207204744.GC16389@suse.de>
+References: <20080207204118.202098927@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="x86-restore-correct-module-name-for-apm.patch"
+In-Reply-To: <20080207204549.GA16389@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-include/linux/mmzone.h:640:22: warning: potentially expensive pointer subtraction
+2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
-The code in question was doing a pointer subtraction to find the index of
-the zone argument in the node_zones array.  This essentially boils down to:
+------------------
+From: Sam Ravnborg <sam@ravnborg.org>
 
-((unsigned long)zone - (unsigned long)zone->zone_pgdat->node_zones)/sizeof(struct zone)
+patch 3a900d89db35c133bc0874e71d9156b22db362b4 in mainline
 
-Which can be expensive if struct zone is not a power of two.  Instead, just
-calculate the offsets rather than the index in the array.
+The apm module were renamed to apm_32 during the merge of 32 and 64 bit
+x86 which is unfortunate. As apm is 32 bit specific we like to keep the
+_32 in the filename but the module should be named apm.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Fix this in the Makefile.
+
+Reported-by: "A.E.Lawrence" <lawrence_a_e@ntlworld.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Cc: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "A.E.Lawrence" <lawrence_a_e@ntlworld.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
-This shows up > 30 times in an x86 allyesconfig, would be nice to get
-rid of it and makes the code a little more efficient.  I believe this
-is correct, unless there is a subtlety I have missed.
+ arch/x86/kernel/Makefile_32 |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
- include/linux/mmzone.h |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -19,7 +19,8 @@ obj-$(CONFIG_X86_MSR)		+= msr.o
+ obj-$(CONFIG_X86_CPUID)		+= cpuid.o
+ obj-$(CONFIG_MICROCODE)		+= microcode.o
+ obj-$(CONFIG_PCI)		+= early-quirks.o
+-obj-$(CONFIG_APM)		+= apm_32.o
++apm-y				:= apm_32.o
++obj-$(CONFIG_APM)		+= apm.o
+ obj-$(CONFIG_X86_SMP)		+= smp_32.o smpboot_32.o tsc_sync.o
+ obj-$(CONFIG_SMP)		+= smpcommon_32.o
+ obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline_32.o
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 8d8d197..cb07758 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -637,9 +637,12 @@ static inline int is_normal_idx(enum zone_type idx)
- static inline int is_highmem(struct zone *zone)
- {
- #ifdef CONFIG_HIGHMEM
--	int zone_idx = zone - zone->zone_pgdat->node_zones;
--	return zone_idx == ZONE_HIGHMEM ||
--		(zone_idx == ZONE_MOVABLE && zone_movable_is_highmem());
-+	const int highmem_off = ZONE_HIGHMEM * sizeof(*zone);
-+	const int movable_off = ZONE_MOVABLE * sizeof(*zone);
-+
-+	int zone_off = (unsigned long)zone - (unsigned long)zone->zone_pgdat->node_zones;
-+	return zone_off == highmem_off ||
-+		(zone_off == movable_off && zone_movable_is_highmem());
- #else
- 	return 0;
- #endif
 -- 
-1.5.4.1219.g65b9
-
-
-
