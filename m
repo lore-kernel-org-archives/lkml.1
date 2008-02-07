@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbYBGM6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbYBGNBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760520AbYBGM6f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYBGM60
+	id S1758151AbYBGNBG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 08:01:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYBGNAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:58:26 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52591 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbYBGM6Z (ORCPT
+	Thu, 7 Feb 2008 08:00:54 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34779 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYBGNAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:58:25 -0500
-Date: Thu, 7 Feb 2008 07:58:24 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Hans-J??rgen Koch <hjk@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM
-	architecture
-Message-ID: <20080207125824.GB7111@infradead.org>
-References: <20080207133805.13f092ff@dilbert.local>
+	Thu, 7 Feb 2008 08:00:53 -0500
+Message-ID: <47AB0101.2050204@davidnewall.com>
+Date: Thu, 07 Feb 2008 23:30:49 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080207133805.13f092ff@dilbert.local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<courier.47A8F072.000079E4@hawking.rebel.net.au> <20080205232550.5d3d22ff@core>
+In-Reply-To: <20080205232550.5d3d22ff@core>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 01:38:05PM +0100, Hans-J??rgen Koch wrote:
-> From: Hans J Koch <hjk@linutronix.de>
-> To: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.arm.linux.org.uk
-> Cc: Greg KH <greg@kroah.com>
-> Subject: arch/arm/Kconfig: Make UIO available on ARM architecture
-> 
-> Source drivers/uio/Kconfig to make UIO available in menuconfig if ARCH=arm.
-> I already posted this a few months ago, but it got lost somehow.
+Alan Cox wrote:
+>> "Of course", because in many parts of the world, a device who's manufacturer 
+>> fails to take reasonable steps to prevent it from being used outside 
+>> regulatory limits is illegal.  Providing source code not only is a failure 
+>> to take those reasonable steps, but is quite the opposite.  It may even be 
+>> viewed as encouraging users to use it inappropriately.
+>>     
+>
+> To my knowledge there is no caselaw on this for software,
 
-Any chance to make arm finally use drivers/Kconfig?  It's a bit silly
-that arm still is crapping around while even s390 uses it.
+In Australia, devices require approval from a regulatory body.  Such
+approval is withheld if appropriate safeguards are not applied.
 
+
+>  nor is it
+> clearly so simple - many vendors do provide source, many vendors provide
+> windows drivers where any end user can click to specify their country and
+> can lie trivially. Many users retrofit US firmware to non US devices and
+> its trivial to do. Its a hard problem
+Yes it is; but what is simple, is to understand that lack of such
+safeguards, even though they are imperfect, does result in refusal to
+approve.
+
+> Some (particularly US) companies choose to take a conservative view based
+>   
+Also, particularly Australia and New Zealand.  I can't imagine France or
+Germany would be different.  Where is it different?
+> on their pessimistic reading of the intent of the US regulator plus the
+> ability of the regulator to do a lot of damage to their business.
+>
+> The notion they are illegal is a real unknown and the market seems split
+> on views of this.
+>   
+
+That is what I was saying: To require that only GPL-licenced USB drivers
+may be used with Linux puts Linux at a disadvantage in the market.  The
+embedded market is simply huge.  Microsoft would _love_ Linux to fail
+there, because that's what's necessary for Wince to win.
