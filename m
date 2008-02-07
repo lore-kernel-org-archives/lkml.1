@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYBGMa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbYBGMjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYBGMa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 07:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbYBGMaR
+	id S1758109AbYBGMjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 07:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbYBGMjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 07:30:17 -0500
-Received: from www.tglx.de ([62.245.132.106]:32790 "EHLO www.tglx.de"
+	Thu, 7 Feb 2008 07:39:43 -0500
+Received: from www.tglx.de ([62.245.132.106]:47403 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798AbYBGMaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 07:30:15 -0500
-Date: Thu, 7 Feb 2008 13:29:47 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Chris Holvenstot <cholvenstot@comcast.net>,
-       Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-git15 Keyboard Issue?
-In-Reply-To: <Pine.LNX.4.64.0802071149260.30955@jikos.suse.cz>
-Message-ID: <alpine.LFD.1.00.0802071324410.9204@apollo.tec.linutronix.de>
-References: <1202302978.9058.13.camel@popeye>  <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>  <1202305740.9058.22.camel@popeye>  <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>  <1202318666.6406.13.camel@popeye>  <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
- <1202381094.6179.0.camel@popeye> <Pine.LNX.4.64.0802071149260.30955@jikos.suse.cz>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1755861AbYBGMjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 07:39:42 -0500
+Date: Thu, 7 Feb 2008 13:38:05 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, Greg KH <greg@kroah.com>
+Subject: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Message-ID: <20080207133805.13f092ff@dilbert.local>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008, Jiri Kosina wrote:
+From: Hans J Koch <hjk@linutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Greg KH <greg@kroah.com>
+Subject: arch/arm/Kconfig: Make UIO available on ARM architecture
 
-> On Thu, 7 Feb 2008, Chris Holvenstot wrote:
-> 
-> > I have been up and running now for about a half hour - since I did not 
-> > hear your preference I stayed with git15 instead of jumping up to git16 
-> > in an attempt to avoid introducing any unwanted changes.
-> > 
-> > The only non-standard thing I did was to use the nohpet directive at
-> > boot time - I did NOT enter the previously used taskset command to alter
-> > X's affinity. 
-> > 
-> > I have been banging away on my keyboard for about a half hour now with
-> > no problems. While this is not conclusive on a 'soft' problem, from what
-> > I experienced yesterday I would have expected to have seen the problem
-> > by now.
-> > 
-> > Please let me know if there are any other items you would like to do or
-> > options you would like me to try.
-> 
-> Thanks. So this clearly indicates that you are hitting either hardware 
-> bug, or some bug in our HPET handling code.
-> 
-> Adding Ingo and Thomas to CC. Short summary -- Chris (and apparently other 
-> people) are sometimes seeing repeated keypressess when HPET timer is used. 
-> This doesn't happen when alternative clocksource is used.
-> 
-> Full thread: http://lkml.org/lkml/2008/2/6/100
+Source drivers/uio/Kconfig to make UIO available in menuconfig if ARCH=arm.
+I already posted this a few months ago, but it got lost somehow.
 
-Now, it would be interesting to know what the detailed difference is,
-when the system is booted with and without nohpet.
+Signed-off-by: Hans J Koch <hjk@linutronix.de>
+---
+ arch/arm/Kconfig |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Chris, can you please provide the dmesg output and the output of
-/proc/timer_list for each bootup ?
-
-.config file would be interesting as well.
-
-Thanks,
-	tglx
+Index: linux-2.6/arch/arm/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/arm/Kconfig	2008-02-07 13:01:45.000000000 +0100
++++ linux-2.6/arch/arm/Kconfig	2008-02-07 13:18:22.000000000 +0100
+@@ -1066,6 +1066,8 @@
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 
++source "drivers/uio/Kconfig"
++
+ endmenu
+ 
+ source "net/Kconfig"
