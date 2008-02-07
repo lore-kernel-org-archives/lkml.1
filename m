@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbYBGKlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbYBGKnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759058AbYBGKlf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 05:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYBGKl2
+	id S1759058AbYBGKnx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 05:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbYBGKnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 05:41:28 -0500
-Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:57172 "EHLO
-	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754760AbYBGKl1 (ORCPT
+	Thu, 7 Feb 2008 05:43:45 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:38666 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754390AbYBGKno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 05:41:27 -0500
-X-Authority-Analysis: v=1.0 c=1 a=yfaj0FAMEn1KDdGR7eIA:9
- a=W5IOY979deS4bXy4zesA:7 a=5AVYvaYdAlAS_HsLGYb1dwoLy18A:4 a=uv1ck3d6JtEA:10
-Subject: Re: 2.6.24-git15 Keyboard Issue?
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
-References: <1202302978.9058.13.camel@popeye>
-	 <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>
-	 <1202305740.9058.22.camel@popeye>
-	 <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>
-	 <1202318666.6406.13.camel@popeye>
-	 <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 07 Feb 2008 04:44:54 -0600
-Message-Id: <1202381094.6179.0.camel@popeye>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Feb 2008 05:43:44 -0500
+Date: Thu, 7 Feb 2008 11:43:43 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Hugh Dickins <hugh@veritas.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ASLR: add possibility for more fine-grained tweaking
+In-Reply-To: <20080207103231.GD16735@elte.hu>
+Message-ID: <Pine.LNX.4.64.0802071143090.11914@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0802061438150.30955@jikos.suse.cz>
+ <Pine.LNX.4.64.0802061442300.30955@jikos.suse.cz> <20080206134959.GA25689@elte.hu>
+ <Pine.LNX.4.64.0802071120110.11914@vixen.sonytel.be> <20080207103231.GD16735@elte.hu>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1261992843-1202381023=:11914"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri - 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+---584349381-1261992843-1202381023=:11914
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-I have been up and running now for about a half hour – since I did not
-hear your preference I stayed with git15 instead of jumping up to git16
-in an attempt to avoid introducing any unwanted changes.
-
-
-The only non-standard thing I did was to use the nohpet directive at
-boot time - I did NOT enter the previously used taskset command to alter
-X's affinity. 
-
-
-I have been banging away on my keyboard for about a half hour now with
-no problems. While this is not conclusive on a 'soft' problem, from what
-I experienced yesterday I would have expected to have seen the problem
-by now.
-
-
-Please let me know if there are any other items you would like to do or
-options you would like me to try.
-
-
-Chris
-
-
-
-On Thu, 2008-02-07 at 10:18 +0100, Jiri Kosina wrote:
-> On Wed, 6 Feb 2008, Chris Holvenstot wrote:
+On Thu, 7 Feb 2008, Ingo Molnar wrote:
+> * Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > On Wed, 6 Feb 2008, Ingo Molnar wrote:
+> > > @@ -541,6 +541,18 @@ config ELF_CORE
+> > >  	help
+> > >  	  Enable support for generating core dumps. Disabling saves about 4k.
+> > >  
+> > > +config COMPAT_BRK
+> > > +	bool "Disable heap randomization"
+> > > +	default y
+> > > +	help
+> > > +	  Randomizing heap placement makes heap exploits harder, but it
+> > > +	  also breaks ancient binaries (including anything libc5 based).
+> > > +	  This option changes the bootup default to heap randomization
+> > > +	  disabled, and can be overriden runtime by setting
+> > > +	  /proc/sys/kernel/randomize_va_space to 2.
+> > > +
+> > > +	  On non-ancient distros (post-2000 ones) Y is usually a safe choice.
+> > 
+> > Somehow my belly feeling tells me something is wrong with this description...
+> > 
+> > Ah, a negative option (Y -> disable).  So Y is always safe.
+> > 
+> > `non-ancient distros' really means `recent distros', and if you have 
+> > one, then _N_ should be a safe choice, too?
 > 
-> > I have several hours of running aith nohpet and X's affinity set to 2
-> > instead of 3 and so far everything is running flawlessly.
+> yeah, you are right :-) I'll fix this.
 > 
-> Great, so this definitely is some kind of timing issue, thanks for 
-> verifying that.
-> 
-> > which has the same suggestion (taskset) as you made, for me this was 
-> > something new starting with 2.6.24-git15 - maybe something made a timing 
-> > issue fall a little closer to the edge.
-> 
-> Yes, could be some scheduler update that made the problem more visible. If 
-> you'd had time to use git-bisect to find the exact commit that exposes 
-> your problem, that might be interesting. But as you said that this is not 
-> immediately reproducible, it might take ages.
-> 
-> > Would you like me to try and further isolate things for you here by 
-> > either running with just nohpet OR just the taskset to change X's 
-> > affinity?
-> 
-> Yes, that would help. Especially knowing whether running with 'nohpet' 
-> fixes the problem would be nice.
-> 
+> btw., "non-ancient distros" does not just mean "recent distros", it 
+> really means "just about any distro you picked up in the past 10 years". 
+> You'd have to go out on a limb to find something historic (or keep 
+> copying /lib/libc5 binaries to new distros like Pavel did) to still have 
+> this particular libc5 assumption/breakage. [ Or at least so i hope =B-)]
 
+Bummer, I guess my good old m68k recovery ramdisk is affected ;-)
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-1261992843-1202381023=:11914--
