@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762818AbYBGUzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbYBGU4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762818AbYBGUzY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762267AbYBGUu7
+	id S932921AbYBGU4E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbYBGUvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:50:59 -0500
-Received: from mx2.suse.de ([195.135.220.15]:38167 "EHLO mx2.suse.de"
+	Thu, 7 Feb 2008 15:51:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45125 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933163AbYBGUu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:50:56 -0500
-Date: Thu, 7 Feb 2008 12:46:57 -0800
+	id S1762449AbYBGUvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:51:04 -0500
+Date: Thu, 7 Feb 2008 12:47:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, linux-usb@vger.kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,13 +19,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 09/45] USB: Adding YC Cable USB Serial device to pl2303
-Message-ID: <20080207204657.GJ16389@suse.de>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Kevin Lloyd <linux@sierrawireless.com>
+Subject: [patch 10/45] USB: sierra driver - add devices
+Message-ID: <20080207204700.GK16389@suse.de>
 References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-adding-yc-cable-usb-serial-device-to-pl2303.patch"
+Content-Disposition: inline; filename="usb-sierra-driver-add-devices.patch"
 In-Reply-To: <20080207204549.GA16389@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,38 +37,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Damien Stuart <dstuart@dstuart.org>
+From: Kevin Lloyd <linux@sierrawireless.com>
 
-This simply adds the "YC Cable" as a vendor and its pl2303-based
-USB<->Serial adapter as a product.  This particular adapter is sold by
-Radio Shack.  I've done limited testing on a few different systems with
-no issues.
+The following improvements were made:
+ - Added new product support: MC5725, AC 880 U, MP 3G (UMTS & CDMA)
 
+Signed-off-by: Kevin Lloyd <linux@sierrawireless.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/pl2303.c |    1 +
- drivers/usb/serial/pl2303.h |    3 +++
- 2 files changed, 4 insertions(+)
+ drivers/usb/serial/sierra.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/drivers/usb/serial/pl2303.c
-+++ b/drivers/usb/serial/pl2303.c
-@@ -88,6 +88,7 @@ static struct usb_device_id id_table [] 
- 	{ USB_DEVICE(WS002IN_VENDOR_ID, WS002IN_PRODUCT_ID) },
- 	{ USB_DEVICE(COREGA_VENDOR_ID, COREGA_PRODUCT_ID) },
- 	{ USB_DEVICE(HL340_VENDOR_ID, HL340_PRODUCT_ID) },
-+	{ USB_DEVICE(YCCABLE_VENDOR_ID, YCCABLE_PRODUCT_ID) },
- 	{ }					/* Terminating entry */
+--- a/drivers/usb/serial/sierra.c
++++ b/drivers/usb/serial/sierra.c
+@@ -104,6 +104,7 @@ static struct usb_device_id id_table [] 
+ 	{ USB_DEVICE(0x1199, 0x0019) },	/* Sierra Wireless AirCard 595 */
+ 	{ USB_DEVICE(0x1199, 0x0021) },	/* Sierra Wireless AirCard 597E */
+ 	{ USB_DEVICE(0x1199, 0x0120) },	/* Sierra Wireless USB Dongle 595U */
++	{ USB_DEVICE(0x1199, 0x0023) },	/* Sierra Wireless AirCard */
+ 
+ 	{ USB_DEVICE(0x1199, 0x6802) },	/* Sierra Wireless MC8755 */
+ 	{ USB_DEVICE(0x1199, 0x6804) },	/* Sierra Wireless MC8755 */
+@@ -117,8 +118,12 @@ static struct usb_device_id id_table [] 
+ 	{ USB_DEVICE(0x1199, 0x6851) },	/* Sierra Wireless AirCard 881 */
+ 	{ USB_DEVICE(0x1199, 0x6852) },	/* Sierra Wireless AirCard 880 E */
+ 	{ USB_DEVICE(0x1199, 0x6853) },	/* Sierra Wireless AirCard 881 E */
++	{ USB_DEVICE(0x1199, 0x6855) },	/* Sierra Wireless AirCard 880 U */
+ 	{ USB_DEVICE(0x1199, 0x6856) },	/* Sierra Wireless AirCard 881 U */
+ 
++	{ USB_DEVICE(0x1199, 0x6468) }, /* Sierra Wireless MP3G - EVDO */
++	{ USB_DEVICE(0x1199, 0x6469) }, /* Sierra Wireless MP3G - UMTS/HSPA */
++
+ 	{ USB_DEVICE(0x1199, 0x0112), .driver_info = DEVICE_1_PORT }, /* Sierra Wireless AirCard 580 */
+ 	{ USB_DEVICE(0x0F3D, 0x0112), .driver_info = DEVICE_1_PORT }, /* Airprime/Sierra PC 5220 */
+ 
+@@ -143,6 +148,7 @@ static struct usb_device_id id_table_3po
+ 	{ USB_DEVICE(0x1199, 0x0019) },	/* Sierra Wireless AirCard 595 */
+ 	{ USB_DEVICE(0x1199, 0x0021) },	/* Sierra Wireless AirCard 597E */
+ 	{ USB_DEVICE(0x1199, 0x0120) },	/* Sierra Wireless USB Dongle 595U*/
++	{ USB_DEVICE(0x1199, 0x0023) },	/* Sierra Wireless AirCard */
+ 
+ 	{ USB_DEVICE(0x1199, 0x6802) },	/* Sierra Wireless MC8755 */
+ 	{ USB_DEVICE(0x1199, 0x6804) },	/* Sierra Wireless MC8755 */
+@@ -156,7 +162,10 @@ static struct usb_device_id id_table_3po
+ 	{ USB_DEVICE(0x1199, 0x6851) },	/* Sierra Wireless AirCard 881 */
+ 	{ USB_DEVICE(0x1199, 0x6852) },	/* Sierra Wireless AirCard 880E */
+ 	{ USB_DEVICE(0x1199, 0x6853) },	/* Sierra Wireless AirCard 881E */
++	{ USB_DEVICE(0x1199, 0x6855) },	/* Sierra Wireless AirCard 880 U */
+ 	{ USB_DEVICE(0x1199, 0x6856) },	/* Sierra Wireless AirCard 881U */
++	{ USB_DEVICE(0x1199, 0x6468) }, /* Sierra Wireless MP3G - EVDO */
++	{ USB_DEVICE(0x1199, 0x6469) }, /* Sierra Wireless MP3G - UMTS/HSPA */
+ 	{ }
  };
  
---- a/drivers/usb/serial/pl2303.h
-+++ b/drivers/usb/serial/pl2303.h
-@@ -112,3 +112,6 @@
- #define HL340_VENDOR_ID		0x4348
- #define HL340_PRODUCT_ID	0x5523
- 
-+/* Y.C. Cable U.S.A., Inc - USB to RS-232 */
-+#define YCCABLE_VENDOR_ID	0x05ad
-+#define YCCABLE_PRODUCT_ID	0x0fba
 
 -- 
