@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbYBGDEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761378AbYBGDZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761145AbYBGDEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 22:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758403AbYBGDEN
+	id S1761378AbYBGDZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 22:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759191AbYBGDZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 22:04:13 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:23426 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757557AbYBGDEM (ORCPT
+	Wed, 6 Feb 2008 22:25:48 -0500
+Received: from smtp106.sbc.mail.re2.yahoo.com ([68.142.229.99]:24867 "HELO
+	smtp106.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759162AbYBGDZr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 22:04:12 -0500
-X-IMAP-Sender: amg
-Date: Wed, 6 Feb 2008 22:04:10 -0500
-From: Amy Griffis <amy.griffis@hp.com>
-To: Clem Taylor <clem.taylor@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: inotify_add_watch() returning ENOSPC in 2.6.24 [watch
-	descriptor leak?]
-Message-ID: <20080207030409.GA14880@fc.hp.com>
-References: <ecb4efd10802051749n6a626e84k3ac8210aa2b5a446@mail.gmail.com> <20080206015103.9a0f4069.akpm@linux-foundation.org> <ecb4efd10802061140g929e699y8d79f1317c30478d@mail.gmail.com>
+	Wed, 6 Feb 2008 22:25:47 -0500
+X-YMail-OSG: Ge.mUlEVM1kAc9Xqfo1tA1TcGzTKLU3qgNd6Fbwz1.ZlaSBcalQSDU1hpzMEbAVKnJIZ9_DWsM5gAeBPnXW8PNOiI9mTrlsZBkyOPwIllvfoNgEGA54FseHjdaw3_1mIvlDXzf6A3ZFXc4ITrpk6JXjb
+X-Yahoo-Newman-Property: ymail-3
+Date: Wed, 6 Feb 2008 21:23:31 -0600
+From: serge@hallyn.com
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       lkml <linux-kernel@vger.kernel.org>, Andrew Morgan <morgan@kernel.org>
+Subject: Re: where is the capset kernel module?
+Message-ID: <20080207032331.GA25762@vino.hallyn.com>
+References: <b6a2187b0802060013i2969a577x921be4d1a1202248@mail.gmail.com> <b6a2187b0802060243u3d8187b8v878dddf9eb4d3cb0@mail.gmail.com> <Pine.LNX.4.64.0802061225240.23855@fbirervta.pbzchgretzou.qr> <b6a2187b0802060356r19e59e67lfa572939545872e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ecb4efd10802061140g929e699y8d79f1317c30478d@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <b6a2187b0802060356r19e59e67lfa572939545872e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clem Taylor wrote:  [Wed Feb 06 2008, 02:40:58PM EST]
-> > Good bug report, thanks.  That code was significantly altered in June 2006
-> > and perhaps something broke.
+Quoting Jeff Chua (jeff.chua.linux@gmail.com):
+> On Feb 6, 2008 7:40 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
 > 
-> I also tested on a 2.6.20 x86 desktop machine. It took ~8k iterations
-> to fail, which matched max_user_watches. Once the program fails, it
-> will fail right away if it is re-run.
+> > >warning: `named' uses 32-bit capabilities (legacy support in use)
+> > Yes it is a really interesting case I have seen before,
+> > but did not bother to investigate.
+> > CONFIG_SECURITY=y
+> > CONFIG_SECURITY_CAPABILITIES=m or y
 > 
-> > It's a bit hard to find people who work on inotify, I'm afraid.  If you had
-> > the time to come up with a script or program which demonstrates the bug,
-> > that would be super-helpful?
+> Tried, but didn't help.
 > 
-> Attached is a simple example that shows off the problem. On a system
-> with a problem, it will only run for about
-> fs.inotify.max_user_watches iterations. If everything is working, it
-> should run forever.
+> Menuconfig can't select these as modules. So may be that's they need
+> to be make modular.
+> 
+>      [*] Enable different security models
+>      [*]   Socket and Networking Security Hooks (NEW)
+>      [*]   Default Linux Capabilities (NEW)
+>      [*] File POSIX Capabilities (EXPERIMENTAL)
+>      [ ] Root Plug Support (NEW)
 
-I'll take a look at this. Thanks for providing a reproducer.
+Odd, I thought the help text was originally far more helpful, including
+a url.  The message isn't telling you you need a kernel module, but that
+you are using an old libcap.  It isn't a real problem right now if
+you're not using the SMACK LSM, but to get rid of the message upgrade
+your libcap from
+http://www.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.6/libcap-2.05.tar.gz
 
-Amy
+thanks,
+-serge
