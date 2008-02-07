@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbYBGR20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbYBGRcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932462AbYBGR20 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 12:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbYBGR2R
+	id S932244AbYBGRcU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 12:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYBGRcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 12:28:17 -0500
-Received: from mga02.intel.com ([134.134.136.20]:46332 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753873AbYBGR2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 12:28:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,316,1199692800"; 
-   d="scan'208";a="257017985"
-Message-ID: <47AB3EEF.6050005@intel.com>
-Date: Thu, 07 Feb 2008 09:25:03 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Thu, 7 Feb 2008 12:32:01 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:53228 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755570AbYBGRcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 12:32:00 -0500
+Date: Thu, 7 Feb 2008 12:31:49 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: feature-removal-schedule.txt is getting out of date again
+In-Reply-To: <200802062054.59755.bzolnier@gmail.com>
+Message-ID: <alpine.LFD.1.00.0802071231070.22432@localhost.localdomain>
+References: <alpine.LFD.1.00.0802060419140.17178@localhost.localdomain> <200802062054.59755.bzolnier@gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Max Krasnyansky <maxk@qualcomm.com>
-CC: Pavel Machek <pavel@ucw.cz>, e1000-devel@lists.sourceforge.net,
-       jesse.brandeburg@intel.com, kernel list <linux-kernel@vger.kernel.org>,
-       john.ronciak@intel.com, jeffrey.t.kirsher@intel.com
-Subject: Re: [E1000-devel] e1000 1sec latency problem
-References: <20080207141718.GA2030@elf.ucw.cz> <47AB38AB.8050001@qualcomm.com>
-In-Reply-To: <47AB38AB.8050001@qualcomm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Krasnyansky wrote:
-> Pavel Machek wrote:
->> Hi!
->>
->> I have the famous e1000 latency problems:
->>
->> 64 bytes from 195.113.31.123: icmp_seq=68 ttl=56 time=351.9 ms
->> 64 bytes from 195.113.31.123: icmp_seq=69 ttl=56 time=209.2 ms
->> 64 bytes from 195.113.31.123: icmp_seq=70 ttl=56 time=1004.1 ms
->> 64 bytes from 195.113.31.123: icmp_seq=71 ttl=56 time=308.9 ms
->> 64 bytes from 195.113.31.123: icmp_seq=72 ttl=56 time=305.4 ms
->> 64 bytes from 195.113.31.123: icmp_seq=73 ttl=56 time=9.8 ms
->> 64 bytes from 195.113.31.123: icmp_seq=74 ttl=56 time=3.7 ms
->>
->> ...and they are still there in 2.6.25-git0. I had ethernet EEPROM
->> checksum problems, which I fixed by the update, but problems are not
->> gone.
->>
->> irqpoll helps.
->>
->> nosmp (which implies XT-PIC is being used) does not help.
->>
->>  16:       1925          0   IO-APIC-fasteoi   ahci, yenta, uhci_hcd:usb2, eth0
->>
->> Booting kernel with nosmp/ no yenta, no usb does not help.
->>
->> Hmm, as expected, interrupt load on ahci (find /) makes latencies go
->> away.
->>
->> It should be easily reproducible on x60 with latest bios, it is 100%
->> reproducible for me...
-> 
-> So you don't think it's related to the interrupt coalescing by any chance ?
-> I'd suggest to try and disable the coalescing and see if it makes any difference.
-> We've had lots of issues with coalescing misbehavior. Not this bad (ie 1 second) though.
-> 
-> Add this to modprobe.conf and reload e1000 module
-> 
-> options e1000 RxIntDelay=0,0 RxAbsIntDelay=0,0 InterruptThrottleRate=0,0 TxIntDelay=0,0 TxAbsIntDelay=0,0
+On Wed, 6 Feb 2008, Bartlomiej Zolnierkiewicz wrote:
 
-that can't be the problem. irq moderation would only account for 2-3ms variance
-maximum.
+> Robert, I suggest that you just send patches removing outdated items (probably
+> starting with the one below like you tried in the past) and be quite stubborn
+> about it (otherwise you can be pretty sure that nothing will happen)...
+>
+> ...
+> What:   PCMCIA control ioctl (needed for pcmcia-cs [cardmgr, cardctl])
+> When:   November 2005
+> ....
+>
+> http://lkml.org/lkml/2007/5/1/107
+>
+> Christoph, 10 months later and this method doesn't seem to work.
+>
+> How's about disabling it in -mm and waiting for complaints instead
+> (if none come just remove the code in 2.6.26-rc1)?
+>
+> [ Either this or we should just remove the item in question from
+>   feature-removal-schedule.txt. ]
 
-Pavel, can you send me the `lspci -vvv` of your machine with the very latest git
-tree and after it's showing the poor ping performance?
+yes, i didn't see any followup on that item.  i still have the patch,
+unless it's already working its way thru the system.
 
-Auke
+rday
+--
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+Home page:                                         http://crashcourse.ca
+Fedora Cookbook:    http://crashcourse.ca/wiki/index.php/Fedora_Cookbook
+========================================================================
