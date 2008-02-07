@@ -1,148 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYBGIDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYBGIHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbYBGIDR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 03:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbYBGIDF
+	id S1755519AbYBGIHt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 03:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbYBGIHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 03:03:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47626 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbYBGIDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 03:03:04 -0500
-Date: Thu, 7 Feb 2008 09:02:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       jesse.barnes@intel.com, yhlu.kernel@gmail.com, ak@suse.de,
-       Yinghai Lu <yinghai.lu@sun.com>
-Subject: Re: [PATCH][Regression] x86, 32-bit: trim memory not covered by wb
-	mtrrs - FIX
-Message-ID: <20080207080245.GA28631@elte.hu>
-References: <200802071257.51893.balajirrao@gmail.com>
+	Thu, 7 Feb 2008 03:07:40 -0500
+Received: from otello.alma.unibo.it ([137.204.24.163]:54698 "EHLO
+	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbYBGIHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 03:07:39 -0500
+Message-ID: <47AABC4A.7010105@otello.alma.unibo.it>
+Date: Thu, 07 Feb 2008 09:07:38 +0100
+From: Diego Zuccato <diego@otello.alma.unibo.it>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802071257.51893.balajirrao@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Christer Weinigel <christer@weinigel.se>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<47A764ED.8030605@weinigel.se>	<1202161091.15090.84.camel@violet>	<20080206213449.6614efea@weinigel.se>	<1202331345.15090.235.camel@violet.holtmann.net> <20080206222937.2aa69a2e@weinigel.se>
+In-Reply-To: <20080206222937.2aa69a2e@weinigel.se>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christer Weinigel ha scritto:
 
-* Balaji Rao <balajirrao@gmail.com> wrote:
+> I think it is perfectly within their rights to do so.  I think it's
+> kind of silly to try to hide it, if someone wants to boost the maximum
+> transmit power, they're going to hack the firmware anyway.  But if it
+> makes Intel happy, well... :-)
+And break the HW :-) Actually, they could be happier, since then you 
+have to buy another...
 
-> Hello,
-> 
-> The following commit caused my X server to stop working.
-> 
-> commit 99fc8d424bc5d803fe92cad56c068fe64e73747a
-> Author: Jesse Barnes <jesse.barnes@intel.com>
-> Date:   Wed Jan 30 13:33:18 2008 +0100
-> 
->     x86, 32-bit: trim memory not covered by wb mtrrs
-> 
-> This patch fixes the improper handling of addresses > 4G by 
-> mtrr_trim_uncached_memory. This, now brings up X on my system.
+[...]
+> preliminary go ahead from the bosses to provide documentation under an
+> NDA to Linux developers that would like to write GPL drivers for it.  I
+[...]
+Urgh... I don't think NDAs and Open Source mix well... Are you sure your 
+bosses KNOW Linux and the OS in general? :-)
 
-thanks. Incidentally this same bug was reported and fixed yesterday, and 
-that fix is upstream already. Could you please compare your solution to 
-Yinghai Lu's fix below, and send us a patch for any further improvements 
-(or cleanups) you might notice in that code? It seems to be almost the 
-same fix as yours. (and hopefully it fixes your X problem too)
-
-	Ingo
-
------------------->
-commit 20651af9ac60fd6e31360688ad44861a7d05256a
-Author: Yinghai Lu <yinghai.lu@sun.com>
-Date:   Wed Feb 6 22:39:45 2008 +0100
-
-    x86: fix mttr trimming
-    
-    Pavel Emelyanov reported that his networking card did not work
-    and bisected it down to:
-    
-    "
-    The commit
-    
-      093af8d7f0ba3c6be1485973508584ef081e9f93
-      x86_32: trim memory by updating e820
-    
-    broke my e1000 card: on loading driver says that
-    
-      e1000: probe of 0000:04:03.0 failed with error -5
-    
-    and the interface doesn't appear.
-    "
-    
-    on a 32-bit kernel, base will overflow when try to do PAGE_SHIFT,
-    and highest_addr will always less 4G.
-    
-    So use pfn instead of address to avoid the overflow when more than
-    4g RAM is installed on a 32-bit kernel.
-    
-    Many thanks to Pavel Emelyanov for reporting and testing it.
-    
-    Bisected-by: Pavel Emelyanov <xemul@openvz.org>
-    Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-    Tested-by: Pavel Emelyanov <xemul@openvz.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 1e27b69..b6e136f 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -659,7 +659,7 @@ static __init int amd_special_default_mtrr(void)
-  */
- int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
- {
--	unsigned long i, base, size, highest_addr = 0, def, dummy;
-+	unsigned long i, base, size, highest_pfn = 0, def, dummy;
- 	mtrr_type type;
- 	u64 trim_start, trim_size;
- 
-@@ -682,28 +682,27 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
- 		mtrr_if->get(i, &base, &size, &type);
- 		if (type != MTRR_TYPE_WRBACK)
- 			continue;
--		base <<= PAGE_SHIFT;
--		size <<= PAGE_SHIFT;
--		if (highest_addr < base + size)
--			highest_addr = base + size;
-+		if (highest_pfn < base + size)
-+			highest_pfn = base + size;
- 	}
- 
- 	/* kvm/qemu doesn't have mtrr set right, don't trim them all */
--	if (!highest_addr) {
-+	if (!highest_pfn) {
- 		printk(KERN_WARNING "WARNING: strange, CPU MTRRs all blank?\n");
- 		WARN_ON(1);
- 		return 0;
- 	}
- 
--	if ((highest_addr >> PAGE_SHIFT) < end_pfn) {
-+	if (highest_pfn < end_pfn) {
- 		printk(KERN_WARNING "WARNING: BIOS bug: CPU MTRRs don't cover"
--			" all of memory, losing %LdMB of RAM.\n",
--			(((u64)end_pfn << PAGE_SHIFT) - highest_addr) >> 20);
-+			" all of memory, losing %luMB of RAM.\n",
-+			(end_pfn - highest_pfn) >> (20 - PAGE_SHIFT));
- 
- 		WARN_ON(1);
- 
- 		printk(KERN_INFO "update e820 for mtrr\n");
--		trim_start = highest_addr;
-+		trim_start = highest_pfn;
-+		trim_start <<= PAGE_SHIFT;
- 		trim_size = end_pfn;
- 		trim_size <<= PAGE_SHIFT;
- 		trim_size -= trim_start;
+BYtE,
+  Diego.
