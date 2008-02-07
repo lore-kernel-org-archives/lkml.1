@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965103AbYBGVjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761587AbYBGVkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965103AbYBGVjd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYBGVir
+	id S1761587AbYBGVkK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964870AbYBGVi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:38:47 -0500
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50931
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbYBGVip (ORCPT
+	Thu, 7 Feb 2008 16:38:56 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:56417 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964858AbYBGViy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:38:45 -0500
-Date: Thu, 7 Feb 2008 14:51:48 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-In-Reply-To: <47AB0B63.20500@vlnb.net>
-Message-ID: <alpine.DEB.1.00.0802071437404.12791@asgard.lang.hm>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>  <1202144767.3096.38.camel@localhost.localdomain>  <47A7488B.4080000@vlnb.net>  <1202145901.3096.49.camel@localhost.localdomain>  <47A751C5.60600@vlnb.net>  <1202149322.3096.66.camel@localhost.localdomain>
-  <47A75B8A.3020503@vlnb.net>  <1202151293.3096.80.camel@localhost.localdomain>  <47A8B210.8040202@vlnb.net>  <1202238802.3133.71.camel@localhost.localdomain> <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com> <47AB0B63.20500@vlnb.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 7 Feb 2008 16:38:54 -0500
+X-Sasl-enc: A7kzf6DNHyZrVY5u+Lb0W81gLf9S8HN/mCnB4hvCWNBn 1202420333
+Date: Thu, 7 Feb 2008 19:38:45 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>,
+       =?iso-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] LED updates
+Message-ID: <20080207213845.GA27862@khazad-dum.debian.net>
+References: <1202380503.9519.21.camel@dax.rpnet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1202380503.9519.21.camel@dax.rpnet.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008, Vladislav Bolkhovitin wrote:
+On Thu, 07 Feb 2008, Richard Purdie wrote:
+> Márton Németh:
+>       leds: Add support for hardware accelerated LED flashing
+>       leds: hw acceleration for Clevo mail LED driver
 
-> Bart Van Assche wrote:
->> - It has been discussed which iSCSI target implementation should be in
->> the mainstream Linux kernel. There is no agreement on this subject
->> yet. The short-term options are as follows:
->> 1) Do not integrate any new iSCSI target implementation in the
->> mainstream Linux kernel.
->> 2) Add one of the existing in-kernel iSCSI target implementations to
->> the kernel, e.g. SCST or PyX/LIO.
->> 3) Create a new in-kernel iSCSI target implementation that combines
->> the advantages of the existing iSCSI kernel target implementations
->> (iETD, STGT, SCST and PyX/LIO).
->> 
->> As an iSCSI user, I prefer option (3). The big question is whether the
->> various storage target authors agree with this ?
->
-> I tend to agree with some important notes:
->
-> 1. IET should be excluded from this list, iSCSI-SCST is IET updated for SCST 
-> framework with a lot of bugfixes and improvements.
->
-> 2. I think, everybody will agree that Linux iSCSI target should work over 
-> some standard SCSI target framework. Hence the choice gets narrower: SCST vs 
-> STGT. I don't think there's a way for a dedicated iSCSI target (i.e. PyX/LIO) 
-> in the mainline, because of a lot of code duplication. Nicholas could decide 
-> to move to either existing framework (although, frankly, I don't think 
-> there's a possibility for in-kernel iSCSI target and user space SCSI target 
-> framework) and if he decide to go with SCST, I'll be glad to offer my help 
-> and support and wouldn't care if LIO-SCST eventually replaced iSCSI-SCST. The 
-> better one should win.
+This one has a loose end: when you call brightness_set on a led with
+hardware flash acceleration, you will leave the trigger armed, BUT the led
+won't blink anymore.  That's just wrong.
 
-why should linux as an iSCSI target be limited to passthrough to a SCSI 
-device.
+Either we should always remove *any* (hardware accelerated or not!) active
+trigger when a write to brightness_set is done, or the stuff about "calling
+brightness_set will disable the hardware accelerated blink" has to go.
 
-the most common use of this sort of thing that I would see is to load up a 
-bunch of 1TB SATA drives in a commodity PC, run software RAID, and then 
-export the resulting volume to other servers via iSCSI. not a 'real' SCSI 
-device in sight.
+I personally prefer that we would always remove any active trigger if
+brightness_set is to be called.  IMHO, it is neater, and it is also the
+least-surprise-behaviour from an user perspective with the LED_OFF:LED_FULL
+triggers we have right now.
 
-As far as how good a standard iSCSI is, at this point I don't think it 
-really matters. There are too many devices and manufacturers out there 
-that implement iSCSI as their storage protocol (from both sides, offering 
-storage to other systems, and using external storage). Sometimes the best 
-technology doesn't win, but Linux should be interoperable with as much as 
-possible and be ready to support the winners and the loosers in technology 
-options, for as long as anyone chooses to use the old equipment (after 
-all, we support things like Arcnet networking, which lost to Ethernet many 
-years ago)
+Which one will be?  If it is "remove any active trigger", I'd not mind
+writing the patch.
 
-David Lang
+> Richard Purdie:
+>       leds: Standardise LED naming scheme
+
+This one causes trouble (at least on 2.6.23 -- I backported the patch) due
+to the 20-byte length limit on sysfs names.  I had to use "tp::<somecrap>"
+instead of "thinkpad::<somecrap>" to name LEDs, and still had to reduce
+ultrabase_battery to ultrabase_batt :-)
+
+Anyway, IMHO, the LED function should come first, and we should not even
+need the led driver name anywhere.  In case of clashes in the class sysfs
+dir, just tack a .# to the end or somesuch.  The device the LED is tied to
+already differentiates them.  That would save a lot of chars for something
+much more useful (the function).
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
