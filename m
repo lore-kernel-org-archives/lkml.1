@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934449AbYBGVyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933141AbYBGV7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934449AbYBGVyr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761026AbYBGVye
+	id S933141AbYBGV7l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbYBGV7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:54:34 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52429 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758525AbYBGVyd (ORCPT
+	Thu, 7 Feb 2008 16:59:21 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:20932 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760551AbYBGV7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:54:33 -0500
-Date: Thu, 7 Feb 2008 21:54:21 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC] Introduce HAVE_IDE to support flexible IDE per arch configuration
-Message-ID: <20080207215421.GJ28435@flint.arm.linux.org.uk>
-References: <20080207214256.GA22572@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Thu, 7 Feb 2008 16:59:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ap7SUdcwTGpUT9WnYCmcp72Rkh7hIguHjx952K0tR9ir/pJoyt98OAPdDSEDUv/DBn+3Ugf2xfd2gaUrATCYTlddBzvQWjk2NrmhM3UIy5U6pm5inI/IX2b/43A/GvpvJetqR9y8cUf7JlogX3asMQ0MLM/EB86rNpa3MDjSy2c=
+Date: Thu, 7 Feb 2008 16:59:07 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Alfred E. Heggestad" <aeh@db.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset
+Message-ID: <20080207165144.ZZRA012@mailhub.coreip.homeip.net>
+References: <47AB5012.20509@db.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080207214256.GA22572@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <47AB5012.20509@db.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 10:42:56PM +0100, Sam Ravnborg wrote:
-> Following patch introduce HAVE_IDE to support flexible per
-> arch or even per. sub-arch configuration of IDE support.
-> This patch is needed to allow arm to use the generic
-> drivers/Kconfig file.
-> 
-> Introducing HAVE_IDE so each arch explicit select HAVE_IDE
-> if supported allowed us to get rid of HAS_IOMEM which
-> is anyway overloaded.
-> And doing it this way is a much better way to document which
-> architectures that supports IDE.
-> Furthermore the decision if IDE is supported or not is
-> distributed.
-> Consider seeing this all over:
-> 
-> -if PCMCIA || ARCH_CLPS7500 || ARCH_IOP32X || ARCH_IOP33X || ARCH_IXP4XX \
-> -       || ARCH_L7200 || ARCH_LH7A40X || ARCH_PXA || ARCH_RPC \
-> -       || ARCH_S3C2410 || ARCH_SA1100 || ARCH_SHARK || FOOTBRIDGE \
-> -       || ARCH_IXP23XX
->  source "drivers/ide/Kconfig"
-> -endif
-> 
-> Only s390 and um does not support IDE from my quick
-> investigation, if there are others let me know.
-> [Added linux-arch to catch all arch maintainers].
-> 
-> Comments?
+Hi Alfred,
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+On Thu, Feb 07, 2008 at 07:38:10PM +0100, Alfred E. Heggestad wrote:
+> From: Alfred E. Heggestad <aeh@db.org>
+>
+> This driver adds support for USB VoIP phones using the CM109 chipset,
+> such as Komunikate KIP-1000 and Genius G-talk. Keypad is scanned and
+> events are reported to the input subsystem. The buzzer can be activated
+> by sending SND_TONE or SND_BELL to the input device. The phone keymap
+> can be selected in run-time by using the "phone" module parameter.
+> The driver has been tested with linux 2.6.24 on i386, and also tested
+> to build cleanly on AMD64.
+> More testing and code review is welcome..
+>
+
+For a long time I was sitting on the patch not sure what to do about
+the pound key, but I think we need to allocate separate keycodes for
+remote controls and phones that work regardless of users keymap.
+
+Another item is keymap for different devices - the best way to handle
+it I think it to implement getkeycodes and setkeycodes methods for
+the input device and have alternative keymaps loaded from userspace
+instead of adding module parameters.
+
+The rest of the driver looks great and I am sorry I was ignoring it
+for so long.
+
+-- 
+Dmitry
