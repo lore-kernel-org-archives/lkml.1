@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbYBGHTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbYBGHUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757648AbYBGHTz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 02:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbYBGHTr
+	id S1759627AbYBGHUU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 02:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbYBGHT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 02:19:47 -0500
-Received: from mail29.messagelabs.com ([216.82.249.147]:57090 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752935AbYBGHTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 02:19:46 -0500
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-11.tower-29.messagelabs.com!1202368786!5413171!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-Date: Thu, 7 Feb 2008 08:19:42 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>, rpurdie@openedhand.com,
-       Linux-arm <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/HP7XX] - Add combined LCD / BL driver for platform HP Jornada 7xx handhelds
-Message-ID: <20080207071942.GC5235@digi.com>
-References: <20080205195331.fa2ca02b.Kristoffer.ericson@gmail.com> <47A9A944.7090401@tiscali.nl> <47A9AA4F.80508@tiscali.nl> <20080206173341.619c52c8.Kristoffer.ericson@gmail.com> <20080206164435.GC32245@flint.arm.linux.org.uk> <20080206202128.06fbcafa.Kristoffer.ericson@gmail.com> <20080206193155.GE32245@flint.arm.linux.org.uk> <20080206204340.0711c4f6.Kristoffer.ericson@gmail.com> <20080206194557.GF32245@flint.arm.linux.org.uk>
+	Thu, 7 Feb 2008 02:19:58 -0500
+Received: from mx1.suse.de ([195.135.220.2]:54694 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758389AbYBGHT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 02:19:56 -0500
+Date: Wed, 6 Feb 2008 23:18:07 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+Message-ID: <20080207071807.GA13866@suse.de>
+References: <20080207064210.GA22896@suse.de> <20080206.223944.200455039.davem@davemloft.net> <20080207070044.GA4851@suse.de> <20080206.231144.174648341.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080206194557.GF32245@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 07 Feb 2008 07:19:42.0697 (UTC) FILETIME=[CF0F9590:01C86959]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15714.002
-X-TM-AS-Result: No--11.409100-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+In-Reply-To: <20080206.231144.174648341.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Russell,
-
-> > Doh, right. Do you use a different checkpatch? I mean it doesn't react on
-> > that for me.
+On Wed, Feb 06, 2008 at 11:11:44PM -0800, David Miller wrote:
+> From: Greg KH <gregkh@suse.de>
+> Date: Wed, 6 Feb 2008 23:00:44 -0800
 > 
-> No, all of the comments I've given were spotted by merely reading the patch.
-May I ask how you spot tab vs. 8 space problems?  Do you apply the patch
-and check in an editor?
+> > On Wed, Feb 06, 2008 at 10:39:44PM -0800, David Miller wrote:
+> > > From: Greg KH <gregkh@suse.de>
+> > > Date: Wed, 6 Feb 2008 22:42:10 -0800
+> > > 
+> > > > On Wed, Feb 06, 2008 at 10:05:44PM -0800, David Miller wrote:
+> > > > > I found the problem, it's the "whole_disk" partition attribute.
+> > > > 
+> > > > I don't understand that code at all, on 2.6.24, what does reading that
+> > > > file give you?  At first glance, I don't see how that file would spit
+> > > > out anything and not give you the same kind of oops.
+> > > > 
+> > > > you are in a maze of kobject pointers, all alike...
+> > > 
+> > > It's supposed to just exist, and be an empty zero length file.
+> > > That's why it's given no ->show method pointer.
+> > > 
+> > > It's existence just means that the partition is a "whole disk"
+> > > partition type.
+> > 
+> > Can you try this patch to see if it solves the oops, and that the file
+> > is still there and works properly?
+> 
+> It doesn't crash, but the file returns -EIO instead of zero when read.
 
-Best regards
-Uwe
+How about this attempt?
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+thanks for your patience,
+
+greg "Kay owes me a beer" k-h
+
+---
+ fs/partitions/check.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
+
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -319,6 +319,14 @@ void delete_partition(struct gendisk *di
+ 	put_device(&p->dev);
+ }
+ 
++static ssize_t whole_disk_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	return 0;
++}
++static DEVICE_ATTR(whole_disk, S_IRUSR | S_IRGRP | S_IROTH,
++		   whole_disk_show, NULL);
++
+ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
+ {
+ 	struct hd_struct *p;
+@@ -352,13 +360,8 @@ void add_partition(struct gendisk *disk,
+ 	device_add(&p->dev);
+ 	partition_sysfs_add_subdir(p);
+ 	p->dev.uevent_suppress = 0;
+-	if (flags & ADDPART_FLAG_WHOLEDISK) {
+-		static struct attribute addpartattr = {
+-			.name = "whole_disk",
+-			.mode = S_IRUSR | S_IRGRP | S_IROTH,
+-		};
+-		err = sysfs_create_file(&p->dev.kobj, &addpartattr);
+-	}
++	if (flags & ADDPART_FLAG_WHOLEDISK)
++		err = device_create_file(&p->dev, &dev_attr_whole_disk);
+ 
+ 	/* suppress uevent if the disk supresses it */
+ 	if (!disk->dev.uevent_suppress)
