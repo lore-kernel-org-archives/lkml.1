@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763227AbYBGVMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760329AbYBGVNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763227AbYBGVMp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762785AbYBGUyM
+	id S1760329AbYBGVNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761415AbYBGUyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:54:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39185 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933252AbYBGUyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:54:08 -0500
-Message-ID: <47AB6FD7.1030502@zytor.com>
-Date: Thu, 07 Feb 2008 12:53:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 7 Feb 2008 15:54:15 -0500
+Received: from ns1.suse.de ([195.135.220.2]:46050 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933694AbYBGUyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:54:13 -0500
+Date: Thu, 7 Feb 2008 12:48:14 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 40/45] sched: let +nice tasks have smaller impact
+Message-ID: <20080207204814.GO16389@suse.de>
+References: <20080207204118.202098927@mini.kroah.org>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24 says "serial8250: too much work for irq4" a lot.
-References: <200802051455.10831.rob@landley.net> <20080207123937.GC15647@elte.hu> <47AB41C8.3010001@zytor.com> <200802071413.45085.rob@landley.net>
-In-Reply-To: <200802071413.45085.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline; filename="sched-let-nice-tasks-have-smaller-impact.patch"
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080207204549.GA16389@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> 
-> Specifically, qemu isn't paravirtualized, it's fully virtualized.  The same 
-> kernel can run on real hardware just fine.  (Sort of the point of the 
-> project...)
-> 
-> I can yank the warning for the kernels I build (or set PASS_LIMIT to 9999999), 
-> but I'd rather not carry any more patches than I can avoid...
-> 
+2.6.24-stable review patch.  If anyone has any objections, please let us know.
 
-The right thing to do is to add virtual FIFO exhaustion into the Qemu 
-device model.  It really isn't a valid emulation of a UART that it has 
-an infinite FIFO behind it that can flood the interrupt handler for an 
-arbitrary number of fetches.
+------------------
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-I was going to give a technical description of how to do it here, but 
-then I realized I might as well just write it up as a patch.  Stay tuned.
+patch ef9884e6f29bbe1075204f962a00f7533bf7e8f3 in mainline.
 
-	-hpa
+Michel Dänzr has bisected an interactivity problem with
+plus-reniced tasks back to this commit:
 
+ 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8 is first bad commit
+ commit 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8
+ Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+ Date:   Mon Oct 15 17:00:14 2007 +0200
+
+ sched: another wakeup_granularity fix
+
+      unit mis-match: wakeup_gran was used against a vruntime
+
+fix this by assymetrically scaling the vtime of positive reniced
+tasks.
+
+Bisected-by: Michel Dänzer <michel@tungstengraphics.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ kernel/sched_fair.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -867,7 +867,11 @@ static void check_preempt_wakeup(struct 
+ 	}
+ 
+ 	gran = sysctl_sched_wakeup_granularity;
+-	if (unlikely(se->load.weight != NICE_0_LOAD))
++	/*
++	 * More easily preempt - nice tasks, while not making
++	 * it harder for + nice tasks.
++	 */
++	if (unlikely(se->load.weight > NICE_0_LOAD))
+ 		gran = calc_delta_fair(gran, &se->load);
+ 
+ 	if (pse->vruntime + gran < se->vruntime)
+
+-- 
