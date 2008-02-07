@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935179AbYBGArK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbYBGAsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935179AbYBGArK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932793AbYBGAfa
+	id S932252AbYBGAsJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:48:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932383AbYBGAgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:35:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46221 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765495AbYBGAf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:35:26 -0500
-Date: Wed, 6 Feb 2008 19:35:12 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 05/19] split LRU lists into anon & file sets
-Message-ID: <20080206193512.77b5f21f@bree.surriel.com>
-In-Reply-To: <20080130175439.1AFD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080108210002.638347207@redhat.com>
-	<20080130121152.1AF1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080130175439.1AFD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Feb 2008 19:36:39 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55833 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932172AbYBGAgh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:36:37 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>, tglx@linutronix.de,
+       mingo@redhat.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com>
+	<20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com>
+	<47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu>
+Date: Wed, 06 Feb 2008 17:31:11 -0700
+In-Reply-To: <20080206233657.GB12393@elte.hu> (Ingo Molnar's message of "Thu,
+	7 Feb 2008 00:36:57 +0100")
+Message-ID: <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 17:57:54 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Ingo Molnar <mingo@elte.hu> writes:
 
-> I found number of scan pages calculation bug.
+> * H. Peter Anvin <hpa@zytor.com> wrote:
+>
+>>> I am wondering if interrupts are disabled on crashing cpu or if 
+>>> crashing cpu is inside die_nmi(), how would it stop/prevent delivery 
+>>> of NMI IPI to other cpus.
+>>
+>> I don't see how it would.
+>
+> cross-CPU IPIs are a bit fragile on some PC platforms. So if the kexec 
+> code relies on getting IPIs to all other CPUs, it might not be able to 
+> do it reliably. There might be limitations on how many APIC irqs there 
+> can be queued at a time, and if those slots are used up and the CPU is 
+> not servicing irqs then stuff gets retried. This might even affect NMIs 
+> sent via APIC messages - not sure about that.
 
-My latest version of get_scan_ratio() works differently, with the
-percentages always adding up to 100.  However, your patch gave me
-the inspiration to (hopefully) find the bug in my version of the
-code.
- 
-> 1. wrong calculation order
 
-I do not believe my new code has this problem.  Of course, this
-is purely due to luck :)
 
-> 2. wrong fraction omission
-> 
-> 	nr[l] = zone->nr_scan[l] * percent[file] / 100;
-> 
-> 	when percent is very small,
-> 	nr[l] become 0.
+The design was as follows:
+- Doing anything in the crashing kernel is unreliable.
+- We do not have the information to do anything useful in the recovery/target
+  kernel.
+- Having the other cpus stopped is very nice as it reduces the amount of
+  weirdness happening.  We do not share the same text or data addresses
+  so stopping the other cpus is not mandatory.  On some other architectures
+  there are cpu tables that must live at a fixed address but this is not
+  the case on x86.
+- Having the location the other cpus were running at is potentially very
+  interesting debugging information.
 
-This is probably where the problem is.  Kind of.
+Therefore the intent of the code is to send an NMI to each other cpu.  With
+a timeout of a second or so.  So that if the NMI do not get sent we continue
+on.
 
-I believe that the problem is that we scale nr[l] by the percentage,
-instead of scaling the amount we add to zone->nr_scan[l] by the
-percentage!
+There is certainly still room for improving the robustness by not shutting
+down the ioapics and using less general infrastructure code on that path.
+That said I would be a little surprised if that is what is biting us.
 
-> @@ -1409,7 +1410,11 @@ static unsigned long shrink_zone(int pri
->  			 */
->  			zone->nr_scan[l] += (zone_page_state(zone,
->  				NR_INACTIVE_ANON + l) >> priority) + 1;
-> -			nr[l] = zone->nr_scan[l] * percent[file] / 100;
-> +			nr[l] = (zone->nr_scan[l] * percent[file] / 100) + 1;
-> +			nr_max_scan = zone_page_state(zone, NR_INACTIVE_ANON+l);
-> +			if (nr[l] > nr_max_scan)
-> +				nr[l] = nr_max_scan;
-> +
->  			if (nr[l] >= sc->swap_cluster_max)
->  				zone->nr_scan[l] = 0;
->  			else
+Looking at the patch the local_irq_enable() is totally bogus.  As soon
+was we hit machine_crash_shutdown the first thing we do is disable irqs.
 
-With the fix below (against my latest tree), we always add at least one
-to zone->nr_scan[l] and always make that increment count later on!
+I'm wondering if someone was using the switch cpus on crash patch that was
+floating around.  That would require the ipis to work.
 
-I am still recovering from my trip home (thanks to the airline companies
-I spent 25 hours travelling, from door to door), so I may not get around
-to actually testing this today:
+I don't know if nmi_exit makes sense.  There are enough layers of abstraction
+in that piece of code I can't quickly spot the part that is banging the hardware.
 
-Index: linux-2.6.24-rc6-mm1/mm/vmscan.c
-===================================================================
---- linux-2.6.24-rc6-mm1.orig/mm/vmscan.c	2008-02-06 19:23:16.000000000 -0500
-+++ linux-2.6.24-rc6-mm1/mm/vmscan.c	2008-02-06 19:22:55.000000000 -0500
-@@ -1275,13 +1275,17 @@ static unsigned long shrink_zone(int pri
- 	for_each_lru(l) {
- 		if (scan_global_lru(sc)) {
- 			int file = is_file_lru(l);
-+			int scan;
- 			/*
- 			 * Add one to nr_to_scan just to make sure that the
--			 * kernel will slowly sift through the active list.
-+			 * kernel will slowly sift through each list.
- 			 */
--			zone->nr_scan[l] += (zone_page_state(zone,
--				NR_INACTIVE_ANON + l) >> priority) + 1;
--			nr[l] = zone->nr_scan[l] * percent[file] / 100;
-+			scan = zone_page_state(zone, NR_INACTIVE_ANON + l);
-+			scan >>= priority;
-+			scan = (scan * percent[file]) / 100;
-+
-+			zone->nr_scan[l] += scan + 1;
-+			nr[l] = zone->nr_scan[l];
- 			if (nr[l] >= sc->swap_cluster_max)
- 				zone->nr_scan[l] = 0;
- 			else
+The location of nmi_exit in the patch is clearly wrong.  crash_kexec is a noop
+if we don't have a crash kernel loaded (and if we are not the first cpu into it),
+so if we don't execute the crash code something weird may happen.  Further the
+code is just more maintainable if that kind of code lives in machine_crash_shutdown.
 
+
+
+Eric
