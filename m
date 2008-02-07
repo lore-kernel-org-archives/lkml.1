@@ -1,733 +1,725 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbYBGTLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbYBGTMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761247AbYBGTLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 14:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbYBGTLb
+	id S1761548AbYBGTMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 14:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761393AbYBGTL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 14:11:31 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:39189 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759257AbYBGTL3 (ORCPT
+	Thu, 7 Feb 2008 14:11:58 -0500
+Received: from submit01.sysedata.no ([195.159.29.244]:61167 "EHLO
+	submit01.sysedata.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761389AbYBGTL4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 14:11:29 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: "Oyvind Aabling" <Oyvind.Aabling@uni-c.dk>
-Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
-Subject: [RFT 1/9] Char: moxa, merge 2 poll functions
-Date: Thu,  7 Feb 2008 20:11:17 +0100
-Message-Id: <1202411485-16022-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.3.8
+	Thu, 7 Feb 2008 14:11:56 -0500
+X-Greylist: delayed 2022 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Feb 2008 14:11:55 EST
+Message-ID: <47AB5012.20509@db.org>
+Date: Thu, 07 Feb 2008 19:38:10 +0100
+From: "Alfred E. Heggestad" <aeh@db.org>
+User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+MIME-Version: 1.0
+To: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] input: driver for USB VoIP phones with CM109 chipset
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- merge 2 timers into one -- one can handle the emptywait as good as the other
-- merge 2 separated poll functions into one, this allows handle the actions
-  directly and simplifies the code
+From: Alfred E. Heggestad <aeh@db.org>
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+This driver adds support for USB VoIP phones using the CM109 chipset,
+such as Komunikate KIP-1000 and Genius G-talk. Keypad is scanned and
+events are reported to the input subsystem. The buzzer can be activated
+by sending SND_TONE or SND_BELL to the input device. The phone keymap
+can be selected in run-time by using the "phone" module parameter.
+The driver has been tested with linux 2.6.24 on i386, and also tested
+to build cleanly on AMD64.
+More testing and code review is welcome..
+
+
+Signed-off-by: Alfred E. Heggestad <aeh@db.org>
+
 ---
- drivers/char/moxa.c |  422 +++++++++++++++++----------------------------------
- drivers/char/moxa.h |   10 +-
- 2 files changed, 142 insertions(+), 290 deletions(-)
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index b61d14a..bdd5fd9 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -129,25 +129,22 @@ struct moxaq_str {
- 
- struct moxa_port {
- 	struct moxa_board_conf *board;
-+	struct tty_struct *tty;
-+	void __iomem *tableAddr;
+diff -uprN -X linux-2.6.24/Documentation/dontdiff linux-2.6.24-orig/drivers/input/misc/cm109.c linux-2.6.24/drivers/input/misc/cm109.c
+--- linux-2.6.24-orig/drivers/input/misc/cm109.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.24/drivers/input/misc/cm109.c	2008-02-07 19:13:52.000000000 +0100
+@@ -0,0 +1,646 @@
++/*
++ * Driver for the VoIP USB phones with CM109 chipsets.
++ *
++ * Copyright (C) 2007 - 2008 Alfred E. Heggestad <aeh@db.org>
++ *
++ *	This program is free software; you can redistribute it and/or
++ *	modify it under the terms of the GNU General Public License as
++ *	published by the Free Software Foundation, version 2.
++ */
 +
- 	int type;
- 	int close_delay;
- 	int count;
- 	int blocked_open;
- 	int asyncflags;
--	unsigned long statusflags;
--	struct tty_struct *tty;
- 	int cflag;
-+	unsigned long statusflags;
- 	wait_queue_head_t open_wait;
- 	struct completion close_wait;
- 
--	struct timer_list emptyTimer;
--
--	char lineCtrl;
--	void __iomem *tableAddr;
--	char DCDState;
--	char lowChkFlag;
--
--	ushort breakCnt;
-+	u8 DCDState;
-+	u8 lineCtrl;
-+	u8 lowChkFlag;
- };
- 
- struct mon_str {
-@@ -169,6 +166,7 @@ struct mon_str {
- static int ttymajor = MOXAMAJOR;
- static struct mon_str moxaLog;
- static unsigned int moxaFuncTout = HZ / 2;
-+static unsigned int moxaLowWaterChk;
- /* Variables for insmod */
- #ifdef MODULE
- static unsigned long baseaddr[MAX_BOARDS];
-@@ -214,13 +212,10 @@ static void moxa_set_tty_param(struct tty_struct *, struct ktermios *);
- static int moxa_block_till_ready(struct tty_struct *, struct file *,
- 			    struct moxa_port *);
- static void moxa_setup_empty_event(struct tty_struct *);
--static void moxa_check_xmit_empty(unsigned long);
- static void moxa_shut_down(struct moxa_port *);
--static void moxa_receive_data(struct moxa_port *);
- /*
-  * moxa board interface functions:
-  */
--static int MoxaDriverPoll(void);
- static void MoxaPortEnable(struct moxa_port *);
- static void MoxaPortDisable(struct moxa_port *);
- static int MoxaPortSetTermio(struct moxa_port *, struct ktermios *, speed_t);
-@@ -228,17 +223,14 @@ static int MoxaPortGetLineOut(struct moxa_port *, int *, int *);
- static void MoxaPortLineCtrl(struct moxa_port *, int, int);
- static void MoxaPortFlowCtrl(struct moxa_port *, int, int, int, int, int);
- static int MoxaPortLineStatus(struct moxa_port *);
--static int MoxaPortDCDChange(struct moxa_port *);
--static int MoxaPortDCDON(struct moxa_port *);
- static void MoxaPortFlushData(struct moxa_port *, int);
- static int MoxaPortWriteData(struct moxa_port *, unsigned char *, int);
--static int MoxaPortReadData(struct moxa_port *, struct tty_struct *tty);
-+static int MoxaPortReadData(struct moxa_port *);
- static int MoxaPortTxQueue(struct moxa_port *);
- static int MoxaPortRxQueue(struct moxa_port *);
- static int MoxaPortTxFree(struct moxa_port *);
- static void MoxaPortTxDisable(struct moxa_port *);
- static void MoxaPortTxEnable(struct moxa_port *);
--static int MoxaPortResetBrkCnt(struct moxa_port *);
- static int moxa_get_serial_info(struct moxa_port *, struct serial_struct __user *);
- static int moxa_set_serial_info(struct moxa_port *, struct serial_struct __user *);
- static void MoxaSetFifo(struct moxa_port *port, int enable);
-@@ -265,6 +257,20 @@ static void moxafunc(void __iomem *ofsAddr, int cmd, ushort arg)
- 	moxa_wait_finish(ofsAddr);
- }
- 
-+static void moxa_low_water_check(void __iomem *ofsAddr)
++/*
++ *   Tested devices:
++ *	- Komunikate KIP1000
++ *	- Genius G-talk
++ *	- ...
++ *
++ * This driver is based on the yealink.c driver
++ *
++ * Thanks to:
++ *   - Authors of yealink.c
++ *   - Thomas Reitmayr
++ *   - Oliver Neukum for good review comments
++ *   - Shaun Jackman <sjackman@gmail.com> for Genius G-talk keymap
++ *
++ * Todo:
++ *   - Read/write EEPROM
++ *   - Report input events volume up/down
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/rwsem.h>
++#include <linux/usb/input.h>
++
++/* #define CM109_DEBUG 1 */
++
++#define DRIVER_VERSION "20080205"
++#define DRIVER_AUTHOR  "Alfred E. Heggestad"
++#define DRIVER_DESC    "CM109 phone driver"
++
++static char *phone = "kip1000";
++module_param(phone, charp, S_IRUSR);
++MODULE_PARM_DESC(phone, "Phone name {kip1000, gtalk}");
++
++
++enum {
++	/* HID Registers */
++	HID_IR0 = 0x00, /* Record/Playback-mute button, Volume up/down  */
++	HID_IR1 = 0x01, /* GPI, generic registers or EEPROM_DATA0       */
++	HID_IR2 = 0x02, /* Generic registers or EEPROM_DATA1            */
++	HID_IR3 = 0x03, /* Generic registers or EEPROM_CTRL             */
++	HID_OR0 = 0x00, /* Mapping control, buzzer, SPDIF (offset 0x04) */
++	HID_OR1 = 0x01, /* GPO - General Purpose Output                 */
++	HID_OR2 = 0x02, /* Set GPIO to input/output mode                */
++	HID_OR3 = 0x03, /* SPDIF status channel or EEPROM_CTRL          */
++
++	/* HID_IR0 */
++	RECORD_MUTE   = 1 << 3,
++	PLAYBACK_MUTE = 1 << 2,
++	VOLUME_DOWN   = 1 << 1,
++	VOLUME_UP     = 1 << 0,
++
++	/* HID_OR0 */
++	/* bits 7-6
++	   0: HID_OR1-2 are used for GPO; HID_OR0, 3 are used for buzzer
++	      and SPDIF
++	   1: HID_OR0-3 are used as generic HID registers
++	   2: Values written to HID_OR0-3 are also mapped to MCU_CTRL,
++	      EEPROM_DATA0-1, EEPROM_CTRL (see Note)
++	   3: Reserved
++	 */
++	HID_OR_GPO_BUZ_SPDIF   = 0 << 6,
++	HID_OR_GENERIC_HID_REG = 1 << 6,
++	HID_OR_MAP_MCU_EEPROM  = 2 << 6,
++
++	BUZZER_ON = 1 << 5,
++};
++
++/* CM109 protocol packet */
++struct cm109_ctl_packet {
++	u8 byte[4];
++} __attribute__ ((packed));
++
++enum {USB_PKT_LEN = sizeof(struct cm109_ctl_packet)};
++
++/* CM109 device structure */
++struct cm109_dev {
++	struct input_dev *idev;	 /* input device */
++	struct usb_device *udev; /* usb device */
++
++	/* irq input channel */
++	struct cm109_ctl_packet *irq_data;
++	dma_addr_t irq_dma;
++	struct urb *urb_irq;
++
++	/* control output channel */
++	struct cm109_ctl_packet *ctl_data;
++	dma_addr_t ctl_dma;
++	struct usb_ctrlrequest *ctl_req;
++	dma_addr_t ctl_req_dma;
++	struct urb *urb_ctl;
++
++	spinlock_t submit_lock;
++	int disconnecting;
++
++	char phys[64];		/* physical device path */
++	int key_code;		/* last reported key */
++	int keybit;		/* 0=new scan  1,2,4,8=scan columns  */
++	u8 gpi;			/* Cached value of GPI (high nibble) */
++};
++
++/*******************************************************************************
++ * CM109 key interface
++ ******************************************************************************/
++
++
++/* Map device buttons to internal key events.
++ *
++ * The "up" and "down" keys, are symbolised by arrows on the button.
++ * The "pickup" and "hangup" keys are symbolised by a green and red phone
++ * on the button.
++
++ Komunikate KIP1000 Keyboard Matrix
++
++     -> -- 1 -- 2 -- 3  --> GPI pin 4 (0x10)
++      |    |    |    |
++     <- -- 4 -- 5 -- 6  --> GPI pin 5 (0x20)
++      |    |    |    |
++     END - 7 -- 8 -- 9  --> GPI pin 6 (0x40)
++      |    |    |    |
++     OK -- * -- 0 -- #  --> GPI pin 7 (0x80)
++      |    |    |    |
++
++     /|\  /|\  /|\  /|\
++      |    |    |    |
++GPO
++pin:  3    2    1    0
++     0x8  0x4  0x2  0x1
++
++ */
++static int keymap_kip1000(int scancode)
 +{
-+	u16 rptr, wptr, mask, len;
-+
-+	if (readb(ofsAddr + FlagStat) & Xoff_state) {
-+		rptr = readw(ofsAddr + RXrptr);
-+		wptr = readw(ofsAddr + RXwptr);
-+		mask = readw(ofsAddr + RX_mask);
-+		len = (wptr - rptr) & mask;
-+		if (len <= Low_water)
-+			moxafunc(ofsAddr, FC_SendXon, 0);
++	switch (scancode) {				/* phone key:   */
++	case 0x82: return KEY_0;			/*   0          */
++	case 0x14: return KEY_1;			/*   1          */
++	case 0x12: return KEY_2;			/*   2          */
++	case 0x11: return KEY_3;			/*   3          */
++	case 0x24: return KEY_4;			/*   4          */
++	case 0x22: return KEY_5;			/*   5          */
++	case 0x21: return KEY_6;			/*   6          */
++	case 0x44: return KEY_7;			/*   7          */
++	case 0x42: return KEY_8;			/*   8          */
++	case 0x41: return KEY_9;			/*   9          */
++	case 0x81: return KEY_LEFTSHIFT | KEY_3 << 8;	/*   #          */
++	case 0x84: return KEY_KPASTERISK;		/*   *          */
++	case 0x88: return KEY_ENTER;			/*   pickup     */
++	case 0x48: return KEY_ESC;			/*   hangup     */
++	case 0x28: return KEY_LEFT;			/*   IN         */
++	case 0x18: return KEY_RIGHT;			/*   OUT        */
 +	}
++	return -EINVAL;
 +}
 +
- /*
-  * TTY operations
-  */
-@@ -812,9 +818,6 @@ static int moxa_init_board(struct moxa_board_conf *brd, struct device *dev)
- 		p->cflag = B9600 | CS8 | CREAD | CLOCAL | HUPCL;
- 		init_waitqueue_head(&p->open_wait);
- 		init_completion(&p->close_wait);
--
--		setup_timer(&p->emptyTimer, moxa_check_xmit_empty,
--				(unsigned long)p);
- 	}
- 
- 	switch (brd->boardType) {
-@@ -857,12 +860,9 @@ err:
- 
- static void moxa_board_deinit(struct moxa_board_conf *brd)
- {
--	unsigned int i;
--
-+	spin_lock_bh(&moxa_lock);
- 	brd->ready = 0;
--	for (i = 0; i < MAX_PORTS_PER_BOARD; i++)
--		del_timer_sync(&brd->ports[i].emptyTimer);
--
-+	spin_unlock_bh(&moxa_lock);
- 	iounmap(brd->basemem);
- 	brd->basemem = NULL;
- 	kfree(brd->ports);
-@@ -1134,7 +1134,6 @@ static void moxa_close(struct tty_struct *tty, struct file *filp)
- 	if (ch->asyncflags & ASYNC_INITIALIZED) {
- 		moxa_setup_empty_event(tty);
- 		tty_wait_until_sent(tty, 30 * HZ);	/* 30 seconds timeout */
--		del_timer_sync(&ch->emptyTimer);
- 	}
- 	moxa_shut_down(ch);
- 	MoxaPortFlushData(ch, 2);
-@@ -1159,15 +1158,14 @@ static int moxa_write(struct tty_struct *tty,
- 		      const unsigned char *buf, int count)
- {
- 	struct moxa_port *ch = tty->driver_data;
--	unsigned long flags;
- 	int len;
- 
- 	if (ch == NULL)
- 		return 0;
- 
--	spin_lock_irqsave(&moxa_lock, flags);
-+	spin_lock_bh(&moxa_lock);
- 	len = MoxaPortWriteData(ch, (unsigned char *) buf, count);
--	spin_unlock_irqrestore(&moxa_lock, flags);
-+	spin_unlock_bh(&moxa_lock);
- 
- 	/*********************************************
- 	if ( !(ch->statusflags & LOWWAIT) &&
-@@ -1235,13 +1233,12 @@ static void moxa_flush_chars(struct tty_struct *tty)
- static void moxa_put_char(struct tty_struct *tty, unsigned char c)
- {
- 	struct moxa_port *ch = tty->driver_data;
--	unsigned long flags;
- 
- 	if (ch == NULL)
- 		return;
--	spin_lock_irqsave(&moxa_lock, flags);
-+	spin_lock_bh(&moxa_lock);
- 	MoxaPortWriteData(ch, &c, 1);
--	spin_unlock_irqrestore(&moxa_lock, flags);
-+	spin_unlock_bh(&moxa_lock);
- 	/************************************************
- 	if ( !(ch->statusflags & LOWWAIT) && (MoxaPortTxFree(port) <= 100) )
- 	*************************************************/
-@@ -1359,58 +1356,111 @@ static void moxa_hangup(struct tty_struct *tty)
- 	wake_up_interruptible(&ch->open_wait);
- }
- 
--static void moxa_poll(unsigned long ignored)
-+static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
- {
--	struct moxa_port *ch;
--	struct tty_struct *tty;
--	unsigned int card;
--	int i;
-+	dcd = !!dcd;
- 
--	del_timer(&moxaTimer);
-+	if ((dcd != p->DCDState) && p->tty && C_CLOCAL(p->tty)) {
-+		if (!dcd) {
-+			tty_hangup(p->tty);
-+			p->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
-+		}
-+		wake_up_interruptible(&p->open_wait);
-+	}
-+	p->DCDState = dcd;
-+}
- 
--	if (MoxaDriverPoll() < 0) {
--		mod_timer(&moxaTimer, jiffies + HZ / 50);
--		return;
-+static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
-+		u16 __iomem *ip)
++/*
++  Contributed by Shaun Jackman <sjackman@gmail.com>
++
++  Genius G-Talk keyboard matrix
++     0 1 2 3
++  4: 0 4 8 Talk
++  5: 1 5 9 End
++  6: 2 6 # Up
++  7: 3 7 * Down
++*/
++static int keymap_gtalk(int scancode)
 +{
-+	struct tty_struct *tty = p->tty;
-+	void __iomem *ofsAddr;
-+	u16 intr;
++	switch (scancode) {
++	case 0x11: return KEY_0;
++	case 0x21: return KEY_1;
++	case 0x41: return KEY_2;
++	case 0x81: return KEY_3;
++	case 0x12: return KEY_4;
++	case 0x22: return KEY_5;
++	case 0x42: return KEY_6;
++	case 0x82: return KEY_7;
++	case 0x14: return KEY_8;
++	case 0x24: return KEY_9;
++	case 0x44: return KEY_LEFTSHIFT | KEY_3 << 8; /* # */
++	case 0x84: return KEY_KPASTERISK;
++	case 0x18: return KEY_ENTER; /* Talk (green handset) */
++	case 0x28: return KEY_ESC; /* End (red handset) */
++	case 0x48: return KEY_UP; /* Menu up (rocker switch) */
++	case 0x88: return KEY_DOWN; /* Menu down (rocker switch) */
++	}
++	return -EINVAL;
++}
 +
-+	if (tty) {
-+		if ((p->statusflags & EMPTYWAIT) &&
-+				MoxaPortTxQueue(p) == 0) {
-+			p->statusflags &= ~EMPTYWAIT;
-+			tty_wakeup(tty);
-+		}
-+		if ((p->statusflags & LOWWAIT) && !tty->stopped &&
-+				MoxaPortTxQueue(p) <= WAKEUP_CHARS) {
-+			p->statusflags &= ~LOWWAIT;
-+			tty_wakeup(tty);
-+		}
-+	} else
-+		p->statusflags &= ~EMPTYWAIT;
++static int (*keymap)(int) = keymap_kip1000;
 +
-+	if (!handle) /* nothing to do */
-+		return 0;
 +
-+	intr = readw(ip); /* port irq status */
-+	if (intr == 0)
-+		return 0;
++/* Completes a request by converting the data into events for the
++ * input subsystem.
++ *
++ * The key parameter can be cascaded: key2 << 8 | key1
++ */
++static void report_key(struct cm109_dev *dev, int key)
++{
++	struct input_dev *idev = dev->idev;
 +
-+	writew(0, ip); /* ACK port */
-+	ofsAddr = p->tableAddr;
-+	if (intr & IntrTx) /* disable tx intr */
-+		writew(readw(ofsAddr + HostStat) & ~WakeupTx,
-+				ofsAddr + HostStat);
-+
-+	if ((p->asyncflags & ASYNC_INITIALIZED) == 0)
-+		return 0;
-+
-+	if (!tty) { /* discard data, nobody wants them, catch dcd change */
-+		MoxaPortFlushData(p, 0);
-+		goto end;
++	if (dev->key_code >= 0) {
++		/* old key up */
++		input_report_key(idev, dev->key_code & 0xff, 0);
++		if (dev->key_code >> 8)
++			input_report_key(idev, dev->key_code >> 8, 0);
 +	}
 +
-+	if (!(p->statusflags & THROTTLE) && MoxaPortRxQueue(p) > 0) { /* RX */
-+		MoxaPortReadData(p);
-+		tty_schedule_flip(tty);
++	dev->key_code = key;
++	if (key >= 0) {
++		/* new valid key */
++		input_report_key(idev, key & 0xff, 1);
++		if (key >> 8)
++			input_report_key(idev, key >> 8, 1);
++	}
++	input_sync(idev);
++}
++
++/*******************************************************************************
++ * CM109 usb communication interface
++ ******************************************************************************/
++
++
++/*
++ * IRQ handler
++ */
++static void urb_irq_callback(struct urb *urb)
++{
++	struct cm109_dev *dev = urb->context;
++	int ret;
++
++#ifdef CM109_DEBUG
++	dbg("### URB IRQ: [0x%02x 0x%02x 0x%02x 0x%02x] keybit=0x%02x",
++	    dev->irq_data->byte[0],
++	    dev->irq_data->byte[1],
++	    dev->irq_data->byte[2],
++	    dev->irq_data->byte[3],
++	    dev->keybit);
++#endif
++
++	if (urb->status) {
++		if (-ESHUTDOWN == urb->status)
++			return;
++		err("%s - urb status %d", __FUNCTION__, urb->status);
 +	}
 +
-+	if ((intr & IntrBreak) && !I_IGNBRK(tty)) { /* BREAK */
-+		tty_insert_flip_char(tty, 0, TTY_BREAK);
-+		tty_schedule_flip(tty);
- 	}
-+end:
-+	if (intr & IntrLine)
-+		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
- 
++	/* Scan key column */
++	if (0xf == dev->keybit) {
++
++		/* Any changes ? */
++		if ((dev->gpi & 0xf0) == (dev->irq_data->byte[HID_IR1] & 0xf0)) {
++			goto out;
++		}
++
++		dev->gpi = dev->irq_data->byte[HID_IR1] & 0xf0;
++
++		dev->keybit = 0x1;
++	} else {
++		report_key(dev, keymap(dev->irq_data->byte[HID_IR1]));
++
++		dev->keybit <<= 1;
++		if (dev->keybit > 0x8)
++			dev->keybit = 0xf;
++	}
++
++	dev->ctl_data->byte[HID_OR1] = dev->keybit;
++	dev->ctl_data->byte[HID_OR2] = dev->keybit;
++
++      out:
++	ret = usb_submit_urb(dev->urb_ctl, GFP_ATOMIC);
++	if (ret)
++		err("%s - usb_submit_urb failed %d", __FUNCTION__, ret);
++}
++
++static void urb_ctl_callback(struct urb *urb)
++{
++	struct cm109_dev *dev = urb->context;
++	int ret = 0;
++
++#ifdef CM109_DEBUG
++	dbg("### URB CTL: [0x%02x 0x%02x 0x%02x 0x%02x]",
++	    dev->ctl_data->byte[0],
++	    dev->ctl_data->byte[1],
++	    dev->ctl_data->byte[2],
++	    dev->ctl_data->byte[3]);
++#endif
++
++	if (urb->status)
++		err("%s - urb status %d", __FUNCTION__, urb->status);
++
++	spin_lock(&dev->submit_lock);
++	/* ask for a response */
++	if (!dev->disconnecting)
++		ret = usb_submit_urb(dev->urb_irq, GFP_ATOMIC);
++	spin_unlock(&dev->submit_lock);
++
++	if (ret)
++		err("%s - usb_submit_urb failed %d", __FUNCTION__, ret);
++}
++
++/*******************************************************************************
++ * input event interface
++ ******************************************************************************/
++
++static DEFINE_SPINLOCK(cm109_buzz_lock);
++
++static int input_open(struct input_dev *idev)
++{
++	struct cm109_dev *dev = input_get_drvdata(idev);
++	int ret;
++
++	dev->key_code = -1;	/* no keys pressed */
++	dev->keybit = 0xf;
++
++	/* issue INIT */
++	dev->ctl_data->byte[HID_OR0] = HID_OR_GPO_BUZ_SPDIF;
++	dev->ctl_data->byte[HID_OR1] = dev->keybit;
++	dev->ctl_data->byte[HID_OR2] = dev->keybit;
++	dev->ctl_data->byte[HID_OR3] = 0x00;
++
++	if ((ret = usb_submit_urb(dev->urb_ctl, GFP_KERNEL)) != 0) {
++		err("%s - usb_submit_urb failed with result %d",
++		    __FUNCTION__, ret);
++		return ret;
++	}
++
 +	return 0;
 +}
 +
-+static void moxa_poll(unsigned long ignored)
++static void input_close(struct input_dev *idev)
 +{
-+	struct moxa_board_conf *brd;
-+	u16 __iomem *ip;
-+	unsigned int card, port;
++	struct cm109_dev *dev = input_get_drvdata(idev);
 +
-+	spin_lock(&moxa_lock);
- 	for (card = 0; card < MAX_BOARDS; card++) {
--		if (!moxa_boards[card].ready)
-+		brd = &moxa_boards[card];
-+		if (!brd->ready)
- 			continue;
--		ch = moxa_boards[card].ports;
--		for (i = 0; i < moxa_boards[card].numPorts; i++, ch++) {
--			if ((ch->asyncflags & ASYNC_INITIALIZED) == 0)
--				continue;
--			if (!(ch->statusflags & THROTTLE) &&
--			    (MoxaPortRxQueue(ch) > 0))
--				moxa_receive_data(ch);
--			tty = ch->tty;
--			if (tty == NULL)
--				continue;
--			if (ch->statusflags & LOWWAIT) {
--				if (MoxaPortTxQueue(ch) <= WAKEUP_CHARS) {
--					if (!tty->stopped) {
--						ch->statusflags &= ~LOWWAIT;
--						tty_wakeup(tty);
--					}
--				}
--			}
--			if (!I_IGNBRK(tty) && (MoxaPortResetBrkCnt(ch) > 0)) {
--				tty_insert_flip_char(tty, 0, TTY_BREAK);
--				tty_schedule_flip(tty);
--			}
--			if (MoxaPortDCDChange(ch)) {
--				if (ch->asyncflags & ASYNC_CHECK_CD) {
--					if (MoxaPortDCDON(ch))
--						wake_up_interruptible(&ch->open_wait);
--					else {
--						tty_hangup(tty);
--						wake_up_interruptible(&ch->open_wait);
--						ch->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
--					}
++	usb_kill_urb(dev->urb_ctl);
++	usb_kill_urb(dev->urb_irq);
++}
 +
-+		ip = NULL;
-+		if (readb(brd->intPend) == 0xff)
-+			ip = brd->intTable + readb(brd->intNdx);
++static void buzz(struct cm109_dev *dev, int on)
++{
++	int ret;
 +
-+		for (port = 0; port < brd->numPorts; port++)
-+			moxa_poll_port(&brd->ports[port], !!ip, ip + port);
++	if (dev == NULL) {
++		err("buzz: dev is NULL");
++		return;
++	}
 +
-+		if (ip)
-+			writeb(0, brd->intPend); /* ACK */
++	dbg("Buzzer %s", on ? "on" : "off");
++	if (on)
++		dev->ctl_data->byte[HID_OR0] |= BUZZER_ON;
++	else
++		dev->ctl_data->byte[HID_OR0] &= ~BUZZER_ON;
 +
-+		if (moxaLowWaterChk) {
-+			struct moxa_port *p = brd->ports;
-+			for (port = 0; port < brd->numPorts; port++, p++)
-+				if (p->lowChkFlag) {
-+					p->lowChkFlag = 0;
-+					moxa_low_water_check(p->tableAddr);
- 				}
--			}
- 		}
- 	}
-+	moxaLowWaterChk = 0;
-+	spin_unlock(&moxa_lock);
++	ret = usb_submit_urb(dev->urb_ctl, GFP_ATOMIC);
++	if (ret)
++		err("%s - usb_submit_urb failed %d", __FUNCTION__, ret);
++}
++
++static int input_ev(struct input_dev *idev, unsigned int type,
++		    unsigned int code, int value)
++{
++	struct cm109_dev *dev = input_get_drvdata(idev);
++	unsigned long flags;
++
++#ifdef CM109_DEBUG
++	info("input_ev: type=%u code=%u value=%d", type, code, value);
++#endif
++
++	if (type != EV_SND)
++		return -EINVAL;
++
++	switch (code) {
++	case SND_TONE:
++	case SND_BELL:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	spin_lock_irqsave(&cm109_buzz_lock, flags);
++	buzz(dev, value);
++	spin_unlock_irqrestore(&cm109_buzz_lock, flags);
++
++	return 0;
++}
++
++
++/*******************************************************************************
++ * Linux interface and usb initialisation
++ ******************************************************************************/
++
++struct driver_info {
++	char *name;
++};
++
++static const struct driver_info info_cm109 = {
++	.name = "CM109 USB driver",
++};
++
++enum {
++	VENDOR_ID        = 0x0d8c, /* C-Media Electronics */
++	PRODUCT_ID_CM109 = 0x000e, /* CM109 defines range 0x0008 - 0x000f */
++};
++
++/* table of devices that work with this driver */
++static const struct usb_device_id usb_table[] = {
++	{
++	 .match_flags = USB_DEVICE_ID_MATCH_DEVICE |
++	 USB_DEVICE_ID_MATCH_INT_INFO,
++	 .idVendor = VENDOR_ID,
++	 .idProduct = PRODUCT_ID_CM109,
++	 .bInterfaceClass = USB_CLASS_HID,
++	 .bInterfaceSubClass = 0,
++	 .bInterfaceProtocol = 0,
++	 .driver_info = (kernel_ulong_t) & info_cm109},
++	/* you can add more devices here with product ID 0x0008 - 0x000f */
++	{}
++};
++
++static int usb_cleanup(struct cm109_dev *dev, int err)
++{
++	if (dev == NULL)
++		return err;
++
++	usb_kill_urb(dev->urb_irq);	/* parameter validation in core/urb */
++	usb_kill_urb(dev->urb_ctl);	/* parameter validation in core/urb */
++
++	if (dev->idev) {
++		if (err)
++			input_free_device(dev->idev);
++		else
++			input_unregister_device(dev->idev);
++	}
++	if (dev->ctl_req)
++		usb_buffer_free(dev->udev, sizeof(*(dev->ctl_req)),
++				dev->ctl_req, dev->ctl_req_dma);
++	if (dev->ctl_data)
++		usb_buffer_free(dev->udev, USB_PKT_LEN,
++				dev->ctl_data, dev->ctl_dma);
++	if (dev->irq_data)
++		usb_buffer_free(dev->udev, USB_PKT_LEN,
++				dev->irq_data, dev->irq_dma);
++
++	usb_free_urb(dev->urb_irq);	/* parameter validation in core/urb */
++	usb_free_urb(dev->urb_ctl);	/* parameter validation in core/urb */
++	kfree(dev);
++
++	return err;
++}
++
++static void usb_disconnect(struct usb_interface *interface)
++{
++	struct cm109_dev *dev;
++
++	dev = usb_get_intfdata(interface);
++
++	/* Wait for URB idle */
++	spin_lock_irq(&dev->submit_lock);
++	dev->disconnecting = 1;
++	spin_unlock_irq(&dev->submit_lock);
++
++	usb_set_intfdata(interface, NULL);
++
++	usb_cleanup(dev, 0);
++}
++
++static int usb_probe(struct usb_interface *intf, const struct usb_device_id *id)
++{
++	struct usb_device *udev = interface_to_usbdev(intf);
++	struct driver_info *nfo = (struct driver_info *)id->driver_info;
++	struct usb_host_interface *interface;
++	struct usb_endpoint_descriptor *endpoint;
++	struct cm109_dev *dev;
++	struct input_dev *input_dev;
++	int ret, pipe, i;
++
++	interface = intf->cur_altsetting;
++	endpoint = &interface->endpoint[0].desc;
++
++	if (!usb_endpoint_is_int_in(endpoint))
++		return -ENODEV;
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev)
++		return -ENOMEM;
++
++	spin_lock_init(&dev->submit_lock);
++	dev->disconnecting = 0;
++
++	dev->udev = udev;
++
++	dev->idev = input_dev = input_allocate_device();
++	if (!input_dev)
++		goto err;
++
++	/* allocate usb buffers */
++	dev->irq_data = usb_buffer_alloc(udev, USB_PKT_LEN,
++					 GFP_KERNEL, &dev->irq_dma);
++	if (dev->irq_data == NULL)
++		goto err;
++
++	dev->ctl_data = usb_buffer_alloc(udev, USB_PKT_LEN,
++					 GFP_KERNEL, &dev->ctl_dma);
++	if (!dev->ctl_data)
++		goto err;
++
++	dev->ctl_req = usb_buffer_alloc(udev, sizeof(*(dev->ctl_req)),
++					GFP_KERNEL, &dev->ctl_req_dma);
++	if (dev->ctl_req == NULL)
++		goto err;
++
++	/* allocate urb structures */
++	dev->urb_irq = usb_alloc_urb(0, GFP_KERNEL);
++	if (dev->urb_irq == NULL)
++		goto err;
++
++	dev->urb_ctl = usb_alloc_urb(0, GFP_KERNEL);
++	if (dev->urb_ctl == NULL)
++		goto err;
++
++	/* get a handle to the interrupt data pipe */
++	pipe = usb_rcvintpipe(udev, endpoint->bEndpointAddress);
++	ret = usb_maxpacket(udev, pipe, usb_pipeout(pipe));
++	if (ret != USB_PKT_LEN)
++		err("invalid payload size %d, expected %d", ret, USB_PKT_LEN);
++
++	/* initialise irq urb */
++	usb_fill_int_urb(dev->urb_irq, udev, pipe, dev->irq_data,
++			 USB_PKT_LEN,
++			 urb_irq_callback, dev, endpoint->bInterval);
++	dev->urb_irq->transfer_dma = dev->irq_dma;
++	dev->urb_irq->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
++	dev->urb_irq->dev = udev;
++
++	/* initialise ctl urb */
++	dev->ctl_req->bRequestType = USB_TYPE_CLASS | USB_RECIP_INTERFACE |
++	    USB_DIR_OUT;
++	dev->ctl_req->bRequest = USB_REQ_SET_CONFIGURATION;
++	dev->ctl_req->wValue = cpu_to_le16(0x200);
++	dev->ctl_req->wIndex = cpu_to_le16(interface->desc.bInterfaceNumber);
++	dev->ctl_req->wLength = cpu_to_le16(USB_PKT_LEN);
++
++	usb_fill_control_urb(dev->urb_ctl, udev, usb_sndctrlpipe(udev, 0),
++			     (void *)dev->ctl_req, dev->ctl_data, USB_PKT_LEN,
++			     urb_ctl_callback, dev);
++	dev->urb_ctl->setup_dma = dev->ctl_req_dma;
++	dev->urb_ctl->transfer_dma = dev->ctl_dma;
++	dev->urb_ctl->transfer_flags |= URB_NO_SETUP_DMA_MAP |
++	    URB_NO_TRANSFER_DMA_MAP;
++	dev->urb_ctl->dev = udev;
++
++	/* find out the physical bus location */
++	usb_make_path(udev, dev->phys, sizeof(dev->phys));
++	strlcat(dev->phys, "/input0", sizeof(dev->phys));
++
++	/* register settings for the input device */
++	input_dev->name = nfo->name;
++	input_dev->phys = dev->phys;
++	usb_to_input_id(udev, &input_dev->id);
++	input_dev->dev.parent = &intf->dev;
++
++	input_set_drvdata(input_dev, dev);
++	input_dev->open = input_open;
++	input_dev->close = input_close;
++	input_dev->event = input_ev;
++
++	/* register available key events */
++	input_dev->evbit[0] = BIT_MASK(EV_KEY);
++	for (i = 0; i < 256; i++) {
++		int k = keymap(i);
++		if (k >= 0) {
++			set_bit(k & 0xff, input_dev->keybit);
++			if (k >> 8)
++				set_bit(k >> 8, input_dev->keybit);
++		}
++	}
++
++	input_dev->evbit[0] |= BIT_MASK(EV_SND);
++	input_dev->sndbit[0] = BIT_MASK(SND_BELL) | BIT_MASK(SND_TONE);
++
++	ret = input_register_device(dev->idev);
++	if (ret)
++		goto err;
++
++	usb_set_intfdata(intf, dev);
++
++	return 0;
++
++      err:
++	return usb_cleanup(dev, -ENOMEM);
++}
++
++static struct usb_driver cm109_driver = {
++	.name       = "cm109",
++	.probe      = usb_probe,
++	.disconnect = usb_disconnect,
++	.id_table   = usb_table,
++};
++
++static int __init cm109_dev_init(void)
++{
++	int ret;
++
++	/* Load the phone keymap */
++	if (0 == strcasecmp(phone, "kip1000")) {
++		keymap = keymap_kip1000;
++		info("Keymap for Komunikate KIP1000 phone loaded");
++	}
++	else if (0 == strcasecmp(phone, "gtalk")) {
++		keymap = keymap_gtalk;
++		info("Keymap for Genius G-talk phone loaded");
++	}
++	else {
++		err("Unsupported phone: %s", phone);
++		return -EINVAL;
++	}
++
++	ret = usb_register(&cm109_driver);
++	if (ret == 0)
++		info(DRIVER_DESC ": " DRIVER_VERSION " (C) " DRIVER_AUTHOR);
++
++	return ret;
++}
++
++static void __exit cm109_dev_exit(void)
++{
++	usb_deregister(&cm109_driver);
++}
++
++module_init(cm109_dev_init);
++module_exit(cm109_dev_exit);
++
++MODULE_DEVICE_TABLE(usb, usb_table);
++
++MODULE_AUTHOR(DRIVER_AUTHOR);
++MODULE_DESCRIPTION(DRIVER_DESC);
++MODULE_LICENSE("GPL");
+diff -uprN -X linux-2.6.24/Documentation/dontdiff linux-2.6.24-orig/drivers/input/misc/Kconfig linux-2.6.24/drivers/input/misc/Kconfig
+--- linux-2.6.24-orig/drivers/input/misc/Kconfig	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24/drivers/input/misc/Kconfig	2008-02-07 19:14:26.000000000 +0100
+@@ -166,6 +166,18 @@ config INPUT_YEALINK
+ 	  To compile this driver as a module, choose M here: the module will be
+ 	  called yealink.
  
- 	mod_timer(&moxaTimer, jiffies + HZ / 50);
- }
-@@ -1425,10 +1475,6 @@ static void moxa_set_tty_param(struct tty_struct *tty, struct ktermios *old_term
- 
- 	ch = (struct moxa_port *) tty->driver_data;
- 	ts = tty->termios;
--	if (ts->c_cflag & CLOCAL)
--		ch->asyncflags &= ~ASYNC_CHECK_CD;
--	else
--		ch->asyncflags |= ASYNC_CHECK_CD;
- 	rts = cts = txflow = rxflow = xany = 0;
- 	if (ts->c_cflag & CRTSCTS)
- 		rts = cts = 1;
-@@ -1453,7 +1499,6 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- 			    struct moxa_port *ch)
- {
- 	DECLARE_WAITQUEUE(wait,current);
--	unsigned long flags;
- 	int retval;
- 	int do_clocal = C_CLOCAL(tty);
- 
-@@ -1488,11 +1533,11 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- 	add_wait_queue(&ch->open_wait, &wait);
- 	pr_debug("block_til_ready before block: ttys%d, count = %d\n",
- 		tty->index, ch->count);
--	spin_lock_irqsave(&moxa_lock, flags);
-+	spin_lock_bh(&moxa_lock);
- 	if (!tty_hung_up_p(filp))
- 		ch->count--;
- 	ch->blocked_open++;
--	spin_unlock_irqrestore(&moxa_lock, flags);
-+	spin_unlock_bh(&moxa_lock);
- 
- 	while (1) {
- 		set_current_state(TASK_INTERRUPTIBLE);
-@@ -1509,7 +1554,7 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- 			break;
- 		}
- 		if (!(ch->asyncflags & ASYNC_CLOSING) && (do_clocal ||
--						MoxaPortDCDON(ch)))
-+				ch->DCDState))
- 			break;
- 
- 		if (signal_pending(current)) {
-@@ -1521,11 +1566,11 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- 	set_current_state(TASK_RUNNING);
- 	remove_wait_queue(&ch->open_wait, &wait);
- 
--	spin_lock_irqsave(&moxa_lock, flags);
-+	spin_lock_bh(&moxa_lock);
- 	if (!tty_hung_up_p(filp))
- 		ch->count++;
- 	ch->blocked_open--;
--	spin_unlock_irqrestore(&moxa_lock, flags);
-+	spin_unlock_bh(&moxa_lock);
- 	pr_debug("block_til_ready after blocking: ttys%d, count = %d\n",
- 		tty->index, ch->count);
- 	if (retval)
-@@ -1538,28 +1583,10 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- static void moxa_setup_empty_event(struct tty_struct *tty)
- {
- 	struct moxa_port *ch = tty->driver_data;
--	unsigned long flags;
- 
--	spin_lock_irqsave(&moxa_lock, flags);
-+	spin_lock_bh(&moxa_lock);
- 	ch->statusflags |= EMPTYWAIT;
--	mod_timer(&ch->emptyTimer, jiffies + HZ);
--	spin_unlock_irqrestore(&moxa_lock, flags);
--}
--
--static void moxa_check_xmit_empty(unsigned long data)
--{
--	struct moxa_port *ch;
--
--	ch = (struct moxa_port *) data;
--	if (ch->tty && (ch->statusflags & EMPTYWAIT)) {
--		if (MoxaPortTxQueue(ch) == 0) {
--			ch->statusflags &= ~EMPTYWAIT;
--			tty_wakeup(ch->tty);
--			return;
--		}
--		mod_timer(&ch->emptyTimer, round_jiffies(jiffies + HZ));
--	} else
--		ch->statusflags &= ~EMPTYWAIT;
-+	spin_unlock_bh(&moxa_lock);
- }
- 
- static void moxa_shut_down(struct moxa_port *ch)
-@@ -1582,43 +1609,8 @@ static void moxa_shut_down(struct moxa_port *ch)
- 	ch->asyncflags &= ~ASYNC_INITIALIZED;
- }
- 
--static void moxa_receive_data(struct moxa_port *ch)
--{
--	struct tty_struct *tp;
--	struct ktermios *ts;
--	unsigned long flags;
--
--	ts = NULL;
--	tp = ch->tty;
--	if (tp)
--		ts = tp->termios;
--	/**************************************************
--	if ( !tp || !ts || !(ts->c_cflag & CREAD) ) {
--	*****************************************************/
--	if (!tp || !ts) {
--		MoxaPortFlushData(ch, 0);
--		return;
--	}
--	spin_lock_irqsave(&moxa_lock, flags);
--	MoxaPortReadData(ch, tp);
--	spin_unlock_irqrestore(&moxa_lock, flags);
--	tty_schedule_flip(tp);
--}
--
--/*
-- *    Query
-- */
--
--#define 	DCD_changed	0x01
--#define 	DCD_oldstate	0x80
--
--static int moxaLowWaterChk;
--
--static void moxa_low_water_check(void __iomem *);
--
- /*****************************************************************************
-  *	Driver level functions: 					     *
-- *	3. MoxaDriverPoll(void);					     *
-  *****************************************************************************/
- 
- static void MoxaPortFlushData(struct moxa_port *port, int mode)
-@@ -1634,67 +1626,6 @@ static void MoxaPortFlushData(struct moxa_port *port, int mode)
- 	}
- }
- 
--static int MoxaDriverPoll(void)
--{
--	struct moxa_board_conf *brd;
--	struct moxa_port *p;
--	void __iomem *ofsAddr;
--	void __iomem *ip;
--	unsigned int port, ports, card;
--	ushort temp;
--
--	for (card = 0; card < MAX_BOARDS; card++) {
--		brd = &moxa_boards[card];
--	        if (brd->ready == 0)
--			continue;
--		if ((ports = brd->numPorts) == 0)
--			continue;
--		if (readb(brd->intPend) == 0xff) {
--			ip = brd->intTable + readb(brd->intNdx);
--			p = brd->ports;
--			ports <<= 1;
--			for (port = 0; port < ports; port += 2, p++) {
--				temp = readw(ip + port);
--				if (temp == 0)
--					continue;
--
--				writew(0, ip + port);
--				ofsAddr = p->tableAddr;
--				if (temp & IntrTx)
--					writew(readw(ofsAddr + HostStat) &
--						~WakeupTx, ofsAddr + HostStat);
--				if (temp & IntrBreak)
--					p->breakCnt++;
--
--				if (temp & IntrLine) {
--					if (readb(ofsAddr + FlagStat) & DCD_state) {
--						if ((p->DCDState & DCD_oldstate) == 0)
--							p->DCDState = (DCD_oldstate |
--									   DCD_changed);
--					} else {
--						if (p->DCDState & DCD_oldstate)
--							p->DCDState = DCD_changed;
--					}
--				}
--			}
--			writeb(0, brd->intPend);
--		}
--		if (moxaLowWaterChk) {
--			p = brd->ports;
--			for (port = 0; port < ports; port++, p++) {
--				if (p->lowChkFlag) {
--					p->lowChkFlag = 0;
--					ofsAddr = p->tableAddr;
--					moxa_low_water_check(ofsAddr);
--				}
--			}
--		}
--	}
--	moxaLowWaterChk = 0;
--
--	return 0;
--}
--
- /*****************************************************************************
-  *	Port level functions:						     *
-  *	2.  MoxaPortEnable(int port);					     *
-@@ -1706,8 +1637,6 @@ static int MoxaDriverPoll(void)
-  *	10. MoxaPortLineCtrl(int port, int dtrState, int rtsState);	     *
-  *	11. MoxaPortFlowCtrl(int port, int rts, int cts, int rx, int tx,int xany);    *
-  *	12. MoxaPortLineStatus(int port);				     *
-- *	13. MoxaPortDCDChange(int port);				     *
-- *	14. MoxaPortDCDON(int port);					     *
-  *	15. MoxaPortFlushData(int port, int mode);	                     *
-  *	16. MoxaPortWriteData(int port, unsigned char * buffer, int length); *
-  *	17. MoxaPortReadData(int port, struct tty_struct *tty); 	     *
-@@ -1754,14 +1683,6 @@ static int MoxaDriverPoll(void)
-  *                      -ENOIOCTLCMD
-  *
-  *
-- *      Function 3:     Moxa driver polling process routine.
-- *      Syntax:
-- *      int  MoxaDriverPoll(void);
-- *
-- *           return:    0       ; polling O.K.
-- *                      -1      : no any Moxa card.             
-- *
-- *
-  *      Function 6:     Enable this port to start Tx/Rx data.
-  *      Syntax:
-  *      void MoxaPortEnable(int port);
-@@ -1852,25 +1773,6 @@ static int MoxaDriverPoll(void)
-  *                      Bit 2 - DCD state (0: off, 1: on)
-  *
-  *
-- *      Function 17:    Check the DCD state has changed since the last read
-- *                      of this function.
-- *      Syntax:
-- *      int  MoxaPortDCDChange(int port);
-- *           int port           : port number (0 - 127)
-- *
-- *           return:    0       : no changed
-- *                      1       : DCD has changed
-- *
-- *
-- *      Function 18:    Check ths current DCD state is ON or not.
-- *      Syntax:
-- *      int  MoxaPortDCDON(int port);
-- *           int port           : port number (0 - 127)
-- *
-- *           return:    0       : DCD off
-- *                      1       : DCD on
-- *
-- *
-  *      Function 19:    Flush the Rx/Tx buffer data of this port.
-  *      Syntax:
-  *      void MoxaPortFlushData(int port, int mode);
-@@ -1953,7 +1855,6 @@ static void MoxaPortEnable(struct moxa_port *port)
- 
- 	ofsAddr = port->tableAddr;
- 	writew(lowwater, ofsAddr + Low_water);
--	port->breakCnt = 0;
- 	if (port->board->boardType == MOXA_BOARD_C320_ISA ||
- 	    port->board->boardType == MOXA_BOARD_C320_PCI) {
- 		moxafunc(ofsAddr, FC_SetBreakIrq, 0);
-@@ -2122,37 +2023,11 @@ static int MoxaPortLineStatus(struct moxa_port *port)
- 		val = readw(ofsAddr + FlagStat) >> 4;
- 	}
- 	val &= 0x0B;
--	if (val & 8) {
-+	if (val & 8)
- 		val |= 4;
--		if ((port->DCDState & DCD_oldstate) == 0)
--			port->DCDState = (DCD_oldstate | DCD_changed);
--	} else {
--		if (port->DCDState & DCD_oldstate)
--			port->DCDState = DCD_changed;
--	}
-+	moxa_new_dcdstate(port, val & 8);
- 	val &= 7;
--	return (val);
--}
--
--static int MoxaPortDCDChange(struct moxa_port *port)
--{
--	int n;
--
--	n = port->DCDState;
--	port->DCDState &= ~DCD_changed;
--	n &= DCD_changed;
--	return (n);
--}
--
--static int MoxaPortDCDON(struct moxa_port *port)
--{
--	int n;
--
--	if (port->DCDState & DCD_oldstate)
--		n = 1;
--	else
--		n = 0;
--	return (n);
-+	return val;
- }
- 
- static int MoxaPortWriteData(struct moxa_port *port, unsigned char *buffer,
-@@ -2220,8 +2095,9 @@ static int MoxaPortWriteData(struct moxa_port *port, unsigned char *buffer,
- 	return (total);
- }
- 
--static int MoxaPortReadData(struct moxa_port *port, struct tty_struct *tty)
-+static int MoxaPortReadData(struct moxa_port *port)
- {
-+	struct tty_struct *tty = port->tty;
- 	register ushort head, pageofs;
- 	int i, count, cnt, len, total, remain;
- 	ushort tail, rx_mask, spage, epage;
-@@ -2242,7 +2118,7 @@ static int MoxaPortReadData(struct moxa_port *port, struct tty_struct *tty)
- 
- 	total = count;
- 	remain = count - total;
--	moxaLog.rxcnt[port->tty->index] += total;
-+	moxaLog.rxcnt[tty->index] += total;
- 	count = total;
- 	if (spage == epage) {
- 		bufhead = readw(ofsAddr + Ofs_rxb);
-@@ -2340,15 +2216,6 @@ static void MoxaPortTxEnable(struct moxa_port *port)
- 	moxafunc(port->tableAddr, FC_SetXonState, Magic_code);
- }
- 
--
--static int MoxaPortResetBrkCnt(struct moxa_port *port)
--{
--	ushort cnt;
--	cnt = port->breakCnt;
--	port->breakCnt = 0;
--	return (cnt);
--}
--
- static int moxa_get_serial_info(struct moxa_port *info,
- 				struct serial_struct __user *retinfo)
- {
-@@ -2412,21 +2279,6 @@ static int moxa_set_serial_info(struct moxa_port *info,
-  *	Static local functions: 					     *
-  *****************************************************************************/
- 
--static void moxa_low_water_check(void __iomem *ofsAddr)
--{
--	int len;
--	ushort rptr, wptr, mask;
--
--	if (readb(ofsAddr + FlagStat) & Xoff_state) {
--		rptr = readw(ofsAddr + RXrptr);
--		wptr = readw(ofsAddr + RXwptr);
--		mask = readw(ofsAddr + RX_mask);
--		len = (wptr - rptr) & mask;
--		if (len <= Low_water)
--			moxafunc(ofsAddr, FC_SendXon, 0);
--	}
--}
--
- static void MoxaSetFifo(struct moxa_port *port, int enable)
- {
- 	void __iomem *ofsAddr = port->tableAddr;
-diff --git a/drivers/char/moxa.h b/drivers/char/moxa.h
-index 49e926d..0b16506 100644
---- a/drivers/char/moxa.h
-+++ b/drivers/char/moxa.h
-@@ -165,11 +165,11 @@
- #define HostStat	0x08	/* IRQ flag and general flag      */
- #define FlagStat	0x0A
- #define FlowControl	0x0C	/* B7 B6 B5 B4 B3 B2 B1 B0              */
--					/*  x  x  x  x  |  |  |  |            */
--					/*              |  |  |  + CTS flow   */
--					/*              |  |  +--- RTS flow   */
--					/*              |  +------ TX Xon/Xoff */
--					/*              +--------- RX Xon/Xoff */
-+				/*  x  x  x  x  |  |  |  |            */
-+				/*              |  |  |  + CTS flow   */
-+				/*              |  |  +--- RTS flow   */
-+				/*              |  +------ TX Xon/Xoff */
-+				/*              +--------- RX Xon/Xoff */
- #define Break_cnt	0x0E	/* received break count   */
- #define CD180TXirq	0x10	/* if non-0: enable TX irq        */
- #define RX_mask 	0x12
--- 
-1.5.3.8
-
++config INPUT_CM109
++	tristate "C-Media CM109 USB I/O Controller"
++	depends on INPUT && EXPERIMENTAL
++	select USB
++	---help---
++	  Say Y here if you want to enable keyboard and buzzer functions of the
++	  C-Media CM109 usb phones. The audio part is enabled by the generic
++	  usb sound driver, so you might want to enable that as well.
++
++	  To compile this driver as a module, choose M here: the module will be
++	  called cm109.
++
+ config INPUT_UINPUT
+ 	tristate "User level driver support"
+ 	help
+diff -uprN -X linux-2.6.24/Documentation/dontdiff linux-2.6.24-orig/drivers/input/misc/Makefile linux-2.6.24/drivers/input/misc/Makefile
+--- linux-2.6.24-orig/drivers/input/misc/Makefile	2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24/drivers/input/misc/Makefile	2008-02-07 19:14:26.000000000 +0100
+@@ -16,5 +16,6 @@ obj-$(CONFIG_INPUT_ATI_REMOTE2)		+= ati_
+ obj-$(CONFIG_INPUT_KEYSPAN_REMOTE)	+= keyspan_remote.o
+ obj-$(CONFIG_INPUT_POWERMATE)		+= powermate.o
+ obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
++obj-$(CONFIG_INPUT_CM109)		+= cm109.o
+ obj-$(CONFIG_HP_SDC_RTC)		+= hp_sdc_rtc.o
+ obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
