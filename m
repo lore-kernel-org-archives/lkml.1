@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbYBGERz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYBGEZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbYBGERz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 23:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYBGERr
+	id S1759273AbYBGEZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 23:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbYBGEZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 23:17:47 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:57704 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754990AbYBGERq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 23:17:46 -0500
-Date: Thu, 7 Feb 2008 09:47:22 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Kay Sievers <kay.sievers@vrfy.org>, vatsa@linux.vnet.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, dmitry.adamushko@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 12/11] sched: rt-group: uid-group interface
-Message-ID: <20080207041721.GA11520@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <1199703080.7143.24.camel@twins> <20080107122330.GB25945@linux.vnet.ibm.com> <1199725063.31975.53.camel@lappy> <20080108105733.GA2569@linux.vnet.ibm.com> <1199790150.7143.57.camel@twins> <3ae72650801080631p2b2c50a6q3d59badf06b62684@mail.gmail.com> <1199835332.31975.66.camel@lappy> <20080108235846.GA17067@suse.de> <20080108235750.GA27248@elte.hu> <20080110000531.GA18069@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080110000531.GA18069@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 6 Feb 2008 23:25:27 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:34789 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755307AbYBGEZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 23:25:26 -0500
+Subject: [PATCH] ext4 can fail badly when device stops accepting
+	BIO_RW_BARRIER requests.
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Neil Brown <neilb@suse.de>
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <18346.24466.83745.944149@notabene.brown>
+References: <18346.24466.83745.944149@notabene.brown>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 22:25:21 -0600
+Message-Id: <1202358321.6497.5.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 09, 2008 at 04:05:31PM -0800, Greg KH wrote:
-> > > > Ingo, Greg,
-> > > > 
-> > > > What would be the easiest way to carry this forward? sched-devel and
-> > > > greg's tree would intersect at this point and leave poor akpm with the
-> > > > resulting mess. Should I just make an incremental patch akpm can carry
-> > > > and push? Or can we base one tree off the other?
-> > > 
-> > > If it's just a single patch for this, I'd be glad to take it.  But by 
-> > > looking at the [11/12] above, I doubt this is so...
-> > > 
-> > > If it's not that rough (12 patches is not a big deal), I'd be glad to 
-> > > take these through my tree, after you fix up Kay's requests above :)
-> > 
-> > hm, i'd really like to see this tested and go through sched.git. It's 
-> > only the few sysfs bits which interfere, right?
-> 
-> Yes, that should be it.
-> 
-> So why not put the majority of this through sched.git, then when my
-> sysfs changes go in at the beginning of the .25 merge cycle, you can
-> then add the sysfs changes through your tree or anywhere else.
-> 
+Duplicating Neil Brown's jbd patch for jbd2.  I guess this can go
+through the ext4 queue rather than straight into -mm.
 
-Hi,
+Neil's text:
 
-I was wondering where these changes are right now. I don't see the sysfs
-interface for rt-group-sched in mainline right now.
+Some devices - notably dm and md - can change their behaviour in
+response to BIO_RW_BARRIER requests.  They might start out accepting
+such requests but on reconfiguration, they find out that they cannot
+any more.
+
+ext3 (and other filesystems) deal with this by always testing if
+BIO_RW_BARRIER requests fail with EOPNOTSUPP, and retrying the write
+requests without the barrier (probably after waiting for any pending
+writes to complete).
+
+However there is a bug in the handling for this for ext3.
+
+When ext3 (jbd actually) decides to submit a BIO_RW_BARRIER request,
+it sets the buffer_ordered flag on the buffer head.
+If the request completes successfully, the flag STAYS SET.
+
+Other code might then write the same buffer_head after the device has
+been reconfigured to not accept barriers.  This write will then fail,
+but the "other code" is not ready to handle EOPNOTSUPP errors and the
+error will be treated as fatal.
+
+This can be seen without having to reconfigure a device at exactly the
+wrong time by putting:
+
+                if (buffer_ordered(bh))
+                        printk("OH DEAR, and ordered buffer\n");
+
+
+in the while loop in "commit phase 5" of journal_commit_transaction.
+
+If it ever prints the "OH DEAR ..." message (as it does sometimes for
+me), then that request could (in different circumstances) have failed
+with EOPNOTSUPP, but that isn't tested for.
+
+My proposed fix is to clear the buffer_ordered flag after it has been
+used, as in the following patch.
 
 Thanks,
--- 
-regards,
-Dhaval
+NeilBrown
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff -Nurp linux-2.6.24-mm1/fs/jbd2/commit.c linux/fs/jbd2/commit.c
+--- linux-2.6.24-mm1/fs/jbd2/commit.c	2008-02-04 09:08:44.000000000 -0600
++++ linux/fs/jbd2/commit.c	2008-02-06 22:11:14.000000000 -0600
+@@ -148,6 +148,8 @@ static int journal_submit_commit_record(
+ 		barrier_done = 1;
+ 	}
+ 	ret = submit_bh(WRITE, bh);
++	if (barrier_done)
++		clear_buffer_ordered(bh);
+ 
+ 	/* is it possible for another commit to fail at roughly
+ 	 * the same time as this one?  If so, we don't want to
+@@ -166,7 +168,6 @@ static int journal_submit_commit_record(
+ 		spin_unlock(&journal->j_state_lock);
+ 
+ 		/* And try again, without the barrier */
+-		clear_buffer_ordered(bh);
+ 		set_buffer_uptodate(bh);
+ 		set_buffer_dirty(bh);
+ 		ret = submit_bh(WRITE, bh);
+
+
