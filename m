@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933324AbYBGUFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbYBGUFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933324AbYBGUFO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:05:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932774AbYBGUDZ
+	id S1762059AbYBGUFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933054AbYBGUDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:03:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:38645 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761189AbYBGUDW (ORCPT
+	Thu, 7 Feb 2008 15:03:30 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:38630 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761260AbYBGUD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:03:22 -0500
+	Thu, 7 Feb 2008 15:03:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pkURWJQGu5/sdb6uI9pW5HK78rXlmUYn/cIQz+z6HenYRMcMPunMg88zh2obFIQ1ZErCrgxO9ouQgptAlMzHEGNZhUb9/hYX3pIJyws46dyYBPf6tL7zZtgH3eJAzLBBX5/bxqeu/ObtAlplaMdLI5MN1lrM9h5Opc6us5T5VR4=
-Message-ID: <6101e8c40802071203q762a977k5cdbe28ef356efa8@mail.gmail.com>
-Date: Thu, 7 Feb 2008 21:03:21 +0100
+        b=oGfJ0SmINJ8MpuEuyZp6LVjoLDe8kpNAH8x3F9oLzBJfLnbJO1zBSv1a5AJbJ6WT6QmA4Ygbg05Y+7XgNJR3XGc/wLS4Fch3EoJq0MZxoC5vKCbQYXCEW/wXUWcSklBj8Gfq4Nn5yfWrARttHVjyqR15YRbw4CgyBSOyNCajPiw=
+Message-ID: <6101e8c40802071203q71cf9401v6b84a589d69cf8dd@mail.gmail.com>
+Date: Thu, 7 Feb 2008 21:03:26 +0100
 From: "Oliver Pinter" <oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: [2.6.22.y] {05/14} - Intel_agp: really fix 945/965GME - on top of 2.6.22.17
+Subject: [2.6.22.y] {06/14} - pci: fix unterminated pci_device_id lists - on top of 2.6.22.17
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -28,116 +28,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-aka: intel-agp-965gme-fix.patch
+aka: pci-fix-unterminated-pci_device_id-lists.patch
 
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-Subject: Intel_agp: really fix 945/965GME
-Patch-mainline: 2.6.23-rc1
-References: 281277
+From: Kees Cook <kees@ubuntu.com>
+Date: Wed, 19 Sep 2007 05:46:32 +0000 (-0700)
+Subject: pci: fix unterminated pci_device_id lists
+Patch-mainline: 2.6.23-rc7
+References: 340527
+Git-commit: h=248bdd5efca5a113cbf443a993c69e53d370236b
 
-Intel_agp: really fix 945/965GME
+pci: fix unterminated pci_device_id lists
 
-mainline: dde4787642ee3cb85aef80bdade04b6f8ddc3df8
+mainline: 248bdd5efca5a113cbf443a993c69e53d370236b
 
-Fix some missing places to check with device id info, which
-should probe the device gart correctly.
+Fix a couple drivers that do not correctly terminate their pci_device_id
+lists.  This results in garbage being spewed into modules.pcimap when the
+module happens to not have 28 NULL bytes following the table, and/or the
+last PCI ID is actually truncated from the table when calculating the
+modules.alias PCI aliases, cause those unfortunate device IDs to not
+auto-load.
 
-Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
-Acked-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Kees Cook <kees@ubuntu.com>
+Acked-by: Corey Minyard <minyard@acm.org>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Acked-by: Jeff Garzik <jeff@garzik.org>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
 CC: Oliver Pinter <oliver.pntr@gmail.com>
-
 ---
-commit dde4787642ee3cb85aef80bdade04b6f8ddc3df8
-tree e99908c8c61a08244b6bb03b87782999a5a3847d
-parent a51b34593f691a0837d752a1394dcee19483c607
-author Zhenyu Wang <zhenyu.z.wang@intel.com> Thu, 26 Jul 2007 09:18:09 +0800
-committer Dave Airlie <airlied@redhat.com> Fri, 27 Jul 2007 10:48:13 +1000
+ drivers/char/ipmi/ipmi_si_intf.c                |    3 ++-
+ drivers/media/video/usbvision/usbvision-cards.c |    1 +
+ drivers/mtd/nand/cafe_nand.c                    |    3 ++-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
- drivers/char/agp/intel-agp.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 9b07f78..dd441ff 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -2215,7 +2215,8 @@ static int ipmi_pci_resume(struct pci_de
 
---- a/drivers/char/agp/intel-agp.c	2007-07-08 19:32:17.000000000 -0400
-+++ b/drivers/char/agp/intel-agp.c	2007-08-27 14:01:47.000000000 -0400
-@@ -20,7 +20,9 @@
- #define PCI_DEVICE_ID_INTEL_82965G_IG       0x29A2
- #define PCI_DEVICE_ID_INTEL_82965GM_HB      0x2A00
- #define PCI_DEVICE_ID_INTEL_82965GM_IG      0x2A02
-+#define PCI_DEVICE_ID_INTEL_82965GME_HB     0x2A10
- #define PCI_DEVICE_ID_INTEL_82965GME_IG     0x2A12
-+#define PCI_DEVICE_ID_INTEL_82945GME_HB     0x27AC
- #define PCI_DEVICE_ID_INTEL_82945GME_IG     0x27AE
- #define PCI_DEVICE_ID_INTEL_G33_HB          0x29C0
- #define PCI_DEVICE_ID_INTEL_G33_IG          0x29C2
-@@ -33,7 +35,8 @@
-                  agp_bridge->dev->device ==
-PCI_DEVICE_ID_INTEL_82965G_1_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
-                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
--                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB)
-+                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
-+                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
+ static struct pci_device_id ipmi_pci_devices[] = {
+ 	{ PCI_DEVICE(PCI_HP_VENDOR_ID, PCI_MMC_DEVICE_ID) },
+-	{ PCI_DEVICE_CLASS(PCI_ERMC_CLASSCODE, PCI_ERMC_CLASSCODE_MASK) }
++	{ PCI_DEVICE_CLASS(PCI_ERMC_CLASSCODE, PCI_ERMC_CLASSCODE_MASK) },
++	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, ipmi_pci_devices);
 
- #define IS_G33 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
- 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
-@@ -527,6 +530,7 @@ static void intel_i830_init_gtt_entries(
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
-+			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB ||
- 			    IS_I965 || IS_G33)
- 				gtt_entries = MB(48) - KB(size);
- 			else
-@@ -538,6 +542,7 @@ static void intel_i830_init_gtt_entries(
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
- 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
-+			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GME_HB ||
- 			    IS_I965 || IS_G33)
- 				gtt_entries = MB(64) - KB(size);
- 			else
-@@ -1848,9 +1853,9 @@ static const struct intel_driver_descrip
- 		NULL, &intel_915_driver },
- 	{ PCI_DEVICE_ID_INTEL_82945G_HB, PCI_DEVICE_ID_INTEL_82945G_IG, 0, "945G",
- 		NULL, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 1, "945GM",
-+	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 0, "945GM",
- 		NULL, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GME_IG,
-0, "945GME",
-+	{ PCI_DEVICE_ID_INTEL_82945GME_HB, PCI_DEVICE_ID_INTEL_82945GME_IG,
-0, "945GME",
- 		NULL, &intel_915_driver },
- 	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, 0, "946GZ",
- 		NULL, &intel_i965_driver },
-@@ -1860,9 +1865,9 @@ static const struct intel_driver_descrip
- 		NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_82965G_HB, PCI_DEVICE_ID_INTEL_82965G_IG, 0, "965G",
- 		NULL, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 1, "965GM",
-+	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 0, "965GM",
- 		NULL, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GME_IG,
-0, "965GME/GLE",
-+	{ PCI_DEVICE_ID_INTEL_82965GME_HB, PCI_DEVICE_ID_INTEL_82965GME_IG,
-0, "965GME/GLE",
- 		NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_7505_0, 0, 0, "E7505", &intel_7505_driver, NULL },
- 	{ PCI_DEVICE_ID_INTEL_7205_0, 0, 0, "E7205", &intel_7505_driver, NULL },
-@@ -2051,11 +2056,13 @@ static struct pci_device_id agp_intel_pc
- 	ID(PCI_DEVICE_ID_INTEL_82915GM_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82945G_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82945GM_HB),
-+	ID(PCI_DEVICE_ID_INTEL_82945GME_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82946GZ_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965G_1_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965Q_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965G_HB),
- 	ID(PCI_DEVICE_ID_INTEL_82965GM_HB),
-+	ID(PCI_DEVICE_ID_INTEL_82965GME_HB),
- 	ID(PCI_DEVICE_ID_INTEL_G33_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
+diff --git a/drivers/media/video/usbvision/usbvision-cards.c
+b/drivers/media/video/usbvision/usbvision-cards.c
+index 380564c..f09eb10 100644
+--- a/drivers/media/video/usbvision/usbvision-cards.c
++++ b/drivers/media/video/usbvision/usbvision-cards.c
+@@ -1081,6 +1081,7 @@ struct usb_device_id usbvision_table []
+ 	{ USB_DEVICE(0x2304, 0x0301), .driver_info=PINNA_LINX_VD_IN_CAB_PAL },
+ 	{ USB_DEVICE(0x2304, 0x0419), .driver_info=PINNA_PCTV_BUNGEE_PAL_FM },
+ 	{ USB_DEVICE(0x2400, 0x4200), .driver_info=HPG_WINTV },
++	{ },    /* terminate list */
+ };
+
+ MODULE_DEVICE_TABLE (usb, usbvision_table);
+diff --git a/drivers/mtd/nand/cafe_nand.c b/drivers/mtd/nand/cafe_nand.c
+index cff969d..6f32a35 100644
+--- a/drivers/mtd/nand/cafe_nand.c
++++ b/drivers/mtd/nand/cafe_nand.c
+@@ -816,7 +816,8 @@ static void __devexit cafe_nand_remove(s
+ }
+
+ static struct pci_device_id cafe_nand_tbl[] = {
+-	{ 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH <<
+8, 0xFFFF0 }
++	{ 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH <<
+8, 0xFFFF0 },
++	{ 0, }
+ };
+
+ MODULE_DEVICE_TABLE(pci, cafe_nand_tbl);
 
 
 -- 
