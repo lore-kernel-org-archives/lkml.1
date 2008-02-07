@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934592AbYBGAgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbYBGAgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934592AbYBGAgN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759621AbYBGADc
+	id S934634AbYBGAgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765155AbYBGAEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:03:32 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40678 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764956AbYBGADb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:03:31 -0500
-Date: Wed, 6 Feb 2008 16:00:33 -0800
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [stable] The SMP alternatives code breaks exception fixup?
-Message-ID: <20080207000033.GB16116@kroah.com>
-References: <479504F6.4080005@redhat.com> <p73zluymnx0.fsf@crumb.suse.de> <alpine.LFD.1.00.0801221312200.3199@apollo.tec.linutronix.de> <47964FD5.6020801@redhat.com> <20080206231020.GB12395@kroah.com> <alpine.LFD.1.00.0802061534470.2883@woody.linux-foundation.org> <20080206234309.GA13758@elte.hu>
+	Wed, 6 Feb 2008 19:04:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36263 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765143AbYBGAEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:04:45 -0500
+Date: Thu, 7 Feb 2008 01:04:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: softlockup: automatically detect hung TASK_UNINTERRUPTIBLE
+	tasks
+Message-ID: <20080207000425.GA21918@elte.hu>
+References: <200801252259.m0PMxHmD012059@hera.kernel.org> <20080205164626.f9c920e0.akpm@linux-foundation.org> <1202309402.6310.0.camel@lappy> <20080206100513.133587fa.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080206234309.GA13758@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080206100513.133587fa.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 12:43:09AM +0100, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > > I don't see this in Linus's tree, am I just missing it?  Do you have 
-> > > a git commit id?
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > Does that kernel have:
 > > 
-> > Isn't this 9d55b9923a1b7ea8193b8875c57ec940dc2ff027 (possibly with 
-> > 2532ec6d178abc55681d049097d3dc577eaa266c on top)?
+> > commit ed50d6cbc394cd0966469d3e249353c9dd1d38b9
+> > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date:   Sat Feb 2 00:23:08 2008 +0100
+> > 
+> >     debug: softlockup looping fix
 > 
-> yeah.
-> 
-> Greg: note that this is against post-unification asm-x86/futex.h so it 
-> wont apply to .24.
-> 
-> I've backported the fix to .24 - find it below. (untested but obvious)
+> yup.  It was fetched less than 24 hours ago.
 
-Thanks for the fix, I'm guessing that this should only go into
-.24-stable and nothing prior?
+does the patch below improve the situation?
 
-thanks,
+	Ingo
 
-greg k-h
+---
+ arch/x86/kernel/reboot.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+Index: linux-x86.q/arch/x86/kernel/reboot.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/reboot.c
++++ linux-x86.q/arch/x86/kernel/reboot.c
+@@ -396,8 +396,20 @@ void machine_shutdown(void)
+ 	if (!cpu_isset(reboot_cpu_id, cpu_online_map))
+ 		reboot_cpu_id = smp_processor_id();
+ 
+-	/* Make certain I only run on the appropriate processor */
+-	set_cpus_allowed(current, cpumask_of_cpu(reboot_cpu_id));
++	/*
++	 * Make certain we only run on the appropriate processor,
++	 * and with sufficient priority:
++	 */
++	{
++		struct sched_param schedparm;
++		schedparm.sched_priority = 99;
++		int ret;
++
++		ret = sched_setscheduler(current, SCHED_RR, &schedparm);
++		WARN_ON_ONCE(1);
++
++		set_cpus_allowed(current, cpumask_of_cpu(reboot_cpu_id));
++	}
+ 
+ 	/* O.K Now that I'm on the appropriate processor,
+ 	 * stop all of the others.
