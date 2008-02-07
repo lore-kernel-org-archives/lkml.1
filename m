@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932941AbYBGS2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933073AbYBGS2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932941AbYBGS2Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 13:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbYBGS2D
+	id S933073AbYBGS2v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 13:28:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbYBGS2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 13:28:03 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:47328 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756555AbYBGS2A (ORCPT
+	Thu, 7 Feb 2008 13:28:40 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38611 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932245AbYBGS2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 13:28:00 -0500
-Message-ID: <47AB4C68.1080308@qualcomm.com>
-Date: Thu, 07 Feb 2008 10:22:32 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+	Thu, 7 Feb 2008 13:28:38 -0500
+Date: Thu, 7 Feb 2008 18:22:18 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [git pull] CPU isolation extensions
-References: <47AA9807.7090402@qualcomm.com>	<20080206215805.17a0c919.akpm@linux-foundation.org>	<20080207015954.92cd3878.pj@sgi.com>	<47AB47C1.1070208@qualcomm.com> <20080207121040.42efad60.pj@sgi.com>
-In-Reply-To: <20080207121040.42efad60.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080207182218.2a53cd8d@core>
+In-Reply-To: <47AB2BE0.9030104@davidnewall.com>
+References: <20080125180232.GA4613@kroah.com>
+	<20080202123710.42df1aa0@weinigel.se>
+	<20080202191930.GA19826@kroah.com>
+	<47A5D895.20300@davidnewall.com>
+	<47A6E742.80408@otello.alma.unibo.it>
+	<courier.47A8F072.000079E4@hawking.rebel.net.au>
+	<20080205232550.5d3d22ff@core>
+	<47AB0101.2050204@davidnewall.com>
+	<20080207141030.78958c29@core>
+	<47AB1A3E.3040703@davidnewall.com>
+	<20080207145817.181481e9@core>
+	<47AB2BE0.9030104@davidnewall.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> It would not be improper to say that "such and such a lawyer said this
+> and that."  I'm not proposing that you breach their copyright in their
 
+It would be highly improper given these were business discussions
+involving companies using Linux.
 
-Paul Jackson wrote:
-> Max - Andrew wondered if the rt tree had seen the
-> code or commented it on it.  What became of that?
-I just replied to Andrew. It's not an RT feature per se.
-And yes Peter CC'ed RT folks. You probably did not get a chance to read all replies.
-They had some questions/concerns and stuff. I believe I answered/clarified all of them.
-
-> My two cents isn't worth a plug nickel here, but
-> I'm inclined to nod in agreement when Linus wants
-> to see these patches get some more exposure before
-> going into Linus's tree.  ... what's the hurry?
-No hurry I guess. I did mentioned in the introductory email that I've been maintaining 
-this stuff for awhile now. SLAB patches used to be messy, with new SLUB the mess goes away.
-CFS handles CPU hotplug much better than O(1), cpu hotplug is needed to be able to change
-isolated bit from sysfs. That's why I think it's a good time to merge.
-I don't mind of course if we put this stuff in -mm first. Although first part of the patchset 
-(ie exporting isolated map, sysfs interface, etc) seem very simple and totally not controversial.
-Stop machine patch is really the only thing that may look suspicious. 
- 
-Max
