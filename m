@@ -1,65 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933701AbYBGVvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbYBGVxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933701AbYBGVvY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbYBGVvL
+	id S933590AbYBGVxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYBGVxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:51:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:11236 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757109AbYBGVvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:51:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GaLUnHZ4Uf7BIR0KBPbJQ/S1Ab/7x/L4gCNWwF02xXYaEVqUEE4bk5EC5Atd1JGAgXYr7Lrvj3jk8/3X7gt6GbUGJ0nK2RvxwJH5d2ob0b5LIg18vIqjZfFwWJAH2E+OS4tE7Hoy3JYoB+Y4p9+8uVcvHMdJ+zd/1vOlJfnSE5Q=
-Message-ID: <47AB7D48.2020805@gmail.com>
-Date: Thu, 07 Feb 2008 22:51:04 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 7 Feb 2008 16:53:30 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:43025 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754362AbYBGVx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 16:53:29 -0500
+Date: Thu, 7 Feb 2008 13:53:27 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andi Kleen <andi@firstfloor.org>,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Subject: Re: [PATCH 1/2] kmemcheck v3
+In-Reply-To: <47AB79D4.2070605@gmail.com>
+Message-ID: <Pine.LNX.4.64.0802071341500.2544@schroedinger.engr.sgi.com>
+References: <47AB79D4.2070605@gmail.com>
 MIME-Version: 1.0
-To: Bob Copeland <me@bobcopeland.com>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org, ath5k-devel@lists.ath5k.org,
-       linux-wireless@vger.kernel.org, Nick Kossifidis <mickflemm@gmail.com>
-Subject: Re: [RFT 1/1] single_chip test
-References: <20080206014131.9d489a34.akpm@linux-foundation.org> <1202294560-7313-1-git-send-email-jirislaby@gmail.com> <20080206150043.GA6921@nineveh.local> <b6c5339f0802060746m3a5f87edj4465797564430292@mail.gmail.com> <20080207212529.GA5975@dose.home.local>
-In-Reply-To: <20080207212529.GA5975@dose.home.local>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/2008 10:25 PM, Tino Keitel wrote:
-> On Wed, Feb 06, 2008 at 10:46:39 -0500, Bob Copeland wrote:
->>>> We failed to resume after a hardware reset here for a whole second. Is there any
->>>> version of ath5k which worked for you (is this a regression)?
->>> I cannot speak for Tino, but my ath5k never worked in MacBook -- it
->>> failed the same way, and I believe the hardware was the same.  My
->>> understanding was that it was a known bug with PCIE devices, but I got
->>> that out of reading list archives.
->> Nick Kossifidis and I are in the process of debugging this -- we
->> determined that AR5K_RESET_CTL_PCI hangs the card in hw_nic_wakeup.
->> It doesn't look like there is any general support for 5424 cards yet.
+On Thu, 7 Feb 2008, Vegard Nossum wrote:
 
-Seems hold for this case too, as Bob noted.
+> --- a/include/linux/slab.h
+> +++ b/include/linux/slab.h
+> @@ -28,6 +28,7 @@
+>  #define SLAB_DESTROY_BY_RCU	0x00080000UL	/* Defer freeing slabs to RCU
+> */
+>  #define SLAB_MEM_SPREAD		0x00100000UL	/* Spread some memory
+> over cpuset */
+>  #define SLAB_TRACE		0x00200000UL	/* Trace allocations and frees
+> */
+> +#define SLAB_NOTRACK		0x00400000UL	/* Don't track use of
+> uninitialized memory */
 
-> I tried the patch, and the card was detected. I was able to associate
-> with an WPA2 AP and send/receive some traffic. But after a while the
-> interface broke:
+Ok new exception for tracking.
+
+> index 3f05667..3b3dfb8 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> +#ifdef CONFIG_KMEMCHECK
+> +	if (s->flags & SLAB_NOTRACK)
+> +		flags |= __GFP_NOTRACK;
+> +
+> +	/* Actually allocate twice as much, since we need to track the
+> +	 * status of each byte within the allocation. */
+> +	if (!(flags & __GFP_NOTRACK)) {
+> +		pages += pages;
+> +		order += 1;
+> +	}
+
+Hmmmm... You seem to assume that __GFP_NOTRACK can be passed to slab 
+function calls like kmalloc. That is pretty unreliable. Could we add
+__GFP_NOTRACK to the flags on which the slab allocators BUG?
+
+> @@ -1551,9 +1586,7 @@ static __always_inline void *slab_alloc(struct
+> kmem_cache *s,
+>  	local_irq_save(flags);
+>  	c = get_cpu_slab(s, smp_processor_id());
+>  	if (unlikely(!c->freelist || !node_match(c, node)))
+> -
+>  		object = __slab_alloc(s, gfpflags, node, addr, c);
+> -
+>  	else {
+>  		object = c->freelist;
+>  		c->freelist = object[c->offset];
+
+Drop this hunk.
+
+
+> @@ -2344,6 +2393,8 @@ EXPORT_SYMBOL(kmem_cache_destroy);
+>  struct kmem_cache kmalloc_caches[PAGE_SHIFT] __cacheline_aligned;
+>  EXPORT_SYMBOL(kmalloc_caches);
 > 
-> ath0: No ProbeResp from current AP 00:14:bf:16:25:87 - assume out of
-> range
-> ath5k_hw_get_isr: 0x00000020
-> ...
-> ath0: failed to set channel 165 (5825 MHz) for scan
-> ath0: failed to restore operational channel after scan
-> printk: 19 messages suppressed.
-> ath5k phy0: calibration timeout (2447MHz)
-> printk: 1 messages suppressed.
-> ath5k phy0: calibration timeout (2447MHz)
-> ath5k phy0: unable to reset hardware: -11
+> +struct kmem_cache cache_cache;
+> +
 
-What's the srev a phy ver printed few lines above this, please?
+Why do we need a cache_cache?
+
+>  #ifdef CONFIG_ZONE_DMA
+>  static struct kmem_cache *kmalloc_caches_dma[PAGE_SHIFT];
+>  #endif
+> @@ -2391,6 +2442,9 @@ static struct kmem_cache *create_kmalloc_cache(struct
+> kmem_cache *s,
+>  	if (gfp_flags & SLUB_DMA)
+>  		flags = SLAB_CACHE_DMA;
+> 
+> +	if (gfp_flags & __GFP_NOTRACK)
+> +		flags |= SLAB_NOTRACK;
+> +
+>  	down_write(&slub_lock);
+>  	if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
+>  			flags, NULL))
+
+Drop this one. create_kmalloc_cache is done only during bootstrap and 
+kmalloc caches either all have SLAB_NOTRACK set or all do not have it 
+set.
+
+> @@ -2445,14 +2499,18 @@ static noinline struct kmem_cache
+> *dma_kmalloc_cache(int index, gfp_t flags)
+>  	if (kmalloc_caches_dma[index])
+>  		goto unlock_out;
+> 
+> +#ifdef CONFIG_KMEMCHECK
+> +	flags |= __GFP_NOTRACK;
+> +#endif
+> +
+
+Same here.
