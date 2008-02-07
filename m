@@ -1,117 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964802AbYBGAyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764490AbYBGAzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964802AbYBGAyK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 19:54:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935208AbYBGAtm
+	id S1764490AbYBGAzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 19:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbYBGAty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 19:49:42 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:4929 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935197AbYBGAta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 19:49:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=KvL+44pEBXiekbgtyjwhwHqfvo+6oaHxXaOY9ywYS9dOrFCvPPu9gvBH7fS34tn+II5Ol5/oWrPBusyjHneZBEsfnUVP2Ni8jYkOZSVzAVPylRhprVtrGSLTJxEXMXk9M6GIZDVrROdHNnWR6Uo4FVqejy2VsGZR5+VWdI4KvoQ=
-Message-ID: <47AA558F.7030006@gmail.com>
-Date: Wed, 06 Feb 2008 19:49:19 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 6 Feb 2008 19:49:54 -0500
+Received: from mailsrv1.zmi.at ([212.69.162.198]:40101 "EHLO mailsrv1.zmi.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763919AbYBGAtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 19:49:51 -0500
+From: Michael Monnerie <michael.monnerie@it-management.at>
+Organization: it-management http://it-management.at
+To: Ralph =?iso-8859-15?q?B=F6hme?= <lists@supported.de>
+Subject: Re: [Netatalk-admins] netatalk slow after system upgrade (possibly kernel problem?)
+Date: Thu, 7 Feb 2008 01:49:44 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netatalk-admins@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <200801251255.48105@zmi.at> <200802051626.25030@zmi.at> <73F08C2B-C3F9-4846-962E-A3D2692804E0@supported.de>
+In-Reply-To: <73F08C2B-C3F9-4846-962E-A3D2692804E0@supported.de>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: any cpu hotplug changes in 2.6.24-current-git?
-References: <20080206125807.GB26817@elf.ucw.cz> <47A9D14C.8000002@gmail.com> <20080206224441.GC1630@elf.ucw.cz>
-In-Reply-To: <20080206224441.GC1630@elf.ucw.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8D62710B9CBD0F672C625D09"
+Content-Type: multipart/signed;
+  boundary="nextPart29334422.M4tpLIQOGx";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200802070149.45873@zmi.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8D62710B9CBD0F672C625D09
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--nextPart29334422.M4tpLIQOGx
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Pavel Machek wrote:
-> Hi!
+I received this e-mail, which could be the resolution to this problem. I=20
+will test it with the customer tomorrow.
+
+Is there a workaround possible from the Linux server, instead of=20
+modifying all clients? As it runs with kernel 2.6.13, but not with=20
+2.6.23, maybe some behaviour change via sysctl could help here.
+
+On Mittwoch, 6. Februar 2008 Ralph B=F6hme wrote:
+> Am 05.02.2008 um 16:26 schrieb Michael Monnerie:
+> > Still, it runs quick within the VM
+> > with kernel 2.6.13-15.15-smp from SUSE 10.0, but slow with more
+> > recent kernels (I couldn't test every combination of course).
 >
->  =20
->>> Are there any recent changes in cpu hotplug? I have suspend (random)
->>> problems, nosmp seems to fix it, and last messages in the "it hangs"
->>> case are from cpu hotplug...
->>>      =20
+> Use the sniffer, Luke!
 >
->  =20
->>   Can you send along your cpuinfo?
->>    =20
+> If you find an ongoing sequence of ~5 packets sent by the server,
+> ~200ms pause, client ACK, next turn, then you might me experiencing
+> this:
 >
-> It happened on more than one machine, one cpuinfo is:
->  =20
-Ah, ok.  This one is a C2D, correct?  The only reason I asked is that=20
-someone was reporting an s2ram problem on P4s on some of that=20
-root-domain logic I submitted a little while ago (and was merged in=20
-=2E25), whereas C2D seemed fine.  That doesn't mean anything here,=20
-really.  The problem could still be my code, or it might be unrelated. =20
-I was just wondering if you also had a P4 on the troubled systems.
-
-So is your problem on suspend or resume?  (or both?)  (I know you=20
-mentioned it was random problems, but I wasn't sure if you could qualify =
-
-that further)
-
-Any info you can provide will be appreciated.=20
-
--Greg
-
-
-> processor       : 1
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 14
-> model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
-> stepping        : 8
-> cpu MHz         : 1000.000
-> cache size      : 2048 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 1
-> cpu cores       : 2
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
-> constant_tsc arch_perfmon bts pni monitor vmx est tm2 xtpr
-> bogomips        : 3657.58
-> clflush size    : 64
+> http://www.helios.de/support/ti.phtml?110
 >
-> 									Pavel
->  =20
+> Proposed solution:
+> sysctl -w net.inet.tcp.delayed_ack=3D2 to be set on the client side.
+> Note: the issue should be resolved with OS X 10.5.
+>
+> It seems as if /some/ server side TCP stacks don't like OS X 10.4
+> delayed ACKs implementation.
+>
+> HTH,
+> -Ralph
 
 
 
---------------enig8D62710B9CBD0F672C625D09
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+=2D-=20
+// Michael Monnerie, Ing.BSc    -----      http://it-management.at
+// Tel: 0676/846 914 666                      .network.your.ideas.
+// PGP Key:         "curl -s http://zmi.at/zmi.asc | gpg --import"
+// Fingerprint: AC19 F9D5 36ED CD8A EF38  500E CE14 91F7 1C12 09B4
+// Keyserver: www.keyserver.net                   Key-ID: 1C1209B4
+
+--nextPart29334422.M4tpLIQOGx
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
 
-iD8DBQFHqlWUP5K2CMvXmqERArCzAJ4haqg69vel+ufWYLQXvtc1xbzw4ACfWNbV
-g6wdalodWYpmhEtcFHOmyQo=
-=O+hz
+iD8DBQBHqlWpzhSR9xwSCbQRAs9iAKDeaNOGTOsyOM1G6jhJ3qEu65jIhwCdGMDK
+lrxfkC7o/pz2FxqG6HFQfSU=
+=sG9U
 -----END PGP SIGNATURE-----
 
---------------enig8D62710B9CBD0F672C625D09--
+--nextPart29334422.M4tpLIQOGx--
