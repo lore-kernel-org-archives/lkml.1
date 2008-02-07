@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYBGG33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYBGGdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYBGG33 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYBGG3U
+	id S1755417AbYBGGdo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:33:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYBGGdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:29:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42709 "EHLO hera.kernel.org"
+	Thu, 7 Feb 2008 01:33:36 -0500
+Received: from ns.suse.de ([195.135.220.2]:51471 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbYBGG3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:29:19 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: nigel@nigel.suspend2.net
-Subject: Re: [linux-pm] Re: Small pm documentation cleanups
-Date: Thu, 7 Feb 2008 01:28:34 -0500
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>
-References: <20080204234700.GA1912@elf.ucw.cz> <20080205182712.GA9483@elf.ucw.cz> <47AA2627.4030509@nigel.suspend2.net>
-In-Reply-To: <47AA2627.4030509@nigel.suspend2.net>
+	id S1751232AbYBGGdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 01:33:35 -0500
+Date: Wed, 6 Feb 2008 22:38:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+Message-ID: <20080207063803.GA22563@suse.de>
+References: <20080207000959.GA16601@suse.de> <20080206.200618.11213859.davem@davemloft.net> <20080207054738.GB20902@suse.de> <20080206.220544.238067538.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802070128.34838.lenb@kernel.org>
+In-Reply-To: <20080206.220544.238067538.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied
-(with nigel's last comment included)
-
-thanks,
--len
-
-On Wednesday 06 February 2008 16:27, Nigel Cunningham wrote:
-> Hi again.
+On Wed, Feb 06, 2008 at 10:05:44PM -0800, David Miller wrote:
+> From: Greg KH <gregkh@suse.de>
+> Date: Wed, 6 Feb 2008 21:47:38 -0800
 > 
-> Pavel Machek wrote:
-> > Hi!
+> > On Wed, Feb 06, 2008 at 08:06:18PM -0800, David Miller wrote:
+> > > I redid the bisect to make sure it absolutely was that specific
+> > > changeset, and it is.
 > > 
-> >>> On Tuesday, 5 of February 2008, Pavel Machek wrote:
-> >>>> Small documentation fixes/additions that accumulated in my tree.
-> >>>>
-> >>>> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> >>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >>>
-> > ...
-> >>>> 0
-> >>>>   	acpi_sleep=	[HW,ACPI] Sleep options
-> >>>> -			Format: { s3_bios, s3_mode }
-> >>>> -			See Documentation/power/video.txt
-> >>>> +			Format: { s3_bios, s3_mode, s3_beep }
-> >>>> +			See Documentation/power/video.txt for s3_bios and s3_mode.
-> >>>> +			s3_beep is for debugging; it beeps on PC speaker as soon as
-> >>>> +			kernel's real-mode entry point is called.
-> >> s/kernel's/the kernel's/
-> > 
-> > Thanks for comments, I applied them.
+> > Thanks for doing that, I'll let you know when I have a patch to test.
 > 
-> You're welcome. Sorry for replying again, but I just noticed another one 
-> in the line above - it should be something like "it makes the PC's 
-> speaker beep as soon as" ('on PC speaker' isn't right).
+> I found the problem, it's the "whole_disk" partition attribute.
 > 
-> Sorry for not getting that last time.
+> Look in fs/partitions/check.c:add_partition() where it tests the
+> ADDPART_FLAG_WHOLEDISK flag.
 > 
-> Nigel
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> I think that code block needs to be updated to match the rest of the
+> changes in the offending changeset we are discussing.
+
+Ah, great catch.  That code just looks wrong.
+
+I'm guessing that you have a partition that is the whole disk?  That
+would make sense why I and most others haven't seen this yet.
+
+I'll make up a patch...
+
+thanks a lot for still digging into this,
+
+greg k-h
