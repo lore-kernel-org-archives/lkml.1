@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYBGJAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbYBGJFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYBGJAu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 04:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYBGJAm
+	id S1755808AbYBGJFp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 04:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYBGJFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 04:00:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38739 "EHLO mx2.mail.elte.hu"
+	Thu, 7 Feb 2008 04:05:21 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34528 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbYBGJAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 04:00:41 -0500
-Date: Thu, 7 Feb 2008 10:00:24 +0100
+	id S1751301AbYBGJFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 04:05:16 -0500
+Date: Thu, 7 Feb 2008 10:04:52 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
        Thomas Gleixner <tglx@linutronix.de>, jesse.barnes@intel.com,
-       ak@suse.de
+       ak@suse.de, Harvey Harrison <harvey.harrison@gmail.com>
 Subject: Re: [PATCH][Regression] x86, 32-bit: trim memory not covered by wb
 	mtrrs - FIX
-Message-ID: <20080207090024.GA12884@elte.hu>
-References: <200802071257.51893.balajirrao@gmail.com> <20080207080245.GA28631@elte.hu> <86802c440802070056o215e97b0u945a08b12dca8d2@mail.gmail.com>
+Message-ID: <20080207090452.GB12884@elte.hu>
+References: <200802071257.51893.balajirrao@gmail.com> <20080207080245.GA28631@elte.hu> <200802071351.02763.balajirrao@gmail.com> <86802c440802070050t2566a261t50cccd649912a4a9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440802070056o215e97b0u945a08b12dca8d2@mail.gmail.com>
+In-Reply-To: <86802c440802070050t2566a261t50cccd649912a4a9@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,18 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> then title for patch is not right
-> > >     x86, 32-bit: trim memory not covered by wb mtrrs
+> minor difference
+> +               trim_start = highest_pfn << PAGE_SHIFT;
+> +               trim_size = end_pfn << PAGE_SHIFT;
 > 
-> should be
+> could cause some problem with 32 bit kernel when mem > 4g. becase 
+> highest_pfn and end_pfn is unsigned long aka 32 bit ...could overflow.
 > 
-> x86_64: trim memory not covered by wb mtrrs
+> so need to assign thtem to trim_start/trim_end at first
+> or
+> +               trim_start = (u64)highest_pfn << PAGE_SHIFT;
+> +               trim_size = (u64)end_pfn << PAGE_SHIFT;
 
-indeed :) Although further reading into the commit clearly tells us that 
-this is 64-bit only for the time being.
+indeed ...
 
-> anyway, we can not modify git log in linux-2.6.git. can we?
+i think the 64-bit behavior of gcc is inherently dangerous, we had 
+numerous subtle bugs in that area.
 
-yeah, linux-2.6.git is append-only.
+i think perhaps Sparse should be extended to warn about this. I think 
+any case where on _32-bit_ we have an 'unsigned long' that is shifted to 
+the left by any significant amount is clearly in danger of overflowing. 
+_Especially_ when the lvalue is 64-bit!
+
+or in other words, on any such construct:
+
+   64-bit lvalue = ... 32-bit value
+
+we should enforce _explicit_ (u64) conversions.
 
 	Ingo
