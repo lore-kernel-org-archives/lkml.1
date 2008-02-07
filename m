@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933512AbYBGWAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbYBGWBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933512AbYBGWAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 17:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760163AbYBGWAb
+	id S934002AbYBGWBA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 17:01:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933715AbYBGWAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 17:00:31 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:11114 "EHLO
-	mail4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759694AbYBGWAa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 17:00:30 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 7 Feb 2008 17:00:44 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57524 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933626AbYBGWAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 17:00:43 -0500
+Date: Thu, 7 Feb 2008 13:58:34 -0800
+From: Greg KH <gregkh@suse.de>
+To: "S.??a??lar Onur" <caglar@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/45] 2.6.24-stable review
+Message-ID: <20080207215834.GA19117@suse.de>
+References: <20080207204549.GA16389@suse.de> <200802072341.44001.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Xilinx: hwicap driver comments
-Date: Thu, 7 Feb 2008 14:00:22 -0800
-In-Reply-To: <20080207135341.04e5652a.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Xilinx: hwicap driver comments
-Thread-Index: Achp0/LQQYyEJJyoQmOBrpA9mpTbNwAAES6g
-References: <47AB6552.7040503@gmail.com><20080207124203.147ce300.akpm@linux-foundation.org><fa686aa40802071254p172103f0w423f4591583ca3ef@mail.gmail.com><20080207132106.ec5ebf1d.akpm@linux-foundation.org><fa686aa40802071331l16b40bacm4a7ca01a7219f1fb@mail.gmail.com><20080207213512.36FA991807D@mail185-dub.bigfish.com> <20080207135341.04e5652a.akpm@linux-foundation.org>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <grant.likely@secretlab.ca>, <jirislaby@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <paulus@samba.org>,
-       <galak@gate.crashing.org>, <benh@kernel.crashing.org>,
-       <torvalds@linux-foundation.org>
-X-OriginalArrivalTime: 07 Feb 2008 22:00:22.0798 (UTC) FILETIME=[D63722E0:01C869D4]
-Message-Id: <20080207220024.C172B1C38015@mail4-dub.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802072341.44001.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > I'm rather new to all this and still (to some extent) trying to
-figure
-> > out what is expected.
+On Thu, Feb 07, 2008 at 11:41:42PM +0200, S.??a??lar Onur wrote:
+> Hi;
 > 
-> We're all still trying to figure it out, really.  We've gone and made
-it
-> awfully easy to get code into the kernel nowadays.  Perhaps too easy.
-I'm
-> presently having a little campaign of watching what's going on a bit
-more
-> closely, and ecouraging people to make it easier for others to see
-what's
-> going on, should they choose to do so.
+> 07 ??ub 2008 Per tarihinde, Greg KH ??unlar?? yazm????t??: 
+> > This is the start of the stable review cycle for the 2.6.24.1 release.
+> > There are 45 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
 > 
-> I'm hoping that by the time we're developing 2.6.26 there will be a
-unified
-> git tree (aka linux-next) (basically all the git and quilt trees from
--mm)
-> for people to look at and play with.  That'll improve our pre-merge
-test
-> coverage, but won't do much to improve review.  And it won't do
-anything to
-> improve our post-merge bugfixing.
-
-All of them are good, but I trust testing and sparse more than review..
-:)
-
-> > Maybe what is needed is git pull --ack?
+> If its possible could you please add [1] "mac80211: hardware scan rework" and [2] "mac80211: Restore rx.fc before every invocation of ieee80211_invoke_rx_handlers" into -stable too?
 > 
-> I'm also hoping/expecting/planning that if someone tries to merge a
-patch
-> into mainline, and that patch hasn't been in linux-next for "long
-enough",
-> flags will wave and lights will flash and we can get to take a closer
-look
-> at why it was so late and whether it's OK.
+> [1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ece8edddf067d21c4e5abfe3f1205da1588edbb2
+> [2] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=69f817b654d683265118188bbfb8bc0d8978cce6
 
-Hmm...  what if git told you what time the original git commit happened?
-That can't be that hard to add (if it's not already there!)
+I can queue them up for the next one after this release.
 
-Steve
+thanks,
 
-
+greg k-h
