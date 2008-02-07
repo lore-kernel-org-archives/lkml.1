@@ -1,144 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbYBGVXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934293AbYBGVYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964834AbYBGVXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 16:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935714AbYBGVUG
+	id S934293AbYBGVYD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 16:24:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935378AbYBGVVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 16:20:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52263 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935349AbYBGVUA (ORCPT
+	Thu, 7 Feb 2008 16:21:03 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43770 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755327AbYBGVVA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 16:20:00 -0500
-Message-ID: <47AB75EB.3040405@zytor.com>
-Date: Thu, 07 Feb 2008 13:19:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24 says "serial8250: too much work for irq4" a lot.
-References: <200802051455.10831.rob@landley.net> <20080207123937.GC15647@elte.hu> <47AB41C8.3010001@zytor.com> <200802071413.45085.rob@landley.net>
-In-Reply-To: <200802071413.45085.rob@landley.net>
-Content-Type: multipart/mixed;
- boundary="------------090109090804000709000801"
+	Thu, 7 Feb 2008 16:21:00 -0500
+Subject: Re: [Regression] 2.6.24-git9: RT sched mishandles artswrapper
+	(bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <200802072053.21131.rjw@sisk.pl>
+References: <200802010237.59320.rjw@sisk.pl>
+	 <200802070031.03955.rjw@sisk.pl> <20080206233434.GA12393@elte.hu>
+	 <200802072053.21131.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 22:20:33 +0100
+Message-Id: <1202419233.6274.47.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090109090804000709000801
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Rob Landley wrote:
+On Thu, 2008-02-07 at 20:53 +0100, Rafael J. Wysocki wrote:
+> On Thursday, 7 of February 2008, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > > http://programming.kicks-ass.net/kernel-patches/sched-rt-group/
+> > > > 
+> > > > on top of sched-devel.
+> > > 
+> > > Indeed, with these patches applied the issue is not reproducible any 
+> > > more.
+> > 
+> > great! I've queued Peter's fixes and enhancements up in sched-devel. 
+> > (not pushed out yet)
 > 
-> Specifically, qemu isn't paravirtualized, it's fully virtualized.  The same 
-> kernel can run on real hardware just fine.  (Sort of the point of the 
-> project...)
+> However, these patches break my second testbed (dual -core AMD desktop),
+> with the attached config.
 > 
-> I can yank the warning for the kernels I build (or set PASS_LIMIT to 9999999), 
-> but I'd rather not carry any more patches than I can avoid...
-> 
+> It crashes on boot with the following trace:
 
-Patch attached, completely untested beyond compilation.
+Ah, that is the last patch - which I didn't intent to push out. Let me
+remove that - its me fighting the group scheduling latencies reported.
 
-In particular:
+Its not lined up for merging.
 
-	- we should probably clear the burst counter when the interrupt
-	  line goes from inactive to active.
-	- there probably should be a timer which clears the burst
-  	  counter.
-
-However, I think I've covered most of the bases...
-
-	-hpa
-
---------------090109090804000709000801
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
-
-diff --git a/hw/serial.c b/hw/serial.c
-index b1bd0ff..c902792 100644
---- a/hw/serial.c
-+++ b/hw/serial.c
-@@ -73,6 +73,15 @@
- #define UART_LSR_OE	0x02	/* Overrun error indicator */
- #define UART_LSR_DR	0x01	/* Receiver data ready */
- 
-+/*
-+ * It's common for an IRQ handler to keep reading the RBR until
-+ * the LSR indicates that the FIFO is empty, expecting that the
-+ * CPU is vastly faster than the serial line.  This can cause
-+ * overruns or error indications if the FIFO never empties, so
-+ * give the target OS a breather every so often.
-+ */
-+#define MAX_BURST	512
-+
- struct SerialState {
-     uint16_t divider;
-     uint8_t rbr; /* receive register */
-@@ -91,8 +100,14 @@ struct SerialState {
-     int last_break_enable;
-     target_phys_addr_t base;
-     int it_shift;
-+    int burst_len;
- };
- 
-+static void serial_clear_burst(SerialState *s)
-+{
-+    s->burst_len = 0;
-+}
-+
- static void serial_update_irq(SerialState *s)
- {
-     if ((s->lsr & UART_LSR_DR) && (s->ier & UART_IER_RDI)) {
-@@ -114,6 +129,8 @@ static void serial_update_parameters(SerialState *s)
-     int speed, parity, data_bits, stop_bits;
-     QEMUSerialSetParams ssp;
- 
-+    serial_clear_burst(s);
-+
-     if (s->lcr & 0x08) {
-         if (s->lcr & 0x10)
-             parity = 'E';
-@@ -221,9 +238,12 @@ static uint32_t serial_ioport_read(void *opaque, uint32_t addr)
-             ret = s->divider & 0xff;
-         } else {
-             ret = s->rbr;
--            s->lsr &= ~(UART_LSR_DR | UART_LSR_BI);
--            serial_update_irq(s);
--            qemu_chr_accept_input(s->chr);
-+	    if (s->burst_len < MAX_BURST) {
-+		s->burst_len++;
-+		s->lsr &= ~(UART_LSR_DR | UART_LSR_BI);
-+		serial_update_irq(s);
-+		qemu_chr_accept_input(s->chr);
-+	    }
-         }
-         break;
-     case 1:
-@@ -235,6 +255,7 @@ static uint32_t serial_ioport_read(void *opaque, uint32_t addr)
-         break;
-     case 2:
-         ret = s->iir;
-+	serial_clear_burst(s);
-         /* reset THR pending bit */
-         if ((ret & 0x7) == UART_IIR_THRI)
-             s->thr_ipending = 0;
-@@ -248,6 +269,10 @@ static uint32_t serial_ioport_read(void *opaque, uint32_t addr)
-         break;
-     case 5:
-         ret = s->lsr;
-+	if (s->burst_len >= MAX_BURST)
-+	    ret &= ~(UART_LSR_DR|UART_LSR_BI);
-+	if (!(ret & UART_LSR_DR))
-+	    serial_clear_burst(s);
-         break;
-     case 6:
-         if (s->mcr & UART_MCR_LOOP) {
-
---------------090109090804000709000801--
