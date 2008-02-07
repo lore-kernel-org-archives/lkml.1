@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbYBGRyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932211AbYBGRz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbYBGRyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 12:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbYBGRyf
+	id S932211AbYBGRz6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 12:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbYBGRzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 12:54:35 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:65402 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756542AbYBGRye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 12:54:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=K+rFfBuKZiz0KyIMkVatDrcI0tBIuHqLXdG5cKDspo3hjdS6BLfr412+7o1DYKz2OdByLV6TS6SXzC6JA7GshnSNmipldFTNWnFa9mWpvFjlkq/c49KLv3FdiixqQxmWA6tG3u96vA30eHSYBIGg81Fh5O0NDUCcoiJdSrBybEs=
-Subject: Re: [PATCH 2/8] Add interface for queuing work on a specific CPU
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+	Thu, 7 Feb 2008 12:55:50 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:16337 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755962AbYBGRzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 12:55:49 -0500
+Date: Thu, 7 Feb 2008 18:55:45 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com,
-       npiggin@suse.de, Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <20080207094928.GB15220@kernel.dk>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com>
-	 <1202375945-29525-3-git-send-email-jens.axboe@oracle.com>
-	 <20080207014503.cf1853c2.akpm@linux-foundation.org>
-	 <20080207094928.GB15220@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 09:44:52 -0800
-Message-Id: <1202406320.22452.9.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+       npiggin@suse.de, Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Pekka Enberg <penberg@gmail.com>
+Subject: Re: [patch] block layer: kmemcheck fixes
+Message-ID: <20080207175544.GL15220@kernel.dk>
+References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-5-git-send-email-jens.axboe@oracle.com> <20080207100738.GB7716@elte.hu> <20080207101727.GE15220@kernel.dk> <20080207102534.GB16735@elte.hu> <20080207103136.GG15220@kernel.dk> <20080207104901.GF16735@elte.hu> <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-07 at 10:49 +0100, Jens Axboe wrote:
-> On Thu, Feb 07 2008, Andrew Morton wrote:
-> > On Thu,  7 Feb 2008 10:18:59 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > > ---
-> > >  include/linux/workqueue.h |    1 +
-> > >  kernel/workqueue.c        |   15 +++++++++++++++
-> > >  2 files changed, 16 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-> > > index 7f28c32..4c46944 100644
-> > > --- a/include/linux/workqueue.h
-> > > +++ b/include/linux/workqueue.h
-> > > @@ -179,6 +179,7 @@ __create_workqueue_key(const char *name, int singlethread,
-> > >  extern void destroy_workqueue(struct workqueue_struct *wq);
-> > >  
-> > >  extern int FASTCALL(queue_work(struct workqueue_struct *wq, struct work_struct *work));
-> > > +extern int FASTCALL(queue_work_on_cpu(struct workqueue_struct *wq, struct work_struct *work, int cpu));
-> > 
-> > -ETOOWIDE
-> > 
-> > please don't add fastcall - we're trying to remove it.
+On Thu, Feb 07 2008, Linus Torvalds wrote:
 > 
-> Oops yes, I'll kill the fastcall and fix the > 80 char line!
 > 
+> On Thu, 7 Feb 2008, Ingo Molnar wrote:
+> >  	INIT_HLIST_NODE(&rq->hash);
+> >  	RB_CLEAR_NODE(&rq->rb_node);
+> > -	rq->ioprio = 0;
+> > -	rq->buffer = NULL;
+> > -	rq->ref_count = 1;
+> > -	rq->q = q;
+> > -	rq->special = NULL;
+> > -	rq->data_len = 0;
+> > -	rq->data = NULL;
+> > -	rq->nr_phys_segments = 0;
+> > -	rq->sense = NULL;
+> > -	rq->end_io = NULL;
+> > -	rq->end_io_data = NULL;
+> > -	rq->completion_data = NULL;
+> > -	rq->next_rq = NULL;
+> > +	rq->completion_data		= NULL;
+> > +	/* rq->elevator_private			*/
+> > +	/* rq->elevator_private2		*/
+> > +	/* rq->rq_disk				*/
+> > +	/* rq->start_time			*/
+> > +	rq->nr_phys_segments		= 0;
+> > +	/* rq->nr_hw_segments			*/
+> > +	rq->ioprio			= 0;
+> > +	rq->special			= NULL;
+> > +	rq->buffer			= NULL;
+> ...
+> 
+> Can we please just stop doing these one-by-one assignments, and just do 
+> something like
+> 
+> 	memset(rq, 0, sizeof(*rq));
+> 	rq->q = q;
+> 	rq->ref_count = 1;
+> 	INIT_HLIST_NODE(&rq->hash);
+> 	RB_CLEAR_NODE(&rq->rb_node);
+> 
+> instead?
+> 
+> The memset() is likely faster and smaller than one-by-one assignments 
+> anyway, even if the one-by-ones can avoid initializing some field or there 
+> ends up being a double initialization..
 
-I'll be making another round-up patch at -rc1 for FASTCALL/fastcall
+I completely agree, the fidgeting with single members quickly loses
+appeal. Ingo, I'll merge and integrate your fixes before leaving, I'll
+be here all day tomorrow as well.
 
-FYI
-
-Harvey
+-- 
+Jens Axboe
 
