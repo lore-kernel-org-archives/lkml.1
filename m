@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYBGHKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYBGHLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbYBGHKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 02:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYBGHKj
+	id S1754631AbYBGHLY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 02:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYBGHLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 02:10:39 -0500
-Received: from mail164.messagelabs.com ([216.82.253.131]:37235 "HELO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753172AbYBGHKi (ORCPT
+	Thu, 7 Feb 2008 02:11:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54094
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753172AbYBGHLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 02:10:38 -0500
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-5.tower-164.messagelabs.com!1202368235!15382603!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: [PATCH] fix type "goot" -> "good"
-Date: Thu,  7 Feb 2008 08:10:32 +0100
-Message-Id: <1202368232-5733-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 07 Feb 2008 07:10:32.0513 (UTC) FILETIME=[87202B10:01C86958]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15714.002
-X-TM-AS-Result: No--6.378000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Thu, 7 Feb 2008 02:11:14 -0500
+Date: Wed, 06 Feb 2008 23:11:44 -0800 (PST)
+Message-Id: <20080206.231144.174648341.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: partition sysfs OOPS in current GIT
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080207070044.GA4851@suse.de>
+References: <20080207064210.GA22896@suse.de>
+	<20080206.223944.200455039.davem@davemloft.net>
+	<20080207070044.GA4851@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
- scripts/checkpatch.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+From: Greg KH <gregkh@suse.de>
+Date: Wed, 6 Feb 2008 23:00:44 -0800
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 579f50f..35bb5a1 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1373,7 +1373,7 @@ sub process {
- 
- # multi-statement macros should be enclosed in a do while loop, grab the
- # first statement and ensure its the whole macro if its not enclosed
--# in a known goot container
-+# in a known good container
- 		if ($prevline =~ /\#define.*\\/ &&
- 		   $prevline !~/(?:do\s+{|\(\{|\{)/ &&
- 		   $line !~ /(?:do\s+{|\(\{|\{)/ &&
--- 
-1.5.4
+> On Wed, Feb 06, 2008 at 10:39:44PM -0800, David Miller wrote:
+> > From: Greg KH <gregkh@suse.de>
+> > Date: Wed, 6 Feb 2008 22:42:10 -0800
+> > 
+> > > On Wed, Feb 06, 2008 at 10:05:44PM -0800, David Miller wrote:
+> > > > I found the problem, it's the "whole_disk" partition attribute.
+> > > 
+> > > I don't understand that code at all, on 2.6.24, what does reading that
+> > > file give you?  At first glance, I don't see how that file would spit
+> > > out anything and not give you the same kind of oops.
+> > > 
+> > > you are in a maze of kobject pointers, all alike...
+> > 
+> > It's supposed to just exist, and be an empty zero length file.
+> > That's why it's given no ->show method pointer.
+> > 
+> > It's existence just means that the partition is a "whole disk"
+> > partition type.
+> 
+> Can you try this patch to see if it solves the oops, and that the file
+> is still there and works properly?
+
+It doesn't crash, but the file returns -EIO instead of zero when read.
 
