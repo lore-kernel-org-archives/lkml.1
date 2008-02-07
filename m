@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbYBGGZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbYBGGZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932181AbYBGGZa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760099AbYBGGV4
+	id S1760535AbYBGGZx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932121AbYBGGXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:21:56 -0500
-Received: from outbound-mail-07.bluehost.com ([69.89.17.207]:38625 "HELO
-	outbound-mail-07.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761713AbYBGGVy (ORCPT
+	Thu, 7 Feb 2008 01:23:05 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:13510 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932368AbYBGGXC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:21:54 -0500
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Dave Airlie <airlied@linux.ie>
-Subject: Re: [git pull] drm patches for 2.6.25
-Date: Wed, 6 Feb 2008 22:21:45 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <alpine.DEB.0.82.0802070534290.26136@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.0.82.0802070534290.26136@skynet.skynet.ie>
+	Thu, 7 Feb 2008 01:23:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=s0PV6kYyLorS5rVXiC3GxdYyvE5kMTBxGQfPzx+n7W4aUurnPFStU5vc/h8Cu6bQwekpeu4HY2xnfhF7ufFKpVHOF+/R2x1CmCzwMQahI4rcQrH6N14CtsC+D3zyv1sJVQaIlr30fkZOYelOyDckreygsYuqCoQDZFjc8qUtJmA=
+Message-ID: <84144f020802062222s78533aa6qe352d5fe7b622e20@mail.gmail.com>
+Date: Thu, 7 Feb 2008 08:22:56 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christer Weinigel" <christer@weinigel.se>
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Cc: "David Newall" <davidn@davidnewall.com>,
+       "Marcel Holtmann" <marcel@holtmann.org>, "Greg KH" <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080206221254.5780a862@weinigel.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802062221.46268.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <20080125180232.GA4613@kroah.com>
+	 <20080202123710.42df1aa0@weinigel.se>
+	 <20080202191930.GA19826@kroah.com> <47A5D9CD.5070001@davidnewall.com>
+	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
+	 <47A5E67D.9040804@davidnewall.com> <1202058820.15090.60.camel@violet>
+	 <courier.47A84ADB.000047C1@hawking.rebel.net.au>
+	 <84144f020802050346h2c26aac4v9841dd5bc98931a0@mail.gmail.com>
+	 <20080206221254.5780a862@weinigel.se>
+X-Google-Sender-Auth: 8d9142f611e7ffe6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 06, 2008 9:37 pm Dave Airlie wrote:
-> Hi Linus,
->
-> Please pull the 'drm-patches' branch from
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git
-> drm-patches
->
-> Sorry this is so late, after much talking at LCA we decided to pull TTM
-> from this round and I had to re-order a lot of things, so highlights of
-> this bunch are
->
-> intel driver suspend/resume support - can bring back text mode now.
+Hi Christer,
 
-Just FYI, given some of the weirdness we've seen in 8xx chipsets in the 2D 
-driver, this new suspend/resume code may still need a few tweaks.  Please 
-test it out and report any bugs you find asap (preferably w/o X running as 
-that makes things easier to debug).
+On Tue, 5 Feb 2008 13:46:08 +0200
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+> > What makes you qualified to make that statement (without giving any
+> > evidence)? Are you're an expert on international copyright law?
 
-Also, if you find that your outputs don't come back, I've got an experimental 
-patch at https://bugs.freedesktop.org/show_bug.cgi?id=14249 that may work for 
-you (this one in particular is the one I'm worried may break 855).
+On Feb 6, 2008 11:12 PM, Christer Weinigel <christer@weinigel.se> wrote:
+> Are you?  You've made some very definite statements about copyright
+> law.  Things that I've been told are definitely in a gray area and not
+> at all as clear cut as you and the FSF likes to say.  FSF has a very
+> clear agenda, and taking what they say as the gospel is a big mistake.
 
-Thanks,
-Jesse
+I have simply stated that (1) the problem boils down to what is
+derived work and what is no and (2) the developers use the
+EXPORT_SYMBOL_GPL as a hint of what they think to be derived work (not
+necessarily tested in court). The _logical conclusion_ of these two
+simple facts is, of course, to _not use_ functions marked as
+EXPORT_SYMBOL_GPL unless you're willing to test your belief in court.
+
+Now I see you really want to argue about this but could you please do
+it on some other list than the LKML? We use this list for real work
+too, you know, and right now you're only contributing noise. Thanks!
+
+                        Pekka
