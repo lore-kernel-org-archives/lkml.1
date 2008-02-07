@@ -1,54 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbYBGPg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbYBGPhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbYBGPg1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:36:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYBGPgT
+	id S1761147AbYBGPhm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYBGPhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:36:19 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:20262 "EHLO hobbit.corpit.ru"
+	Thu, 7 Feb 2008 10:37:34 -0500
+Received: from sacred.ru ([62.205.161.221]:34517 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754918AbYBGPgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:36:18 -0500
-Message-ID: <47AB256A.5070304@msgid.tls.msk.ru>
-Date: Thu, 07 Feb 2008 18:36:10 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	id S1755973AbYBGPhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 10:37:33 -0500
+Message-ID: <47AB25AD.30400@openvz.org>
+Date: Thu, 07 Feb 2008 18:37:17 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: remount-ro & umount & quota interaction
-References: <47A9F495.8060400@msgid.tls.msk.ru> <20080207102815.GB26403@atrey.karlin.mff.cuni.cz> <47AAE250.8040702@msgid.tls.msk.ru> <20080207140441.GF6140@duck.suse.cz>
-In-Reply-To: <20080207140441.GF6140@duck.suse.cz>
-X-Enigmail-Version: 0.94.2.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][DOCUMENTATION] Minimal controller code for a quick start
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 07 Feb 2008 18:37:01 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-[]
->> I mean, why it locks in the first place?  Quota subsystem trying
->> to write something into an read-only filesystem?  If so, WHY it
->> is trying to do that on umount instead on a remount-ro?
+The Documentation/cgroups.txt file contains the info on how
+to write some controller for cgroups subsystem, but even with
+this, one need to write quite a lot of code before developing
+the core (or copy-n-paste it from some other place).
 
->   Actually, I couldn't reproduce the hang on my testing machine so I don't
-> know exactly why it hangs. But my guess is that it's because we try to
-> write to the filesystem...
+I propose to put this minimal controller into Documentation
+directory to let people copy-n-paste a) from a known place and 
+b) a small piece of code.
 
-I can't reproduce it here easily as well.  Yesterday I had a
-locked-up console and had to hard-reboot the machine due to
-this (it was far from first time when I've hit this issue),
-but "on-demand reproducing" don't work (the uptime on that
-host was about 100 days, and I had to do some repartition -
-hence remount-ro to copy consistent data to other place -
-maybe during that 100 day there was something... ;)
+Besides, many people learn better reading an example rather
+than/along with a document.
 
-And I wasn't able to reproduce it on 2.6.24 so far, as well
-(this one is only used on a test machine so far).
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-I'll keep trying ;)
+---
 
-Thanks for your support!
-
-/mjt
+diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+index 42d7c4c..66068dc 100644
+--- a/Documentation/cgroups.txt
++++ b/Documentation/cgroups.txt
+@@ -531,6 +531,9 @@ and root cgroup. Currently this will only involve movement between
+ the default hierarchy (which never has sub-cgroups) and a hierarchy
+ that is being created/destroyed (and hence has no sub-cgroups).
+ 
++For a quick start you may want to look at the
++Documentation/controllers/example.c file.
++
+ 4. Questions
+ ============
+ 
+diff --git a/Documentation/controllers/example.c b/Documentation/controllers/example.c
+new file mode 100644
+index 0000000..4a73c77
+--- /dev/null
++++ b/Documentation/controllers/example.c
+@@ -0,0 +1,134 @@
++/*
++ * Documentation/controllers/example.c - A simple controller
++ *
++ * Copy and make s/foo/$SUBSYS_NAME/g in it to get a minimal
++ * working code. Don't forget to add a SUBSYS(foo) line in the
++ * include/linux/cgroup_subsys.h file.
++ *
++ */
++
++#include <linux/cgroup.h>
++
++/*
++ * the foo main structure - it is used to store any info, that
++ * is required from the group of tasks
++ */
++
++struct foo_cgroup {
++	/*
++	 * put your fields here
++	 */
++
++	struct cgroup_subsys_state css;
++
++	/*
++	 * ... or/and here
++	 */
++};
++
++/*
++ * helpers to get the foo_cgroup from a task and a control group
++ */
++
++static inline struct foo_cgroup *foo_from_css(struct cgroup_subsys_state *css)
++{
++	return container_of(css, struct foo_cgroup, css);
++}
++
++static inline struct foo_cgroup *foo_from_cgroup(struct cgroup *cg)
++{
++	return foo_from_css(cgroup_subsys_state(cg, foo_subsys_id));
++}
++
++static inline struct foo_cgroup *foo_from_task(struct task_struct *p)
++{
++	return foo_from_css(task_subsys_state(p, foo_subsys_id));
++}
++
++/*
++ * foo files
++ */
++
++static ssize_t foo_bar_read(struct cgroup *cg, struct cftype *cft,
++		struct file *file, char __user *userbuf,
++		size_t nbytes, loff_t *ppos)
++{
++	struct foo_cgroup *foo;
++
++	foo = foo_from_cgroup(cg);
++
++	/*
++	 * produce some output
++	 */
++
++	return nbytes;
++}
++
++static ssize_t foo_bar_write(struct cgroup *cg, struct cftype *cft,
++		struct file *file, const char __user *userbuf,
++		size_t nbytes, loff_t *ppos)
++{
++	struct foo_cgroup *foo;
++
++	foo = foo_from_cgroup(cg);
++
++	/*
++	 * read and tune the foo
++	 */
++
++	return nbytes;
++}
++
++static struct cftype foo_files[] = {
++	{
++		.name = "bar",
++		.read = foo_bar_read,
++		.write = foo_bar_write,
++	},
++};
++
++/*
++ * foo subsystem basic callbacks
++ */
++
++static struct cgroup_subsys_state *foo_create(struct cgroup_subsys *cs,
++		struct cgroup *cg)
++{
++	struct foo_cgroup *foo;
++
++	foo = kmalloc(sizeof(struct foo_cgroup), GFP_KERNEL);
++	if (foo == NULL)
++		return NULL;
++
++	/*
++	 * initialize your fields
++	 */
++
++	return &foo->css;
++}
++
++static void foo_destroy(struct cgroup_subsys *cs, struct cgroup *cg)
++{
++	struct foo_cgroup *foo;
++
++	foo = foo_from_cgroup(cg);
++
++	/*
++	 * clean your fields
++	 */
++
++	kfree(foo);
++}
++
++static int foo_populate(struct cgroup_subsys *cs, struct cgroup *cg)
++{
++	return cgroup_add_files(cg, cs, foo_files, ARRAY_SIZE(foo_files));
++}
++
++struct cgroup_subsys foo_subsys = {
++	.name = "foo",
++	.subsys_id = foo_subsys_id,
++	.create = foo_create,
++	.destroy = foo_destroy,
++	.populate = foo_populate,
++};
