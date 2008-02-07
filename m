@@ -1,128 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932534AbYBGGYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYBGGYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932534AbYBGGYd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYBGGS2
+	id S1759727AbYBGGYw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYBGGSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:18:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54032 "EHLO mx1.redhat.com"
+	Thu, 7 Feb 2008 01:18:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57597 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752907AbYBGGSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:18:07 -0500
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Denis Cheng <crquan@gmail.com>
-Subject: [PATCH 16/16] dlm: add __init and __exit marks to init and exit functions
-Date: Thu,  7 Feb 2008 00:09:19 -0600
-Message-Id: <1202364559-9201-17-git-send-email-teigland@redhat.com>
-X-Mailer: git-send-email 1.5.3.3
+	id S1753298AbYBGGSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 01:18:10 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Roel Kluin <12o3l@tiscali.nl>
+Subject: Re: [PATCH][drivers/misc/thinkpad_acpi.c] duplicate test if (level & TP_EC_FAN_FULLSPEED)
+Date: Thu, 7 Feb 2008 01:17:44 -0500
+User-Agent: KMail/1.9.5
+Cc: Roland Dreier <rdreier@cisco.com>, len.brown@intel.com,
+       ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+References: <47A78CBB.2090401@tiscali.nl> <ada8x20gykq.fsf@cisco.com> <47A79EC8.6060700@tiscali.nl>
+In-Reply-To: <47A79EC8.6060700@tiscali.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802070117.45119.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis Cheng <crquan@gmail.com>
+Applied.
 
-it moves 365 bytes from .text to .init.text, and 30 bytes from .text to
-.exit.text, saves memory.
+thanks,
+-Len
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
-Signed-off-by: David Teigland <teigland@redhat.com>
----
- fs/dlm/config.c    |    2 +-
- fs/dlm/debug_fs.c  |    2 +-
- fs/dlm/lockspace.c |    2 +-
- fs/dlm/memory.c    |    2 +-
- fs/dlm/netlink.c   |    4 ++--
- fs/dlm/user.c      |    2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/fs/dlm/config.c b/fs/dlm/config.c
-index 2f8e3c8..c3ad1df 100644
---- a/fs/dlm/config.c
-+++ b/fs/dlm/config.c
-@@ -604,7 +604,7 @@ static struct clusters clusters_root = {
- 	},
- };
- 
--int dlm_config_init(void)
-+int __init dlm_config_init(void)
- {
- 	config_group_init(&clusters_root.subsys.su_group);
- 	mutex_init(&clusters_root.subsys.su_mutex);
-diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
-index 52b1196..8fc24f4 100644
---- a/fs/dlm/debug_fs.c
-+++ b/fs/dlm/debug_fs.c
-@@ -541,7 +541,7 @@ void dlm_delete_debug_file(struct dlm_ls *ls)
- 		debugfs_remove(ls->ls_debug_locks_dentry);
- }
- 
--int dlm_register_debugfs(void)
-+int __init dlm_register_debugfs(void)
- {
- 	mutex_init(&debug_buf_lock);
- 	dlm_root = debugfs_create_dir("dlm", NULL);
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index b180fdc..b64e55e 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -191,7 +191,7 @@ static int do_uevent(struct dlm_ls *ls, int in)
- }
- 
- 
--int dlm_lockspace_init(void)
-+int __init dlm_lockspace_init(void)
- {
- 	ls_count = 0;
- 	mutex_init(&ls_lock);
-diff --git a/fs/dlm/memory.c b/fs/dlm/memory.c
-index 65e41e5..54c14c6 100644
---- a/fs/dlm/memory.c
-+++ b/fs/dlm/memory.c
-@@ -18,7 +18,7 @@
- static struct kmem_cache *lkb_cache;
- 
- 
--int dlm_memory_init(void)
-+int __init dlm_memory_init(void)
- {
- 	int ret = 0;
- 
-diff --git a/fs/dlm/netlink.c b/fs/dlm/netlink.c
-index 90374b8..7145936 100644
---- a/fs/dlm/netlink.c
-+++ b/fs/dlm/netlink.c
-@@ -78,7 +78,7 @@ static struct genl_ops dlm_nl_ops = {
- 	.doit		= user_cmd,
- };
- 
--int dlm_netlink_init(void)
-+int __init dlm_netlink_init(void)
- {
- 	int rv;
- 
-@@ -95,7 +95,7 @@ int dlm_netlink_init(void)
- 	return rv;
- }
- 
--void dlm_netlink_exit(void)
-+void __exit dlm_netlink_exit(void)
- {
- 	genl_unregister_ops(&family, &dlm_nl_ops);
- 	genl_unregister_family(&family);
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index 70b31b9..ebbcf38 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -902,7 +902,7 @@ static struct miscdevice ctl_device = {
- 	.minor = MISC_DYNAMIC_MINOR,
- };
- 
--int dlm_user_init(void)
-+int __init dlm_user_init(void)
- {
- 	int error;
- 
--- 
-1.5.3.3
-
+On Monday 04 February 2008 18:24, Roel Kluin wrote:
+> Roland Dreier wrote:
+> >  >                 /* safety net should the EC not support AUTO
+> >  >                  * or FULLSPEED mode bits and just ignore them */
+> >  >                 if (level & TP_EC_FAN_FULLSPEED)
+> >  >                         level |= 7;     /* safety min speed 7 */
+> >  >                 else if (level & TP_EC_FAN_FULLSPEED)
+> >  >                         level |= 4;     /* safety min speed 4 */
+> >  > 
+> >  > Note the duplicate test 'if (level & TP_EC_FAN_FULLSPEED)'. should
+> >  > this be replaced by
+> > 
+> > Actually I suspect one of the two tests should be against TP_EC_FAN_AUTO
+> > (based on the comment).
+> > 
+> 
+> Thanks Roland, for your info
+> 
+> based on the comments in commit eaa7571b2d1a08873e4bdd8e6db3431df61cd9ad,
+> I think this should be modified like below:
+> 
+> ACPI: thinkpad-acpi: add a safety net for TPEC fan control mode
+> The Linux ThinkPad community is not positive that all ThinkPads that do
+> HFSP EC fan control do implement full-speed and auto modes, some of the
+> earlier ones supporting HFSP might not.
+> 
+> If the EC ignores the AUTO or FULL-SPEED bits, it will pay attention to the
+> lower three bits that set the fan level. And as thinkpad-acpi was leaving
+> these set to zero, it would stop(!) the fan, which is Not A Good Thing.
+> So, as a safety net, we now make sure to also set the fan level part of the
+> HFSP register to speed 7 for full-speed, and a minimum of speed 4 for auto
+> mode.
+> --
+> second TP_EC_FAN_FULLSPEED should be P_EC_FAN_AUTO
+> 
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+> index cf56647..3c323fe 100644
+> --- a/drivers/misc/thinkpad_acpi.c
+> +++ b/drivers/misc/thinkpad_acpi.c
+> @@ -4138,7 +4138,7 @@ static int fan_set_level(int level)
+>  		 * or FULLSPEED mode bits and just ignore them */
+>  		if (level & TP_EC_FAN_FULLSPEED)
+>  			level |= 7;	/* safety min speed 7 */
+> -		else if (level & TP_EC_FAN_FULLSPEED)
+> +		else if (level & TP_EC_FAN_AUTO)
+>  			level |= 4;	/* safety min speed 4 */
+>  
+>  		if (!acpi_ec_write(fan_status_offset, level))
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
