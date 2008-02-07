@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbYBGOa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932343AbYBGObk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761406AbYBGOa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 09:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932174AbYBGOaO
+	id S932343AbYBGObk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 09:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYBGOb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 09:30:14 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53661 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761070AbYBGOaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 09:30:12 -0500
-Date: Thu, 7 Feb 2008 15:30:11 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Hugh Dickins <hugh@veritas.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document randomize_va_space and CONFIG_COMPAT_BRK (was
- Re: [PATCH 2/2] ASLR: add possibility for more fine-grained	tweaking)
-In-Reply-To: <20080206231040.GA6225@elte.hu>
-Message-ID: <Pine.LNX.4.64.0802071525520.30955@jikos.suse.cz>
-References: <Pine.LNX.4.64.0802061438150.30955@jikos.suse.cz>
- <Pine.LNX.4.64.0802061442300.30955@jikos.suse.cz> <20080206134959.GA25689@elte.hu>
- <Pine.LNX.4.64.0802061650230.30955@jikos.suse.cz> <20080206231040.GA6225@elte.hu>
+	Thu, 7 Feb 2008 09:31:28 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:34869 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754174AbYBGOb1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 09:31:27 -0500
+Message-ID: <47AB163C.5070107@davidnewall.com>
+Date: Fri, 08 Feb 2008 01:01:24 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?UTF-8?B?SGFucy1Kw7xyZ2VuIEtvY2g=?= <hjk@linutronix.de>
+CC: Christer Weinigel <christer@weinigel.se>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<47A764ED.8030605@weinigel.se>	<1202161091.15090.84.camel@violet>	<20080206213449.6614efea@weinigel.se>	<20080206215442.63c94cf3@dilbert.local>	<47AB056E.70802@davidnewall.com> <20080207150612.21ba60df@dilbert.local>
+In-Reply-To: <20080207150612.21ba60df@dilbert.local>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008, Ingo Molnar wrote:
+Hans-Jürgen Koch wrote:
+> Am Thu, 07 Feb 2008 23:49:42 +1030
+> schrieb David Newall <davidn@davidnewall.com>:
+>   
+>> Nobody is saying "I don't like your licence."  The issue is a
+>> technical restriction in Linux that attempts to restrict non-GPL
+>> software from running under it.  
+>>     
+>
+> What are you trying to say? You like the license but you're against
+> enforcing it? 
+>   
 
-> i'm wondering about the following detail: i guess on 64-bit x86 kernels 
-> we could default to !CONFIG_COMPAT_BRK? In 1997 there was no 64-bit x86. 
-> Maybe for compat 32-bit binaries we could keep it off, but always do it 
-> for 64-bit binaries.
+I told you: the GPL does not preclude inter-operation with non-GPL software.
 
-So what do you think is proper behavior in situation when 
-CONFIG_COMPAT_BRK=N on 64bit kernel, and 32bit-binary is loaded in 32bit 
-emulation?
+>> It's a bullish approach, technically incompetent,
+>>     
+>
+> What's incompetent?
+>   
+It's easily defeated.
 
-We can either leave the brk as-is, but that is in contradiction to user 
-explictly specifying CONFIG_COMPAT_BRK=N. Is this what you propose?
+>> legally meaningless
+>>     
+>
+> It is not legally meaningless if copyright holders publicly state how
+> they interpret the license and what they consider a license violation.
+>   
 
-Or we can randomize brk start in such situation, but that is the behavior 
-we currently automatically have due to CONFIG_COMPAT_BRK=N, so no change 
-is needed.
+Copyright-holders' opinions mean nothing.  In the particular case of
+EXPORT_SYMBOL_GPL, copyright-holders' opinions are clearly flawed
+because they make a statement about code that they do not even know of. 
+It's equivalent to someone saying, "you are wrong," before you've even
+thought about saying something.
 
-Thanks,
+> In the end, a court must decide, but lots of courts will at least look
+> at the statements the copyright holders made over the years.
+>
+>   
+>> and politically damaging.
+>>     
+>
+> That's your opinion because it's damaging _your_ political goals.
+>   
 
--- 
-Jiri Kosina
-SUSE Labs
+How ludicrous.  That's as much a nonsense as EXPORT_SYMBOL_GPL.  You
+have no idea what my political goals are.
+
+Less there be further confusion: I am not an advocate for binary
+drivers.  That role is reserved for others.  However that does not stop
+me from criticising something that is obviously wrong.  Stating that
+only a GPL code is permitted to use a symbol contravenes the GPL,
+because the GPL states no such requirement.  Saying that it's impossible
+for code that uses the symbol to be non-GPL (as has been claimed) is a
+lie at worst, and a hope at best.  Nobody claiming such a thing could
+know it to be true.  (It is not true.)
