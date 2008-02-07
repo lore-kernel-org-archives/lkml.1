@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYBGGux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYBGGyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488AbYBGGux (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 01:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYBGGup
+	id S1756055AbYBGGyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 01:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYBGGyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 01:50:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58676 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752515AbYBGGuo (ORCPT
+	Thu, 7 Feb 2008 01:54:31 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:35013 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753889AbYBGGy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 01:50:44 -0500
-Date: Wed, 6 Feb 2008 22:55:00 -0800
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stable Team <stable@kernel.org>
-Subject: Re: [stable] The SMP alternatives code breaks exception fixup?
-Message-ID: <20080207065500.GA23212@kroah.com>
-References: <479504F6.4080005@redhat.com> <p73zluymnx0.fsf@crumb.suse.de> <alpine.LFD.1.00.0801221312200.3199@apollo.tec.linutronix.de> <47964FD5.6020801@redhat.com> <20080206231020.GB12395@kroah.com> <alpine.LFD.1.00.0802061534470.2883@woody.linux-foundation.org> <20080206234309.GA13758@elte.hu>
+	Thu, 7 Feb 2008 01:54:29 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=kXFDNhFoVqqhnWHoqEHHui6X8stZnTW2unV99xhhlPO2JDoewVOBR6DMazWX1uMm8
+	lGyfBqwxZCU0xNkFoRmDQ==
+Date: Wed, 6 Feb 2008 22:54:19 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Sven Wegener <sven.wegener@stealer.net>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipvs: Make the synchronization interval controllable
+In-Reply-To: <Pine.LNX.4.64.0802062329150.15729@titan.stealer.net>
+Message-ID: <alpine.DEB.1.00.0802062253290.31533@chino.kir.corp.google.com>
+References: <1202333990-19359-1-git-send-email-sven.wegener@stealer.net> <alpine.DEB.1.00.0802061409130.7879@chino.kir.corp.google.com> <Pine.LNX.4.64.0802062329150.15729@titan.stealer.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080206234309.GA13758@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 12:43:09AM +0100, Ingo Molnar wrote:
+On Thu, 7 Feb 2008, Sven Wegener wrote:
+
+> Negative values will be converted to MAX_JIFFY_OFFSET by msecs_to_jiffies and
+> result in a very long interval. A too long interval will be a good way to get
+> your system OOM. We could use an unsigned int or even restrict the value with
+> proc_dointvec_minmax. I'd prefer the latter, that's what I already had in my
+> mind and it also protects from unintentionally choosing a too long interval.
 > 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > > I don't see this in Linus's tree, am I just missing it?  Do you have 
-> > > a git commit id?
-> > 
-> > Isn't this 9d55b9923a1b7ea8193b8875c57ec940dc2ff027 (possibly with 
-> > 2532ec6d178abc55681d049097d3dc577eaa266c on top)?
-> 
-> yeah.
-> 
-> Greg: note that this is against post-unification asm-x86/futex.h so it 
-> wont apply to .24.
-> 
-> I've backported the fix to .24 - find it below. (untested but obvious)
 
-unfortunatly it doesn't even compile:
+Yeah, you're definitely going to want an upper bound on acceptable values 
+and not allow anything negative for the aforementioned reason.
 
-distcc[30740] ERROR: compile (null) on localhost failed
-In file included from include/asm/futex.h:2,
-                 from kernel/futex.c:59:
-include/asm/futex_32.h:72:29: error: macro "__futex_atomic_op1" passed 6 arguments, but takes just 5
-In file included from include/asm/futex.h:2,
-                 from kernel/futex.c:59:
-include/asm/futex_32.h: In function 'futex_atomic_op_inuser':
-include/asm/futex_32.h:71: error: '__futex_atomic_op1' undeclared (first use in this function)
-include/asm/futex_32.h:71: error: (Each undeclared identifier is reported only once
-include/asm/futex_32.h:71: error: for each function it appears in.)
-distcc[30739] ERROR: compile kernel/futex.c on localhost failed
-make[1]: *** [kernel/futex.o] Error 1
-
-
-Care to try again?  :)
-
-thanks,
-
-greg k-h
+		David
