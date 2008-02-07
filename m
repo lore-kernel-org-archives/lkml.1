@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbYBGXMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762188AbYBGXNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbYBGXMv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 18:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYBGXMU
+	id S1762188AbYBGXNW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 18:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760280AbYBGXMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 18:12:20 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59474 "EHLO smtp6.pp.htv.fi"
+	Thu, 7 Feb 2008 18:12:22 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:51663 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757351AbYBGXMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 18:12:18 -0500
-Date: Fri, 8 Feb 2008 01:12:30 +0200
+	id S1759274AbYBGXMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 18:12:20 -0500
+Date: Fri, 8 Feb 2008 01:12:32 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: David Rientjes <rientjes@google.com>, wli@holomorphy.com
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: sparc compile error
-Message-ID: <20080207231230.GE7198@cs181133002.pp.htv.fi>
+To: Christoph Lameter <clameter@sgi.com>, kyle@parisc-linux.org,
+       matthew@wil.cx, grundler@parisc-linux.org
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: parisc compile error
+Message-ID: <20080207231232.GF7198@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,21 +24,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 3062fc67dad01b1d2a15d58c709eff946389eca4 broke sparc:
+Commit 9e2779fa281cfda13ac060753d674bbcaa23367e broke parisc:
 
 <--  snip  -->
 
 ...
-  CC      init/do_mounts.o
-In file included from include/linux/mm.h:39,
-                 from include/linux/memcontrol.h:24,
-                 from include/linux/swap.h:8,
-                 from include/linux/suspend.h:7,
-                 from init/do_mounts.c:6:
-include/asm/pgtable.h:344: warning: parameter names (without types) in function declaration
-include/asm/pgtable.h:345: warning: parameter names (without types) in function declaration
-include/asm/pgtable.h:346: error: expected '=', ',', ';', 'asm' or '__attribute__' before '___f___swp_entry'
-make[1]: *** [init/do_mounts.o] Error 1
+  CC      arch/parisc/kernel/asm-offsets.s
+In file included from include/asm/pgtable.h:13,
+                 from arch/parisc/kernel/asm-offsets.c:36:
+include/linux/mm.h: In function 'is_vmalloc_addr':
+include/linux/mm.h:243: error: 'VMALLOC_START' undeclared (first use in this function)
+include/linux/mm.h:243: error: (Each undeclared identifier is reported only once
+include/linux/mm.h:243: error: for each function it appears in.)
+include/linux/mm.h:243: error: 'VMALLOC_END' undeclared (first use in this function)
+make[1]: *** [arch/parisc/kernel/asm-offsets.s] Error 1
 
 <--  snip  -->
 
