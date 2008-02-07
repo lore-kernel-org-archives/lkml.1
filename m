@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYBGHCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbYBGHEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYBGHCo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 02:02:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYBGHCe
+	id S1756323AbYBGHEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 02:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYBGHEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 02:02:34 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34625 "EHLO mx2.suse.de"
+	Thu, 7 Feb 2008 02:04:48 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34743 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbYBGHCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 02:02:33 -0500
-Date: Wed, 6 Feb 2008 23:00:44 -0800
+	id S1753190AbYBGHEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 02:04:47 -0500
+Date: Wed, 6 Feb 2008 22:58:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: David Miller <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
 Subject: Re: partition sysfs OOPS in current GIT
-Message-ID: <20080207070044.GA4851@suse.de>
+Message-ID: <20080207065803.GA23317@suse.de>
 References: <20080207054738.GB20902@suse.de> <20080206.220544.238067538.davem@davemloft.net> <20080207064210.GA22896@suse.de> <20080206.223944.200455039.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -44,31 +44,9 @@ On Wed, Feb 06, 2008 at 10:39:44PM -0800, David Miller wrote:
 > It's existence just means that the partition is a "whole disk"
 > partition type.
 
-Can you try this patch to see if it solves the oops, and that the file
-is still there and works properly?
+Ah, ok, that's a bit wierd, thanks for explaining it, I'll go make it
+work...
 
 thanks,
 
 greg k-h
-
----
- fs/partitions/check.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -353,11 +353,9 @@ void add_partition(struct gendisk *disk,
- 	partition_sysfs_add_subdir(p);
- 	p->dev.uevent_suppress = 0;
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
--		static struct attribute addpartattr = {
--			.name = "whole_disk",
--			.mode = S_IRUSR | S_IRGRP | S_IROTH,
--		};
--		err = sysfs_create_file(&p->dev.kobj, &addpartattr);
-+		static DEVICE_ATTR(whole_disk, S_IRUSR | S_IRGRP | S_IROTH,
-+				   NULL, NULL);
-+		err = device_create_file(&p->dev, &dev_attr_whole_disk);
- 	}
- 
- 	/* suppress uevent if the disk supresses it */
