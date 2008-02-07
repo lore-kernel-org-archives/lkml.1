@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759178AbYBGQuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbYBGQyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759178AbYBGQuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 11:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbYBGQub
+	id S1757187AbYBGQyV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 11:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYBGQyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 11:50:31 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34952 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754187AbYBGQua (ORCPT
+	Thu, 7 Feb 2008 11:54:13 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:45604 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbYBGQyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 11:50:30 -0500
-Message-ID: <47AB36D2.5050602@davidnewall.com>
-Date: Fri, 08 Feb 2008 03:20:26 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 7 Feb 2008 11:54:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type;
+        b=BE2NrD5i4hlgQt2eMslv95yAVAecIPOQjs+QKMdK+1V531jTmczQSjnBRi5oBSxRQW5VSlk5XasmB3pC12ZyBn3nzPaMvTq1stGyTE0QGVqejIkDwm8kxLbvqag3hyIVV8rS6woGZcj5NahAK6/GmVhdP3ivuA4L1t2oyGR0zLY=
+Date: Thu, 7 Feb 2008 11:53:46 -0500 (EST)
+From: Parag Warudkar <parag.warudkar@gmail.com>
+X-X-Sender: parag@mini.warudkars.net
+Reply-To: parag.warudkar@gmail.com
+To: Parag Warudkar <parag.warudkar@gmail.com>
+cc: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Frank Mayhar <fmayhar@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [Bugme-new] [Bug 9906] New: Weird hang with NPTL and SIGPROF.
+In-Reply-To: <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+Message-ID: <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+References: <bug-9906-10286@http.bugzilla.kernel.org/> <20080206165045.89b809cc.akpm@linux-foundation.org> <1202345893.8525.33.camel@peace.smo.corp.google.com> <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net> <20080207162203.3e3cf5ab@Varda>
+ <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net> <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net> <20080207165455.04ec490b@Varda> <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+User-Agent: Alpine 1.00 (LRH 882 2007-12-20)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-CC: Christer Weinigel <christer@weinigel.se>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<47A764ED.8030605@weinigel.se>	<1202161091.15090.84.camel@violet>	<20080206213449.6614efea@weinigel.se>	<20080206215442.63c94cf3@dilbert.local>	<47AB056E.70802@davidnewall.com>	<20080207150612.21ba60df@dilbert.local>	<47AB163C.5070107@davidnewall.com> <20080207171322.40eb7c95@dilbert.local>
-In-Reply-To: <20080207171322.40eb7c95@dilbert.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans-Jürgen Koch wrote:
-> Am Fri, 08 Feb 2008 01:01:24 +1030
-> schrieb David Newall <davidn@davidnewall.com>:
->   
->>> It is not legally meaningless if copyright holders publicly state
->>> how they interpret the license and what they consider a license
->>> violation. 
->>>       
->> Copyright-holders' opinions mean nothing.  In the particular case of
->> EXPORT_SYMBOL_GPL, copyright-holders' opinions are clearly flawed
->> because they make a statement about code that they do not even know
->> of. 
->>     
->
-> What are you talking about? That's what every GPL-licensed library
-> does. By putting a library under the GPL, the copyright-holder clearly
-> states that he considers all programs that link against that library a
-> derived work. And that he therefor requires these programs to be GPL,
-> too, no matter if these programs already exist or not.
->   
-
-Your last sentence, above: That is what EXPORT_SYMBOL_GPL attempts to
-do.  The place to state such a requirement is in the licence, not in the
-source code.  That is what I am talking about.  I can't provide you with
-software under a licence that says, "you are free to use this software
-in any way you want," and later say, "oh, but in the source code is
-tells you that you must take a break every two hours of use."
 
 
->> Less there be further confusion: I am not an advocate for binary
->> drivers.  
->>     
->
-> Nice to hear. So, if you're an advocate for open source drivers, why do
-> you have problems making them GPL?
->   
+On Thu, 7 Feb 2008, Parag Warudkar wrote:
+> Yep. I will enable PREEMPT and see if it reproduces for me.
 
-I don't, but EXPORT_SYMBOL_GPL doesn't do that.  It makes an ambit
-claim, that might coerce an author into making a driver GPL, but might
-also cause them to exit the Linux market.  I have a problem with driving
-manufacturers away from Linux.
+Not reproducible with PREEMPT either. 
 
-> Using a symbol from a library means linking to it, and that creates a
-> derived work. Why should it be different when using kernel symbols?
-I don't agree with your claim, but I'm going to explain something else:
-The GPL doesn't require software that *uses* GPL code to itself be GPL. 
-It requires software that is *distributed* as part of a GPL work to
-itself be GPL.  At time of distribution, a kernel module is neither
-using nor linked to the kernel.
+Parag
