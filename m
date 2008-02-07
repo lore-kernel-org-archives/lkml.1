@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbYBGPC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbYBGPFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932287AbYBGPC5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 10:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbYBGPCq
+	id S932518AbYBGPFL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 10:05:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbYBGPEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 10:02:46 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:34899 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756032AbYBGPCo (ORCPT
+	Thu, 7 Feb 2008 10:04:34 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56133 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756163AbYBGPEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 10:02:44 -0500
-Message-ID: <47AB1D91.6090609@davidnewall.com>
-Date: Fri, 08 Feb 2008 01:32:41 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Adrian Bunk <bunk@kernel.org>, Chris Friesen <cfriesen@nortel.com>,
-       Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-usb@vger.kernel.org,
+	Thu, 7 Feb 2008 10:04:32 -0500
+Date: Thu, 7 Feb 2008 14:58:17 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<20080203124849.0226560f@weinigel.se>	<84144f020802030635h3a9c4304n943d117e936f1c2d@mail.gmail.com>	<47A5F418.6030104@weinigel.se>	<20080203231530.GB15692@kroah.com>	<courier.47A8EDDC.0000785F@hawking.rebel.net.au>	<47A8F27F.3060504@nortel.com>	<20080206210452.GB7198@cs181133002.pp.htv.fi>	<47AB06F9.30201@davidnewall.com> <20080207141557.5fcf3b2d@core>
-In-Reply-To: <20080207141557.5fcf3b2d@core>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20080207145817.181481e9@core>
+In-Reply-To: <47AB1A3E.3040703@davidnewall.com>
+References: <20080125180232.GA4613@kroah.com>
+	<20080202123710.42df1aa0@weinigel.se>
+	<20080202191930.GA19826@kroah.com>
+	<47A5D895.20300@davidnewall.com>
+	<47A6E742.80408@otello.alma.unibo.it>
+	<courier.47A8F072.000079E4@hawking.rebel.net.au>
+	<20080205232550.5d3d22ff@core>
+	<47AB0101.2050204@davidnewall.com>
+	<20080207141030.78958c29@core>
+	<47AB1A3E.3040703@davidnewall.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> IANAL, but when looking at the "But when you distribute the same 
->>> sections as part of a whole which is a work based on the Program, the 
->>> distribution of the whole must be on the terms of this License" of the 
->>> GPLv2 I would still consult a lawyer before e.g. selling a laptop with a 
->>> closed-source driver loaded through ndiswrapper.
->>>       
->> Don't ignore, "mere aggregation of another work not based on the Program
->> with the Program (or with a work based on the Program) on a volume of a
->> storage or distribution medium does not bring the other work under the
->> scope of this License."  Static linking certainly makes something part
->> of the whole; dynamic linking doesn't.
->>     
->
-> Wrong again. You really are quite amusing.
+> That's what you claim it says, but has any court, anywhere, agreed with
+> you?  You claim the authority of others (i.e. numerous lawyers), but I
+> don't believe you have that authority.  You're just starting hearsay. 
+> You've never said what lawyers and you've never told us what they
+> actually said.
 
-I'm glad to entertain.  It's a pity you refuse to be educated.  Closed
-mind on the topic, perhaps?
+That would be improper as you'd well know if you knew the first thing
+about the subject.
 
+> 
+> I see that you have a clear political agenda, and I respect it in
+> principle, but you're claiming that things are so in pursuit of that
+> agenda when you don't *know* that they are.  You don't need to stretch
+> any truths to spread adoption of GPL, and doing so is not respectable.
 
-> The test is "derivative works" not linking.
+Why don't you just say "you are a liar" as I assume that is what you want
+to say. Then I have to read less words before I find you funny.
 
-That is one of the terms used.  Another, which I pointed out to your
-apparent glee, is "aggregation."  Both terms are relevant only because
-they were chosen for use in GPL.
+> I don't understand this, but I do understand that an essential question
+> being considered is whether or not Linux can participate in a market
+> that prohibits GPL drivers, whether explicitly, or more likely through
+> pressure from regulatory bodies.  Doing this would be a mistake. 
+> Probably a big one.
 
+Linux is GPL licencesed code you either follow the licence or don't use
+it. It's very simple. 
+> 
+> Don't telling people to switch to BSD, as some have done; they might do
+> it.  Where would Linux be if embedded devices used BSD instead?  Don't
 
-> Linking is a meaningless (in law) computing term with no
-> place. Legal precedent for combining of works is drawn from things like
-> shipping a book and a commentary on the book together, putting music to
-> films, putting photos in a book. These are not "linking"
->   
-Whatever the precedent is, and I'll take your word on it even though
-it's more hearsay, it's explicitly covered by that part of the licence
-referring to "mere aggregation."
+I don't actually care. If you want to do binary products then pick a
+product you have the right to do that with. 
 
-> And I know what the lawyers I've talked to have said about the case of
-> shipping proprietary modules with the OS. Its a pretty definite "bad idea"
+> think they can't.  Don't think Linux has a technical advantage.  Lose
+> the embedded market, and that's where it would be felt first, and Linux
+> volumes fall by what?  50%?  90%?  Would you care if servers followed?
 
-Now, that's more like it.  It sounds somewhat believable, unlike your
-previous statements which seemed to say, "you've spoken to numerous
-lawyers and they've all said that proprietary modules violate GPL."  I
-paraphrased you, and if that's not what you meant then please take the
-opportunity to refine your claims.  "Bad idea" is legal speak for, "I'll
-fight it for you, but you can lose."  That's a big step away from
-"dynamic modules must be governed by GPL."
+The market will ultimately decide which models of software development
+are the right ones for which situation. 
+
+Alan
