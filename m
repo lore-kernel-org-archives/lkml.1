@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYBGRoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbYBGRqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbYBGRoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 12:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYBGRnw
+	id S932135AbYBGRqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 12:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbYBGRq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 12:43:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46889 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751287AbYBGRnv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 12:43:51 -0500
-Date: Thu, 7 Feb 2008 09:42:56 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com,
-       npiggin@suse.de, Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@gmail.com>
-Subject: Re: [patch] block layer: kmemcheck fixes
-In-Reply-To: <20080207104901.GF16735@elte.hu>
-Message-ID: <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <1202375945-29525-5-git-send-email-jens.axboe@oracle.com> <20080207100738.GB7716@elte.hu> <20080207101727.GE15220@kernel.dk> <20080207102534.GB16735@elte.hu> <20080207103136.GG15220@kernel.dk>
- <20080207104901.GF16735@elte.hu>
+	Thu, 7 Feb 2008 12:46:28 -0500
+Received: from www.tglx.de ([62.245.132.106]:42843 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755828AbYBGRq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 12:46:27 -0500
+Date: Thu, 7 Feb 2008 18:46:03 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chris Holvenstot <cholvenstot@comcast.net>
+cc: Jiri Kosina <jkosina@suse.cz>, Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-git15 Keyboard Issue?
+In-Reply-To: <1202402704.6087.12.camel@popeye>
+Message-ID: <alpine.LFD.1.00.0802071838110.9204@apollo.tec.linutronix.de>
+References: <1202302978.9058.13.camel@popeye>  <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>  <1202305740.9058.22.camel@popeye>  <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>  <1202318666.6406.13.camel@popeye>  <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
+  <1202381094.6179.0.camel@popeye>  <Pine.LNX.4.64.0802071149260.30955@jikos.suse.cz>  <alpine.LFD.1.00.0802071324410.9204@apollo.tec.linutronix.de>  <1202396868.6087.8.camel@popeye>  <alpine.LFD.1.00.0802071629350.9204@apollo.tec.linutronix.de>
+ <1202402704.6087.12.camel@popeye>
 User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,49 +27,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris,
 
+On Thu, 7 Feb 2008, Chris Holvenstot wrote:
+> Thomas - 
+> 
+> I hope that, from at least my perspective, your question is rhetorical.
 
-On Thu, 7 Feb 2008, Ingo Molnar wrote:
->  	INIT_HLIST_NODE(&rq->hash);
->  	RB_CLEAR_NODE(&rq->rb_node);
-> -	rq->ioprio = 0;
-> -	rq->buffer = NULL;
-> -	rq->ref_count = 1;
-> -	rq->q = q;
-> -	rq->special = NULL;
-> -	rq->data_len = 0;
-> -	rq->data = NULL;
-> -	rq->nr_phys_segments = 0;
-> -	rq->sense = NULL;
-> -	rq->end_io = NULL;
-> -	rq->end_io_data = NULL;
-> -	rq->completion_data = NULL;
-> -	rq->next_rq = NULL;
-> +	rq->completion_data		= NULL;
-> +	/* rq->elevator_private			*/
-> +	/* rq->elevator_private2		*/
-> +	/* rq->rq_disk				*/
-> +	/* rq->start_time			*/
-> +	rq->nr_phys_segments		= 0;
-> +	/* rq->nr_hw_segments			*/
-> +	rq->ioprio			= 0;
-> +	rq->special			= NULL;
-> +	rq->buffer			= NULL;
-...
+Yeah. The non rhetorical one was directed to Jiri. :)
 
-Can we please just stop doing these one-by-one assignments, and just do 
-something like
+> I am fully willing to publicly admit that I don't have a clue. About
+> much of anything. I will even admit that until prompted by Jiri
+> yesterday I had never even heard of the nohpet directive for the boot
+> line. 
 
-	memset(rq, 0, sizeof(*rq));
-	rq->q = q;
-	rq->ref_count = 1;
-	INIT_HLIST_NODE(&rq->hash);
-	RB_CLEAR_NODE(&rq->rb_node);
+No problem. At the moment I'm equally clueless :)
+ 
+> I am willing to do whatever I can to help isolate and or resolve this
+> issue, but to do so I need one of you experts to firmly grab hold of
+> some portion of my anatomy and guide me in the right direction.
 
-instead?
+Can you please apply the following patch, boot w/o nohpet and provide
+the dmesg output ?
 
-The memset() is likely faster and smaller than one-by-one assignments 
-anyway, even if the one-by-ones can avoid initializing some field or there 
-ends up being a double initialization..
+Thanks,
+	tglx
 
-			Linus
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 429d084..4e98241 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -375,8 +375,10 @@ int __init hpet_enable(void)
+ {
+ 	unsigned long id;
+ 
+-	if (!is_hpet_capable())
++	if (!is_hpet_capable()) {
++		printk(KERN_INFO "HPET not available\n");
+ 		return 0;
++	}
+ 
+ 	hpet_set_mapping();
+ 
+@@ -392,6 +394,7 @@ int __init hpet_enable(void)
+ 	 * information and the number of channels
+ 	 */
+ 	id = hpet_readl(HPET_ID);
++	printk(KERN_INFO "HPET available. ID = %lx\n", id);
+ 
+ #ifdef CONFIG_HPET_EMULATE_RTC
+ 	/*
+@@ -412,6 +415,7 @@ int __init hpet_enable(void)
+ 	return 0;
+ 
+ out_nohpet:
++	printk(KERN_INFO "HPET disabled\n");
+ 	hpet_clear_mapping();
+ 	boot_hpet_disable = 1;
+ 	return 0;
