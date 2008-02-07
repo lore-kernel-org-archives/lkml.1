@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYBGEZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbYBGE22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759273AbYBGEZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Feb 2008 23:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbYBGEZ1
+	id S1759651AbYBGE22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Feb 2008 23:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbYBGE2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Feb 2008 23:25:27 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34789 "EHLO e2.ny.us.ibm.com"
+	Wed, 6 Feb 2008 23:28:18 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:34137 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755307AbYBGEZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Feb 2008 23:25:26 -0500
-Subject: [PATCH] ext4 can fail badly when device stops accepting
-	BIO_RW_BARRIER requests.
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Neil Brown <neilb@suse.de>
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <18346.24466.83745.944149@notabene.brown>
-References: <18346.24466.83745.944149@notabene.brown>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 22:25:21 -0600
-Message-Id: <1202358321.6497.5.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	id S1755490AbYBGE2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Feb 2008 23:28:17 -0500
+Date: Thu, 7 Feb 2008 13:28:09 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipvs: Make the synchronization interval controllable
+Message-ID: <20080207042808.GA6211@verge.net.au>
+References: <Pine.LNX.4.64.0802062329150.15729@titan.stealer.net> <1202342263-25176-1-git-send-email-sven.wegener@stealer.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202342263-25176-1-git-send-email-sven.wegener@stealer.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duplicating Neil Brown's jbd patch for jbd2.  I guess this can go
-through the ext4 queue rather than straight into -mm.
+On Thu, Feb 07, 2008 at 12:57:43AM +0100, Sven Wegener wrote:
+> The default synchronization interval of 1000 milliseconds is too high for a
+> heavily loaded director. Collecting the connection information from one second
+> and then sending it out in a burst will overflow the socket buffer and lead to
+> synchronization information being dropped. Make the interval controllable by a
+> sysctl variable so that users can tune it. We enforce a lower limit of 0 and an
+> upper limit of 2000 ms on the interval. A too large interval can make the
+> synchronization buffer consume too much memory and will also delay the exit of
+> the kernel threads.
+> 
+> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
 
-Neil's text:
+Hi Sven,
 
-Some devices - notably dm and md - can change their behaviour in
-response to BIO_RW_BARRIER requests.  They might start out accepting
-such requests but on reconfiguration, they find out that they cannot
-any more.
+I have no problems with the spirit of this patch, and the range checking
+seems good to me.  Though I wonder if 2000 might not be an exessively
+low maximum.  I can't think of a usage case off-hand, but I'm not sure I
+understand why a user shouldn't be able to set it to much (rediculously)
+higher values.
 
-ext3 (and other filesystems) deal with this by always testing if
-BIO_RW_BARRIER requests fail with EOPNOTSUPP, and retrying the write
-requests without the barrier (probably after waiting for any pending
-writes to complete).
+In any case, thats not a big deal.
 
-However there is a bug in the handling for this for ext3.
+Acked-by: Simon Horman <horms@verge.net.au>
 
-When ext3 (jbd actually) decides to submit a BIO_RW_BARRIER request,
-it sets the buffer_ordered flag on the buffer head.
-If the request completes successfully, the flag STAYS SET.
+> ---
+> 
+> Changes from the last version include the addition of the range enforcement.
+> Also place the definitions of the variables where all other ipvs sysctl
+> variables are.
 
-Other code might then write the same buffer_head after the device has
-been reconfigured to not accept barriers.  This write will then fail,
-but the "other code" is not ready to handle EOPNOTSUPP errors and the
-error will be treated as fatal.
-
-This can be seen without having to reconfigure a device at exactly the
-wrong time by putting:
-
-                if (buffer_ordered(bh))
-                        printk("OH DEAR, and ordered buffer\n");
-
-
-in the while loop in "commit phase 5" of journal_commit_transaction.
-
-If it ever prints the "OH DEAR ..." message (as it does sometimes for
-me), then that request could (in different circumstances) have failed
-with EOPNOTSUPP, but that isn't tested for.
-
-My proposed fix is to clear the buffer_ordered flag after it has been
-used, as in the following patch.
-
-Thanks,
-NeilBrown
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-diff -Nurp linux-2.6.24-mm1/fs/jbd2/commit.c linux/fs/jbd2/commit.c
---- linux-2.6.24-mm1/fs/jbd2/commit.c	2008-02-04 09:08:44.000000000 -0600
-+++ linux/fs/jbd2/commit.c	2008-02-06 22:11:14.000000000 -0600
-@@ -148,6 +148,8 @@ static int journal_submit_commit_record(
- 		barrier_done = 1;
- 	}
- 	ret = submit_bh(WRITE, bh);
-+	if (barrier_done)
-+		clear_buffer_ordered(bh);
- 
- 	/* is it possible for another commit to fail at roughly
- 	 * the same time as this one?  If so, we don't want to
-@@ -166,7 +168,6 @@ static int journal_submit_commit_record(
- 		spin_unlock(&journal->j_state_lock);
- 
- 		/* And try again, without the barrier */
--		clear_buffer_ordered(bh);
- 		set_buffer_uptodate(bh);
- 		set_buffer_dirty(bh);
- 		ret = submit_bh(WRITE, bh);
-
+-- 
+Horms
 
