@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759768AbYBGINH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbYBGIUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759768AbYBGINH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 03:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYBGIMy
+	id S1756443AbYBGIUw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 03:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbYBGIUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 03:12:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42880 "EHLO mx2.mail.elte.hu"
+	Thu, 7 Feb 2008 03:20:43 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:44543 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753078AbYBGIMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 03:12:53 -0500
-Date: Thu, 7 Feb 2008 09:12:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: clean up find_e820_area
-Message-ID: <20080207081239.GC28631@elte.hu>
-References: <200802061246.43413.yinghai.lu@sun.com> <20080206231226.GA6417@elte.hu> <200802062022.44069.yinghai.lu@sun.com> <200802062023.30427.yinghai.lu@sun.com>
+	id S1754136AbYBGIUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 03:20:43 -0500
+From: Frank Seidel <fseidel@suse.de>
+Organization: SuSE Linux Products GmbH
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH v2] mmc: extend ricoh_mmc to support Ricoh RL5c476
+Date: Thu, 7 Feb 2008 09:20:38 +0100
+User-Agent: KMail/1.9.5
+Cc: Philip Langdale <philipl@overt.org>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, Andrew de Quincey <adq_dvb@lidskialf.net>
+References: <200801311838.24743.fseidel@suse.de> <200802041925.43081.fseidel@suse.de> <20080207090834.3c6fde7d@poseidon.drzeus.cx>
+In-Reply-To: <20080207090834.3c6fde7d@poseidon.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802062023.30427.yinghai.lu@sun.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200802070920.39120.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-
-> [PATCH] x86_64: clean up find_e820_area
+On Thursday 07 February 2008 09:08, Pierre Ossman wrote:
+> On Mon, 4 Feb 2008 19:25:42 +0100
+> Frank Seidel <fseidel@suse.de> wrote:
+> > Signed-off-by: Frank Seidel <fseidel@suse.de>
 > 
-> change size to unsigned long, becase caller and user all used unsigned 
-> long. also make bad_addr take align.
+> I see you've guys have kept yourself busy in my absence. :)
 
-thanks, applied.
+Yes, we really did :)
 
-[ tiny nitpicking detail:
+> As for the patch, it looks ok although I'm not really a fan of more
+> voodoo constants that noone knows what they mean. Could you add some
+> comments explaining some of them at least?  
 
- > -static inline int bad_addr(unsigned long *addrp, unsigned long size)
- > +static inline int bad_addr(unsigned long *addrp, unsigned long size, unsigned long align)
+I also don't like that voodoo, but as long as we don't have more information
+or let alone specs.. well, i really wish i could provide more than
+the already IMHO obvious sequence.. voodoo-adress and value to make config
+bit writeable, set voodo-bit and cleanup again.
 
- please run scripts/checkpatch.pl over your patches, that would have 
- caught the above overlong line. ]
+> > +	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+> 
+> *snip*
+> 
+> > +	} else {
+> > +		/* via R5C832 */
+> 
+> Wouldn't it be prudent to have a check that this is indeed a R5C832,
+> and a failure mode if it's none of the two known devices? 
 
-> @@ -105,7 +105,7 @@ again:
->  	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
->  		struct early_res *r = &early_res[i];
->  		if (last >= r->start && addr < r->end) {
-> -			*addrp = addr = r->end;
-> +			*addrp = addr = round_up(r->end, align);
+Also thought about that, but as far as i can see this cannot happen since
+we only probe for those two devices and deny to continue if anything else
+/those two were not found in the beginning.
 
-nice! This makes the reservation intent and effect much clearer.
-
-	Ingo
+Thanks,
+Frank
