@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbYBGUao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbYBGUbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761548AbYBGUao (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 15:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYBGUag
+	id S1761970AbYBGUbf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 15:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbYBGUb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 15:30:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60083 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753033AbYBGUag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 15:30:36 -0500
+	Thu, 7 Feb 2008 15:31:27 -0500
+Received: from wr-out-0506.google.com ([64.233.184.229]:48087 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754072AbYBGUb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 15:31:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VXopNlKxRV89NWmk6uaAHkIcFnOEfO5IsLvk/W0N6M/zLMzpP1Lw1jmH7Dx4zbYSadSyCG6sT7U/mkyWQwP2SCxncbrPQg+2nxgt00elyPx9i5xAnkJYL7IkBkUv6NAqni2hGDQUeR93u1N6xNbbf4yZ7NU0EsRUIdymwDiAp88=
+Message-ID: <8bd0f97a0802071231n56c1ba3fs86f2aeb188f6a853@mail.gmail.com>
+Date: Thu, 7 Feb 2008 15:31:23 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <cooloney.lkml@gmail.com>
+Subject: Re: blackfin compile error
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>, mpm@selenic.com,
+       bunk@kernel.org, bryan.wu@analog.com, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+In-Reply-To: <386072610802071137i697897dcr2d1c6ecab50f4809@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64: make traps on 'iret' be debuggable in user	space
-In-Reply-To: Chuck Ebbert's message of  Thursday, 7 February 2008 15:13:06 -0500 <47AB6652.3010600@redhat.com>
-References: <20080205075137.617012701A8@magilla.localdomain>
-	<20080205080149.GA16929@elte.hu>
-	<20080205081506.655CB2701A8@magilla.localdomain>
-	<47AB6652.3010600@redhat.com>
-Emacs: don't try this at home, kids!
-Message-Id: <20080207203032.5BF392701AB@magilla.localdomain>
-Date: Thu,  7 Feb 2008 12:30:32 -0800 (PST)
+Content-Disposition: inline
+References: <20080206151830.GI505@cs181133002.pp.htv.fi>
+	 <1202315015.17934.242.camel@cinder.waste.org>
+	 <200802061412.50675.rgetz@blackfin.uclinux.org>
+	 <20080206113734.511473b0.akpm@linux-foundation.org>
+	 <386072610802062326h4e41a351h28f1d93906784ed0@mail.gmail.com>
+	 <8bd0f97a0802070803x2497b783o516491ed6249a4fe@mail.gmail.com>
+	 <386072610802071137i697897dcr2d1c6ecab50f4809@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Did you test without CONFIG_PARAVIRT, and CONFIG_PARAVIRT booted both with and
-> without the "noreplace-paravirt" parameter?
+On Feb 7, 2008 2:37 PM, Bryan Wu <cooloney.lkml@gmail.com> wrote:
+> On Feb 8, 2008 12:03 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > On Feb 7, 2008 2:26 AM, Bryan Wu <cooloney.lkml@gmail.com> wrote:
+> > > On Feb 7, 2008 3:37 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > The world would be a better place if arch maintainers (or their helpers)
+> > > > were to build and test -mm once a month or so.
+> > >
+> > > I will be here for Blackfin. Actually, we got some patches in -mm, it
+> > > is necessary to built and test -mm on Blackfin.
+> >
+> > ive setup one of our internal machines to auto build all the Blackfin
+> > defconfigs found in mainline git and the mm tree
+>
+> Thanks a lot, it makes life easier.
+>
+> > just need to find a way to publish/notify people upon failure ...
+>
+> Maybe Grace can help to setup some cruisecontrol auto test machine
+> with email notification.
 
-I did not test CONFIG_PARAVIRT at all.  I just fixed what its introduction
-had done to break generic x86-64.
-
-
-Thanks,
-Roland
+i'm thinking i'll post the linux-2.6.git/blackfin-2.6.git/linux-mm
+tree results to the Blackfin kernel list
+-mike
