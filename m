@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYBHWR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYBHWSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbYBHWR5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbYBHWRu
+	id S1757059AbYBHWSY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYBHWSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:17:50 -0500
-Received: from mail.windriver.com ([147.11.1.11]:41913 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbYBHWRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:17:49 -0500
-Message-ID: <47ACD4CB.7090701@windriver.com>
-Date: Fri, 08 Feb 2008 16:16:43 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
+	Fri, 8 Feb 2008 17:18:12 -0500
+Received: from qb-out-0506.google.com ([72.14.204.229]:39888 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbYBHWSJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:18:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=bLlSryDVdASzOhkWi+idxbXSmDEyU4AZMHgbj7u0WwoYFuRThsVFs1uFlere9i9BQPlcK0X/MrhHmoOMA1h1xQvDuk3VwU5YKuJYuml1SOtZ0M4TpAMlSku2R9HPq0/eIL0wawHo3Ngr4tFmiZTiB0f4kAWH/d0d96YdwZVcec8=
+Subject: Re: [PATCH] fix sparse warning from include/linux/mmzone.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jan Kiszka <jan.kiszka@web.de>, Andi Kleen <andi@firstfloor.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC][PATCH] KGDB: remove kgdb-own fault handling
-References: <20080130011550.GA31853@elte.hu> <200802050436.31070.maximlevitsky@gmail.com> <alpine.LFD.1.00.0802041922300.3237@woody.linux-foundation.org> <p73ejbn2xk2.fsf@bingen.suse.de> <47AC95FC.5090701@siemens.com> <20080208185719.GA11573@one.firstfloor.org> <47ACC97C.3000806@web.de> <alpine.LFD.1.00.0802081347150.2896@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802081347150.2896@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
+References: <1202417543.31361.5.camel@brick>
+	 <20080208135154.ccdac0c1.akpm@linux-foundation.org>
+	 <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 14:17:58 -0800
+Message-Id: <1202509083.8067.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Feb 2008 22:16:22.0215 (UTC) FILETIME=[3C7C4D70:01C86AA0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Fri, 8 Feb 2008, Jan Kiszka wrote:
->   
->> Well, let's try it this way: Find below a patch against kgdb.git that
->> removes the special fault handling (this wouldn't be the first feature I
->> recently removed from kgdb :->). Light testing revealed no obvious
->> problems yet.
->>     
->
-> That is indeed horrible code. No way will I merge anything that has things 
-> like that even in it's *history* (ie somebody needs to re-generate the 
-> tree without code like that - some things should not be allowed to exist).
->
->   
+On Fri, 2008-02-08 at 14:04 -0800, Linus Torvalds wrote:
+> 
+> On Fri, 8 Feb 2008, Andrew Morton wrote:
+> > >  #ifdef CONFIG_HIGHMEM
+> > > -	int zone_idx = zone - zone->zone_pgdat->node_zones;
+> > > -	return zone_idx == ZONE_HIGHMEM ||
+> > > -		(zone_idx == ZONE_MOVABLE && zone_movable_is_highmem());
+> > > +	const int highmem_off = ZONE_HIGHMEM * sizeof(*zone);
+> > > +	const int movable_off = ZONE_MOVABLE * sizeof(*zone);
+> > > +
+> > > +	int zone_off = (unsigned long)zone - (unsigned long)zone->zone_pgdat->node_zones;
+> > > +	return zone_off == highmem_off ||
+> > > +		(zone_off == movable_off && zone_movable_is_highmem());
+> > 
+> > hrm.  For my i386 build (and that's where CONFIG_HIGHMEM really matters)
+> > this patch makes mm/page_alloc.o six bytes larger, and I don't think the
+> > change did much for readability.
+> 
+> Heh, yeah. That's a very odd way to write it.
 
-I concur.  I will collapse the entire kgdb tree back to the original few
-patches which can be bisected.
+As long as you read 'odd' as 'rather dumb'
 
-> That said, while just using "probe_kernel_addr()" is certainly much 
-> better, it's still really inefficient. If you actually want to do a "safe 
-> memory copy", then the right way to do that is basically to do
->
-> 	pagefault_disable();
-> 	leftover = __copy_from_user_inatomic(dst, src, count);
-> 	pagefault_enable();
->
-> 	if (leftover)
-> 		handle_the_fact_that_the_copy_didnt_complete();
->
->   
+> 
+> It would probably make more sense to just write it as something like
+> 
+> 	struct zone *base = zone->zone_pgdat->node_zones;
+> 
+> 	if (zone == base + ZONE_HIGHMEM ||
+> 		(zone == base + ZONE_MOVABLE && zone_movable_is_highmem());
 
-Duly Noted.  Further cleanups are in progress.
+s/if/return/ I think.  And missing a closing brace.  Unless I'm (again)
+missing something.
+
+Harvey
 
 
-Thanks,
-Jason.
