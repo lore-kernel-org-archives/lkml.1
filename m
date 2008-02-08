@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935258AbYBHLa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935283AbYBHLcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935258AbYBHLa4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 06:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935158AbYBHLaP
+	id S935283AbYBHLcA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 06:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933324AbYBHLbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 06:30:15 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58011 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934889AbYBHLaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 06:30:12 -0500
-Date: Fri, 8 Feb 2008 05:21:20 -0600
-From: David Teigland <teigland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] dlm updates for 2.6.25 (batch 2)
-Message-ID: <20080208112120.GA17595@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 8 Feb 2008 06:31:46 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:29946 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932924AbYBHLbp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 06:31:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JHbcoSX7bXtFInzmOxST2YGS/MIlCE2vtt+q+boC2yATIzpUdL3vRga21rlyxQDYRQoUvSbRGk0rp3dDsToThiBdpB2dxu5SgQPn8/wsZMlfW7Hi8phEUu7PFYG9xOmr9x8ok3JRUIQntlRicHApe2PVaPs4LE0Aiqx92sj4sBI=
+Message-ID: <84144f020802080331j5bc01bc6naf1fe0192aadf70b@mail.gmail.com>
+Date: Fri, 8 Feb 2008 13:31:44 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH 1/2] kmemcheck v3
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20080208115542.GD4745@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+References: <47AB79D4.2070605@gmail.com>
+	 <20080208115542.GD4745@one.firstfloor.org>
+X-Google-Sender-Auth: a80b59b917494eea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi Andi,
 
-Please pull a second batch of dlm updates for 2.6.25 from:
+On Feb 8, 2008 1:55 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> Impressive patch! On the other hand a lot of the interesting
+> data isn't it kmalloc anymore, but in slab. Does it really track
+> all that much?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
-
-Al Viro (13):
-      dlm: use proper C for dlm/requestqueue stuff (and fix alignment bug)
-      dlm: dlm_process_incoming_buffer() fixes
-      dlm: do not byteswap rcom_lock
-      dlm: do not byteswap rcom_config
-      dlm: use proper type for ->ls_recover_buf
-      dlm: missing length check in check_config()
-      dlm: validate data in dlm_recover_directory()
-      dlm: verify that places expecting rcom_lock have packet long enough
-      dlm: receive_rcom_lock_args() overflow check
-      dlm: make find_rsb() fail gracefully when namelen is too large
-      dlm: fix overflows when copying from ->m_extra to lvb
-      dlm: fix dlm_dir_lookup() handling of too long names
-      dlm: dlm/user.c input validation fixes
-
-David Teigland (2):
-      dlm: proper types for asts and basts
-      dlm: eliminate astparam type casting
-
-Denis Cheng (1):
-      dlm: add __init and __exit marks to init and exit functions
-
- fs/dlm/ast.c          |    9 ++--
- fs/dlm/config.c       |    2 +-
- fs/dlm/debug_fs.c     |    8 +--
- fs/dlm/dir.c          |   28 +++++++++--
- fs/dlm/dlm_internal.h |   53 +++++++++++--------
- fs/dlm/lock.c         |  139 +++++++++++++++++++++++++++++--------------------
- fs/dlm/lock.h         |    2 +-
- fs/dlm/lockspace.c    |    2 +-
- fs/dlm/memory.c       |    4 +-
- fs/dlm/midcomms.c     |   33 +++++++-----
- fs/dlm/netlink.c      |    9 ++--
- fs/dlm/rcom.c         |   63 ++++++++++++++--------
- fs/dlm/recover.c      |    4 +-
- fs/dlm/requestqueue.c |   12 ++--
- fs/dlm/requestqueue.h |    2 +-
- fs/dlm/user.c         |   29 ++++------
- fs/dlm/util.c         |   61 ---------------------
- 17 files changed, 235 insertions(+), 225 deletions(-)
+It tracks all slab caches. What we're not tracking is pages from the
+page allocator that are directly used by callers. We had some
+discussion of this already and we definitely want to extend it to
+cover that too later on.
