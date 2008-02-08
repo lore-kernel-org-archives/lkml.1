@@ -1,197 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933272AbYBHTFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932607AbYBHTIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933272AbYBHTFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 14:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933395AbYBHTEx
+	id S932607AbYBHTIc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 14:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758828AbYBHTIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 14:04:53 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:44657 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933390AbYBHTEu (ORCPT
+	Fri, 8 Feb 2008 14:08:20 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35123 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758730AbYBHTIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 14:04:50 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] tty: BKL pushdown fix
-Date: Fri,  8 Feb 2008 20:04:47 +0100
-Message-Id: <1202497487-32550-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <20080208154208.0efd6885@core>
-References: <20080208154208.0efd6885@core>
+	Fri, 8 Feb 2008 14:08:18 -0500
+Message-ID: <47ACA8A5.9010807@davidnewall.com>
+Date: Sat, 09 Feb 2008 05:38:21 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>	 <47A5D9CD.5070001@davidnewall.com>	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>	 <47A5E67D.9040804@davidnewall.com>	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>	 <courier.47A8497B.0000472E@hawking.rebel.net.au>	 <1202240590.15090.119.camel@violet>  <47AB0A76.3000404@davidnewall.com>	 <1202411113.15090.263.camel@violet>  <47ABD317.5060805@davidnewall.com> <1202462101.15090.300.camel@violet> <47ACA204.7030702@davidnewall.com>
+In-Reply-To: <47ACA204.7030702@davidnewall.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/char/n_hdlc.c  |    4 ++--
- drivers/char/n_r3964.c |    6 +++---
- drivers/char/n_tty.c   |    2 +-
- drivers/char/tty_io.c  |   16 +++++++++-------
- drivers/char/vt.c      |    8 ++++----
- 5 files changed, 19 insertions(+), 17 deletions(-)
+I explained something poorly:
+> Now, Alan has made a big issue over numerous legal opinions he has
+> received, but he's been completely coy in the details.
 
-diff --git a/drivers/char/n_hdlc.c b/drivers/char/n_hdlc.c
-index 0bc0498..77629da 100644
---- a/drivers/char/n_hdlc.c
-+++ b/drivers/char/n_hdlc.c
-@@ -579,7 +579,7 @@ static ssize_t n_hdlc_tty_read(struct tty_struct *tty, struct file *file,
- 	}
- 
- 	lock_kernel();
--	
-+
- 	for (;;) {
- 		if (test_bit(TTY_OTHER_CLOSED, &tty->flags)) {
- 			unlock_kernel();
-@@ -672,7 +672,7 @@ static ssize_t n_hdlc_tty_write(struct tty_struct *tty, struct file *file,
- 	}
- 	
- 	lock_kernel();
--	
-+
- 	add_wait_queue(&tty->write_wait, &wait);
- 	set_current_state(TASK_INTERRUPTIBLE);
- 	
-diff --git a/drivers/char/n_r3964.c b/drivers/char/n_r3964.c
-index 3eb7880..3f6486e 100644
---- a/drivers/char/n_r3964.c
-+++ b/drivers/char/n_r3964.c
-@@ -1074,7 +1074,7 @@ static ssize_t r3964_read(struct tty_struct *tty, struct file *file,
- 	int count;
- 
- 	TRACE_L("read()");
--	
-+
- 	lock_kernel();
- 
- 	pClient = findClient(pInfo, task_pid(current));
-@@ -1165,7 +1165,7 @@ static ssize_t r3964_write(struct tty_struct *tty, struct file *file,
- 	pHeader->owner = NULL;
- 
- 	lock_kernel();
--	
-+
- 	pClient = findClient(pInfo, task_pid(current));
- 	if (pClient) {
- 		pHeader->owner = pClient;
-@@ -1182,7 +1182,7 @@ static ssize_t r3964_write(struct tty_struct *tty, struct file *file,
-  */
- 	add_tx_queue(pInfo, pHeader);
- 	trigger_transmit(pInfo);
--	
-+
- 	unlock_kernel();
- 
- 	return 0;
-diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-index a9c8c8f..79a052e 100644
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -1303,7 +1303,7 @@ do_it_again:
- 			return -ERESTARTSYS;
- 	}
- 	packet = tty->packet;
--	
-+
- 	add_wait_queue(&tty->read_wait, &wait);
- 	while (nr) {
- 		/* First test for status change. */
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 3d489ce..bf08a38 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1204,8 +1204,8 @@ static unsigned int hung_up_tty_poll(struct file *filp, poll_table *wait)
- 	return POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDNORM | POLLWRNORM;
- }
- 
--static long hung_up_tty_ioctl(struct inode *inode, struct file *file,
--			     unsigned int cmd, unsigned long arg)
-+static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
-+		unsigned long arg)
- {
- 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
- }
-@@ -1259,7 +1259,7 @@ static const struct file_operations hung_up_tty_fops = {
- 	.read		= hung_up_tty_read,
- 	.write		= hung_up_tty_write,
- 	.poll		= hung_up_tty_poll,
--	.ioctl		= hung_up_tty_ioctl,
-+	.unlocked_ioctl	= hung_up_tty_ioctl,
- 	.compat_ioctl	= hung_up_tty_compat_ioctl,
- 	.release	= tty_release,
- };
-@@ -3208,10 +3208,12 @@ static int tiocsetd(struct tty_struct *tty, int __user *p)
- 
- 	if (get_user(ldisc, p))
- 		return -EFAULT;
--		
-+
- 	lock_kernel();
- 	ret = tty_set_ldisc(tty, ldisc);
- 	unlock_kernel();
-+
-+	return ret;
- }
- 
- /**
-@@ -3230,7 +3232,7 @@ static int tiocsetd(struct tty_struct *tty, int __user *p)
- static int send_break(struct tty_struct *tty, unsigned int duration)
- {
- 	int retval = -EINTR;
--	
-+
- 	lock_kernel();
- 	if (tty_write_lock(tty, 0) < 0)
- 		goto out;
-@@ -3345,9 +3347,9 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	/*
- 	 * Break handling by driver
- 	 */
--	 
-+
- 	retval = -EINVAL;
--	
-+
- 	if (!tty->driver->break_ctl) {
- 		switch (cmd) {
- 		case TIOCSBRK:
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index d6a3a2a..a26d65b 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -2531,9 +2531,9 @@ int tioclinux(struct tty_struct *tty, unsigned long arg)
- 	if (get_user(type, p))
- 		return -EFAULT;
- 	ret = 0;
--	
-+
- 	lock_kernel();
--	
-+
- 	switch (type)
- 	{
- 		case TIOCL_SETSEL:
-@@ -2553,7 +2553,7 @@ int tioclinux(struct tty_struct *tty, unsigned long arg)
- 			ret = sel_loadlut(p);
- 			break;
- 		case TIOCL_GETSHIFTSTATE:
--			
-+
- 	/*
- 	 * Make it possible to react to Shift+Mousebutton.
- 	 * Note that 'shift_state' is an undocumented
-@@ -3823,7 +3823,7 @@ static int con_font_get(struct vc_data *vc, struct console_font_op *op)
- 		goto out;
- 
- 	c = (font.width+7)/8 * 32 * font.charcount;
--	
-+
- 	if (op->data && font.charcount > op->charcount)
- 		rc = -ENOSPC;
- 	if (!(op->flags & KD_FONT_FLAG_OLD)) {
--- 
-1.5.3.8
-
+The point I wanted to make is that a few people have said that lawyers
+say that kernel modules are derivative, but I only remember Alan saying
+that he had actually spoken with the lawyers.  Therefore I infer that
+this somewhat widely held opinion originates from him.  My point was to
+those people who have been taking him at his word, and was to point out
+that there are more reliable and transparent sources.  Don't take his
+word on it.  Take the words of real experts in the law, because instead
+of a mere four word conclusion, they explain everything.
