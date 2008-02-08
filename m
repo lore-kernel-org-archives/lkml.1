@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934053AbYBHJ4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934312AbYBHJ50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934053AbYBHJ4d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 04:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbYBHJ4Y
+	id S934312AbYBHJ50 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 04:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760351AbYBHJ5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 04:56:24 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54041 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760270AbYBHJ4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 04:56:23 -0500
-Date: Fri, 8 Feb 2008 09:45:38 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Marcin Juszkiewicz <openembedded@haerwu.biz>,
-       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-Message-ID: <20080208094538.GC21852@flint.arm.linux.org.uk>
-References: <20080207133805.13f092ff@dilbert.local> <20080207125824.GB7111@infradead.org> <20080207130117.GA18750@uranus.ravnborg.org> <200802071609.36960.openembedded@haerwu.biz> <20080207160557.GB28435@flint.arm.linux.org.uk> <20080207202329.GA21949@uranus.ravnborg.org> <1202461453.5469.217.camel@pmac.infradead.org>
-Mime-Version: 1.0
+	Fri, 8 Feb 2008 04:57:11 -0500
+Received: from ozlabs.org ([203.10.76.45]:33350 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760270AbYBHJ5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 04:57:09 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202461453.5469.217.camel@pmac.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18348.10091.120122.608010@cargo.ozlabs.ibm.com>
+Date: Fri, 8 Feb 2008 20:56:59 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Please pull powerpc.git for-2.6.25 branch
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 09:04:13AM +0000, David Woodhouse wrote:
-> On Thu, 2008-02-07 at 21:23 +0100, Sam Ravnborg wrote:
-> > Both situations are trivially fixable by introducing
-> > HAVE_IDE and HAVE_MTD.
-> > See attached patch.
-> 
-> HAVE_MTD is wrong.
+Linus,
 
-If we are serious about allowing ARM to use drivers/Kconfig, then let's
-not get distracted by perfection - by trying to do too many changes in
-one go.
+Please do
 
-If, today, we conditionalise MTD or IDE on a certain set of symbols,
-then those conditions should be preserved in the first step - it should
-be a 1:1 translation.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git for-2.6.25
 
-Later, if there's a need to improve it (as you're suggesting) that should
-be a *separate* change.
+to get some bug-fixes for powerpc (1 for powermac and 8 for Cell),
+plus 3 commits from Badari Pulavarty that implement memory hot-remove
+for 64-bit powerpc.  These 3 commits have been signed-off by Andrew
+Morton.  One of them touches generic code (kernel/resource.c), and it
+has been acked by KAMEZAWA Hiroyuki.
+
+Thanks,
+Paul.
+
+ arch/powerpc/Kconfig                            |    6 +++
+ arch/powerpc/mm/mem.c                           |   33 +++++++++++++++
+ arch/powerpc/platforms/cell/iommu.c             |   48 +++++++++++++----------
+ arch/powerpc/platforms/cell/spufs/backing_ops.c |    6 +++
+ arch/powerpc/platforms/cell/spufs/fault.c       |   12 ++----
+ arch/powerpc/platforms/cell/spufs/file.c        |   49 ++++++++++++++---------
+ arch/powerpc/platforms/cell/spufs/run.c         |   21 ++++++----
+ arch/powerpc/platforms/cell/spufs/spufs.h       |    5 ++
+ arch/powerpc/platforms/powermac/feature.c       |   11 +++++
+ drivers/macintosh/smu.c                         |   25 +++++++++++-
+ include/asm-powerpc/pmac_feature.h              |    8 ++++
+ kernel/resource.c                               |    2 -
+ 12 files changed, 166 insertions(+), 60 deletions(-)
+
+Badari Pulavarty (3):
+      [POWERPC] Add remove_memory() for 64-bit powerpc
+      [POWERPC] Enable hotplug memory remove for 64-bit powerpc
+      [POWERPC] Add arch-specific walk_memory_remove() for 64-bit powerpc
+
+Benjamin Herrenschmidt (1):
+      [POWERPC] Disable G5 NAP mode during SMU commands on U3
+
+Christoph Hellwig (1):
+      [POWERPC] spufs: Fix state_mutex leaks
+
+Luke Browning (2):
+      [POWERPC] spufs: No need to have a runnable SPU for libassist update
+      [POWERPC] spufs: Fix timing dependent false return from spufs_run_spu
+
+Masato Noguchi (1):
+      [POWERPC] spufs: Update SPU_Status[CISHP] in backing runcntl write
+
+Michael Ellerman (4):
+      [POWERPC] Fix cell IOMMU null pointer explosion on old firmwares
+      [POWERPC] Don't enable cell IOMMU fixed mapping if there are no dma-ranges
+      [POWERPC] Fix potential cell IOMMU bug when switching back to default DMA ops
+      [POWERPC] Make cell IOMMU fixed mapping printk more useful
+
