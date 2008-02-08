@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbYBHPL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbYBHPNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212AbYBHPL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 10:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbYBHPLS
+	id S932526AbYBHPNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 10:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbYBHPNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 10:11:18 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41027 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758250AbYBHPLR (ORCPT
+	Fri, 8 Feb 2008 10:13:13 -0500
+Received: from mga10.intel.com ([192.55.52.92]:65022 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751492AbYBHPNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 10:11:17 -0500
-Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eugene Teo <eugeneteo@kernel.sg>
-Cc: linux-kernel@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080208145950.GA3910@kernel.sg>
-References: <20080208145950.GA3910@kernel.sg>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 16:10:45 +0100
-Message-Id: <1202483445.6292.1.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Fri, 8 Feb 2008 10:13:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,322,1199692800"; 
+   d="scan'208";a="515372986"
+Message-ID: <47AC7093.1070003@linux.intel.com>
+Date: Fri, 08 Feb 2008 07:09:07 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, dgc@sgi.com,
+       npiggin@suse.de, akpm@linux-foundation.org, vegard.nossum@gmail.com,
+       penberg@gmail.com
+Subject: Re: [patch] block layer: kmemcheck fixes
+References: <20080207103136.GG15220@kernel.dk>	<20080207104901.GF16735@elte.hu>	<alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org> <20080207.172246.31415231.davem@davemloft.net>
+In-Reply-To: <20080207.172246.31415231.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-02-08 at 22:59 +0800, Eugene Teo wrote:
-> RLIMIT_RTTIME was introduced to allow the user to set a runtime timeout on
-> real-time tasks: http://lkml.org/lkml/2007/12/18/218. This patch updates
-> /proc/<pid>/limits with the new rlimit.
-
-Ah, didn't know about that file, thanks!
-
-> Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> ---
->  fs/proc/base.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Thu, 7 Feb 2008 09:42:56 -0800 (PST)
 > 
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index c59852b..dcf7be8 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -412,6 +412,7 @@ static const struct limit_names lnames[RLIM_NLIMITS] = {
->  	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
->  	[RLIMIT_NICE] = {"Max nice priority", NULL},
->  	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
-> +	[RLIMIT_RTTIME] = {"Max realtime timeout", "us"},
->  };
->  
->  /* Display limits for a process */
+>> Can we please just stop doing these one-by-one assignments, and just do 
+>> something like
+>>
+>> 	memset(rq, 0, sizeof(*rq));
+>> 	rq->q = q;
+>> 	rq->ref_count = 1;
+>> 	INIT_HLIST_NODE(&rq->hash);
+>> 	RB_CLEAR_NODE(&rq->rb_node);
+>>
+>> instead?
+>>
+>> The memset() is likely faster and smaller than one-by-one assignments 
+>> anyway, even if the one-by-ones can avoid initializing some field or there 
+>> ends up being a double initialization..
+> 
+> The problem is store buffer compression.  At least a few years
+> ago this made a huge difference in sk_buff initialization in the
+> networking.
+> 
+> Maybe cpus these days have so much store bandwith that doing
+> things like the above is OK, but I doubt it :-)
+
+on modern x86 cpus the memset may even be faster if the memory isn't in cache;
+the "explicit" method ends up doing Write Allocate on the cache lines
+(so read them from memory) even though they then end up being written entirely.
+With memset the CPU is told that the entire range is set to a new value, and
+the WA can be avoided for the whole-cachelines in the range.
 
