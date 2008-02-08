@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964982AbYBHUPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935731AbYBHUPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964982AbYBHUPP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935288AbYBHUNr
+	id S935731AbYBHUPw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:15:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935423AbYBHUNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:13:47 -0500
-Received: from hs-out-0708.google.com ([64.233.178.246]:59208 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935392AbYBHUNo (ORCPT
+	Fri, 8 Feb 2008 15:13:48 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:32476 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935264AbYBHUNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:13:44 -0500
+	Fri, 8 Feb 2008 15:13:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aPZt1uQppRpeYBIWPY8HYVLRLc7vWuLpuUHXAhXrm0CsbqLWc4PuOybEH0yzkMllGbBGKEahKZXPUGJ2q5FwRq09WOHhx1hpuvzxbpYye6NwYyqHY80Mp+dqTOTZ4zAgvMCzBRJzHF6PIPjNalcgKAgFxx6F8b/dxbif8C1muNE=
-Subject: [PATCH 4/9] x86: reduce trivial style differences in signal_32|64.c
+        b=jreZPdpDGSIz8L2Z5xa1dXD/izRC0xLfqcARrhGnDaTGxHZrqwppAGMcgcYyXkoAnrJs2IW4CcaF+QgdpxoYTyKQEFPYvmQpzQawfKb4NK1i7Tqtbup+LznnwtyVbCbpcxexP1Bk8lAABilqNdbZ+Rdwi5J96+za9CQGhRVrnB0=
+Subject: [PATCH 7/9] x86: move struct definitions to unifed sigframe.h
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 08 Feb 2008 12:09:58 -0800
-Message-Id: <1202501398.12966.23.camel@brick>
+Date: Fri, 08 Feb 2008 12:10:00 -0800
+Message-Id: <1202501400.12966.26.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,250 +29,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Small step towards unification.
-
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/x86/kernel/signal_32.c |   66 ++++++++++++++++++++----------------------
- arch/x86/kernel/signal_64.c |   47 ++++++++++++++++--------------
- 2 files changed, 56 insertions(+), 57 deletions(-)
+ arch/x86/kernel/sigframe_32.h |    9 +++++++++
+ arch/x86/kernel/signal_32.c   |    2 +-
+ arch/x86/kernel/signal_64.c   |    9 +--------
+ 3 files changed, 11 insertions(+), 9 deletions(-)
 
+diff --git a/arch/x86/kernel/sigframe_32.h b/arch/x86/kernel/sigframe_32.h
+index 0b22217..1284e8b 100644
+--- a/arch/x86/kernel/sigframe_32.h
++++ b/arch/x86/kernel/sigframe_32.h
+@@ -1,3 +1,4 @@
++#ifdef CONFIG_X86_32
+ struct sigframe
+ {
+ 	char __user *pretcode;
+@@ -19,3 +20,11 @@ struct rt_sigframe
+ 	struct _fpstate fpstate;
+ 	char retcode[8];
+ };
++#else
++struct rt_sigframe
++{
++	char __user *pretcode;
++	struct ucontext uc;
++	struct siginfo info;
++};
++#endif
 diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index a99529e..70d0cc8 100644
+index cf6bedf..858a71f 100644
 --- a/arch/x86/kernel/signal_32.c
 +++ b/arch/x86/kernel/signal_32.c
-@@ -131,14 +131,8 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc, int *peax
- 	COPY_SEG(fs);
- 	COPY_SEG(es);
- 	COPY_SEG(ds);
--	COPY(di);
--	COPY(si);
--	COPY(bp);
--	COPY(sp);
--	COPY(bx);
--	COPY(dx);
--	COPY(cx);
--	COPY(ip);
-+	COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
-+	COPY(dx); COPY(cx); COPY(ip);
- 	COPY_SEG_STRICT(cs);
- 	COPY_SEG_STRICT(ss);
- 	
-@@ -500,12 +494,12 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	 * The tracer may want to single-step inside the
- 	 * handler too.
- 	 */
--	regs->flags &= ~TF_MASK;
-+	regs->flags &= ~X86_EFLAGS_TF;
- 	if (test_thread_flag(TIF_SINGLESTEP))
- 		ptrace_notify(SIGTRAP);
+@@ -24,7 +24,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/i387.h>
+ #include <asm/vdso.h>
+-#include "sigframe_32.h"
++#include "sigframe.h"
  
- #if DEBUG_SIG
--	printk("SIG deliver (%s:%d): sp=%p pc=%p ra=%p\n",
-+	printk("SIG deliver (%s:%d): sp=%p pc=%lx ra=%p\n",
- 		current->comm, current->pid, frame, regs->ip, frame->pretcode);
- #endif
- 
-@@ -522,7 +516,7 @@ give_sigsegv:
- 
- static int
- handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
--	      sigset_t *oldset,	struct pt_regs * regs)
-+	      sigset_t *oldset, struct pt_regs *regs)
- {
- 	int ret;
- 
-@@ -530,20 +524,21 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 	if ((long)regs->orig_ax >= 0) {
- 		/* If so, check system call restarting.. */
- 		switch (regs->ax) {
--		        case -ERESTART_RESTARTBLOCK:
--			case -ERESTARTNOHAND:
-+		case -ERESTART_RESTARTBLOCK:
-+		case -ERESTARTNOHAND:
-+			regs->ax = -EINTR;
-+			break;
-+
-+		case -ERESTARTSYS:
-+			if (!(ka->sa.sa_flags & SA_RESTART)) {
- 				regs->ax = -EINTR;
- 				break;
--
--			case -ERESTARTSYS:
--				if (!(ka->sa.sa_flags & SA_RESTART)) {
--					regs->ax = -EINTR;
--					break;
--				}
--			/* fallthrough */
--			case -ERESTARTNOINTR:
--				regs->ax = regs->orig_ax;
--				regs->ip -= 2;
-+			}
-+		/* fallthrough */
-+		case -ERESTARTNOINTR:
-+			regs->ax = regs->orig_ax;
-+			regs->ip -= 2;
-+			break;
- 		}
- 	}
- 
-@@ -580,18 +575,17 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
-  */
- static void do_signal(struct pt_regs *regs)
- {
-+	struct k_sigaction ka;
- 	siginfo_t info;
- 	int signr;
--	struct k_sigaction ka;
- 	sigset_t *oldset;
- 
- 	/*
--	 * We want the common case to go fast, which
--	 * is why we may in certain cases get here from
--	 * kernel mode. Just return without doing anything
-- 	 * if so.  vm86 regs switched out by assembly code
-- 	 * before reaching here, so testing against kernel
-- 	 * CS suffices.
-+	 * We want the common case to go fast, which is why we may in certain
-+	 * cases get here from kernel mode. Just return without doing anything
-+	 * if so.
-+	 * X86_32: vm86 regs switched out by assembly code before reaching
-+	 * here, so testing against kernel CS suffices.
- 	 */
- 	if (!user_mode(regs))
- 		return;
-@@ -608,7 +602,7 @@ static void do_signal(struct pt_regs *regs)
- 		 * have been cleared if the watchpoint triggered
- 		 * inside the kernel.
- 		 */
--		if (unlikely(current->thread.debugreg7))
-+		if (current->thread.debugreg7)
- 			set_debugreg(current->thread.debugreg7, 7);
- 
- 		/* Whee!  Actually deliver the signal.  */
-@@ -642,8 +636,10 @@ static void do_signal(struct pt_regs *regs)
- 		}
- 	}
- 
--	/* if there's no signal to deliver, we just put the saved sigmask
--	 * back */
-+	/*
-+	 * If there's no signal to deliver, we just put the saved sigmask
-+	 * back.
-+	 */
- 	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
- 		clear_thread_flag(TIF_RESTORE_SIGMASK);
- 		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
-@@ -654,12 +650,12 @@ static void do_signal(struct pt_regs *regs)
-  * notification of userspace execution resumption
-  * - triggered by the TIF_WORK_MASK flags
-  */
--void do_notify_resume(struct pt_regs *regs, void *_unused,
-+void do_notify_resume(struct pt_regs *regs, void *unused,
- 		      __u32 thread_info_flags)
- {
- 	/* Pending single-step? */
- 	if (thread_info_flags & _TIF_SINGLESTEP) {
--		regs->flags |= TF_MASK;
-+		regs->flags |= X86_EFLAGS_TF;
- 		clear_thread_flag(TIF_SINGLESTEP);
- 	}
+ #define DEBUG_SIG 0
  
 diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 7347bb1..a1e56dc 100644
+index fb27473..f006ea1 100644
 --- a/arch/x86/kernel/signal_64.c
 +++ b/arch/x86/kernel/signal_64.c
-@@ -316,7 +316,7 @@ give_sigsegv:
+@@ -26,6 +26,7 @@
+ #include <asm/proto.h>
+ #include <asm/ia32_unistd.h>
+ #include <asm/mce.h>
++#include "sigframe.h"
  
+ /* #define DEBUG_SIG 1 */
+ 
+@@ -59,14 +60,6 @@ sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
+ /*
+  * Do a signal return; undo the signal stack.
+  */
+-
+-struct rt_sigframe
+-{
+-	char __user *pretcode;
+-	struct ucontext uc;
+-	struct siginfo info;
+-};
+-
  static int
- handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
--		sigset_t *oldset, struct pt_regs *regs)
-+	      sigset_t *oldset, struct pt_regs *regs)
+ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc, unsigned long *prax)
  {
- 	int ret;
- 
-@@ -330,21 +330,21 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
- 	if ((long)regs->orig_ax >= 0) {
- 		/* If so, check system call restarting.. */
- 		switch (regs->ax) {
--		        case -ERESTART_RESTARTBLOCK:
--			case -ERESTARTNOHAND:
--				regs->ax = -EINTR;
--				break;
-+		case -ERESTART_RESTARTBLOCK:
-+		case -ERESTARTNOHAND:
-+			regs->ax = -EINTR;
-+			break;
- 
--			case -ERESTARTSYS:
--				if (!(ka->sa.sa_flags & SA_RESTART)) {
--					regs->ax = -EINTR;
--					break;
--				}
--				/* fallthrough */
--			case -ERESTARTNOINTR:
--				regs->ax = regs->orig_ax;
--				regs->ip -= 2;
-+		case -ERESTARTSYS:
-+			if (!(ka->sa.sa_flags & SA_RESTART)) {
-+				regs->ax = -EINTR;
- 				break;
-+			}
-+		/* fallthrough */
-+		case -ERESTARTNOINTR:
-+			regs->ax = regs->orig_ax;
-+			regs->ip -= 2;
-+			break;
- 		}
- 	}
- 
-@@ -391,10 +391,11 @@ static void do_signal(struct pt_regs *regs)
- 	sigset_t *oldset;
- 
- 	/*
--	 * We want the common case to go fast, which
--	 * is why we may in certain cases get here from
--	 * kernel mode. Just return without doing anything
-+	 * We want the common case to go fast, which is why we may in certain
-+	 * cases get here from kernel mode. Just return without doing anything
- 	 * if so.
-+	 * X86_32: vm86 regs switched out by assembly code before reaching
-+	 * here, so testing against kernel CS suffices.
- 	 */
- 	if (!user_mode(regs))
- 		return;
-@@ -445,16 +446,18 @@ static void do_signal(struct pt_regs *regs)
- 		}
- 	}
- 
--	/* if there's no signal to deliver, we just put the saved sigmask
--	   back. */
-+	/*
-+	 * If there's no signal to deliver, we just put the saved sigmask
-+	 * back.
-+	 */
- 	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
- 		clear_thread_flag(TIF_RESTORE_SIGMASK);
- 		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
- 	}
- }
- 
--void
--do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
-+void do_notify_resume(struct pt_regs *regs, void *unused,
-+		      __u32 thread_info_flags)
- {
- #ifdef DEBUG_SIG
- 	printk("do_notify_resume flags:%x ip:%lx sp:%lx caller:%p pending:%x\n",
-@@ -474,7 +477,7 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- #endif /* CONFIG_X86_MCE */
- 
- 	/* deal with pending signal delivery */
--	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
-+	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
- 		do_signal(regs);
- 
- 	if (thread_info_flags & _TIF_HRTICK_RESCHED)
 -- 
 1.5.4.1219.g65b9
 
