@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbYBHI4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933184AbYBHJDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933330AbYBHI4R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 03:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbYBHI4A
+	id S933184AbYBHJDy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 04:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYBHJDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 03:56:00 -0500
-Received: from otello.alma.unibo.it ([137.204.24.163]:56244 "EHLO
-	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753542AbYBHIz7 (ORCPT
+	Fri, 8 Feb 2008 04:03:36 -0500
+Received: from edna.telenet-ops.be ([195.130.132.58]:51935 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbYBHJDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 03:55:59 -0500
-Message-ID: <47AC191E.303@otello.alma.unibo.it>
-Date: Fri, 08 Feb 2008 09:55:58 +0100
-From: Diego Zuccato <diego@otello.alma.unibo.it>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080206)
+	Fri, 8 Feb 2008 04:03:33 -0500
+Date: Fri, 8 Feb 2008 10:03:31 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
+In-Reply-To: <1202432873.3171.58.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0802081001540.18242@anakin>
+References: <1202432206.3171.53.camel@localhost.localdomain>
+ <1202432647.31361.26.camel@brick> <1202432873.3171.58.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Lee Mathers <Lee.Mathers@tcafs.org>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>            <20080202123710.42df1aa0@weinigel.se>            <20080202191930.GA19826@kroah.com>            <47A5D895.20300@davidnewall.com>            <47A6E742.80408@otello.alma.unibo.it> <courier.47A8F072.000079E4@hawking.rebel.net.au> <47AAC1EE.6060101@otello.alma.unibo.it> <47AB0911.3060508@davidnewall.com> <47AB5D2B.5010806@tcafs.org>
-In-Reply-To: <47AB5D2B.5010806@tcafs.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Mathers ha scritto:
+On Thu, 7 Feb 2008, James Bottomley wrote:
+> On Thu, 2008-02-07 at 17:04 -0800, Harvey Harrison wrote:
+> > On Thu, 2008-02-07 at 18:56 -0600, James Bottomley wrote:
+> > > Quite a bit of this is fixing things broken previously (the advansys fix
+> > > is still pending resolution, but I'll send it as an -rc fix when we have
+> > > it).  There's the final elimination of all drivers that are esp based
+> > > but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
+> > > the usual bunch of driver updates and the addition of a new enclosure
+> > > services driver and the corresponding ULD.
+> > > 
+> > > The patch is available from:
+> > > 
+> > 
+> > I'm going to guess that this is the entry in feature-removal.txt
+> > that need an update then:
+> > 
+> > ---------------------------
+> > 
+> > What:	old NCR53C9x driver
+> > When:	October 2007
+> > Why:	Replaced by the much better esp_scsi driver.  Actual low-level
+> > 	driver can be ported over almost trivially.
+> > Who:	David Miller <davem@davemloft.net>
+> > 	Christoph Hellwig <hch@lst.de>
+> 
+> Not immediately ... I anticipate a few "where'd my driver go?" type
+> questions from m68k for which this provides a useful reference to point
+> to ...
 
-> Now we have hardware ASIC that depend on the most part a (dll in 
-> windows) or .ko .o file under linux to provide the entire instruction 
-> set.  Think Winmodems,  Winprinters etc....
+Don't bother, we're fully aware of this.
 
-Well, winmodem case is the only I could *almost* understand 
-closed-source drivers: the algorithms used *are* the modem. It's not a 
-simple firmware upload.
-What I really don't understand are graphic cards producers... If what 
-they say about the card is true, then there's no "advanced" algorithm in 
-the driver, just (at most) a firmware uploader (that's better suited 
-off-kernel anyway)...
+The shortest feature removal notice in Linux's history (is it?) didn't go
+unnoticed ;-)
 
-Bohf!
+Gr{oetje,eeting}s,
 
-BYtE,
-  Diego.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
