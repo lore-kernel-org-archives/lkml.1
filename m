@@ -1,166 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYBHXj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759802AbYBHXjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759481AbYBHXj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbYBHXhp
+	id S1759802AbYBHXjp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbYBHXi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:37:45 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:47194 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753749AbYBHXhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:37:39 -0500
-Message-Id: <20080208233738.566954000@polaris-admin.engr.sgi.com>
-References: <20080208233738.108449000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 08 Feb 2008 15:37:41 -0800
-From: Mike Travis <travis@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Philippe Elie <phil.el@wanadoo.fr>, oprofile-list@lists.sourceforge.net
-Subject: [PATCH 3/4] oprofile: change cpu_buffer from array to per_cpu variable
-Content-Disposition: inline; filename=nr_cpus-in-cpu_buffer
+	Fri, 8 Feb 2008 18:38:57 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:49527 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759227AbYBHXi4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 18:38:56 -0500
+Date: Fri, 8 Feb 2008 15:37:41 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Torokhov <dtor@insightbb.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [patch] [git pull] Input updates for 2.6.25-rc0
+Message-Id: <20080208153741.54409a7a.randy.dunlap@oracle.com>
+In-Reply-To: <20080208152812.2bb14374@extreme>
+References: <200802060108.31644.dtor@insightbb.com>
+	<20080208232536.GA15727@elte.hu>
+	<20080208152812.2bb14374@extreme>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change cpu_buffer from array to per_cpu variable in
-oprofile functions.
+On Fri, 8 Feb 2008 15:28:12 -0800 Stephen Hemminger wrote:
 
-Based on linux-2.6.git + x86.git
+> On Sat, 9 Feb 2008 00:25:36 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Dmitry Torokhov <dtor@insightbb.com> wrote:
+> > 
+> > > Stephen Hemminger (2):
+> > >       Input: add driver for Fujitsu application buttons
+> > 
+> > this change broke the build on x86 in randconfig testing:
+> > 
+> >   drivers/built-in.o: In function `apanel_detach_client':
+> >   apanel.c:(.text+0x15c120): undefined reference to  `__led_classdev_unregister'
+> >   drivers/built-in.o: In function `apanel_probe':
+> >   apanel.c:(.text+0x15c30f): undefined reference to  `led_classdev_register'
+> > 
+> > .config attached.
+> > 
+> > the Kconfig dependencies seem incomplete:
+> > 
+> > > +config INPUT_APANEL
+> > > +     tristate "Fujitsu Lifebook Application Panel buttons"
+> > > +     depends on X86
+> > > +     select I2C_I801
+> > > +     select INPUT_POLLDEV
+> > > +     select CHECK_SIGNATURE
+> > > +     help
+> > 
+> > it doesnt list LEDS.
+> > 
+> > 	Ingo
+> 
+> I think someone already sent a patch to select the LEDS
 
-Cc: Philippe Elie <phil.el@wanadoo.fr>
-Cc: oprofile-list@lists.sf.net
-Signed-off-by: Mike Travis <travis@sgi.com>
+I did... and more.  Who will merge it?  (below)
+
 ---
- drivers/oprofile/buffer_sync.c    |    2 +-
- drivers/oprofile/cpu_buffer.c     |   16 ++++++++--------
- drivers/oprofile/cpu_buffer.h     |    3 ++-
- drivers/oprofile/oprofile_stats.c |    4 ++--
- 4 files changed, 13 insertions(+), 12 deletions(-)
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
---- a/drivers/oprofile/buffer_sync.c
-+++ b/drivers/oprofile/buffer_sync.c
-@@ -494,7 +494,7 @@ typedef enum {
-  */
- void sync_buffer(int cpu)
- {
--	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
-+	struct oprofile_cpu_buffer * cpu_buf = &per_cpu(cpu_buffer, cpu);
- 	struct mm_struct *mm = NULL;
- 	struct task_struct * new;
- 	unsigned long cookie = 0;
---- a/drivers/oprofile/cpu_buffer.c
-+++ b/drivers/oprofile/cpu_buffer.c
-@@ -27,7 +27,7 @@
- #include "buffer_sync.h"
- #include "oprof.h"
- 
--struct oprofile_cpu_buffer cpu_buffer[NR_CPUS] __cacheline_aligned;
-+DEFINE_PER_CPU_SHARED_ALIGNED(struct oprofile_cpu_buffer, cpu_buffer);
- 
- static void wq_sync_buffer(struct work_struct *work);
- 
-@@ -39,7 +39,7 @@ void free_cpu_buffers(void)
- 	int i;
-  
- 	for_each_online_cpu(i)
--		vfree(cpu_buffer[i].buffer);
-+		vfree(per_cpu(cpu_buffer, i).buffer);
- }
- 
- int alloc_cpu_buffers(void)
-@@ -49,7 +49,7 @@ int alloc_cpu_buffers(void)
- 	unsigned long buffer_size = fs_cpu_buffer_size;
-  
- 	for_each_online_cpu(i) {
--		struct oprofile_cpu_buffer * b = &cpu_buffer[i];
-+		struct oprofile_cpu_buffer * b = &per_cpu(cpu_buffer, i);
-  
- 		b->buffer = vmalloc_node(sizeof(struct op_sample) * buffer_size,
- 			cpu_to_node(i));
-@@ -83,7 +83,7 @@ void start_cpu_work(void)
- 	work_enabled = 1;
- 
- 	for_each_online_cpu(i) {
--		struct oprofile_cpu_buffer * b = &cpu_buffer[i];
-+		struct oprofile_cpu_buffer * b = &per_cpu(cpu_buffer, i);
- 
- 		/*
- 		 * Spread the work by 1 jiffy per cpu so they dont all
-@@ -100,7 +100,7 @@ void end_cpu_work(void)
- 	work_enabled = 0;
- 
- 	for_each_online_cpu(i) {
--		struct oprofile_cpu_buffer * b = &cpu_buffer[i];
-+		struct oprofile_cpu_buffer * b = &per_cpu(cpu_buffer, i);
- 
- 		cancel_delayed_work(&b->work);
- 	}
-@@ -227,7 +227,7 @@ static void oprofile_end_trace(struct op
- void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
- 				unsigned long event, int is_kernel)
- {
--	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[smp_processor_id()];
-+	struct oprofile_cpu_buffer * cpu_buf = &__get_cpu_var(cpu_buffer);
- 
- 	if (!backtrace_depth) {
- 		log_sample(cpu_buf, pc, is_kernel, event);
-@@ -254,13 +254,13 @@ void oprofile_add_sample(struct pt_regs 
- 
- void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event)
- {
--	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[smp_processor_id()];
-+	struct oprofile_cpu_buffer * cpu_buf = &__get_cpu_var(cpu_buffer);
- 	log_sample(cpu_buf, pc, is_kernel, event);
- }
- 
- void oprofile_add_trace(unsigned long pc)
- {
--	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[smp_processor_id()];
-+	struct oprofile_cpu_buffer * cpu_buf = &__get_cpu_var(cpu_buffer);
- 
- 	if (!cpu_buf->tracing)
- 		return;
---- a/drivers/oprofile/cpu_buffer.h
-+++ b/drivers/oprofile/cpu_buffer.h
-@@ -14,6 +14,7 @@
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
- #include <linux/cache.h>
-+#include <linux/sched.h>
-  
- struct task_struct;
-  
-@@ -47,7 +48,7 @@ struct oprofile_cpu_buffer {
- 	struct delayed_work work;
- } ____cacheline_aligned;
- 
--extern struct oprofile_cpu_buffer cpu_buffer[];
-+DECLARE_PER_CPU(struct oprofile_cpu_buffer, cpu_buffer);
- 
- void cpu_buffer_reset(struct oprofile_cpu_buffer * cpu_buf);
- 
---- a/drivers/oprofile/oprofile_stats.c
-+++ b/drivers/oprofile/oprofile_stats.c
-@@ -23,7 +23,7 @@ void oprofile_reset_stats(void)
- 	int i;
-  
- 	for_each_possible_cpu(i) {
--		cpu_buf = &cpu_buffer[i]; 
-+		cpu_buf = &per_cpu(cpu_buffer, i);
- 		cpu_buf->sample_received = 0;
- 		cpu_buf->sample_lost_overflow = 0;
- 		cpu_buf->backtrace_aborted = 0;
-@@ -49,7 +49,7 @@ void oprofile_create_stats_files(struct 
- 		return;
- 
- 	for_each_possible_cpu(i) {
--		cpu_buf = &cpu_buffer[i]; 
-+		cpu_buf = &per_cpu(cpu_buffer, i);
- 		snprintf(buf, 10, "cpu%d", i);
- 		cpudir = oprofilefs_mkdir(sb, dir, buf);
-  
+Add I2C to config since the driver makes several i2c*() calls.
 
--- 
+Add to help text that the Intel I2C ICH (i801) driver is also needed
+for this kernel.
+
+Add LEDS_CLASS to config since the driver makes les_classdev_*() calls:
+ERROR: "led_classdev_register" [drivers/input/misc/apanel.ko] undefined!
+ERROR: "__led_classdev_unregister" [drivers/input/misc/apanel.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/input/misc/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- linux-2.6.24-mm1.orig/drivers/input/misc/Kconfig
++++ linux-2.6.24-mm1/drivers/input/misc/Kconfig
+@@ -42,14 +42,14 @@ config INPUT_M68K_BEEP
+ 
+ config INPUT_APANEL
+ 	tristate "Fujitsu Lifebook Application Panel buttons"
+-	depends on X86
+-	select I2C_I801
++	depends on X86 && I2C && LEDS_CLASS
+ 	select INPUT_POLLDEV
+ 	select CHECK_SIGNATURE
+ 	help
+ 	 Say Y here for support of the Application Panel buttons, used on
+ 	 Fujitsu Lifebook. These are attached to the mainboard through
+-	 an SMBus interface managed by the I2C Intel ICH (i801) driver.
++	 an SMBus interface managed by the I2C Intel ICH (i801) driver,
++	 which you should also build for this kernel.
+ 
+ 	 To compile this driver as a module, choose M here: the module will
+ 	 be called apanel.
