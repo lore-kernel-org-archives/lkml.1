@@ -1,95 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbYBHAdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761802AbYBHAeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932603AbYBHAdn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 19:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762984AbYBHAa6
+	id S1761802AbYBHAeM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 19:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763019AbYBHAbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 19:30:58 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:3804 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762716AbYBHAau (ORCPT
+	Thu, 7 Feb 2008 19:31:00 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:45438 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762931AbYBHAa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 19:30:50 -0500
+	Thu, 7 Feb 2008 19:30:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=V0PqkMIrsDZo6j6eqYOO0nsnRDPt6aOLoWuF6RL4CZEKwdykpPDiXRe+xh7dz0AYueEljM/udzvs2JEzypHNOyf9/HDpQBg0HCYhb8mfPUXL7XAmkVDuqwGXYfV097zszwg7CNgNQETD/lYFeSW+tKgYo/+Dt+k38kXRlwb7sTE=
+        b=tn4vUFrH/LFsYbMW1W7InWwyyvOukg9bSAU4T7d6JWq0xcsLxQ0LJ7EbbpvhpGPV0dje2/u6Jv48+YpPMgMixGf2CT4tu80UXZF8JmWQjo+fxNGlrUy9FbLxKt7OLj5ZQJP58VE1ViibrkVXlcjUphQbRtpdF2+GJ2GDTw5Aews=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:02 +0100
-Message-Id: <20080208004502.17746.73284.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:09 +0100
+Message-Id: <20080208004509.17746.70379.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 06/18] ide: factor out code unregistering devices from ide_unregister()
+Subject: [PATCH 07/18] ide: factor out devices init from ide_init_port_data()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factor out code unregistering devices from ide_unregister() to
-ide_port_unregister_devices().
+* Factor out devices init from ide_init_port_data() to
+  ide_port_init_devices_data().
+
+While at it:
+
+* Add explicit clearing of IDE device structure.
+
+There should be no functionality changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide.c |   30 +++++++++++++++++++-----------
- 1 file changed, 19 insertions(+), 11 deletions(-)
+ drivers/ide/ide.c |   23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
 Index: b/drivers/ide/ide.c
 ===================================================================
 --- a/drivers/ide/ide.c
 +++ b/drivers/ide/ide.c
-@@ -494,6 +494,23 @@ void ide_remove_port_from_hwgroup(ide_hw
- 	spin_unlock_irq(&ide_lock);
- }
+@@ -109,13 +109,13 @@ ide_hwif_t ide_hwifs[MAX_HWIFS];	/* mast
  
-+/* Called with ide_lock held. */
-+static void ide_port_unregister_devices(ide_hwif_t *hwif)
-+{
-+	int i;
-+
-+	for (i = 0; i < MAX_DRIVES; i++) {
-+		ide_drive_t *drive = &hwif->drives[i];
-+
-+		if (drive->present) {
-+			spin_unlock_irq(&ide_lock);
-+			device_unregister(&drive->gendev);
-+			wait_for_completion(&drive->gendev_rel_comp);
-+			spin_lock_irq(&ide_lock);
-+		}
-+	}
-+}
-+
- /**
-  *	ide_unregister		-	free an IDE interface
-  *	@index: index of interface (will change soon to a pointer)
-@@ -520,11 +537,10 @@ void ide_remove_port_from_hwgroup(ide_hw
+ EXPORT_SYMBOL(ide_hwifs);
  
- void ide_unregister(unsigned int index, int init_default, int restore)
++static void ide_port_init_devices_data(ide_hwif_t *);
++
+ /*
+  * Do not even *think* about calling this!
+  */
+ void ide_init_port_data(ide_hwif_t *hwif, unsigned int index)
  {
--	ide_drive_t *drive;
- 	ide_hwif_t *hwif, *g;
- 	static ide_hwif_t tmp_hwif; /* protected by ide_cfg_mtx */
- 	ide_hwgroup_t *hwgroup;
--	int irq_count = 0, unit;
-+	int irq_count = 0;
+-	unsigned int unit;
+-
+ 	/* bulk initialize hwif & drive info with zeros */
+ 	memset(hwif, 0, sizeof(ide_hwif_t));
  
- 	BUG_ON(index >= MAX_HWIFS);
+@@ -134,8 +134,20 @@ void ide_init_port_data(ide_hwif_t *hwif
  
-@@ -535,15 +551,7 @@ void ide_unregister(unsigned int index, 
- 	hwif = &ide_hwifs[index];
- 	if (!hwif->present)
- 		goto abort;
--	for (unit = 0; unit < MAX_DRIVES; ++unit) {
--		drive = &hwif->drives[unit];
--		if (!drive->present)
--			continue;
--		spin_unlock_irq(&ide_lock);
--		device_unregister(&drive->gendev);
--		wait_for_completion(&drive->gendev_rel_comp);
--		spin_lock_irq(&ide_lock);
--	}
-+	ide_port_unregister_devices(hwif);
- 	hwif->present = 0;
+ 	default_hwif_iops(hwif);
+ 	default_hwif_transport(hwif);
++
++	ide_port_init_devices_data(hwif);
++}
++EXPORT_SYMBOL_GPL(ide_init_port_data);
++
++static void ide_port_init_devices_data(ide_hwif_t *hwif)
++{
++	int unit;
++
+ 	for (unit = 0; unit < MAX_DRIVES; ++unit) {
+ 		ide_drive_t *drive = &hwif->drives[unit];
++		u8 j = (hwif->index * MAX_DRIVES) + unit;
++
++		memset(drive, 0, sizeof(*drive));
  
- 	spin_unlock_irq(&ide_lock);
+ 		drive->media			= ide_disk;
+ 		drive->select.all		= (unit<<4)|0xa0;
+@@ -147,15 +159,14 @@ void ide_init_port_data(ide_hwif_t *hwif
+ 		drive->special.b.set_geometry	= 1;
+ 		drive->name[0]			= 'h';
+ 		drive->name[1]			= 'd';
+-		drive->name[2]			= 'a' + (index * MAX_DRIVES) + unit;
++		drive->name[2]			= 'a' + j;
+ 		drive->max_failures		= IDE_DEFAULT_MAX_FAILURES;
+-		drive->using_dma		= 0;
+-		drive->vdma			= 0;
++
+ 		INIT_LIST_HEAD(&drive->list);
+ 		init_completion(&drive->gendev_rel_comp);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(ide_init_port_data);
++
+ 
+ static void init_hwif_default(ide_hwif_t *hwif, unsigned int index)
+ {
