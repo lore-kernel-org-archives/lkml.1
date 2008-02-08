@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932864AbYBHSBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934864AbYBHSBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932864AbYBHSBN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759856AbYBHR5p
+	id S934864AbYBHSBq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932591AbYBHR5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:57:45 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38136 "EHLO
+	Fri, 8 Feb 2008 12:57:46 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38132 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933334AbYBHR5i (ORCPT
+	with ESMTP id S933346AbYBHR5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Feb 2008 12:57:38 -0500
 From: Rodolfo Giometti <giometti@linux.it>
@@ -15,236 +15,111 @@ To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Fri,  8 Feb 2008 19:00:39 +0100
-Message-Id: <12024936441531-git-send-email-giometti@linux.it>
+Date: Fri,  8 Feb 2008 19:00:43 +0100
+Message-Id: <12024936442887-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12024936442252-git-send-email-giometti@linux.it>
+In-Reply-To: <12024936441151-git-send-email-giometti@linux.it>
 References: <1202493644764-git-send-email-giometti@linux.it>
  <120249364418-git-send-email-giometti@linux.it>
  <12024936442252-git-send-email-giometti@linux.it>
+ <12024936441531-git-send-email-giometti@linux.it>
+ <12024936442967-git-send-email-giometti@linux.it>
+ <1202493644247-git-send-email-giometti@linux.it>
+ <12024936441151-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 3/8] PPS: userland header file for PPS API.
+Subject: [PATCH 7/8] PPS: example program to enable PPS support on serial ports.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds into the PPS's documentation directory a possible
-implementation of the PPS API (RFC 2783) by using the LinuxPPS's char
-devices.
-
-This file is not just an example but it can be used into real
-systems. :)
-
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- Documentation/pps/timepps.h |  195 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 195 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/pps/timepps.h
+ Documentation/pps/Makefile |    2 +-
+ Documentation/pps/ppsctl.c |   62 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/pps/ppsctl.c
 
-diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
+index af4f9b4..8ef4f47 100644
+--- a/Documentation/pps/Makefile
++++ b/Documentation/pps/Makefile
+@@ -1,4 +1,4 @@
+-TARGETS = ppstest
++TARGETS = ppstest ppsctl
+ 
+ CFLAGS += -Wall -O2 -D_GNU_SOURCE
+ CFLAGS += -I .
+diff --git a/Documentation/pps/ppsctl.c b/Documentation/pps/ppsctl.c
 new file mode 100644
-index 0000000..2372949
+index 0000000..83fd08a
 --- /dev/null
-+++ b/Documentation/pps/timepps.h
-@@ -0,0 +1,195 @@
-+/*
-+ * timepps.h -- PPS API main header
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef _SYS_TIMEPPS_H_
-+#define _SYS_TIMEPPS_H_
-+
-+#include <sys/syscall.h>
++++ b/Documentation/pps/ppsctl.c
+@@ -0,0 +1,62 @@
++#include <stdio.h>
 +#include <unistd.h>
++#include <stdlib.h>
 +#include <errno.h>
-+#include <linux/pps.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <string.h>
++#include <linux/serial.h>
 +
-+#define LINUXPPS	1		/* signal we are using LinuxPPS */
-+
-+/*
-+ * New data structures
-+ */
-+
-+struct ntp_fp {
-+	unsigned int integral;
-+	unsigned int fractional;
-+};
-+
-+union pps_timeu {
-+	struct timespec tspec;
-+	struct ntp_fp ntpfp;
-+	unsigned long longpad[3];
-+};
-+
-+struct pps_info {
-+	unsigned long assert_sequence;	/* seq. num. of assert event */
-+	unsigned long clear_sequence;	/* seq. num. of clear event */
-+	union pps_timeu assert_tu;	/* time of assert event */
-+	union pps_timeu clear_tu;	/* time of clear event */
-+	int current_mode;		/* current mode bits */
-+};
-+
-+struct pps_params {
-+	int api_version;		/* API version # */
-+	int mode;			/* mode bits */
-+	union pps_timeu assert_off_tu;	/* offset compensation for assert */
-+	union pps_timeu clear_off_tu;	/* offset compensation for clear */
-+};
-+
-+typedef int pps_handle_t;		/* represents a PPS source */
-+typedef unsigned long pps_seq_t;	/* sequence number */
-+typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
-+typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
-+typedef struct pps_info pps_info_t;
-+typedef struct pps_params pps_params_t;
-+
-+#define assert_timestamp        assert_tu.tspec
-+#define clear_timestamp         clear_tu.tspec
-+
-+#define assert_timestamp_ntpfp  assert_tu.ntpfp
-+#define clear_timestamp_ntpfp   clear_tu.ntpfp
-+
-+#define assert_offset		assert_off_tu.tspec
-+#define clear_offset		clear_off_tu.tspec
-+
-+#define assert_offset_ntpfp     assert_off_tu.ntpfp
-+#define clear_offset_ntpfp      clear_off_tu.ntpfp
-+
-+/*
-+ * The PPS API
-+ */
-+
-+static __inline int time_pps_create(int source, pps_handle_t *handle)
++void usage(char *name)
 +{
++	fprintf(stderr, "usage: %s <ttyS> [enable|disable]\n", name);
++
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int fd;
 +	int ret;
++	struct serial_struct ss;
 +
-+	if (!handle) {
-+		errno = EINVAL;
-+		return -1;
++	if (argc < 2)
++		usage(argv[0]);
++
++	fd = open(argv[1], O_RDWR);
++	if (fd < 0) {
++		perror("open");
++		exit(EXIT_FAILURE);
 +	}
 +
-+	/* First we check if current device is a PPS valid PPS one...
-+	 */
-+	ret = ioctl(source, PPS_CHECK);
-+	if (ret) {
-+		errno = EOPNOTSUPP;
-+		return -1;
++	ret = ioctl(fd, TIOCGSERIAL, &ss);
++	if (ret < 0) {
++		perror("ioctl(TIOCGSERIAL)");
++		exit(EXIT_FAILURE);
 +	}
 +
-+	/* ... then since in LinuxPPS there are no differences between a
-+	 * "PPS source" and a "PPS handle", we simply return the same value.
-+	 */
-+	*handle = source;
++	if (argc < 3) {		/* just read PPS status */
++		printf("PPS is %sabled\n",
++		       ss.flags & ASYNC_HARDPPS_CD ? "en" : "dis");
++		exit(EXIT_SUCCESS);
++	}
++
++	if (argv[2][0] == 'e' || argv[2][0] == '1')
++		ss.flags |= ASYNC_HARDPPS_CD;
++	else if (argv[2][0] == 'd' || argv[2][0] == '0')
++		ss.flags &= ~ASYNC_HARDPPS_CD;
++	else {
++		fprintf(stderr, "invalid state argument \"%s\"\n", argv[2]);
++		exit(EXIT_FAILURE);
++	}
++
++	ret = ioctl(fd, TIOCSSERIAL, &ss);
++	if (ret < 0) {
++		perror("ioctl(TIOCSSERIAL)");
++		exit(EXIT_FAILURE);
++	}
 +
 +	return 0;
 +}
-+
-+static __inline int time_pps_destroy(pps_handle_t handle)
-+{
-+	return close(handle);
-+}
-+
-+static __inline int time_pps_getparams(pps_handle_t handle,
-+					pps_params_t *ppsparams)
-+{
-+	int ret;
-+	struct pps_kparams __ppsparams;
-+
-+	ret = ioctl(handle, PPS_GETPARAMS, &__ppsparams);
-+
-+	ppsparams->api_version = __ppsparams.api_version;
-+	ppsparams->mode = __ppsparams.mode;
-+	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
-+	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
-+	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
-+	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
-+
-+	return ret;
-+}
-+
-+static __inline int time_pps_setparams(pps_handle_t handle,
-+					const pps_params_t *ppsparams)
-+{
-+	struct pps_kparams __ppsparams;
-+
-+	__ppsparams.api_version = ppsparams->api_version;
-+	__ppsparams.mode = ppsparams->mode;
-+	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
-+	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
-+	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
-+	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
-+
-+	return ioctl(handle, PPS_SETPARAMS, &__ppsparams);
-+}
-+
-+/* Get capabilities for handle */
-+static __inline int time_pps_getcap(pps_handle_t handle, int *mode)
-+{
-+	return ioctl(handle, PPS_GETCAP, mode);
-+}
-+
-+static __inline int time_pps_fetch(pps_handle_t handle, const int tsformat,
-+					pps_info_t *ppsinfobuf,
-+					const struct timespec *timeout)
-+{
-+	struct pps_fdata __fdata;
-+	int ret;
-+
-+	/* Sanity checks */
-+	if (tsformat != PPS_TSFMT_TSPEC) {
-+		errno = EINVAL;
-+		return -1;
-+	}
-+
-+	if (timeout) {
-+		__fdata.timeout.sec = timeout->tv_sec;
-+		__fdata.timeout.nsec = timeout->tv_nsec;
-+		__fdata.timeout.flags = ~PPS_TIME_INVALID;
-+	} else
-+		__fdata.timeout.flags = PPS_TIME_INVALID;
-+
-+	ret = ioctl(handle, PPS_FETCH, &__fdata);
-+
-+	ppsinfobuf->assert_sequence = __fdata.info.assert_sequence;
-+	ppsinfobuf->clear_sequence = __fdata.info.clear_sequence;
-+	ppsinfobuf->assert_tu.tspec.tv_sec = __fdata.info.assert_tu.sec;
-+	ppsinfobuf->assert_tu.tspec.tv_nsec = __fdata.info.assert_tu.nsec;
-+	ppsinfobuf->clear_tu.tspec.tv_sec = __fdata.info.clear_tu.sec;
-+	ppsinfobuf->clear_tu.tspec.tv_nsec = __fdata.info.clear_tu.nsec;
-+	ppsinfobuf->current_mode = __fdata.info.current_mode;
-+
-+	return ret;
-+}
-+
-+static __inline int time_pps_kcbind(pps_handle_t handle,
-+					const int kernel_consumer,
-+					const int edge, const int tsformat)
-+{
-+	/* LinuxPPS doesn't implement kernel consumer feature */
-+	errno = EOPNOTSUPP;
-+	return -1;
-+}
-+
-+#endif				/* _SYS_TIMEPPS_H_ */
 -- 
 1.5.2.5
 
