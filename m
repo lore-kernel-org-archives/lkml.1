@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbYBHTYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763009AbYBHTYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762423AbYBHTYG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 14:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYBHTXx
+	id S1763009AbYBHTYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 14:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761925AbYBHTX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 14:23:53 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:35132 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbYBHTXn (ORCPT
+	Fri, 8 Feb 2008 14:23:59 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:52732 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761561AbYBHTX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 14:23:43 -0500
-Message-ID: <47ACAC40.5010505@davidnewall.com>
-Date: Sat, 09 Feb 2008 05:53:44 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 8 Feb 2008 14:23:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=m/zFi4E5NnAa2hOzxxNtiZUOiuxjgLe0MRFMUFUeHQUt0F2G97IKKli1ljo3r55xdQsTJHsjHmt1vNj7ugCTgzIGZfr5nOBdNtjnSA38yoayAETOj7CYMa1Bs6YFsiNMBaTdcsl1R7CL6/ABypdjsCdrTRIcb5iaXco2Jc2oxZo=
+Date: Fri, 8 Feb 2008 22:23:43 +0300
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>, akpm@osdl.org,
+       jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] exporting capability code/name pairs (try #4)
+Message-ID: <20080208192343.GA15571@martell.zuzino.mipt.ru>
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com> <20080204162103.GA20130@sergelap.ibm.com> <47A91B00.9080301@ak.jp.nec.com> <20080206050805.GD3258@sergelap.austin.ibm.com> <47AC23F1.5030300@ak.jp.nec.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Marcel Holtmann <marcel@holtmann.org>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>	 <47A5D9CD.5070001@davidnewall.com>	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>	 <47A5E67D.9040804@davidnewall.com>	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>	 <courier.47A8497B.0000472E@hawking.rebel.net.au>	 <1202240590.15090.119.camel@violet>  <47AB0A76.3000404@davidnewall.com>	 <1202411113.15090.263.camel@violet>  <47ABD317.5060805@davidnewall.com> <1202462101.15090.300.camel@violet> <47ACA204.7030702@davidnewall.com> <47ACA8A5.9010807@davidnewall.com>
-In-Reply-To: <47ACA8A5.9010807@davidnewall.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AC23F1.5030300@ak.jp.nec.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My, I am full of post scripts today.  This one is a peace token for Alan.
+On Fri, Feb 08, 2008 at 06:42:09PM +0900, Kohei KaiGai wrote:
+> [kaigai@saba ~]$ ls -R /sys/kernel/capability/
+> /sys/kernel/capability/:
+> codes  names  version
+> 
+> /sys/kernel/capability/codes:
+> 0  10  12  14  16  18  2   21  23  25  27  29  30  32  4  6  8
+> 1  11  13  15  17  19  20  22  24  26  28  3   31  33  5  7  9
+> 
+> /sys/kernel/capability/names:
+> cap_audit_control    cap_kill              cap_net_raw     cap_sys_nice
+> cap_audit_write      cap_lease             cap_setfcap     cap_sys_pacct
+> cap_chown            cap_linux_immutable   cap_setgid      cap_sys_ptrace
+> cap_dac_override     cap_mac_admin         cap_setpcap     cap_sys_rawio
+> cap_dac_read_search  cap_mac_override      cap_setuid      cap_sys_resource
+> cap_fowner           cap_mknod             cap_sys_admin   cap_sys_time
+> cap_fsetid           cap_net_admin         cap_sys_boot    cap_sys_tty_config
+> cap_ipc_lock         cap_net_bind_service  cap_sys_chroot
+> cap_ipc_owner        cap_net_broadcast     cap_sys_module
+> [kaigai@saba ~]$ cat /sys/kernel/capability/codes/20
+> cap_sys_pacct
+> [kaigai@saba ~]$ cat /sys/kernel/capability/names/cap_mknod
+> 27
+> [kaigai@saba ~]$
+> --------------------------------------------------------
+> Any comment please.
 
-David Newall wrote:
-> there are more reliable and transparent sources [than Alan.]  Don't take his
-> word on it.  Take the words of real experts in the law, because instead
-> of a mere four word conclusion, they explain everything.
-
-I do realise that my later postings come across harshly for Alan, and
-that they might seem to be attacking him.  Of course, he did set himself
-up for that with his own snide and personal attacks on me.  However, I
-took no offense and likewise intended none.  I have not intended
-anything personally.  I'm sure he's a jolly reliable bloke, and I can
-see he's a hard worker for, and advocate of, Linux, and that he's
-enormously respected.  Nobody is right all the time and this, I believe,
-is a case where he is wrong.  I hope nobody is upset that I pointed it
-out.  I also hope that the ideas behind EXPORT_SYMBOL_GPL might be
-reconsidered.
+You don't like 1 (one) /proc/capabilities, why?
