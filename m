@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934434AbYBHBUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934908AbYBHBWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934434AbYBHBUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 20:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbYBHBUq
+	id S934908AbYBHBWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 20:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759018AbYBHBWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 20:20:46 -0500
-Received: from rfc2324.org ([89.149.194.216]:52766 "EHLO rfc2324.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753637AbYBHBUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 20:20:45 -0500
-Date: Fri, 8 Feb 2008 02:20:29 +0100
-From: Maximilian Wilhelm <max@rfc2324.org>
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: max@rfc2324.org, linux-kernel@vger.kernel.org, Eric.Moore@lsil.com
-Subject: Re: Kernel Panic in MPT SAS on 2.6.24 (and 2.6.23.14, 2.6.23.9)
-Message-ID: <20080208012028.GF11236@outback.rfc2324.org>
-Mail-Followup-To: Krzysztof Oledzki <olel@ans.pl>, max@rfc2324.org,
-	linux-kernel@vger.kernel.org, Eric.Moore@lsil.com
-References: <20080206210426.GD11236@outback.rfc2324.org> <47AB82DD.90201@ans.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47AB82DD.90201@ans.pl>
-X-Operating-System: Linux 2.6.23.9-grsec auf i686
-X-Warning: This message may contain ironic / sarcastic elements.
-X-GC-3.12: GCM/CS/IT d+(--) s+: a-- C++>$ UL++++$ US>++++ P++ L+++>++++ E--- W+ N o+ K- w O? M? V? PS+ PE Y+ PGP++ t 5? X- R tv b+(++) DI+(++) !D G++ e>+++  h!>--(---) r++ y+
-X-message-Flag: Outlook: A programm to spread viri, but it can mail, too.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 7 Feb 2008 20:22:16 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43831
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758917AbYBHBWP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 20:22:15 -0500
+Date: Thu, 07 Feb 2008 17:22:46 -0800 (PST)
+Message-Id: <20080207.172246.31415231.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: mingo@elte.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com,
+       npiggin@suse.de, akpm@linux-foundation.org, vegard.nossum@gmail.com,
+       penberg@gmail.com
+Subject: Re: [patch] block layer: kmemcheck fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
+References: <20080207103136.GG15220@kernel.dk>
+	<20080207104901.GF16735@elte.hu>
+	<alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thursday, den  7 February hub Krzysztof Oledzki folgendes in die Tasten:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 7 Feb 2008 09:42:56 -0800 (PST)
 
-Hi!
+> Can we please just stop doing these one-by-one assignments, and just do 
+> something like
+> 
+> 	memset(rq, 0, sizeof(*rq));
+> 	rq->q = q;
+> 	rq->ref_count = 1;
+> 	INIT_HLIST_NODE(&rq->hash);
+> 	RB_CLEAR_NODE(&rq->rb_node);
+> 
+> instead?
+> 
+> The memset() is likely faster and smaller than one-by-one assignments 
+> anyway, even if the one-by-ones can avoid initializing some field or there 
+> ends up being a double initialization..
 
-> >While installing my new firewall I got the following kernel panic in
-> >the MPT SAS driver which I need for the disks.
+The problem is store buffer compression.  At least a few years
+ago this made a huge difference in sk_buff initialization in the
+networking.
 
-> >The first kernel I bootet was 2.6.23.14 which did panic so I tried a
-> >2.6.24 which panics, too. Our usual FAI kernel (2.6.23.9) is also
-> >affected.
-
-> Could you please try 2.6.22-stable?
-
-Yes it works :-/
-
-I've put some things which on the web which might be helpful:
-
-dmesg		http://files.rfc2324.org/mptsas_panic/2.6.22-dmesg
-lspci -v	http://files.rfc2324.org/mptsas_panic/2.6.22-lspci-v
-.config		http://files.rfc2324.org/mptsas_panic/2.6.22-config
-
-I'll search for the last working kernel and try to break it down to a
-commit tommorow when I can get a serial console or direct access.
-The Java driven console redirection is everything else than fulfilling :-(
-
-> It looks *very* similar to my problem:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=9909
-
-It seems to be the same controller:
-
-01:00.0 SCSI storage controller: LSI Logic / Symbios Logic SAS1068E PCI-Express Fusion-MPT SAS (rev 08)
-	Subsystem: Dell Unknown device 1f10
-	Flags: bus master, fast devsel, latency 0, IRQ 16
-	I/O ports at ec00 [size=256]
-	Memory at fc8fc000 (64-bit, non-prefetchable) [size=16K]
-	Memory at fc8e0000 (64-bit, non-prefetchable) [size=64K]
-	Expansion ROM at fc900000 [disabled] [size=1M]
-	Capabilities: [50] Power Management version 2
-	Capabilities: [68] Express Endpoint IRQ 0
-	Capabilities: [98] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
-	Capabilities: [b0] MSI-X: Enable- Mask- TabSize=1
-
-Stay tuned.
-
-Ciao
-Max
--- 
-	Follow the white penguin.
+Maybe cpus these days have so much store bandwith that doing
+things like the above is OK, but I doubt it :-)
