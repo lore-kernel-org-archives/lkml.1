@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbYBHRLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965320AbYBHRMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934863AbYBHRLk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934117AbYBHQzx
+	id S965320AbYBHRMH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:12:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932623AbYBHQz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:55:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52830 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:55:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52863 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933846AbYBHQyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:54:45 -0500
+	id S933964AbYBHQzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:55:04 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 23/37] NFS: Permit local filesystem caching to be enabled for
-	NFS
+Subject: [PATCH 32/37] NFS: Add read context retention for FS-Cache to call
+	back with
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:54:00 +0000
-Message-ID: <20080208165400.15902.53982.stgit@warthog.procyon.org.uk>
+Date: Fri, 08 Feb 2008 16:54:48 +0000
+Message-ID: <20080208165448.15902.66028.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,33 +32,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Permit local filesystem caching to be enabled for NFS in the kernel
-configuration.
+Add read context retention so that FS-Cache can call back into NFS when a read
+operation on the cache fails EIO rather than reading data.  This permits NFS to
+then fetch the data from the server instead using the appropriate security
+context.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/Kconfig |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ fs/nfs/fscache-index.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index c42ec50..fa8e978 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1644,6 +1644,14 @@ config NFS_V4
+diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
+index eec8e7e..af9f06b 100644
+--- a/fs/nfs/fscache-index.c
++++ b/fs/nfs/fscache-index.c
+@@ -285,6 +285,30 @@ static void nfs_cache_inode_now_uncached(void *cookie_netfs_data)
+ }
  
- 	  If unsure, say N.
- 
-+config NFS_FSCACHE
-+	bool "Provide NFS client caching support (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL
-+	depends on NFS_FS=m && FSCACHE || NFS_FS=y && FSCACHE=y
-+	help
-+	  Say Y here if you want NFS data to be cached locally on disc through
-+	  the general filesystem cache manager
+ /*
++ * Get an extra reference on a read context.
++ * - This function can be absent if the completion function doesn't require a
++ *   context.
++ * - The read context is passed back to NFS in the event that a data read on the
++ *   cache fails with EIO - in which case the server must be contacted to
++ *   retrieve the data, which requires the read context for security.
++ */
++static void nfs_fh_get_context(void *cookie_netfs_data, void *context)
++{
++	get_nfs_open_context(context);
++}
 +
- config NFS_DIRECTIO
- 	bool "Allow direct I/O on NFS files"
- 	depends on NFS_FS
++/*
++ * Release an extra reference on a read context.
++ * - This function can be absent if the completion function doesn't require a
++ *   context.
++ */
++static void nfs_fh_put_context(void *cookie_netfs_data, void *context)
++{
++	if (context)
++		put_nfs_open_context(context);
++}
++
++/*
+  * Define the inode object for FS-Cache.  This is used to describe an inode
+  * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
+  * an inode.
+@@ -301,4 +325,6 @@ const struct fscache_cookie_def nfs_cache_inode_object_def = {
+ 	.get_aux	= nfs_cache_inode_get_aux,
+ 	.check_aux	= nfs_cache_inode_check_aux,
+ 	.now_uncached	= nfs_cache_inode_now_uncached,
++	.get_context	= nfs_fh_get_context,
++	.put_context	= nfs_fh_put_context,
+ };
 
