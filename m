@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbYBHQPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYBHQQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932702AbYBHQPK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbYBHQO5
+	id S1760581AbYBHQQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbYBHQQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:14:57 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:65218 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756801AbYBHQO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:14:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gvLSjk72KeTmSzqXDOOMbE0Dd7FAX7Fdvqk2o12s8sJAzJcn8iUc/vzGQV2KwG8b38GWtqODSkH29kcY/nR1tN2I/iKQdBVfAGFpon/hZYJ/PaI0Oe79v7NNsOQO6m/63ScfaFf0Sgb5gSRs/eC8TiyIjVfOO5sf+8CDW2uZc5M=
-Message-ID: <15577be70802080814j1bb21b30r6f8a82e35aa8dc07@mail.gmail.com>
-Date: Fri, 8 Feb 2008 17:14:50 +0100
-From: "Abel Bernabeu" <abelbg@m2grp.com>
-Reply-To: abelbg@m2grp.com
-To: linux-kernel@vger.kernel.org
-Subject: Re: Elf loader crash while zero-filling .bss
-In-Reply-To: <15577be70801310738x3afcc393k6cf8f7151677528c@mail.gmail.com>
+	Fri, 8 Feb 2008 11:16:04 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4568 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757092AbYBHQQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:16:01 -0500
+Date: Fri, 8 Feb 2008 11:14:22 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@redhat.com>,
+       tglx@linutronix.de, mingo@redhat.com, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in
+	die_nmi path
+Message-ID: <20080208161422.GA32204@hmsreliant.think-freely.org>
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com> <47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu> <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com> <20080207121719.GA29279@hmsreliant.think-freely.org> <20080207122404.GA8195@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <15577be70801300309k4eb84047peb4bffd4b41cbaa7@mail.gmail.com>
-	 <15577be70801310738x3afcc393k6cf8f7151677528c@mail.gmail.com>
-X-Google-Sender-Auth: 3992e702feb59612
+In-Reply-To: <20080207122404.GA8195@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/31, Abel Bernabeu <abelbg@m2grp.com>:
-> 2008/1/30, Abel Bernabeu <abelbg@m2grp.com>:
->
-> > Now I am trying to execute some bigger C applications: in instance
-> > BusyBox. I've chosen the buildroot package in order to produce a small
-> > "distro".
-> >
-> > Then I've tried to boot the system using init=/bin/sh but I am getting
-> > a crash while loading this non-toy binary.
+On Thu, Feb 07, 2008 at 01:24:04PM +0100, Ingo Molnar wrote:
+> 
+> * Neil Horman <nhorman@tuxdriver.com> wrote:
+> 
+> > Ingo noted a few posts down the nmi_exit doesn't actually write to the 
+> > APIC EOI register, so yeah, I agree, its bogus (and I apologize, I 
+> > should have checked that more carefully).  Nevertheless, this patch 
+> > consistently allowed a hangning machine to boot through an Nmi lockup.  
+> > So I'm forced to wonder whats going on then that this patch helps 
+> > with.  perhaps its a just a very fragile timing issue, I'll need to 
+> > look more closely.
+> 
+> try a dummy iret, something like:
+> 
+>   asm volatile ("pushf; push $1f; iret; 1: \n");
+> 
+> to get the CPU out of its 'nested NMI' state. (totally untested)
+> 
+> the idea is to push down an iret frame to the kernel stack that will 
+> just jump to the next instruction and gets it out of the NMI nesting. 
+> Note: interrupts will/must still be disabled, despite the iret. (the 
+> ordering of the pushes might be wrong, we might need more than that for 
+> a valid iret, etc. etc.)
+> 
+> 	Ingo
 
-Hi guys,
+Just tried this experiment and it met with success.  Executing a dummy iret
+instruction got us to boot the kdump kernel successfully.  
 
-Excuse me for posting even another message about the same crash (I am
-responding myself anyway :). It is my crash and I will find why
-happens! :D
+Thoughts on how we should handle this from here?
 
-I've found THE COMMON DENOMINATOR present in all the binaries that get
-my kernel crash.
 
-The offset of some sections fall in the middle of the .bss section. In
-instance, look at the sections 12 (.comment) and 13 (.ARM.atributes).
-Both sections are overlapping with 11 (.bss):
+Regards
+Neil
 
-[11] .bss                 NOBITS       0001143c 00143c 000048  0 WA     0   0  4
-[12] .comment             PROGBITS     00000000 00143c 000094  0        0   0  1
-[13] .ARM.attributes      SHT_LOPROC+3 00000000 0014d0 000010  0        0   0  1
-[14] .shstrtab            STRTAB       00000000 0014e0 00007b  0        0   0  1
-[15] .symtab              SYMTAB       00000000 001804 000c70 16       16  92  4
-[16] .strtab              STRTAB       00000000 002474 000840  0        0   0  1
-
-Is this fact meaningful??
-
-I don't think this .elf file is correct and you can blame my
-cross-compiler building skills... but the kernel should be friendly
-enough to tell me about the problem instead of crashing :)
-
-Any ideas?
-
-Yours, Abel.
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
