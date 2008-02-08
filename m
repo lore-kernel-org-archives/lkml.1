@@ -1,260 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbYBHAfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935493AbYBHAfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763707AbYBHAfN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 19:35:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932558AbYBHAbQ
+	id S935493AbYBHAfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 19:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbYBHAb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 19:31:16 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:56846 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762470AbYBHAbM (ORCPT
+	Thu, 7 Feb 2008 19:31:28 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:45194 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779AbYBHAbT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 19:31:12 -0500
+	Thu, 7 Feb 2008 19:31:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=I34hBAt+0XsokoRQWEnQWkr3IYyFGrVAraja8kP/HOzy+BZ/t/nyTtorS12zCDIVNkyCOpdj2GVPAgmkaDmP/RdklsJwK5IjTK8h6X5bwx6thpmQ7P/SBc3JszzcYQsRQ+AweBg3LbxfU9roe4F8TDCHGEc753x7G2ficAC56g0=
+        b=n++vZ/hSHd0GapupzqvM7yhhmoceJw8KirS0hBumPpjjpuH3ke9yftWh3e4NUftU79UGTQhP7U5nudAY13dKhBE0sHDYu+xJ5oNXegbl9W0yKATU8GI3gFaH6kwtJsotASXaExdm9UHR2ZoCOFFZBubQxNDQoIQqtCbfc6nyrDA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:23 +0100
-Message-Id: <20080208004523.17746.24578.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:30 +0100
+Message-Id: <20080208004530.17746.11984.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 09/18] ide: rework PowerMac media-bay support
+Subject: [PATCH 10/18] ide: add warm-plug support for IDE devices
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rework PowerMac media-bay support in such way that instead of
-un/registering the IDE interface we un/register IDE devices:
+* Add 'struct class ide_port_class' ('ide_port' class) and embedd 'struct
+  class_device classdev' ('ide_port' class device) in ide_hwif_t.
 
-* Add ide_port_scan() helper for probing+registerering devices on a port.
+* Register 'ide_port' class in ide_init() and unregister it in
+  cleanup_module().
 
-* Rename ide_port_unregister_devices() to __ide_port_unregister_devices().
+* Add class_to_ide_port() macro and ide_port_class_release().
 
-* Add ide_port_unregister_devices() helper for unregistering devices on a port.
+* Register ->classdev in ide_register_port () and unregister it in
+  ide_unregister().
 
-* Add 'ide_hwif_t *cd_port' to 'struct media_bay_info', pass 'hwif' instead
-  of hwif->index to media_bay_set_ide_infos() and use it to setup 'cd_port'.
+* Add "delete_devices" class device attribute for unregistering IDE devices
+  on a port and "scan" one for probing+registering IDE devices on a port.
 
-* Use ide_port_unregister_devices() instead of ide_unregister()
-  and ide_port_scan() instead of ide_register_hw() in media_bay_step().
+* Add ide_sysfs_register_port() helper for registering "delete_devices"
+  and "scan" attributes with ->classdev.  Call it in ide_device_add_all().
 
-* Unexport ide_register_hw() and make it static.
+* Document IDE warm-plug support in Documentation/ide/warm-plug-howto.txt.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c        |   18 ++++++++++++++++++
- drivers/ide/ide.c              |   22 ++++++++++++++++------
- drivers/ide/ppc/pmac.c         |    3 ++-
- drivers/macintosh/mediabay.c   |   17 +++++++----------
- include/asm-powerpc/mediabay.h |    4 +++-
- include/linux/ide.h            |    6 ++----
- 6 files changed, 48 insertions(+), 22 deletions(-)
++540 bytes (x86-32)
 
+After seeing some 'class device' conversion patches from Greg I tried to
+recast this patch to just use 'device' but I couldn't figure out how to
+use class_device_create() with *static* objects...
+
+ Documentation/ide/warm-plug-howto.txt |   13 ++++++
+ drivers/ide/ide-probe.c               |   70 +++++++++++++++++++++++++++++++++-
+ drivers/ide/ide.c                     |   22 ++++++++++
+ include/linux/ide.h                   |    7 ++-
+ 4 files changed, 109 insertions(+), 3 deletions(-)
+
+Index: b/Documentation/ide/warm-plug-howto.txt
+===================================================================
+--- /dev/null
++++ b/Documentation/ide/warm-plug-howto.txt
+@@ -0,0 +1,13 @@
++
++IDE warm-plug HOWTO
++===================
++
++To warm-plug devices on a port 'idex':
++
++# echo -n "1" > /sys/class/ide_port/idex/delete_devices
++
++unplug old device(s) and plug new device(s)
++
++# echo -n "1" > /sys/class/ide_port/idex/scan
++
++done
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1490,3 +1490,21 @@ int ide_device_add(u8 idx[4], const stru
- 	return ide_device_add_all(idx_all, d);
+@@ -623,7 +623,7 @@ static void hwif_release_dev (struct dev
+ 	complete(&hwif->gendev_rel_comp);
  }
- EXPORT_SYMBOL_GPL(ide_device_add);
+ 
+-static void ide_register_port(ide_hwif_t *hwif)
++static int ide_register_port(ide_hwif_t *hwif)
+ {
+ 	int ret;
+ 
+@@ -639,9 +639,23 @@ static void ide_register_port(ide_hwif_t
+ 	}
+ 	hwif->gendev.release = hwif_release_dev;
+ 	ret = device_register(&hwif->gendev);
+-	if (ret < 0)
++	if (ret < 0) {
+ 		printk(KERN_WARNING "IDE: %s: device_register error: %d\n",
+ 			__FUNCTION__, ret);
++		goto out;
++	}
 +
-+void ide_port_scan(ide_hwif_t *hwif)
++	get_device(&hwif->gendev);
++
++	strlcpy(hwif->classdev.class_id, hwif->name, BUS_ID_SIZE);
++	hwif->classdev.dev = &hwif->gendev;
++	hwif->classdev.class = &ide_port_class;
++
++	ret = class_device_register(&hwif->classdev);
++	if (ret < 0)
++		device_unregister(&hwif->gendev);
++out:
++	return ret;
+ }
+ 
+ /**
+@@ -1374,6 +1388,57 @@ static void ide_port_cable_detect(ide_hw
+ 	}
+ }
+ 
++static ssize_t store_delete_devices(struct class_device *class_dev,
++				    const char *buf, size_t n)
 +{
-+	ide_port_cable_detect(hwif);
-+	ide_port_init_devices(hwif);
++	ide_hwif_t *hwif = class_to_ide_port(class_dev);
 +
-+	if (ide_probe_port(hwif) < 0)
-+		return;
++	if (strncmp(buf, "1", n))
++		return -EINVAL;
 +
-+	hwif->present = 1;
++	ide_port_unregister_devices(hwif);
 +
-+	ide_port_tune_devices(hwif);
-+	ide_acpi_port_init_devices(hwif);
-+	ide_port_setup_devices(hwif);
-+	hwif_register_devices(hwif);
-+	ide_proc_port_register_devices(hwif);
++	return n;
++};
++
++static CLASS_DEVICE_ATTR(delete_devices, S_IWUSR, NULL, store_delete_devices);
++
++static ssize_t store_scan(struct class_device *class_dev, const char *buf,
++			  size_t n)
++{
++	ide_hwif_t *hwif = class_to_ide_port(class_dev);
++
++	if (strncmp(buf, "1", n))
++		return -EINVAL;
++
++	ide_port_unregister_devices(hwif);
++	ide_port_scan(hwif);
++
++	return n;
++};
++
++static CLASS_DEVICE_ATTR(scan, S_IWUSR, NULL, store_scan);
++
++static struct class_device_attribute *ide_port_attrs[] = {
++	&class_device_attr_delete_devices,
++	&class_device_attr_scan,
++	NULL
++};
++
++static int ide_sysfs_register_port(ide_hwif_t *hwif)
++{
++	int i, rc;
++
++	for (i = 0; ide_port_attrs[i]; i++) {
++		rc = class_device_create_file(&hwif->classdev,
++					      ide_port_attrs[i]);
++		if (rc)
++			break;
++	}
++
++	return rc;
 +}
-+EXPORT_SYMBOL_GPL(ide_port_scan);
++
+ int ide_device_add_all(u8 *idx, const struct ide_port_info *d)
+ {
+ 	ide_hwif_t *hwif, *mate = NULL;
+@@ -1470,6 +1535,7 @@ int ide_device_add_all(u8 *idx, const st
+ 		hwif = &ide_hwifs[idx[i]];
+ 
+ 		if (hwif->present) {
++			ide_sysfs_register_port(hwif);
+ 			ide_proc_register_port(hwif);
+ 			ide_proc_port_register_devices(hwif);
+ 		}
 Index: b/drivers/ide/ide.c
 ===================================================================
 --- a/drivers/ide/ide.c
 +++ b/drivers/ide/ide.c
-@@ -506,7 +506,7 @@ void ide_remove_port_from_hwgroup(ide_hw
- }
+@@ -596,6 +596,7 @@ void ide_unregister(unsigned int index, 
  
- /* Called with ide_lock held. */
--static void ide_port_unregister_devices(ide_hwif_t *hwif)
-+static void __ide_port_unregister_devices(ide_hwif_t *hwif)
- {
- 	int i;
+ 	ide_remove_port_from_hwgroup(hwif);
  
-@@ -522,6 +522,18 @@ static void ide_port_unregister_devices(
- 	}
- }
++	class_device_unregister(&hwif->classdev);
+ 	device_unregister(&hwif->gendev);
+ 	wait_for_completion(&hwif->gendev_rel_comp);
  
-+void ide_port_unregister_devices(ide_hwif_t *hwif)
+@@ -1613,6 +1614,16 @@ struct bus_type ide_bus_type = {
+ 
+ EXPORT_SYMBOL_GPL(ide_bus_type);
+ 
++static void ide_port_class_release(struct class_device *class_dev)
 +{
-+	mutex_lock(&ide_cfg_mtx);
-+	spin_lock_irq(&ide_lock);
-+	__ide_port_unregister_devices(hwif);
-+	hwif->present = 0;
-+	ide_port_init_devices_data(hwif);
-+	spin_unlock_irq(&ide_lock);
-+	mutex_unlock(&ide_cfg_mtx);
++	put_device(&class_to_ide_port(class_dev)->gendev);
 +}
-+EXPORT_SYMBOL_GPL(ide_port_unregister_devices);
 +
- /**
-  *	ide_unregister		-	free an IDE interface
-  *	@index: index of interface (will change soon to a pointer)
-@@ -562,7 +574,7 @@ void ide_unregister(unsigned int index, 
- 	hwif = &ide_hwifs[index];
- 	if (!hwif->present)
- 		goto abort;
--	ide_port_unregister_devices(hwif);
-+	__ide_port_unregister_devices(hwif);
- 	hwif->present = 0;
- 
- 	spin_unlock_irq(&ide_lock);
-@@ -657,8 +669,8 @@ EXPORT_SYMBOL_GPL(ide_init_port_hw);
-  *	Returns -1 on error.
-  */
- 
--int ide_register_hw(hw_regs_t *hw, void (*quirkproc)(ide_drive_t *),
--		    ide_hwif_t **hwifp)
-+static int ide_register_hw(hw_regs_t *hw, void (*quirkproc)(ide_drive_t *),
-+			   ide_hwif_t **hwifp)
- {
- 	int index, retry = 1;
- 	ide_hwif_t *hwif;
-@@ -692,8 +704,6 @@ found:
- 	return hwif->present ? index : -1;
- }
- 
--EXPORT_SYMBOL(ide_register_hw);
--
++struct class ide_port_class = {
++	.name		= "ide_port",
++	.release	= ide_port_class_release,
++};
++
  /*
-  *	Locks for IDE setting functionality
+  * This is gets invoked once during initialization, to set *everything* up
   */
-Index: b/drivers/ide/ppc/pmac.c
-===================================================================
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1088,7 +1088,8 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
- 	if (np->parent && np->parent->name
- 	    && strcasecmp(np->parent->name, "media-bay") == 0) {
- #ifdef CONFIG_PMAC_MEDIABAY
--		media_bay_set_ide_infos(np->parent, pmif->regbase, pmif->irq, hwif->index);
-+		media_bay_set_ide_infos(np->parent, pmif->regbase, pmif->irq,
-+					hwif);
- #endif /* CONFIG_PMAC_MEDIABAY */
- 		pmif->mediabay = 1;
- 		if (!bidp)
-Index: b/drivers/macintosh/mediabay.c
-===================================================================
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -79,6 +79,7 @@ struct media_bay_info {
- 	int				sleeping;
- 	struct semaphore		lock;
- #ifdef CONFIG_BLK_DEV_IDE_PMAC
-+	ide_hwif_t			*cd_port;
- 	void __iomem			*cd_base;
- 	int				cd_irq;
- 	int				cd_retry;
-@@ -450,7 +451,7 @@ int check_media_bay_by_base(unsigned lon
+@@ -1633,11 +1644,20 @@ static int __init ide_init(void)
+ 		return ret;
+ 	}
+ 
++	ret = class_register(&ide_port_class);
++	if (ret)
++		goto out_port_class;
++
+ 	init_ide_data();
+ 
+ 	proc_ide_create();
+ 
+ 	return 0;
++
++out_port_class:
++	bus_unregister(&ide_bus_type);
++
++	return ret;
  }
  
- int media_bay_set_ide_infos(struct device_node* which_bay, unsigned long base,
--			    int irq, int index)
-+			    int irq, ide_hwif_t *hwif)
- {
- 	int	i;
+ #ifdef MODULE
+@@ -1674,6 +1694,8 @@ void __exit cleanup_module (void)
  
-@@ -458,10 +459,11 @@ int media_bay_set_ide_infos(struct devic
- 		struct media_bay_info* bay = &media_bays[i];
+ 	proc_ide_destroy();
  
- 		if (bay->mdev && which_bay == bay->mdev->ofdev.node) {
--			int timeout = 5000;
-+			int timeout = 5000, index = hwif->index;
- 			
- 			down(&bay->lock);
++	class_unregister(&ide_port_class);
++
+ 	bus_unregister(&ide_bus_type);
+ }
  
-+			bay->cd_port	= hwif;
-  			bay->cd_base	= (void __iomem *) base;
- 			bay->cd_irq	= irq;
- 
-@@ -553,15 +555,10 @@ static void media_bay_step(int i)
- 			bay->timer = 0;
- 			bay->state = mb_up;
- 			if (bay->cd_index < 0) {
--				hw_regs_t hw;
--
- 				printk("mediabay %d, registering IDE...\n", i);
- 				pmu_suspend();
--				ide_init_hwif_ports(&hw, (unsigned long) bay->cd_base, (unsigned long) 0, NULL);
--				hw.irq = bay->cd_irq;
--				hw.chipset = ide_pmac;
--				bay->cd_index =
--					ide_register_hw(&hw, NULL, NULL);
-+				ide_port_scan(bay->cd_port);
-+				bay->cd_index = bay->cd_port->index;
- 				pmu_resume();
- 			}
- 			if (bay->cd_index == -1) {
-@@ -591,7 +588,7 @@ static void media_bay_step(int i)
-     	        if (bay->cd_index >= 0) {
- 			printk(KERN_DEBUG "Unregistering mb %d ide, index:%d\n", i,
- 			       bay->cd_index);
--			ide_unregister(bay->cd_index, 1, 1);
-+			ide_port_unregister_devices(bay->cd_port);
- 			bay->cd_index = -1;
- 		}
- 	    	if (bay->cd_retry) {
-Index: b/include/asm-powerpc/mediabay.h
-===================================================================
---- a/include/asm-powerpc/mediabay.h
-+++ b/include/asm-powerpc/mediabay.h
-@@ -22,10 +22,12 @@ int check_media_bay(struct device_node *
- /* Number of bays in the machine or 0 */
- extern int media_bay_count;
- 
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- int check_media_bay_by_base(unsigned long base, int what);
- /* called by IDE PMAC host driver to register IDE controller for media bay */
- int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
--			    int irq, int index);
-+			    int irq, ide_hwif_t *hwif);
-+#endif
- 
- #endif /* __KERNEL__ */
- #endif /* _PPC_MEDIABAY_H */
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -189,10 +189,6 @@ struct hwif_s * ide_find_port(unsigned l
- void ide_init_port_data(struct hwif_s *, unsigned int);
- void ide_init_port_hw(struct hwif_s *, hw_regs_t *);
+@@ -581,7 +581,9 @@ typedef struct hwif_s {
+ 	unsigned	mmio       : 1; /* host uses MMIO */
+ 	unsigned	straight8  : 1;	/* Alan's straight 8 check */
  
--struct ide_drive_s;
--int ide_register_hw(hw_regs_t *, void (*)(struct ide_drive_s *),
--		    struct hwif_s **);
--
- static inline void ide_std_init_ports(hw_regs_t *hw,
- 				      unsigned long io_addr,
- 				      unsigned long ctl_addr)
-@@ -1202,6 +1198,8 @@ void ide_undecoded_slave(ide_drive_t *);
+-	struct device	gendev;
++	struct device		gendev;
++	struct class_device	classdev;
++
+ 	struct completion gendev_rel_comp; /* To deal with device release() */
  
- int ide_device_add_all(u8 *idx, const struct ide_port_info *);
- int ide_device_add(u8 idx[4], const struct ide_port_info *);
-+void ide_port_unregister_devices(ide_hwif_t *);
-+void ide_port_scan(ide_hwif_t *);
+ 	void		*hwif_data;	/* extra hwif data */
+@@ -593,6 +595,8 @@ typedef struct hwif_s {
+ #endif
+ } ____cacheline_internodealigned_in_smp ide_hwif_t;
  
- static inline void *ide_get_hwifdata (ide_hwif_t * hwif)
- {
++#define class_to_ide_port(dev)	container_of(dev, ide_hwif_t, classdev)
++
+ /*
+  *  internal ide interrupt handler type
+  */
+@@ -1275,6 +1279,7 @@ extern struct mutex ide_cfg_mtx;
+ #define local_irq_set(flags)	do { local_save_flags((flags)); local_irq_enable_in_hardirq(); } while (0)
+ 
+ extern struct bus_type ide_bus_type;
++extern struct class ide_port_class;
+ 
+ /* check if CACHE FLUSH (EXT) command is supported (bits defined in ATA-6) */
+ #define ide_id_has_flush_cache(id)	((id)->cfs_enable_2 & 0x3000)
