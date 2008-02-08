@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbYBHHlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbYBHHsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934635AbYBHHlj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 02:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbYBHHlY
+	id S1757616AbYBHHsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 02:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYBHHru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 02:41:24 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55798 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758893AbYBHHlX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 02:41:23 -0500
-Message-ID: <47AC077F.1010809@zytor.com>
-Date: Thu, 07 Feb 2008 23:40:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 8 Feb 2008 02:47:50 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:5382 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752743AbYBHHru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 02:47:50 -0500
+Date: Fri, 8 Feb 2008 08:47:47 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
+       dgc@sgi.com
+Subject: Re: IO queuing and complete affinity with threads (was Re: [PATCH 0/8] IO queuing and complete affinity)
+Message-ID: <20080208074747.GY15220@kernel.dk>
+References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <20080207182544.GM15220@kernel.dk> <20080208073859.GE9730@wotan.suse.de>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <47AB887E.7010000@zytor.com> <200802080006.54151.rjw@sisk.pl> <20080207233509.GB21468@elf.ucw.cz> <47AB975C.1010902@zytor.com> <20080208070419.GA4544@ucw.cz>
-In-Reply-To: <20080208070419.GA4544@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080208073859.GE9730@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+On Fri, Feb 08 2008, Nick Piggin wrote:
+> On Thu, Feb 07, 2008 at 07:25:45PM +0100, Jens Axboe wrote:
+> > Hi,
+> > 
+> > Here's a variant using kernel threads only, the nasty arch bits are then
+> > not needed. Works for me, no performance testing (that's a hint for Alan
+> > to try and queue up some testing for this variant as well :-)
 > 
->>> I really need the entry point to be at offset 0, so 
->>> that I can get
->>> pointers to my data. I could not figure out how to do 
->>> it any other
->>> way. And if 0 is taken, I thought I'd put header at the 
->>> end.
->>>
->> Why not just put the structure at 0, and put pointers in 
->> the structure to everything else you need?
-> 
-> segments:offsets rear its ugly head here. I need %ds to point to my
-> data, and the way to do it is copy it from %cs; that needs start to be
-> at 0.
-> 
-> If you can find a solution that does not need this (some
-> segment/offset arithmetics at beggining of wakeup?) we could use it,
-> but I was lost between relocations.
-> 
+> Well this stuff looks pretty nice (although I'm not sure whether the
+> softirq->thread changes are a good idea for performance, I guess we'll
+> see).
 
-Let me look at it in the morning.  Got a specific pointer?
+Yeah, that is indeed an open question and why I have two seperate
+patches for now (io-cpu-affinity branch and io-cpu-affinity-kthread
+branch). As Ingo mentioned, this is how softirqs are handled in the -rt
+branch already.
 
-	-hpa
+> You still don't have the option that the Intel patch gave, that is,
+> to submit on the completer. I guess that you could do it somewhat
+> generically by having a cpuid in the request queue, and update that
+> with the completing cpu.
+
+Not sure what you mean, if setting queue_affinity doesn't accomplish it.
+If you know the completing CPU to begin with, surely you can just set
+the queuing affinity appropriately?
+
+> At least they reported it to be the most efficient scheme in their
+> testing, and Dave thought that migrating completions out to submitters
+> might be a bottleneck in some cases.
+
+More so than migrating submitters to completers? The advantage of only
+movign submitters is that you get rid of the completion locking. Apart
+from that, the cost should be the same, especially for the thread based
+solution.
+
+-- 
+Jens Axboe
+
