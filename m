@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934151AbYBHSxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbYBHSy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934151AbYBHSxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759702AbYBHSxn
+	id S934456AbYBHSy4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:54:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760794AbYBHSyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 13:53:43 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:51119 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753682AbYBHSxm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 13:53:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XTyC6Iy09ovGJoY1hpvmozYR+Ov6ItLFOyzFj6dEB8vt1S1NRJnbxperWBd8sDXVlUaVCTPc22CNtR6cHXrUFKBwLgZ1EeBKayucQuETO+gkkGrlf22siv+Zj3jjJvf7VP69pjBGtOmH7STQ531rgtdEGZvP1z7NhFTA1mCEY/M=
-Message-ID: <386072610802081053r73aeb264m7f86d513ec7d1c6d@mail.gmail.com>
-Date: Sat, 9 Feb 2008 02:53:40 +0800
-From: "Bryan Wu" <cooloney.lkml@gmail.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: blackfin compile error
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       "Matt Mackall" <mpm@selenic.com>, "Adrian Bunk" <bunk@kernel.org>,
-       bryan.wu@analog.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Howells" <dhowells@redhat.com>
-In-Reply-To: <8bd0f97a0802072125l16e3fc5cw91a92eed299f82e8@mail.gmail.com>
+	Fri, 8 Feb 2008 13:54:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39832 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760790AbYBHSys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 13:54:48 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 11/9] firewire: fw-sbp2: enforce a retry of __scsi_add_device if bus generation changed
+Date: Fri, 8 Feb 2008 13:54:23 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <47A9FBFD.50100@s5r6.in-berlin.de> <tkrat.b66856ee2df66cd4@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.b66856ee2df66cd4@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080206151830.GI505@cs181133002.pp.htv.fi>
-	 <1202315015.17934.242.camel@cinder.waste.org>
-	 <200802061412.50675.rgetz@blackfin.uclinux.org>
-	 <8bd0f97a0802072125l16e3fc5cw91a92eed299f82e8@mail.gmail.com>
+Message-Id: <200802081354.23299.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 8, 2008 1:25 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+On Wednesday 06 February 2008 04:09:47 pm Stefan Richter wrote:
+> fw-sbp2 is unable to reconnect while performing __scsi_add_device
+> because there is only a single workqueue thread context available for
+> both at the moment.  This should be fixed eventually.
 >
-> On Feb 6, 2008 2:12 PM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> > On Wed 6 Feb 2008 11:23, Matt Mackall pondered:
-> > > On Wed, 2008-02-06 at 17:18 +0200, Adrian Bunk wrote:
-> > > > Commit 698dd4ba6b12e34e1e432c944c01478c0b2cd773 broke blackfin:
-> > > >
-> > > > <--  snip  -->
-> > > >
-> > > > ...
-> > > >   CC      mm/vmscan.o
-> > > > In file included from
-> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/vmscan.c:44:
-> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h: In function 'is_swap_pte':
-> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_none'
-> > > > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_present'
-> > > > make[2]: *** [mm/vmscan.o] Error 1
-> > >
-> > > This suggests that no one's tried to compile -mm on Blackfin since
-> > > before September, I think.
-> >
-> > Or any other nommu arch's either, since looking at the include files, FRV
-> > (when configured as noMMU) and m68knommu does not include it either...
-> >
-> > > Is there somewhere more appropriate to move it? I can't find one.
-> > > Failing that, we can wrap it in CONFIG_MMU, I suppose.
-> >
-> > Or just add to the the following:
-> >
-> > ./include/asm-blackfin
-> > ./include/asm-frv/ (only when configured as !MMU)
-> > ./include/asm-h8300
-> > ./include/asm-m68knommu
-> > ./include/asm-v850
-> >
-> > Others seem to have it in include/asm-xxxxx/pgtable.h as #define, inline
-> > function, or extern.
+> Until then, take care that __scsi_add_device does not return success
+> even though the SCSI high-level driver probing failed (sd READ_CAPACITY
+> and friends) due to bus reset.  The trick to do so is to use a different
+> error indicator in the command completion as long as __scsi_add_device
+> did not return.
 >
-> looks like only MMU code currently uses the function, but to keep
-> things nice, we may want something like:
-> static inline int is_swap_pte(pte_t pte)
-> {
-> #ifdef CONFIG_MMU
->     return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
-> #else
->     return 0;
-> #endif
-> }
+> An actual failure of __scsi_add_device is easy to handle, but an
+> incomplete execution of __scsi_add_device with an sdev returned would
+> remain undetected and leave the SBP-2 target unusable.
 >
-> the header is also lacking an #include <asm/pgtable.h> at the top ...
-> -mike
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
 >
+> Jarod, does this work like I assume and fixes your setup of two OXFW911
+> based disks?
 
-Did you submit a patch to mainline? It should be merged to fix this
-compiling error.
+Well, it results in the dmesg spew saying "sd 6:0:0:0: [sdc] Result: 
+hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK" -- i.e., 
+DID_NO_CONNECT instead of DID_BUS_BUSY, but other than that, no change in 
+behavior, sdc remains unusable just as before.
 
-Thanks a lot
--Bryan
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
