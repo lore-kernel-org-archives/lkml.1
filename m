@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYBHDz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbYBHD5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761963AbYBHDz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 22:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbYBHDzO
+	id S933293AbYBHD5W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 22:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbYBHD5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 22:55:14 -0500
-Received: from pie.citi.umich.edu ([141.211.133.115]:50486 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756174AbYBHDzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 22:55:12 -0500
-Date: Thu, 7 Feb 2008 22:55:08 -0500
-To: NeilBrown <neilb@suse.de>
-Cc: J.Bruce@suse.de, Fields@suse.de, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH] knfsd: Remove NLM_HOST_MAX and associated logic.
-Message-ID: <20080208035508.GC7117@fieldses.org>
-References: <20080208130300.14320.patches@notabene> <1080208020337.14371@suse.de>
+	Thu, 7 Feb 2008 22:57:12 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35020 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758798AbYBHD5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 22:57:11 -0500
+Message-ID: <47ABD317.5060805@davidnewall.com>
+Date: Fri, 08 Feb 2008 14:27:11 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1080208020337.14371@suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>	 <47A5D9CD.5070001@davidnewall.com>	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>	 <47A5E67D.9040804@davidnewall.com>	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>	 <courier.47A8497B.0000472E@hawking.rebel.net.au>	 <1202240590.15090.119.camel@violet>  <47AB0A76.3000404@davidnewall.com> <1202411113.15090.263.camel@violet>
+In-Reply-To: <1202411113.15090.263.camel@violet>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 01:03:37PM +1100, NeilBrown wrote:
-> 
-> Lockd caches information about hosts that have recently held locks it
-> expedite the taking of further locks.
-
-Applied, thanks!--b.
-
-> 
-> It periodically discards this information for hosts that have not been
-> used for a few minutes.
-> 
-> lockd currently has a value NLM_HOST_MAX, and changes the 'garbage
-> collection' behaviour when the number of hosts exceeds this threshold.
-> 
-> However it's behaviour in strange an likely not what was intended.
-> When the number of hosts exceeds the max, it scans *less* often (every
-> 2 minutes vs every minute) and allows unused host information to
-> remain around longer (5 minutes instead of 2).
-> 
-> Having this limit is of dubious value anyway, and we have not
-> suffered from the code not getting the limit right, so remove the
-> limit altogether.  We go with the larger values (discard 5 minute old
-> hosts every 2 minutes) as that is probably safer.
-> 
-> Maybe the periodic garbage collection should be replace to with
-> 'shrinker' handler so we just respond to memory pressure....
-> 
-> Acked-by: Jeff Layton <jlayton@redhat.com>
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> ### Diffstat output
->  ./fs/lockd/host.c |    9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
-> 
-> diff .prev/fs/lockd/host.c ./fs/lockd/host.c
-> --- .prev/fs/lockd/host.c	2008-02-07 14:20:54.000000000 +1100
-> +++ ./fs/lockd/host.c	2008-02-08 12:54:28.000000000 +1100
-> @@ -19,12 +19,11 @@
->  
->  
->  #define NLMDBG_FACILITY		NLMDBG_HOSTCACHE
-> -#define NLM_HOST_MAX		64
->  #define NLM_HOST_NRHASH		32
->  #define NLM_ADDRHASH(addr)	(ntohl(addr) & (NLM_HOST_NRHASH-1))
->  #define NLM_HOST_REBIND		(60 * HZ)
-> -#define NLM_HOST_EXPIRE		((nrhosts > NLM_HOST_MAX)? 300 * HZ : 120 * HZ)
-> -#define NLM_HOST_COLLECT	((nrhosts > NLM_HOST_MAX)? 120 * HZ :  60 * HZ)
-> +#define NLM_HOST_EXPIRE		(300 * HZ)
-> +#define NLM_HOST_COLLECT	(120 * HZ)
->  
->  static struct hlist_head	nlm_hosts[NLM_HOST_NRHASH];
->  static unsigned long		next_gc;
-> @@ -142,9 +141,7 @@ nlm_lookup_host(int server, const struct
->  	INIT_LIST_HEAD(&host->h_granted);
->  	INIT_LIST_HEAD(&host->h_reclaim);
->  
-> -	if (++nrhosts > NLM_HOST_MAX)
-> -		next_gc = 0;
-> -
-> +	nrhosts++;
->  out:
->  	mutex_unlock(&nlm_host_mutex);
->  	return host;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Marcel Holtmann wrote:
+> Hi David,
+>
+>   
+>>>>> I think you're missing my point: as long as the license stays the way
+>>>>> it is now, you can never distribute proprietary code unless you've
+>>>>> consulted a lawyer and even then you run the risk of being sued for
+>>>>> infringement if the copyright holder thinks what you have is derived
+>>>>> work.
+>>>>>       
+>>>>>           
+>>>> Yes I can, if the proprietary code is not linked with GPL code (and the 
+>>>> proprietary code is original).  Loadable modules are not linked.  This is a 
+>>>> very clear-cut case.
+>>>>     
+>>>>         
+>>> that is not clear-cut case. You link at run-time. Otherwise the module
+>>> would do nothing.
+>>>       
+>> That's why it's allowed.  The module isn't linked when it's distributed,
+>> and the author doesn't do or cause the linking; the user does.  And the
+>> user never distributes in the linked state.  Distribution is key to GPL.
+>>     
+>
+> so how do you build this module that is not linked without using the
+> Linux kernel.
+You could hand code in assembler, using Microsoft's assembler under
+Windows.  You could compile from C, using GCC on FreeBSD.  But that's
+immaterial.  A module which is an original, non-derivative work, is,
+well, original and non-derivative.  Do you say that it must be
+otherwise?  Why would that be?
