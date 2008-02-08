@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765185AbYBHWqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765312AbYBHWqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765185AbYBHWqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:46:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764275AbYBHWob
+	id S1765312AbYBHWqw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYBHWpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:44:31 -0500
-Received: from mx1.suse.de ([195.135.220.2]:54364 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759955AbYBHWoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:44:30 -0500
-Date: Fri, 8 Feb 2008 23:44:27 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       mingo@elte.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       Alan.Brunelle@hp.com, dgc@sgi.com, akpm@linux-foundation.org,
-       vegard.nossum@gmail.com, penberg@gmail.com
-Subject: Re: [patch] block layer: kmemcheck fixes
-Message-ID: <20080208224427.GC4952@wotan.suse.de>
-References: <20080207103136.GG15220@kernel.dk> <20080207104901.GF16735@elte.hu> <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org> <20080207.172246.31415231.davem@davemloft.net> <47AC7093.1070003@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 8 Feb 2008 17:45:17 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:56337 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755674AbYBHWpN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:45:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=h7MirmbM/Ita6+vWIVFCW5p/PYahRHltGAEBg8Qrw7QsDfndXxs41xcNbH9idlg9fIrFHhvs2TiAIFopUYYdmr3dQ4BbihVIFtt2yew/eFBET986IK3Y+mSvpyroEKq21xNq1dJwtmx1LQP78CENA8Hojg2Wq11J6kwQlFl+jxw=
+Message-ID: <170fa0d20802081445i42ff7f9em919946d0dc0537b0@mail.gmail.com>
+Date: Fri, 8 Feb 2008 17:45:11 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Paul Clements" <paul.clements@steeleye.com>
+Subject: Re: [Nbd] [PATCH 1/1] NBD: make nbd default to deadline I/O scheduler
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       nbd-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <47ACA250.1010404@steeleye.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47AC7093.1070003@linux.intel.com>
-User-Agent: Mutt/1.5.9i
+References: <47AC87AE.9040408@steeleye.com>
+	 <20080208093341.b4d02e22.randy.dunlap@oracle.com>
+	 <20080208101151.935b575c.akpm@linux-foundation.org>
+	 <47ACA250.1010404@steeleye.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 07:09:07AM -0800, Arjan van de Ven wrote:
-> David Miller wrote:
-> >From: Linus Torvalds <torvalds@linux-foundation.org>
-> >Date: Thu, 7 Feb 2008 09:42:56 -0800 (PST)
+On Feb 8, 2008 1:41 PM, Paul Clements <paul.clements@steeleye.com> wrote:
+> Andrew Morton wrote:
+> > On Fri, 8 Feb 2008 09:33:41 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > >
-> >>Can we please just stop doing these one-by-one assignments, and just do 
-> >>something like
+> >> On Fri, 08 Feb 2008 11:47:42 -0500 Paul Clements wrote:
 > >>
-> >>	memset(rq, 0, sizeof(*rq));
-> >>	rq->q = q;
-> >>	rq->ref_count = 1;
-> >>	INIT_HLIST_NODE(&rq->hash);
-> >>	RB_CLEAR_NODE(&rq->rb_node);
-> >>
-> >>instead?
-> >>
-> >>The memset() is likely faster and smaller than one-by-one assignments 
-> >>anyway, even if the one-by-ones can avoid initializing some field or 
-> >>there ends up being a double initialization..
+> >>> There have been numerous reports of problems with nbd and cfq. Deadline
+> >>> gives better performance for nbd, anyway, so let's use it by default.
 > >
-> >The problem is store buffer compression.  At least a few years
-> >ago this made a huge difference in sk_buff initialization in the
-> >networking.
+> > Please define "problems".  If it's just "slowness" then we can live with
+> > that, but I'd hope that Jens is aware and that it's understood.
 > >
-> >Maybe cpus these days have so much store bandwith that doing
-> >things like the above is OK, but I doubt it :-)
-> 
-> on modern x86 cpus the memset may even be faster if the memory isn't in 
-> cache;
-> the "explicit" method ends up doing Write Allocate on the cache lines
-> (so read them from memory) even though they then end up being written 
-> entirely.
-> With memset the CPU is told that the entire range is set to a new value, and
-> the WA can be avoided for the whole-cachelines in the range.
+> > It it's "hangs" or "oopses" then we panic.
+>
+> The two problems I have experienced (which may already be fixed):
+>
+> 1) nbd hangs with cfq on RHEL 5 (2.6.18) -- this may well have been fixed
 
-Don't you have write combining store buffers? Or is it still speculatively
-issuing the reads even before the whole cacheline is combined?
+It has been fixed in RHEL5 (but not yet released AFAIK):
+https://bugzilla.redhat.com/show_bug.cgi?id=241540#c43
 
+On a slightly related performance note; I'm seeing that for NBD
+devices both max_hw_sectors_kb  and max_sectors_kb are 127.  If I set
+it to be 256 with the following patch I see a 25% improvement in
+overall throughput:
+
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index 5def9c5..ed63e2f 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -764,6 +764,7 @@ static int __init nbd_init(void)
+                        put_disk(disk);
+                        goto out;
+                }
++               blk_queue_max_sectors(disk->queue, 512);
+        }
+
+        if (register_blkdev(NBD_MAJOR, "nbd")) {
+
+Any chance we can take steps to make NBD not be artificially slow?
+Any other recommendations for improving NBD throughput?
+
+regards,
+Mike
