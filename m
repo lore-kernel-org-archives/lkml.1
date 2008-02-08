@@ -1,62 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbYBEMRs (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 5 Feb 2008 07:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYBEMRj
+	id S1759895AbYBHQZm (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 8 Feb 2008 11:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759131AbYBHQZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Feb 2008 07:17:39 -0500
-Received: from n8b.bullet.mail.tp2.yahoo.com ([203.188.202.120]:26321 "HELO
-	n8b.bullet.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751519AbYBEMRi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Feb 2008 07:17:38 -0500
-X-Greylist: delayed 409 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Feb 2008 07:17:37 EST
-X-Yahoo-Newman-Property: ymail-5
-X-Yahoo-Newman-Id: 989743.72786.bm@omp207.mail.sp1.yahoo.com
-X-YMail-OSG: 2j8XjRAVM1kUD7xXKPAwycScf4vcZuoX22e35nG9
-Date: Tue, 5 Feb 2008 04:10:42 -0800 (PST)
-From: am kara <kara_am@yahoo.com>
-Subject: kara_am
-To: linux-kernel@vger.kernel.org
+	Fri, 8 Feb 2008 11:25:26 -0500
+Received: from ns2.masicom.si ([84.20.224.11]:37798 "EHLO ns2.masicom.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932476AbYBHQZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:25:24 -0500
+Message-ID: <1202486049.47ac7b21ce795@mailer.masicom.si>
+Date: Fri,  8 Feb 2008 16:54:09 +0100
+From: ris.sp@masicom.net
+Subject: mutual trust in good faith
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <747860.31019.qm@web45912.mail.sp1.yahoo.com>
+User-Agent: Internet Messaging Program (IMP) 3.2.1
+X-Originating-IP: 81.199.177.14
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753566AbYBEMRs@vger.kernel.org>
-
-I am trying to understand IPsec and found some related
-subfolders:
-crypto, net/key, net/xfrm, net/netlink
-and it may be more folders and files involved in the
-process.
-
-Would anyone please tell me how is the flow of
-network(internet) information(traffic) from a user
-process to the deepest layers of the kernel only by
-the name of the most important files and folders in
-case of IPsec and a typical TCP, IP(and IPsec) and
-Ethernet adaptor senario?
-
-For example: 
-setkey(shell command)--> ....(some intermediate
-processes)-->crypto(setkey method)  
-
-I guess it should be:
-net/ipv4-->net/key-->net/xfrm-->crypto
-net/ipv4-->net/core-->net/core/dev.c
-
-What is netlink, is it a kind of socket? how does it
-become connected to IPsec? 
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759895AbYBHQZm@vger.kernel.org>
 
 
 
+Greetings to you,
+ 
+I am the above named person I was married to Dr. Peter Hanff who worked with 
+erithean Embassy in Poland 
+as a diplomat and a bussiness man for over 6 years.I have a charitable project 
+on ground which i want you as a sole person in charge.Please assure me that you 
+will act accordingly as I stated herein.Please reply me through my private 
+email:Mrs_babara_hanff@yahoo.com.hk, for more details on this charity project.
+Mrs Babara Hanff.
 
 
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ 
-
+-------------------------------------------------
+This mail sent through IMP: http://horde.org/imp/
 
