@@ -1,24 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbYBHXyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbYBHX4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbYBHXyV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbYBHXxq
+	id S1757133AbYBHX4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:56:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYBHX41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:53:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35959 "EHLO
+	Fri, 8 Feb 2008 18:56:27 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38476 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754119AbYBHXxo (ORCPT
+	by vger.kernel.org with ESMTP id S1751983AbYBHX4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:53:44 -0500
-Date: Fri, 8 Feb 2008 15:53:19 -0800
+	Fri, 8 Feb 2008 18:56:25 -0500
+Date: Fri, 8 Feb 2008 15:54:59 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, arjan@infradead.org,
-       linux-pcmcia@lists.infradead.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] pcmcia: fix i82092 printk format
-Message-Id: <20080208155319.dfc584c8.akpm@linux-foundation.org>
-In-Reply-To: <20080208152244.8aa5fdbb.randy.dunlap@oracle.com>
-References: <20080208152244.8aa5fdbb.randy.dunlap@oracle.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Dmitry Torokhov <dtor@insightbb.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] [git pull] Input updates for 2.6.25-rc0
+Message-Id: <20080208155459.fdbcf610.akpm@linux-foundation.org>
+In-Reply-To: <20080208153741.54409a7a.randy.dunlap@oracle.com>
+References: <200802060108.31644.dtor@insightbb.com>
+	<20080208232536.GA15727@elte.hu>
+	<20080208152812.2bb14374@extreme>
+	<20080208153741.54409a7a.randy.dunlap@oracle.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,37 +32,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008 15:22:44 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Fri, 8 Feb 2008 15:37:41 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
+> > I think someone already sent a patch to select the LEDS
+> 
+> I did... and more.  Who will merge it?  (below)
+> 
+> ---
 > From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Fix printk format warnings:
-> linux-2.6.24-git19/drivers/pcmcia/i82092.c:650: warning: format '%lx' expects type 'long unsigned int', but argument 3 has type 'resource_size_t'
-> linux-2.6.24-git19/drivers/pcmcia/i82092.c:650: warning: format '%lx' expects type 'long unsigned int', but argument 4 has type 'resource_size_t'
+> Add I2C to config since the driver makes several i2c*() calls.
 > 
-> Fix very long source line size.
-> Fix spacing within the printk format string.
+> Add to help text that the Intel I2C ICH (i801) driver is also needed
+> for this kernel.
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/pcmcia/i82092.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.24-git19.orig/drivers/pcmcia/i82092.c
-> +++ linux-2.6.24-git19/drivers/pcmcia/i82092.c
-> @@ -647,7 +647,9 @@ static int i82092aa_set_mem_map(struct p
->  	if ( (mem->card_start > 0x3ffffff) || (region.start > region.end) ||
->  	     (mem->speed > 1000) ) {
->  		leave("i82092aa_set_mem_map: invalid address / speed");
-> -		printk("invalid mem map for socket %i : %lx to %lx with a start of %x \n",sock,region.start, region.end, mem->card_start);
-> +		printk("invalid mem map for socket %i: %llx to %llx with a start of %x\n",
-> +			sock, (unsigned long long)region.start,
-> +			(unsigned long long)region.end, mem->card_start);
->  		return -EINVAL;
->  	}
->  	
+> Add LEDS_CLASS to config since the driver makes les_classdev_*() calls:
+> ERROR: "led_classdev_register" [drivers/input/misc/apanel.ko] undefined!
+> ERROR: "__led_classdev_unregister" [drivers/input/misc/apanel.ko] undefined!
 
-I've apleady sent a similar patch to Greg
-(drivers-pcmcia-i82092c-fix-up-after-pci_bus_region-changes.patch) but I
-imagine he's swamped with -stable fun and games at present.
-
+I have assumed that Dmitry will be handling this one.
