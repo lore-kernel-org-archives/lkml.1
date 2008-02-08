@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbYBHFVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYBHFZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933327AbYBHFVp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 00:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYBHFVf
+	id S1755556AbYBHFZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYBHFZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 00:21:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:62321 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbYBHFVf (ORCPT
+	Fri, 8 Feb 2008 00:25:10 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:55905 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbYBHFZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 00:21:35 -0500
+	Fri, 8 Feb 2008 00:25:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Ysc7SjyfG/vqeubzbvygTZv6ab/lev6DyHOfbYhQuZLInXF9o4/x0V5anpRF8yd1iPuQqapFJN88OatMtNjCSmgv5K3wRfdUd0rBVyL+SWZ2me8Mbszk0koR0mOpSZx0a4wbvdPtD7kf+rWecIA39wjH28u1PBhQ8RY5jH5WymA=
-Message-ID: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
-Date: Fri, 8 Feb 2008 10:51:33 +0530
-From: "rohit h" <hrohit85@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [LINUX-KERNEL] C++ in linux kernel
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+        h=date:from:to:cc:bcc:subject:reply-to:in-reply-to:message-id;
+        b=ODCDDU7FIbdEK4ShmnUmp0aMclpI5ub+Pkb455umoGSXW2cYeQx0GeiSF5pHTtrNRbJt/uxR7HzKnYNLOtmNwtfKQVRyeK0HIFwEtmfbg0F70luWcp6EHMLnrtx8J4CqNT0SWnxvtZtTkG/o/mKE7vRn5t03/4BxMUYRNu5ekFE=
+Date: Thu,  7 Feb 2008 21:32:30 -0800
+From: Glenn Griffin <ggriffin.kernel@gmail.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Glenn Griffin <ggriffin.kernel@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+In-Reply-To: <47AAD203.4030706@cosmosbay.com>
+Message-ID: <47abe7b1.20588c0a.7013.75b7@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
- I am a kernel newbie.
- I tried to insmod a C++ module containing classes, inheritance.
- I am getting 'unresolved symbol' error when I use the 'new' keyword.
- What could the problem be?
+> Or maybe use percpu storage for that...
 
- What kind of runtime support is needed ( arm linux kernel)? Is a
-patch available for it?
+That seems like a good approach.  I'll incorporate it into my v6 patch,
+and send out an update.  Thanks.
 
- Thanks,
-Rohit
+> I am not sure if cookie_hash() is always called with preemption disabled.
+> (If not, we have to use get_cpu_var()/put_cpu_var())
+
+cookie_hash is always called within NET_RX_SOFTIRQ context so I believe
+preemption will always be disabled by __do_softirq().  So there
+shouldn't be a need to use get_cpu_var/put_cpu_var, somebody correct me
+if I'm wrong.
+
+--Glenn
+
