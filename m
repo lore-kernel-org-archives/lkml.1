@@ -1,1165 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965107AbYBHSDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965188AbYBHSEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965107AbYBHSDy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933496AbYBHR5x
+	id S965188AbYBHSEa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:04:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934040AbYBHR6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:57:53 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38144 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933293AbYBHR5n (ORCPT
+	Fri, 8 Feb 2008 12:58:41 -0500
+Received: from flpi102.sbcis.sbc.com ([207.115.20.71]:17857 "EHLO
+	flpi102.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934035AbYBHR6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 12:57:43 -0500
-From: Rodolfo Giometti <giometti@linux.it>
+	Fri, 8 Feb 2008 12:58:39 -0500
+X-ORBL: [76.241.169.38]
+From: Chuck Lever <chuck.lever@oracle.com>
+Subject: [PATCH 03/11] NFS: Update help text for CONFIG_NFS_FS
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Rodolfo Giometti <giometti@linux.it>
-Date: Fri,  8 Feb 2008 19:00:37 +0100
-Message-Id: <120249364418-git-send-email-giometti@linux.it>
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <1202493644764-git-send-email-giometti@linux.it>
-References: <1202493644764-git-send-email-giometti@linux.it>
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 1/8] LinuxPPS core support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Cc: linux-nfs@vger.kernel.org
+Date: Fri, 08 Feb 2008 12:51:46 -0500
+Message-ID: <20080208175146.16261.43159.stgit@manray.1015granger.net>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the kernel side of the PPS support currently named
-"LinuxPPS".
+Clean up: refresh the help text for Kconfig items related to the NFS
+client.  Remove obsolete URLs, and make the language consistent among
+the options.
 
-PPS means "pulse per second" and a PPS source is just a device which
-provides a high precision signal each second so that an application
-can use it to adjust system clock time.
+Also move the ROOT_NFS config option next to the options related to the
+NFS client.
 
-Common use is the combination of the NTPD as userland program with a
-GPS receiver as PPS source to obtain a wallclock-time with
-sub-millisecond synchronisation to UTC.
-
-To obtain this goal the userland programs shoud use the PPS API
-specification (RFC 2783 - Pulse-Per-Second API for UNIX-like Operating
-Systems, Version 1.0) which in part is implemented by this patch. It
-provides a set of chars devices, one per PPS source, which can be used
-to get the time signal. The RFC's functions can be implemented by
-accessing to these char devices.
-
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
 ---
- MAINTAINERS          |    7 +
- drivers/Kconfig      |    2 +
- drivers/Makefile     |    1 +
- drivers/pps/Kconfig  |   32 +++++
- drivers/pps/Makefile |   10 ++
- drivers/pps/kapi.c   |  272 +++++++++++++++++++++++++++++++++++++++
- drivers/pps/pps.c    |  342 ++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/pps/sysfs.c  |  142 +++++++++++++++++++++
- include/linux/Kbuild |    1 +
- include/linux/pps.h  |  204 ++++++++++++++++++++++++++++++
- 10 files changed, 1013 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pps/Kconfig
- create mode 100644 drivers/pps/Makefile
- create mode 100644 drivers/pps/kapi.c
- create mode 100644 drivers/pps/pps.c
- create mode 100644 drivers/pps/sysfs.c
- create mode 100644 include/linux/pps.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 58b1603..c1cd5c2 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3096,6 +3096,13 @@ P:	James Chapman
- M:	jchapman@katalix.com
- S:	Maintained
+ fs/Kconfig |  115 ++++++++++++++++++++++++++++++------------------------------
+ 1 files changed, 57 insertions(+), 58 deletions(-)
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 9c2c24b..9427c73 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1517,10 +1517,6 @@ config UFS_FS
+           The recently released UFS2 variant (used in FreeBSD 5.x) is
+           READ-ONLY supported.
  
-+PPS SUPPORT
-+P:	Rodolfo Giometti
-+M:	giometti@enneenne.com
-+W:	http://wiki.enneenne.com/index.php/LinuxPPS_support
-+L:	linuxpps@ml.enneenne.com
-+S:	Maintained
+-	  If you only intend to mount files from some other Unix over the
+-	  network using NFS, you don't need the UFS file system support (but
+-	  you need NFS file system support obviously).
+-
+ 	  Note that this option is generally not needed for floppies, since a
+ 	  good portable way to transport files and directories between unixes
+ 	  (and even other operating systems) is given by the tar program ("man
+@@ -1560,6 +1556,7 @@ menuconfig NETWORK_FILESYSTEMS
+ 	  Say Y here to get to see options for network filesystems and
+ 	  filesystem-related networking code, such as NFS daemon and
+ 	  RPCSEC security modules.
 +
- PREEMPTIBLE KERNEL
- P:	Robert Love
- M:	rml@tech9.net
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 08d4ae2..2c656c8 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -52,6 +52,8 @@ source "drivers/i2c/Kconfig"
+ 	  This option alone does not add any kernel code.
  
- source "drivers/spi/Kconfig"
+ 	  If you say N, all options in this submenu will be skipped and
+@@ -1568,76 +1565,92 @@ menuconfig NETWORK_FILESYSTEMS
+ if NETWORK_FILESYSTEMS
  
-+source "drivers/pps/Kconfig"
-+
- source "drivers/w1/Kconfig"
+ config NFS_FS
+-	tristate "NFS file system support"
++	tristate "NFS client support"
+ 	depends on INET
+ 	select LOCKD
+ 	select SUNRPC
+ 	select NFS_ACL_SUPPORT if NFS_V3_ACL
+ 	help
+-	  If you are connected to some other (usually local) Unix computer
+-	  (using SLIP, PLIP, PPP or Ethernet) and want to mount files residing
+-	  on that computer (the NFS server) using the Network File Sharing
+-	  protocol, say Y. "Mounting files" means that the client can access
+-	  the files with usual UNIX commands as if they were sitting on the
+-	  client's hard disk. For this to work, the server must run the
+-	  programs nfsd and mountd (but does not need to have NFS file system
+-	  support enabled in its kernel). NFS is explained in the Network
+-	  Administrator's Guide, available from
+-	  <http://www.tldp.org/docs.html#guide>, on its man page: "man
+-	  nfs", and in the NFS-HOWTO.
++	  Choose Y here if you want to access files residing on other
++	  computers using Sun's Network File System protocol.  To compile
++	  this file system support as a module, choose M here: the module
++	  will be called nfs.
  
- source "drivers/power/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 0ee9a8a..da8fee3 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -61,6 +61,7 @@ obj-$(CONFIG_INPUT)		+= input/
- obj-$(CONFIG_I2O)		+= message/
- obj-$(CONFIG_RTC_LIB)		+= rtc/
- obj-y				+= i2c/
-+obj-$(CONFIG_PPS)		+= pps/
- obj-$(CONFIG_W1)		+= w1/
- obj-$(CONFIG_POWER_SUPPLY)	+= power/
- obj-$(CONFIG_HWMON)		+= hwmon/
-diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
-new file mode 100644
-index 0000000..dce4a1f
---- /dev/null
-+++ b/drivers/pps/Kconfig
-@@ -0,0 +1,32 @@
-+#
-+# PPS support configuration
-+#
+-	  A superior but less widely used alternative to NFS is provided by
+-	  the Coda file system; see "Coda file system support" below.
++	  To mount file systems exported by NFS servers, you also need to
++	  install the user space mount.nfs command which can be found in
++	  the Linux nfs-utils package, available from http://linux-nfs.org/.
++	  Information about using the mount command is available in the
++	  mount(8) man page.  More detail about the Linux NFS client
++	  implementation is available via the nfs(5) man page.
+ 
+-	  If you say Y here, you should have said Y to TCP/IP networking also.
+-	  This option would enlarge your kernel by about 27 KB.
++	  Below you can choose which versions of the NFS protocol are
++	  available in the kernel to mount NFS servers.  Support for NFS
++	  version 2 (RFC 1094) is always available when NFS_FS is selected.
+ 
+-	  To compile this file system support as a module, choose M here: the
+-	  module will be called nfs.
+-
+-	  If you are configuring a diskless machine which will mount its root
+-	  file system over NFS at boot time, say Y here and to "Kernel
+-	  level IP autoconfiguration" above and to "Root file system on NFS"
+-	  below. You cannot compile this driver as a module in this case.
+-	  There are two packages designed for booting diskless machines over
+-	  the net: netboot, available from
+-	  <http://ftp1.sourceforge.net/netboot/>, and Etherboot,
+-	  available from <http://ftp1.sourceforge.net/etherboot/>.
++	  To configure a system which mounts its root file system via NFS
++	  at boot time, say Y here, select "Kernel level IP
++	  autoconfiguration" in the NETWORK menu, and select "Root file
++	  system on NFS" below.  You cannot compile this file system as a
++	  module in this case.
+ 
+-	  If you don't know what all this is about, say N.
++	  If unsure, say N.
+ 
+ config NFS_V3
+-	bool "Provide NFSv3 client support"
++	bool "NFS client support for NFS version 3"
+ 	depends on NFS_FS
+ 	help
+-	  Say Y here if you want your NFS client to be able to speak version
+-	  3 of the NFS protocol.
++	  This option enables support for version 3 of the NFS protocol
++	  (RFC 1813) in the kernel's NFS client.
+ 
+ 	  If unsure, say Y.
+ 
+ config NFS_V3_ACL
+-	bool "Provide client support for the NFSv3 ACL protocol extension"
++	bool "NFS client support for the NFSv3 ACL protocol extension"
+ 	depends on NFS_V3
+ 	help
+-	  Implement the NFSv3 ACL protocol extension for manipulating POSIX
+-	  Access Control Lists.  The server should also be compiled with
+-	  the NFSv3 ACL protocol extension; see the CONFIG_NFSD_V3_ACL option.
++	  Some NFS servers support an auxiliary NFSv3 ACL protocol that
++	  Sun added to Solaris but never became an official part of the
++	  NFS version 3 protocol.  This protocol extension allows
++	  applications on NFS clients to manipulate POSIX Access Control
++	  Lists on files residing on NFS servers.  NFS servers enforce
++	  ACLs on local files whether this protocol is available or not.
 +
-+menu "PPS support"
++	  Choose Y here if your NFS server supports the Solaris NFSv3 ACL
++	  protocol extension and you want your NFS client to allow
++	  applications to access and modify ACLs on files on the server.
 +
-+config PPS
-+	tristate "PPS support"
-+	depends on EXPERIMENTAL
-+	---help---
-+	  PPS (Pulse Per Second) is a special pulse provided by some GPS
-+	  antennae. Userland can use it to get an high time reference.
-+
-+	  Some antennae's PPS signals are connected with the CD (Carrier
-+	  Detect) pin of the serial line they use to communicate with the
-+	  host. In this case use the SERIAL_LINE client support.
-+
-+	  Some antennae's PPS signals are connected with some special host
-+	  inputs so you have to enable the corresponding client support.
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called pps_core.ko.
-+
-+config PPS_DEBUG
-+	bool "PPS debugging messages"
-+	depends on PPS
++	  Most NFS servers don't support the Solaris NFSv3 ACL protocol
++	  extension.  You can choose N here or specify the "noacl" mount
++	  option to prevent your NFS client from trying to use the NFSv3
++	  ACL protocol.
+ 
+ 	  If unsure, say N.
+ 
+ config NFS_V4
+-	bool "Provide NFSv4 client support (EXPERIMENTAL)"
++	bool "NFS client support for NFS version 4 (EXPERIMENTAL)"
+ 	depends on NFS_FS && EXPERIMENTAL
+ 	select RPCSEC_GSS_KRB5
+ 	help
+-	  Say Y here if you want your NFS client to be able to speak the newer
+-	  version 4 of the NFS protocol.
++	  This option enables support for version 4 of the NFS protocol 
++	  (RFC 3530) in the kernel's NFS client.
+ 
+-	  Note: Requires auxiliary userspace daemons which may be found on
+-		http://www.citi.umich.edu/projects/nfsv4/
++	  To mount NFS servers using NFSv4, you also need to install user
++	  space programs which can be found in the Linux nfs-utils package,
++	  available from http://linux-nfs.org/.
+ 
+ 	  If unsure, say N.
+ 
++config ROOT_NFS
++	bool "Root file system on NFS"
++	depends on NFS_FS=y && IP_PNP
 +	help
-+	  Say Y here if you want the PPS support to produce a bunch of debug
-+	  messages to the system log.  Select this if you are having a
-+	  problem with PPS support and want to see more of what is going on.
-+
-+endmenu
-diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
-new file mode 100644
-index 0000000..5a9a51b
---- /dev/null
-+++ b/drivers/pps/Makefile
-@@ -0,0 +1,10 @@
-+#
-+# Makefile for the PPS core.
-+#
-+
-+pps_core-objs			+= pps.o kapi.o sysfs.o
-+obj-$(CONFIG_PPS)		+= pps_core.o
-+
-+ifeq ($(CONFIG_PPS_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
-diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
-new file mode 100644
-index 0000000..c127e66
---- /dev/null
-+++ b/drivers/pps/kapi.c
-@@ -0,0 +1,272 @@
-+/*
-+ * kapi.c -- kernel API
-+ *
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/time.h>
-+#include <linux/spinlock.h>
-+#include <linux/idr.h>
-+#include <linux/fs.h>
-+#include <linux/pps.h>
-+
-+/*
-+ * Global variables
-+ */
-+
-+DEFINE_SPINLOCK(idr_lock);
-+DEFINE_IDR(pps_idr);
-+
-+/*
-+ * Local functions
-+ */
-+
-+static void pps_add_offset(struct pps_ktime *ts, struct pps_ktime *offset)
-+{
-+	ts->nsec += offset->nsec;
-+	while (ts->nsec >= NSEC_PER_SEC) {
-+		ts->nsec -= NSEC_PER_SEC;
-+		ts->sec++;
-+	}
-+	while (ts->nsec < 0) {
-+		ts->nsec += NSEC_PER_SEC;
-+		ts->sec--;
-+	}
-+	ts->sec += offset->sec;
-+}
-+
-+/*
-+ * Exported functions
-+ */
-+
-+int pps_register_source(struct pps_source_info *info, int default_params)
-+{
-+	struct pps_device *pps;
-+	int id;
-+	int err;
-+
-+	/* Sanity checks */
-+	if ((info->mode & default_params) != default_params) {
-+		printk(KERN_ERR "pps: %s: unsupported default parameters\n",
-+					info->name);
-+		err = -EINVAL;
-+		goto pps_register_source_exit;
-+	}
-+	if ((info->mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)) != 0 &&
-+			info->echo == NULL) {
-+		printk(KERN_ERR "pps: %s: echo function is not defined\n",
-+					info->name);
-+		err = -EINVAL;
-+		goto pps_register_source_exit;
-+	}
-+	if ((info->mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
-+		printk(KERN_ERR "pps: %s: unspecified time format\n",
-+					info->name);
-+		err = -EINVAL;
-+		goto pps_register_source_exit;
-+	}
-+
-+	/* Allocate memory for the new PPS source struct */
-+	pps = kzalloc(sizeof(struct pps_device), GFP_KERNEL);
-+	if (pps == NULL) {
-+		err = -ENOMEM;
-+		goto pps_register_source_exit;
-+	}
-+
-+	/* Get new ID for the new PPS source */
-+	if (idr_pre_get(&pps_idr, GFP_KERNEL) == 0) {
-+		err = -ENOMEM;
-+		goto kfree_pps;
-+	}
-+
-+	spin_lock_irq(&idr_lock);
-+	err = idr_get_new(&pps_idr, pps, &id);
-+	spin_unlock_irq(&idr_lock);
-+
-+	if (err < 0)
-+		goto kfree_pps;
-+
-+	id = id & MAX_ID_MASK;
-+	if (id >= PPS_MAX_SOURCES) {
-+		printk(KERN_ERR "pps: %s: too many PPS sources in the system\n",
-+					info->name);
-+		err = -EBUSY;
-+		goto free_idr;
-+	}
-+
-+	pps->id = id;
-+	pps->params.api_version = PPS_API_VERS;
-+	pps->params.mode = default_params;
-+	pps->info = *info;
-+
-+	init_waitqueue_head(&pps->queue);
-+	spin_lock_init(&pps->lock);
-+	atomic_set(&pps->usage, 0);
-+	init_waitqueue_head(&pps->usage_queue);
-+
-+	/* Create the char device */
-+	err = pps_register_cdev(pps);
-+	if (err < 0) {
-+		printk(KERN_ERR "pps: %s: unable to create char device\n",
-+					info->name);
-+		goto free_idr;
-+	}
-+
-+	/* Create the sysfs entry */
-+	err = pps_sysfs_create_source_entry(pps);
-+	if (err < 0) {
-+		printk(KERN_ERR "pps: %s: unable to create sysfs entries\n",
-+					info->name);
-+		goto unregister_cdev;
-+	}
-+
-+	pr_info("new PPS source %s at ID %d\n", info->name, id);
-+
-+	return id;
-+
-+unregister_cdev:
-+	pps_unregister_cdev(pps);
-+
-+free_idr:
-+	spin_lock_irq(&idr_lock);
-+	idr_remove(&pps_idr, id);
-+	spin_unlock_irq(&idr_lock);
-+
-+kfree_pps:
-+	kfree(pps);
-+
-+pps_register_source_exit:
-+	printk(KERN_ERR "pps: %s: unable to register source\n", info->name);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(pps_register_source);
-+
-+void pps_unregister_source(int source)
-+{
-+	struct pps_device *pps;
-+
-+	spin_lock_irq(&idr_lock);
-+	pps = idr_find(&pps_idr, source);
-+
-+	if (!pps) {
-+		spin_unlock_irq(&idr_lock);
-+		return;
-+	}
-+
-+	/* This should be done first in order to deny IRQ handlers
-+	 * to access PPS structs
-+	 */
-+
-+	idr_remove(&pps_idr, pps->id);
-+	spin_unlock_irq(&idr_lock);
-+
-+	wait_event(pps->usage_queue, atomic_read(&pps->usage) == 0);
-+
-+	pps_sysfs_remove_source_entry(pps);
-+	pps_unregister_cdev(pps);
-+	kfree(pps);
-+}
-+EXPORT_SYMBOL(pps_unregister_source);
-+
-+void pps_event(int source, int event, void *data)
-+{
-+	struct pps_device *pps;
-+	struct timespec __ts;
-+	struct pps_ktime ts;
-+	unsigned long flags;
-+
-+	/* First of all we get the time stamp... */
-+	getnstimeofday(&__ts);
-+
-+	/* ... and translate it to PPS time data struct */
-+	ts.sec = __ts.tv_sec;
-+	ts.nsec = __ts.tv_nsec;
-+
-+	if ((event & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0) {
-+		printk(KERN_ERR "pps: unknown event (%x) for source %d\n",
-+			event, source);
-+		return;
-+	}
-+
-+	spin_lock_irqsave(&idr_lock, flags);
-+	pps = idr_find(&pps_idr, source);
-+
-+	/* If we find a valid PPS source we lock it before leaving
-+	 * the lock!
-+	 */
-+	if (pps)
-+		atomic_inc(&pps->usage);
-+	spin_unlock_irqrestore(&idr_lock, flags);
-+
-+	if (!pps)
-+		return;
-+
-+	pr_debug("PPS event on source %d at %llu.%06u\n",
-+			pps->id, ts.sec, ts.nsec);
-+
-+	spin_lock_irqsave(&pps->lock, flags);
-+
-+	/* Must call the echo function? */
-+	if ((pps->params.mode & (PPS_ECHOASSERT | PPS_ECHOCLEAR)))
-+		pps->info.echo(source, event, data);
-+
-+	/* Check the event */
-+	pps->current_mode = pps->params.mode;
-+	if (event & PPS_CAPTUREASSERT) {
-+		/* We have to add an offset? */
-+		if (pps->params.mode & PPS_OFFSETASSERT)
-+			pps_add_offset(&ts, &pps->params.assert_off_tu);
-+
-+		/* Save the time stamp */
-+		pps->assert_tu = ts;
-+		pps->assert_sequence++;
-+		pr_debug("capture assert seq #%u for source %d\n",
-+			pps->assert_sequence, source);
-+	}
-+	if (event & PPS_CAPTURECLEAR) {
-+		/* We have to add an offset? */
-+		if (pps->params.mode & PPS_OFFSETCLEAR)
-+			pps_add_offset(&ts, &pps->params.clear_off_tu);
-+
-+		/* Save the time stamp */
-+		pps->clear_tu = ts;
-+		pps->clear_sequence++;
-+		pr_debug("capture clear seq #%u for source %d\n",
-+			pps->clear_sequence, source);
-+	}
-+
-+	pps->go = ~0;
-+	wake_up_interruptible(&pps->queue);
-+
-+	kill_fasync(&pps->async_queue, SIGIO, POLL_IN);
-+
-+	spin_unlock_irqrestore(&pps->lock, flags);
-+
-+	/* Now we can release the PPS source for (possible) deregistration */
-+	spin_lock_irqsave(&idr_lock, flags);
-+	atomic_dec(&pps->usage);
-+	wake_up_all(&pps->usage_queue);
-+	spin_unlock_irqrestore(&idr_lock, flags);
-+}
-+EXPORT_SYMBOL(pps_event);
-diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
-new file mode 100644
-index 0000000..b3b9af8
---- /dev/null
-+++ b/drivers/pps/pps.c
-@@ -0,0 +1,342 @@
-+/*
-+ * pps.c -- Main PPS support file
-+ *
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/uaccess.h>
-+#include <linux/idr.h>
-+#include <linux/cdev.h>
-+#include <linux/poll.h>
-+#include <linux/pps.h>
-+
-+/*
-+ * Local variables
-+ */
-+
-+static dev_t pps_devt;
-+static struct class *pps_class;
-+
-+/*
-+ * Char device methods
-+ */
-+
-+static unsigned int pps_cdev_poll(struct file *file, poll_table *wait)
-+{
-+	struct pps_device *pps = file->private_data;
-+
-+	poll_wait(file, &pps->queue, wait);
-+
-+	return POLLIN | POLLRDNORM;
-+}
-+
-+static int pps_cdev_fasync(int fd, struct file *file, int on)
-+{
-+	struct pps_device *pps = file->private_data;
-+	return fasync_helper(fd, file, on, &pps->async_queue);
-+}
-+
-+static int pps_cdev_ioctl(struct inode *inode, struct file *file,
-+		unsigned int cmd, unsigned long arg)
-+{
-+	struct pps_device *pps = file->private_data;
-+	struct pps_kparams params;
-+	struct pps_fdata fdata;
-+	unsigned long ticks;
-+	void __user *uarg = (void __user *) arg;
-+	int __user *iuarg = (int __user *) arg;
-+	int err;
-+
-+	switch (cmd) {
-+	case PPS_CHECK:
-+
-+		/* This does nothing but signal we are a PPS source... */
-+
-+		return 0;
-+
-+	case PPS_GETPARAMS:
-+		pr_debug("PPS_GETPARAMS: source %d\n", pps->id);
-+
-+		/* Sanity checks */
-+		if (!uarg)
-+			return -EINVAL;
-+
-+		/* Return current parameters */
-+		err = copy_to_user(uarg, &pps->params,
-+						sizeof(struct pps_kparams));
-+		if (err)
-+			return -EFAULT;
-+
-+		break;
-+
-+	case PPS_SETPARAMS:
-+		pr_debug("PPS_SETPARAMS: source %d\n", pps->id);
-+
-+		/* Check the capabilities */
-+		if (!capable(CAP_SYS_TIME))
-+			return -EPERM;
-+
-+		/* Sanity checks */
-+		if (!uarg)
-+			return -EINVAL;
-+		err = copy_from_user(&params, uarg, sizeof(struct pps_kparams));
-+		if (err)
-+			return -EFAULT;
-+		if (!(params.mode & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR))) {
-+			pr_debug("capture mode unspecified (%x)\n",
-+								params.mode);
-+			return -EINVAL;
-+		}
-+
-+		/* Check for supported capabilities */
-+		if ((params.mode & ~pps->info.mode) != 0) {
-+			pr_debug("unsupported capabilities (%x)\n",
-+								params.mode);
-+			return -EINVAL;
-+		}
-+
-+		spin_lock_irq(&pps->lock);
-+
-+		/* Save the new parameters */
-+		pps->params = params;
-+
-+		/* Restore the read only parameters */
-+		if ((params.mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
-+			/* section 3.3 of RFC 2783 interpreted */
-+			pr_debug("time format unspecified (%x)\n",
-+								params.mode);
-+			pps->params.mode |= PPS_TSFMT_TSPEC;
-+		}
-+		if (pps->info.mode & PPS_CANWAIT)
-+			pps->params.mode |= PPS_CANWAIT;
-+		pps->params.api_version = PPS_API_VERS;
-+
-+		spin_unlock_irq(&pps->lock);
-+
-+		break;
-+
-+	case PPS_GETCAP:
-+		pr_debug("PPS_GETCAP: source %d\n", pps->id);
-+
-+		/* Sanity checks */
-+		if (!uarg)
-+			return -EINVAL;
-+
-+		err = put_user(pps->info.mode, iuarg);
-+		if (err)
-+			return -EFAULT;
-+
-+		break;
-+
-+	case PPS_FETCH:
-+		pr_debug("PPS_FETCH: source %d\n", pps->id);
-+
-+		if (!uarg)
-+			return -EINVAL;
-+		err = copy_from_user(&fdata, uarg, sizeof(struct pps_fdata));
-+		if (err)
-+			return -EFAULT;
-+
-+		pps->go = 0;
-+
-+		/* Manage the timeout */
-+		if (fdata.timeout.flags & PPS_TIME_INVALID)
-+			err = wait_event_interruptible(pps->queue, pps->go);
-+		else {
-+			pr_debug("timeout %lld.%09d\n",
-+					fdata.timeout.sec, fdata.timeout.nsec);
-+			ticks = fdata.timeout.sec * HZ;
-+			ticks += fdata.timeout.nsec / (NSEC_PER_SEC / HZ);
-+
-+			if (ticks != 0) {
-+				err = wait_event_interruptible_timeout(
-+						pps->queue, pps->go, ticks);
-+				if (err == 0)
-+					return -ETIMEDOUT;
-+			}
-+		}
-+
-+		/* Check for pending signals */
-+		if (err == -ERESTARTSYS) {
-+			pr_debug("pending signal caught\n");
-+			return -EINTR;
-+		}
-+
-+		/* Return the fetched timestamp */
-+		spin_lock_irq(&pps->lock);
-+
-+		fdata.info.assert_sequence = pps->assert_sequence;
-+		fdata.info.clear_sequence = pps->clear_sequence;
-+		fdata.info.assert_tu = pps->assert_tu;
-+		fdata.info.clear_tu = pps->clear_tu;
-+		fdata.info.current_mode = pps->current_mode;
-+
-+		spin_unlock_irq(&pps->lock);
-+
-+		err = copy_to_user(uarg, &fdata, sizeof(struct pps_fdata));
-+		if (err)
-+			return -EFAULT;
-+
-+		break;
-+
-+	default:
-+		return -ENOTTY;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pps_cdev_open(struct inode *inode, struct file *file)
-+{
-+	struct pps_device *pps = container_of(inode->i_cdev,
-+						struct pps_device, cdev);
-+	int found;
-+
-+	spin_lock_irq(&idr_lock);
-+	found = idr_find(&pps_idr, pps->id) != NULL;
-+
-+	/* Lock the PPS source against (possible) deregistration */
-+	if (found)
-+		atomic_inc(&pps->usage);
-+
-+	spin_unlock_irq(&idr_lock);
-+
-+	if (!found)
-+		return -ENODEV;
-+
-+	file->private_data = pps;
-+
-+	return 0;
-+}
-+
-+static int pps_cdev_release(struct inode *inode, struct file *file)
-+{
-+	struct pps_device *pps = file->private_data;
-+
-+	/* Free the PPS source and wake up (possible) deregistration */
-+	atomic_dec(&pps->usage);
-+	wake_up_all(&pps->usage_queue);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Char device stuff
-+ */
-+
-+static const struct file_operations pps_cdev_fops = {
-+	.owner		= THIS_MODULE,
-+	.llseek		= no_llseek,
-+	.poll		= pps_cdev_poll,
-+	.fasync		= pps_cdev_fasync,
-+	.ioctl		= pps_cdev_ioctl,
-+	.open		= pps_cdev_open,
-+	.release	= pps_cdev_release,
-+};
-+
-+int pps_register_cdev(struct pps_device *pps)
-+{
-+	int err;
-+
-+	pps->devno = MKDEV(MAJOR(pps_devt), pps->id);
-+	cdev_init(&pps->cdev, &pps_cdev_fops);
-+	pps->cdev.owner = pps->info.owner;
-+
-+	err = cdev_add(&pps->cdev, pps->devno, 1);
-+	if (err) {
-+		printk(KERN_ERR "pps: %s: failed to add char device %d:%d\n",
-+				pps->info.name, MAJOR(pps_devt), pps->id);
-+		return err;
-+	}
-+	pps->dev = device_create(pps_class, pps->info.dev, pps->devno,
-+							"pps%d", pps->id);
-+	if (err)
-+		goto del_cdev;
-+	dev_set_drvdata(pps->dev, pps);
-+
-+	pr_debug("source %s got cdev (%d:%d)\n", pps->info.name,
-+			MAJOR(pps_devt), pps->id);
-+
-+	return 0;
-+
-+del_cdev:
-+	cdev_del(&pps->cdev);
-+
-+	return err;
-+}
-+
-+void pps_unregister_cdev(struct pps_device *pps)
-+{
-+	device_destroy(pps_class, pps->devno);
-+	cdev_del(&pps->cdev);
-+}
-+
-+/*
-+ * Module staff
-+ */
-+
-+static void __exit pps_exit(void)
-+{
-+	class_destroy(pps_class);
-+
-+	if (pps_devt)
-+		unregister_chrdev_region(pps_devt, PPS_MAX_SOURCES);
-+
-+	pr_info("LinuxPPS API ver. %d removed\n", PPS_API_VERS);
-+}
-+
-+static int __init pps_init(void)
-+{
-+	int err;
-+
-+	pps_class = class_create(THIS_MODULE, "pps");
-+	if (!pps_class) {
-+		printk(KERN_ERR "pps: failed to allocate class\n");
-+		return -ENOMEM;
-+	}
-+
-+	err = alloc_chrdev_region(&pps_devt, 0, PPS_MAX_SOURCES, "pps");
-+	if (err < 0) {
-+		printk(KERN_ERR "pps: failed to allocate char device region\n");
-+		goto remove_class;
-+	}
-+
-+	pr_info("LinuxPPS API ver. %d registered\n", PPS_API_VERS);
-+	pr_info("Software ver. %s - Copyright 2005-2007 Rodolfo Giometti "
-+		"<giometti@linux.it>\n", PPS_VERSION);
-+
-+	return 0;
-+
-+remove_class:
-+	class_destroy(pps_class);
-+
-+	return err;
-+}
-+
-+subsys_initcall(pps_init);
-+module_exit(pps_exit);
-+
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("LinuxPPS support (RFC 2783) - ver. " PPS_VERSION);
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/pps/sysfs.c b/drivers/pps/sysfs.c
-new file mode 100644
-index 0000000..9b65ddd
---- /dev/null
-+++ b/drivers/pps/sysfs.c
-@@ -0,0 +1,142 @@
-+/*
-+ * sysfs.c -- sysfs support
-+ *
-+ *
-+ * Copyright (C) 2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/pps.h>
-+
-+/*
-+ * Attribute functions
-+ */
-+
-+static ssize_t pps_show_assert(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pps_device *pps = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%lld.%09d#%d\n",
-+			pps->assert_tu.sec, pps->assert_tu.nsec,
-+			pps->assert_sequence);
-+}
-+DEVICE_ATTR(assert, S_IRUGO, pps_show_assert, NULL);
-+
-+static ssize_t pps_show_clear(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pps_device *pps = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%lld.%09d#%d\n",
-+			pps->clear_tu.sec, pps->clear_tu.nsec,
-+			pps->clear_sequence);
-+}
-+DEVICE_ATTR(clear, S_IRUGO, pps_show_clear, NULL);
-+
-+static ssize_t pps_show_mode(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pps_device *pps = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%4x\n", pps->info.mode);
-+}
-+DEVICE_ATTR(mode, S_IRUGO, pps_show_mode, NULL);
-+
-+static ssize_t pps_show_echo(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pps_device *pps = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%d\n", !!pps->info.echo);
-+}
-+DEVICE_ATTR(echo, S_IRUGO, pps_show_echo, NULL);
-+
-+static ssize_t pps_show_name(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pps_device *pps = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%s\n", pps->info.name);
-+}
-+DEVICE_ATTR(name, S_IRUGO, pps_show_name, NULL);
-+
-+static ssize_t pps_show_path(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pps_device *pps = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%s\n", pps->info.path);
-+}
-+DEVICE_ATTR(path, S_IRUGO, pps_show_path, NULL);
-+
-+/*
-+ * Public functions
-+ */
-+
-+void pps_sysfs_remove_source_entry(struct pps_device *pps)
-+{
-+	/* Delete info files */
-+	if (pps->info.mode & PPS_CAPTUREASSERT)
-+		device_remove_file(pps->dev, &dev_attr_assert);
-+
-+	if (pps->info.mode & PPS_CAPTURECLEAR)
-+		device_remove_file(pps->dev, &dev_attr_clear);
-+
-+	device_remove_file(pps->dev, &dev_attr_mode);
-+	device_remove_file(pps->dev, &dev_attr_echo);
-+	device_remove_file(pps->dev, &dev_attr_name);
-+	device_remove_file(pps->dev, &dev_attr_path);
-+}
-+
-+int pps_sysfs_create_source_entry(struct pps_device *pps)
-+{
-+	int ret;
-+
-+	/* Create file "assert" and "clear" according to source capability */
-+	if (pps->info.mode & PPS_CAPTUREASSERT) {
-+		ret = device_create_file(pps->dev, &dev_attr_assert);
-+		if (ret)
-+			dev_err(pps->dev, "unable to create \"assert\" "
-+					"sysfs entry");
-+	}
-+
-+	if (pps->info.mode & PPS_CAPTURECLEAR) {
-+		ret = device_create_file(pps->dev, &dev_attr_clear);
-+		if (ret)
-+			dev_err(pps->dev, "unable to create \"clear\" "
-+					"sysfs entry");
-+	}
-+
-+	ret = device_create_file(pps->dev, &dev_attr_mode);
-+	if (ret)
-+		dev_err(pps->dev, "unable to create \"mode\" sysfs entry");
-+	ret = device_create_file(pps->dev, &dev_attr_echo);
-+	if (ret)
-+		dev_err(pps->dev, "unable to create \"echo\" sysfs entry");
-+	ret = device_create_file(pps->dev, &dev_attr_name);
-+	if (ret)
-+		dev_err(pps->dev, "unable to create \"name\" sysfs entry");
-+	ret = device_create_file(pps->dev, &dev_attr_path);
-+	if (ret)
-+		dev_err(pps->dev, "unable to create \"path\" sysfs entry");
-+
-+	return 0;
-+}
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index c0f9bb7..93c5363 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -297,6 +297,7 @@ unifdef-y += pmu.h
- unifdef-y += poll.h
- unifdef-y += ppp_defs.h
- unifdef-y += ppp-comp.h
-+unifdef-y += pps.h
- unifdef-y += ptrace.h
- unifdef-y += qnx4_fs.h
- unifdef-y += quota.h
-diff --git a/include/linux/pps.h b/include/linux/pps.h
-new file mode 100644
-index 0000000..5a86109
---- /dev/null
-+++ b/include/linux/pps.h
-@@ -0,0 +1,204 @@
-+/*
-+ * pps.h -- PPS API kernel header.
-+ *
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+
-+#ifndef _PPS_H_
-+#define _PPS_H_
-+
-+/* Implementation note: the logical states ``assert'' and ``clear''
-+ * are implemented in terms of the chip register, i.e. ``assert''
-+ * means the bit is set.  */
-+
-+/*
-+ * 3.2 New data structures
-+ */
-+
-+#ifndef __KERNEL__
-+#include <linux/types.h>
-+#include <sys/time.h>
-+#include <sys/ioctl.h>
-+#else
-+#include <linux/time.h>
-+#endif
-+
-+#define PPS_API_VERS_1		1
-+#define PPS_API_VERS		PPS_API_VERS_1	/* we use API version 1 */
-+#define PPS_MAX_NAME_LEN	32
-+
-+/* 32-bit vs. 64-bit compatibility.
-+ *
-+ * 0n i386, the alignment of a uint64_t is only 4 bytes, while on most other
-+ * architectures it's 8 bytes. On i386, there will be no padding between the
-+ * two consecutive 'struct pps_ktime' members of struct pps_kinfo and struct
-+ * pps_kparams. But on most platforms there will be padding to ensure correct
-+ * alignment.
-+ *
-+ * The simple fix is probably to add an explicit padding.
-+ *					 		[David Woodhouse]
-+ */
-+struct pps_ktime {
-+	__s64 sec;
-+	__s32 nsec;
-+	__u32 flags;
-+};
-+#define PPS_TIME_INVALID	(1<<0)	/* used to specify timeout==NULL */
-+
-+struct pps_kinfo {
-+	__u32 assert_sequence;		/* seq. num. of assert event */
-+	__u32 clear_sequence; 		/* seq. num. of clear event */
-+	struct pps_ktime assert_tu;	/* time of assert event */
-+	struct pps_ktime clear_tu;	/* time of clear event */
-+	int current_mode;		/* current mode bits */
-+};
-+
-+struct pps_kparams {
-+	int api_version;		/* API version # */
-+	int mode;			/* mode bits */
-+	struct pps_ktime assert_off_tu;	/* offset compensation for assert */
-+	struct pps_ktime clear_off_tu;	/* offset compensation for clear */
-+};
-+
-+/*
-+ * 3.3 Mode bit definitions
-+ */
-+
-+/* Device/implementation parameters */
-+#define PPS_CAPTUREASSERT	0x01	/* capture assert events */
-+#define PPS_CAPTURECLEAR	0x02	/* capture clear events */
-+#define PPS_CAPTUREBOTH		0x03	/* capture assert and clear events */
-+
-+#define PPS_OFFSETASSERT	0x10	/* apply compensation for assert ev. */
-+#define PPS_OFFSETCLEAR		0x20	/* apply compensation for clear ev. */
-+
-+#define PPS_CANWAIT		0x100	/* can we wait for an event? */
-+#define PPS_CANPOLL		0x200	/* bit reserved for future use */
-+
-+/* Kernel actions */
-+#define PPS_ECHOASSERT		0x40	/* feed back assert event to output */
-+#define PPS_ECHOCLEAR		0x80	/* feed back clear event to output */
-+
-+/* Timestamp formats */
-+#define PPS_TSFMT_TSPEC		0x1000	/* select timespec format */
-+#define PPS_TSFMT_NTPFP		0x2000	/* select NTP format */
-+
-+/*
-+ * 3.4.4 New functions: disciplining the kernel timebase
-+ */
-+
-+/* Kernel consumers */
-+#define PPS_KC_HARDPPS		0	/* hardpps() (or equivalent) */
-+#define PPS_KC_HARDPPS_PLL	1	/* hardpps() constrained to
-+					   use a phase-locked loop */
-+#define PPS_KC_HARDPPS_FLL	2	/* hardpps() constrained to
-+					   use a frequency-locked loop */
-+/*
-+ * Here begins the implementation-specific part!
-+ */
-+
-+struct pps_fdata {
-+	struct pps_kinfo info;
-+	struct pps_ktime timeout;
-+};
-+
-+#include <linux/ioctl.h>
-+
-+#define PPS_CHECK		_IO('P', 0)
-+#define PPS_GETPARAMS		_IOR('P', 1, struct pps_kparams *)
-+#define PPS_SETPARAMS		_IOW('P', 2, struct pps_kparams *)
-+#define PPS_GETCAP		_IOR('P', 3, int *)
-+#define PPS_FETCH		_IOWR('P', 4, struct pps_fdata *)
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/cdev.h>
-+#include <linux/device.h>
-+
-+#define PPS_VERSION		"5.0.0"
-+#define PPS_MAX_SOURCES		16		/* should be enought... */
-+
-+/*
-+ * Global defines
-+ */
-+
-+/* The specific PPS source info */
-+struct pps_source_info {
-+	char name[PPS_MAX_NAME_LEN];		/* simbolic name */
-+	char path[PPS_MAX_NAME_LEN];		/* path of connected device */
-+	int mode;				/* PPS's allowed mode */
-+
-+	void (*echo)(int source, int event, void *data); /* PPS echo function */
-+
-+	struct module *owner;
-+	struct device *dev;
-+};
-+
-+/* The main struct */
-+struct pps_device {
-+	struct pps_source_info info;		/* PSS source info */
-+
-+	struct pps_kparams params;		/* PPS's current params */
-+
-+	__u32 assert_sequence;			/* PPS' assert event seq # */
-+	__u32 clear_sequence;			/* PPS' clear event seq # */
-+	struct pps_ktime assert_tu;
-+	struct pps_ktime clear_tu;
-+	int current_mode;			/* PPS mode at event time */
-+
-+	int go;					/* PPS event is arrived? */
-+	wait_queue_head_t queue;		/* PPS event queue */
-+
-+	unsigned int id;			/* PPS source unique ID */
-+	struct cdev cdev;
-+	struct device *dev;
-+	int devno;
-+	struct fasync_struct *async_queue;	/* fasync method */
-+	spinlock_t lock;
-+
-+	atomic_t usage;				/* usage count */
-+	wait_queue_head_t usage_queue;
-+
-+	struct class class_dev;
-+};
-+
-+/*
-+ * Global variables
-+ */
-+
-+extern spinlock_t idr_lock;
-+extern struct idr pps_idr;
-+
-+/*
-+ * Exported functions
-+ */
-+
-+extern int pps_register_source(struct pps_source_info *info,
-+				int default_params);
-+extern void pps_unregister_source(int source);
-+extern int pps_register_cdev(struct pps_device *pps);
-+extern void pps_unregister_cdev(struct pps_device *pps);
-+extern void pps_event(int source, int event, void *data);
-+
-+extern int pps_sysfs_create_source_entry(struct pps_device *pps);
-+extern void pps_sysfs_remove_source_entry(struct pps_device *pps);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _PPS_H_ */
--- 
-1.5.2.5
++	  If you want your system to mount its root file system via NFS,
++	  choose Y here.  This is common practice for managing systems
++	  without local permanent storage.  For details, read
++	  <file:Documentation/nfsroot.txt>.
++
++	  Most people say N here.
++
+ config NFSD
+ 	tristate "NFS server support"
+ 	depends on INET
+@@ -1704,20 +1717,6 @@ config NFSD_V4
+ 	  should only be used if you are interested in helping to test NFSv4.
+ 	  If unsure, say N.
+ 
+-config ROOT_NFS
+-	bool "Root file system on NFS"
+-	depends on NFS_FS=y && IP_PNP
+-	help
+-	  If you want your Linux box to mount its whole root file system (the
+-	  one containing the directory /) from some other computer over the
+-	  net via NFS (presumably because your box doesn't have a hard disk),
+-	  say Y. Read <file:Documentation/nfsroot.txt> for details. It is
+-	  likely that in this case, you also want to say Y to "Kernel level IP
+-	  autoconfiguration" so that your box can discover its network address
+-	  at boot time.
+-
+-	  Most people say N here.
+-
+ config LOCKD
+ 	tristate
+ 
 
