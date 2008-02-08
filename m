@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbYBHQ2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbYBHQeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933124AbYBHQ2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbYBHQ2H
+	id S1760152AbYBHQeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757874AbYBHQeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:28:07 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:37631 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759369AbYBHQ2G (ORCPT
+	Fri, 8 Feb 2008 11:34:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47029 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350AbYBHQeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:28:06 -0500
-Subject: Re: [PATCH] scsi_error: Fix language abuse.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080208155938.339d9f3d@core>
-References: <20080208153217.5fc42a50@core>
-	 <1202486247.3102.17.camel@localhost.localdomain>
-	 <20080208155938.339d9f3d@core>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 10:28:02 -0600
-Message-Id: <1202488082.3102.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 11:34:08 -0500
+Date: Fri, 8 Feb 2008 08:31:08 -0800
+From: Greg KH <greg@kroah.com>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: UBI: add mtd_num sysfs attribute
+Message-ID: <20080208163108.GE16477@kroah.com>
+References: <200802071907.m17J7eYA022058@hera.kernel.org> <20080208054743.GA13097@kroah.com> <47AC1205.5070907@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AC1205.5070907@nokia.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-08 at 15:59 +0000, Alan Cox wrote:
-> > http://www.t10.org/ftp/t10/drafts/spc3/spc3r23.pdf
-> > 
-> > By a simple text search.
-> > 
-> > I don't think the pedantry is worth the confusion ...
-> 
-> Ok so we should file a formal change request with T10 instead perhaps ?
+On Fri, Feb 08, 2008 at 10:25:41AM +0200, Artem Bityutskiy wrote:
+> Greg KH wrote:
+>> Can you please add this information to Documentation/ABI/ so that people
+>> know what is going on here?
+>
+> Sent you the patch (Subject: [PATCH] Documentation: add UBI sysfs ABI 
+> docs).
 
-As long as that "we" is royal, be my guest and go ahead.
+Thanks, looks good.
 
-If you set up the correct legal trust, your heirs and assigns can submit
-the patch just as soon as T10 accepts the change ...
+> I assume you'll put it into your tree and take the further care of it, 
+> right?
 
-James
+No, it needs to go through the same path that your other UBI patches
+went through.  Can you do that?
 
+thanks,
 
+greg k-h
