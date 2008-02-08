@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbYBHQ7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbYBHQ7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933455AbYBHQ7N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:59:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761741AbYBHQxq
+	id S934510AbYBHQ7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933618AbYBHQxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:53:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52685 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:53:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52692 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933479AbYBHQxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:53:24 -0500
+	id S933524AbYBHQx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:53:27 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 09/37] Security: Allow kernel services to override LSM
-	settings for task actions
+Subject: [PATCH 04/37] KEYS: Add keyctl function to get a security label
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:52:46 +0000
-Message-ID: <20080208165245.15902.13085.stgit@warthog.procyon.org.uk>
+Date: Fri, 08 Feb 2008 16:52:19 +0000
+Message-ID: <20080208165218.15902.7388.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,501 +31,322 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow kernel services to override LSM settings appropriate to the actions
-performed by a task by duplicating a security record, modifying it and then
-using task_struct::act_as to point to it when performing operations on behalf
-of a task.
+Add a keyctl() function to get the security label of a key.
 
-This is used, for example, by CacheFiles which has to transparently access the
-cache on behalf of a process that thinks it is doing, say, NFS accesses with a
-potentially inappropriate (with respect to accessing the cache) set of
-security data.
+The following is added to Documentation/keys.txt:
 
-This patch provides two LSM hooks for modifying a task security record:
+ (*) Get the LSM security context attached to a key.
 
- (*) security_kernel_act_as() which allows modification of the security datum
-     with which a task acts on other objects (most notably files).
+	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
+		    size_t buflen)
 
- (*) security_create_files_as() which allows modification of the security
-     datum that is used to initialise the security data on a file that a task
-     creates.
+     This function returns a string that represents the LSM security context
+     attached to a key in the buffer provided.
+
+     Unless there's an error, it always returns the amount of data it could
+     produce, even if that's too big for the buffer, but it won't copy more
+     than requested to userspace. If the buffer pointer is NULL then no copy
+     will take place.
+
+     A NUL character is included at the end of the string if the buffer is
+     sufficiently big.  This is included in the returned count.  If no LSM is
+     in force then an empty string will be returned.
+
+     A process must have view permission on the key for this function to be
+     successful.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 ---
 
- include/linux/capability.h          |   12 ++--
- include/linux/cred.h                |   23 +++++++
- include/linux/security.h            |   43 +++++++++++++
- kernel/cred.c                       |  112 +++++++++++++++++++++++++++++++++++
- security/dummy.c                    |   17 +++++
- security/security.c                 |   15 ++++-
- security/selinux/hooks.c            |   51 ++++++++++++++++
- security/selinux/include/security.h |    2 -
- security/selinux/ss/services.c      |    5 +-
- 9 files changed, 265 insertions(+), 15 deletions(-)
- create mode 100644 include/linux/cred.h
+ Documentation/keys.txt   |   21 +++++++++++++++
+ include/linux/keyctl.h   |    1 +
+ include/linux/security.h |   20 +++++++++++++-
+ security/dummy.c         |    8 ++++++
+ security/keys/compat.c   |    3 ++
+ security/keys/keyctl.c   |   66 ++++++++++++++++++++++++++++++++++++++++++++++
+ security/security.c      |    5 +++
+ security/selinux/hooks.c |   21 +++++++++++++--
+ 8 files changed, 141 insertions(+), 4 deletions(-)
 
 
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 7d50ff6..424de01 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -364,12 +364,12 @@ typedef struct kernel_cap_struct {
- # error Fix up hand-coded capability macro initializers
- #else /* HAND-CODED capability initializers */
+diff --git a/Documentation/keys.txt b/Documentation/keys.txt
+index b82d38d..be424b0 100644
+--- a/Documentation/keys.txt
++++ b/Documentation/keys.txt
+@@ -711,6 +711,27 @@ The keyctl syscall functions are:
+      The assumed authoritative key is inherited across fork and exec.
  
--# define CAP_EMPTY_SET    {{ 0, 0 }}
--# define CAP_FULL_SET     {{ ~0, ~0 }}
--# define CAP_INIT_EFF_SET {{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }}
--# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } }
--# define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
--			     CAP_FS_MASK_B1 } }
-+# define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
-+# define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
-+# define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
-+# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
-+# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
-+					CAP_FS_MASK_B1 } })
  
- #endif /* _LINUX_CAPABILITY_U32S != 2 */
++ (*) Get the LSM security context attached to a key.
++
++	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
++		    size_t buflen)
++
++     This function returns a string that represents the LSM security context
++     attached to a key in the buffer provided.
++
++     Unless there's an error, it always returns the amount of data it could
++     produce, even if that's too big for the buffer, but it won't copy more
++     than requested to userspace. If the buffer pointer is NULL then no copy
++     will take place.
++
++     A NUL character is included at the end of the string if the buffer is
++     sufficiently big.  This is included in the returned count.  If no LSM is
++     in force then an empty string will be returned.
++
++     A process must have view permission on the key for this function to be
++     successful.
++
++
+ ===============
+ KERNEL SERVICES
+ ===============
+diff --git a/include/linux/keyctl.h b/include/linux/keyctl.h
+index 3365945..656ee6b 100644
+--- a/include/linux/keyctl.h
++++ b/include/linux/keyctl.h
+@@ -49,5 +49,6 @@
+ #define KEYCTL_SET_REQKEY_KEYRING	14	/* set default request-key keyring */
+ #define KEYCTL_SET_TIMEOUT		15	/* set key timeout */
+ #define KEYCTL_ASSUME_AUTHORITY		16	/* assume request_key() authorisation */
++#define KEYCTL_GET_SECURITY		17	/* get key security label */
  
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-new file mode 100644
-index 0000000..497af5b
---- /dev/null
-+++ b/include/linux/cred.h
-@@ -0,0 +1,23 @@
-+/* Credential management
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+
-+#ifndef _LINUX_CRED_H
-+#define _LINUX_CRED_H
-+
-+struct task_security;
-+struct inode;
-+
-+extern struct task_security *get_kernel_security(struct task_struct *);
-+extern int set_security_override(struct task_security *, u32);
-+extern int set_security_override_from_ctx(struct task_security *, const char *);
-+extern int change_create_files_as(struct task_security *, struct inode *);
-+
-+#endif /* _LINUX_CRED_H */
+ #endif /*  _LINUX_KEYCTL_H */
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 9bf93c7..1c17b91 100644
+index fe52cde..a33fd03 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -568,6 +568,19 @@ struct request_sock;
-  *	Duplicate and attach the security structure currently attached to the
-  *	p->security field.
-  *	Return 0 if operation was successful.
-+ * @task_kernel_act_as:
-+ *	Set the credentials for a kernel service to act as (subjective context).
-+ *	@p points to the task that nominated @secid.
-+ *	@sec points to the task security record to be modified.
-+ *	@secid specifies the security ID to be set
-+ *	Return 0 if successful.
-+ * @task_create_files_as:
-+ *	Set the file creation context in a task security record to be the same
-+ *	as the objective context of the specified inode.
-+ *	@p points to the task that nominated @inode.
-+ *	@sec points to the task security record to be modified.
-+ *	@inode points to the inode to use as a reference.
-+ *	Return 0 if successful.
-  * @task_setuid:
-  *	Check permission before setting one or more of the user identity
-  *	attributes of the current process.  The @flags parameter indicates
-@@ -1342,6 +1355,11 @@ struct security_operations {
- 	int (*task_alloc_security) (struct task_struct *p);
- 	void (*task_free_security) (struct task_security *p);
- 	int (*task_dup_security) (struct task_security *p);
-+	int (*task_kernel_act_as)(struct task_struct *p,
-+				  struct task_security *sec, u32 secid);
-+	int (*task_create_files_as)(struct task_struct *p,
-+				    struct task_security *sec,
-+				    struct inode *inode);
- 	int (*task_setuid) (uid_t id0, uid_t id1, uid_t id2, int flags);
- 	int (*task_post_setuid) (uid_t old_ruid /* or fsuid */ ,
- 				 uid_t old_euid, uid_t old_suid, int flags);
-@@ -1410,7 +1428,7 @@ struct security_operations {
-  	int (*getprocattr)(struct task_struct *p, char *name, char **value);
-  	int (*setprocattr)(struct task_struct *p, char *name, void *value, size_t size);
- 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
--	int (*secctx_to_secid)(char *secdata, u32 seclen, u32 *secid);
-+	int (*secctx_to_secid)(const char *secdata, u32 seclen, u32 *secid);
- 	void (*release_secctx)(char *secdata, u32 seclen);
+@@ -970,6 +970,17 @@ struct request_sock;
+  *	@perm describes the combination of permissions required of this key.
+  *	Return 1 if permission granted, 0 if permission denied and -ve it the
+  *      normal permissions model should be effected.
++ * @key_getsecurity:
++ *	Get a textual representation of the security context attached to a key
++ *	for the purposes of honouring KEYCTL_GETSECURITY.  This function
++ *	allocates the storage for the NUL-terminated string and the caller
++ *	should free it.
++ *	@key points to the key to be queried.
++ *	@_buffer points to a pointer that should be set to point to the
++ *	 resulting string (if no label or an error occurs).
++ *	Return the length of the string (including terminating NUL) or -ve if
++ *      an error.
++ *	May also return 0 (and a NULL buffer pointer) if there is no label.
+  *
+  * Security hooks affecting all System V IPC operations.
+  *
+@@ -1459,7 +1470,7 @@ struct security_operations {
+ 	int (*key_permission)(key_ref_t key_ref,
+ 			      struct task_struct *context,
+ 			      key_perm_t perm);
+-
++	int (*key_getsecurity)(struct key *key, char **_buffer);
+ #endif	/* CONFIG_KEYS */
  
- #ifdef CONFIG_SECURITY_NETWORK
-@@ -1599,6 +1617,11 @@ int security_task_create(unsigned long clone_flags);
- int security_task_alloc(struct task_struct *p);
- void security_task_free(struct task_security *p);
- int security_task_dup(struct task_security *p);
-+int security_task_kernel_act_as(struct task_struct *p,
-+				struct task_security *sec, u32 secid);
-+int security_task_create_files_as(struct task_struct *p,
-+				  struct task_security *sec,
-+				  struct inode *inode);
- int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags);
- int security_task_post_setuid(uid_t old_ruid, uid_t old_euid,
- 			       uid_t old_suid, int flags);
-@@ -1651,7 +1674,7 @@ int security_setprocattr(struct task_struct *p, char *name, void *value, size_t
- int security_netlink_send(struct sock *sk, struct sk_buff *skb);
- int security_netlink_recv(struct sk_buff *skb, int cap);
- int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
--int security_secctx_to_secid(char *secdata, u32 seclen, u32 *secid);
-+int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
- void security_release_secctx(char *secdata, u32 seclen);
+ };
+@@ -2600,6 +2611,7 @@ int security_key_alloc(struct key *key, struct task_struct *tsk, unsigned long f
+ void security_key_free(struct key *key);
+ int security_key_permission(key_ref_t key_ref,
+ 			    struct task_struct *context, key_perm_t perm);
++int security_key_getsecurity(struct key *key, char **_buffer);
  
- #else /* CONFIG_SECURITY */
-@@ -2080,6 +2103,20 @@ static inline int security_task_dup(struct task_security *p)
+ #else
+ 
+@@ -2621,6 +2633,12 @@ static inline int security_key_permission(key_ref_t key_ref,
  	return 0;
  }
  
-+static inline int security_task_kernel_act_as(struct task_struct *p,
-+					      struct task_security *sec,
-+					      u32 secid)
++static inline int security_key_getsecurity(struct key *key, char **_buffer)
 +{
++	*_buffer = NULL;
 +	return 0;
 +}
 +
-+static inline int security_task_create_files_as(struct task_struct *p,
-+						struct task_security *sec,
-+						struct inode *inode)
-+{
-+	return 0;
-+}
-+
- static inline int security_task_setuid (uid_t id0, uid_t id1, uid_t id2,
- 					int flags)
- {
-@@ -2331,7 +2368,7 @@ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *secle
- 	return -EOPNOTSUPP;
- }
+ #endif
+ #endif /* CONFIG_KEYS */
  
--static inline int security_secctx_to_secid(char *secdata,
-+static inline int security_secctx_to_secid(const char *secdata,
- 					   u32 seclen,
- 					   u32 *secid)
- {
-diff --git a/kernel/cred.c b/kernel/cred.c
-index 298f26e..aaa630a 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -11,6 +11,7 @@
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/key.h>
-+#include <linux/keyctl.h>
- #include <linux/init_task.h>
- #include <linux/security.h>
- 
-@@ -138,3 +139,114 @@ void put_task_security(struct task_security *sec)
- 	}
- }
- EXPORT_SYMBOL(put_task_security);
-+
-+/**
-+ * get_kernel_security - Get a task security record for a kernel service
-+ * @daemon: A userspace daemon to be used as a reference
-+ *
-+ * Get a task security record for a kernel service.  This can then be used to
-+ * override a task's own security so that work can be done on behalf of that
-+ * task that requires a different security context.
-+ *
-+ * @daemon is used to provide a base for the security record, but can be NULL.
-+ * If @daemon is supplied, then the security data will be derived from that;
-+ * otherwise they'll be set to 0 and no groups, full capabilities and no keys.
-+ *
-+ * The caller may change these controls afterwards if desired.
-+ */
-+struct task_security *get_kernel_security(struct task_struct *daemon)
-+{
-+	const struct task_security *dsec;
-+	struct task_security *sec;
-+
-+	sec = kzalloc(sizeof *sec, GFP_KERNEL);
-+	if (!sec)
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (daemon) {
-+		rcu_read_lock();
-+		dsec = rcu_dereference(daemon->sec);
-+		*sec = *dsec;
-+		get_group_info(sec->group_info);
-+		get_uid(sec->user);
-+		rcu_read_unlock();
-+#ifdef CONFIG_KEYS
-+		sec->request_key_auth = NULL;
-+		sec->thread_keyring = NULL;
-+		sec->tgsec = NULL;
-+#endif
-+	} else {
-+		sec->keep_capabilities = 0;
-+		sec->cap_inheritable = CAP_INIT_INH_SET;
-+		sec->cap_permitted = CAP_FULL_SET;
-+		sec->cap_effective = CAP_INIT_EFF_SET;
-+		sec->cap_bset = CAP_INIT_BSET;
-+		sec->user = &root_user;
-+		get_uid(sec->user);
-+		sec->group_info = &init_groups;
-+		get_group_info(sec->group_info);
-+	}
-+
-+	atomic_set(&sec->usage, 1);
-+	spin_lock_init(&sec->lock);
-+#ifdef CONFIG_KEYS
-+	sec->jit_keyring = KEY_REQKEY_DEFL_THREAD_KEYRING;
-+#endif
-+
-+	return sec;
-+}
-+EXPORT_SYMBOL(get_kernel_security);
-+
-+/**
-+ * set_security_override - Set the security ID in a security record
-+ * @sec: The security record to alter
-+ * @secid: The LSM security ID to set
-+ *
-+ * Set the LSM security ID in a security record so that the subjective security
-+ * is overridden when the act_as pointer of a task is overridden.
-+ */
-+int set_security_override(struct task_security *sec, u32 secid)
-+{
-+	return security_task_kernel_act_as(current, sec, secid);
-+}
-+EXPORT_SYMBOL(set_security_override);
-+
-+/**
-+ * set_security_override_from_ctx - Set the security ID in a security record
-+ * @sec: The security record to alter
-+ * @secctx: The LSM security context to generate the security ID from.
-+ *
-+ * Set the LSM security ID in a security record so that the subjective security
-+ * is overridden when the act_as pointer of a task is overridden.  The security
-+ * ID is specified in string form as a security context to be interpreted by
-+ * the LSM.
-+ */
-+int set_security_override_from_ctx(struct task_security *sec, const char *secctx)
-+{
-+	u32 secid;
-+	int ret;
-+
-+	ret = security_secctx_to_secid(secctx, strlen(secctx), &secid);
-+	if (ret < 0)
-+		return ret;
-+
-+	return set_security_override(sec, secid);
-+}
-+EXPORT_SYMBOL(set_security_override_from_ctx);
-+
-+/**
-+ * change_create_files_as - Change the file create context in a security record
-+ * @sec: The security record to alter
-+ * @inode: The inode to take the context from
-+ *
-+ * Change the file creation context in a security record to be the same as the
-+ * object context of the specified inode, so that the new inodes have the same
-+ * MAC context as that inode.
-+ */
-+int change_create_files_as(struct task_security *sec, struct inode *inode)
-+{
-+	sec->fsuid = inode->i_uid;
-+	sec->fsgid = inode->i_gid;
-+	return security_task_create_files_as(current, sec, inode);
-+}
-+EXPORT_SYMBOL(change_create_files_as);
 diff --git a/security/dummy.c b/security/dummy.c
-index cc516ab..965504a 100644
+index 649326b..6a0056b 100644
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -518,6 +518,19 @@ static int dummy_task_dup_security(struct task_security *p)
+@@ -977,6 +977,13 @@ static inline int dummy_key_permission(key_ref_t key_ref,
+ {
  	return 0;
  }
- 
-+static int dummy_task_kernel_act_as(struct task_struct *p,
-+				    struct task_security *sec, u32 secid)
++
++static int dummy_key_getsecurity(struct key *key, char **_buffer)
 +{
++	*_buffer = NULL;
 +	return 0;
 +}
 +
-+static int dummy_task_create_files_as(struct task_struct *p,
-+				      struct task_security *sec,
-+				      struct inode *inode)
-+{
-+	return 0;
-+}
-+
- static int dummy_task_setuid (uid_t id0, uid_t id1, uid_t id2, int flags)
- {
- 	return 0;
-@@ -966,7 +979,7 @@ static int dummy_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
- 	return -EOPNOTSUPP;
- }
+ #endif /* CONFIG_KEYS */
  
--static int dummy_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
-+static int dummy_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid)
- {
- 	return -EOPNOTSUPP;
- }
-@@ -1093,6 +1106,8 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, task_alloc_security);
- 	set_to_dummy_if_null(ops, task_free_security);
- 	set_to_dummy_if_null(ops, task_dup_security);
-+	set_to_dummy_if_null(ops, task_kernel_act_as);
-+	set_to_dummy_if_null(ops, task_create_files_as);
- 	set_to_dummy_if_null(ops, task_setuid);
- 	set_to_dummy_if_null(ops, task_post_setuid);
- 	set_to_dummy_if_null(ops, task_setgid);
-diff --git a/security/security.c b/security/security.c
-index 3aceeac..e7345e1 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -600,6 +600,19 @@ int security_task_dup(struct task_security *sec)
- 	return security_ops->task_dup_security(sec);
- }
+ struct security_operations dummy_security_ops;
+@@ -1164,6 +1171,7 @@ void security_fixup_ops (struct security_operations *ops)
+ 	set_to_dummy_if_null(ops, key_alloc);
+ 	set_to_dummy_if_null(ops, key_free);
+ 	set_to_dummy_if_null(ops, key_permission);
++	set_to_dummy_if_null(ops, key_getsecurity);
+ #endif	/* CONFIG_KEYS */
  
-+int security_task_kernel_act_as(struct task_struct *p,
-+				struct task_security *sec, u32 secid)
-+{
-+	return security_ops->task_kernel_act_as(p, sec, secid);
-+}
-+
-+int security_task_create_files_as(struct task_struct *p,
-+				  struct task_security *sec,
-+				  struct inode *inode)
-+{
-+	return security_ops->task_create_files_as(p, sec, inode);
-+}
-+
- int security_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
- {
- 	return security_ops->task_setuid(id0, id1, id2, flags);
-@@ -838,7 +851,7 @@ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
  }
- EXPORT_SYMBOL(security_secid_to_secctx);
+diff --git a/security/keys/compat.c b/security/keys/compat.c
+index e10ec99..c766c68 100644
+--- a/security/keys/compat.c
++++ b/security/keys/compat.c
+@@ -79,6 +79,9 @@ asmlinkage long compat_sys_keyctl(u32 option,
+ 	case KEYCTL_ASSUME_AUTHORITY:
+ 		return keyctl_assume_authority(arg2);
  
--int security_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
-+int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid)
- {
- 	return security_ops->secctx_to_secid(secdata, seclen, secid);
- }
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index ea9e0a8..815e03d 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -3092,6 +3092,53 @@ static int selinux_task_dup_security(struct task_security *sec)
- 	return 0;
- }
++	case KEYCTL_GET_SECURITY:
++		return keyctl_get_security(arg2, compat_ptr(arg3), arg4);
++
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index 1698bf9..56e963b 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -20,6 +20,7 @@
+ #include <linux/string.h>
+ #include <linux/err.h>
+ #include <linux/vmalloc.h>
++#include <linux/security.h>
+ #include <asm/uaccess.h>
+ #include "internal.h"
+ 
+@@ -1080,6 +1081,66 @@ error:
+ 
+ } /* end keyctl_assume_authority() */
  
 +/*
-+ * set the security data for a kernel service
-+ * - all the creation contexts are set to unlabelled
++ * get the security label of a key
++ * - the key must grant us view permission
++ * - if there's a buffer, we place up to buflen bytes of data into it
++ * - unless there's an error, we return the amount of information available,
++ *   irrespective of how much we may have copied (including the terminal NUL)
++ * - implements keyctl(KEYCTL_GET_SECURITY)
 + */
-+static int selinux_task_kernel_act_as(struct task_struct *p,
-+				      struct task_security *sec, u32 secid)
++long keyctl_get_security(key_serial_t keyid,
++			 char __user *buffer,
++			 size_t buflen)
 +{
-+	struct task_security_struct *tsec = sec->security;
-+	struct task_security_struct *ptsec = p->act_as->security;
-+	int ret;
++	struct key *key, *instkey;
++	key_ref_t key_ref;
++	char *context;
++	long ret;
 +
-+ 	ret = avc_has_perm(ptsec->sid, secid,
-+			   SECCLASS_KERNEL_SERVICE,
-+			   KERNEL_SERVICE__USE_AS_OVERRIDE,
-+			   NULL);
-+	if (ret == 0) {
-+		tsec->sid = secid;
-+		tsec->create_sid = 0;
-+		tsec->keycreate_sid = 0;
-+		tsec->sockcreate_sid = 0;
++	key_ref = lookup_user_key(NULL, keyid, 0, 1, KEY_VIEW);
++	if (IS_ERR(key_ref)) {
++		if (PTR_ERR(key_ref) != -EACCES)
++			return PTR_ERR(key_ref);
++
++		/* viewing a key under construction is also permitted if we
++		 * have the authorisation token handy */
++		instkey = key_get_instantiation_authkey(keyid);
++		if (IS_ERR(instkey))
++			return PTR_ERR(key_ref);
++		key_put(instkey);
++
++		key_ref = lookup_user_key(NULL, keyid, 0, 1, 0);
++		if (IS_ERR(key_ref))
++			return PTR_ERR(key_ref);
 +	}
++
++	key = key_ref_to_ptr(key_ref);
++	ret = security_key_getsecurity(key, &context);
++	if (ret == 0) {
++		/* if no information was returned, give userspace an empty
++		 * string */
++		ret = 1;
++		if (buffer && buflen > 0 &&
++		    copy_to_user(buffer, "", 1) != 0)
++			ret = -EFAULT;
++	} else if (ret > 0) {
++		/* return as much data as there's room for */
++		if (buffer && buflen > 0) {
++			if (buflen > ret)
++				buflen = ret;
++
++			if (copy_to_user(buffer, context, buflen) != 0)
++				ret = -EFAULT;
++		}
++
++		kfree(context);
++	}
++
++	key_ref_put(key_ref);
 +	return ret;
 +}
 +
-+/*
-+ * set the file creation context in a security record to the same as the
-+ * objective context of the specified inode
-+ */
-+static int selinux_task_create_files_as(struct task_struct *p,
-+					struct task_security *sec,
-+					struct inode *inode)
+ /*****************************************************************************/
+ /*
+  * the key control system call
+@@ -1160,6 +1221,11 @@ asmlinkage long sys_keyctl(int option, unsigned long arg2, unsigned long arg3,
+ 	case KEYCTL_ASSUME_AUTHORITY:
+ 		return keyctl_assume_authority((key_serial_t) arg2);
+ 
++	case KEYCTL_GET_SECURITY:
++		return keyctl_get_security((key_serial_t) arg2,
++					   (char *) arg3,
++					   (size_t) arg4);
++
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+diff --git a/security/security.c b/security/security.c
+index d15e56c..3e75b90 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -1102,4 +1102,9 @@ int security_key_permission(key_ref_t key_ref,
+ 	return security_ops->key_permission(key_ref, context, perm);
+ }
+ 
++int security_key_getsecurity(struct key *key, char **_buffer)
 +{
-+	struct inode_security_struct *isec = inode->i_security;
-+	struct task_security_struct *tsec = sec->security;
-+	struct task_security_struct *ptsec = p->act_as->security;
-+	int ret;
-+
-+ 	ret = avc_has_perm(ptsec->sid, isec->sid,
-+			   SECCLASS_KERNEL_SERVICE,
-+			   KERNEL_SERVICE__CREATE_FILES_AS,
-+			   NULL);
-+
-+	if (ret == 0)
-+		tsec->create_sid = isec->sid;
-+	return 0;
++	return security_ops->key_getsecurity(key, _buffer);
 +}
 +
- static int selinux_task_setuid(uid_t id0, uid_t id1, uid_t id2, int flags)
- {
- 	/* Since setuid only affects the current process, and
-@@ -5164,7 +5211,7 @@ static int selinux_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
- 	return security_sid_to_context(secid, secdata, seclen);
+ #endif	/* CONFIG_KEYS */
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index e5ed075..face4b4 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -5203,6 +5203,20 @@ static int selinux_key_permission(key_ref_t key_ref,
+ 			    SECCLASS_KEY, perm, NULL);
  }
  
--static int selinux_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
-+static int selinux_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid)
- {
- 	return security_context_to_sid(secdata, seclen, secid);
- }
-@@ -5322,6 +5369,8 @@ static struct security_operations selinux_ops = {
- 	.task_alloc_security =		selinux_task_alloc_security,
- 	.task_free_security =		selinux_task_free_security,
- 	.task_dup_security =		selinux_task_dup_security,
-+	.task_kernel_act_as =		selinux_task_kernel_act_as,
-+	.task_create_files_as =		selinux_task_create_files_as,
- 	.task_setuid =			selinux_task_setuid,
- 	.task_post_setuid =		selinux_task_post_setuid,
- 	.task_setgid =			selinux_task_setgid,
-diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
-index 837ce42..7c1e8ba 100644
---- a/security/selinux/include/security.h
-+++ b/security/selinux/include/security.h
-@@ -78,7 +78,7 @@ int security_change_sid(u32 ssid, u32 tsid,
- int security_sid_to_context(u32 sid, char **scontext,
- 	u32 *scontext_len);
++static int selinux_key_getsecurity(struct key *key, char **_buffer)
++{
++	struct key_security_struct *ksec = key->security;
++	char *context = NULL;
++	unsigned len;
++	int rc;
++
++	rc = security_sid_to_context(ksec->sid, &context, &len);
++	if (!rc)
++		rc = len;
++	*_buffer = context;
++	return rc;
++}
++
+ #endif
  
--int security_context_to_sid(char *scontext, u32 scontext_len,
-+int security_context_to_sid(const char *scontext, u32 scontext_len,
- 	u32 *out_sid);
+ static struct security_operations selinux_ops = {
+@@ -5382,9 +5396,10 @@ static struct security_operations selinux_ops = {
+ #endif
  
- int security_context_to_sid_default(char *scontext, u32 scontext_len, u32 *out_sid, u32 def_sid);
-diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index f374186..519b2c1 100644
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -680,7 +680,8 @@ out:
+ #ifdef CONFIG_KEYS
+-	.key_alloc =                    selinux_key_alloc,
+-	.key_free =                     selinux_key_free,
+-	.key_permission =               selinux_key_permission,
++	.key_alloc =			selinux_key_alloc,
++	.key_free =			selinux_key_free,
++	.key_permission =		selinux_key_permission,
++	.key_getsecurity =		selinux_key_getsecurity,
+ #endif
+ };
  
- }
- 
--static int security_context_to_sid_core(char *scontext, u32 scontext_len, u32 *sid, u32 def_sid)
-+static int security_context_to_sid_core(const char *scontext, u32 scontext_len,
-+					u32 *sid, u32 def_sid)
- {
- 	char *scontext2;
- 	struct context context;
-@@ -806,7 +807,7 @@ out:
-  * Returns -%EINVAL if the context is invalid, -%ENOMEM if insufficient
-  * memory is available, or 0 on success.
-  */
--int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
-+int security_context_to_sid(const char *scontext, u32 scontext_len, u32 *sid)
- {
- 	return security_context_to_sid_core(scontext, scontext_len,
- 	                                    sid, SECSID_NULL);
 
