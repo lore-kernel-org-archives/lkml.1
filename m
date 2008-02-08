@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYBHVKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYBHVLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbYBHVKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYBHVKR
+	id S1758291AbYBHVLV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYBHVLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:10:17 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:18013 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYBHVKP (ORCPT
+	Fri, 8 Feb 2008 16:11:12 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60713 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751033AbYBHVLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:10:15 -0500
-In-Reply-To: <20080208202033.GD31984@uranus.ravnborg.org>
-References: <20080208175208.16261.74626.stgit@manray.1015granger.net> <20080208202033.GD31984@uranus.ravnborg.org>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <42BB19FA-AF43-4BF6-AF32-EF31A17A41B4@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+	Fri, 8 Feb 2008 16:11:11 -0500
+Date: Fri, 8 Feb 2008 13:10:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: g.liakhovetski@pengutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lib/scatterlist.o needed by a module only - link it in
+  unconditionally
+Message-Id: <20080208131020.7086ce1d.akpm@linux-foundation.org>
+In-Reply-To: <20080208204611.GE23197@kernel.dk>
+References: <Pine.LNX.4.64.0802081930590.8364@axis700.grange>
+	<20080208204611.GE23197@kernel.dk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: [PATCH 06/11] NFSD: Remove NFSv4 dependency on NFSv3
-Date: Fri, 8 Feb 2008 16:08:42 -0500
-To: Sam Ravnborg <sam@ravnborg.org>
-X-Mailer: Apple Mail (2.753)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 8, 2008, at 3:20 PM, Sam Ravnborg wrote:
-> On Fri, Feb 08, 2008 at 12:52:08PM -0500, Chuck Lever wrote:
->> Clean up: Because NFSD_V4 "depends on" NFSD_V3, it appears as a  
->> child of
->> the NFSD_V3 menu entry, and is not visible if NFSD_V3 is unselected.
->>
->> Replace the dependency on NFSD_V3 with a "select NFSD_V3".  This  
->> makes
->> NFSD_V4 look and work just like NFS_V3, while ensuring that  
->> NFSD_V3 is
->> enabled if NFSD_V4 is.
->>
->> Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
->> ---
->>
->>  fs/Kconfig |    3 ++-
->>  1 files changed, 2 insertions(+), 1 deletions(-)
->>
->> diff --git a/fs/Kconfig b/fs/Kconfig
->> index 9ad62a9..4c16789 100644
->> --- a/fs/Kconfig
->> +++ b/fs/Kconfig
->> @@ -1723,7 +1723,8 @@ config NFSD_V3_ACL
->>
->>  config NFSD_V4
->>  	bool "NFS server support for NFS version 4 (EXPERIMENTAL)"
->> -	depends on NFSD && NFSD_V3 && EXPERIMENTAL
->> +	depends on NFSD && EXPERIMENTAL
->> +	select NFSD_V3
->>  	select RPCSEC_GSS_KRB5
->>  	help
->>  	  This option enables support in your system's NFS server for
->
-> This use of select is questionable. In general it is bad to select
-> a symbol with dependencies.
-> In this case the dependencies of NFSD_V3 are duplicated for NFSD_V4
-> so we will not se erratic configurations but do you remember to
-> update NFSD_V4 when you add a depends on NFSD_V3?
->
-> But I see no other clean way to do it rithg now.
+On Fri, 8 Feb 2008 21:46:11 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-This patch is entirely optional, and I can just drop it for now.
+> On Fri, Feb 08 2008, Guennadi Liakhovetski wrote:
+> > lib/scatterlist.c is needed by drivers/media/video/videobuf-dma-sg.c, and 
+> > we would like to be able to use the latter without PCI too, for example, 
+> > on PXA270 ARM CPU. It is then possible to create a configuration with 
+> > CONFIG_BLOCK=n, where only module code will need scatterlist.c. Therefore 
+> > it must be in obj-y.
+> > 
+> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+> 
+> Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> 
+> Andrew, can I ask you to take care of this?
 
-Thanks for the review.
-
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+sure..
