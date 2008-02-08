@@ -1,104 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbYBHQin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbYBHQjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933869AbYBHQin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759380AbYBHQgW
+	id S933460AbYBHQjV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933585AbYBHQhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:36:22 -0500
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:8715 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758826AbYBHQgT (ORCPT
+	Fri, 8 Feb 2008 11:37:17 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57760 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933577AbYBHQhL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:36:19 -0500
-From: Andi Kleen <ak@suse.de>
-References: <20080208536.837219990@suse.de>
-In-Reply-To: <20080208536.837219990@suse.de>
-To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] [5/5] Switch i386 early boot page table initialization over to use required_static_prot()
-Message-Id: <20080208163616.E83A81B41AA@basil.firstfloor.org>
-Date: Fri,  8 Feb 2008 17:36:16 +0100 (CET)
-X-OriginalArrivalTime: 08 Feb 2008 16:29:56.0871 (UTC) FILETIME=[D7748170:01C86A6F]
+	Fri, 8 Feb 2008 11:37:11 -0500
+Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802081001540.18242@anakin>
+References: <1202432206.3171.53.camel@localhost.localdomain>
+	 <1202432647.31361.26.camel@brick>
+	 <1202432873.3171.58.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0802081001540.18242@anakin>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 10:37:00 -0600
+Message-Id: <1202488620.3102.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-02-08 at 10:03 +0100, Geert Uytterhoeven wrote:
+> On Thu, 7 Feb 2008, James Bottomley wrote:
+> > On Thu, 2008-02-07 at 17:04 -0800, Harvey Harrison wrote:
+> > > On Thu, 2008-02-07 at 18:56 -0600, James Bottomley wrote:
+> > > > Quite a bit of this is fixing things broken previously (the advansys fix
+> > > > is still pending resolution, but I'll send it as an -rc fix when we have
+> > > > it).  There's the final elimination of all drivers that are esp based
+> > > > but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
+> > > > the usual bunch of driver updates and the addition of a new enclosure
+> > > > services driver and the corresponding ULD.
+> > > > 
+> > > > The patch is available from:
+> > > > 
+> > > 
+> > > I'm going to guess that this is the entry in feature-removal.txt
+> > > that need an update then:
+> > > 
+> > > ---------------------------
+> > > 
+> > > What:	old NCR53C9x driver
+> > > When:	October 2007
+> > > Why:	Replaced by the much better esp_scsi driver.  Actual low-level
+> > > 	driver can be ported over almost trivially.
+> > > Who:	David Miller <davem@davemloft.net>
+> > > 	Christoph Hellwig <hch@lst.de>
+> > 
+> > Not immediately ... I anticipate a few "where'd my driver go?" type
+> > questions from m68k for which this provides a useful reference to point
+> > to ...
+> 
+> Don't bother, we're fully aware of this.
+> 
+> The shortest feature removal notice in Linux's history (is it?) didn't go
+> unnoticed ;-)
 
-This makes it use the same tests for this as pageattr.
+I don't know where you get that from.  The notice went in on 30 April
+2007 and we gave you six months to convert the drivers, hence the
+October 2007 date for when the deletion will actually be done.  I've
+actually delayed removal until February 2007 giving you a further three
+months.  Even then I only removed the drivers because they no longer
+compile.
 
-Does not check advisory protections yet because that is not needed yet.
+I think nine months isn't unreasonable for a feature removal ... unless
+you work on a different time scale from me?
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+James
 
----
- arch/x86/mm/init_32.c        |   15 +++------------
- arch/x86/mm/pageattr.c       |    2 +-
- include/asm-x86/cacheflush.h |    3 +++
- 3 files changed, 7 insertions(+), 13 deletions(-)
 
-Index: linux/arch/x86/mm/init_32.c
-===================================================================
---- linux.orig/arch/x86/mm/init_32.c
-+++ linux/arch/x86/mm/init_32.c
-@@ -140,13 +140,6 @@ page_table_range_init(unsigned long star
- 	}
- }
- 
--static inline int is_kernel_text(unsigned long addr)
--{
--	if (addr >= PAGE_OFFSET && addr <= (unsigned long)__init_end)
--		return 1;
--	return 0;
--}
--
- /*
-  * This maps the physical memory to kernel virtual address space, a total
-  * of max_low_pfn pages, by creating page tables starting from address
-@@ -189,9 +182,7 @@ static void __init kernel_physical_mappi
- 				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
- 					PAGE_OFFSET + PAGE_SIZE-1;
- 
--				if (is_kernel_text(addr) ||
--				    is_kernel_text(addr2))
--					prot = PAGE_KERNEL_LARGE_EXEC;
-+				prot = required_static_prot(prot, addr, addr2);
- 
- 				set_pmd(pmd, pfn_pmd(pfn, prot));
- 
-@@ -205,8 +196,8 @@ static void __init kernel_physical_mappi
- 			     pte++, pfn++, pte_ofs++, addr += PAGE_SIZE) {
- 				pgprot_t prot = PAGE_KERNEL;
- 
--				if (is_kernel_text(addr))
--					prot = PAGE_KERNEL_EXEC;
-+				prot = required_static_prot(prot, addr,
-+							addr + PAGE_SIZE - 1);
- 
- 				set_pte(pte, pfn_pte(pfn, prot));
- 			}
-Index: linux/include/asm-x86/cacheflush.h
-===================================================================
---- linux.orig/include/asm-x86/cacheflush.h
-+++ linux/include/asm-x86/cacheflush.h
-@@ -45,6 +45,9 @@ int set_memory_4k(unsigned long addr, in
- 
- void clflush_cache_range(void *addr, unsigned int size);
- 
-+pgprot_t required_static_prot(pgprot_t prot, unsigned long start,
-+				unsigned long end);
-+
- #ifdef CONFIG_DEBUG_RODATA
- void mark_rodata_ro(void);
- #endif
-Index: linux/arch/x86/mm/pageattr.c
-===================================================================
---- linux.orig/arch/x86/mm/pageattr.c
-+++ linux/arch/x86/mm/pageattr.c
-@@ -156,7 +156,7 @@ static unsigned long virt_to_highmap(voi
-  * right (again, ioremap() on BIOS memory is not uncommon) so this function
-  * checks and fixes these known static required protection bits.
-  */
--static pgprot_t
-+pgprot_t
- required_static_prot(pgprot_t prot, unsigned long start, unsigned long end)
- {
- 	pgprot_t forbidden = __pgprot(0);
