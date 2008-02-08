@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYBHWFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYBHWGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYBHWFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbYBHWFY
+	id S1758084AbYBHWGV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYBHWGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:05:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53620 "EHLO
+	Fri, 8 Feb 2008 17:06:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46279 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750786AbYBHWFX (ORCPT
+	by vger.kernel.org with ESMTP id S1751368AbYBHWGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:05:23 -0500
-Date: Fri, 8 Feb 2008 14:02:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Clements <paul.clements@steeleye.com>
-Cc: jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] NBD: make nbd default to deadline I/O scheduler
-Message-Id: <20080208140244.c850a5d3.akpm@linux-foundation.org>
-In-Reply-To: <47ACC835.4070102@steeleye.com>
-References: <47AC87AE.9040408@steeleye.com>
-	<20080208093341.b4d02e22.randy.dunlap@oracle.com>
-	<20080208101151.935b575c.akpm@linux-foundation.org>
-	<47ACA250.1010404@steeleye.com>
-	<20080208204510.GD23197@kernel.dk>
-	<20080208204713.GF23197@kernel.dk>
-	<47ACC835.4070102@steeleye.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 17:06:13 -0500
+Date: Fri, 8 Feb 2008 14:04:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Harvey Harrison <harvey.harrison@gmail.com>, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] fix sparse warning from include/linux/mmzone.h
+In-Reply-To: <20080208135154.ccdac0c1.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
+References: <1202417543.31361.5.camel@brick> <20080208135154.ccdac0c1.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Feb 2008 16:23:01 -0500
-Paul Clements <paul.clements@steeleye.com> wrote:
 
-> --- ./drivers/block/nbd.c.max_nbd_killed	2008-02-07 16:46:24.000000000 -0500
-> +++ ./drivers/block/nbd.c	2008-02-08 16:13:01.000000000 -0500
-> @@ -667,6 +667,12 @@ static int __init nbd_init(void)
->  			put_disk(disk);
->  			goto out;
->  		}
-> +		if (elevator_init(disk->queue, "deadline") != 0) {
-> +			if (elevator_init(disk->queue, "noop") != 0) {
-> +				put_disk(disk);
-> +				goto out;
-> +			}
-> +		}
->  	}
 
-- if the user doesn't have deadline or noop configured, NBD will now
-  fail.  That's a non-backward-compatible change.
+On Fri, 8 Feb 2008, Andrew Morton wrote:
+> >  #ifdef CONFIG_HIGHMEM
+> > -	int zone_idx = zone - zone->zone_pgdat->node_zones;
+> > -	return zone_idx == ZONE_HIGHMEM ||
+> > -		(zone_idx == ZONE_MOVABLE && zone_movable_is_highmem());
+> > +	const int highmem_off = ZONE_HIGHMEM * sizeof(*zone);
+> > +	const int movable_off = ZONE_MOVABLE * sizeof(*zone);
+> > +
+> > +	int zone_off = (unsigned long)zone - (unsigned long)zone->zone_pgdat->node_zones;
+> > +	return zone_off == highmem_off ||
+> > +		(zone_off == movable_off && zone_movable_is_highmem());
+> 
+> hrm.  For my i386 build (and that's where CONFIG_HIGHMEM really matters)
+> this patch makes mm/page_alloc.o six bytes larger, and I don't think the
+> change did much for readability.
 
-- when it fails, it will fail silently.  Puzzled and angry users.
+Heh, yeah. That's a very odd way to write it.
 
-- when it fails, it will inappropriately return -ENOMEM.
+It would probably make more sense to just write it as something like
+
+	struct zone *base = zone->zone_pgdat->node_zones;
+
+	if (zone == base + ZONE_HIGHMEM ||
+		(zone == base + ZONE_MOVABLE && zone_movable_is_highmem());
+
+instead.
+
+The above is totally untested, of course.
+
+		Linus
