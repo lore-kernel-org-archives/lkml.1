@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932531AbYBHP5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761150AbYBHP6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932531AbYBHP5u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 10:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbYBHP5g
+	id S1761150AbYBHP6o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 10:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbYBHP6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 10:57:36 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42261 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757068AbYBHP5f (ORCPT
+	Fri, 8 Feb 2008 10:58:32 -0500
+Received: from bizon.gios.gov.pl ([212.244.124.8]:37497 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756706AbYBHP6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 10:57:35 -0500
-Subject: Re: [PATCH] scsi_error: Fix language abuse.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080208153217.5fc42a50@core>
-References: <20080208153217.5fc42a50@core>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 09:57:27 -0600
-Message-Id: <1202486247.3102.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 10:58:31 -0500
+Date: Fri, 8 Feb 2008 16:57:47 +0100 (CET)
+From: Krzysztof Oledzki <olel@ans.pl>
+X-X-Sender: olel@bizon.gios.gov.pl
+To: Andi Kleen <andi@firstfloor.org>
+cc: Sven Wegener <sven.wegener@stealer.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipvs: Make the synchronization interval controllable
+In-Reply-To: <871w7n34ss.fsf@basil.nowhere.org>
+Message-ID: <Pine.LNX.4.64.0802081656130.10726@bizon.gios.gov.pl>
+References: <1202333990-19359-1-git-send-email-sven.wegener@stealer.net>
+ <871w7n34ss.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1369484947-1202486267=:10726"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Fri, 2008-02-08 at 15:32 +0000, Alan Cox wrote:
-> The word "illegal" has a precise dictionary meaning of "prohibited by
-> law". The error messages are therefore incorrect as so far nobody has
-> made SCSI violations a criminal offence.
-
-Um, I'm really reluctant to do this without an incredibly good reason.
-Illegal is a defined term under the SCSI standards, and the messages you
-are changing actually appear with the word Illegal in the actual
-ASC/ASCQ definition.  If I accept this patch, you'll no longer be able
-to look the messages up in the relevant standard:
-
-http://www.t10.org/ftp/t10/drafts/spc3/spc3r23.pdf
-
-By a simple text search.
-
-I don't think the pedantry is worth the confusion ...
-
-James
+---187430788-1369484947-1202486267=:10726
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 
+
+On Fri, 8 Feb 2008, Andi Kleen wrote:
+
+> Sven Wegener <sven.wegener@stealer.net> writes:
+>
+>> The default synchronization interval of 1000 milliseconds is too high fo=
+r a
+>> heavily loaded director. Collecting the connection information from one =
+second
+>> and then sending it out in a burst will overflow the socket buffer and l=
+ead to
+>> synchronization information being dropped. Make the interval controllabl=
+e by a
+>> sysctl variable so that users can tune it.
+>
+> It would be better if the defaults just worked under all circumstances.
+> So why not just lower the default?
+>
+> Or the code could detect overflowing socket buffers and lower the
+> value dynamically.
+
+We can also start sending when amount of data reaches defined level.
+
+Best regards,
+
+ =09=09=09=09Krzysztof Ol=EAdzki
+---187430788-1369484947-1202486267=:10726--
