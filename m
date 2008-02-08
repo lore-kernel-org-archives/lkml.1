@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764613AbYBHRZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933526AbYBHR2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764613AbYBHRZT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764345AbYBHRYp
+	id S933526AbYBHR2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYBHR2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:24:45 -0500
-Received: from homer.mvista.com ([63.81.120.155]:60903 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764340AbYBHRYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 12:24:43 -0500
-Message-ID: <47AC908F.2060201@ru.mvista.com>
-Date: Fri, 08 Feb 2008 20:25:35 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 8 Feb 2008 12:28:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37638 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758580AbYBHR2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 12:28:12 -0500
+Date: Fri, 8 Feb 2008 12:26:58 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       Horms <horms@verge.net.au>
+Subject: Re: why kexec insists on syncing with recent kernels?
+Message-ID: <20080208172658.GB23772@redhat.com>
+References: <47AB120A.1000600@wpkg.org> <20080207163752.GD11969@redhat.com> <47AB38E2.9050509@wpkg.org> <20080208160408.GB18782@redhat.com> <20080208090407.4ab240f1.randy.dunlap@oracle.com> <47AC8F34.3020705@wpkg.org>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] pdc202xx_old: always enable burst mode
-References: <200802072214.44352.bzolnier@gmail.com>
-In-Reply-To: <200802072214.44352.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AC8F34.3020705@wpkg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Fri, Feb 08, 2008 at 06:19:48PM +0100, Tomasz Chmielewski wrote:
+> Randy Dunlap schrieb:
+>
+> (...)
+>
+>>> Even if you did -f, it must have shutdown the network. I think somehow
+>>> in latest kernels there is some dependency on network and that's why
+>>> not shutting down network in this case is helping you.
+>>
+>> I'm seeing NFS mounts take forever to unmount (at shutdown/reboot).
+>> (forever => 1 hour ... or never completes)
+>>
+>> Is this similar to the problem that the OP is asking about?
+>
+> Is it a diskless station?
+>
+> Even in not, just make sure you don't shut the network down before NFS is 
+> actually unmounted...?
 
-> Alan has noticed that distros always enabled burst mode
-> (+ datasheet confirms that it is the right thing to do).
+Network is shutdown just before kexec -e finally enters the kernel and 
+starts preparing to jump to the new kernel. Any syncing operation, or
+File system unmounting operation will be done before that.
 
-> Thus fix pdc202xx_old host driver to do it unconditionally
-> and remove no longer needed CONFIG_PDC202XX_BURST option.
+Can't understand why not disabling the network will help in NFS umount
+or syncing operation. It has to be something else.
 
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-WBR, Sergei
+Thanks
+Vivek
