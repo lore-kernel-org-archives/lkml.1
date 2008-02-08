@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbYBHS1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933896AbYBHScv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964844AbYBHS1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935214AbYBHS0g
+	id S933896AbYBHScv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYBHScn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 13:26:36 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33097 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934864AbYBHS0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 13:26:34 -0500
-Date: Fri, 8 Feb 2008 20:01:43 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Prakash Punnoor <prakash@punnoor.de>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       lenb@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
-Message-ID: <20080208190143.GB11573@one.firstfloor.org>
-References: <20080207195519.GA21772@basil.nowhere.org> <200802081613.39906.prakash@punnoor.de> <20080208160906.GA9642@one.firstfloor.org> <200802081839.18267.prakash@punnoor.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802081839.18267.prakash@punnoor.de>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Feb 2008 13:32:43 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:35671 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751119AbYBHScm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 13:32:42 -0500
+Date: Fri, 8 Feb 2008 10:32:41 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Joe Perches <joe@perches.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] mm/slub.c - Use print_hex_dump
+In-Reply-To: <1202495069.27394.85.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0802081031320.28862@schroedinger.engr.sgi.com>
+References: <1202493808.27394.76.camel@localhost> 
+ <Pine.LNX.4.64.0802081006460.28568@schroedinger.engr.sgi.com>
+ <1202495069.27394.85.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 06:39:17PM +0100, Prakash Punnoor wrote:
-> On the day of Friday 08 February 2008 Andi Kleen hast written:
-> > On Fri, Feb 08, 2008 at 04:13:35PM +0100, Prakash Punnoor wrote:
+On Fri, 8 Feb 2008, Joe Perches wrote:
+
+> On Fri, 2008-02-08 at 10:07 -0800, Christoph Lameter wrote:
+> > On Fri, 8 Feb 2008, Joe Perches wrote:
+> > > Use the library function to dump memory
+> > Could you please compare the formatting of the output before and 
+> > after? Last time we tried this we had issues because it became a bit ugly.
 > 
-> > > Sorry, I meant the opposite. I needed the acpi_skip_timer_override kernel
-> > > parameter for nforce2, thus no override. So this chipset is missing here.
-> > > At least I remember that my nforce2 needed the skipping,
-> >
-> > I hope you remember correctly and mean it this time. It would be better
-> > if you could double check.
+> The difference is the last line of the ascii is not aligned
+> if the length is non modulo 16.
 > 
-> Yes, confirmed. timer w/o the skipping stays XT-PIC on nforce2.
+> I have sent a patch to print_hex_dump to always align.
+> http://lkml.org/lkml/2007/12/6/304
 
-Confirmed what? Did you test my patch on both machines? 
-What was the result? 
+Could you group these together for review? I think we are okay with the 
+slub changes if the print_hex_dump is fixed.
 
-> lspci -n:
-
-Please always send lspci without -n too; I hate looking up hex codes
-by hand when a computer can do that for me.
-
-> 02:00.0 0300: 10de:0281 (rev a1)
-> 
-> > I'm a little sceptical because we had this patch in OpenSUSE 10.3
-> > and I didn't think there were complaints from NF2 users.
-> > With the changes you're requesting it turns from something
-> > very well tested into something experimental.
-> 
-> Well, even w/o the skipping my nforce2 system wasn't unstable, AFAIK. So I 
-> don't think just because of the XT-PIC entry people would complain.
-
-Timer override only does something in APIC mode and when you see XT-PIC
-in /proc/interrupts then you're not in APIC mode. All these patches
-are a no-op in this state.
-
-> See why I don't want the quirk to be applied more than needed? *NOT* applying 
-> the quirk on nforce2 didn't cause any obvious side effects. APPLYING to mcp51 
-> causes hard lock-ups.
-
-Can you please just test the patches instead of speculating what they
-might do or not do?
-
--Andi
