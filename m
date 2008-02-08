@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbYBHIxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbYBHI4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933712AbYBHIxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 03:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYBHIxK
+	id S933330AbYBHI4R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 03:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbYBHI4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 03:53:10 -0500
-Received: from edna.telenet-ops.be ([195.130.132.58]:39508 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039AbYBHIxJ (ORCPT
+	Fri, 8 Feb 2008 03:56:00 -0500
+Received: from otello.alma.unibo.it ([137.204.24.163]:56244 "EHLO
+	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbYBHIz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 03:53:09 -0500
-Date: Fri, 8 Feb 2008 09:53:05 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: why kexec insists on syncing with recent kernels?
-In-Reply-To: <47AB120A.1000600@wpkg.org>
-Message-ID: <Pine.LNX.4.64.0802080949470.18242@anakin>
-References: <47AB120A.1000600@wpkg.org>
+	Fri, 8 Feb 2008 03:55:59 -0500
+Message-ID: <47AC191E.303@otello.alma.unibo.it>
+Date: Fri, 08 Feb 2008 09:55:58 +0100
+From: Diego Zuccato <diego@otello.alma.unibo.it>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Lee Mathers <Lee.Mathers@tcafs.org>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>            <20080202123710.42df1aa0@weinigel.se>            <20080202191930.GA19826@kroah.com>            <47A5D895.20300@davidnewall.com>            <47A6E742.80408@otello.alma.unibo.it> <courier.47A8F072.000079E4@hawking.rebel.net.au> <47AAC1EE.6060101@otello.alma.unibo.it> <47AB0911.3060508@davidnewall.com> <47AB5D2B.5010806@tcafs.org>
+In-Reply-To: <47AB5D2B.5010806@tcafs.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008, Tomasz Chmielewski wrote:
-> According to kernel/kexec.c:
-> 
->  * kexec does not sync, or unmount filesystems so if you need
->  * that to happen you need to do that yourself.
-> 
-> 
-> I saw this was true with 2.6.18 kernel (i.e., it didn't sync), but kexec syncs
-> with recent kernels (I checked 2.6.23.14 and 2.6.24):
-> 
-> # kexec -e
-> md: stopping all md devices
-> sd 2:0:0:0: [sdb] Synchronizing SCSI cache
-> 
-> 
-> With kexec on 2.6.18 it was executing a loaded kernel immediately.
-> 
-> 
-> Generally, it's a good thing to sync before jumping into a new kernel, but it
-> breaks my setup here after upgrading from 2.6.18 to 2.6.24.
-> 
-> Why?
->
-> I have a couple of diskless (iSCSI-boot) machines with a buggy BIOS (old
-> Supermicro P4SBR/P4SBE) which randomly freeze after rebooting (the machine
-> shuts down just fine, but instead of booting again, showing BIOS bootup
-> messages etc. you can just see blank screen).
-> 
-> Therefore, I use kexec as a workaround for this rebooting problem.
-> 
-> The way kexec works now makes rebooting unreliable again:
-> - network interfaces are brought down,
-> - kernel tries to sync - it never will, as we're booted off network, which is
-> down
-> 
-> Any ideas why kexec insists on syncing?
+Lee Mathers ha scritto:
 
-kexec calls device_shutdown(), so ->shutdown() will be called for all
-devices.
+> Now we have hardware ASIC that depend on the most part a (dll in 
+> windows) or .ko .o file under linux to provide the entire instruction 
+> set.  Think Winmodems,  Winprinters etc....
 
-Gr{oetje,eeting}s,
+Well, winmodem case is the only I could *almost* understand 
+closed-source drivers: the algorithms used *are* the modem. It's not a 
+simple firmware upload.
+What I really don't understand are graphic cards producers... If what 
+they say about the card is true, then there's no "advanced" algorithm in 
+the driver, just (at most) a firmware uploader (that's better suited 
+off-kernel anyway)...
 
-						Geert
+Bohf!
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+BYtE,
+  Diego.
