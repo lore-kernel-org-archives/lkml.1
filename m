@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYBHWpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763477AbYBHWqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbYBHWpi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761553AbYBHWiW
+	id S1763477AbYBHWqI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:46:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764550AbYBHWld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:38:22 -0500
-Received: from qb-out-0506.google.com ([72.14.204.234]:13476 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763455AbYBHWiT (ORCPT
+	Fri, 8 Feb 2008 17:41:33 -0500
+Received: from bgo1smout1.broadpark.no ([217.13.4.94]:36582 "EHLO
+	bgo1smout1.broadpark.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764536AbYBHWlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:38:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=oCvqjBtvi0idQgmC3bTAW9J48rg/tSUkftJjdoJARi0krqGHWyQMUVbOa5Xjrx7kH0STSlSRMKFPOjO8slWhTj2LQN1tfIELXDuPkgSgH7UuBcK/YUHt2DVakV4M2pn54kY2DKGd4hcxIJz816qbu4Si4i4fkmFBMvCX1a3PA7o=
-Subject: Re: [PATCH] fix sparse warning from include/linux/mmzone.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
-References: <1202417543.31361.5.camel@brick>
-	 <20080208135154.ccdac0c1.akpm@linux-foundation.org>
-	 <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 14:38:12 -0800
-Message-Id: <1202510292.8067.6.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 17:41:31 -0500
+X-Greylist: delayed 3641 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Feb 2008 17:41:30 EST
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=US-ASCII
+Date: Fri, 08 Feb 2008 18:04:20 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: kernel@avr32linux.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] AVR32: pass i2c board info through at32_add_device_twi
+Message-id: <20080208180420.095cfb91@dhcp-252-066.norway.atmel.com>
+In-reply-to: <47AA8909.3040706@niasdigital.com>
+References: <47AA8909.3040706@niasdigital.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-include/linux/mmzone.h:640:22: warning: potentially expensive pointer subtraction
+On Thu, 07 Feb 2008 15:28:57 +1100
+Ben Nizette <bn@niasdigital.com> wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Linus, something like the following?
+> New-style I2C drivers require that motherboard-mounted I2C devices are
+> registered with the I2C core, typically at arch_initcall time.  This can be
+> done nice and neat by passing the struct i2c_board_info[] through
+> at32_add_device_twi just like we do for the SPI board info.
+> 
+> While we've got the hood up, remove a duplicate declaration of
+> at32_add_device_twi() in board.h.
+> 
+> Signed-Off-By: Ben Nizette <bn@niasdigital.com>
 
- include/linux/mmzone.h |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+Applied, thanks.
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 8d8d197..7ed2922 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -637,9 +637,10 @@ static inline int is_normal_idx(enum zone_type idx)
- static inline int is_highmem(struct zone *zone)
- {
- #ifdef CONFIG_HIGHMEM
--	int zone_idx = zone - zone->zone_pgdat->node_zones;
--	return zone_idx == ZONE_HIGHMEM ||
--		(zone_idx == ZONE_MOVABLE && zone_movable_is_highmem());
-+	struct zone *base = zone->zone_pgdat->node_zones;
-+
-+	return zone == base + ZONE_HIGHMEM ||
-+		(zone == base + ZONE_MOVABLE && zone_movable_is_highmem());
- #else
- 	return 0;
- #endif
--- 
-1.5.4.1219.g65b9
-
-
-
+Haavard
