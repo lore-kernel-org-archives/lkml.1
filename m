@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbYBHCNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYBHCPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762813AbYBHCNd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 21:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYBHCN0
+	id S1757239AbYBHCPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 21:15:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYBHCOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 21:13:26 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:49734 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753487AbYBHCNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 21:13:25 -0500
-Date: Thu, 7 Feb 2008 18:13:22 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [git pull] more SLUB updates for 2.6.25
-Message-ID: <Pine.LNX.4.64.0802071755580.7473@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Feb 2008 21:14:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46694
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753487AbYBHCOs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 21:14:48 -0500
+Date: Thu, 07 Feb 2008 18:15:19 -0800 (PST)
+Message-Id: <20080207.181519.209912794.davem@davemloft.net>
+To: paul.moore@hp.com
+Cc: akpm@linux-foundation.org, casey@schaufler-ca.com, jmorris@namei.org,
+       mingo@elte.hu, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: + smack-unlabeled-outgoing-ambient-packets.patch added to -mm
+ tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200802072054.57284.paul.moore@hp.com>
+References: <200802071514.34770.paul.moore@hp.com>
+	<20080207.173402.163351740.davem@davemloft.net>
+	<200802072054.57284.paul.moore@hp.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-are available in the git repository at:
+From: Paul Moore <paul.moore@hp.com>
+Date: Thu, 7 Feb 2008 20:54:56 -0500
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git slub-linus
+> I have no idea what was causing the mail problem, probably somebody
+> in our IT department playing around with some new knobs, oh well.  I
+> resubscribed this afternoon with both fingers crossed.
 
-(includes the cmpxchg_local fastpath since the cmpxchg_local work
-by Matheiu is in now, and the non atomic unlock by Nick. Verified that 
-this is not doing any harm after some other patches had been removed. 
-cmpxchg_local fastpath was stripped of support for CONFIG_PREEMPT since
-that uglified the code and did not seem to work right. We will be 
-able to handle preempt much better in the future with some upcoming 
-patches)
+In the future please contact postmaster@vger.kernel.org when you
+notice you have been unsubscribed so we can work on fixing the
+issue.
 
-Christoph Lameter (4):
-      SLUB: Deal with annoying gcc warning on kfree()
-      SLUB: Use unique end pointer for each slab page.
-      SLUB: Alternate fast paths using cmpxchg_local
-      SLUB: Support for performance statistics
-
-Ingo Molnar (1):
-      SLUB: fix checkpatch warnings
-
-Nick Piggin (1):
-      Use non atomic unlock
-
- Documentation/vm/slabinfo.c |  149 ++++++++++++++++++--
- arch/x86/Kconfig            |    4 +
- include/linux/mm_types.h    |    5 +-
- include/linux/slub_def.h    |   23 +++
- lib/Kconfig.debug           |   13 ++
- mm/slub.c                   |  326 
-++++++++++++++++++++++++++++++++++++-------
- 6 files changed, 457 insertions(+), 63 deletions(-)
-
+Blind resubscriptions are severely frowned upon, we remove you for
+good reason and if the problem isn't solved you'll just soil up my
+inbox further with bounces....
