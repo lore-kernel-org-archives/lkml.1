@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYBHVuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbYBHVvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbYBHVuE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:50:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYBHVtl
+	id S1756945AbYBHVvA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYBHVuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:49:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:58400 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbYBHVtk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:49:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=J1hl37CTPfyfcXSkNGjIv0ddYWSTBanQzk6OCtIoANYem8+aKSIBkzcGdGMj25dwNb39i73VGaMWfC5JGJfNfb6Gi3XxniiKG5mq4IPD3Hsx79LhWCZ8glsNLFdwRxEuil/MG98KW0kFxbr9ZjZuZINex9chqaVfkO4a8pCIc/Q=
-Date: Sat, 9 Feb 2008 00:49:13 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86 cleanup: suspend_asm_64.S - use X86_CR4_PGE instead of
-	numeric value
-Message-ID: <20080208214913.GB6787@cvg>
-MIME-Version: 1.0
+	Fri, 8 Feb 2008 16:50:50 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39935 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750969AbYBHVus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 16:50:48 -0500
+Date: Fri, 8 Feb 2008 22:50:54 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH 06/11] NFSD: Remove NFSv4 dependency on NFSv3
+Message-ID: <20080208215054.GB541@uranus.ravnborg.org>
+References: <20080208175208.16261.74626.stgit@manray.1015granger.net> <20080208202033.GD31984@uranus.ravnborg.org> <42BB19FA-AF43-4BF6-AF32-EF31A17A41B4@oracle.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <42BB19FA-AF43-4BF6-AF32-EF31A17A41B4@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By including <asm/processor-flags.h> we're allowed to use
-X86_CR4_PGE instead of numeric constant.
+On Fri, Feb 08, 2008 at 04:08:42PM -0500, Chuck Lever wrote:
+> On Feb 8, 2008, at 3:20 PM, Sam Ravnborg wrote:
+> >On Fri, Feb 08, 2008 at 12:52:08PM -0500, Chuck Lever wrote:
+> >>Clean up: Because NFSD_V4 "depends on" NFSD_V3, it appears as a  
+> >>child of
+> >>the NFSD_V3 menu entry, and is not visible if NFSD_V3 is unselected.
+> >>
+> >>Replace the dependency on NFSD_V3 with a "select NFSD_V3".  This  
+> >>makes
+> >>NFSD_V4 look and work just like NFS_V3, while ensuring that  
+> >>NFSD_V3 is
+> >>enabled if NFSD_V4 is.
+> >>
+> >>Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+> >>---
+> >>
+> >> fs/Kconfig |    3 ++-
+> >> 1 files changed, 2 insertions(+), 1 deletions(-)
+> >>
+> >>diff --git a/fs/Kconfig b/fs/Kconfig
+> >>index 9ad62a9..4c16789 100644
+> >>--- a/fs/Kconfig
+> >>+++ b/fs/Kconfig
+> >>@@ -1723,7 +1723,8 @@ config NFSD_V3_ACL
+> >>
+> >> config NFSD_V4
+> >> 	bool "NFS server support for NFS version 4 (EXPERIMENTAL)"
+> >>-	depends on NFSD && NFSD_V3 && EXPERIMENTAL
+> >>+	depends on NFSD && EXPERIMENTAL
+> >>+	select NFSD_V3
+> >> 	select RPCSEC_GSS_KRB5
+> >> 	help
+> >> 	  This option enables support in your system's NFS server for
+> >
+> >This use of select is questionable. In general it is bad to select
+> >a symbol with dependencies.
+> >In this case the dependencies of NFSD_V3 are duplicated for NFSD_V4
+> >so we will not se erratic configurations but do you remember to
+> >update NFSD_V4 when you add a depends on NFSD_V3?
+> >
+> >But I see no other clean way to do it rithg now.
+> 
+> This patch is entirely optional, and I can just drop it for now.
 
-md5 sums of compiled files are differ due to this inclusion
-but .text section remains the same.
+Keep it. My comment was more to say we have things to address in kconfig.
+This is abuse in the acceptable range.
 
----
-
-If anyone has an objection on this patch - just drop it please.
-
-I'm not sure but this could have a side effect in case of future
-<asm/processor-flags.h> modifications so it would require
-__ASSEMBLY__ preprocessor directive.
-
-Index: linux-2.6.git/arch/x86/kernel/suspend_asm_64.S
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/suspend_asm_64.S	2008-02-09 00:28:45.000000000 +0300
-+++ linux-2.6.git/arch/x86/kernel/suspend_asm_64.S	2008-02-09 00:28:48.000000000 +0300
-@@ -9,12 +9,13 @@
-  * image could very well be data page in "new" image, and overwriting
-  * your own stack under you is bad idea.
-  */
--	
-+
- 	.text
- #include <linux/linkage.h>
- #include <asm/segment.h>
- #include <asm/page.h>
- #include <asm/asm-offsets.h>
-+#include <asm/processor-flags.h>
- 
- ENTRY(swsusp_arch_suspend)
- 	movq	$saved_context, %rax
-@@ -55,7 +56,7 @@ ENTRY(restore_image)
- 	/* Flush TLB */
- 	movq	mmu_cr4_features(%rip), %rax
- 	movq	%rax, %rdx
--	andq	$~(1<<7), %rdx	# PGE
-+	andq	$~(X86_CR4_PGE), %rdx
- 	movq	%rdx, %cr4;  # turn off PGE
- 	movq	%cr3, %rcx;  # flush TLB
- 	movq	%rcx, %cr3;
-@@ -107,7 +108,7 @@ ENTRY(restore_registers)
- 	/* Flush TLB, including "global" things (vmalloc) */
- 	movq	mmu_cr4_features(%rip), %rax
- 	movq	%rax, %rdx
--	andq	$~(1<<7), %rdx;  # PGE
-+	andq	$~(X86_CR4_PGE), %rdx
- 	movq	%rdx, %cr4;  # turn off PGE
- 	movq	%cr3, %rcx;  # flush TLB
- 	movq	%rcx, %cr3
+	Sam
