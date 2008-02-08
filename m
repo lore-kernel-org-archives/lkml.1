@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933991AbYBHFhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934159AbYBHFlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933991AbYBHFhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 00:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYBHFhj
+	id S934159AbYBHFlR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYBHFk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 00:37:39 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52278 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYBHFhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 00:37:39 -0500
-Date: Thu, 7 Feb 2008 21:41:58 -0800
-From: Greg KH <greg@kroah.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [-mm PATCH] sysdev_unregister() should call kobject_del()
-Message-ID: <20080208054158.GA12742@kroah.com>
-References: <1202428618.26309.45.camel@dyn9047017100.beaverton.ibm.com> <20080208003825.GB27317@kroah.com> <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com> <20080208045533.GA10988@kroah.com> <1202447322.13910.3.camel@badari-laptop.beaverton.ibm.com>
+	Fri, 8 Feb 2008 00:40:59 -0500
+Received: from bgerelbas01.asiapac.hp.net ([15.219.201.134]:50936 "EHLO
+	bgerelbas01.asiapac.hp.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752234AbYBHFk5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 00:40:57 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202447322.13910.3.camel@badari-laptop.beaverton.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/7] blk_end_request: full I/O completion handler
+Date: Fri, 8 Feb 2008 11:10:32 +0530
+Message-ID: <77334B9413C72244AE1B51ADD4868D700AFD9D60@BGEEXC02.asiapacific.cpqcorp.net>
+In-Reply-To: <20080205103851.GQ15220@kernel.dk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/7] blk_end_request: full I/O completion handler
+Thread-Index: Achn42YrDNAZ4IGrRvCXMJx9bzvBxgCMVwkg
+From: "S, Chandrakala (STSD)" <chandrakala.s@hp.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Cc: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       "Miller, Mike (OS Dev)" <mike.miller@hp.com>,
+       <grant.likely@secretlab.ca>, <dm-devel@redhat.com>,
+       <j-nomura@ce.jp.nec.com>
+X-OriginalArrivalTime: 08 Feb 2008 05:40:33.0464 (UTC) FILETIME=[1F746B80:01C86A15]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 09:08:42PM -0800, Badari Pulavarty wrote:
+Hi,
+
+Thanks for the information! 
+We would like to know when does the 2.6.25 kernel will be available at
+kernel.org.
+
+Thanks,
+Chandrakala 
+
+-----Original Message-----
+From: Jens Axboe [mailto:jens.axboe@oracle.com] 
+Sent: Tuesday, February 05, 2008 4:09 PM
+To: S, Chandrakala (STSD)
+Cc: Kiyoshi Ueda; linux-kernel@vger.kernel.org;
+linux-scsi@vger.kernel.org; linux-ide@vger.kernel.org; Miller, Mike (OS
+Dev); grant.likely@secretlab.ca; dm-devel@redhat.com;
+j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 0/7] blk_end_request: full I/O completion handler
+
+On Tue, Feb 05 2008, S, Chandrakala (STSD) wrote:
+> Hello,
 > 
-> On Thu, 2008-02-07 at 20:55 -0800, Greg KH wrote:
-> > On Thu, Feb 07, 2008 at 05:25:46PM -0800, Badari Pulavarty wrote:
-> > > On Thu, 2008-02-07 at 16:38 -0800, Greg KH wrote:
-> > > > On Thu, Feb 07, 2008 at 03:56:58PM -0800, Badari Pulavarty wrote:
-> > > > > Hi Greg,
-> > > > > 
-> > > > > While playing with hotplug memory remove on 2.6.24-mm1, I 
-> > > > > noticed that /sysfs directory entries are not getting removed.
-> > > > > 
-> > > > > sysdev_unregister() used to call kobject_unregister().
-> > > > > But in 2.6.24-mm1, its only dropping the ref. It should
-> > > > > call kobject_del() to remove the object. Correct ?
-> > > > > 
-> > > > > With this change, the directories are getting removed
-> > > > > correctly. Comments ?
-> > > > 
-> > > > Ick, no, this shouldn't be needed, someone else must be holding a
-> > > > reference to the kobject device somewhere.  See the kobject documenation
-> > > > for more info.
-> > > > 
-> > > > I'll try to see where we grab 2 references...
-> > > 
-> > > I will take a closer look then. I was taking easy way out :(
-> > 
-> > Hm, I don't see anything obvious in the sys.c core.  What code is
-> > controlling these objects that you are creating and removing from the
-> > system?
-> 
-> add_memory_block()/register_memory() is creating sysfs entries
-> for the memory blocks.
-> 
-> I am trying to make use of remove_memory_block() to clean up
-> sysfs entries. BTW, remove_memory_block() is never tested
-> before, since we don't support memory remove yet.
+> We would like to know in which kernel version these patches are 
+> available.
 
-So how are you testing the sysdev removal logic then if you can't remove
-memory?
+They were merged after 2.6.24 was released, so they will show up in the
+2.6.25 kernel.
 
-Oh, one thing, remove the link in unregister_memory, before you call
-sysdev_unregister().  You are trying to get the name of a kobject, and
-the whole object, that has just been blown away, not nice...
+--
+Jens Axboe
 
-Which makes me believe your statement about this never being tested
-before :)
-
-thanks,
-
-greg k-h
