@@ -1,115 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYBHXVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYBHXWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYBHXVP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYBHXVA
+	id S1756267AbYBHXWn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbYBHXWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:21:00 -0500
-Received: from waste.org ([66.93.16.53]:48695 "EHLO waste.org"
+	Fri, 8 Feb 2008 18:22:35 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47656 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752133AbYBHXU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:20:59 -0500
-Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some
-	processors
-From: Matt Mackall <mpm@selenic.com>
-To: Michael Opdenacker <michael-lists@free-electrons.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com
-In-Reply-To: <200802082347.25364.michael-lists@free-electrons.com>
-References: <200802082347.25364.michael-lists@free-electrons.com>
+	id S1752229AbYBHXWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 18:22:34 -0500
+Subject: Re: [-mm PATCH] sysdev_unregister() should call kobject_del()
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Greg KH <greg@kroah.com>, haveblue@us.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080208045533.GA10988@kroah.com>
+References: <1202428618.26309.45.camel@dyn9047017100.beaverton.ibm.com>
+	 <20080208003825.GB27317@kroah.com>
+	 <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com>
+	 <20080208045533.GA10988@kroah.com>
 Content-Type: text/plain
-Date: Fri, 08 Feb 2008 17:20:12 -0600
-Message-Id: <1202512812.17934.680.camel@cinder.waste.org>
+Date: Fri, 08 Feb 2008 15:22:29 -0800
+Message-Id: <1202512949.6354.3.camel@badari-laptop.beaverton.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-02-08 at 23:47 +0100, Michael Opdenacker wrote:
-> This patch against x86/mm tries to revive an original patch
-> from Matt Mackall which didn't get merged at that time. It makes
-> it possible to disable support code for some processors. This can
-> be useful to support only the exact processor type used
-> in a given system.
+On Thu, 2008-02-07 at 20:55 -0800, Greg KH wrote:
+> On Thu, Feb 07, 2008 at 05:25:46PM -0800, Badari Pulavarty wrote:
+> > On Thu, 2008-02-07 at 16:38 -0800, Greg KH wrote:
+> > > On Thu, Feb 07, 2008 at 03:56:58PM -0800, Badari Pulavarty wrote:
+> > > > Hi Greg,
+> > > > 
+> > > > While playing with hotplug memory remove on 2.6.24-mm1, I 
+> > > > noticed that /sysfs directory entries are not getting removed.
+> > > > 
+> > > > sysdev_unregister() used to call kobject_unregister().
+> > > > But in 2.6.24-mm1, its only dropping the ref. It should
+> > > > call kobject_del() to remove the object. Correct ?
+> > > > 
+> > > > With this change, the directories are getting removed
+> > > > correctly. Comments ?
+> > > 
+> > > Ick, no, this shouldn't be needed, someone else must be holding a
+> > > reference to the kobject device somewhere.  See the kobject documenation
+> > > for more info.
+> > > 
+> > > I'll try to see where we grab 2 references...
+> > 
+> > I will take a closer look then. I was taking easy way out :(
 > 
-> I may have made wrong assumptions with the code handling
-> force_mwait. As force_mwait is only declared in
-> arch/x86/kernel/cpu/amd.c, which is only compiled
-> when CONFIG_X86_32 is set, I thought it was safe
-> to make the code depend on CONFIG_CPU_SUP_AMD,
-> but I could be wrong.
+> Hm, I don't see anything obvious in the sys.c core.  What code is
+> controlling these objects that you are creating and removing from the
+> system?
 > 
-> Your comments are more than welcome! To make the code
-> cleaner, I could use empty inline functions instead
-> of ifdef's, as suggested in Documentation/SubmittingPatches.
 
-Please include the output of size with all these options on and off.
+I found the culprit. Its not in sys.c core :)
 
-> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> index dabdbef..8f9a123 100644
-> --- a/arch/x86/kernel/process_32.c
-> +++ b/arch/x86/kernel/process_32.c
-> @@ -287,8 +287,10 @@ static void mwait_idle(void)
->  
->  static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
->  {
-> +#ifdef CONFIG_CPU_SUP_AMD
->  	if (force_mwait)
->  		return 1;
-> +#endif
+remove_memory_block() takes a reference on kobject by calling
+find_memory_block(). It then calls  unregister_memory() to free up sysfs
+entry.
+It drops only one ref (which it got at register time). So it never gets
+freed up. I am going to send out a separate patch for it.
 
-Probably makes sense to move force_mwait (one word) here and eliminate
-these ifdefs.
+Thanks for your help.
 
-> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-> index 347a8cd..812bfa0 100644
-> --- a/arch/x86/mm/init_32.c
-> +++ b/arch/x86/mm/init_32.c
-> @@ -211,12 +211,14 @@ static void __init kernel_physical_mapping_init(pgd_t *pgd_base)
->  	}
->  }
->  
-> +#ifdef CONFIG_CPU_SUP_INTEL
->  static inline int page_kills_ppro(unsigned long pagenr)
->  {
->  	if (pagenr >= 0x70000 && pagenr <= 0x7003F)
->  		return 1;
->  	return 0;
->  }
-> +#endif
->  /*
->   * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-> @@ -287,7 +289,11 @@ static void __meminit free_new_highpage(struct page *page)
->  
->  void __init add_one_highpage_init(struct page *page, int pfn, int bad_ppro)
->  {
-> -	if (page_is_ram(pfn) && !(bad_ppro && page_kills_ppro(pfn))) {
-> +	if (page_is_ram(pfn)
-> +#ifdef CONFIG_CPU_SUP_INTEL
-> +	    && !(bad_ppro && page_kills_ppro(pfn))
-> +#endif
+Thanks,
+Badari
 
-Yuck. A better way to do this is move the bad_ppro check into
-page_kills_ppro and then ifdef out -the body- of the inline.
 
-> @@ -592,7 +598,11 @@ void __init mem_init(void)
->  #ifdef CONFIG_FLATMEM
->  	BUG_ON(!mem_map);
->  #endif
-> +#ifdef CONFIG_CPU_SUP_INTEL
->  	bad_ppro = ppro_with_ram_bug();
-> +#else
-> +	bad_ppro = 0;
-> +#endif
-
-Again, move the storage for this, let it get initialized to zero
-automatically, and initialize it in the CPU-specific code (if ordering
-allows).
- 
--- 
-Mathematics is the supreme nostalgia of our time.
 
