@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbYBHIrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbYBHIs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932927AbYBHIrt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 03:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbYBHIrj
+	id S1762210AbYBHIs3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 03:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761676AbYBHIsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 03:47:39 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:41347 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754760AbYBHIrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 03:47:39 -0500
-Date: Fri, 8 Feb 2008 09:47:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: section breakage on ppc64 (aka __devinitconst is broken by design)
-Message-ID: <20080208084744.GA27120@uranus.ravnborg.org>
-References: <20080203130844.GS27894@ZenIV.linux.org.uk> <47AB4F0E.3050907@redhat.com> <20080207185409.GA21145@uranus.ravnborg.org> <47AC1D63.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AC1D63.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Feb 2008 03:48:17 -0500
+Received: from otello.alma.unibo.it ([137.204.24.163]:56238 "EHLO
+	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758310AbYBHIsP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 03:48:15 -0500
+Message-ID: <47AC174C.4080300@otello.alma.unibo.it>
+Date: Fri, 08 Feb 2008 09:48:12 +0100
+From: Diego Zuccato <diego@otello.alma.unibo.it>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080206)
+MIME-Version: 1.0
+To: David Newall <davidn@davidnewall.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>            <20080202123710.42df1aa0@weinigel.se>            <20080202191930.GA19826@kroah.com>            <47A5D895.20300@davidnewall.com>            <47A6E742.80408@otello.alma.unibo.it> <courier.47A8F072.000079E4@hawking.rebel.net.au> <47AAC1EE.6060101@otello.alma.unibo.it> <47AB0911.3060508@davidnewall.com> <47AB14E4.6080100@otello.alma.unibo.it> <47AB2022.7080303@davidnewall.com>
+In-Reply-To: <47AB2022.7080303@davidnewall.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 08:14:11AM +0000, Jan Beulich wrote:
-> >I cannot see any other way out of this than to loose all the newly added
-> >consts. We have to different behavior across platforms to find a suitable
-> >solution that is reliable.
-> >
-> >[Kept rest of mail as I added Jan - hope he have some ideas to throw in].
-> 
-> I'd first of all need a better understanding of what these comments are
-> really based upon:
-> 
-> /* On some platforms relocations to global data cannot go into read-only
->    sections, so 'const' makes no sense and even causes compile failures
->    with some compilers. */
+David Newall ha scritto:
 
-Al posted the following:
-====================================================================
-; cat >a.c <<'EOF'
-const char foo[] __attribute__ ((__section__(".blah"))) = "";
-const char * const bar __attribute__((__section__(".blah"))) = "";
-EOF
-; gcc -m32 -S a.c
-; gcc -m64 -S a.c
-a.c:2: error: bar causes a section type conflict
-;
+>> Precisely: One purpose of the driver is to enforce local compliance.
+>> It can't *enforce* it anyway, at least if the users are all around the
+>> world.
+> Yes it can.   You're confusing the software with different or modified
+> software.  Different things.  And by the way, if you modify the software
+> to defeat the restrictions you are committing a criminal act, or you
+> would be if you did it in Australia.
+You said it! Gotcha! :-)
+There's no difference if what I'm going to modify is the binary or the 
+source: it's a criminal act anyway.
+So why not release the source? :-)
+>  You'd probably get with
+> crucifixion for a first offense!
+ROFLASTC :-)
 
-That's 4.1.2 on ppc.  What happens is that the second declaration
-wants to make .blah writable.  We actually trigger that in ppc64
-builds on drivers/net/natsemi.c.
+> What's your point?  That it's easy to break the law?  Nobody's arguing
+> against that.
+I was simply implying there are easier ways than others... And binary 
+drivers can't help...
 
-Note that on ppc64 without explicit sections you have the second one land in
-.data.rel.ro.local, which is "aw",progbits.
-====================================================================
+>> Nope. The driver should simply make the device WORK. The USER must
+>> make sure to meet the local regulations.
+> Definitely no.  The manufacturer must ensure it meets local
+> regulations.  One way they do that is via the driver.
+Well, the driver must trust the user, that's my point.
+If the user lies, the driver can't know (well, it could, but I don't 
+think it could be considered "reasonable"...).
 
-Se we see that despite being marked as const the the section
-is in one case marked as read-only by gcc and in another case the section
-is marked as rw.
+> You're correct, but that's still how it is.  In fact, some manufacturers
+> provide country specific drivers simply to shore up this weakness. 
+> (They'd only do that to protect their regulatory approval.)
+Allowing the lying user to download a driver for another country...
 
-And this is with the gcc version that is in use today and which
-we must support.
-Thats why I think we have to loose the constification that is going on
-or we should loose the section attribute on the data.
+>> If you're right, he is and must pay, remove that device from shops and
+>> replace sold ones. Or at least make sure all users update their
+>> drivers with others without that bug... 
+> That's the most likely result.  That would be what I expect would
+> happen.  This is why manufacturers view open source licences dimly in
+> certain markets, of which radio communications is just one example.
+And it's a reason to release open drivers, so that everybody can check 
+there's no such bug. And, if found, it can be fixed with a lot less effort.
 
+BTW I've now asked a lawyer... Waiting his answer.
 
-> 
-> While I can see such behavior as reasonable for, say, shared objects,
-> I severely doubt that this is generally appropriate for executables, not
-> to say for the kernel. This is particularly in the light of this comment in
-> gcc/output.h:
-> 
->   /* To optimize loading of shared programs, define following subsections
->      of data section:
-> 
-> which clearly says that the resulting (default) object placement (of read-
-> only data in writeable sections) is an optimization, not a requirement,
-> and even then only for shared programs (which the kernel clearly isn't).
-> Has there been any communication with the gcc folks on this subject?
-
-No.
-
-	Sam
+BYtE,
+  Diego.
