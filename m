@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbYBHPwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760497AbYBHPzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760060AbYBHPwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 10:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbYBHPwc
+	id S1760497AbYBHPzO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 10:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756642AbYBHPzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 10:52:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59031 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755883AbYBHPwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 10:52:31 -0500
-Date: Fri, 8 Feb 2008 10:52:04 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Joe Perches <joe@perches.com>
-Cc: mathieu.desnoyers@polymtl.ca, akpm@linux-foundation.org, mingo@elte.hu,
-       fche@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] make pr_debug() dynamic
-Message-ID: <20080208155204.GB13650@redhat.com>
-References: <20080207210320.GA14732@redhat.com> <1202424134.27394.42.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202424134.27394.42.camel@localhost>
-User-Agent: Mutt/1.4.1i
+	Fri, 8 Feb 2008 10:55:01 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:55129 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756247AbYBHPzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 10:55:00 -0500
+Date: Fri, 8 Feb 2008 16:54:59 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Joonwoo Park <joonwpark81@gmail.com>
+cc: rohit h <hrohit85@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [LINUX-KERNEL] C++ in linux kernel
+In-Reply-To: <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
+References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
+ <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 02:42:14PM -0800, Joe Perches wrote:
-> On Thu, 2008-02-07 at 16:03 -0500, Jason Baron wrote:
-> > make the pr_debug() function dependent upon the new immediate infrastruture.
-> 
-> What's wrong with klogd -c 8 or equivalent?
-> 
-> 
 
-Setting the loglevel higher, will not make pr_debug() calls visible. The only
-way to make them visible right now, is by re-compiling the kernel.
+On Feb 9 2008 00:14, Joonwoo Park wrote:
+>2008/2/8, rohit h <hrohit85@gmail.com>:
+>> Hi,
+>>  I am a kernel newbie.
+>>  I tried to insmod a C++ module containing classes, inheritance.
+>>  I am getting 'unresolved symbol' error when I use the 'new' keyword.
+>>  What could the problem be?
+>>
+>>  What kind of runtime support is needed ( arm linux kernel)? Is a
+>> patch available for it?
+>>
+>Please take a look at click modular router which is using c++ as a
+>linux kernel module.
+>http://www.read.cs.ucla.edu/click/
+>The lib/glue.cc provides custom operator new.
 
--Jason
-
-
+Uh, let's not make the world worse :)
+Just call malloc from C++, and carefully select what C++ features
+you are going to use. The VMware source for example does it right.
