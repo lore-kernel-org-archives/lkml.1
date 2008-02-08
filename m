@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbYBHCsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbYBHCul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932416AbYBHCsV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 21:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbYBHCsH
+	id S932416AbYBHCul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 21:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbYBHCuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 21:48:07 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43437 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756154AbYBHCsF (ORCPT
+	Thu, 7 Feb 2008 21:50:32 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35000 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755118AbYBHCub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 21:48:05 -0500
-Date: Thu, 7 Feb 2008 18:48:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org
-Subject: Re: [GIT] Please pull 2 NFS client fixes
-Message-Id: <20080207184818.e40d5277.akpm@linux-foundation.org>
-In-Reply-To: <1202432841.18376.50.camel@heimdal.trondhjem.org>
-References: <1202432841.18376.50.camel@heimdal.trondhjem.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 21:50:31 -0500
+Message-ID: <47ABC375.5040103@davidnewall.com>
+Date: Fri, 08 Feb 2008 13:20:29 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: =?UTF-8?B?SGFucy1Kw7xyZ2VuIEtvY2g=?= <hjk@linutronix.de>
+CC: Christer Weinigel <christer@weinigel.se>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<47A764ED.8030605@weinigel.se>	<1202161091.15090.84.camel@violet>	<20080206213449.6614efea@weinigel.se>	<20080206215442.63c94cf3@dilbert.local>	<47AB056E.70802@davidnewall.com>	<20080207150612.21ba60df@dilbert.local>	<47AB163C.5070107@davidnewall.com>	<20080207171322.40eb7c95@dilbert.local>	<47AB36D2.5050602@davidnewall.com> <20080207184939.17030887@dilbert.local>
+In-Reply-To: <20080207184939.17030887@dilbert.local>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 20:07:21 -0500 Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+Hans-Jürgen Koch wrote:
+> The license says that derivative work has to be GPL. Naturally, every
+> sensible and practically usable license has gray areas. We know that
+> and we live with that. But if there's room for interpretation, it's
+> perfectly OK and helpful, if the copyright holder states what his
+> interpretation is. If you use an EXPORT_SYMBOL_GPL symbol in non-GPL
+> code, you know that the owner of the work doesn't agree with you
+> license-wise.
 
-> commit 5d47a35600270e7115061cb1320ee60ae9bcb6b8
-> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:   Thu Feb 7 17:24:07 2008 -0500
-> 
->     NFS: Fix a potential file corruption issue when writing
->     
->     If the inode is flagged as having an invalid mapping, then we can't rely on
->     the PageUptodate() flag. Ensure that we don't use the "anti-fragmentation"
->     write optimisation in nfs_updatepage(), since that will cause NFS to write
->     out areas of the page that are no longer guaranteed to be up to date.
->     
->     A potential corruption could occur in the following scenario:
->     
->     client 1			client 2
->     ===============			===============
->     				fd=open("f",O_CREAT|O_WRONLY,0644);
->     				write(fd,"fubar\n",6);	// cache last page
->     				close(fd);
->     fd=open("f",O_WRONLY|O_APPEND);
->     write(fd,"foo\n",4);
->     close(fd);
->     
->     				fd=open("f",O_WRONLY|O_APPEND);
->     				write(fd,"bar\n",4);
->     				close(fd);
->     -----
->     The bug may lead to the file "f" reading 'fubar\n\0\0\0\nbar\n' because
->     client 2 does not update the cached page after re-opening the file for
->     write. Instead it keeps it marked as PageUptodate() until someone calls
->     invaldate_inode_pages2() (typically by calling read()).
+How can an author form the opinion that another work is derivative, when
+it hasn't even necessarily been written yet?
 
-Is this one worth feeding back into 2.6.24.x?  (for various values of "4"?)
+EXPORT_SYMBOL_GPL is no statement of the author's beliefs.  It's an
+algorithm of restriction, and it affects original, non-derivative works.
+
+>> It requires software that is *distributed* as part of a GPL
+>> work to itself be GPL.  At time of distribution, a kernel module is
+>> neither using nor linked to the kernel.
+>>     
+>
+> Oh, come on! You cannot turn a derived work into an original work just
+> by distributing them seperately.
+
+That's not what I said.  From the start, I've made clear that I'm
+talking of original, non-derivative works.  You said that mere linking
+makes that non-derivative work derivative:
+
+> Using a symbol from a library means linking to it, and that creates a
+> derived work. Why should it be different when using kernel symbols?
+
+
+This is wrong for the reasons I stated.
