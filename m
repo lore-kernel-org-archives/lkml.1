@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYBHVSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYBHVSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbYBHVSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYBHVS0
+	id S1757308AbYBHVSs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbYBHVSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:18:26 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:42692 "EHLO
+	Fri, 8 Feb 2008 16:18:38 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42694 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbYBHVSZ (ORCPT
+	with ESMTP id S1755508AbYBHVSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:18:25 -0500
-Message-ID: <47ACC718.5060508@zytor.com>
-Date: Fri, 08 Feb 2008 13:18:16 -0800
+	Fri, 8 Feb 2008 16:18:37 -0500
+Message-ID: <47ACC6F2.8050601@zytor.com>
+Date: Fri, 08 Feb 2008 13:17:38 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-References: <20080205190600.GB11613@elf.ucw.cz> <47AB975C.1010902@zytor.com> <20080208070419.GA4544@ucw.cz> <200802081723.16354.rjw@sisk.pl> <20080208210004.GA12923@elf.ucw.cz> <47ACC381.9070601@zytor.com> <20080208210905.GB12923@elf.ucw.cz>
-In-Reply-To: <20080208210905.GB12923@elf.ucw.cz>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/9] x86: change most X86_32 pt_regs members to unsigned
+ long
+References: <1202501396.12966.20.camel@brick> <20080208211344.GB15571@martell.zuzino.mipt.ru>
+In-Reply-To: <20080208211344.GB15571@martell.zuzino.mipt.ru>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+Alexey Dobriyan wrote:
+> Why?! You don't have even minimal chances to unify pt_regs for i386 and
+> x86_64.
 
-> 
-> Indirect call from where?
-> 
-> BIOS jumps to address you provide.
-> 
->> Where is this code?
-> 
-> arch/x86/kernel/acpi/realmode/wakeup.S
-> 
-> BIOS jumps to wakeup_code. With CS=something, IP=0. If wakeup code is
-> at other address than zero, I'll not be able to easily address data
-> below it.
-> 								Pavel
-
-Ah, okay.  Yes, the canonical way to deal with that is to put a short 
-jump at the top.
+The structure itself, no.  Some of the users may very well be candidates 
+for unification, however.
 
 	-hpa
