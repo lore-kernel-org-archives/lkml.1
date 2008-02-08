@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbYBHRPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965146AbYBHRP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761338AbYBHRPX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:15:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762023AbYBHQ4o
+	id S965146AbYBHRP4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934105AbYBHQzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:56:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35020 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:55:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52843 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933274AbYBHQ43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:56:29 -0500
+	id S933569AbYBHQys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:54:48 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 33/37] NFS: nfs_readpage_async() needs to be accessible as a
-	fallback for local caching
+Subject: [PATCH 29/37] NFS: Invalidate FsCache page flags when cache removed
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:54:54 +0000
-Message-ID: <20080208165453.15902.40730.stgit@warthog.procyon.org.uk>
+Date: Fri, 08 Feb 2008 16:54:32 +0000
+Message-ID: <20080208165432.15902.55962.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,44 +31,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nfs_readpage_async() needs to be non-static so that it can be used as a
-fallback for the local on-disk caching should an EIO crop up when reading the
-cache.
+Invalidate the FsCache page flags on the pages belonging to an inode when the
+cache backing that NFS inode is removed.
+
+This allows a live cache to be withdrawn.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/read.c          |    4 ++--
- include/linux/nfs_fs.h |    2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ fs/nfs/fscache-index.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 40 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 3d7d963..725a5a2 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -114,8 +114,8 @@ static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
- 	}
+diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
+index c3c63fa..eec8e7e 100644
+--- a/fs/nfs/fscache-index.c
++++ b/fs/nfs/fscache-index.c
+@@ -246,6 +246,45 @@ static enum fscache_checkaux nfs_cache_inode_check_aux(void *cookie_netfs_data,
  }
  
--static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
--		struct page *page)
-+int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
-+		       struct page *page)
- {
- 	LIST_HEAD(one_request);
- 	struct nfs_page	*new;
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index d9adb53..d1d545e 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -505,6 +505,8 @@ extern int  nfs_readpages(struct file *, struct address_space *,
- 		struct list_head *, unsigned);
- extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
- extern void nfs_readdata_release(void *data);
-+extern int  nfs_readpage_async(struct nfs_open_context *, struct inode *,
-+			       struct page *);
- 
  /*
-  * Allocate nfs_read_data structures
++ * Indication from FS-Cache that the cookie is no longer cached
++ * - This function is called when the backing store currently caching a cookie
++ *   is removed
++ * - The netfs should use this to clean up any markers indicating cached pages
++ * - This is mandatory for any object that may have data
++ */
++static void nfs_cache_inode_now_uncached(void *cookie_netfs_data)
++{
++	struct nfs_inode *nfsi = cookie_netfs_data;
++	struct pagevec pvec;
++	pgoff_t first;
++	int loop, nr_pages;
++
++	pagevec_init(&pvec, 0);
++	first = 0;
++
++	dprintk("NFS: nfs_inode_now_uncached: nfs_inode 0x%p\n", nfsi);
++
++	for (;;) {
++		/* grab a bunch of pages to unmark */
++		nr_pages = pagevec_lookup(&pvec,
++					  nfsi->vfs_inode.i_mapping,
++					  first,
++					  PAGEVEC_SIZE - pagevec_count(&pvec));
++		if (!nr_pages)
++			break;
++
++		for (loop = 0; loop < nr_pages; loop++)
++			ClearPageFsCache(pvec.pages[loop]);
++
++		first = pvec.pages[nr_pages - 1]->index + 1;
++
++		pvec.nr = nr_pages;
++		pagevec_release(&pvec);
++		cond_resched();
++	}
++}
++
++/*
+  * Define the inode object for FS-Cache.  This is used to describe an inode
+  * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
+  * an inode.
+@@ -261,4 +300,5 @@ const struct fscache_cookie_def nfs_cache_inode_object_def = {
+ 	.get_attr	= nfs_cache_inode_get_attr,
+ 	.get_aux	= nfs_cache_inode_get_aux,
+ 	.check_aux	= nfs_cache_inode_check_aux,
++	.now_uncached	= nfs_cache_inode_now_uncached,
+ };
 
