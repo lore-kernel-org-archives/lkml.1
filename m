@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751136AbYBHW1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbYBHW1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751136AbYBHW1D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:27:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYBHW0r
+	id S1759530AbYBHW1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbYBHW0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:26:47 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:54764 "EHLO e1.ny.us.ibm.com"
+	Fri, 8 Feb 2008 17:26:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58985 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752703AbYBHW0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:26:46 -0500
-Subject: [RFC][PATCH 00/30] Read-only bind mounts (-mm resend)
-To: linux-kernel@vger.kernel.org
-Cc: hch@lst.de, viro@ZenIV.linux.org.uk, viro@ftp.linux.org.uk,
-       miklos@szeredi.hu, Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 08 Feb 2008 14:26:41 -0800
-Message-Id: <20080208222641.6024A7CC@kernel>
+	id S1755749AbYBHW0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:26:50 -0500
+Date: Fri, 8 Feb 2008 23:26:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix sparse warning from include/linux/mmzone.h
+Message-ID: <20080208222637.GA2989@elte.hu>
+References: <1202417543.31361.5.camel@brick> <20080208135154.ccdac0c1.akpm@linux-foundation.org> <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is against current Linus git
-(a4ffc0a0b240a29cbe489f6db9dae112a49ef1c1).
 
-This rolls up all the -mm bugfixes that were accumulated, and
-addresses some new review comments from Al.  Also contains some
-reworking from hch and a patch from Jeff Dike.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Just posting here to let everyone have a sniff before we resend
-it back to -mm.
+> Heh, yeah. That's a very odd way to write it.
+> 
+> It would probably make more sense to just write it as something like
+> 
+> 	struct zone *base = zone->zone_pgdat->node_zones;
+> 
+> 	if (zone == base + ZONE_HIGHMEM ||
+> 		(zone == base + ZONE_MOVABLE && zone_movable_is_highmem());
+> 
+> instead.
 
----
+missing closing parenthesis ;-)
 
-Why do we need r/o bind mounts?
+btw., doesnt this look even nicer?:
 
-This feature allows a read-only view into a read-write filesystem.
-In the process of doing that, it also provides infrastructure for
-keeping track of the number of writers to any given mount.
+     if (zone == base + ZONE_HIGHMEM ||
+        (zone == base + ZONE_MOVABLE && zone_movable_is_highmem()));
 
-This has a number of uses.  It allows chroots to have parts of
-filesystems writable.  It will be useful for containers in the future
-because users may have root inside a container, but should not
-be allowed to write to somefilesystems.  This also replaces 
-patches that vserver has had out of the tree for several years.
+[ i guess it must be Friday... ;-) ]
 
-It allows security enhancement by making sure that parts of
-your filesystem are read-only (such as when you don't trust your
-FTP server), when you don't want to have entire new filesystems
-mounted, or when you want atime selectively updated.
-I've been using this script:
-
-	http://sr71.net/~dave/linux/robind-test.sh
-
-to test that the feature is working as desired.  It takes a
-directory and makes a regular bind and a r/o bind mount of it.
-It then performs some normal filesystem operations on the
-three directories, including ones that are expected to fail,
-like creating a file on the r/o mount.
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+	Ingo
