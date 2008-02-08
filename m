@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763748AbYBHUWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763633AbYBHUYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763748AbYBHUWx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762082AbYBHUWP
+	id S1763633AbYBHUYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761366AbYBHUYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:22:15 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40134 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761606AbYBHUWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:22:13 -0500
-Date: Fri, 8 Feb 2008 21:22:19 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Chuck Lever <chuck.lever@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: [PATCH 07/11] NFSD: Use "depends on" for PROC_FS dependency
-Message-ID: <20080208202219.GE31984@uranus.ravnborg.org>
-References: <20080208175215.16261.39243.stgit@manray.1015granger.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080208175215.16261.39243.stgit@manray.1015granger.net>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Feb 2008 15:24:08 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:39672 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761473AbYBHUYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 15:24:06 -0500
+To: zippel@linux-m68k.org
+CC: miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfrench@us.ibm.com, lachlan@sgi.com, jsipek@cs.sunysb.edu,
+       rmk@arm.linux.org.uk, dhowells@redhat.com, raven@themaw.net,
+       rathamahata@php4.ru, kkeil@suse.de, hpa@zytor.com, tytso@mit.edu,
+       hirofumi@mail.parknet.co.jp, jdike@addtoit.com,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
+       shaggy@austin.ibm.com, vandrove@vc.cvut.cz, Trond.Myklebust@netapp.com,
+       jeffm@suse.com, paulus@samba.org, hugh@veritas.com, gorcunov@gmail.com,
+       gregkh@suse.de
+In-reply-to: <Pine.LNX.4.64.0802081849430.3378@scrub.home> (message from Roman
+	Zippel on Fri, 8 Feb 2008 20:20:39 +0100 (CET))
+Subject: Re: [patch 01/26] mount options: add documentation
+References: <20080124193341.166753833@szeredi.hu> <20080124193416.379218079@szeredi.hu>
+ <200801300254.06363.zippel@linux-m68k.org> <E1JK8wJ-0007aA-Tt@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0802081849430.3378@scrub.home>
+Message-Id: <E1JNZky-0006lq-S7@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 08 Feb 2008 21:23:32 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 12:52:15PM -0500, Chuck Lever wrote:
-> Recently a reverse dependency was added to fs/Kconfig to ensure that
-> PROC_FS was enabled if NFSD_V4 was enabled.
+> > > Could also please explain why you want to go via user
+> > > mounts. Other OS use a daemon for that, which e.g. can maintain
+> > > access controls. How do you want to manage this?
+> > 
+> > The unprivileged mounts patches do contain a simple form of access
+> > control.  I don't think anything more is needed, but of course, having
+> > unprivileged mounts in the kernel does not prevent the use of a more
+> > sophisticated access control daemon in userspace, if that becomes
+> > necessary.
 > 
-> There is a guideline in Documentation/kbuild/kconfig-language.txt that
-> states "In general use select only for non-visible symbols (no prompts
-> anywhere) and for symbols with no dependencies."
-> 
-> A quick grep around other Kconfig files reveals that no entry currently
-> uses "select PROC_FS" -- every one uses "depends on".  Thus CONFIG_NFSD_V4
-> should use "depends on PROC_FS" as well.
-> 
-> For SUNRPC_GSS, it's a little more complex.  Other entries can "select"
-> SUNRPC_GSS, as it is non-visible.  However, the guideline suggests an
-> entry can't "select" it if it has a dependency (such as PROC_FS).
-> So, we add forward dependencies on PROC_FS to RPCSEC_GSS_FOO instead.
-> 
-> XXX: Both CONFIG_NFSV4 and CONFIG_NFSD_V4 select RPCSEC_GSS_KRB5, which is
-> visible, which kconfig-language.txt also frowns upon.  The intent was to
-> enable at least one GSS mechanism if V4 was enabled.  Perhaps we should
-> make SUNRPC_GSS visible, and make the NFSv4 options visible only if
-> SUNRPC_GSS is enabled.
+> A "I don't think anything more is needed" lets go off all sorts of warning 
+> lights. Most things start out simple, so IMO it's very worth it to check 
+> where it might go to to know the limits beforehand. The main question here 
+> is why should a kernel based solution be preferable over a daemon based 
+> solution?
 
-This is better than what we had - so OK.
-We can revisit when kconfig gets more features added to support
-such configurations.
+A daemon based solution would work for the "normal" case, where we
+have a single mount namespace and a single /etc/mtab file, and we hope
+it doesn't get too much out of sync with what is actually in the
+kernel (on remount the mount options do get out of sync, but hey, we
+seem to be able to live with that).
 
-	Sam
+However, once you start using multiple namespaces, the daemon based
+solution quickly becomes unusable, because you would need a separate
+daemon for each namespace, and it would have to somehow keep track of
+mount propagations in userspace (which is basically impossible), etc,
+etc...
+
+Does that answer your question?
+
+Thanks,
+Miklos
