@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbYBHQ7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933613AbYBHRA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934510AbYBHQ7l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933618AbYBHQxv
+	id S933613AbYBHRA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933649AbYBHQxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:53:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52692 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:53:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52687 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933524AbYBHQx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:53:27 -0500
+	id S933502AbYBHQx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:53:26 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 04/37] KEYS: Add keyctl function to get a security label
+Subject: [PATCH 10/37] Security: Make NFSD work with detached security
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:52:19 +0000
-Message-ID: <20080208165218.15902.7388.stgit@warthog.procyon.org.uk>
+Date: Fri, 08 Feb 2008 16:52:51 +0000
+Message-ID: <20080208165251.15902.62383.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -31,322 +31,285 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a keyctl() function to get the security label of a key.
+Make NFSD work with detached security, using the patches that excise the
+security information from task_struct to struct task_security as a base.
 
-The following is added to Documentation/keys.txt:
+Each time NFSD wants a new security descriptor (to do NFS4 recovery or just to
+do NFS operations), a task_security record is derived from NFSD's *objective*
+security, modified and then applied as the *subjective* security.  This means
+(a) the changes are not visible to anyone looking at NFSD through /proc, (b)
+there is no leakage between two consecutive ops with different security
+configurations.
 
- (*) Get the LSM security context attached to a key.
+Consideration should probably be given to caching the task_security record on
+the basis that there'll probably be several ops that will want to use any
+particular security configuration.
 
-	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
-		    size_t buflen)
+Furthermore, nfs4recover.c perhaps ought to set an appropriate LSM context on
+the record pointed to by rec_security so that the disk is accessed
+appropriately (see set_security_override[_from_ctx]()).
 
-     This function returns a string that represents the LSM security context
-     attached to a key in the buffer provided.
-
-     Unless there's an error, it always returns the amount of data it could
-     produce, even if that's too big for the buffer, but it won't copy more
-     than requested to userspace. If the buffer pointer is NULL then no copy
-     will take place.
-
-     A NUL character is included at the end of the string if the buffer is
-     sufficiently big.  This is included in the returned count.  If no LSM is
-     in force then an empty string will be returned.
-
-     A process must have view permission on the key for this function to be
-     successful.
+NOTE!  This patch must be rolled in to one of the earlier security patches to
+make it compile fully.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 ---
 
- Documentation/keys.txt   |   21 +++++++++++++++
- include/linux/keyctl.h   |    1 +
- include/linux/security.h |   20 +++++++++++++-
- security/dummy.c         |    8 ++++++
- security/keys/compat.c   |    3 ++
- security/keys/keyctl.c   |   66 ++++++++++++++++++++++++++++++++++++++++++++++
- security/security.c      |    5 +++
- security/selinux/hooks.c |   21 +++++++++++++--
- 8 files changed, 141 insertions(+), 4 deletions(-)
+ fs/nfsd/auth.c        |   37 +++++++++++++++++++---------
+ fs/nfsd/nfs4recover.c |   64 +++++++++++++++++++++++++++++++------------------
+ 2 files changed, 65 insertions(+), 36 deletions(-)
 
 
-diff --git a/Documentation/keys.txt b/Documentation/keys.txt
-index b82d38d..be424b0 100644
---- a/Documentation/keys.txt
-+++ b/Documentation/keys.txt
-@@ -711,6 +711,27 @@ The keyctl syscall functions are:
-      The assumed authoritative key is inherited across fork and exec.
+diff --git a/fs/nfsd/auth.c b/fs/nfsd/auth.c
+index 5586157..ebdc562 100644
+--- a/fs/nfsd/auth.c
++++ b/fs/nfsd/auth.c
+@@ -6,6 +6,7 @@
  
+ #include <linux/types.h>
+ #include <linux/sched.h>
++#include <linux/cred.h>
+ #include <linux/sunrpc/svc.h>
+ #include <linux/sunrpc/svcauth.h>
+ #include <linux/nfsd/nfsd.h>
+@@ -26,12 +27,17 @@ int nfsexp_flags(struct svc_rqst *rqstp, struct svc_export *exp)
  
-+ (*) Get the LSM security context attached to a key.
-+
-+	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
-+		    size_t buflen)
-+
-+     This function returns a string that represents the LSM security context
-+     attached to a key in the buffer provided.
-+
-+     Unless there's an error, it always returns the amount of data it could
-+     produce, even if that's too big for the buffer, but it won't copy more
-+     than requested to userspace. If the buffer pointer is NULL then no copy
-+     will take place.
-+
-+     A NUL character is included at the end of the string if the buffer is
-+     sufficiently big.  This is included in the returned count.  If no LSM is
-+     in force then an empty string will be returned.
-+
-+     A process must have view permission on the key for this function to be
-+     successful.
-+
-+
- ===============
- KERNEL SERVICES
- ===============
-diff --git a/include/linux/keyctl.h b/include/linux/keyctl.h
-index 3365945..656ee6b 100644
---- a/include/linux/keyctl.h
-+++ b/include/linux/keyctl.h
-@@ -49,5 +49,6 @@
- #define KEYCTL_SET_REQKEY_KEYRING	14	/* set default request-key keyring */
- #define KEYCTL_SET_TIMEOUT		15	/* set key timeout */
- #define KEYCTL_ASSUME_AUTHORITY		16	/* assume request_key() authorisation */
-+#define KEYCTL_GET_SECURITY		17	/* get key security label */
- 
- #endif /*  _LINUX_KEYCTL_H */
-diff --git a/include/linux/security.h b/include/linux/security.h
-index fe52cde..a33fd03 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -970,6 +970,17 @@ struct request_sock;
-  *	@perm describes the combination of permissions required of this key.
-  *	Return 1 if permission granted, 0 if permission denied and -ve it the
-  *      normal permissions model should be effected.
-+ * @key_getsecurity:
-+ *	Get a textual representation of the security context attached to a key
-+ *	for the purposes of honouring KEYCTL_GETSECURITY.  This function
-+ *	allocates the storage for the NUL-terminated string and the caller
-+ *	should free it.
-+ *	@key points to the key to be queried.
-+ *	@_buffer points to a pointer that should be set to point to the
-+ *	 resulting string (if no label or an error occurs).
-+ *	Return the length of the string (including terminating NUL) or -ve if
-+ *      an error.
-+ *	May also return 0 (and a NULL buffer pointer) if there is no label.
-  *
-  * Security hooks affecting all System V IPC operations.
-  *
-@@ -1459,7 +1470,7 @@ struct security_operations {
- 	int (*key_permission)(key_ref_t key_ref,
- 			      struct task_struct *context,
- 			      key_perm_t perm);
--
-+	int (*key_getsecurity)(struct key *key, char **_buffer);
- #endif	/* CONFIG_KEYS */
- 
- };
-@@ -2600,6 +2611,7 @@ int security_key_alloc(struct key *key, struct task_struct *tsk, unsigned long f
- void security_key_free(struct key *key);
- int security_key_permission(key_ref_t key_ref,
- 			    struct task_struct *context, key_perm_t perm);
-+int security_key_getsecurity(struct key *key, char **_buffer);
- 
- #else
- 
-@@ -2621,6 +2633,12 @@ static inline int security_key_permission(key_ref_t key_ref,
- 	return 0;
- }
- 
-+static inline int security_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	*_buffer = NULL;
-+	return 0;
-+}
-+
- #endif
- #endif /* CONFIG_KEYS */
- 
-diff --git a/security/dummy.c b/security/dummy.c
-index 649326b..6a0056b 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -977,6 +977,13 @@ static inline int dummy_key_permission(key_ref_t key_ref,
+ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
  {
- 	return 0;
- }
-+
-+static int dummy_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	*_buffer = NULL;
-+	return 0;
-+}
-+
- #endif /* CONFIG_KEYS */
+-	struct task_security *act_as = current->act_as;
++	struct task_security *sec, *old;
+ 	struct svc_cred	cred = rqstp->rq_cred;
+ 	int i;
+ 	int flags = nfsexp_flags(rqstp, exp);
+ 	int ret;
  
- struct security_operations dummy_security_ops;
-@@ -1164,6 +1171,7 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, key_alloc);
- 	set_to_dummy_if_null(ops, key_free);
- 	set_to_dummy_if_null(ops, key_permission);
-+	set_to_dummy_if_null(ops, key_getsecurity);
- #endif	/* CONFIG_KEYS */
- 
- }
-diff --git a/security/keys/compat.c b/security/keys/compat.c
-index e10ec99..c766c68 100644
---- a/security/keys/compat.c
-+++ b/security/keys/compat.c
-@@ -79,6 +79,9 @@ asmlinkage long compat_sys_keyctl(u32 option,
- 	case KEYCTL_ASSUME_AUTHORITY:
- 		return keyctl_assume_authority(arg2);
- 
-+	case KEYCTL_GET_SECURITY:
-+		return keyctl_get_security(arg2, compat_ptr(arg3), arg4);
++	/* derive the new security record from nfsd's objective security */
++	sec = get_kernel_security(current);
++	if (!sec)
++		return -ENOMEM;
 +
- 	default:
- 		return -EOPNOTSUPP;
+ 	if (flags & NFSEXP_ALLSQUASH) {
+ 		cred.cr_uid = exp->ex_anon_uid;
+ 		cred.cr_gid = exp->ex_anon_gid;
+@@ -55,26 +61,33 @@ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
+ 		get_group_info(cred.cr_group_info);
+ 
+ 	if (cred.cr_uid != (uid_t) -1)
+-		act_as->fsuid = cred.cr_uid;
++		sec->fsuid = cred.cr_uid;
+ 	else
+-		act_as->fsuid = exp->ex_anon_uid;
++		sec->fsuid = exp->ex_anon_uid;
+ 	if (cred.cr_gid != (gid_t) -1)
+-		act_as->fsgid = cred.cr_gid;
++		sec->fsgid = cred.cr_gid;
+ 	else
+-		act_as->fsgid = exp->ex_anon_gid;
++		sec->fsgid = exp->ex_anon_gid;
+ 
+-	if (!cred.cr_group_info)
++	if (!cred.cr_group_info) {
++		put_task_security(sec);
+ 		return -ENOMEM;
+-	ret = set_groups(act_as, cred.cr_group_info);
++	}
++	ret = set_groups(sec, cred.cr_group_info);
+ 	put_group_info(cred.cr_group_info);
+ 	if ((cred.cr_uid)) {
+-		act_as->cap_effective =
+-			cap_drop_nfsd_set(act_as->cap_effective);
++		sec->cap_effective =
++			cap_drop_nfsd_set(sec->cap_effective);
+ 	} else {
+-		act_as->cap_effective =
+-			cap_raise_nfsd_set(act_as->cap_effective,
+-					   act_as->cap_permitted);
++		sec->cap_effective =
++			cap_raise_nfsd_set(sec->cap_effective,
++					   sec->cap_permitted);
  	}
-diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-index 1698bf9..56e963b 100644
---- a/security/keys/keyctl.c
-+++ b/security/keys/keyctl.c
-@@ -20,6 +20,7 @@
- #include <linux/string.h>
- #include <linux/err.h>
- #include <linux/vmalloc.h>
-+#include <linux/security.h>
- #include <asm/uaccess.h>
- #include "internal.h"
++
++	/* set the new security as nfsd's subjective security */
++	old = current->act_as;
++	current->act_as = sec;
++	put_task_security(old);
+ 	return ret;
+ }
  
-@@ -1080,6 +1081,66 @@ error:
+diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+index bf0217a..ae91262 100644
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -46,27 +46,37 @@
+ #include <linux/scatterlist.h>
+ #include <linux/crypto.h>
+ #include <linux/sched.h>
++#include <linux/cred.h>
  
- } /* end keyctl_assume_authority() */
+ #define NFSDDBG_FACILITY                NFSDDBG_PROC
+ 
+ /* Globals */
+ static struct nameidata rec_dir;
+ static int rec_dir_init = 0;
++static struct task_security *rec_security;
  
 +/*
-+ * get the security label of a key
-+ * - the key must grant us view permission
-+ * - if there's a buffer, we place up to buflen bytes of data into it
-+ * - unless there's an error, we return the amount of information available,
-+ *   irrespective of how much we may have copied (including the terminal NUL)
-+ * - implements keyctl(KEYCTL_GET_SECURITY)
++ * switch the special recovery access security in on the current task's
++ * subjective security
 + */
-+long keyctl_get_security(key_serial_t keyid,
-+			 char __user *buffer,
-+			 size_t buflen)
-+{
-+	struct key *key, *instkey;
-+	key_ref_t key_ref;
-+	char *context;
-+	long ret;
-+
-+	key_ref = lookup_user_key(NULL, keyid, 0, 1, KEY_VIEW);
-+	if (IS_ERR(key_ref)) {
-+		if (PTR_ERR(key_ref) != -EACCES)
-+			return PTR_ERR(key_ref);
-+
-+		/* viewing a key under construction is also permitted if we
-+		 * have the authorisation token handy */
-+		instkey = key_get_instantiation_authkey(keyid);
-+		if (IS_ERR(instkey))
-+			return PTR_ERR(key_ref);
-+		key_put(instkey);
-+
-+		key_ref = lookup_user_key(NULL, keyid, 0, 1, 0);
-+		if (IS_ERR(key_ref))
-+			return PTR_ERR(key_ref);
-+	}
-+
-+	key = key_ref_to_ptr(key_ref);
-+	ret = security_key_getsecurity(key, &context);
-+	if (ret == 0) {
-+		/* if no information was returned, give userspace an empty
-+		 * string */
-+		ret = 1;
-+		if (buffer && buflen > 0 &&
-+		    copy_to_user(buffer, "", 1) != 0)
-+			ret = -EFAULT;
-+	} else if (ret > 0) {
-+		/* return as much data as there's room for */
-+		if (buffer && buflen > 0) {
-+			if (buflen > ret)
-+				buflen = ret;
-+
-+			if (copy_to_user(buffer, context, buflen) != 0)
-+				ret = -EFAULT;
-+		}
-+
-+		kfree(context);
-+	}
-+
-+	key_ref_put(key_ref);
-+	return ret;
-+}
-+
- /*****************************************************************************/
- /*
-  * the key control system call
-@@ -1160,6 +1221,11 @@ asmlinkage long sys_keyctl(int option, unsigned long arg2, unsigned long arg3,
- 	case KEYCTL_ASSUME_AUTHORITY:
- 		return keyctl_assume_authority((key_serial_t) arg2);
+ static void
+-nfs4_save_user(uid_t *saveuid, gid_t *savegid)
++nfs4_begin_secure(struct task_security **saved_sec)
+ {
+-	*saveuid = current->act_as->fsuid;
+-	*savegid = current->act_as->fsgid;
+-	current->act_as->fsuid = 0;
+-	current->act_as->fsgid = 0;
++	*saved_sec = current->act_as;
++	current->act_as = get_task_security(rec_security);
+ }
  
-+	case KEYCTL_GET_SECURITY:
-+		return keyctl_get_security((key_serial_t) arg2,
-+					   (char *) arg3,
-+					   (size_t) arg4);
++/*
++ * return the current task's subjective security to its former glory
++ */
+ static void
+-nfs4_reset_user(uid_t saveuid, gid_t savegid)
++nfs4_end_secure(struct task_security *saved_sec)
+ {
+-	current->act_as->fsuid = saveuid;
+-	current->act_as->fsgid = savegid;
++	struct task_security *discard;
 +
- 	default:
- 		return -EOPNOTSUPP;
++	discard = current->act_as;
++	current->act_as = saved_sec;
++	put_task_security(discard);
+ }
+ 
+ static void
+@@ -128,10 +138,9 @@ nfsd4_sync_rec_dir(void)
+ int
+ nfsd4_create_clid_dir(struct nfs4_client *clp)
+ {
++	struct task_security *saved_sec;
+ 	char *dname = clp->cl_recdir;
+ 	struct dentry *dentry;
+-	uid_t uid;
+-	gid_t gid;
+ 	int status;
+ 
+ 	dprintk("NFSD: nfsd4_create_clid_dir for \"%s\"\n", dname);
+@@ -139,7 +148,7 @@ nfsd4_create_clid_dir(struct nfs4_client *clp)
+ 	if (!rec_dir_init || clp->cl_firststate)
+ 		return 0;
+ 
+-	nfs4_save_user(&uid, &gid);
++	nfs4_begin_secure(&saved_sec);
+ 
+ 	/* lock the parent */
+ 	mutex_lock(&rec_dir.dentry->d_inode->i_mutex);
+@@ -163,7 +172,7 @@ out_unlock:
+ 		clp->cl_firststate = 1;
+ 		nfsd4_sync_rec_dir();
  	}
-diff --git a/security/security.c b/security/security.c
-index d15e56c..3e75b90 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -1102,4 +1102,9 @@ int security_key_permission(key_ref_t key_ref,
- 	return security_ops->key_permission(key_ref, context, perm);
+-	nfs4_reset_user(uid, gid);
++	nfs4_end_secure(saved_sec);
+ 	dprintk("NFSD: nfsd4_create_clid_dir returns %d\n", status);
+ 	return status;
+ }
+@@ -206,20 +215,19 @@ nfsd4_build_dentrylist(void *arg, const char *name, int namlen,
+ static int
+ nfsd4_list_rec_dir(struct dentry *dir, recdir_func *f)
+ {
++	struct task_security *saved_sec;
+ 	struct file *filp;
+ 	struct dentry_list_arg dla = {
+ 		.parent = dir,
+ 	};
+ 	struct list_head *dentries = &dla.dentries;
+ 	struct dentry_list *child;
+-	uid_t uid;
+-	gid_t gid;
+ 	int status;
+ 
+ 	if (!rec_dir_init)
+ 		return 0;
+ 
+-	nfs4_save_user(&uid, &gid);
++	nfs4_begin_secure(&saved_sec);
+ 
+ 	filp = dentry_open(dget(dir), mntget(rec_dir.mnt), O_RDONLY);
+ 	status = PTR_ERR(filp);
+@@ -244,7 +252,7 @@ out:
+ 		dput(child->dentry);
+ 		kfree(child);
+ 	}
+-	nfs4_reset_user(uid, gid);
++	nfs4_end_secure(saved_sec);
+ 	return status;
  }
  
-+int security_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	return security_ops->key_getsecurity(key, _buffer);
-+}
+@@ -306,17 +314,16 @@ out:
+ void
+ nfsd4_remove_clid_dir(struct nfs4_client *clp)
+ {
+-	uid_t uid;
+-	gid_t gid;
++	struct task_security *saved_sec;
+ 	int status;
+ 
+ 	if (!rec_dir_init || !clp->cl_firststate)
+ 		return;
+ 
+ 	clp->cl_firststate = 0;
+-	nfs4_save_user(&uid, &gid);
++	nfs4_begin_secure(&saved_sec);
+ 	status = nfsd4_unlink_clid_dir(clp->cl_recdir, HEXDIR_LEN-1);
+-	nfs4_reset_user(uid, gid);
++	nfs4_end_secure(saved_sec);
+ 	if (status == 0)
+ 		nfsd4_sync_rec_dir();
+ 	if (status)
+@@ -387,8 +394,7 @@ nfsd4_recdir_load(void) {
+ void
+ nfsd4_init_recdir(char *rec_dirname)
+ {
+-	uid_t			uid = 0;
+-	gid_t			gid = 0;
++	struct task_security	*saved_sec;
+ 	int 			status;
+ 
+ 	printk("NFSD: Using %s as the NFSv4 state recovery directory\n",
+@@ -396,7 +402,15 @@ nfsd4_init_recdir(char *rec_dirname)
+ 
+ 	BUG_ON(rec_dir_init);
+ 
+-	nfs4_save_user(&uid, &gid);
++	/* derive the security record from this task's objective security */
++	rec_security = get_kernel_security(current);
++	if (!rec_security) {
++		printk("NFSD:"
++		       " unable to allocate recovery directory security\n");
++		return;
++	}
 +
- #endif	/* CONFIG_KEYS */
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index e5ed075..face4b4 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -5203,6 +5203,20 @@ static int selinux_key_permission(key_ref_t key_ref,
- 			    SECCLASS_KEY, perm, NULL);
++	nfs4_begin_secure(&saved_sec);
+ 
+ 	status = path_lookup(rec_dirname, LOOKUP_FOLLOW | LOOKUP_DIRECTORY,
+ 			&rec_dir);
+@@ -406,7 +420,8 @@ nfsd4_init_recdir(char *rec_dirname)
+ 
+ 	if (!status)
+ 		rec_dir_init = 1;
+-	nfs4_reset_user(uid, gid);
++
++	nfs4_end_secure(saved_sec);
  }
  
-+static int selinux_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	struct key_security_struct *ksec = key->security;
-+	char *context = NULL;
-+	unsigned len;
-+	int rc;
-+
-+	rc = security_sid_to_context(ksec->sid, &context, &len);
-+	if (!rc)
-+		rc = len;
-+	*_buffer = context;
-+	return rc;
-+}
-+
- #endif
- 
- static struct security_operations selinux_ops = {
-@@ -5382,9 +5396,10 @@ static struct security_operations selinux_ops = {
- #endif
- 
- #ifdef CONFIG_KEYS
--	.key_alloc =                    selinux_key_alloc,
--	.key_free =                     selinux_key_free,
--	.key_permission =               selinux_key_permission,
-+	.key_alloc =			selinux_key_alloc,
-+	.key_free =			selinux_key_free,
-+	.key_permission =		selinux_key_permission,
-+	.key_getsecurity =		selinux_key_getsecurity,
- #endif
- };
- 
+ void
+@@ -416,4 +431,5 @@ nfsd4_shutdown_recdir(void)
+ 		return;
+ 	rec_dir_init = 0;
+ 	path_release(&rec_dir);
++	put_task_security(rec_security);
+ }
 
