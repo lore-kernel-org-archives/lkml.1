@@ -1,113 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbYBHBef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935629AbYBHBfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932638AbYBHBef (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 20:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760039AbYBHBe0
+	id S935629AbYBHBfU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 20:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761074AbYBHBfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 20:34:26 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:63394 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761476AbYBHBeZ (ORCPT
+	Thu, 7 Feb 2008 20:35:04 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47565 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760039AbYBHBfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 20:34:25 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CANBAq0dMQWYq/2dsb2JhbACBWapE
-Date: Thu, 7 Feb 2008 20:34:23 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Subject: Re: frv cmpxchg_local compile error
-Message-ID: <20080208013422.GA22122@Krystal>
-References: <20080207231350.GG7198@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
+	Thu, 7 Feb 2008 20:35:01 -0500
+Date: Thu, 7 Feb 2008 17:32:54 -0800
+From: Greg KH <greg@kroah.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
+       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/45] 2.6.24-stable review
+Message-ID: <20080208013254.GA3782@kroah.com>
+References: <20080207204549.GA16389@suse.de> <47AB994A.1010802@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080207231350.GG7198@cs181133002.pp.htv.fi>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:29:14 up 96 days,  6:34,  3 users,  load average: 1.89, 2.09,
-	1.54
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <47AB994A.1010802@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@kernel.org) wrote:
-> Commit 14e0cb3c60b89c4a2512852ffc18601c72314a0f broke frv compilation:
+On Thu, Feb 07, 2008 at 06:50:34PM -0500, Chuck Ebbert wrote:
+> On 02/07/2008 03:45 PM, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.24.1 release.
+> > There are 45 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
+> > 
+> > These patches are sent out with a number of different people on the Cc:
+> > line.  If you wish to be a reviewer, please email stable@kernel.org to
+> > add your name to the list.  If you want to be off the reviewer list,
+> > also email us.
+> > 
+> > Responses should be made by Friday, Feb 8 2008, 21:00:00 UTC@.
+> > Anything received after that time might be too late.
+> > 
+> > thanks,
+> > 
+> > the -stable release team
 > 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/frv/kernel/asm-offsets.s
-> In file included from include/asm/system.h:271,
->                  from include/asm/bitops.h:19,
->                  from include/linux/bitops.h:17,
->                  from include/linux/kernel.h:15,
->                  from include/linux/sched.h:52,
->                  from arch/frv/kernel/asm-offsets.c:7:
-> include/asm-generic/cmpxchg-local.h: In function '__cmpxchg_local_generic':
-> include/asm-generic/cmpxchg-local.h:23: error: implicit declaration of function 'typecheck'
+> Is there an -rc1 patch somewhere on kernel.org? (and also for 2.6.23?)
 
+Ugh, no, I didn't create one, sorry.  I'll get to that after dinner...
 
-Isn't typecheck() supposed to be defined in kernel.h which is included
-_everywhere_ ?
+thanks,
 
-Hrm, I see, dependency from kernel.h on bitops.h on asm/bitops.h on
-asm/system.h.
-
-
-
-> include/asm-generic/cmpxchg-local.h:23: error: expected expression before 'unsigned'
-> include/asm-generic/cmpxchg-local.h:23: error: expected expression before 'unsigned'
-> include/asm-generic/cmpxchg-local.h:44: error: expected expression before 'unsigned'
-> include/asm-generic/cmpxchg-local.h: In function '__cmpxchg64_local_generic':
-> include/asm-generic/cmpxchg-local.h:57: error: expected expression before 'unsigned'
-> include/asm-generic/cmpxchg-local.h:57: error: expected expression before 'unsigned'
-> include/asm-generic/cmpxchg-local.h:61: error: expected expression before 'unsigned'
-> In file included from include/asm/bitops.h:19,
->                  from include/linux/bitops.h:17,
->                  from include/linux/kernel.h:15,
->                  from include/linux/sched.h:52,
->                  from arch/frv/kernel/asm-offsets.c:7:
-> include/asm/system.h: In function '__cmpxchg_local':
-> include/asm/system.h:279: error: variable or field '__xg_orig' declared void
-> include/asm/system.h:279: error: variable or field '__xg_test' declared void
-> include/asm/system.h:279: error: variable or field '__xg_new' declared void
-> include/asm/system.h:279: error: void value not ignored as it ought to be
-> make[1]: *** [arch/frv/kernel/asm-offsets.s] Error 1
-> 
-> <--  snip  -->
-> 
-> 
-> An architecture specific patch that breaks the one architecture it 
-> touches at the first file being compiled is even for kernel standards 
-> unusually bad...
-> 
-
-I did this cmpxchg_local patchset to support Christoph Lameter's slub
-performance improvement work. It implies touching every kernel
-architecture. Each architecture is touched by a different patch. And no,
-I did not happen to have an FRV toolchain handy. Sorry. I'll dig into
-this.
-
-Mathieu
-
-
-> 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+greg k-h
