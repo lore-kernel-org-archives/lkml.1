@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYBHWZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751136AbYBHW1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbYBHWZy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYBHWZo
+	id S1751136AbYBHW1D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:27:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYBHW0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:25:44 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:54247 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753017AbYBHWZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:25:43 -0500
-Date: Sat, 9 Feb 2008 01:25:44 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, rusty@rustcorp.com.au,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUILD_FAILURE] 2.6.24-git18 build fails section type conflict
-	psmouse-base
-Message-ID: <20080208222544.GA15333@jurassic.park.msu.ru>
-References: <47AC2FDB.7080104@linux.vnet.ibm.com> <20080208104851.GI7198@cs181133002.pp.htv.fi> <47AC502C.70809@linux.vnet.ibm.com> <20080208133022.GA2254@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080208133022.GA2254@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 8 Feb 2008 17:26:47 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54764 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752703AbYBHW0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:26:46 -0500
+Subject: [RFC][PATCH 00/30] Read-only bind mounts (-mm resend)
+To: linux-kernel@vger.kernel.org
+Cc: hch@lst.de, viro@ZenIV.linux.org.uk, viro@ftp.linux.org.uk,
+       miklos@szeredi.hu, Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Fri, 08 Feb 2008 14:26:41 -0800
+Message-Id: <20080208222641.6024A7CC@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 03:30:22PM +0200, Adrian Bunk wrote:
-> > > On Fri, Feb 08, 2008 at 04:02:59PM +0530, Kamalesh Babulal wrote:
-> > >> The 2.6.24-git18 kernel build fails on the power machine with following message
-> > >> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+This is against current Linus git
+(a4ffc0a0b240a29cbe489f6db9dae112a49ef1c1).
 
-My fault - I somehow overlooked that ppc64 is the club member...
+This rolls up all the -mm bugfixes that were accumulated, and
+addresses some new review comments from Al.  Also contains some
+reworking from hch and a patch from Jeff Dike.
 
-> The comment is wrong now, the #if's should refer to kconfig variables, 
-> and I don't know whether this patch is really the best solution.
+Just posting here to let everyone have a sniff before we resend
+it back to -mm.
 
-I think it's the best, because it at least points at some of
-the problems which arise when you blindly rely on some undocumented
-behaviour of __attribute__(section()) on certain platform, and
-assume it's the same for the rest of the world...
+---
 
-Alternatives are:
-- drop the 'const' qualifier from that macro unconditionally, so that
-  __param section gets read/write on all arches. I'd be fine with it,
-  but then we'll probably have the same problem again and again...
-- make the offending module_param functions global (psmouse and 3-4
-  other places). But how do you explain that to driver writers?
-  These functions are logically private to this particular module,
-  so it's obviously not the same as "we don't export static functions",
-  though underlying problem is precisely the same on our three
-  platforms...
-- hack up gcc. But I don't even have a proposal, because it's not a bug
-  from gcc point of view. Ideally, I'd like to pass some extra parameters
-  to __attribute__(section()), like r/w control and some equivalent of
-  -fno-jump-tables...
+Why do we need r/o bind mounts?
 
-Oh, well. Updated patch in a minute.
+This feature allows a read-only view into a read-write filesystem.
+In the process of doing that, it also provides infrastructure for
+keeping track of the number of writers to any given mount.
 
-Ivan.
+This has a number of uses.  It allows chroots to have parts of
+filesystems writable.  It will be useful for containers in the future
+because users may have root inside a container, but should not
+be allowed to write to somefilesystems.  This also replaces 
+patches that vserver has had out of the tree for several years.
+
+It allows security enhancement by making sure that parts of
+your filesystem are read-only (such as when you don't trust your
+FTP server), when you don't want to have entire new filesystems
+mounted, or when you want atime selectively updated.
+I've been using this script:
+
+	http://sr71.net/~dave/linux/robind-test.sh
+
+to test that the feature is working as desired.  It takes a
+directory and makes a regular bind and a r/o bind mount of it.
+It then performs some normal filesystem operations on the
+three directories, including ones that are expected to fail,
+like creating a file on the r/o mount.
+
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
