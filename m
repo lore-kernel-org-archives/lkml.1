@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYBHVLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYBHVNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbYBHVLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYBHVLM
+	id S1754579AbYBHVNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYBHVNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:11:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60713 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751033AbYBHVLL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:11:11 -0500
-Date: Fri, 8 Feb 2008 13:10:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: g.liakhovetski@pengutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] lib/scatterlist.o needed by a module only - link it in
-  unconditionally
-Message-Id: <20080208131020.7086ce1d.akpm@linux-foundation.org>
-In-Reply-To: <20080208204611.GE23197@kernel.dk>
-References: <Pine.LNX.4.64.0802081930590.8364@axis700.grange>
-	<20080208204611.GE23197@kernel.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 16:13:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35718 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750853AbYBHVNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 16:13:34 -0500
+Date: Fri, 8 Feb 2008 22:13:46 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Message-ID: <20080208211346.GC12923@elf.ucw.cz>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <20080207222845.GA6096@elf.ucw.cz> <200802072340.06138.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802072340.06138.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008 21:46:11 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Hi!
 
-> On Fri, Feb 08 2008, Guennadi Liakhovetski wrote:
-> > lib/scatterlist.c is needed by drivers/media/video/videobuf-dma-sg.c, and 
-> > we would like to be able to use the latter without PCI too, for example, 
-> > on PXA270 ARM CPU. It is then possible to create a configuration with 
-> > CONFIG_BLOCK=n, where only module code will need scatterlist.c. Therefore 
-> > it must be in obj-y.
+> > Can you post a delta against my versoin? I do not see any changes from
+> > a quick glance.
+> 
+> Appended (plus I removed two hunks, one in arch/x86/Makefile and one in
+> drivers/acpi/sleep/main.c that were unrelated to the rest of the patch).
+
+Thanks, applied.
+
+> > This is probably more acceptable version of beep; but there are
+> > probably even better ways to clean it...
 > > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+> >         if (wakeup_header.realmode_flags & 4) {
+> >                 inb(97);
+> >                 outb(0, 0x80);
+> >                 outb(3, 97);
+> >                 outb(0, 0x80);
+> >                 outb(-74, 67);
+> >                 outb(0, 0x80);
+> >                 outb(-119, 66);
+> >                 outb(0, 0x80);
+> >                 outb(15, 66);
+> >         }
+> > 
+> > ...like the version that makes beep/pause/beep/pause, so that user can
+> > count them.
 > 
-> Acked-by: Jens Axboe <jens.axboe@oracle.com>
-> 
-> Andrew, can I ask you to take care of this?
+> Can we move it into a separate function?
 
-sure..
+I guess we want to use HPA's morse code ;-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
