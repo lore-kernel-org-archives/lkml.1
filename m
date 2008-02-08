@@ -1,240 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934374AbYBHSCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934612AbYBHSCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934374AbYBHSCR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbYBHR5s
+	id S934612AbYBHSCy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbYBHR5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:57:48 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38137 "EHLO
+	Fri, 8 Feb 2008 12:57:49 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38134 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933347AbYBHR5i (ORCPT
+	with ESMTP id S933385AbYBHR5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 12:57:38 -0500
+	Fri, 8 Feb 2008 12:57:39 -0500
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Fri,  8 Feb 2008 19:00:41 +0100
-Message-Id: <1202493644247-git-send-email-giometti@linux.it>
+Date: Fri,  8 Feb 2008 19:00:38 +0100
+Message-Id: <12024936442252-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12024936442967-git-send-email-giometti@linux.it>
+In-Reply-To: <120249364418-git-send-email-giometti@linux.it>
 References: <1202493644764-git-send-email-giometti@linux.it>
  <120249364418-git-send-email-giometti@linux.it>
- <12024936442252-git-send-email-giometti@linux.it>
- <12024936441531-git-send-email-giometti@linux.it>
- <12024936442967-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 5/8] PPS: LinuxPPS clients support.
+Subject: [PATCH 2/8] PPS: basic documentation file.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Each PPS source can be registered/deregistered into the system by
-using special modules called "clients". They simply define the PPS
-sources' attributes and implement the time signal registartion
-mechanism.
-
-This patch adds a special directory for such clients and adds a dummy
-client that can be useful to test system integrity on real systems.
-
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- drivers/pps/Kconfig          |    2 +
- drivers/pps/Makefile         |    1 +
- drivers/pps/clients/Kconfig  |   18 +++++++
- drivers/pps/clients/Makefile |    9 +++
- drivers/pps/clients/ktimer.c |  114 ++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 144 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pps/clients/Kconfig
- create mode 100644 drivers/pps/clients/Makefile
- create mode 100644 drivers/pps/clients/ktimer.c
+ Documentation/pps/pps.txt |  170 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 170 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/pps.txt
 
-diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
-index dce4a1f..0c82285 100644
---- a/drivers/pps/Kconfig
-+++ b/drivers/pps/Kconfig
-@@ -29,4 +29,6 @@ config PPS_DEBUG
- 	  messages to the system log.  Select this if you are having a
- 	  problem with PPS support and want to see more of what is going on.
- 
-+source drivers/pps/clients/Kconfig
-+
- endmenu
-diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
-index 5a9a51b..d8ec308 100644
---- a/drivers/pps/Makefile
-+++ b/drivers/pps/Makefile
-@@ -4,6 +4,7 @@
- 
- pps_core-objs			+= pps.o kapi.o sysfs.o
- obj-$(CONFIG_PPS)		+= pps_core.o
-+obj-y				+= clients/
- 
- ifeq ($(CONFIG_PPS_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
+diff --git a/Documentation/pps/pps.txt b/Documentation/pps/pps.txt
 new file mode 100644
-index 0000000..60b83be
+index 0000000..2af58bd
 --- /dev/null
-+++ b/drivers/pps/clients/Kconfig
-@@ -0,0 +1,18 @@
-+#
-+# PPS clients configuration
-+#
++++ b/Documentation/pps/pps.txt
+@@ -0,0 +1,170 @@
 +
-+if PPS
++			PPS - Pulse Per Second
++			----------------------
 +
-+comment "PPS clients support"
++(C) Copyright 2007 Rodolfo Giometti <giometti@enneenne.com>
 +
-+config PPS_CLIENT_KTIMER
-+	tristate "Kernel timer client (Testing client, use for debug)"
-+	help
-+	  If you say yes here you get support for a PPS debugging client
-+	  which uses a kernel timer to generate the PPS signal.
++This program is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2 of the License, or
++(at your option) any later version.
 +
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called ktimer.ko.
-+
-+endif
-diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
-new file mode 100644
-index 0000000..f3c1e39
---- /dev/null
-+++ b/drivers/pps/clients/Makefile
-@@ -0,0 +1,9 @@
-+#
-+# Makefile for PPS clients.
-+#
-+
-+obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= ktimer.o
-+
-+ifeq ($(CONFIG_PPS_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
-diff --git a/drivers/pps/clients/ktimer.c b/drivers/pps/clients/ktimer.c
-new file mode 100644
-index 0000000..5845188
---- /dev/null
-+++ b/drivers/pps/clients/ktimer.c
-@@ -0,0 +1,114 @@
-+/*
-+ * ktimer.c -- kernel timer test client
-+ *
-+ *
-+ * Copyright (C) 2005-2006   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
++This program is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
 +
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/time.h>
-+#include <linux/timer.h>
 +
-+#include <linux/pps.h>
++Overview
++--------
 +
-+/*
-+ * Global variables
-+ */
++LinuxPPS provides a programming interface (API) to define into the
++system several PPS sources.
 +
-+static int source;
-+static struct timer_list ktimer;
++PPS means "pulse per second" and a PPS source is just a device which
++provides a high precision signal each second so that an application
++can use it to adjust system clock time.
 +
-+/*
-+ * The kernel timer
-+ */
++A PPS source can be connected to a serial port (usually to the Data
++Carrier Detect pin) or to a parallel port (ACK-pin) or to a special
++CPU's GPIOs (this is the common case in embedded systems) but in each
++case when a new pulse comes the system must apply to it a timestamp
++and record it for the userland.
 +
-+static void pps_ktimer_event(unsigned long ptr)
-+{
-+	pr_info("PPS event at %lu\n", jiffies);
++Common use is the combination of the NTPD as userland program with a
++GPS receiver as PPS source to obtain a wallclock-time with
++sub-millisecond synchronisation to UTC.
 +
-+	pps_event(source, PPS_CAPTUREASSERT, NULL);
 +
-+	mod_timer(&ktimer, jiffies + HZ);
-+}
++RFC considerations
++------------------
 +
-+/*
-+ * The echo function
-+ */
++While implementing a PPS API as RFC 2783 defines and using an embedded
++CPU GPIO-Pin as physical link to the signal, I encountered a deeper
++problem:
 +
-+static void pps_ktimer_echo(int source, int event, void *data)
-+{
-+	pr_info("echo %s %s for source %d\n",
-+		event & PPS_CAPTUREASSERT ? "assert" : "",
-+		event & PPS_CAPTURECLEAR ? "clear" : "",
-+		source);
-+}
++   At startup it needs a file descriptor as argument for the function
++   time_pps_create().
 +
-+/*
-+ * The PPS info struct
-+ */
++This implies that the source has a /dev/... entry. This assumption is
++ok for the serial and parallel port, where you can do something
++useful besides(!) the gathering of timestamps as it is the central
++task for a PPS-API. But this assumption does not work for a single
++purpose GPIO line. In this case even basic file-related functionality
++(like read() and write()) makes no sense at all and should not be a
++precondition for the use of a PPS-API.
 +
-+static struct pps_source_info pps_ktimer_info = {
-+	.name		= "ktimer",
-+	.path		= "",
-+	.mode		= PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
-+			  PPS_ECHOASSERT | \
-+			  PPS_CANWAIT | PPS_TSFMT_TSPEC,
-+	.echo 		= pps_ktimer_echo,
-+	.owner		= THIS_MODULE,
-+};
++The problem can be simply solved if you consider that a PPS source is
++not always connected with a GPS data source.
 +
-+/*
-+ * Module staff
-+ */
++So your programs should check if the GPS data source (the serial port
++for instance) is a PPS source too, otherwise they should provide the
++possibility to open another device as PPS source.
 +
-+static void __exit pps_ktimer_exit(void)
-+{
-+	del_timer_sync(&ktimer);
-+	pps_unregister_source(source);
++In LinuxPPS the PPS sources are simply char devices usually mapped
++into files /dev/pps0, /dev/pps1, etc..
 +
-+	pr_info("ktimer PPS source unregistered\n");
-+}
 +
-+static int __init pps_ktimer_init(void)
-+{
-+	int ret;
++Coding example
++--------------
 +
-+	ret = pps_register_source(&pps_ktimer_info,
-+				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
-+	if (ret < 0) {
-+		printk(KERN_ERR "cannot register ktimer source\n");
-+		return ret;
-+	}
-+	source = ret;
++To register a PPS source into the kernel you should define a struct
++pps_source_info_s as follow:
 +
-+	setup_timer(&ktimer, pps_ktimer_event, 0);
-+	mod_timer(&ktimer, jiffies + HZ);
++    static struct pps_source_info_s pps_ktimer_info = {
++            .name         = "ktimer",
++            .path         = "",
++            .mode         = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++			    PPS_ECHOASSERT | \
++                            PPS_CANWAIT | PPS_TSFMT_TSPEC,
++            .echo         = pps_ktimer_echo,
++            .owner        = THIS_MODULE,
++    };
 +
-+	pr_info("ktimer PPS source registered at %d\n", source);
++and then calling the function pps_register_source() in your
++intialization routine as follow:
 +
-+	return  0;
-+}
++    source = pps_register_source(&pps_ktimer_info,
++			PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
 +
-+module_init(pps_ktimer_init);
-+module_exit(pps_ktimer_exit);
++The pps_register_source() prototype is:
 +
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("dummy PPS source by using a kernel timer (just for debug)");
-+MODULE_LICENSE("GPL");
++  int pps_register_source(struct pps_source_info_s *info, int default_params)
++
++where "info" is a pointer to a structure that describes a particular
++PPS source, "default_params" tells the system what the initial default
++parameters for the device should be (is obvious that these parameters
++must be a subset of ones defined into the struct
++pps_source_info_s which describe the capabilities of the driver).
++
++Once you have registered a new PPS source into the system you can
++signal an assert event (for example in the interrupt handler routine)
++just using:
++
++    pps_event(source, PPS_CAPTUREASSERT, ptr);
++
++The same function may also run the defined echo function
++(pps_ktimer_echo(), passing to it the "ptr" pointer) if the user
++asked for that... etc..
++
++Please see the file drivers/pps/clients/ktimer.c for an example code.
++
++
++SYSFS support
++-------------
++
++If the SYSFS filesystem is enabled in the kernel it provides a new class:
++
++   $ ls /sys/class/pps/
++   pps0/  pps1/  pps2/
++
++Every directory is the ID of a PPS sources defined into the system and
++inside you find several files:
++
++   $ ls /sys/class/pps/pps0/
++   assert	clear  echo  mode  name  path  subsystem@  uevent
++
++Inside each "assert" and "clear" file you can find the timestamp and a
++sequence number:
++
++   $ cat /sys/class/pps/pps0/assert
++   1170026870.983207967#8
++
++Where before the "#" is the timestamp in seconds and after it is the
++sequence number. Other files are:
++
++* echo: reports if the PPS source has an echo function or not;
++
++* mode: reports available PPS functioning modes;
++
++* name: reports the PPS source's name;
++
++* path: reports the PPS source's device path, that is the device the
++  PPS source is connected to (if it exists).
++
++
++Testing the PPS support
++-----------------------
++
++In order to test the PPS support even without specific hardware you can use
++the ktimer driver (see the client subsection in the PPS configuration menu)
++and the userland tools provided into Documentaion/pps/ directory.
++
++Once you have enabled the compilation of ktimer just modprobe it (if
++not statically compiled):
++
++   # modprobe ktimer
++
++and the run ppstest as follow:
++
++   $ ./ppstest /dev/pps0
++   trying PPS source "/dev/pps1"
++   found PPS source "/dev/pps1"
++   ok, found 1 source(s), now start fetching data...
++   source 0 - assert 1186592699.388832443, sequence: 364 - clear  0.000000000, sequence: 0
++   source 0 - assert 1186592700.388931295, sequence: 365 - clear  0.000000000, sequence: 0
++   source 0 - assert 1186592701.389032765, sequence: 366 - clear  0.000000000, sequence: 0
++
++Please, note that to compile userland programs you need the file timepps.h
++(see Documentation/pps/).
 -- 
 1.5.2.5
 
