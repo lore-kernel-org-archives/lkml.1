@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934391AbYBHKoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934038AbYBHKub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934391AbYBHKoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 05:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933207AbYBHKnw
+	id S934038AbYBHKub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 05:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932159AbYBHKuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 05:43:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46322 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932753AbYBHKnv (ORCPT
+	Fri, 8 Feb 2008 05:50:16 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:56232 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751782AbYBHKuO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 05:43:51 -0500
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM
-	architecture
-From: David Woodhouse <dwmw2@infradead.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Marcin Juszkiewicz <openembedded@haerwu.biz>,
-       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20080208102347.GD21852@flint.arm.linux.org.uk>
-References: <20080207133805.13f092ff@dilbert.local>
-	 <20080207125824.GB7111@infradead.org>
-	 <20080207130117.GA18750@uranus.ravnborg.org>
-	 <200802071609.36960.openembedded@haerwu.biz>
-	 <20080207160557.GB28435@flint.arm.linux.org.uk>
-	 <20080207202329.GA21949@uranus.ravnborg.org>
-	 <1202461453.5469.217.camel@pmac.infradead.org>
-	 <20080208094538.GC21852@flint.arm.linux.org.uk>
-	 <1202465911.5469.240.camel@pmac.infradead.org>
-	 <20080208102347.GD21852@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 10:43:42 +0000
-Message-Id: <1202467422.5469.245.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8.dwmw2.1) 
+	Fri, 8 Feb 2008 05:50:14 -0500
+Message-Id: <01cd01c86a40$21d49410$41a8400a@bsd.tnes.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Theodore Tso" <tytso@MIT.EDU>, <linux-ext4@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu>
+Subject: Re: [RFC] ext3 freeze feature
+Date: Fri, 8 Feb 2008 19:48:25 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Fri, 2008-02-08 at 10:23 +0000, Russell King - ARM Linux wrote:
-> That would be misleading though - !CPU_CP15_MMU does not mean we
-> support unaligned accesses.  It means that we may have no way to
-> support fixing up unaligned accesses.
+Ted wrote:
+> And I do agree that we probably should just implement this in
+> filesystem independent way, in which case all of the filesystems that
+> support this already have super_operations functions
+> write_super_lockfs() and unlockfs().
+> 
+> So if this is done using a new system call, there should be no
+> filesystem-specific changes needed, and all filesystems which support
+> those super_operations method functions would be able to provide this
+> functionality to the new system call.
 
-Doesn't that mean you should disallow MTD (or at least 16-bit NOR flash)
-if !CPU_CP15_MMU, then? But at the moment you allow it?
+OK I would like to implement the freeze feature on VFS
+as the filesystem independent ioctl so that it can be
+available on filesystems that have already had write_super_lockfs()
+and unlockfs().
+The usage for the freeze ioctl is the following.
+  int ioctl(int fd, int FIFREEZE, long *timeval);
+    fd:file descriptor of mountpoint
+    FIFREEZE:request cord for freeze
+    timeval:timeout period (second)
 
--- 
-dwmw2
+And the unfreeze ioctl is the following.
+  int ioctl(int fd, int FITHAW, NULL);
+    fd:file descriptor of mountpoint
+    FITHAW:Request cord for unfreeze
 
+I think we need the timeout feature which thaws the filesystem
+after lapse of specified time for a fail-safe in case the freezer
+accesses the frozen filesystem and causes a deadlock.
+I intend to implement the timeout feature on VFS.
+(This is realized by registering the delayed work which calls
+thaw_bdev() to the delayed work queue.)
+
+Any comments are very welcome.
+
+Cheers, Takashi
