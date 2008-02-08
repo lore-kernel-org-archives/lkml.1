@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbYBHLCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934398AbYBHLGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932537AbYBHLCQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 06:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934076AbYBHLBx
+	id S934398AbYBHLGE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 06:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbYBHLFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 06:01:53 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:44703 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934057AbYBHLBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 06:01:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=IUUJ4ZuJF8dy+D3bXTCN2RygRJPi/4FWiJ7Bu/PMBdDjjvEuB3dCOvoBZ7hi9mfaSZCczVD7ykTRLa56w+vdMDKonrYpHMWRSRbcyGEa3LeGRS2LKzt3ISQMAD86TRX6yC8Kq7/8kAmpKlsOhVcyFgheTQ9EIkULZ/gZeGNRrnU=
-Message-ID: <47ABD817.2020903@gmail.com>
-Date: Fri, 08 Feb 2008 13:18:31 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Fri, 8 Feb 2008 06:05:50 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54636 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758924AbYBHLFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 06:05:49 -0500
+Date: Fri, 8 Feb 2008 12:48:51 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, rusty@rustcorp.com.au
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [BUILD_FAILURE] 2.6.24-git18 build fails section type conflict
+	psmouse-base
+Message-ID: <20080208104851.GI7198@cs181133002.pp.htv.fi>
+References: <47AC2FDB.7080104@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH #upstream] libata: implement libata.force module parameter
-References: <47A3375F.80101@gmail.com> <47A356C3.3010904@garzik.org> <20080201183621.GC14759@uranus.ravnborg.org>
-In-Reply-To: <20080201183621.GC14759@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47AC2FDB.7080104@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> I have lost the actual patch.
-> But what you see is what happens when you mix const and non-const data
-> in the same section.
+On Fri, Feb 08, 2008 at 04:02:59PM +0530, Kamalesh Babulal wrote:
+> Hi,
 > 
-> Look for use of __initdata for const data and replace it with __initconst.
+> The 2.6.24-git18 kernel build fails on the power machine with following message
 > 
-> And modpost cannot warn about it as gcc errors out before we look at the
-> .o file with modpost.
+> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+> make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
+> make[2]: *** [drivers/input/mouse] Error 2
+> make[1]: *** [drivers/input] Error 2
+> make: *** [drivers] Error 2
+> 
+> this failure was reported earlier http://lkml.org/lkml/2007/9/22/64
 
-OIC, thanks.  Hmmm... in init.h, I see __{dev|cpu|mem}initconst but no
-__initconst.  The data structure in question is used from module init
-function tagged properly with __init.  What should be done here?
+You need the patch from [1] manually applied (due to changed context) 
+and with " || defined(__powerpc__)" added for getting it compiling.
 
+@Rusty:
+Can you look at this issue? It's a modules problem on 3 architectures.
+
+cu
+Adrian
+
+[1] http://lkml.org/lkml/2007/12/27/29
 
 -- 
-tejun
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
