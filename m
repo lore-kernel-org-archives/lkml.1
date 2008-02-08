@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934119AbYBHEQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934214AbYBHEST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934119AbYBHEQR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 23:16:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759928AbYBHEQF
+	id S934214AbYBHEST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 23:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760050AbYBHESJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 23:16:05 -0500
-Received: from qb-out-0506.google.com ([72.14.204.233]:32691 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759933AbYBHEQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 23:16:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BGbCGlon2+1D9kbF9r/e5B22dNCGVZLdhBqEP8cxs3mqSh2gzcbJ4qx1Z4hmDbQ2qa3l+DWbrGLDj0PAO9050uAEtW3Xjoe7IoMW0SChFVl2f9G9iKr0kp2k8ss9Pu/CKCjupdHZn+hTcectEU3Y9ojZDth+InhbpFhiE99C3vI=
-Message-ID: <a9951d2a0802072016m635784ffw73c1de7a86e064c2@mail.gmail.com>
-Date: Fri, 8 Feb 2008 12:16:01 +0800
-From: "Rogelio Serrano" <rogelio.serrano@gmail.com>
-Subject: Re: The ext3 way of journalling
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 7 Feb 2008 23:18:09 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:31828 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759928AbYBHESH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 23:18:07 -0500
+X-IronPort-AV: E=Sophos;i="4.25,319,1199692800"; 
+   d="scan'208";a="149970665"
+Subject: Re: [GIT] Please pull 2 NFS client fixes
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org
+In-Reply-To: <20080207184818.e40d5277.akpm@linux-foundation.org>
+References: <1202432841.18376.50.camel@heimdal.trondhjem.org>
+	 <20080207184818.e40d5277.akpm@linux-foundation.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <slrnfo77tv.2rr.tuomov@jolt.modeemi.cs.tut.fi>
-To: unlisted-recipients:; (no To-header on input)
+Organization: Network Appliance Inc
+Date: Thu, 07 Feb 2008 23:18:03 -0500
+Message-Id: <1202444283.18376.63.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 08 Feb 2008 04:18:04.0573 (UTC) FILETIME=[99AF94D0:01C86A09]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 9, 2008 12:07 AM, Tuomo Valkonen <tuomov@iki.fi> wrote:
-> One should always indicate the version of software when complaining. Well,
->
->     $ uname -a
->     Linux noi 2.6.14 #1 PREEMPT Sun Oct 30 20:18:48 EET 2005 i686 GNU/Linux
->
-> I've tried upgrading, and failed: the megatonne monolith with a gazillion
-> hidden options (and totally worthless make oldconfig) is impossible to
-> compile these days, and the distros' stock kernel are utter and total crap
-> that load drivers in wrong order etc., and are difficult to configure
-> (demanding crap that demands udev to edit their initrds). Not to even
-> speak of the udev-demanding scsi-mapping insanity of SATA etc. devices
-> these days.
->
 
-somebody has been reading the Unix Haters Handbook...
+On Thu, 2008-02-07 at 18:48 -0800, Andrew Morton wrote:
+> On Thu, 07 Feb 2008 20:07:21 -0500 Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+> 
+> > commit 5d47a35600270e7115061cb1320ee60ae9bcb6b8
+> > Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+> > Date:   Thu Feb 7 17:24:07 2008 -0500
+> > 
+> >     NFS: Fix a potential file corruption issue when writing
+> >     
+> >     If the inode is flagged as having an invalid mapping, then we can't rely on
+> >     the PageUptodate() flag. Ensure that we don't use the "anti-fragmentation"
+> >     write optimisation in nfs_updatepage(), since that will cause NFS to write
+> >     out areas of the page that are no longer guaranteed to be up to date.
+> >     
+> >     A potential corruption could occur in the following scenario:
+> >     
+> >     client 1			client 2
+> >     ===============			===============
+> >     				fd=open("f",O_CREAT|O_WRONLY,0644);
+> >     				write(fd,"fubar\n",6);	// cache last page
+> >     				close(fd);
+> >     fd=open("f",O_WRONLY|O_APPEND);
+> >     write(fd,"foo\n",4);
+> >     close(fd);
+> >     
+> >     				fd=open("f",O_WRONLY|O_APPEND);
+> >     				write(fd,"bar\n",4);
+> >     				close(fd);
+> >     -----
+> >     The bug may lead to the file "f" reading 'fubar\n\0\0\0\nbar\n' because
+> >     client 2 does not update the cached page after re-opening the file for
+> >     write. Instead it keeps it marked as PageUptodate() until someone calls
+> >     invaldate_inode_pages2() (typically by calling read()).
+> 
+> Is this one worth feeding back into 2.6.24.x?  (for various values of "4"?)
 
-I like that book too. In a way it a very good guideline for unix developers.
+Definitely, and probably back into 2.6.23.x, 2.6.22.x,... too.
 
-
-> I've had it with Linux. It's no longer for power users. It's so complex
-> that it's only for idiot users that are content with the shoddy defaults,
-> and (paid) developers.
->
-> --
-> Tuomo
->
-
-I said that 2 weeks ago. And after trying out alternatives im back to linux.
-
-But i bought the minix 3 book...
-
--- 
-Lay low and nourish in obscurity
+Cheers
+  Trond
