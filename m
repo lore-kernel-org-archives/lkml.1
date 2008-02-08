@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934731AbYBHSEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934952AbYBHSFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934731AbYBHSEy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934283AbYBHR7T
+	id S934952AbYBHSFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934454AbYBHR7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:59:19 -0500
-Received: from flpi102.sbcis.sbc.com ([207.115.20.71]:18710 "EHLO
+	Fri, 8 Feb 2008 12:59:41 -0500
+Received: from flpi102.sbcis.sbc.com ([207.115.20.71]:14611 "EHLO
 	flpi102.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933160AbYBHR7S (ORCPT
+	with ESMTP id S934438AbYBHR7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 12:59:18 -0500
+	Fri, 8 Feb 2008 12:59:40 -0500
 X-ORBL: [76.241.169.38]
 From: Chuck Lever <chuck.lever@oracle.com>
-Subject: [PATCH 06/11] NFSD: Remove NFSv4 dependency on NFSv3
+Subject: [PATCH 05/11] SUNRPC: Update help Kconfig text
 To: linux-kernel@vger.kernel.org
 Cc: linux-nfs@vger.kernel.org
-Date: Fri, 08 Feb 2008 12:52:08 -0500
-Message-ID: <20080208175208.16261.74626.stgit@manray.1015granger.net>
+Date: Fri, 08 Feb 2008 12:52:01 -0500
+Message-ID: <20080208175201.16261.74366.stgit@manray.1015granger.net>
 User-Agent: StGIT/0.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,31 +25,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up: Because NFSD_V4 "depends on" NFSD_V3, it appears as a child of
-the NFSD_V3 menu entry, and is not visible if NFSD_V3 is unselected.
-
-Replace the dependency on NFSD_V3 with a "select NFSD_V3".  This makes
-NFSD_V4 look and work just like NFS_V3, while ensuring that NFSD_V3 is
-enabled if NFSD_V4 is.
+Clean up: refresh the help text for Kconfig items related to the sunrpc
+module.  Remove obsolete URLs, and make the language consistent among
+the options.
 
 Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
 ---
 
- fs/Kconfig |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ fs/Kconfig |   44 +++++++++++++++++++++++++++++---------------
+ 1 files changed, 29 insertions(+), 15 deletions(-)
 
 diff --git a/fs/Kconfig b/fs/Kconfig
-index 9ad62a9..4c16789 100644
+index 53e21eb..9ad62a9 100644
 --- a/fs/Kconfig
 +++ b/fs/Kconfig
-@@ -1723,7 +1723,8 @@ config NFSD_V3_ACL
- 
- config NFSD_V4
- 	bool "NFS server support for NFS version 4 (EXPERIMENTAL)"
--	depends on NFSD && NFSD_V3 && EXPERIMENTAL
-+	depends on NFSD && EXPERIMENTAL
-+	select NFSD_V3
- 	select RPCSEC_GSS_KRB5
+@@ -1766,17 +1766,29 @@ config SUNRPC_XPRT_RDMA
+ 	depends on SUNRPC && INFINIBAND && EXPERIMENTAL
+ 	default m
  	help
- 	  This option enables support in your system's NFS server for
+-	  Adds a client RPC transport for supporting kernel NFS over RDMA
+-	  mounts, including Infiniband and iWARP. Experimental.
++	  This option enables the RPC client transport capability that
++	  supports NFS over RDMA in the kernel's NFS client.  To compile
++	  RPC client RDMA transport support as a module, choose M here:
++	  the module will be called xprtrdma.
++
++	  If unsure, say N.
+ 
+ config SUNRPC_BIND34
+ 	bool "Support for rpcbind versions 3 & 4 (EXPERIMENTAL)"
+ 	depends on SUNRPC && EXPERIMENTAL
+ 	help
+-	  Provides kernel support for querying rpcbind servers via versions 3
+-	  and 4 of the rpcbind protocol.  The kernel automatically falls back
+-	  to version 2 if a remote rpcbind service does not support versions
+-	  3 or 4.
++	  RPC requests over IPv6 networks require support for larger
++	  addresses when performing an RPC bind.  Sun added support for
++	  IPv6 addressing by creating two new versions of the rpcbind
++	  protocol (RFC 1833).
++
++	  This option enables support in the kernel RPC client for
++	  querying rpcbind servers via versions 3 and 4 of the rpcbind
++	  protocol.  The kernel automatically falls back to version 2
++	  if a remote rpcbind service does not support versions 3 or 4.
++	  By themselves, these new versions do not provide support for
++	  RPC over IPv6, but the new protocol versions are necessary to
++	  support it.
+ 
+ 	  If unsure, say N to get traditional behavior (version 2 rpcbind
+ 	  requests only).
+@@ -1790,12 +1802,13 @@ config RPCSEC_GSS_KRB5
+ 	select CRYPTO_DES
+ 	select CRYPTO_CBC
+ 	help
+-	  Provides for secure RPC calls by means of a gss-api
+-	  mechanism based on Kerberos V5. This is required for
+-	  NFSv4.
++	  Choose Y here to enable Secure RPC using the Kerberos version 5
++	  GSS-API mechanism (RFC 1964).
+ 
+-	  Note: Requires an auxiliary userspace daemon which may be found on
+-		http://www.citi.umich.edu/projects/nfsv4/
++	  Secure RPC calls with Kerberos require an auxiliary user-space
++	  daemon which may be found in the Linux nfs-utils package
++	  available from http://linux-nfs.org/.  In addition, user-space
++	  Kerberos support should be installed.
+ 
+ 	  If unsure, say N.
+ 
+@@ -1809,11 +1822,12 @@ config RPCSEC_GSS_SPKM3
+ 	select CRYPTO_CAST5
+ 	select CRYPTO_CBC
+ 	help
+-	  Provides for secure RPC calls by means of a gss-api
+-	  mechanism based on the SPKM3 public-key mechanism.
++	  Choose Y here to enable Secure RPC using the SPKM3 public key
++	  GSS-API mechansim (RFC 2025).
+ 
+-	  Note: Requires an auxiliary userspace daemon which may be found on
+-	  	http://www.citi.umich.edu/projects/nfsv4/
++	  Secure RPC calls with SPKM3 require an auxiliary userspace
++	  daemon which may be found in the Linux nfs-utils package
++	  available from http://linux-nfs.org/.
+ 
+ 	  If unsure, say N.
+ 
 
