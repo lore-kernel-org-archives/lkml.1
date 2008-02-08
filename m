@@ -1,168 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764501AbYBHWlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764626AbYBHWlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764501AbYBHWlQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:41:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbYBHW1j
+	id S1764626AbYBHWlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbYBHW1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:27:39 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:46583 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758678AbYBHW1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:27:30 -0500
-Subject: [RFC][PATCH 29/30] r/o bind mounts: honor mount writer counts at remount
+	Fri, 8 Feb 2008 17:27:41 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:53770 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759518AbYBHW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:27:34 -0500
+Subject: [RFC][PATCH 30/30] r/o bind mounts: debugging for missed calls
 To: linux-kernel@vger.kernel.org
 Cc: hch@lst.de, viro@ZenIV.linux.org.uk, viro@ftp.linux.org.uk,
        miklos@szeredi.hu, Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 08 Feb 2008 14:27:27 -0800
+Date: Fri, 08 Feb 2008 14:27:28 -0800
 References: <20080208222641.6024A7CC@kernel>
 In-Reply-To: <20080208222641.6024A7CC@kernel>
-Message-Id: <20080208222727.0F5093DA@kernel>
+Message-Id: <20080208222728.34C251B1@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Originally from: Herbert Poetzl <herbert@13thfloor.at>
+There have been a few oopses caused by 'struct file's with NULL f_vfsmnts. 
+There was also a set of potentially missed mnt_want_write()s from
+dentry_open() calls.
 
-This is the core of the read-only bind mount patch set.
+This patch provides a very simple debugging framework to catch these kinds of
+bugs.  It will WARN_ON() them, but should stop us from having any oopses or
+mnt_writer count imbalances.
 
-Note that this does _not_ add a "ro" option directly to the bind mount
-operation.  If you require such a mount, you must first do the bind, then
-follow it up with a 'mount -o remount,ro' operation:
+I'm quite convinced that this is a good thing because it found bugs in the
+stuff I was working on as soon as I wrote it.
 
-If you wish to have a r/o bind mount of /foo on bar:
+[hch: made it conditional on a debug option.
+      But it's still a little bit too ugly]
 
-	mount --bind /foo /bar
-	mount -o remount,ro /bar
+[hch: merged forced remount r/o fix from Dave and akpm's fix for the fix]
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-Cc: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- linux-2.6.git-dave/fs/namespace.c        |   50 ++++++++++++++++++++++++++-----
- linux-2.6.git-dave/include/linux/mount.h |    1 
- 2 files changed, 44 insertions(+), 7 deletions(-)
+ linux-2.6.git-dave/fs/file_table.c    |   11 ++++++-
+ linux-2.6.git-dave/fs/open.c          |   12 +++++++-
+ linux-2.6.git-dave/fs/super.c         |    3 ++
+ linux-2.6.git-dave/include/linux/fs.h |   49 ++++++++++++++++++++++++++++++++++
+ linux-2.6.git-dave/lib/Kconfig.debug  |   10 ++++++
+ 5 files changed, 82 insertions(+), 3 deletions(-)
 
-diff -puN fs/namespace.c~r-o-bind-mounts-honor-r-w-changes-at-do_remount-time fs/namespace.c
---- linux-2.6.git/fs/namespace.c~r-o-bind-mounts-honor-r-w-changes-at-do_remount-time	2008-02-08 13:05:01.000000000 -0800
-+++ linux-2.6.git-dave/fs/namespace.c	2008-02-08 13:05:01.000000000 -0800
-@@ -105,7 +105,11 @@ struct vfsmount *alloc_vfsmnt(const char
-  */
- int __mnt_is_readonly(struct vfsmount *mnt)
+diff -puN fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file fs/file_table.c
+--- linux-2.6.git/fs/file_table.c~keep-track-of-mnt_writer-state-of-struct-file	2008-02-08 13:05:02.000000000 -0800
++++ linux-2.6.git-dave/fs/file_table.c	2008-02-08 13:05:02.000000000 -0800
+@@ -42,6 +42,7 @@ static inline void file_free_rcu(struct 
+ static inline void file_free(struct file *f)
  {
--	return (mnt->mnt_sb->s_flags & MS_RDONLY);
-+	if (mnt->mnt_flags & MNT_READONLY)
-+		return 1;
-+	if (mnt->mnt_sb->s_flags & MS_RDONLY)
-+		return 1;
-+	return 0;
+ 	percpu_counter_dec(&nr_files);
++	file_check_state(f);
+ 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
  }
- EXPORT_SYMBOL_GPL(__mnt_is_readonly);
  
-@@ -299,7 +303,7 @@ void mnt_drop_write(struct vfsmount *mnt
- }
- EXPORT_SYMBOL_GPL(mnt_drop_write);
- 
--int mnt_make_readonly(struct vfsmount *mnt)
-+static int mnt_make_readonly(struct vfsmount *mnt)
- {
- 	int ret = 0;
- 
-@@ -312,15 +316,25 @@ int mnt_make_readonly(struct vfsmount *m
- 		goto out;
- 	}
- 	/*
--	 * actually set mount's r/o flag here to make
--	 * __mnt_is_readonly() true, which keeps anyone
--	 * from doing a successful mnt_want_write().
-+	 * nobody can do a successful mnt_want_write() with all
-+	 * of the counts in MNT_DENIED_WRITE and the locks held.
+@@ -207,6 +208,7 @@ int init_file(struct file *file, struct 
+ 	 * that we can do debugging checks at __fput()e
  	 */
-+	spin_lock(&vfsmount_lock);
-+	if (!ret)
-+		mnt->mnt_flags |= MNT_READONLY;
-+	spin_unlock(&vfsmount_lock);
- out:
- 	unlock_mnt_writers();
- 	return ret;
- }
- 
-+static void __mnt_unmake_readonly(struct vfsmount *mnt)
-+{
-+	spin_lock(&vfsmount_lock);
-+	mnt->mnt_flags &= ~MNT_READONLY;
-+	spin_unlock(&vfsmount_lock);
-+}
-+
- int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
- {
- 	mnt->mnt_sb = sb;
-@@ -643,7 +657,7 @@ static int show_vfsmnt(struct seq_file *
- 		seq_putc(m, '.');
- 		mangle(m, mnt->mnt_sb->s_subtype);
+ 	if ((mode & FMODE_WRITE) && !special_file(dentry->d_inode->i_mode)) {
++		file_take_write(file);
+ 		error = mnt_want_write(mnt);
+ 		WARN_ON(error);
  	}
--	seq_puts(m, mnt->mnt_sb->s_flags & MS_RDONLY ? " ro" : " rw");
-+	seq_puts(m, __mnt_is_readonly(mnt) ? " ro" : " rw");
- 	for (fs_infop = fs_info; fs_infop->flag; fs_infop++) {
- 		if (mnt->mnt_sb->s_flags & fs_infop->flag)
- 			seq_puts(m, fs_infop->str);
-@@ -1231,6 +1245,23 @@ out:
- 	return err;
+@@ -237,8 +239,13 @@ void drop_file_write_access(struct file 
+ 	struct inode *inode = dentry->d_inode;
+ 
+ 	put_write_access(inode);
+-	if (!special_file(inode->i_mode))
+-		mnt_drop_write(mnt);
++
++	if (special_file(inode->i_mode))
++		return;
++	if (file_check_writeable(file) != 0)
++		return;
++	mnt_drop_write(mnt);
++	file_release_write(file);
+ }
+ EXPORT_SYMBOL_GPL(drop_file_write_access);
+ 
+diff -puN fs/open.c~keep-track-of-mnt_writer-state-of-struct-file fs/open.c
+--- linux-2.6.git/fs/open.c~keep-track-of-mnt_writer-state-of-struct-file	2008-02-08 13:05:02.000000000 -0800
++++ linux-2.6.git-dave/fs/open.c	2008-02-08 13:05:02.000000000 -0800
+@@ -810,6 +810,8 @@ static struct file *__dentry_open(struct
+ 		error = __get_file_write_access(inode, mnt);
+ 		if (error)
+ 			goto cleanup_file;
++		if (!special_file(inode->i_mode))
++			file_take_write(f);
+ 	}
+ 
+ 	f->f_mapping = inode->i_mapping;
+@@ -851,8 +853,16 @@ cleanup_all:
+ 	fops_put(f->f_op);
+ 	if (f->f_mode & FMODE_WRITE) {
+ 		put_write_access(inode);
+-		if (!special_file(inode->i_mode))
++		if (!special_file(inode->i_mode)) {
++			/*
++			 * We don't consider this a real
++			 * mnt_want/drop_write() pair
++			 * because it all happenend right
++			 * here, so just reset the state.
++			 */
++			file_reset_write(f);
+ 			mnt_drop_write(mnt);
++		}
+ 	}
+ 	file_kill(f);
+ 	f->f_path.dentry = NULL;
+diff -puN fs/super.c~keep-track-of-mnt_writer-state-of-struct-file fs/super.c
+--- linux-2.6.git/fs/super.c~keep-track-of-mnt_writer-state-of-struct-file	2008-02-08 13:05:02.000000000 -0800
++++ linux-2.6.git-dave/fs/super.c	2008-02-08 13:05:02.000000000 -0800
+@@ -578,6 +578,9 @@ retry:
+ 		if (!(f->f_mode & FMODE_WRITE))
+ 			continue;
+ 		f->f_mode &= ~FMODE_WRITE;
++		if (file_check_writeable(f) != 0)
++			continue;
++		file_release_write(f);
+ 		mnt = f->f_path.mnt;
+ 		file_list_unlock();
+ 		/*
+diff -puN include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file include/linux/fs.h
+--- linux-2.6.git/include/linux/fs.h~keep-track-of-mnt_writer-state-of-struct-file	2008-02-08 13:05:02.000000000 -0800
++++ linux-2.6.git-dave/include/linux/fs.h	2008-02-08 13:05:02.000000000 -0800
+@@ -776,6 +776,9 @@ static inline int ra_has_index(struct fi
+ 		index <  ra->start + ra->size);
  }
  
-+static int change_mount_flags(struct vfsmount *mnt, int ms_flags)
++#define FILE_MNT_WRITE_TAKEN	1
++#define FILE_MNT_WRITE_RELEASED	2
++
+ struct file {
+ 	/*
+ 	 * fu_list becomes invalid after file_free is called and queued via
+@@ -810,6 +813,9 @@ struct file {
+ 	spinlock_t		f_ep_lock;
+ #endif /* #ifdef CONFIG_EPOLL */
+ 	struct address_space	*f_mapping;
++#ifdef CONFIG_DEBUG_WRITECOUNT
++	unsigned long f_mnt_write_state;
++#endif
+ };
+ extern spinlock_t files_lock;
+ #define file_list_lock() spin_lock(&files_lock);
+@@ -818,6 +824,49 @@ extern spinlock_t files_lock;
+ #define get_file(x)	atomic_inc(&(x)->f_count)
+ #define file_count(x)	atomic_read(&(x)->f_count)
+ 
++#ifdef CONFIG_DEBUG_WRITECOUNT
++static inline void file_take_write(struct file *f)
 +{
-+	int error = 0;
-+	int readonly_request = 0;
-+
-+	if (ms_flags & MS_RDONLY)
-+		readonly_request = 1;
-+	if (readonly_request == __mnt_is_readonly(mnt))
-+		return 0;
-+
-+	if (readonly_request)
-+		error = mnt_make_readonly(mnt);
-+	else
-+		__mnt_unmake_readonly(mnt);
-+	return error;
++	WARN_ON(f->f_mnt_write_state != 0);
++	f->f_mnt_write_state = FILE_MNT_WRITE_TAKEN;
 +}
++static inline void file_release_write(struct file *f)
++{
++	f->f_mnt_write_state |= FILE_MNT_WRITE_RELEASED;
++}
++static inline void file_reset_write(struct file *f)
++{
++	f->f_mnt_write_state = 0;
++}
++static inline void file_check_state(struct file *f)
++{
++	/*
++	 * At this point, either both or neither of these bits
++	 * should be set.
++	 */
++	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_TAKEN);
++	WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_RELEASED);
++}
++static inline int file_check_writeable(struct file *f)
++{
++	if (f->f_mnt_write_state == FILE_MNT_WRITE_TAKEN)
++		return 0;
++	printk(KERN_WARNING "writeable file with no "
++			    "mnt_want_write()\n");
++	WARN_ON(1);
++	return -EINVAL;
++}
++#else /* !CONFIG_DEBUG_WRITECOUNT */
++static inline void file_take_write(struct file *filp) {}
++static inline void file_release_write(struct file *filp) {}
++static inline void file_reset_write(struct file *filp) {}
++static inline void file_check_state(struct file *filp) {}
++static inline int file_check_writeable(struct file *filp)
++{
++	return 0;
++}
++#endif /* CONFIG_DEBUG_WRITECOUNT */
 +
- /*
-  * change filesystem flags. dir should be a physical root of filesystem.
-  * If you've mounted a non-root directory somewhere and want to do remount
-@@ -1252,7 +1283,10 @@ static int do_remount(struct nameidata *
- 		return -EINVAL;
+ #define	MAX_NON_LFS	((1UL<<31) - 1)
  
- 	down_write(&sb->s_umount);
--	err = do_remount_sb(sb, flags, data, 0);
-+	if (flags & MS_BIND)
-+		err = change_mount_flags(nd->mnt, flags);
-+	else
-+		err = do_remount_sb(sb, flags, data, 0);
- 	if (!err)
- 		nd->mnt->mnt_flags = mnt_flags;
- 	up_write(&sb->s_umount);
-@@ -1696,6 +1730,8 @@ long do_mount(char *dev_name, char *dir_
- 		mnt_flags |= MNT_NODIRATIME;
- 	if (flags & MS_RELATIME)
- 		mnt_flags |= MNT_RELATIME;
-+	if (flags & MS_RDONLY)
-+		mnt_flags |= MNT_READONLY;
+ /* Page cache limit. The filesystems should put that into their s_maxbytes 
+diff -puN lib/Kconfig.debug~keep-track-of-mnt_writer-state-of-struct-file lib/Kconfig.debug
+--- linux-2.6.git/lib/Kconfig.debug~keep-track-of-mnt_writer-state-of-struct-file	2008-02-08 13:05:02.000000000 -0800
++++ linux-2.6.git-dave/lib/Kconfig.debug	2008-02-08 13:05:02.000000000 -0800
+@@ -433,6 +433,16 @@ config DEBUG_VM
  
- 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
- 		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT);
-diff -puN include/linux/mount.h~r-o-bind-mounts-honor-r-w-changes-at-do_remount-time include/linux/mount.h
---- linux-2.6.git/include/linux/mount.h~r-o-bind-mounts-honor-r-w-changes-at-do_remount-time	2008-02-08 13:05:01.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/mount.h	2008-02-08 13:05:01.000000000 -0800
-@@ -29,6 +29,7 @@ struct mnt_namespace;
- #define MNT_NOATIME	0x08
- #define MNT_NODIRATIME	0x10
- #define MNT_RELATIME	0x20
-+#define MNT_READONLY	0x40	/* does the user want this to be r/o? */
+ 	  If unsure, say N.
  
- #define MNT_SHRINKABLE	0x100
- #define MNT_IMBALANCED_WRITE_COUNT	0x200 /* just for debugging */
++config DEBUG_WRITECOUNT
++	bool "Debug filesystem writers count"
++	depends on DEBUG_KERNEL
++	help
++	  Enable this to catch wrong use of the writers count in struct
++	  vfsmount.  This will increase the size of each file struct by
++	  32 bits.
++
++	  If unsure, say N.
++
+ config DEBUG_LIST
+ 	bool "Debug linked list manipulation"
+ 	depends on DEBUG_KERNEL
 _
