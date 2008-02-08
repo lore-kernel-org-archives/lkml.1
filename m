@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYBHVOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbYBHVOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYBHVOM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYBHVNz
+	id S1757622AbYBHVOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYBHVOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:13:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:57298 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751106AbYBHVNy (ORCPT
+	Fri, 8 Feb 2008 16:14:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:64276 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYBHVOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:13:54 -0500
+	Fri, 8 Feb 2008 16:14:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=Ni6SQt0HvrEqfddxSeXH/+a7hPy1czY4U2vA0XG6gMS31+xZ4pdFfRah205/5JAwzi4a+32FWK65ic6KMpivns7RKgkVoF5wP724LRV1o82E2zaYV09l+iLdDaIMRmqkrOrZnlY7aj5RIxiA5dBJhHHP4fjvBPD006e1N1RA8d0=
-Date: Sat, 9 Feb 2008 00:13:44 +0300
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/9] x86: change most X86_32 pt_regs members to unsigned long
-Message-ID: <20080208211344.GB15571@martell.zuzino.mipt.ru>
-References: <1202501396.12966.20.camel@brick>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JVglXHHTwwPt3rRoNS22lFJwVzGJjXTmGUN+HAW8Q1z7gco35yvHFzxhqS7uAfu9Dq32ypoanfym2myNEexmYv9g56zmc4soKFPwaUMmQD5oQVtGy8/hImStaN3xm2lYrhuMV3wfP3ewQvt2TNmqbp9cmZrR4VUqiC3KNPZ9H+8=
+Message-ID: <6101e8c40802081314q41a37a50o9d343aee569b9731@mail.gmail.com>
+Date: Fri, 8 Feb 2008 22:14:30 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: Linux 2.6.24.1
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+In-Reply-To: <20080208210756.GA5429@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1202501396.12966.20.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+References: <20080208203404.GC4520@kroah.com>
+	 <6101e8c40802081300o3a978d9axef5ca3040d6a5839@mail.gmail.com>
+	 <20080208210756.GA5429@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 12:09:56PM -0800, Harvey Harrison wrote:
-> All but ax and orig_ax can move with no changes.
+ok, the git pull methon worked with the begin, but the gitweb not, ok,
+than in a 30 min I checked
 
-> --- a/include/asm-x86/ptrace.h
-> +++ b/include/asm-x86/ptrace.h
-> @@ -36,23 +36,23 @@ struct pt_regs {
->  #else /* __KERNEL__ */
->  
->  struct pt_regs {
-> -	long bx;
-> -	long cx;
-> -	long dx;
-> -	long si;
-> -	long di;
-> -	long bp;
-> +	unsigned long bx;
-> +	unsigned long cx;
-> +	unsigned long dx;
-> +	unsigned long si;
-> +	unsigned long di;
-> +	unsigned long bp;
->  	long ax;
-> -	int  ds;
-> -	int  es;
-> -	int  fs;
-> +	unsigned long ds;
-> +	unsigned long es;
-> +	unsigned long fs;
->  	/* int  gs; */
->  	long orig_ax;
-> -	long ip;
-> -	int  cs;
-> -	long flags;
-> -	long sp;
-> -	int  ss;
-> +	unsigned long ip;
-> +	unsigned long cs;
-> +	unsigned long flags;
-> +	unsigned long sp;
-> +	unsigned long ss;
+On 2/8/08, Greg KH <gregkh@suse.de> wrote:
+> On Fri, Feb 08, 2008 at 10:00:56PM +0100, Oliver Pinter wrote:
+> > Hi!
+> >
+> > the v2.6.24.y tree is not published or not visible with git-web on
+> >
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=summary
+> > address
+>
+> Hm, that was odd, Chris created that tree in a different way than
+> normal, which worked to push and pull from directly through ssh, but
+> didn't work through the gitweb interface.
+>
+> It should be fixed now, but might take 30 minutes or so to propagate.
+>
+> If within an hour, it's still not working, please let me know.
+>
+> thanks,
+>
+> greg k-h
+>
 
-Why?! You don't have even minimal chances to unify pt_regs for i386 and
-x86_64.
+
+-- 
+Thanks,
+Oliver
