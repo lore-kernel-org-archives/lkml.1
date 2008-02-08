@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYBHVao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbYBHVbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbYBHVao (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbYBHVaQ
+	id S1757579AbYBHVbH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:31:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYBHVaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:30:16 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43103 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753689AbYBHVaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:30:14 -0500
-Date: Fri, 8 Feb 2008 13:29:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] unifdef linux/vt.h
-Message-Id: <20080208132941.994229f7.akpm@linux-foundation.org>
-In-Reply-To: <20080208173810.GA22895@aepfle.de>
-References: <20080125180215.GA30039@aepfle.de>
-	<20080208173810.GA22895@aepfle.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 16:30:52 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45505 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758102AbYBHVav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 16:30:51 -0500
+Date: Fri, 8 Feb 2008 22:31:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Re: [rft] s2ram wakeup moves to .c, could fix few
+	machines
+Message-ID: <20080208213101.GE12923@elf.ucw.cz>
+References: <20080208210004.GA12923@elf.ucw.cz> <Pine.LNX.4.44L0.0802081617280.5958-100000@iolanthe.rowland.org> <20080208212317.GD12923@elf.ucw.cz> <47ACC942.1020308@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47ACC942.1020308@zytor.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008 18:38:10 +0100
-Olaf Hering <olaf@aepfle.de> wrote:
+On Fri 2008-02-08 13:27:30, H. Peter Anvin wrote:
+> Pavel Machek wrote:
+>>
+>> See arch/x86/kernel/acpi/realmode/wakeup.S (the version that was sent
+>> to the list). No problem there, but table stored at nonzero
+>> offset. Short jump at the beggining of table would fix it (ugly).
+>>
+>
+> Ugly, but it's the standard way to deal.  We have it in the bzImage format, 
+> too.
 
-> On Fri, Jan 25, Olaf Hering wrote:
-> 
-> > remove the newly added __KERNEL__ block from linux/vt.h
-> 
-> Can you pick this up? The patch cant get any better.
+I'd prefer to keep it as it is, there are no problems.
 
-spose so.  Coud you send a tested version against current mainline please?
+This way, we can put debugging instructions at the first byte of
+wakeup code, which is somehow important.
 
+Plus, with right #defines, it should be clean enough.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
