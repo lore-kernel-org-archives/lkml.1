@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbYBHWUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYBHWW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbYBHWUz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:20:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbYBHWUk
+	id S1756848AbYBHWW2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYBHWWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:20:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59418 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbYBHWUj (ORCPT
+	Fri, 8 Feb 2008 17:22:19 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:36958 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751898AbYBHWWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:20:39 -0500
-Date: Fri, 8 Feb 2008 14:15:48 -0800
-From: Greg KH <greg@kroah.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Oliver Pinter <oliver.pntr@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] Linux 2.6.24.1
-Message-ID: <20080208221548.GA6827@kroah.com>
-References: <20080208203404.GC4520@kroah.com> <6101e8c40802081300o3a978d9axef5ca3040d6a5839@mail.gmail.com> <47ACD3F4.8040203@redhat.com>
+	Fri, 8 Feb 2008 17:22:18 -0500
+Message-ID: <47ACD614.2080000@codemonkey.ws>
+Date: Fri, 08 Feb 2008 16:22:12 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47ACD3F4.8040203@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] KVM binary incompatiablity
+References: <20080208113236.55b2ead1@extreme>
+In-Reply-To: <20080208113236.55b2ead1@extreme>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 05:13:08PM -0500, Chuck Ebbert wrote:
-> On 02/08/2008 04:00 PM, Oliver Pinter wrote:
-> > 
-> > the v2.6.24.y tree is not published or not visible with git-web on
-> > http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=summary
-> > address
-> > 
-> 
-> And,
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git
-> 
-> is missing 2.6.23.11, .12 and .13.
+Stephen Hemminger wrote:
+> I notice that recent KVM is incompatiable with older versions.
+>
+> Using a KVM image created on 2.6.24 will crash on 2.6.25 (or
+> vice versa). It appears that Ubuntu Hardy has incorporated the 2.6.25
+> update even though it claims to be 2.6.24.
+>   
 
-And probably the .24 stuff too :)
+This isn't intentional.  What is the guest and how does it crash?
 
-> This one is much easier to use for figuring out what went into each
-> -stable release.
+I've been using the same image for most of KVM's development life cycle 
+without having issues.
 
-I haven't been using that repo, I think Chris has been setting that one
-up.  I'll leave updating it to him, as I'm not quite sure how the
-branches are supposed to be there...
+Regards,
 
-thanks,
+Anthony Liguori
 
-greg k-h
+> This is reproducible on Intel (64bit) kernel.  Was this intentional?
+> is it documented? 
+>
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Microsoft
+> Defy all challenges. Microsoft(R) Visual Studio 2008.
+> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+> _______________________________________________
+> kvm-devel mailing list
+> kvm-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/kvm-devel
+>   
+
