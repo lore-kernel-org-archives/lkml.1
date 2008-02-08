@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760707AbYBHHtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbYBHHun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760707AbYBHHtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 02:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbYBHHtE
+	id S1761381AbYBHHun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 02:50:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYBHHud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 02:49:04 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:20110 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753122AbYBHHtB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 02:49:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=KPE8Qse+5x6sxCqS61p6ZGIMO9IWImZaoYrI9glGPTE/4MFrpZXBtsIAY4/8OzWOHA6T/9/irPT0QsnFIfjR/N6GfwV5YAD9fIoO8VI2zjgW3EPXJrnyCw57NCroi8Q4kXZpj4cqsvgpSdI2AkR8YTkxqVi7UjMd48MkSrx4UzY=
-Message-ID: <84144f020802072348p2f9bda73m52fcc07e272dd68c@mail.gmail.com>
-Date: Fri, 8 Feb 2008 09:48:58 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH 1/2] kmemcheck v3
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Richard Knutsson" <ricknu-0@student.ltu.se>
-In-Reply-To: <Pine.LNX.4.64.0802072307040.22292@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 02:50:33 -0500
+Received: from mx1.suse.de ([195.135.220.2]:36454 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753376AbYBHHub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 02:50:31 -0500
+Date: Fri, 8 Feb 2008 08:50:29 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: David Chinner <dgc@sgi.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de,
+       jens.axboe@oracle.com, James.Bottomley@SteelEye.com, andrea@suse.de,
+       clameter@sgi.com, akpm@linux-foundation.org, andrew.vasquez@qlogic.com,
+       willy@linux.intel.com, Zach Brown <zach.brown@oracle.com>
+Subject: Re: [rfc] direct IO submission and completion scalability issues
+Message-ID: <20080208075029.GF9730@wotan.suse.de>
+References: <20070728012128.GB10033@linux-os.sc.intel.com> <20080203095252.GA11043@wotan.suse.de> <20080204021052.GD155407@sgi.com> <47A69135.3060306@linux.intel.com> <20080204044020.GE155407@sgi.com> <20080204100959.GA15210@wotan.suse.de> <20080205001419.GG155407@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47AB79D4.2070605@gmail.com>
-	 <Pine.LNX.4.64.0802072307040.22292@schroedinger.engr.sgi.com>
-X-Google-Sender-Auth: 14d4db9369e0dc1d
+In-Reply-To: <20080205001419.GG155407@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+On Tue, Feb 05, 2008 at 11:14:19AM +1100, David Chinner wrote:
+> On Mon, Feb 04, 2008 at 11:09:59AM +0100, Nick Piggin wrote:
+> > You get better behaviour in the slab and page allocators and locality
+> > and cache hotness of memory. For example, I guess in a filesystem /
+> > pagecache heavy workload, you have to touch each struct page, buffer head,
+> > fs private state, and also often have to wake the thread for completion.
+> > Much of this data has just been touched at submit time, so doin this on
+> > the same CPU is nice...
+> 
+> [....]
+> 
+> > I'm surprised that the xfs global state bouncing would outweigh the
+> > bouncing of all the per-page/block/bio/request/etc data that gets touched
+> > during completion. We'll see.
+> 
+> per-page/block.bio/request/etc is local to a single I/O. the only
+> penalty is a cacheline bounce for each of the structures from one
+> CPU to another.  That is, there is no global state modified by these
+> completions.
 
-On Thu, 7 Feb 2008, Vegard Nossum wrote:
-> > - DMA can be a problem since there's generally no way for kmemcheck to
-> >   determine when/if a chunk of memory is used for DMA. Ideally, DMA should be
-> >   allocated with untracked caches, but this requires annotation of the
-> >   drivers in question.
+Yeah, but it is going from _all_ submitting CPUs to the one completing
+CPU. So you could bottleneck the interconnect at the completing CPU
+just as much as if you had cachelines being pulled the other way (ie.
+many CPUs trying to pull in a global cacheline).
 
-On Feb 8, 2008 9:10 AM, Christoph Lameter <clameter@sgi.com> wrote:
-> There is a fundamental misunderstanding here: GFP_DMA allocations have
-> nothing to do with DMA. Rather GFP_DMA means allocate memory in a special
-> range of physical memory that is required by legacy devices that cannot
-> use the high address bits for one or the other reason. Any regular
-> memory can be used for DMA.
+ 
+> The real issue is metadata. The transaction log I/O completion
+> funnels through a state machine protected by a single lock, which
+> means completions on different CPUs pulls that lock to all
+> completion CPUs. Given that the same lock is used during transaction
+> completion for other state transitions (in task context, not intr),
+> the more cpus active at once touches, the worse the problem gets.
 
-No there isn't and we've been over this with Vegard many times :-).
-Christoph, can you actually see this in the patch? There shouldn't be
-any __GFP_DMA confusion there. What we have is per-object
-__GFP_NOTRACK which can be used to suppress false positives for
-DMA-filled objects and SLAB_NOTRACK for whole _caches_ that contains
-objects which we must not take page faults at all.
+OK, once you add locking (and not simply cacheline contention), then
+the problem gets harder I agree. But I think that if the submitting
+side takes the same locks as log completion (eg. maybe for starting a
+new transaction), then it is not going to be a clear win either way,
+and you'd have to measure it in the end.
+
