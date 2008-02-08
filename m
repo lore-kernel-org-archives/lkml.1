@@ -1,117 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbYBHQEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbYBHQEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbYBHQEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:04:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757092AbYBHQEX
+	id S932476AbYBHQEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760483AbYBHQEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:04:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42917 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:04:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42925 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755558AbYBHQEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:04:21 -0500
-Date: Fri, 8 Feb 2008 11:04:08 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Horms <horms@verge.net.au>
-Subject: Re: why kexec insists on syncing with recent kernels?
-Message-ID: <20080208160408.GB18782@redhat.com>
-References: <47AB120A.1000600@wpkg.org> <20080207163752.GD11969@redhat.com> <47AB38E2.9050509@wpkg.org>
+	id S1760152AbYBHQEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:04:30 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/4] KEYS: Increase the payload size when instantiating a key
+To: torvalds@osdl.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Fri, 08 Feb 2008 16:04:24 +0000
+Message-ID: <20080208160424.14436.6965.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AB38E2.9050509@wpkg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 05:59:14PM +0100, Tomasz Chmielewski wrote:
-> Vivek Goyal schrieb:
->> On Thu, Feb 07, 2008 at 03:13:30PM +0100, Tomasz Chmielewski wrote:
->>> According to kernel/kexec.c:
->>>
->>>  * kexec does not sync, or unmount filesystems so if you need
->>>  * that to happen you need to do that yourself.
->>>
->>>
->>
->> In latest kexec code I do see it syncing. But it does not unmount the
->> filesystems. So this comment looks like partially wrong.
->>
->>> I saw this was true with 2.6.18 kernel (i.e., it didn't sync), but kexec 
->>> syncs with recent kernels (I checked 2.6.23.14 and 2.6.24):
->>>
->>> # kexec -e
->>> md: stopping all md devices
->>> sd 2:0:0:0: [sdb] Synchronizing SCSI cache
->>
->> Which kexec-tools you are using? 
->
-> # kexec -v
-> kexec 1.101 released 15 February 2005
->
->
->> syncing is initiated by user space so changing kernel will not have
->> any effect (as long as user space is same). I think just that message
->> are spitted by kernel, so probably 2.6.18 did not spit any message and
->> 2.6.24 does.
->
-> Yes and no.
-> I just booted 2.6.24 on a diskless system (Mandriva) I normally use with 
-> 2.6.18 kernel, did kexec -e... And it executed the kernel immediately, 
-> without any syncing.
-> On Debian, with the same 2.6.24 kernel, it does sync.
->
-> So what user space part does the syncing (and how to prevent it)?
+Increase the size of a payload that can be used to instantiate a key in
+add_key() and keyctl_instantiate_key().  This permits huge CIFS SPNEGO blobs to
+be passed around.  The limit is raised to 1MB.  If kmalloc() can't allocate a
+buffer of sufficient size, vmalloc() will be tried instead.
 
-Syncing is initiated by kexec-tools. Following is the code in
-kexec/kexec.c in kexec-tools-testing.tar.gz
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ security/keys/keyctl.c |   38 ++++++++++++++++++++++++++++++--------
+ 1 files changed, 30 insertions(+), 8 deletions(-)
 
 
-        if ((result == 0) && do_sync) {
-                sync();
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index d9ca15c..8ec8432 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -19,6 +19,7 @@
+ #include <linux/capability.h>
+ #include <linux/string.h>
+ #include <linux/err.h>
++#include <linux/vmalloc.h>
+ #include <asm/uaccess.h>
+ #include "internal.h"
+ 
+@@ -62,9 +63,10 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 	char type[32], *description;
+ 	void *payload;
+ 	long ret;
++	bool vm;
+ 
+ 	ret = -EINVAL;
+-	if (plen > 32767)
++	if (plen > 1024 * 1024 - 1)
+ 		goto error;
+ 
+ 	/* draw all the data into kernel space */
+@@ -81,11 +83,18 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 	/* pull the payload in if one was supplied */
+ 	payload = NULL;
+ 
++	vm = false;
+ 	if (_payload) {
+ 		ret = -ENOMEM;
+ 		payload = kmalloc(plen, GFP_KERNEL);
+-		if (!payload)
+-			goto error2;
++		if (!payload) {
++			if (plen <= PAGE_SIZE)
++				goto error2;
++			vm = true;
++			payload = vmalloc(plen);
++			if (!payload)
++				goto error2;
++		}
+ 
+ 		ret = -EFAULT;
+ 		if (copy_from_user(payload, _payload, plen) != 0)
+@@ -113,7 +122,10 @@ asmlinkage long sys_add_key(const char __user *_type,
+ 
+ 	key_ref_put(keyring_ref);
+  error3:
+-	kfree(payload);
++	if (!vm)
++		kfree(payload);
++	else
++		vfree(payload);
+  error2:
+ 	kfree(description);
+  error:
+@@ -821,9 +833,10 @@ long keyctl_instantiate_key(key_serial_t id,
+ 	key_ref_t keyring_ref;
+ 	void *payload;
+ 	long ret;
++	bool vm = false;
+ 
+ 	ret = -EINVAL;
+-	if (plen > 32767)
++	if (plen > 1024 * 1024 - 1)
+ 		goto error;
+ 
+ 	/* the appropriate instantiation authorisation key must have been
+@@ -843,8 +856,14 @@ long keyctl_instantiate_key(key_serial_t id,
+ 	if (_payload) {
+ 		ret = -ENOMEM;
+ 		payload = kmalloc(plen, GFP_KERNEL);
+-		if (!payload)
+-			goto error;
++		if (!payload) {
++			if (plen <= PAGE_SIZE)
++				goto error;
++			vm = true;
++			payload = vmalloc(plen);
++			if (!payload)
++				goto error;
++		}
+ 
+ 		ret = -EFAULT;
+ 		if (copy_from_user(payload, _payload, plen) != 0)
+@@ -877,7 +896,10 @@ long keyctl_instantiate_key(key_serial_t id,
+ 	}
+ 
+ error2:
+-	kfree(payload);
++	if (!vm)
++		kfree(payload);
++	else
++		vfree(payload);
+ error:
+ 	return ret;
+ 
 
-I think this problem has nothing to do with syncing. There seems to be
-some dependency on not shutting down network here. You might want to 
-debug, exactly where does it get stuck.
-
-- Specify earlyprintk= parameter for second kernel and see if control
-  is reaching to second kernel.
-
-- Otherwise specify --console-serial parameter on "kexec -l" commandline
-  and it should display a message "I am in purgatory" on serial console.
-  This will just mean that control has reached at least till purgatory.
-
-Right now  there does not seem to be any option to prevent syncing and 
-I don't know why would one like to have one.
-
-> (...)
->
->
->>> The way kexec works now makes rebooting unreliable again:
->>> - network interfaces are brought down,
->>> - kernel tries to sync - it never will, as we're booted off network, 
->>> which is down
->>>
->>
->> Kexec has got an option -x --no-ifdown, which will not bring the network
->> down. Try that. "kexec- -e -x"
->
-> It does seem to help, thanks.
->
-> Why it has to be the last option specified?
->
-
-I have no idea. This might be an stale comment. Try putting -x before -e.
-
-> I tried -f option before (don't call shutdown), but it didn't help.
->
-
-Even if you did -f, it must have shutdown the network. I think somehow
-in latest kernels there is some dependency on network and that's why
-not shutting down network in this case is helping you.
-
-Thanks
-Vivek
