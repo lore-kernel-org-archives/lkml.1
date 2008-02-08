@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763398AbYBHRGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935190AbYBHRGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763398AbYBHRGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932366AbYBHQzE
+	id S935190AbYBHRGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933972AbYBHQzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:55:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52763 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:55:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52788 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758688AbYBHQyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:54:08 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 22/37] NFS: Add FS-Cache option bit and debug bit
-To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
-Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:53:55 +0000
-Message-ID: <20080208165355.15902.87464.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
-References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	id S933745AbYBHQyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:54:20 -0500
+Message-ID: <47AC8931.50704@redhat.com>
+Date: Fri, 08 Feb 2008 10:54:09 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rth@redhat.com
+Subject: Re: [PATCH] reduce large do_mount stack usage with noinlines
+References: <47AA3126.8090102@redhat.com>	<20080206143457.03e8741d.akpm@linux-foundation.org>	<47AA3EAA.9080204@redhat.com>	<20080206152239.a2352d6d.akpm@linux-foundation.org> <p73myqb2y09.fsf@bingen.suse.de>
+In-Reply-To: <p73myqb2y09.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add FS-Cache option bit to nfs_server struct.  This is set to indicate local
-on-disk caching is enabled for a particular superblock.
+Andi Kleen wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+>>>   */
+>>> -static int do_change_type(struct nameidata *nd, int flag)
+>>> +static noinline int do_change_type(struct nameidata *nd, int flag)
+>> What we could do here is defined a new noinline_because_of_stack_suckiness
+>> and use that.  Reasons:
+>>
+>> - self-documenting, so we don't need to comment each site
+>>
+>> - can be made a no-op for suitable __GNUC__ values if gcc ever fixes this
+> 
+> In theory it should be already fixed; iirc Richard H. (cc'ed) added
+> code for this somewhere in 4.x. Don't quite remember which x, likely 
+> either 1 or 2.
+> 
+> e.g. if I do a quick test here on gcc 4.2 then it definitely
+> reuses stack slots between inlines. As you can see only ~100 bytes
+> are allocated, not ~200.
 
-Also add debug bit for local caching operations.
+On gcc 4.1.2 and 4.3 (fedora flavors) I don't see it re-used in
+do_mount, though... *shrug*
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- include/linux/nfs_fs.h    |    1 +
- include/linux/nfs_fs_sb.h |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
-
-
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index a69ba80..14894c9 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -578,6 +578,7 @@ extern void * nfs_root_data(void);
- #define NFSDBG_CALLBACK		0x0100
- #define NFSDBG_CLIENT		0x0200
- #define NFSDBG_MOUNT		0x0400
-+#define NFSDBG_FSCACHE		0x0800
- #define NFSDBG_ALL		0xFFFF
- 
- #ifdef __KERNEL__
-diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
-index 3423c67..e7c4cdd 100644
---- a/include/linux/nfs_fs_sb.h
-+++ b/include/linux/nfs_fs_sb.h
-@@ -99,6 +99,8 @@ struct nfs_server {
- 	unsigned int		acdirmin;
- 	unsigned int		acdirmax;
- 	unsigned int		namelen;
-+	unsigned int		options;	/* extra options enabled by mount */
-+#define NFS_OPTION_FSCACHE	0x00000001	/* - local caching enabled */
- 
- 	struct nfs_fsid		fsid;
- 	__u64			maxfilesize;	/* maximum file size */
-
+-Eric
