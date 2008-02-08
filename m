@@ -1,75 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763468AbYBHD0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761795AbYBHDpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763468AbYBHD0M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 22:26:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760768AbYBHDZ5
+	id S1761795AbYBHDpp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 22:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759114AbYBHDpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 22:25:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54469 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758147AbYBHDZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 22:25:56 -0500
-Date: Fri, 8 Feb 2008 03:24:23 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Brian Wood <brian.j.wood@intel.com>, Daniel Walker <dwalker@mvista.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Jonathan Brassow <jbrassow@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
-       Milan Broz <mbroz@redhat.com>, Paul Jimenez <pj@place.org>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>, Vasily Averin <vvs@sw.ru>,
-       dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] device-mapper update for 2.6.25
-Message-ID: <20080208032423.GX8075@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Brian Wood <brian.j.wood@intel.com>,
-	Daniel Walker <dwalker@mvista.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Jonathan Brassow <jbrassow@redhat.com>,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
-	Milan Broz <mbroz@redhat.com>, Paul Jimenez <pj@place.org>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Vasily Averin <vvs@sw.ru>, dm-devel@redhat.com,
-	linux-kernel@vger.kernel.org
-References: <20080208024532.GC24157@agk.fab.redhat.com> <20080207190447.b4dcfe0c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080207190447.b4dcfe0c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	Thu, 7 Feb 2008 22:45:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54949 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758998AbYBHDpd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 22:45:33 -0500
+Message-ID: <47ABD056.5070304@torque.net>
+Date: Thu, 07 Feb 2008 22:45:26 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: npiggin@suse.de
+CC: akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [patch 10/18] sg: nopage
+References: <20071205071547.701344000@nick.local0.net> <20071205071627.793811000@nick.local0.net>
+In-Reply-To: <20071205071627.793811000@nick.local0.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 07:04:47PM -0800, Andrew Morton wrote:
-> On Fri, 8 Feb 2008 02:45:32 +0000 Alasdair G Kergon <agk@redhat.com> wrote:
-> 
-> >       dm: move deferred bio flushing to workqueue
-> 
-> To my unpracticed eye this one looks fairly fundamental.  Unfortunately the
-> changelog:
-> 
->   Add a single-thread workqueue for each mapped device and move flushing
->   of the lists of pushback and deferred bios to this new workqueue.
-> 
-> tells us nothing of the reasons for this change.  (It should have done so!)
-> 
-> It _looks_ pretty unscalable.  Perhaps these deferred BIOs don't happen
-> very often?
- 
-Indeed - it's a rare occurrence - happens when the dm device is
-suspended/resumed which usually means it was being reconfigured by something in
-userspace.
+For the patch shown below:
 
-It's the first patch of a series that will provide barrier support (slated for
-2.6.26).
+Signed-off-by: Douglas Gilbert <dougg@torque.net>
 
-The appearance of all these workqueues in dm goes back to this old change:
-  md-dm-reduce-stack-usage-with-stacked-block-devices.patch
 
-Alasdair
--- 
-agk@redhat.com
+
+npiggin@suse.de wrote:
+Convert SG from nopage to fault.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Cc: dgilbert@interlog.com
+Cc: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+  drivers/scsi/sg.c |   23 +++++++++++------------
+  1 file changed, 11 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/drivers/scsi/sg.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/sg.c
++++ linux-2.6/drivers/scsi/sg.c
+@@ -1144,23 +1144,22 @@ sg_fasync(int fd, struct file *filp, int
+  	return (retval < 0) ? retval : 0;
+  }
+
+-static struct page *
+-sg_vma_nopage(struct vm_area_struct *vma, unsigned long addr, int *type)
++static int
++sg_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+  {
+  	Sg_fd *sfp;
+-	struct page *page = NOPAGE_SIGBUS;
+  	unsigned long offset, len, sa;
+  	Sg_scatter_hold *rsv_schp;
+  	struct scatterlist *sg;
+  	int k;
+
+  	if ((NULL == vma) || (!(sfp = (Sg_fd *) vma->vm_private_data)))
+-		return page;
++		return VM_FAULT_SIGBUS;
+  	rsv_schp = &sfp->reserve;
+-	offset = addr - vma->vm_start;
++	offset = vmf->pgoff << PAGE_SHIFT;
+  	if (offset >= rsv_schp->bufflen)
+-		return page;
+-	SCSI_LOG_TIMEOUT(3, printk("sg_vma_nopage: offset=%lu, scatg=%d\n",
++		return VM_FAULT_SIGBUS;
++	SCSI_LOG_TIMEOUT(3, printk("sg_vma_fault: offset=%lu, scatg=%d\n",
+  				   offset, rsv_schp->k_use_sg));
+  	sg = rsv_schp->buffer;
+  	sa = vma->vm_start;
+@@ -1169,21 +1168,21 @@ sg_vma_nopage(struct vm_area_struct *vma
+  		len = vma->vm_end - sa;
+  		len = (len < sg->length) ? len : sg->length;
+  		if (offset < len) {
++			struct page *page;
+  			page = virt_to_page(page_address(sg_page(sg)) + offset);
+  			get_page(page);	/* increment page count */
+-			break;
++			vmf->page = page;
++			return 0; /* success */
+  		}
+  		sa += len;
+  		offset -= len;
+  	}
+
+-	if (type)
+-		*type = VM_FAULT_MINOR;
+-	return page;
++	return VM_FAULT_SIGBUS;
+  }
+
+  static struct vm_operations_struct sg_mmap_vm_ops = {
+-	.nopage = sg_vma_nopage,
++	.fault = sg_vma_fault,
+  };
+
+  static int
+
+
