@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763009AbYBHTYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbYBHT1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763009AbYBHTYd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 14:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761925AbYBHTX7
+	id S1761506AbYBHT1i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 14:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYBHT1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 14:23:59 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:52732 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761561AbYBHTX6 (ORCPT
+	Fri, 8 Feb 2008 14:27:30 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:26338 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbYBHT13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 14:23:58 -0500
+	Fri, 8 Feb 2008 14:27:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=m/zFi4E5NnAa2hOzxxNtiZUOiuxjgLe0MRFMUFUeHQUt0F2G97IKKli1ljo3r55xdQsTJHsjHmt1vNj7ugCTgzIGZfr5nOBdNtjnSA38yoayAETOj7CYMa1Bs6YFsiNMBaTdcsl1R7CL6/ABypdjsCdrTRIcb5iaXco2Jc2oxZo=
-Date: Fri, 8 Feb 2008 22:23:43 +0300
-To: Kohei KaiGai <kaigai@ak.jp.nec.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>, akpm@osdl.org,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] exporting capability code/name pairs (try #4)
-Message-ID: <20080208192343.GA15571@martell.zuzino.mipt.ru>
-References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com> <20080204162103.GA20130@sergelap.ibm.com> <47A91B00.9080301@ak.jp.nec.com> <20080206050805.GD3258@sergelap.austin.ibm.com> <47AC23F1.5030300@ak.jp.nec.com>
+        h=from:organization:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=XmIWzyT5BuZ5TKYMva8reuahMQYBWMWuIVLRwy9501x991vgQJgE0QHDe3WncsgnOnW6IcM2RY1JN4UnRKnCfrqTRcilSqwRuCbYyPJnSjls3Kly6i98Hc63gT8xCO3X1Egq1DS1Q3AxTCwxBcnLZp4FxrJdFNDxR0XQ+Xiw2mM=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology, Karnataka
+To: linux-kernel@vger.kernel.org
+Subject: [REGRESSION] kobject handling in cpufreq
+Date: Sat, 9 Feb 2008 00:52:40 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: gregkh@suse.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47AC23F1.5030300@ak.jp.nec.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Message-Id: <200802090052.40939.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 06:42:09PM +0900, Kohei KaiGai wrote:
-> [kaigai@saba ~]$ ls -R /sys/kernel/capability/
-> /sys/kernel/capability/:
-> codes  names  version
-> 
-> /sys/kernel/capability/codes:
-> 0  10  12  14  16  18  2   21  23  25  27  29  30  32  4  6  8
-> 1  11  13  15  17  19  20  22  24  26  28  3   31  33  5  7  9
-> 
-> /sys/kernel/capability/names:
-> cap_audit_control    cap_kill              cap_net_raw     cap_sys_nice
-> cap_audit_write      cap_lease             cap_setfcap     cap_sys_pacct
-> cap_chown            cap_linux_immutable   cap_setgid      cap_sys_ptrace
-> cap_dac_override     cap_mac_admin         cap_setpcap     cap_sys_rawio
-> cap_dac_read_search  cap_mac_override      cap_setuid      cap_sys_resource
-> cap_fowner           cap_mknod             cap_sys_admin   cap_sys_time
-> cap_fsetid           cap_net_admin         cap_sys_boot    cap_sys_tty_config
-> cap_ipc_lock         cap_net_bind_service  cap_sys_chroot
-> cap_ipc_owner        cap_net_broadcast     cap_sys_module
-> [kaigai@saba ~]$ cat /sys/kernel/capability/codes/20
-> cap_sys_pacct
-> [kaigai@saba ~]$ cat /sys/kernel/capability/names/cap_mknod
-> 27
-> [kaigai@saba ~]$
-> --------------------------------------------------------
-> Any comment please.
+Hi greg,
 
-You don't like 1 (one) /proc/capabilities, why?
+I encountered a regression in linux-2.6.git which prevented the system from shutting down. I found that it 
+was 'waiting_for_completion' on kobj_unregister.The same thing happened when I tried to take CPUs offline.
+
+git-bisect pointed me to this commit :
+
+commit c10997f6575f476ff38442fa18fd4a0d80345f9d
+Author: Greg Kroah-Hartman <gregkh@suse.de>
+Date:   Thu Dec 20 08:13:05 2007 -0800
+
+    Kobject: convert drivers/* from kobject_unregister() to kobject_put()
+
+In the file drivers/cpufreq/cpufreq.c, you have not replaced one occurrence of kobject_unregister with kobject_put. 
+Apparently its because of the kobject_put in the subsequent line.
+
+@@ -1030,8 +1030,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
+ 
+        unlock_policy_rwsem_write(cpu);
+ 
+-       kobject_unregister(&data->kobj);
+-
+        kobject_put(&data->kobj);
+ 
+        /* we need to make sure that the underlying kobj is actually
+
+Now, this can be fixed by adding another kobject_put. But having two kobject_puts in consequent lines tells us that there 
+should be two references to the kobject at that point. So, I believe that it is safe to remove the kobject_get 
+corresponding to the existing kobject_put to fix this.
+
+Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 64926aa..2158786 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1004,17 +1004,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
+ 		unlock_policy_rwsem_write(cpu);
+ 		return 0;
+ 	}
+-#endif
+-
+-
+-	if (!kobject_get(&data->kobj)) {
+-		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-		cpufreq_debug_enable_ratelimit();
+-		unlock_policy_rwsem_write(cpu);
+-		return -EFAULT;
+-	}
+-
+-#ifdef CONFIG_SMP
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	cpufreq_cpu_governor[cpu] = data->governor;
+-- 
+regards,
+balaji rao
