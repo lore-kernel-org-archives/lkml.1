@@ -1,86 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbYBHLcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbYBHLeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762389AbYBHLcz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 06:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYBHLcl
+	id S1762667AbYBHLeY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 06:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760421AbYBHLd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 06:32:41 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49557 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbYBHLcj (ORCPT
+	Fri, 8 Feb 2008 06:33:59 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:28962 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759499AbYBHLd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 06:32:39 -0500
-Date: Fri, 8 Feb 2008 13:07:46 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ross Vandegrift <ross@kallisti.us>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glenn Griffin <ggriffin.kernel@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-Message-ID: <20080208120746.GE4745@one.firstfloor.org>
-References: <47a79d64.16538c0a.5b6a.ffffb0fe@mx.google.com> <20080205155558.GA23145@one.firstfloor.org> <c9e534200802051029u5d08cf6dm54866f769e362262@mail.gmail.com> <20080205192559.GA10573@kallisti.us> <20080205201106.GB26150@one.firstfloor.org> <20080205212335.GA11287@kallisti.us> <20080206085357.GA1402@one.firstfloor.org> <20080207194446.GA25463@kallisti.us>
+	Fri, 8 Feb 2008 06:33:57 -0500
+X-YMail-OSG: BTjXdKcVM1kBBDRywyDdXJdNkdsLeN9DoaV61NIox3g6mQapTM2Q9WoJRldGvs78q0CEsdLW.A--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: david@lang.hm
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.00.0802071437404.12791@asgard.lang.hm>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1202144767.3096.38.camel@localhost.localdomain>
+	 <47A7488B.4080000@vlnb.net>
+	 <1202145901.3096.49.camel@localhost.localdomain> <47A751C5.60600@vlnb.net>
+	 <1202149322.3096.66.camel@localhost.localdomain>
+	 <47A75B8A.3020503@vlnb.net>
+	 <1202151293.3096.80.camel@localhost.localdomain>
+	 <47A8B210.8040202@vlnb.net>
+	 <1202238802.3133.71.camel@localhost.localdomain>
+	 <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
+	 <47AB0B63.20500@vlnb.net>
+	 <alpine.DEB.1.00.0802071437404.12791@asgard.lang.hm>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 03:33:15 -0800
+Message-Id: <1202470395.1805.127.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080207194446.GA25463@kallisti.us>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 02:44:46PM -0500, Ross Vandegrift wrote:
-> On Wed, Feb 06, 2008 at 09:53:57AM +0100, Andi Kleen wrote:
-> > That would be useful yes -- for different bandwidths.
+On Thu, 2008-02-07 at 14:51 -0800, david@lang.hm wrote:
+> On Thu, 7 Feb 2008, Vladislav Bolkhovitin wrote:
 > 
-> My initial test is end-to-end 1000Mbps, but I've got a few different
-> packet rates.
+> > Bart Van Assche wrote:
+> >> - It has been discussed which iSCSI target implementation should be in
+> >> the mainstream Linux kernel. There is no agreement on this subject
+> >> yet. The short-term options are as follows:
+> >> 1) Do not integrate any new iSCSI target implementation in the
+> >> mainstream Linux kernel.
+> >> 2) Add one of the existing in-kernel iSCSI target implementations to
+> >> the kernel, e.g. SCST or PyX/LIO.
+> >> 3) Create a new in-kernel iSCSI target implementation that combines
+> >> the advantages of the existing iSCSI kernel target implementations
+> >> (iETD, STGT, SCST and PyX/LIO).
+> >> 
+> >> As an iSCSI user, I prefer option (3). The big question is whether the
+> >> various storage target authors agree with this ?
+> >
+> > I tend to agree with some important notes:
+> >
+> > 1. IET should be excluded from this list, iSCSI-SCST is IET updated for SCST 
+> > framework with a lot of bugfixes and improvements.
+> >
+> > 2. I think, everybody will agree that Linux iSCSI target should work over 
+> > some standard SCSI target framework. Hence the choice gets narrower: SCST vs 
+> > STGT. I don't think there's a way for a dedicated iSCSI target (i.e. PyX/LIO) 
+> > in the mainline, because of a lot of code duplication. Nicholas could decide 
+> > to move to either existing framework (although, frankly, I don't think 
+> > there's a possibility for in-kernel iSCSI target and user space SCSI target 
+> > framework) and if he decide to go with SCST, I'll be glad to offer my help 
+> > and support and wouldn't care if LIO-SCST eventually replaced iSCSI-SCST. The 
+> > better one should win.
 > 
-> > If the young/old heuristics do not work well enough anymore most
-> > likely we should try readding RED to the syn queue again. That used
-> > to be pretty effective in the early days. I don't quite remember why
-> > Linux didn't end up using it in fact.
+> why should linux as an iSCSI target be limited to passthrough to a SCSI 
+> device.
 > 
-> I'm running juno-z with 2, 4, & 8 threads of syn flood to port 80.
-> wireshark measures 2 threads at 350pps, 4 threads at 750pps, and 8
 
-What's the total bandwidth of the attack?
+<nod>
 
-> threads at 1200pps.  Under no SYN flood, the server handles 750 HTTP
-> requests per second, measured via httping in flood mode.
+I don't think anyone is saying it should be.  It makes sense that the
+more mature SCSI engines that have working code will be providing alot
+of the foundation as we talk about options..
 
-Thanks for the tests. Could you please do an additional experiment? 
-Use sch_em or similar to add a jittering longer latency in the connection
-(as would be realistic in a real distributed DOS). Does it make a
-difference? 
+>From comparing the designs of SCST and LIO-SE, we know that SCST has
+supports very SCSI specific target mode hardware, including software
+target mode forks of other kernel code.  This code for the target mode
+pSCSI, FC and SAS control paths (more for the state machines, that CDB
+emulation) that will most likely never need to be emulated on non SCSI
+target engine.  SCST has support for the most SCSI fabric protocols of
+the group (although it is lacking iSER) while the LIO-SE only supports
+traditional iSCSI using Linux/IP (this means TCP, SCTP and IPv6).  The
+design of LIO-SE was to make every iSCSI initiator that sends SCSI CDBs
+and data to talk to every potential device in the Linux storage stack on
+the largest amount of hardware architectures possible.
 
-> With a default tcp_max_syn_backlog of 1024, I can trivially prevent
-> any inbound client connections with 2 threads of syn flood.
-> Enabling tcp_syncookies brings the connection handling back up to 725
-> fetches per second.
+Most of the iSCSI Initiators I know (including non Linux) do not rely on
+heavy SCSI task management, and I think this would be a lower priority
+item to get real SCSI specific recovery in the traditional iSCSI target
+for users.  Espically things like SCSI target mode queue locking
+(affectionally called Auto Contingent Allegiance) make no sense for
+traditional iSCSI or iSER, because CmdSN rules are doing this for us.
 
-Yes the defaults are probably too low. That's something that should
-be fixed.
-
+> the most common use of this sort of thing that I would see is to load up a 
+> bunch of 1TB SATA drives in a commodity PC, run software RAID, and then 
+> export the resulting volume to other servers via iSCSI. not a 'real' SCSI 
+> device in sight.
 > 
-> At these levels the CPU impact of tcp_syncookies is nothing.  I can't
 
-CPU impact of syncookies was never a concern. The problems are rather
-missing flow control and disabling of valuable TCP features.
+I recently moved the last core LIO target machine from a hardware RAID5
+to MD RAID6 with struct block_device exported LVM objects via
+Linux/iSCSI to PVM and HVM domains, and I have been very happy with the
+results.  Being able to export any physical or virtual storage object
+from whatever layer makes sense for your particular case.  This applies
+to both block and file level access.  For example, making an iSCSI
+Initiator and Target run in the most limited in environments places
+where NAS (espically userspace server side) would have a really hard
+time fitting, has always been a requirement.  You can imagine a system
+with a smaller amount of memory (say 32MB) having a difficult time doing
+I/O to any amount of NAS clients.
 
-> BUG: soft lockup detected on CPU#1!
->  [<c044d1ec>] softlockup_tick+0x96/0xa4
->  [<c042ddb0>] update_process_times+0x39/0x5c
->  [<c04196f7>] smp_apic_timer_interrupt+0x5b/0x6c
->  [<c04059bf>] apic_timer_interrupt+0x1f/0x24
->  [<c045007b>] taskstats_exit_send+0x152/0x371
->  [<c05c007b>] netlink_kernel_create+0x5/0x11c
->  [<c05a7415>] reqsk_queue_alloc+0x32/0x81
->  [<c05a5aca>] lock_sock+0x8e/0x96
+If are talking about memory required to get best performance, using
+kernel level DMA ring allocation and submission to a generic target
+engine uses a significantly smaller amount of memory, than say
+traditional buffered FILEIO.  Going futher up the storage stack with
+buffered file IO, regardless of if its block or file level, will always
+start to add overhead.  I think that kernel level FILEIO with O_DIRECT
+and asyncio would probably help alot in this case for general target
+mode usage of MD and LVM block devices.
 
-I think the softirqs are starving user context through the socket
-lock.  Probably should be fixed too. Something like softirq should
-detect when there is a user and it is looping too long and should
-give up the lock for some time.
+This is because when we are using PSCSI or IBLOCK to queue I/Os which,
+may need be different from the original IO from the initiator/client due
+to OS storage subsystem differences and/or physical HBA limitiations for
+the layers below block.  The current LIO-SE API excepts the storage
+object to present these physical limitiations if to engine they exist.
+This is called iscsi_transport_t in iscsi_target_transport.h currently,
+but really should be called something like target_subsytem_api_t and
+plugins called target_pscsi_t, target_bio_t, target_file_t, etc.
 
+> As far as how good a standard iSCSI is, at this point I don't think it 
+> really matters. There are too many devices and manufacturers out there 
+> that implement iSCSI as their storage protocol (from both sides, offering 
+> storage to other systems, and using external storage). Sometimes the best 
+> technology doesn't win, but Linux should be interoperable with as much as 
+> possible and be ready to support the winners and the loosers in technology 
+> options, for as long as anyone chooses to use the old equipment (after 
+> all, we support things like Arcnet networking, which lost to Ethernet many 
+> years ago)
+> 
 
--Andi
+The RFC-3720 standard has been stable for going on four years in 2008,
+and as the implementations continue to mature, having Linux lead the way
+in iSCSI Target, Initiator and Target/Initiator that can potentially run
+on anything that can boot Linux on the many, many types of system and
+storage around these days is the goal.  I can't personally comment on
+how many of these types of systems that target mode or iSCSI stacks have
+run in other people's environments, but I have personally been involved
+getting LIO/SE and Core/iSCSI running on i386 and x86_64, along with
+Alpha, ia64, MIPS, PPC and POWER, and lots of ARM.  I believe the LIO
+Target and Initiator stacks have been able to run on the smallest
+systems so far, including a uclinux 2.6 sub 100 Mhz board and ~4 MB of
+usable sytem memory.  This is still today with the LIO target stack,
+which has been successfully run on the OpenMoko device with memory and
+FILEIO. :-)
+
+--nab
+
+Btw, I definately agree that being able to export the large amount of
+legacy drivers will continue to be an important part..
+
