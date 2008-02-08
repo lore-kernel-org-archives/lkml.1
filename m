@@ -1,103 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761802AbYBHAeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbYBHAej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761802AbYBHAeM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 19:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763019AbYBHAbA
+	id S1763589AbYBHAej (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 19:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763273AbYBHAbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 19:31:00 -0500
-Received: from wr-out-0506.google.com ([64.233.184.224]:45438 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762931AbYBHAa5 (ORCPT
+	Thu, 7 Feb 2008 19:31:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:23469 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763210AbYBHAbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 19:30:57 -0500
+	Thu, 7 Feb 2008 19:31:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=tn4vUFrH/LFsYbMW1W7InWwyyvOukg9bSAU4T7d6JWq0xcsLxQ0LJ7EbbpvhpGPV0dje2/u6Jv48+YpPMgMixGf2CT4tu80UXZF8JmWQjo+fxNGlrUy9FbLxKt7OLj5ZQJP58VE1ViibrkVXlcjUphQbRtpdF2+GJ2GDTw5Aews=
+        b=BqVZUfwAZPUWcUC4zfMVfYkzWugC508RGojXHKpA2MfJ1kI+smJaAzIytIN3AdtIMyyQ9E1VR5gLcI2HIx26/cphrGzltOP+OPT9Y0q/UImXnVhj46oao56/fztVfJi6AdvjD3marmzF+/upHboJbihYUafnIB8nt6667ynCMeU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:09 +0100
-Message-Id: <20080208004509.17746.70379.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:16 +0100
+Message-Id: <20080208004516.17746.18498.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 07/18] ide: factor out devices init from ide_init_port_data()
+Subject: [PATCH 08/18] ide: move ide_port_setup_devices() call to ide_device_add_all()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Factor out devices init from ide_init_port_data() to
-  ide_port_init_devices_data().
-
-While at it:
-
-* Add explicit clearing of IDE device structure.
-
-There should be no functionality changes caused by this patch.
+Add ide_cfg_mtx lock/unlock to ide_port_setup_devices() and then move
+ide_port_setup_devices() call from init_irq() to ide_device_add_all().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide.c |   23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ drivers/ide/ide-probe.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: b/drivers/ide/ide.c
+Index: b/drivers/ide/ide-probe.c
 ===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -109,13 +109,13 @@ ide_hwif_t ide_hwifs[MAX_HWIFS];	/* mast
- 
- EXPORT_SYMBOL(ide_hwifs);
- 
-+static void ide_port_init_devices_data(ide_hwif_t *);
-+
- /*
-  * Do not even *think* about calling this!
-  */
- void ide_init_port_data(ide_hwif_t *hwif, unsigned int index)
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -947,6 +947,7 @@ static void ide_port_setup_devices(ide_h
  {
--	unsigned int unit;
--
- 	/* bulk initialize hwif & drive info with zeros */
- 	memset(hwif, 0, sizeof(ide_hwif_t));
+ 	int i;
  
-@@ -134,8 +134,20 @@ void ide_init_port_data(ide_hwif_t *hwif
++	mutex_lock(&ide_cfg_mtx);
+ 	for (i = 0; i < MAX_DRIVES; i++) {
+ 		ide_drive_t *drive = &hwif->drives[i];
  
- 	default_hwif_iops(hwif);
- 	default_hwif_transport(hwif);
-+
-+	ide_port_init_devices_data(hwif);
-+}
-+EXPORT_SYMBOL_GPL(ide_init_port_data);
-+
-+static void ide_port_init_devices_data(ide_hwif_t *hwif)
-+{
-+	int unit;
-+
- 	for (unit = 0; unit < MAX_DRIVES; ++unit) {
- 		ide_drive_t *drive = &hwif->drives[unit];
-+		u8 j = (hwif->index * MAX_DRIVES) + unit;
-+
-+		memset(drive, 0, sizeof(*drive));
+@@ -961,6 +962,7 @@ static void ide_port_setup_devices(ide_h
  
- 		drive->media			= ide_disk;
- 		drive->select.all		= (unit<<4)|0xa0;
-@@ -147,15 +159,14 @@ void ide_init_port_data(ide_hwif_t *hwif
- 		drive->special.b.set_geometry	= 1;
- 		drive->name[0]			= 'h';
- 		drive->name[1]			= 'd';
--		drive->name[2]			= 'a' + (index * MAX_DRIVES) + unit;
-+		drive->name[2]			= 'a' + j;
- 		drive->max_failures		= IDE_DEFAULT_MAX_FAILURES;
--		drive->using_dma		= 0;
--		drive->vdma			= 0;
-+
- 		INIT_LIST_HEAD(&drive->list);
- 		init_completion(&drive->gendev_rel_comp);
+ 		ide_add_drive_to_hwgroup(drive);
  	}
++	mutex_unlock(&ide_cfg_mtx);
  }
--EXPORT_SYMBOL_GPL(ide_init_port_data);
-+
  
- static void init_hwif_default(ide_hwif_t *hwif, unsigned int index)
- {
+ /*
+@@ -1086,8 +1088,6 @@ static int init_irq (ide_hwif_t *hwif)
+ 			hwif->sharing_irq ? "shar" : "serializ", match->name);
+ 	printk("\n");
+ 
+-	ide_port_setup_devices(hwif);
+-
+ 	mutex_unlock(&ide_cfg_mtx);
+ 	return 0;
+ out_unlink:
+@@ -1443,6 +1443,8 @@ int ide_device_add_all(u8 *idx, const st
+ 			continue;
+ 		}
+ 
++		ide_port_setup_devices(hwif);
++
+ 		ide_acpi_init(hwif);
+ 		ide_acpi_port_init_devices(hwif);
+ 	}
