@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbYBHDxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYBHDz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbYBHDxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 22:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbYBHDxl
+	id S1761963AbYBHDz2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 22:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbYBHDzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 22:53:41 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:43137 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbYBHDxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 22:53:40 -0500
-To: James.Bottomley@HansenPartnership.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1202434627.3171.63.camel@localhost.localdomain>
-References: <1202432206.3171.53.camel@localhost.localdomain>
-	<1202434627.3171.63.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080208125328J.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 08 Feb 2008 12:53:28 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Thu, 7 Feb 2008 22:55:14 -0500
+Received: from pie.citi.umich.edu ([141.211.133.115]:50486 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756174AbYBHDzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 22:55:12 -0500
+Date: Thu, 7 Feb 2008 22:55:08 -0500
+To: NeilBrown <neilb@suse.de>
+Cc: J.Bruce@suse.de, Fields@suse.de, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] knfsd: Remove NLM_HOST_MAX and associated logic.
+Message-ID: <20080208035508.GC7117@fieldses.org>
+References: <20080208130300.14320.patches@notabene> <1080208020337.14371@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1080208020337.14371@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 19:37:07 -0600
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Fri, Feb 08, 2008 at 01:03:37PM +1100, NeilBrown wrote:
+> 
+> Lockd caches information about hosts that have recently held locks it
+> expedite the taking of further locks.
+
+Applied, thanks!--b.
 
 > 
-> On Thu, 2008-02-07 at 18:56 -0600, James Bottomley wrote:
-> > Quite a bit of this is fixing things broken previously (the advansys fix
-> > is still pending resolution, but I'll send it as an -rc fix when we have
-> > it).  There's the final elimination of all drivers that are esp based
-> > but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
-> > the usual bunch of driver updates and the addition of a new enclosure
-> > services driver and the corresponding ULD.
+> It periodically discards this information for hosts that have not been
+> used for a few minutes.
 > 
-> OK, the advansys fix came in.  I've added it to the patch.
+> lockd currently has a value NLM_HOST_MAX, and changes the 'garbage
+> collection' behaviour when the number of hosts exceeds this threshold.
 > 
-> James
+> However it's behaviour in strange an likely not what was intended.
+> When the number of hosts exceeds the max, it scans *less* often (every
+> 2 minutes vs every minute) and allows unused host information to
+> remain around longer (5 minutes instead of 2).
 > 
-> ----
+> Having this limit is of dubious value anyway, and we have not
+> suffered from the code not getting the limit right, so remove the
+> limit altogether.  We go with the larger values (discard 5 minute old
+> hosts every 2 minutes) as that is probably safer.
 > 
-> >From f983323fea178352ed3b69c70561a13825a3ce59 Mon Sep 17 00:00:00 2001
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Date: Fri, 8 Feb 2008 09:50:08 +0900
-> Subject: [SCSI] advansys: fix overrun_buf aligned bug
-
-Seems that it was a bit late, Linus pulled scsi-misc before the patch
-was added.
+> Maybe the periodic garbage collection should be replace to with
+> 'shrinker' handler so we just respond to memory pressure....
+> 
+> Acked-by: Jeff Layton <jlayton@redhat.com>
+> Signed-off-by: Neil Brown <neilb@suse.de>
+> 
+> ### Diffstat output
+>  ./fs/lockd/host.c |    9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
+> 
+> diff .prev/fs/lockd/host.c ./fs/lockd/host.c
+> --- .prev/fs/lockd/host.c	2008-02-07 14:20:54.000000000 +1100
+> +++ ./fs/lockd/host.c	2008-02-08 12:54:28.000000000 +1100
+> @@ -19,12 +19,11 @@
+>  
+>  
+>  #define NLMDBG_FACILITY		NLMDBG_HOSTCACHE
+> -#define NLM_HOST_MAX		64
+>  #define NLM_HOST_NRHASH		32
+>  #define NLM_ADDRHASH(addr)	(ntohl(addr) & (NLM_HOST_NRHASH-1))
+>  #define NLM_HOST_REBIND		(60 * HZ)
+> -#define NLM_HOST_EXPIRE		((nrhosts > NLM_HOST_MAX)? 300 * HZ : 120 * HZ)
+> -#define NLM_HOST_COLLECT	((nrhosts > NLM_HOST_MAX)? 120 * HZ :  60 * HZ)
+> +#define NLM_HOST_EXPIRE		(300 * HZ)
+> +#define NLM_HOST_COLLECT	(120 * HZ)
+>  
+>  static struct hlist_head	nlm_hosts[NLM_HOST_NRHASH];
+>  static unsigned long		next_gc;
+> @@ -142,9 +141,7 @@ nlm_lookup_host(int server, const struct
+>  	INIT_LIST_HEAD(&host->h_granted);
+>  	INIT_LIST_HEAD(&host->h_reclaim);
+>  
+> -	if (++nrhosts > NLM_HOST_MAX)
+> -		next_gc = 0;
+> -
+> +	nrhosts++;
+>  out:
+>  	mutex_unlock(&nlm_host_mutex);
+>  	return host;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
