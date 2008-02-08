@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYBHWSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYBHWUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbYBHWSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYBHWSM
+	id S1755720AbYBHWUN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYBHWUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:18:12 -0500
-Received: from qb-out-0506.google.com ([72.14.204.229]:39888 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbYBHWSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:18:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bLlSryDVdASzOhkWi+idxbXSmDEyU4AZMHgbj7u0WwoYFuRThsVFs1uFlere9i9BQPlcK0X/MrhHmoOMA1h1xQvDuk3VwU5YKuJYuml1SOtZ0M4TpAMlSku2R9HPq0/eIL0wawHo3Ngr4tFmiZTiB0f4kAWH/d0d96YdwZVcec8=
-Subject: Re: [PATCH] fix sparse warning from include/linux/mmzone.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
-References: <1202417543.31361.5.camel@brick>
-	 <20080208135154.ccdac0c1.akpm@linux-foundation.org>
-	 <alpine.LFD.1.00.0802081401410.2896@woody.linux-foundation.org>
+	Fri, 8 Feb 2008 17:20:00 -0500
+Received: from waste.org ([66.93.16.53]:52091 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752103AbYBHWT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:19:59 -0500
+Subject: Re: [PATCH] stub out is_swap_pte for !MMU
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: vapier@gentoo.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080208140555.01d3832f.akpm@linux-foundation.org>
+References: <1202500959-2727-1-git-send-email-vapier@gentoo.org>
+	 <1202503750.17934.639.camel@cinder.waste.org>
+	 <200802081625.12893.vapier@gentoo.org>
+	 <1202506903.17934.653.camel@cinder.waste.org>
+	 <20080208140555.01d3832f.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Fri, 08 Feb 2008 14:17:58 -0800
-Message-Id: <1202509083.8067.2.camel@brick>
+Date: Fri, 08 Feb 2008 16:19:39 -0600
+Message-Id: <1202509179.17934.663.camel@cinder.waste.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-08 at 14:04 -0800, Linus Torvalds wrote:
+
+On Fri, 2008-02-08 at 14:05 -0800, Andrew Morton wrote:
+> On Fri, 08 Feb 2008 15:41:42 -0600
+> Matt Mackall <mpm@selenic.com> wrote:
 > 
-> On Fri, 8 Feb 2008, Andrew Morton wrote:
-> > >  #ifdef CONFIG_HIGHMEM
-> > > -	int zone_idx = zone - zone->zone_pgdat->node_zones;
-> > > -	return zone_idx == ZONE_HIGHMEM ||
-> > > -		(zone_idx == ZONE_MOVABLE && zone_movable_is_highmem());
-> > > +	const int highmem_off = ZONE_HIGHMEM * sizeof(*zone);
-> > > +	const int movable_off = ZONE_MOVABLE * sizeof(*zone);
-> > > +
-> > > +	int zone_off = (unsigned long)zone - (unsigned long)zone->zone_pgdat->node_zones;
-> > > +	return zone_off == highmem_off ||
-> > > +		(zone_off == movable_off && zone_movable_is_highmem());
+> > Fix compile error on nommu for is_swap_pte
 > > 
-> > hrm.  For my i386 build (and that's where CONFIG_HIGHMEM really matters)
-> > this patch makes mm/page_alloc.o six bytes larger, and I don't think the
-> > change did much for readability.
+> > Does it ever make sense to ask "is this pte a swap entry?" on a machine
+> > with no MMU? Presumably this also means it has no ptes too, right? In
+> > which case, it's better to comment the whole function out. Then when
+> > someone tries to ask the above meaningless question, they get a compile
+> > error rather than a meaningless answer.
+> > 
+> > Signed-off-by: Matt Mackall <mpm@selenic.com>
+> > 
+> > diff -r 50a6e531a9f2 include/linux/swapops.h
+> > --- a/include/linux/swapops.h	Mon Feb 04 20:23:02 2008 -0600
+> > +++ b/include/linux/swapops.h	Fri Feb 08 15:38:01 2008 -0600
+> > @@ -42,11 +42,13 @@
+> >  	return entry.val & SWP_OFFSET_MASK(entry);
+> >  }
+> >  
+> > +#ifdef CONFIG_MMU
+> >  /* check whether a pte points to a swap entry */
+> >  static inline int is_swap_pte(pte_t pte)
+> >  {
+> >  	return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
+> >  }
+> > +#endif
+> >  
 > 
-> Heh, yeah. That's a very odd way to write it.
+> Seems contradictory.  Is there _really_ a compilation error at present? 
+> The changelog seems to imply otherwise and no compiler error output is
+> quoted and it all compiled OK for me on nommu superh.
 
-As long as you read 'odd' as 'rather dumb'
+Sorry, here's the compile error from the original thread (where the
+original copy of the above patch was posted).
 
-> 
-> It would probably make more sense to just write it as something like
-> 
-> 	struct zone *base = zone->zone_pgdat->node_zones;
-> 
-> 	if (zone == base + ZONE_HIGHMEM ||
-> 		(zone == base + ZONE_MOVABLE && zone_movable_is_highmem());
+...
+  CC      mm/vmscan.o
+In file included from 
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/vmscan.c:44:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h: In function 'is_swap_pte':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_none'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_present'
+make[2]: *** [mm/vmscan.o] Error 1
 
-s/if/return/ I think.  And missing a closing brace.  Unless I'm (again)
-missing something.
-
-Harvey
-
+-- 
+Mathematics is the supreme nostalgia of our time.
 
