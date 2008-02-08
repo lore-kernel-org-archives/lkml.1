@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYBHWHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYBHWH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbYBHWHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:07:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYBHWHA
+	id S1760608AbYBHWH6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbYBHWHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 8 Feb 2008 17:07:00 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:36039 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752587AbYBHWG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51243 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753037AbYBHWG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Feb 2008 17:06:58 -0500
-Message-Id: <20080208220657.029243317@sgi.com>
-References: <20080208220616.089936205@sgi.com>
+Message-Id: <20080208220616.089936205@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Feb 2008 14:06:22 -0800
+Date: Fri, 08 Feb 2008 14:06:16 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: Andrea Arcangeli <andrea@qumranet.com>
@@ -22,294 +22,105 @@ Cc: kvm-devel@lists.sourceforge.net
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: daniel.blueman@quadrics.com
-Subject: [patch 6/6] mmu_rmap_notifier: Skeleton for complex driver that uses its own rmaps
-Content-Disposition: inline; filename=mmu_rmap_skeleton
+Subject: [patch 0/6] MMU Notifiers V6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The skeleton for the rmap notifier leaves the invalidate_page method of
-the mmu_notifier empty and hooks a new invalidate_page callback into the
-global chain for mmu_rmap_notifiers.
+This is a patchset implementing MMU notifier callbacks based on Andrea's
+earlier work. These are needed if Linux pages are referenced from something
+else than tracked by the rmaps of the kernel (an external MMU). MMU
+notifiers allow us to get rid of the page pinning for RDMA and various
+other purposes. It gets rid of the broken use of mlock for page pinning.
+(mlock really does *not* pin pages....)
 
-There are seveal simplifications in here to avoid making this too complex.
-The reverse maps need to consit of references to vma f.e.
+More information on the rationale and the technical details can be found in
+the first patch and the README provided by that patch in
+Documentation/mmu_notifiers.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+The known immediate users are
 
----
- Documentation/mmu_notifier/skeleton_rmap.c |  265 +++++++++++++++++++++++++++++
- 1 file changed, 265 insertions(+)
+KVM
+- Establishes a refcount to the page via get_user_pages().
+- External references are called spte.
+- Has page tables to track pages whose refcount was elevated but
+  no reverse maps.
 
-Index: linux-2.6/Documentation/mmu_notifier/skeleton_rmap.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/Documentation/mmu_notifier/skeleton_rmap.c	2008-02-08 13:25:28.000000000 -0800
-@@ -0,0 +1,265 @@
-+#include <linux/mm.h>
-+#include <linux/mmu_notifier.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/pagemap.h>
-+
-+/*
-+ * Skeleton for an mmu notifier with rmap callbacks and sleeping during
-+ * invalidate_page.
-+ *
-+ * (C) 2008 Silicon Graphics, Inc.
-+ * 		Christoph Lameter <clameter@sgi.com>
-+ *
-+ * Note that the locking is fairly basic. One can add various optimizations
-+ * here and there. There is a single lock for an address space which should be
-+ * satisfactory for most cases. If not then the lock can be split like the
-+ * pte_lock in Linux. It is most likely best to place the locks in the
-+ * page table structure or into whatever the external mmu uses to
-+ * track the mappings.
-+ */
-+
-+struct my_mmu {
-+	/* MMU notifier specific fields */
-+	struct mmu_notifier notifier;
-+	spinlock_t lock;	/* Protects counter and invidual zaps */
-+	int invalidates;	/* Number of active range_invalidate */
-+
-+       /* Rmap support */
-+       struct list_head list;	/* rmap list of my_mmu structs */
-+       unsigned long base;
-+};
-+
-+/*
-+ * Called with m->lock held
-+ */
-+static void my_mmu_insert_page(struct my_mmu *m,
-+		unsigned long address, unsigned long pfn)
-+{
-+	/* Must be provided */
-+	printk(KERN_INFO "insert page %p address=%lx pfn=%ld\n",
-+							m, address, pfn);
-+}
-+
-+/*
-+ * Called with m->lock held
-+ */
-+static void my_mmu_zap_range(struct my_mmu *m,
-+	unsigned long start, unsigned long end, int atomic)
-+{
-+	/* Must be provided */
-+	printk(KERN_INFO "zap range %p address=%lx-%lx atomic=%d\n",
-+						m, start, end, atomic);
-+}
-+
-+/*
-+ * Called with m->lock held (optional but usually required to
-+ * protect data structures of the driver).
-+ */
-+static void my_mmu_zap_page(struct my_mmu *m, unsigned long address)
-+{
-+	/* Must be provided */
-+	printk(KERN_INFO "zap page %p address=%lx\n", m, address);
-+}
-+
-+/*
-+ * Increment and decrement of the number of range invalidates
-+ */
-+static inline void inc_active(struct my_mmu *m)
-+{
-+	spin_lock(&m->lock);
-+	m->invalidates++;
-+	spin_unlock(&m->lock);
-+}
-+
-+static inline void dec_active(struct my_mmu *m)
-+{
-+	spin_lock(&m->lock);
-+	m->invalidates--;
-+	spin_unlock(&m->lock);
-+}
-+
-+static void my_mmu_invalidate_range_begin(struct mmu_notifier *mn,
-+	struct mm_struct *mm, unsigned long start, unsigned long end,
-+	int atomic)
-+{
-+	struct my_mmu *m = container_of(mn, struct my_mmu, notifier);
-+
-+	inc_active(m);	/* Holds off new references */
-+	my_mmu_zap_range(m, start, end, atomic);
-+}
-+
-+static void my_mmu_invalidate_range_end(struct mmu_notifier *mn,
-+	struct mm_struct *mm, unsigned long start, unsigned long end,
-+	int atomic)
-+{
-+	struct my_mmu *m = container_of(mn, struct my_mmu, notifier);
-+
-+	dec_active(m);	/* Enables new references */
-+}
-+
-+/*
-+ * Populate a page.
-+ *
-+ * A return value of-EAGAIN means please retry this operation.
-+ *
-+ * Acuisition of mmap_sem can be omitted if the caller already holds
-+ * the semaphore.
-+ */
-+struct page *my_mmu_populate_page(struct my_mmu *m,
-+	struct vm_area_struct *vma,
-+	unsigned long address, int write)
-+{
-+	struct page *page = ERR_PTR(-EAGAIN);
-+	int err;
-+
-+	/*
-+	 * No need to do anything if a range invalidate is running
-+	 * Could use a wait queue here to avoid returning -EAGAIN.
-+	 */
-+	if (m->invalidates)
-+		goto out;
-+
-+	down_read(&vma->vm_mm->mmap_sem);
-+	err = get_user_pages(current, vma->vm_mm, address, 1,
-+						write, 1, &page, NULL);
-+
-+	up_read(&vma->vm_mm->mmap_sem);
-+	if (err < 0) {
-+		page = ERR_PTR(err);
-+		goto out;
-+	}
-+	lock_page(page);
-+
-+	/*
-+	 * The page is now locked and we are holding a refcount on it.
-+	 * So things are tied down. Now we can check the page status.
-+	 */
-+	if (page_mapped(page)) {
-+		/* Could do some preprocessing here. Can sleep */
-+		spin_lock(&m->lock);
-+		if (!m->invalidates)
-+			my_mmu_insert_page(m, address, page_to_pfn(page));
-+		spin_unlock(&m->lock);
-+		/* Could do some postprocessing here. Can sleep */
-+	}
-+	unlock_page(page);
-+	put_page(page);
-+out:
-+	return page;
-+}
-+
-+/*
-+ * All other threads accessing this mm_struct must have terminated by now.
-+ */
-+static void my_mmu_release(struct mmu_notifier *mn, struct mm_struct *mm)
-+{
-+	struct my_mmu *m = container_of(mn, struct my_mmu, notifier);
-+
-+	my_mmu_zap_range(m, 0, TASK_SIZE, 0);
-+	/* No concurrent processes thus no worries about RCU */
-+	list_del(&m->list);
-+	kfree(m);
-+	printk(KERN_INFO "MMU Notifier terminating\n");
-+}
-+
-+static struct mmu_notifier_ops my_mmu_ops = {
-+	my_mmu_release,
-+	NULL,		/* No aging function */
-+	NULL,		/* No atomic invalidate_page function */
-+	my_mmu_invalidate_range_begin,
-+	my_mmu_invalidate_range_end
-+};
-+
-+/* Rmap specific fields */
-+static LIST_HEAD(my_mmu_list);
-+static struct rw_semaphore listlock;
-+
-+/*
-+ * This function must be called to activate callbacks from a process
-+ */
-+int my_mmu_attach_to_process(struct mm_struct *mm)
-+{
-+	struct my_mmu *m = kzalloc(sizeof(struct my_mmu), GFP_KERNEL);
-+
-+	if (!m)
-+		return -ENOMEM;
-+
-+	m->notifier.ops = &my_mmu_ops;
-+	spin_lock_init(&m->lock);
-+
-+	/*
-+	 * mmap_sem handling can be omitted if it is guaranteed that
-+	 * the context from which my_mmu_attach_to_process is called
-+	 * is already holding a writelock on mmap_sem.
-+	 */
-+	down_write(&mm->mmap_sem);
-+	mmu_notifier_register(&m->notifier, mm);
-+	up_write(&mm->mmap_sem);
-+	down_write(&listlock);
-+	list_add(&m->list, &my_mmu_list);
-+	up_write(&listlock);
-+
-+	/*
-+	 * RCU sync is expensive but necessary if we need to guarantee
-+	 * that multiple threads running on other cpus have seen the
-+	 * notifier changes.
-+	 */
-+	synchronize_rcu();
-+	return 0;
-+}
-+
-+
-+static void my_sleeping_invalidate_page(struct my_mmu *m, unsigned long address)
-+{
-+	/* Must be provided */
-+	spin_lock(&m->lock);	/* Only taken to ensure mmu data integrity */
-+	my_mmu_zap_page(m, address);
-+	spin_unlock(&m->lock);
-+	printk(KERN_INFO "Sleeping invalidate_page %p address=%lx\n",
-+                                                               m, address);
-+}
-+
-+static unsigned long my_mmu_find_addr(struct my_mmu *m, struct page *page)
-+{
-+	/* Determine the address of a page in a mmu segment */
-+	return -EFAULT;
-+}
-+
-+/*
-+ * A reference must be held on the page passed and the page passed
-+ * must be locked. No spinlocks are held. invalidate_page() is held
-+ * off by us holding the page lock.
-+ */
-+static void my_mmu_rmap_invalidate_page(struct mmu_rmap_notifier *mrn,
-+							struct page *page)
-+{
-+	struct my_mmu *m;
-+
-+	BUG_ON(!PageLocked(page));
-+	down_read(&listlock);
-+	list_for_each_entry(m, &my_mmu_list, list) {
-+		unsigned long address = my_mmu_find_addr(m, page);
-+
-+		if (address != -EFAULT)
-+			my_sleeping_invalidate_page(m, address);
-+	}
-+	up_read(&listlock);
-+}
-+
-+static struct mmu_rmap_notifier_ops my_mmu_rmap_ops = {
-+	.invalidate_page = my_mmu_rmap_invalidate_page
-+};
-+
-+static struct mmu_rmap_notifier my_mmu_rmap_notifier = {
-+	.ops = &my_mmu_rmap_ops
-+};
-+
-+static int __init my_mmu_init(void)
-+{
-+	mmu_rmap_notifier_register(&my_mmu_rmap_notifier);
-+	return 0;
-+}
-+
-+late_initcall(my_mmu_init);
-+
+GRU
+- Simple additional hardware TLB (possibly covering multiple instances of
+  Linux)
+- Needs TLB shootdown when the VM unmaps pages.
+- Determines page address via follow_page (from interrupt context) but can
+  fall back to get_user_pages().
+- No page reference possible since no page status is kept..
+
+XPmem
+- Allows use of a processes memory by remote instances of Linux.
+- Provides its own reverse mappings to track remote pte.
+- Established refcounts on the exported pages.
+- Must sleep in order to wait for remote acks of ptes that are being
+  cleared.
+
+Andrea's mmu_notifier #4 -> RFC V1
+
+- Merge subsystem rmap based with Linux rmap based approach
+- Move Linux rmap based notifiers out of macro
+- Try to account for what locks are held while the notifiers are
+  called.
+- Develop a patch sequence that separates out the different types of
+  hooks so that we can review their use.
+- Avoid adding include to linux/mm_types.h
+- Integrate RCU logic suggested by Peter.
+
+V1->V2:
+- Improve RCU support
+- Use mmap_sem for mmu_notifier register / unregister
+- Drop invalidate_page from COW, mm/fremap.c and mm/rmap.c since we
+  already have invalidate_range() callbacks there.
+- Clean compile for !MMU_NOTIFIER
+- Isolate filemap_xip strangeness into its own diff
+- Pass a the flag to invalidate_range to indicate if a spinlock
+  is held.
+- Add invalidate_all()
+
+V2->V3:
+- Further RCU fixes
+- Fixes from Andrea to fixup aging and move invalidate_range() in do_wp_page
+  and sys_remap_file_pages() after the pte clearing.
+
+V3->V4:
+- Drop locking and synchronize_rcu() on ->release since we know on release that
+  we are the only executing thread. This is also true for invalidate_all() so
+  we could drop off the mmu_notifier there early. Use hlist_del_init instead
+  of hlist_del_rcu.
+- Do the invalidation as begin/end pairs with the requirement that the driver
+  holds off new references in between.
+- Fixup filemap_xip.c
+- Figure out a potential way in which XPmem can deal with locks that are held.
+- Robin's patches to make the mmu_notifier logic manage the PageRmapExported bit.
+- Strip cc list down a bit.
+- Drop Peters new rcu list macro
+- Add description to the core patch
+
+V4->V5:
+- Provide missing callouts for mremap.
+- Provide missing callouts for copy_page_range.
+- Reduce mm_struct space to zero if !MMU_NOTIFIER by #ifdeffing out
+  structure contents.
+- Get rid of the invalidate_all() callback by moving ->release in place
+  of invalidate_all.
+- Require holding mmap_sem on register/unregister instead of acquiring it
+  ourselves. In some contexts where we want to register/unregister we are
+  already holding mmap_sem.
+- Split out the rmap support patch so that there is no need to apply
+  all patches for KVM and GRU.
+
+V5->V6:
+- Provide missing range callouts for mprotect
+- Fix do_wp_page control path sequencing
+- Clarify locking conventions
+- GRU and XPmem confirmed to work with this patchset.
+- Provide skeleton code for GRU/KVM type callback and for XPmem type.
+- Rework documentation and put it into Documentation/mmu_notifier.
 
 -- 
