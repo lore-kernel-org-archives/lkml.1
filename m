@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934057AbYBHK3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934250AbYBHKcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934057AbYBHK3H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 05:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760366AbYBHK2y
+	id S934250AbYBHKcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 05:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761021AbYBHKcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 05:28:54 -0500
-Received: from ns.suse.de ([195.135.220.2]:58030 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759225AbYBHK2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 05:28:53 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] x86: Simplify cpu_idle_wait
-Date: Fri, 8 Feb 2008 11:28:48 +0100
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Brown, Len" <len.brown@intel.com>, Adam Belay <abelay@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <1199759244.26343.35.camel@localhost.localdomain> <B5B0CFF685D7DF46A05CF1678CFB42ED20E00653@orsmsx423.amr.corp.intel.com> <20080208010550.GA8090@linux-os.sc.intel.com>
-In-Reply-To: <20080208010550.GA8090@linux-os.sc.intel.com>
+	Fri, 8 Feb 2008 05:32:08 -0500
+Received: from mail-relay-02.mailcluster.net ([77.221.130.214]:54892 "EHLO
+	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760884AbYBHKcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 05:32:06 -0500
+Message-ID: <47AC2FA7.7020700@vlnb.net>
+Date: Fri, 08 Feb 2008 13:32:07 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
+X-Accept-Language: en-us, ru, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: ltuikov@yahoo.com
+CC: Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ming Zhang <blackmagic02881@gmail.com>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+References: <393719.81864.qm@web31808.mail.mud.yahoo.com>
+In-Reply-To: <393719.81864.qm@web31808.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802081128.48621.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Luben Tuikov wrote:
+> Is there an open iSCSI Target implementation which does NOT
+> issue commands to sub-target devices via the SCSI mid-layer, but
+> bypasses it completely?
 
-> -	set_cpus_allowed(current, tmp);
-> +	smp_mb();
-> +	/* kick all the CPUs so that they exit out of pm_idle */
-> +	smp_call_function(do_nothing, NULL, 0, 0);
+What do you mean? To call directly low level backstorage SCSI drivers 
+queuecommand() routine? What are advantages of it?
 
-I think the last argument (wait) needs to be 1 to make sure it is 
-synchronous (for 32/64) Otherwise the patch looks great.
-
--Andi
+>    Luben
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
