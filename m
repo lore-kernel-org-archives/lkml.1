@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbYBHF2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751488AbYBHF2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752862AbYBHF2N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 00:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760756AbYBHF1a
+	id S1751488AbYBHF2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933294AbYBHF2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 00:27:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58879 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760669AbYBHF11 (ORCPT
+	Fri, 8 Feb 2008 00:28:08 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52673 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbYBHF2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 00:27:27 -0500
-Date: Thu, 7 Feb 2008 21:31:43 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/73] 2.6.23-stable review
-Message-ID: <20080208053143.GB12428@kroah.com>
-References: <20080206235015.GA13121@suse.de>
+	Fri, 8 Feb 2008 00:28:05 -0500
+Date: Fri, 08 Feb 2008 14:28:34 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "rohit h" <hrohit85@gmail.com>
+Subject: Re: C++ in linux kernel
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+In-Reply-To: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
+References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
+Message-Id: <20080208142638.87EB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080206235015.GA13121@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 06, 2008 at 03:50:15PM -0800, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.23.15 release.
-> There are 73 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
+Hi
 
-Rolled up patch can be found at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.23.15-rc1.gz
+>  I am a kernel newbie.
+>  I tried to insmod a C++ module containing classes, inheritance.
+>  I am getting 'unresolved symbol' error when I use the 'new' keyword.
+>  What could the problem be?
 
-thanks,
+under using gcc, new operator use malloc by default.
+but linux doesn't have malloc.
 
-greg k-h
+Could you create custom allocater?
+
+>  What kind of runtime support is needed ( arm linux kernel)? Is a
+> patch available for it?
+
+may be nothing.
+
+- kosaki
+
+
