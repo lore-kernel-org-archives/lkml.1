@@ -1,103 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbYBHBTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934434AbYBHBUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933976AbYBHBTi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 20:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbYBHBT3
+	id S934434AbYBHBUy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 20:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbYBHBUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 20:19:29 -0500
-Received: from cyberslack.slackadelic.com ([216.23.240.152]:48486 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbYBHBT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 20:19:27 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Fri, 8 Feb 2008 01:19:07 +0000
-User-Agent: KMail/1.9.7
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <lenb@kernel.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       linux-acpi@vger.kernel.org
-References: <20080207214715.GA15211@elf.ucw.cz> <200802072351.32521.carlos@strangeworlds.co.uk> <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com>
-In-Reply-To: <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com>
+	Thu, 7 Feb 2008 20:20:46 -0500
+Received: from rfc2324.org ([89.149.194.216]:52766 "EHLO rfc2324.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753637AbYBHBUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 20:20:45 -0500
+Date: Fri, 8 Feb 2008 02:20:29 +0100
+From: Maximilian Wilhelm <max@rfc2324.org>
+To: Krzysztof Oledzki <olel@ans.pl>
+Cc: max@rfc2324.org, linux-kernel@vger.kernel.org, Eric.Moore@lsil.com
+Subject: Re: Kernel Panic in MPT SAS on 2.6.24 (and 2.6.23.14, 2.6.23.9)
+Message-ID: <20080208012028.GF11236@outback.rfc2324.org>
+Mail-Followup-To: Krzysztof Oledzki <olel@ans.pl>, max@rfc2324.org,
+	linux-kernel@vger.kernel.org, Eric.Moore@lsil.com
+References: <20080206210426.GD11236@outback.rfc2324.org> <47AB82DD.90201@ans.pl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802080119.08872.carlos@strangeworlds.co.uk>
+In-Reply-To: <47AB82DD.90201@ans.pl>
+X-Operating-System: Linux 2.6.23.9-grsec auf i686
+X-Warning: This message may contain ironic / sarcastic elements.
+X-GC-3.12: GCM/CS/IT d+(--) s+: a-- C++>$ UL++++$ US>++++ P++ L+++>++++ E--- W+ N o+ K- w O? M? V? PS+ PE Y+ PGP++ t 5? X- R tv b+(++) DI+(++) !D G++ e>+++  h!>--(---) r++ y+
+X-message-Flag: Outlook: A programm to spread viri, but it can mail, too.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 February 2008 00:12:24 Ray Lee wrote:
-> On Feb 7, 2008 3:51 PM, Carlos Corbacho <carlos@strangeworlds.co.uk> wrote:
-> > On Thursday 07 February 2008 23:33:54 Ray Lee wrote:
-> > > Do you have list of hardware/platforms that require this feature to
-> > > get the hardware to work? (acer abc123, tcm1100 xyz)
-> >
-> > I have a very long list of Acer laptops that are supported - which is far
-> > too long, and changes on far too much of a regular basis to put in there.
-> >
-> > Perhaps adding something like "This driver is also a required dependency
-> > to build the firmware specific drivers needed for many laptops, including
-> > Acer and HP machines"?
+Am Thursday, den  7 February hub Krzysztof Oledzki folgendes in die Tasten:
 
-Would this be acceptable then?
+Hi!
 
--Carlos
----
-ACPI: WMI: Improve Kconfig entry
+> >While installing my new firewall I got the following kernel panic in
+> >the MPT SAS driver which I need for the disks.
 
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> >The first kernel I bootet was 2.6.23.14 which did panic so I tried a
+> >2.6.24 which panics, too. Our usual FAI kernel (2.6.23.9) is also
+> >affected.
 
-As Pavel Machek has pointed out, the Kconfig entry for WMI is pretty
-non-descriptive.
+> Could you please try 2.6.22-stable?
 
-Rewrite it so that it explains what ACPI-WMI is, and why anyone
-would want to enable it.
+Yes it works :-/
 
-Many thanks to Ray Lee for ideas on this.
+I've put some things which on the web which might be helpful:
 
-Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
-CC: Pavel Machek <pavel@ucw.cz>
-CC: Ray Lee <ray-lk@madrabbit.org>
-CC: Len Brown <lenb@kernel.org>
----
+dmesg		http://files.rfc2324.org/mptsas_panic/2.6.22-dmesg
+lspci -v	http://files.rfc2324.org/mptsas_panic/2.6.22-lspci-v
+.config		http://files.rfc2324.org/mptsas_panic/2.6.22-config
 
- drivers/acpi/Kconfig |   19 +++++++++++++++----
- 1 files changed, 15 insertions(+), 4 deletions(-)
+I'll search for the last working kernel and try to break it down to a
+commit tommorow when I can get a serial console or direct access.
+The Java driven console redirection is everything else than fulfilling :-(
 
+> It looks *very* similar to my problem:
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index b7fbf16..ea763ef 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -207,11 +207,22 @@ config ACPI_WMI
- 	depends on EXPERIMENTAL
- 	depends on X86
- 	help
--	  This driver adds support for the ACPI-WMI mapper device (PNP0C14)
--	  found on some systems.
-+	  This driver adds support for the ACPI-WMI (Windows Management
-+	  Instrumentation) mapper device (PNP0C14) found on some systems.
- 
--	  NOTE: You will need another driver or userspace application on top of
--	  this to actually use anything defined in the ACPI-WMI mapper.
-+	  ACPI-WMI is a proprietary extension to ACPI to expose parts of the
-+	  ACPI firmware to userspace - this is done through various vendor
-+	  defined methods and data blocks in a PNP0C14 device, which are then
-+	  made available for userspace to call.
-+
-+	  The implementation of this in Linux currently only exposes this to
-+	  other kernel space drivers.
-+
-+	  This driver is a required dependency to build the firmware specific
-+	  drivers needed on many machines, including Acer and HP laptops.
-+
-+	  It is safe to enable this driver even if your DSDT doesn't define
-+	  any ACPI-WMI devices.
- 
- config ACPI_ASUS
-         tristate "ASUS/Medion Laptop Extras"
+> http://bugzilla.kernel.org/show_bug.cgi?id=9909
+
+It seems to be the same controller:
+
+01:00.0 SCSI storage controller: LSI Logic / Symbios Logic SAS1068E PCI-Express Fusion-MPT SAS (rev 08)
+	Subsystem: Dell Unknown device 1f10
+	Flags: bus master, fast devsel, latency 0, IRQ 16
+	I/O ports at ec00 [size=256]
+	Memory at fc8fc000 (64-bit, non-prefetchable) [size=16K]
+	Memory at fc8e0000 (64-bit, non-prefetchable) [size=64K]
+	Expansion ROM at fc900000 [disabled] [size=1M]
+	Capabilities: [50] Power Management version 2
+	Capabilities: [68] Express Endpoint IRQ 0
+	Capabilities: [98] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+	Capabilities: [b0] MSI-X: Enable- Mask- TabSize=1
+
+Stay tuned.
+
+Ciao
+Max
+-- 
+	Follow the white penguin.
