@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbYBHCLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbYBHCNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbYBHCLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 21:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYBHCL3
+	id S1762813AbYBHCNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 21:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYBHCN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 21:11:29 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45465
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751863AbYBHCL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 21:11:28 -0500
-Date: Thu, 07 Feb 2008 18:11:59 -0800 (PST)
-Message-Id: <20080207.181159.160811975.davem@davemloft.net>
-To: ramirose@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [IPV6] Minor cleanup: remove unused definitions in
- net/ip6_fib.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <eb3ff54b0802070823y7038fcedga27cba4a9bb35731@mail.gmail.com>
-References: <eb3ff54b0802070823y7038fcedga27cba4a9bb35731@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Feb 2008 21:13:26 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:49734 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753487AbYBHCNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 21:13:25 -0500
+Date: Thu, 7 Feb 2008 18:13:22 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: [git pull] more SLUB updates for 2.6.25
+Message-ID: <Pine.LNX.4.64.0802071755580.7473@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rami Rosen" <ramirose@gmail.com>
-Date: Thu, 7 Feb 2008 18:23:58 +0200
+are available in the git repository at:
 
-> Hi,
-> 
-> This patch removes some unused definitions and one method typedef
-> declaration (f_pnode)
-> in include/net/ip6_fib.h, as they are not used in the kernel.
-> 
-> Signed-off-by: Rami Rosen <ramirose@gmail.com>
+  git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git slub-linus
 
-Applied, thanks.
+(includes the cmpxchg_local fastpath since the cmpxchg_local work
+by Matheiu is in now, and the non atomic unlock by Nick. Verified that 
+this is not doing any harm after some other patches had been removed. 
+cmpxchg_local fastpath was stripped of support for CONFIG_PREEMPT since
+that uglified the code and did not seem to work right. We will be 
+able to handle preempt much better in the future with some upcoming 
+patches)
+
+Christoph Lameter (4):
+      SLUB: Deal with annoying gcc warning on kfree()
+      SLUB: Use unique end pointer for each slab page.
+      SLUB: Alternate fast paths using cmpxchg_local
+      SLUB: Support for performance statistics
+
+Ingo Molnar (1):
+      SLUB: fix checkpatch warnings
+
+Nick Piggin (1):
+      Use non atomic unlock
+
+ Documentation/vm/slabinfo.c |  149 ++++++++++++++++++--
+ arch/x86/Kconfig            |    4 +
+ include/linux/mm_types.h    |    5 +-
+ include/linux/slub_def.h    |   23 +++
+ lib/Kconfig.debug           |   13 ++
+ mm/slub.c                   |  326 
+++++++++++++++++++++++++++++++++++++-------
+ 6 files changed, 457 insertions(+), 63 deletions(-)
+
