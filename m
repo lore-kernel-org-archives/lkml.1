@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934645AbYBHKiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934391AbYBHKoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934645AbYBHKiG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 05:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964820AbYBHKhn
+	id S934391AbYBHKoA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 05:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933207AbYBHKnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 05:37:43 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34726 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934046AbYBHKhl (ORCPT
+	Fri, 8 Feb 2008 05:43:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46322 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932753AbYBHKnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 05:37:41 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Holger Schurig <hs4233@mail.mn-solutions.de>,
-       Michael Opdenacker <michael-lists@free-electrons.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: allow embedded targets to disable sysctl_check.c
-References: <200802071438.58497.hs4233@mail.mn-solutions.de>
-	<20080207194735.35d87346.akpm@linux-foundation.org>
-Date: Fri, 08 Feb 2008 03:36:41 -0700
-In-Reply-To: <20080207194735.35d87346.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Thu, 7 Feb 2008 19:47:35 -0800")
-Message-ID: <m13as3d9ae.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 8 Feb 2008 05:43:51 -0500
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM
+	architecture
+From: David Woodhouse <dwmw2@infradead.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Marcin Juszkiewicz <openembedded@haerwu.biz>,
+       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20080208102347.GD21852@flint.arm.linux.org.uk>
+References: <20080207133805.13f092ff@dilbert.local>
+	 <20080207125824.GB7111@infradead.org>
+	 <20080207130117.GA18750@uranus.ravnborg.org>
+	 <200802071609.36960.openembedded@haerwu.biz>
+	 <20080207160557.GB28435@flint.arm.linux.org.uk>
+	 <20080207202329.GA21949@uranus.ravnborg.org>
+	 <1202461453.5469.217.camel@pmac.infradead.org>
+	 <20080208094538.GC21852@flint.arm.linux.org.uk>
+	 <1202465911.5469.240.camel@pmac.infradead.org>
+	 <20080208102347.GD21852@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 10:43:42 +0000
+Message-Id: <1202467422.5469.245.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Thu, 7 Feb 2008 14:38:58 +0100 Holger Schurig <hs4233@mail.mn-solutions.de>
-> wrote:
->
->> Disable sysctl_check.c for embedded targets. This saves about about 11 kB
->> in .text and another 11 kB in .data on a PXA255 embedded platform.
->> 
->
-> Nice improvement.  But iirc sysctl_check was overtly a temporary thing.
-> Eric, was that the intention?
+On Fri, 2008-02-08 at 10:23 +0000, Russell King - ARM Linux wrote:
+> That would be misleading though - !CPU_CP15_MMU does not mean we
+> support unaligned accesses.  It means that we may have no way to
+> support fixing up unaligned accesses.
 
-Well so far sysctl_check has been a remarkably effective little piece of code
-in catching a great many long over looked bugs.
+Doesn't that mean you should disallow MTD (or at least 16-bit NOR flash)
+if !CPU_CP15_MMU, then? But at the moment you allow it?
 
-I do agree that the static tables are big.  My current inclination is to modify
-sys_sysctl so that it does a look up in the binary tables to find the ascii
-names and then sys_sysctl can lookup the information in the ascii tables.
-
-If we do that we can completely remove ctl_name form the external sysctl data
-structures, which should save us quite a bit of space and make it absolutely
-impossible to add a new binary name.  And with the current ability to compile
-out sys_sysctl the embedded folks would get their space savings.
-
-I believe the only tricky bit is there are a few places in the network code
-where we need to translate from ifindex to interface name.  Otherwise
-the mapping is fixed.
-
-No that isn't quite right.  Getting the binary to ascii translation for the
-values is also a bit tricky.
-
-As for the rest of the checks I don't know if they are that big.  If they
-are then an option to compile them out on embedded platforms where you
-know what you are doing makes sense.  At the same time sysctl has been so
-badly abused in the past, and so very many bugs have been over looked
-that I am extremely reluctant to disable simple sanity checks at
-registration time.
-
-If we can remove the need for sysctl users to implement the binary
-interface many of those checks go completely away as the reason for their
-existence would be gone.
-
-I have seen to many absolutely horrible things in the usage of the sysctl
-tables to be happy with an option that removes the sanity checks at this
-point, although the patch likely makes sense from a code size perspective.
-
-Let's see if we can find a bit of time to make those big tables completely
-specific to sys_sysctl and kill ctl_name in the kernel.  Long term that is
-a whole lot more maintainable, and smaller for everyone who can disable
-sys_sysctl.
-
-Eric
+-- 
+dwmw2
 
