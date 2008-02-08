@@ -1,87 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbYBHFZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbYBHF1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759610AbYBHFZo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 00:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYBHFZN
+	id S1759226AbYBHF1Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYBHF1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 00:25:13 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:63078 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbYBHFZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 00:25:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Yz8RK94a1GpC7nAAWfZsuLZ8BUQRqOiD246A5JlISU1UN1DrtM0RLjZm0sx4YV7kvLZzDUMgqY2BAricsS2QJV/ew7gcRveLOByPOdndb5DVN15wd3vPJDuFOz+1ERteMf2xF/wLzc9A41P+T0dmCwnr2cvjq0BOauW/dHfXL2k=
-Message-ID: <8bd0f97a0802072125l16e3fc5cw91a92eed299f82e8@mail.gmail.com>
-Date: Fri, 8 Feb 2008 00:25:06 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>
-Subject: Re: blackfin compile error
-Cc: "Matt Mackall" <mpm@selenic.com>, "Adrian Bunk" <bunk@kernel.org>,
-       bryan.wu@analog.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Howells" <dhowells@redhat.com>
-In-Reply-To: <200802061412.50675.rgetz@blackfin.uclinux.org>
+	Fri, 8 Feb 2008 00:27:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46986 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbYBHF1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 00:27:12 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: ACPI_WMI: worst config description of all times
+Date: Fri, 8 Feb 2008 00:26:40 -0500
+User-Agent: KMail/1.9.5
+Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Pavel Machek" <pavel@ucw.cz>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       linux-acpi@vger.kernel.org
+References: <20080207214715.GA15211@elf.ucw.cz> <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com> <200802080119.08872.carlos@strangeworlds.co.uk>
+In-Reply-To: <200802080119.08872.carlos@strangeworlds.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080206151830.GI505@cs181133002.pp.htv.fi>
-	 <1202315015.17934.242.camel@cinder.waste.org>
-	 <200802061412.50675.rgetz@blackfin.uclinux.org>
+Message-Id: <200802080026.41139.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 6, 2008 2:12 PM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> On Wed 6 Feb 2008 11:23, Matt Mackall pondered:
-> > On Wed, 2008-02-06 at 17:18 +0200, Adrian Bunk wrote:
-> > > Commit 698dd4ba6b12e34e1e432c944c01478c0b2cd773 broke blackfin:
-> > >
-> > > <--  snip  -->
-> > >
-> > > ...
-> > >   CC      mm/vmscan.o
-> > > In file included from
-> > > /home/bunk/linux/kernel-2.6/git/linux-2.6/mm/vmscan.c:44:
-> > > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h: In function 'is_swap_pte':
-> > > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_none'
-> > > /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/swapops.h:48: error: implicit declaration of function 'pte_present'
-> > > make[2]: *** [mm/vmscan.o] Error 1
-> >
-> > This suggests that no one's tried to compile -mm on Blackfin since
-> > before September, I think.
->
-> Or any other nommu arch's either, since looking at the include files, FRV
-> (when configured as noMMU) and m68knommu does not include it either...
->
-> > Is there somewhere more appropriate to move it? I can't find one.
-> > Failing that, we can wrap it in CONFIG_MMU, I suppose.
->
-> Or just add to the the following:
->
-> ./include/asm-blackfin
-> ./include/asm-frv/ (only when configured as !MMU)
-> ./include/asm-h8300
-> ./include/asm-m68knommu
-> ./include/asm-v850
->
-> Others seem to have it in include/asm-xxxxx/pgtable.h as #define, inline
-> function, or extern.
+good description, Carlos.
 
-looks like only MMU code currently uses the function, but to keep
-things nice, we may want something like:
-static inline int is_swap_pte(pte_t pte)
-{
-#ifdef CONFIG_MMU
-    return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
-#else
-    return 0;
-#endif
-}
+applied.
+thanks,
+-Len
 
-the header is also lacking an #include <asm/pgtable.h> at the top ...
--mike
+On Thursday 07 February 2008 20:19, Carlos Corbacho wrote:
+> On Friday 08 February 2008 00:12:24 Ray Lee wrote:
+> > On Feb 7, 2008 3:51 PM, Carlos Corbacho <carlos@strangeworlds.co.uk> wrote:
+> > > On Thursday 07 February 2008 23:33:54 Ray Lee wrote:
+> > > > Do you have list of hardware/platforms that require this feature to
+> > > > get the hardware to work? (acer abc123, tcm1100 xyz)
+> > >
+> > > I have a very long list of Acer laptops that are supported - which is far
+> > > too long, and changes on far too much of a regular basis to put in there.
+> > >
+> > > Perhaps adding something like "This driver is also a required dependency
+> > > to build the firmware specific drivers needed for many laptops, including
+> > > Acer and HP machines"?
+> 
+> Would this be acceptable then?
+> 
+> -Carlos
+> ---
+> ACPI: WMI: Improve Kconfig entry
+> 
+> From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> 
+> As Pavel Machek has pointed out, the Kconfig entry for WMI is pretty
+> non-descriptive.
+> 
+> Rewrite it so that it explains what ACPI-WMI is, and why anyone
+> would want to enable it.
+> 
+> Many thanks to Ray Lee for ideas on this.
+> 
+> Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> CC: Pavel Machek <pavel@ucw.cz>
+> CC: Ray Lee <ray-lk@madrabbit.org>
+> CC: Len Brown <lenb@kernel.org>
+> ---
+> 
+>  drivers/acpi/Kconfig |   19 +++++++++++++++----
+>  1 files changed, 15 insertions(+), 4 deletions(-)
+> 
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index b7fbf16..ea763ef 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -207,11 +207,22 @@ config ACPI_WMI
+>  	depends on EXPERIMENTAL
+>  	depends on X86
+>  	help
+> -	  This driver adds support for the ACPI-WMI mapper device (PNP0C14)
+> -	  found on some systems.
+> +	  This driver adds support for the ACPI-WMI (Windows Management
+> +	  Instrumentation) mapper device (PNP0C14) found on some systems.
+>  
+> -	  NOTE: You will need another driver or userspace application on top of
+> -	  this to actually use anything defined in the ACPI-WMI mapper.
+> +	  ACPI-WMI is a proprietary extension to ACPI to expose parts of the
+> +	  ACPI firmware to userspace - this is done through various vendor
+> +	  defined methods and data blocks in a PNP0C14 device, which are then
+> +	  made available for userspace to call.
+> +
+> +	  The implementation of this in Linux currently only exposes this to
+> +	  other kernel space drivers.
+> +
+> +	  This driver is a required dependency to build the firmware specific
+> +	  drivers needed on many machines, including Acer and HP laptops.
+> +
+> +	  It is safe to enable this driver even if your DSDT doesn't define
+> +	  any ACPI-WMI devices.
+>  
+>  config ACPI_ASUS
+>          tristate "ASUS/Medion Laptop Extras"
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
