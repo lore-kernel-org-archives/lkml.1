@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbYBHMPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762644AbYBHMPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759519AbYBHMPP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 07:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbYBHMO7
+	id S1762644AbYBHMPs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 07:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbYBHMO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 8 Feb 2008 07:14:59 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:40578 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753814AbYBHMO6 (ORCPT
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:24717 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754593AbYBHMO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Feb 2008 07:14:58 -0500
 From: Andi Kleen <ak@suse.de>
-References: <20080208114.066167427@suse.de>
-In-Reply-To: <20080208114.066167427@suse.de>
+Message-Id: <20080208114.066167427@suse.de>
 To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/3] Use 2000 offset for 32bit kernels
-Message-Id: <20080208121454.1D9A01B41BB@basil.firstfloor.org>
-Date: Fri,  8 Feb 2008 13:14:54 +0100 (CET)
-X-OriginalArrivalTime: 08 Feb 2008 12:08:33.0964 (UTC) FILETIME=[53B6CEC0:01C86A4B]
+Subject: [PATCH] [1/3] Only do century BCD conversion when we know the RTC is BCD
+Date: Fri,  8 Feb 2008 13:14:53 +0100 (CET)
+X-OriginalArrivalTime: 08 Feb 2008 12:08:33.0136 (UTC) FILETIME=[53387700:01C86A4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-We know it is already after 2000.
-
-This extends the effective lifetime of 32bit systems by 8 years:
-from 2030 to 2038.
-
-The only drawback is that users cannot set the cmos date to before 2000
-now on 32bit with systems that don't support extended century in 
-the RTC clock. 64bit systems had this limitation for some time
-and nobody complained.
-
-And they can always set it to such a date in Linux only using date -s 
-if they really want.
+Minor logic fix. The century change was previously always BCD,
+even when the CMOS data would report itself not being BCD.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/kernel/rtc.c |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ arch/x86/kernel/rtc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 Index: linux/arch/x86/kernel/rtc.c
 ===================================================================
 --- linux.orig/arch/x86/kernel/rtc.c
 +++ linux/arch/x86/kernel/rtc.c
-@@ -9,7 +9,6 @@
- #include <asm/vsyscall.h>
+@@ -130,10 +130,10 @@ unsigned long mach_get_cmos_time(void)
+ 		BCD_TO_BIN(day);
+ 		BCD_TO_BIN(mon);
+ 		BCD_TO_BIN(year);
++		BCD_TO_BIN(century);
+ 	}
  
- #ifdef CONFIG_X86_32
--# define CMOS_YEARS_OFFS 1900
- /*
-  * This is a special lock that is owned by the CPU and holds the index
-  * register we are working with.  It is required for NMI access to the
-@@ -17,14 +16,11 @@
-  */
- volatile unsigned long cmos_lock = 0;
- EXPORT_SYMBOL(cmos_lock);
--#else
--/*
-- * x86-64 systems only exists since 2002.
-- * This will work up to Dec 31, 2100
-- */
--# define CMOS_YEARS_OFFS 2000
- #endif
- 
-+/* For two digit years assume time is always after that */
-+#define CMOS_YEARS_OFFS 2000
-+
- DEFINE_SPINLOCK(rtc_lock);
- EXPORT_SYMBOL(rtc_lock);
- 
+ 	if (century) {
+-		BCD_TO_BIN(century);
+ 		year += century * 100;
+ 		printk(KERN_INFO "Extended CMOS year: %d\n", century * 100);
+ 	} else {
