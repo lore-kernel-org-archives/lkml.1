@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934011AbYBHFHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934291AbYBHFHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934011AbYBHFHA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 00:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbYBHFGj
+	id S934291AbYBHFHq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYBHFH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 00:06:39 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:30026 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYBHFGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 00:06:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pURMhvjwvJdoCXqo2+O6ZyZMsShBDMpRqCh2PVKvcWdHqAH+Y0MLwt+wOG0xwwH9ks/KEWrNC/fN+CHETtQtxBT5IfiKeqgdqgPlIEuRFMSKJxYJbNXz2VGFRvXLTvl9w7XO78KPki6Fhal/PreDRlaintutc0x5WrSa0euSVbM=
-Subject: [PATCH 2/2] x86: regparm(3) is mandatory, no need to annotate
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 07 Feb 2008 21:06:30 -0800
-Message-Id: <1202447190.31361.42.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 00:07:27 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:32978 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750803AbYBHFHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 00:07:25 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: sam@ravnborg.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kbuild: silence CHK/UPD messages according to $(quiet)
+Date: Fri,  8 Feb 2008 00:05:52 -0500
+Message-Id: <1202447152-29083-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.5.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Functions in ptrace.c and signal_32.c were defined with __attribute(regparm(3))
-which is unnecessary now that X86_32 must compile this way.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/x86/kernel/ptrace.c    |    1 -
- arch/x86/kernel/signal_32.c |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+ init/Makefile          |    4 +++-
+ scripts/Kbuild.include |    8 ++++++--
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 702c33e..2e785d5 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1426,7 +1426,6 @@ void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
- /* notification of system call entry/exit
-  * - triggered by current->work.syscall_trace
-  */
--__attribute__((regparm(3)))
- int do_syscall_trace(struct pt_regs *regs, int entryexit)
- {
- 	int is_sysemu = test_thread_flag(TIF_SYSCALL_EMU);
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index c1f4ff7..a99529e 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -654,7 +654,6 @@ static void do_signal(struct pt_regs *regs)
-  * notification of userspace execution resumption
-  * - triggered by the TIF_WORK_MASK flags
-  */
--__attribute__((regparm(3)))
- void do_notify_resume(struct pt_regs *regs, void *_unused,
- 		      __u32 thread_info_flags)
- {
+diff --git a/init/Makefile b/init/Makefile
+index 633392f..c5f157c 100644
+--- a/init/Makefile
++++ b/init/Makefile
+@@ -27,7 +27,9 @@ $(obj)/version.o: include/linux/compile.h
+ # mkcompile_h will make sure to only update the
+ # actual file if its content has changed.
+ 
++ quiet_chk_compile.h = echo '  CHK     $@'
++silent_chk_compile.h = :
+ include/linux/compile.h: FORCE
+-	@echo '  CHK     $@'
++	@$($(quiet)chk_compile.h)
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@ \
+ 	"$(UTS_MACHINE)" "$(CONFIG_SMP)" "$(CONFIG_PREEMPT)" "$(CC) $(KBUILD_CFLAGS)"
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index b96ea8d..da3559e 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -39,15 +39,19 @@ escsq = $(subst $(squote),'\$(squote)',$1)
+ # - If they are equal no change, and no timestamp update
+ # - stdin is piped in from the first prerequisite ($<) so one has
+ #   to specify a valid file as first prerequisite (often the kbuild file)
++ quiet_chk_filechk = echo '  CHK     $@'
++silent_chk_filechk = :
++ quiet_upd_filechk = echo '  UPD     $@'
++silent_upd_filechk = :
+ define filechk
+ 	$(Q)set -e;				\
+-	echo '  CHK     $@';			\
++	$($(quiet)chk_filechk);			\
+ 	mkdir -p $(dir $@);			\
+ 	$(filechk_$(1)) < $< > $@.tmp;		\
+ 	if [ -r $@ ] && cmp -s $@ $@.tmp; then	\
+ 		rm -f $@.tmp;			\
+ 	else					\
+-		echo '  UPD     $@';		\
++		$($(quiet)upd_filechk);		\
+ 		mv -f $@.tmp $@;		\
+ 	fi
+ endef
 -- 
-1.5.4.1219.g65b9
+1.5.4
 
