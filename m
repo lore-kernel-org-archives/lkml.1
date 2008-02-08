@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762838AbYBHWcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYBHWch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762838AbYBHWcB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:32:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759271AbYBHW1K
+	id S1755277AbYBHWch (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:32:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbYBHW1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:27:10 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36312 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758536AbYBHW1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:27:12 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53400 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758460AbYBHW1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Feb 2008 17:27:06 -0500
-Subject: [RFC][PATCH 09/30] r/o bind mounts: drop write during emergency remount
+Subject: [RFC][PATCH 12/30] r/o bind mounts: elevate mnt_writers for unlink callers
 To: linux-kernel@vger.kernel.org
 Cc: hch@lst.de, viro@ZenIV.linux.org.uk, viro@ftp.linux.org.uk,
        miklos@szeredi.hu, Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 08 Feb 2008 14:26:58 -0800
+Date: Fri, 08 Feb 2008 14:27:03 -0800
 References: <20080208222641.6024A7CC@kernel>
 In-Reply-To: <20080208222641.6024A7CC@kernel>
-Message-Id: <20080208222658.3CF9608F@kernel>
+Message-Id: <20080208222703.5A70B0CF@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The emergency remount code forcibly removes FMODE_WRITE from
-filps.  The r/o bind mount code notices that this was done
-without a proper mnt_drop_write() and properly gives a
-warning.
 
-This patch does a mnt_drop_write() to keep everything
-balanced.
-	
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- linux-2.6.git-dave/fs/super.c |   20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ linux-2.6.git-dave/fs/namei.c   |    4 ++++
+ linux-2.6.git-dave/ipc/mqueue.c |    5 ++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
-diff -puN fs/super.c~robind-sysrq-fix fs/super.c
---- linux-2.6.git/fs/super.c~robind-sysrq-fix	2008-02-08 13:04:48.000000000 -0800
-+++ linux-2.6.git-dave/fs/super.c	2008-02-08 13:04:49.000000000 -0800
-@@ -37,6 +37,7 @@
- #include <linux/idr.h>
- #include <linux/kobject.h>
- #include <linux/mutex.h>
-+#include <linux/file.h>
- #include <asm/uaccess.h>
- 
- 
-@@ -566,10 +567,25 @@ static void mark_files_ro(struct super_b
- {
- 	struct file *f;
- 
-+retry:
- 	file_list_lock();
- 	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
--		if (S_ISREG(f->f_path.dentry->d_inode->i_mode) && file_count(f))
--			f->f_mode &= ~FMODE_WRITE;
-+		struct vfsmount *mnt;
-+		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
-+		       continue;
-+		if (!file_count(f))
-+			continue;
-+		if (!(f->f_mode & FMODE_WRITE))
-+			continue;
-+		f->f_mode &= ~FMODE_WRITE;
-+		mnt = f->f_path.mnt;
-+		file_list_unlock();
-+		/*
-+		 * This can sleep, so we can't hold
-+		 * the file_list_lock() spinlock.
-+		 */
-+		mnt_drop_write(mnt);
-+		goto retry;
+diff -puN fs/namei.c~r-o-bind-mounts-elevate-mnt-writers-for-vfs_unlink-callers fs/namei.c
+--- linux-2.6.git/fs/namei.c~r-o-bind-mounts-elevate-mnt-writers-for-vfs_unlink-callers	2008-02-08 13:04:50.000000000 -0800
++++ linux-2.6.git-dave/fs/namei.c	2008-02-08 13:04:50.000000000 -0800
+@@ -2278,7 +2278,11 @@ static long do_unlinkat(int dfd, const c
+ 		inode = dentry->d_inode;
+ 		if (inode)
+ 			atomic_inc(&inode->i_count);
++		error = mnt_want_write(nd.mnt);
++		if (error)
++			goto exit2;
+ 		error = vfs_unlink(nd.dentry->d_inode, dentry);
++		mnt_drop_write(nd.mnt);
+ 	exit2:
+ 		dput(dentry);
  	}
- 	file_list_unlock();
- }
+diff -puN ipc/mqueue.c~r-o-bind-mounts-elevate-mnt-writers-for-vfs_unlink-callers ipc/mqueue.c
+--- linux-2.6.git/ipc/mqueue.c~r-o-bind-mounts-elevate-mnt-writers-for-vfs_unlink-callers	2008-02-08 13:04:50.000000000 -0800
++++ linux-2.6.git-dave/ipc/mqueue.c	2008-02-08 13:04:50.000000000 -0800
+@@ -743,8 +743,11 @@ asmlinkage long sys_mq_unlink(const char
+ 	inode = dentry->d_inode;
+ 	if (inode)
+ 		atomic_inc(&inode->i_count);
+-
++	err = mnt_want_write(mqueue_mnt);
++	if (err)
++		goto out_err;
+ 	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
++	mnt_drop_write(mqueue_mnt);
+ out_err:
+ 	dput(dentry);
+ 
 _
