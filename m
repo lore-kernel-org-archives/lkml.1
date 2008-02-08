@@ -1,39 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbYBHVEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYBHVFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757708AbYBHVEe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYBHVDT
+	id S1754158AbYBHVFc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758491AbYBHVD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:03:19 -0500
-Received: from ag-out-0708.google.com ([72.14.246.243]:56691 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756016AbYBHVDO (ORCPT
+	Fri, 8 Feb 2008 16:03:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:55094 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758911AbYBHVDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:03:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=n04TyOS/sCUSkvd0cPHqB6rJxxHr7iiERD2kYNvrBsKKPVR4M7vwlmJNH4cV3AQ+tmI/dFADJOmzM1fbfqqL4ec7z21uC803V/IC0TPfESEiHoFdiv4DrqC1RgYGrjp+9BNgN2SxgCFkvPbJbTT0ojyTbbeJTisXLa9AFtbv+I0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] fix ide/legacy/gayle.c compilation
-Date: Fri, 8 Feb 2008 21:33:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: geert@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20080207231226.GD7198@cs181133002.pp.htv.fi>
-In-Reply-To: <20080207231226.GD7198@cs181133002.pp.htv.fi>
+	Fri, 8 Feb 2008 16:03:38 -0500
+Message-ID: <47ACC381.9070601@zytor.com>
+Date: Fri, 08 Feb 2008 13:02:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Pavel Machek <pavel@ucw.cz>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+References: <20080205190600.GB11613@elf.ucw.cz> <47AB975C.1010902@zytor.com> <20080208070419.GA4544@ucw.cz> <200802081723.16354.rjw@sisk.pl> <20080208210004.GA12923@elf.ucw.cz>
+In-Reply-To: <20080208210004.GA12923@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802082133.17290.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 February 2008, Adrian Bunk wrote:
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Pavel Machek wrote:
+> On Fri 2008-02-08 17:23:15, Rafael J. Wysocki wrote:
+>> On Friday, 8 of February 2008, Pavel Machek wrote:
+>>> Hi!
+>> Hi,
+>>
+>>>>> I really need the entry point to be at offset 0, so 
+>>>>> that I can get
+>>>>> pointers to my data. I could not figure out how to do 
+>>>>> it any other
+>>>>> way. And if 0 is taken, I thought I'd put header at the 
+>>>>> end.
+>>>>>
+>>>> Why not just put the structure at 0, and put pointers in 
+>>>> the structure to everything else you need?
+>>> segments:offsets rear its ugly head here. I need %ds to point to my
+>>> data, and the way to do it is copy it from %cs; that needs start to be
+>>> at 0.
+>> Hm, why exactly is that necessay?
+> 
+> It is not _neccessary_. Try to come up with another method that gets
+> relocations right. I could not :-(.
+> 
+> (Actually, putting table at the offset 0 and short jump at beggining
+> of the table would probably do the trick. But that still keeps code at
+> offset 0 :-).
+> 									Pavel
 
-applied
+Why not just put a pointer to the start of the code in the table, and 
+make an indirect call to it?
+
+Where is this code?
+
+	-hpa
