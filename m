@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbYBHFeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933991AbYBHFhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933777AbYBHFeX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 00:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYBHFeO
+	id S933991AbYBHFhr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYBHFhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 00:34:14 -0500
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:35244 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbYBHFeN (ORCPT
+	Fri, 8 Feb 2008 00:37:39 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52278 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYBHFhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 00:34:13 -0500
-X-IronPort-AV: E=Sophos;i="4.25,319,1199685600"; 
-   d="scan'208";a="529597598"
-Date: Thu, 7 Feb 2008 23:33:59 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: DMI: add-type-41
-Message-ID: <20080208053359.GE7226@auslistsprd01.us.dell.com>
-References: <20080125201911.GB3234@infomag.infomag.iguana.be>
-Mime-Version: 1.0
+	Fri, 8 Feb 2008 00:37:39 -0500
+Date: Thu, 7 Feb 2008 21:41:58 -0800
+From: Greg KH <greg@kroah.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm PATCH] sysdev_unregister() should call kobject_del()
+Message-ID: <20080208054158.GA12742@kroah.com>
+References: <1202428618.26309.45.camel@dyn9047017100.beaverton.ibm.com> <20080208003825.GB27317@kroah.com> <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com> <20080208045533.GA10988@kroah.com> <1202447322.13910.3.camel@badari-laptop.beaverton.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080125201911.GB3234@infomag.infomag.iguana.be>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1202447322.13910.3.camel@badari-laptop.beaverton.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 09:19:11PM +0100, Wim Van Sebroeck wrote:
-> Hi All,
+On Thu, Feb 07, 2008 at 09:08:42PM -0800, Badari Pulavarty wrote:
 > 
-> Would appreciate feedback on this patch.
+> On Thu, 2008-02-07 at 20:55 -0800, Greg KH wrote:
+> > On Thu, Feb 07, 2008 at 05:25:46PM -0800, Badari Pulavarty wrote:
+> > > On Thu, 2008-02-07 at 16:38 -0800, Greg KH wrote:
+> > > > On Thu, Feb 07, 2008 at 03:56:58PM -0800, Badari Pulavarty wrote:
+> > > > > Hi Greg,
+> > > > > 
+> > > > > While playing with hotplug memory remove on 2.6.24-mm1, I 
+> > > > > noticed that /sysfs directory entries are not getting removed.
+> > > > > 
+> > > > > sysdev_unregister() used to call kobject_unregister().
+> > > > > But in 2.6.24-mm1, its only dropping the ref. It should
+> > > > > call kobject_del() to remove the object. Correct ?
+> > > > > 
+> > > > > With this change, the directories are getting removed
+> > > > > correctly. Comments ?
+> > > > 
+> > > > Ick, no, this shouldn't be needed, someone else must be holding a
+> > > > reference to the kobject device somewhere.  See the kobject documenation
+> > > > for more info.
+> > > > 
+> > > > I'll try to see where we grab 2 references...
+> > > 
+> > > I will take a closer look then. I was taking easy way out :(
+> > 
+> > Hm, I don't see anything obvious in the sys.c core.  What code is
+> > controlling these objects that you are creating and removing from the
+> > system?
 > 
-> Thanks in advance,
-> Wim.
+> add_memory_block()/register_memory() is creating sysfs entries
+> for the memory blocks.
 > 
-> commit 4956e4e5e77b5a8f87bcfe6127ef17a406edf94b
-> Author: Wim Van Sebroeck <wim@iguana.be>
-> Date:   Mon Dec 31 17:21:33 2007 +0000
-> 
->     [PATCH] SMBIOS/DMI - add type 41 = Onboard Devices Extended Information
+> I am trying to make use of remove_memory_block() to clean up
+> sysfs entries. BTW, remove_memory_block() is never tested
+> before, since we don't support memory remove yet.
 
-Is there something in the kernel that will consume this data, or is it
-being exported in /sys/class/dmi/id somehow?  There will be one table
-entry per device (Dell PowerEdge x9xx servers with recent BIOS do so).
+So how are you testing the sysdev removal logic then if you can't remove
+memory?
 
-FWIW, my biosdevname app consumes this data, using dmidecode from
-userspace.
+Oh, one thing, remove the link in unregister_memory, before you call
+sysdev_unregister().  You are trying to get the name of a kobject, and
+the whole object, that has just been blown away, not nice...
 
+Which makes me believe your statement about this never being tested
+before :)
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+thanks,
+
+greg k-h
