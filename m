@@ -1,51 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934160AbYBHJil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933784AbYBHJor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934160AbYBHJil (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 04:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbYBHJi3
+	id S933784AbYBHJor (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 04:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760813AbYBHJod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 04:38:29 -0500
-Received: from phoenix.slamd64.com ([217.10.145.2]:50478 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759397AbYBHJi2 (ORCPT
+	Fri, 8 Feb 2008 04:44:33 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:38659 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756038AbYBHJob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 04:38:28 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Fri, 8 Feb 2008 09:37:33 +0000
-User-Agent: KMail/1.9.7
-Cc: Ray Lee <ray-lk@madrabbit.org>, Len Brown <lenb@kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       linux-acpi@vger.kernel.org
-References: <20080207214715.GA15211@elf.ucw.cz> <200802080027.54576.carlos@strangeworlds.co.uk> <20080208065312.GA4341@ucw.cz>
-In-Reply-To: <20080208065312.GA4341@ucw.cz>
+	Fri, 8 Feb 2008 04:44:31 -0500
+Message-ID: <47AC23F1.5030300@ak.jp.nec.com>
+Date: Fri, 08 Feb 2008 18:42:09 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>
+CC: akpm@osdl.org, jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: [PATCH] exporting capability code/name pairs (try #4)
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com> <20080204162103.GA20130@sergelap.ibm.com> <47A91B00.9080301@ak.jp.nec.com> <20080206050805.GD3258@sergelap.austin.ibm.com>
+In-Reply-To: <20080206050805.GD3258@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802080937.35225.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Fri, 08 Feb 2008 09:37:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 February 2008 06:53:13 Pavel Machek wrote:
-> I believe selct is the way to go here. What do acer-wmi handle?
-> Additional buttons? Leds? Temperatures? Fan states?
+This patch enables to export code/name pair of capabilities supported
+on the running kernel, under the /sys/kernel/capability .
+We can apply it onto the latest Linus's git tree.
 
-Enabling wireless, bluetooth and 3G; and exposing the mail LED and backlight.
+Changes from the previous version:
+- I added "names/" ans "codes/" directories, and we can use them
+  to lookup capability code or name non-sequentially.
+  In the previous version, we had to scan whole of entries to lookup
+  capability name by its code.
+  (required by Andrew Morgan)
+- I added an assertion when "mkcapname.sh" works incorrectly.
+  (required by Serge E.Hallyn)
 
-tc1100-wmi handles wireless and the jog dial, IIRC.
+In addition, Andrew suggested me to export these translation by symlinks
+to reduce the number of invocation of system call.
+However, current sysfs interface does not allows to create symlinks with
+invalid indication.
+Thus, this patch exports them as regular files.
 
-> The laptops will boot fine without it, right?
+--------------------------------------------------------
+[kaigai@saba ~]$ ls -R /sys/kernel/capability/
+/sys/kernel/capability/:
+codes  names  version
 
-Yes.
+/sys/kernel/capability/codes:
+0  10  12  14  16  18  2   21  23  25  27  29  30  32  4  6  8
+1  11  13  15  17  19  20  22  24  26  28  3   31  33  5  7  9
 
--Carlos
+/sys/kernel/capability/names:
+cap_audit_control    cap_kill              cap_net_raw     cap_sys_nice
+cap_audit_write      cap_lease             cap_setfcap     cap_sys_pacct
+cap_chown            cap_linux_immutable   cap_setgid      cap_sys_ptrace
+cap_dac_override     cap_mac_admin         cap_setpcap     cap_sys_rawio
+cap_dac_read_search  cap_mac_override      cap_setuid      cap_sys_resource
+cap_fowner           cap_mknod             cap_sys_admin   cap_sys_time
+cap_fsetid           cap_net_admin         cap_sys_boot    cap_sys_tty_config
+cap_ipc_lock         cap_net_bind_service  cap_sys_chroot
+cap_ipc_owner        cap_net_broadcast     cap_sys_module
+[kaigai@saba ~]$ cat /sys/kernel/capability/codes/20
+cap_sys_pacct
+[kaigai@saba ~]$ cat /sys/kernel/capability/names/cap_mknod
+27
+[kaigai@saba ~]$
+--------------------------------------------------------
+Any comment please.
+
+Thanks,
+
+Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+----
+ scripts/mkcapnames.sh |   44 +++++++++++++++++++
+ security/Kconfig      |    9 ++++
+ security/Makefile     |   11 +++++
+ security/capability.c |  115 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 179 insertions(+), 0 deletions(-)
+
+diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
+index e69de29..9e7290f 100644
+--- a/scripts/mkcapnames.sh
++++ b/scripts/mkcapnames.sh
+@@ -0,0 +1,44 @@
++#!/bin/sh
++
++#
++# generate a cap_names.h file from include/linux/capability.h
++#
++
++CAPHEAD="`dirname $0`/../include/linux/capability.h"
++REGEXP='^#define CAP_[A-Z_]+[ 	]+[0-9]+$'
++NUMCAP=`cat "$CAPHEAD" | egrep -c "$REGEXP"`
++
++echo '#ifndef CAP_NAMES_H'
++echo '#define CAP_NAMES_H'
++echo
++echo '/*'
++echo ' * Do NOT edit this file directly.'
++echo ' * This file is generated from include/linux/capability.h automatically'
++echo ' */'
++echo
++echo '#if !defined(SYSFS_CAP_NAME_ENTRY) || !defined(SYSFS_CAP_CODE_ENTRY)'
++echo '#error cap_names.h should be included from security/capability.c'
++echo '#else'
++echo "#if $NUMCAP != CAP_LAST_CAP + 1"
++echo '#error mkcapnames.sh cannot collect capabilities correctly'
++echo '#else'
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("SYSFS_CAP_NAME_ENTRY(%s,%s);\n", tolower($2), $2); }'
++echo
++echo 'static struct attribute *capability_name_attrs[] = {'
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("\t&%s_name_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
++echo '};'
++
++echo
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("SYSFS_CAP_CODE_ENTRY(%s,%s);\n", tolower($2), $2); }'
++echo
++echo 'static struct attribute *capability_code_attrs[] = {'
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("\t&%s_code_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
++echo '};'
++
++echo '#endif'
++echo '#endif'
++echo '#endif'
+diff --git a/security/Kconfig b/security/Kconfig
+index 25ffe1b..b79e830 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -91,6 +91,15 @@ config SECURITY_FILE_CAPABILITIES
+
+ 	  If in doubt, answer N.
+
++config SECURITY_CAPABILITIES_EXPORT
++	bool "Exporting capabilities kernel supported"
++	depends on SECURITY_CAPABILITIES && SYSFS
++	help
++	  This enables to export any capabilities which are supported
++	  in the running kernel.
++	
++	  If you are unsure how to answer this question, answer Y.
++
+ config SECURITY_ROOTPLUG
+ 	bool "Root Plug Support"
+ 	depends on USB=y && SECURITY
+diff --git a/security/Makefile b/security/Makefile
+index 9e8b025..0e80903 100644
+--- a/security/Makefile
++++ b/security/Makefile
+@@ -18,3 +18,14 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
+ obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+ obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
++
++ifeq ($(CONFIG_SECURITY_CAPABILITIES_EXPORT),y)
++# cap_names.h contains the code/name pair of capabilities.
++# It is generated using include/linux/capability.h automatically.
++$(obj)/capability.o: $(obj)/cap_names.h
++quiet_cmd_cap_names  = CAPS    $@
++	cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
++targets += cap_names.h
++$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
++	$(call if_changed,cap_names)
++endif
+\ No newline at end of file
+diff --git a/security/capability.c b/security/capability.c
+index 9e99f36..ca30a17 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -20,6 +20,8 @@
+ #include <linux/netlink.h>
+ #include <linux/ptrace.h>
+ #include <linux/moduleparam.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
+
+ static struct security_operations capability_ops = {
+ 	.ptrace =			cap_ptrace,
+@@ -58,6 +60,119 @@ static int secondary;
+ static int capability_disable;
+ module_param_named(disable, capability_disable, int, 0);
+
++#ifdef CONFIG_SECURITY_CAPABILITIES_EXPORT
++/*
++ * Export the list of capabilities on /sys/kernel/capability
++ */
++static struct kobject *capability_kobj;
++
++struct capability_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct kobject *kobj,
++			struct capability_attribute *attr,
++			char *buffer);
++	ssize_t (*store)(struct kobject *kobj,
++			 struct capability_attribute *attr,
++			 const char *buffer, size_t count);
++	union {
++		int code;
++		char *name;
++	} c;
++};
++
++static ssize_t capability_name_show(struct kobject *kobj,
++				    struct capability_attribute *attr,
++				    char *buffer)
++{
++	return scnprintf(buffer, PAGE_SIZE, "%d\n", attr->c.code);
++}
++
++static ssize_t capability_code_show(struct kobject *kobj,
++				    struct capability_attribute *attr,
++				    char *buffer)
++{
++	return scnprintf(buffer, PAGE_SIZE, "%s\n", attr->c.name);
++}
++
++static ssize_t capability_version_show(struct kobject *kobj,
++				       struct capability_attribute *attr,
++				       char *buffer)
++{
++	return scnprintf(buffer, PAGE_SIZE, "0x%08x\n",
++			 _LINUX_CAPABILITY_VERSION);
++}
++
++#define SYSFS_CAP_NAME_ENTRY(_name,_code)	\
++	static struct capability_attribute _name##_name_attr = {	\
++		.attr = { .name = __stringify(_name), .mode = 0444 },	\
++		.show = capability_name_show,				\
++		.c.code = (_code),					\
++	}
++
++#define SYSFS_CAP_CODE_ENTRY(_name,_code)				\
++	static struct capability_attribute _name##_code_attr = {	\
++		.attr = { .name = __stringify(_code), .mode = 0444 },   \
++		.show = capability_code_show,				\
++		.c.name = __stringify(_name),				\
++	}
++/*
++ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
++ * This script parses include/linux/capability.h
++ */
++#include "cap_names.h"
++
++static struct attribute_group capability_name_attr_group = {
++	.name = "names",
++	.attrs = capability_name_attrs,
++};
++
++static struct attribute_group capability_code_attr_group = {
++	.name = "codes",
++	.attrs = capability_code_attrs,
++};
++
++static struct capability_attribute cap_version_attr = {
++	.attr = { .name = "version", .mode = 0444 },
++	.show = capability_version_show,
++};
++
++static int __init capability_export_names(void)
++{
++	/* make /sys/kernel/capability */
++	capability_kobj = kobject_create_and_add("capability", kernel_kobj);
++	if (!capability_kobj)
++		goto error0;
++
++	/* make /sys/kernel/capability/names */
++	if (sysfs_create_group(capability_kobj,
++			       &capability_name_attr_group))
++		goto error1;
++
++	/* make /sys/kernel/capability/codes */
++	if (sysfs_create_group(capability_kobj,
++			       &capability_code_attr_group))
++		goto error2;
++
++	if (sysfs_create_file(capability_kobj,
++			      &cap_version_attr.attr))
++		goto error3;
++
++	return 0;
++
++error3:
++	sysfs_remove_group(capability_kobj, &capability_code_attr_group);
++error2:
++	sysfs_remove_group(capability_kobj, &capability_name_attr_group);
++error1:
++	kobject_put(capability_kobj);
++error0:
++	printk(KERN_ERR "Unable to export capabilities\n");
++
++	return 0;
++}
++__initcall(capability_export_names);
++#endif
++
+ static int __init capability_init (void)
+ {
+ 	if (capability_disable) {
+
 -- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
