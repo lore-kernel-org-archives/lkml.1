@@ -1,217 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934612AbYBHSCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965008AbYBHSDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934612AbYBHSCy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbYBHR5t
+	id S965008AbYBHSDZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:03:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933477AbYBHR5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:57:49 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38134 "EHLO
+	Fri, 8 Feb 2008 12:57:51 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38140 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933385AbYBHR5j (ORCPT
+	with ESMTP id S933427AbYBHR5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 12:57:39 -0500
+	Fri, 8 Feb 2008 12:57:40 -0500
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Fri,  8 Feb 2008 19:00:38 +0100
-Message-Id: <12024936442252-git-send-email-giometti@linux.it>
+Date: Fri,  8 Feb 2008 19:00:42 +0100
+Message-Id: <12024936441151-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <120249364418-git-send-email-giometti@linux.it>
+In-Reply-To: <1202493644247-git-send-email-giometti@linux.it>
 References: <1202493644764-git-send-email-giometti@linux.it>
  <120249364418-git-send-email-giometti@linux.it>
+ <12024936442252-git-send-email-giometti@linux.it>
+ <12024936441531-git-send-email-giometti@linux.it>
+ <12024936442967-git-send-email-giometti@linux.it>
+ <1202493644247-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 2/8] PPS: basic documentation file.
+Subject: [PATCH 6/8] PPS: serial clients support.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adds support for the PPS sources connected with the CD (Carrier
+Detect) pin of a serial port.
+
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- Documentation/pps/pps.txt |  170 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 170 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/pps/pps.txt
+ drivers/pps/clients/Kconfig  |   10 ++++++
+ drivers/serial/8250.c        |    2 +
+ drivers/serial/serial_core.c |   71 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/serial_core.h  |   30 ++++++++++++++---
+ 4 files changed, 106 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/pps/pps.txt b/Documentation/pps/pps.txt
-new file mode 100644
-index 0000000..2af58bd
---- /dev/null
-+++ b/Documentation/pps/pps.txt
-@@ -0,0 +1,170 @@
+diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
+index 60b83be..517c338 100644
+--- a/drivers/pps/clients/Kconfig
++++ b/drivers/pps/clients/Kconfig
+@@ -15,4 +15,14 @@ config PPS_CLIENT_KTIMER
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called ktimer.ko.
+ 
++comment "UART serial support (forced off)"
++	depends on ! (SERIAL_CORE != n && !(PPS = m && SERIAL_CORE = y))
 +
-+			PPS - Pulse Per Second
-+			----------------------
++config PPS_CLIENT_UART
++	bool "UART serial support"
++	depends on SERIAL_CORE != n && !(PPS = m && SERIAL_CORE = y)
++	help
++	  If you say yes here you get support for a PPS source connected
++	  with the CD (Carrier Detect) pin of your serial port.
 +
-+(C) Copyright 2007 Rodolfo Giometti <giometti@enneenne.com>
+ endif
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index f94109c..a5e83f8 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2118,6 +2118,8 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+ 		up->ier |= UART_IER_MSI;
+ 	if (up->capabilities & UART_CAP_UUE)
+ 		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
++	if (up->port.flags & UPF_HARDPPS_CD)
++		up->ier |= UART_IER_MSI;	/* enable interrupts */
+ 
+ 	serial_out(up, UART_IER, up->ier);
+ 
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 3bb5d24..ff6cdac 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -33,6 +33,7 @@
+ #include <linux/serial.h> /* for serial_state and serial_icounter_struct */
+ #include <linux/delay.h>
+ #include <linux/mutex.h>
++#include <linux/pps.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+@@ -633,6 +634,54 @@ static int uart_get_info(struct uart_state *state,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPS_CLIENT_UART
 +
-+This program is free software; you can redistribute it and/or modify
-+it under the terms of the GNU General Public License as published by
-+the Free Software Foundation; either version 2 of the License, or
-+(at your option) any later version.
++static int
++uart_register_pps_port(struct uart_state *state, struct uart_port *port)
++{
++	struct tty_driver *drv = port->info->tty->driver;
++	int ret;
 +
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
++	state->pps_info.owner = THIS_MODULE;
++	state->pps_info.dev = port->dev;
++	snprintf(state->pps_info.name, PPS_MAX_NAME_LEN, "%s%d",
++		drv->driver_name, port->line);
++	snprintf(state->pps_info.path, PPS_MAX_NAME_LEN, "/dev/%s%d",
++		drv->name, port->line);
 +
++	state->pps_info.mode = PPS_CAPTUREBOTH | \
++			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
++			PPS_CANWAIT | PPS_TSFMT_TSPEC;
 +
++	ret = pps_register_source(&state->pps_info, PPS_CAPTUREBOTH | \
++				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
++	if (ret < 0) {
++		dev_err(port->dev, "cannot register PPS source \"%s\"\n",
++						state->pps_info.path);
++		return ret;
++	}
++	port->pps_source = ret;
++	dev_dbg(port->dev, "PPS source #%d \"%s\" added\n",
++		port->pps_source, state->pps_info.path);
 +
-+Overview
-+--------
++	return 0;
++}
 +
-+LinuxPPS provides a programming interface (API) to define into the
-+system several PPS sources.
++static void
++uart_unregister_pps_port(struct uart_state *state, struct uart_port *port)
++{
++	pps_unregister_source(port->pps_source);
++	dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
++				port->pps_source, state->pps_info.path);
++}
 +
-+PPS means "pulse per second" and a PPS source is just a device which
-+provides a high precision signal each second so that an application
-+can use it to adjust system clock time.
++#else
 +
-+A PPS source can be connected to a serial port (usually to the Data
-+Carrier Detect pin) or to a parallel port (ACK-pin) or to a special
-+CPU's GPIOs (this is the common case in embedded systems) but in each
-+case when a new pulse comes the system must apply to it a timestamp
-+and record it for the userland.
++#define uart_register_pps_port(state, port)	do { } while (0)
++#define uart_unregister_pps_port(state, port)	do { } while (0)
 +
-+Common use is the combination of the NTPD as userland program with a
-+GPS receiver as PPS source to obtain a wallclock-time with
-+sub-millisecond synchronisation to UTC.
++#endif /* CONFIG_PPS_CLIENT_UART */
 +
+ static int uart_set_info(struct uart_state *state,
+ 			 struct serial_struct __user *newinfo)
+ {
+@@ -807,11 +856,19 @@ static int uart_set_info(struct uart_state *state,
+ 			(port->flags & UPF_LOW_LATENCY) ? 1 : 0;
+ 
+  check_and_exit:
++	/* PPS support enabled/disabled? */
++	if ((old_flags & UPF_HARDPPS_CD) != (new_flags & UPF_HARDPPS_CD)) {
++		if (new_flags & UPF_HARDPPS_CD)
++			uart_register_pps_port(state, port);
++		else
++			uart_unregister_pps_port(state, port);
++	}
 +
-+RFC considerations
-+------------------
+ 	retval = 0;
+ 	if (port->type == PORT_UNKNOWN)
+ 		goto exit;
+ 	if (state->info->flags & UIF_INITIALIZED) {
+-		if (((old_flags ^ port->flags) & UPF_SPD_MASK) ||
++		if (((old_flags ^ port->flags) & (UPF_SPD_MASK|UPF_HARDPPS_CD)) ||
+ 		    old_custom_divisor != port->custom_divisor) {
+ 			/*
+ 			 * If they're setting up a custom divisor or speed,
+@@ -2140,6 +2197,12 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
+ 		port->ops->config_port(port, flags);
+ 	}
+ 
++	/*
++	 * Add the PPS support for the current port.
++	 */
++	if (port->flags & UPF_HARDPPS_CD)
++		uart_register_pps_port(state, port);
 +
-+While implementing a PPS API as RFC 2783 defines and using an embedded
-+CPU GPIO-Pin as physical link to the signal, I encountered a deeper
-+problem:
+ 	if (port->type != PORT_UNKNOWN) {
+ 		unsigned long flags;
+ 
+@@ -2396,6 +2459,12 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
+ 	mutex_unlock(&state->mutex);
+ 
+ 	/*
++	 * Remove PPS support from the current port.
++	 */
++	if (port->flags & UPF_HARDPPS_CD)
++		uart_unregister_pps_port(state, port);
 +
-+   At startup it needs a file descriptor as argument for the function
-+   time_pps_create().
++	/*
+ 	 * Remove the devices from the tty layer
+ 	 */
+ 	tty_unregister_device(drv->tty_driver, port->line);
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 9963f81..c8e4d92 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -160,6 +160,7 @@
+ #include <linux/tty.h>
+ #include <linux/mutex.h>
+ #include <linux/sysrq.h>
++#include <linux/pps.h>
+ 
+ struct uart_port;
+ struct uart_info;
+@@ -239,6 +240,9 @@ struct uart_port {
+ 	unsigned char		regshift;		/* reg offset shift */
+ 	unsigned char		iotype;			/* io access style */
+ 	unsigned char		unused1;
++#ifdef CONFIG_PPS_CLIENT_UART
++	int			pps_source;		/* PPS source ID */
++#endif
+ 
+ #define UPIO_PORT		(0)
+ #define UPIO_HUB6		(1)
+@@ -283,7 +287,8 @@ struct uart_port {
+ #define UPF_IOREMAP		((__force upf_t) (1 << 31))
+ 
+ #define UPF_CHANGE_MASK		((__force upf_t) (0x17fff))
+-#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY))
++#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY\
++							|UPF_HARDPPS_CD))
+ 
+ 	unsigned int		mctrl;			/* current modem ctrl settings */
+ 	unsigned int		timeout;		/* character-based timeout */
+@@ -316,6 +321,10 @@ struct uart_state {
+ 	struct uart_info	*info;
+ 	struct uart_port	*port;
+ 
++#ifdef CONFIG_PPS_CLIENT_UART
++	struct pps_source_info	pps_info;
++#endif
 +
-+This implies that the source has a /dev/... entry. This assumption is
-+ok for the serial and parallel port, where you can do something
-+useful besides(!) the gathering of timestamps as it is the central
-+task for a PPS-API. But this assumption does not work for a single
-+purpose GPIO line. In this case even basic file-related functionality
-+(like read() and write()) makes no sense at all and should not be a
-+precondition for the use of a PPS-API.
+ 	struct mutex		mutex;
+ };
+ 
+@@ -480,13 +489,22 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
+ {
+ 	struct uart_info *info = port->info;
+ 
+-	port->icount.dcd++;
+-
+-#ifdef CONFIG_HARD_PPS
+-	if ((port->flags & UPF_HARDPPS_CD) && status)
+-		hardpps();
++#ifdef CONFIG_PPS_CLIENT_UART
++	if (port->flags & UPF_HARDPPS_CD) {
++		if (status) {
++			pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
++			dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
++				jiffies, port->pps_source);
++		} else {
++			pps_event(port->pps_source, PPS_CAPTURECLEAR, port);
++			dev_dbg(port->dev, "PPS clear at %lu on source #%d\n",
++				jiffies, port->pps_source);
++		}
++	}
+ #endif
+ 
++	port->icount.dcd++;
 +
-+The problem can be simply solved if you consider that a PPS source is
-+not always connected with a GPS data source.
-+
-+So your programs should check if the GPS data source (the serial port
-+for instance) is a PPS source too, otherwise they should provide the
-+possibility to open another device as PPS source.
-+
-+In LinuxPPS the PPS sources are simply char devices usually mapped
-+into files /dev/pps0, /dev/pps1, etc..
-+
-+
-+Coding example
-+--------------
-+
-+To register a PPS source into the kernel you should define a struct
-+pps_source_info_s as follow:
-+
-+    static struct pps_source_info_s pps_ktimer_info = {
-+            .name         = "ktimer",
-+            .path         = "",
-+            .mode         = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
-+			    PPS_ECHOASSERT | \
-+                            PPS_CANWAIT | PPS_TSFMT_TSPEC,
-+            .echo         = pps_ktimer_echo,
-+            .owner        = THIS_MODULE,
-+    };
-+
-+and then calling the function pps_register_source() in your
-+intialization routine as follow:
-+
-+    source = pps_register_source(&pps_ktimer_info,
-+			PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
-+
-+The pps_register_source() prototype is:
-+
-+  int pps_register_source(struct pps_source_info_s *info, int default_params)
-+
-+where "info" is a pointer to a structure that describes a particular
-+PPS source, "default_params" tells the system what the initial default
-+parameters for the device should be (is obvious that these parameters
-+must be a subset of ones defined into the struct
-+pps_source_info_s which describe the capabilities of the driver).
-+
-+Once you have registered a new PPS source into the system you can
-+signal an assert event (for example in the interrupt handler routine)
-+just using:
-+
-+    pps_event(source, PPS_CAPTUREASSERT, ptr);
-+
-+The same function may also run the defined echo function
-+(pps_ktimer_echo(), passing to it the "ptr" pointer) if the user
-+asked for that... etc..
-+
-+Please see the file drivers/pps/clients/ktimer.c for an example code.
-+
-+
-+SYSFS support
-+-------------
-+
-+If the SYSFS filesystem is enabled in the kernel it provides a new class:
-+
-+   $ ls /sys/class/pps/
-+   pps0/  pps1/  pps2/
-+
-+Every directory is the ID of a PPS sources defined into the system and
-+inside you find several files:
-+
-+   $ ls /sys/class/pps/pps0/
-+   assert	clear  echo  mode  name  path  subsystem@  uevent
-+
-+Inside each "assert" and "clear" file you can find the timestamp and a
-+sequence number:
-+
-+   $ cat /sys/class/pps/pps0/assert
-+   1170026870.983207967#8
-+
-+Where before the "#" is the timestamp in seconds and after it is the
-+sequence number. Other files are:
-+
-+* echo: reports if the PPS source has an echo function or not;
-+
-+* mode: reports available PPS functioning modes;
-+
-+* name: reports the PPS source's name;
-+
-+* path: reports the PPS source's device path, that is the device the
-+  PPS source is connected to (if it exists).
-+
-+
-+Testing the PPS support
-+-----------------------
-+
-+In order to test the PPS support even without specific hardware you can use
-+the ktimer driver (see the client subsection in the PPS configuration menu)
-+and the userland tools provided into Documentaion/pps/ directory.
-+
-+Once you have enabled the compilation of ktimer just modprobe it (if
-+not statically compiled):
-+
-+   # modprobe ktimer
-+
-+and the run ppstest as follow:
-+
-+   $ ./ppstest /dev/pps0
-+   trying PPS source "/dev/pps1"
-+   found PPS source "/dev/pps1"
-+   ok, found 1 source(s), now start fetching data...
-+   source 0 - assert 1186592699.388832443, sequence: 364 - clear  0.000000000, sequence: 0
-+   source 0 - assert 1186592700.388931295, sequence: 365 - clear  0.000000000, sequence: 0
-+   source 0 - assert 1186592701.389032765, sequence: 366 - clear  0.000000000, sequence: 0
-+
-+Please, note that to compile userland programs you need the file timepps.h
-+(see Documentation/pps/).
+ 	if (info->flags & UIF_CHECK_CD) {
+ 		if (status)
+ 			wake_up_interruptible(&info->open_wait);
 -- 
 1.5.2.5
 
