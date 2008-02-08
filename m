@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbYBHO6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbYBHO7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322AbYBHO6U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 09:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbYBHO6J
+	id S932624AbYBHO7b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 09:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYBHO7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 09:58:09 -0500
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:61939 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756506AbYBHO6I (ORCPT
+	Fri, 8 Feb 2008 09:59:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57835 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757111AbYBHO7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 09:58:08 -0500
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [git pull] more SLUB updates for 2.6.25
-References: <Pine.LNX.4.64.0802071755580.7473@schroedinger.engr.sgi.com>
-	<200802081812.22513.nickpiggin@yahoo.com.au>
-	<47AC04CD.9090407@cosmosbay.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 08 Feb 2008 15:58:05 +0100
-In-Reply-To: <47AC04CD.9090407@cosmosbay.com>
-Message-ID: <87ve4z1on6.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 8 Feb 2008 09:59:19 -0500
+Date: Fri, 8 Feb 2008 09:59:11 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Takashi Sato <t-sato@yk.jp.nec.com>, Theodore Tso <tytso@MIT.EDU>,
+       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature
+Message-ID: <20080208145911.GA4257@infradead.org>
+References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <01cd01c86a40$21d49410$41a8400a@bsd.tnes.nec.co.jp> <20080208132657.GE3120@webber.adilger.int>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Feb 2008 14:51:45.0563 (UTC) FILETIME=[1FF63EB0:01C86A62]
+Content-Disposition: inline
+In-Reply-To: <20080208132657.GE3120@webber.adilger.int>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet <dada1@cosmosbay.com> writes:
-> 
-> What about IRQ masking then ?
-> 
-> Many CPU pay high cost for cli/sti pair...
+On Fri, Feb 08, 2008 at 08:26:57AM -0500, Andreas Dilger wrote:
+> You may as well make the common ioctl the same as the XFS version,
+> both by number and parameters, so that applications which already
+> understand the XFS ioctl will work on other filesystems.
 
-Many? In the x86 world only P4. On the other cores cli/sti (and even
-pushf ; cli ; popf) is reasonably fast.
+Yes.  In facy you should be able to lift the implementations of
+XFS_IOC_FREEZE and XFS_IOC_THAW to generic code, there's nothing
+XFS-specific in there.
 
-> 
-> And SLAB/SLUB allocators, even if only used from process context, want
-> to disable/re-enable interrupts...
-> 
-> I understand kmalloc() want generic pools, but dedicated pools could
-> avoid this cli/sti
-
-While there are a lot of P4s around they are obsolete by now and I would
-advise against major redesigns for tuning obsolete CPUs.
-
--Andi
