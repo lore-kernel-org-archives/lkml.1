@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYBHUqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYBHUrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYBHUqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYBHUqR
+	id S1755552AbYBHUrA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYBHUqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:46:17 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:28301 "EHLO kernel.dk"
+	Fri, 8 Feb 2008 15:46:19 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43793 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYBHUqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:46:16 -0500
-Date: Fri, 8 Feb 2008 21:46:11 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] lib/scatterlist.o needed by a module only - link it in  unconditionally
-Message-ID: <20080208204611.GE23197@kernel.dk>
-References: <Pine.LNX.4.64.0802081930590.8364@axis700.grange>
-MIME-Version: 1.0
+	id S1752821AbYBHUqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 15:46:17 -0500
+Date: Fri, 8 Feb 2008 21:46:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Barry Kasindorf <barry.kasindorf@amd.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] AMD Family10h IBS support for oProfile driver
+Message-ID: <20080208204623.GG31984@uranus.ravnborg.org>
+References: <47ACB571.8070507@amd.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802081930590.8364@axis700.grange>
+In-Reply-To: <47ACB571.8070507@amd.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08 2008, Guennadi Liakhovetski wrote:
-> lib/scatterlist.c is needed by drivers/media/video/videobuf-dma-sg.c, and 
-> we would like to be able to use the latter without PCI too, for example, 
-> on PXA270 ARM CPU. It is then possible to create a configuration with 
-> CONFIG_BLOCK=n, where only module code will need scatterlist.c. Therefore 
-> it must be in obj-y.
+Nitpicks only - and as I am not familiar
+with this codebase I could not provide
+proper code review.
+
+	Sam
+
+> +
+> +	/*setup AMD Family10h IBS irq if needed */
+
+Please add a space after '/*'
+Several places.
+
+>  static int nmi_create_files(struct super_block *sb, struct dentry *root)
+>  {
+>  	unsigned int i;
+> +	struct dentry *dir;
 > 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+>  	for (i = 0; i < model->num_counters; ++i) {
+> -		struct dentry *dir;
+> +
+>  		char buf[4];
+Please drop this empty line
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> @@ -391,6 +428,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+>  	__u8 vendor = boot_cpu_data.x86_vendor;
+>  	__u8 family = boot_cpu_data.x86;
+>  	char *cpu_type;
+> +	uint32_t eax, ebx, ecx, edx;
 
-Andrew, can I ask you to take care of this?
+We do not recommned use of uint32_t in the kernel. Use plain u32.
+uint32_t belongs to a namespace outside the kernel.
+(googling will find lots of discussion on the topic but I see code
+just above using u8 so at least be consistent and use u32)
 
--- 
-Jens Axboe
+> +		/* see if IBS is available */
+> +		if (family >= 0x10) {
+> +			cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
+
+Two hardcoded numbers on two lines??
+
+> +			if (ecx & 0x40)
+And one more..
 
