@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbYBHX6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbYBHX62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbYBHX6J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYBHX55
+	id S1758827AbYBHX62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbYBHX6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:57:57 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55476 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752945AbYBHX54 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:57:56 -0500
-Date: Fri, 8 Feb 2008 15:56:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, andrea@qumranet.com,
-       avi@qumranet.com, izike@qumranet.com, kvm-devel@lists.sourceforge.net,
-       a.p.zijlstra@chello.nl, steiner@sgi.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com,
-       general@lists.openfabrics.org
-Subject: Re: [patch 0/6] MMU Notifiers V6
-Message-Id: <20080208155641.2258ad2c.akpm@linux-foundation.org>
-In-Reply-To: <20080208234302.GH26564@sgi.com>
-References: <20080208220616.089936205@sgi.com>
-	<20080208142315.7fe4b95e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0802081528070.4036@schroedinger.engr.sgi.com>
-	<20080208233636.GG26564@sgi.com>
-	<Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
-	<20080208234302.GH26564@sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 8 Feb 2008 18:58:09 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39072 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757773AbYBHX6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 18:58:07 -0500
+Date: Sat, 9 Feb 2008 00:58:03 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       mingo@elte.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       Alan.Brunelle@hp.com, dgc@sgi.com, akpm@linux-foundation.org,
+       vegard.nossum@gmail.com, penberg@gmail.com
+Subject: Re: [patch] block layer: kmemcheck fixes
+Message-ID: <20080208235803.GF4952@wotan.suse.de>
+References: <20080207103136.GG15220@kernel.dk> <20080207104901.GF16735@elte.hu> <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org> <20080207.172246.31415231.davem@davemloft.net> <47AC7093.1070003@linux.intel.com> <20080208224427.GC4952@wotan.suse.de> <47ACDE09.7020805@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47ACDE09.7020805@linux.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008 17:43:02 -0600 Robin Holt <holt@sgi.com> wrote:
-
-> On Fri, Feb 08, 2008 at 03:41:24PM -0800, Christoph Lameter wrote:
-> > On Fri, 8 Feb 2008, Robin Holt wrote:
-> > 
-> > > > > What about ib_umem_get()?
-> > 
-> > Correct.
-> > 
-> > You missed the turn of the conversation to how ib_umem_get() works. 
-> > Currently it seems to pin the same way that the SLES10 XPmem works.
+On Fri, Feb 08, 2008 at 02:56:09PM -0800, Arjan van de Ven wrote:
+> Nick Piggin wrote:
+> >>>Maybe cpus these days have so much store bandwith that doing
+> >>>things like the above is OK, but I doubt it :-)
+> >>on modern x86 cpus the memset may even be faster if the memory isn't in 
+> >>cache;
+> >>the "explicit" method ends up doing Write Allocate on the cache lines
+> >>(so read them from memory) even though they then end up being written 
+> >>entirely.
+> >>With memset the CPU is told that the entire range is set to a new value, 
+> >>and
+> >>the WA can be avoided for the whole-cachelines in the range.
+> >
+> >Don't you have write combining store buffers? Or is it still speculatively
+> >issuing the reads even before the whole cacheline is combined?
 > 
-> Ah.  I took Andrew's question as more of a probe about whether we had
-> worked with the IB folks to ensure this fits the ib_umem_get needs
-> as well.
-> 
+> x86 memory order model doesn't allow that quite; and you need a "series" of 
+> at least 64 bytes
+> without any other memory accesses in between even if it would....
+> not happening in practice.
 
-You took it correctly, and I didn't understand the answer ;)
+OK, fair enough... then it will be a very nice test to see if it
+helps. I'm sure you could have an arch specific initialisation
+function if it makes a significant difference.
