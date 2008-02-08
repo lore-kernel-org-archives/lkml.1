@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934006AbYBHLVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934614AbYBHLWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934006AbYBHLVP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 06:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762143AbYBHLUs
+	id S934614AbYBHLWZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 06:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760296AbYBHLWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 06:20:48 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:51867 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762048AbYBHLUq (ORCPT
+	Fri, 8 Feb 2008 06:22:03 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:55649 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757969AbYBHLWA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 06:20:46 -0500
-X-Sasl-enc: xoY9yrAOcJOJpImDNIOcQzi36L/Pa4LXzTPQXKPPyR7g 1202469645
-Date: Fri, 8 Feb 2008 09:20:40 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: Richard Purdie <rpurdie@rpsys.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] LED updates
-Message-ID: <20080208112040.GA9485@khazad-dum.debian.net>
-References: <1202380503.9519.21.camel@dax.rpnet.com> <20080207213845.GA27862@khazad-dum.debian.net> <1202422388.9519.123.camel@dax.rpnet.com> <47ABFEC5.8010206@freemail.hu>
+	Fri, 8 Feb 2008 06:22:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=v+kA103CSqYscw2nxoi30W8KQp4kZ5vmTynGh9B0djEPDLyIqWHGBUa88qh9lMEN2j2jsAfUVfklRPVdUTpaaOTeHYYfc3nKVOY739meJyYA+jValLv6kIA0+Xg3IHKzwzBg0G29iUn0yk4zCfHKN29YmI7zkb5DfQ7BEvn0VO0=
+Message-ID: <8b67d60802080321o6f6c8ca7x768d911a6f1fba0b@mail.gmail.com>
+Date: Fri, 8 Feb 2008 11:21:58 +0000
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: jgarzik@pobox.com, "Paul Mundt" <lethal@linux-sh.org>
+Subject: [PATCH] 8139too fix for Dreamcast
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47ABFEC5.8010206@freemail.hu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Feb 2008, Németh Márton wrote:
-> Richard Purdie wrote:
-> >>>       leds: Add support for hardware accelerated LED flashing
-> >> This one has a loose end: when you call brightness_set on a led with
-> >> hardware flash acceleration, you will leave the trigger armed, BUT the led
-> >> won't blink anymore.  That's just wrong.
-> > 
-> > Agreed.
-> 
-> My only question is that do you know any LED hardware which can blink _and_
-> can set the brightness independently? If there would be such a LED I could
+Updates the 8139too driver to work with recently added
+(a724605cb7a66d423a494a395f9a8ba871b8a1eb) declared coherent memory
+patch for the Dreamcast.
 
-Several, but none on laptops or other stuff that runs Linux.  That behaviour
-is not common on indicator LEDs.  I have seen standby LEDs on laptops which
-"blink" by slowly fading from full to off, and then back to full, though.
+Jeff - I am assuming you are still the maintainer and I guess Paul
+should also ack this as it is SH related.
 
-> imagine that the brightness can be changed while the LED remains blinking at
-> some low frequency. For example a simple LED with brightness set possibility and
-> blinking directed by software is an example where the blinking and the brightness
-> setting are completely independent.
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
-Sure, it is perfectly possible.  I am not sure it is *desireable*, though.
-The way we have triggers work make what you describe impossible right now,
-the software triggers are LED_OFF:LED_FULL, not LED_OFF:old-brightness.
+-----
 
-And so are the common hardware triggers on laptops, for that matter.
 
-If we go and fix every trigger to use the current brightness (as long as it
-is non-zero) as the "turn LED on" trigger event, then the documentation has
-to be changed accordingly to do what you said above, and we would stop the
-trigger only by setting brightness to zero or by explicitly removing it.
-
-I don't think it is worth the hassle, though.  But we better decide that
-*now*, because all this changing of the LED class ABI (even if it is, IMHO,
-a big improvement) is not a good idea.  We better do it all during the
-2.6.25 cycle.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index d373545..80f1cce 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -168,7 +168,7 @@ static int debug = -1;
+  * Warning: 64K ring has hardware issues and may lock up.
+  */
+ #if defined(CONFIG_SH_DREAMCAST)
+-#define RX_BUF_IDX	1	/* 16K ring */
++#define RX_BUF_IDX 0	/* 8K ring */
+ #else
+ #define RX_BUF_IDX	2	/* 32K ring */
+ #endif
