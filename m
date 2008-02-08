@@ -1,96 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbYBHTWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbYBHTWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762273AbYBHTWN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 14:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYBHTV4
+	id S1762679AbYBHTWo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 14:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbYBHTWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 14:21:56 -0500
-Received: from ns.suse.de ([195.135.220.2]:38104 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbYBHTVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 14:21:55 -0500
-Date: Fri, 8 Feb 2008 11:19:14 -0800
-From: Greg KH <gregkh@suse.de>
-To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org
-Subject: Re: [patch 43/45] x86: replace LOCK_PREFIX in futex.h
-Message-ID: <20080208191914.GA13589@suse.de>
-References: <20080207204118.202098927@mini.kroah.org> <20080207204821.GR16389@suse.de> <200802081935.34666.s.L-H@gmx.de>
+	Fri, 8 Feb 2008 14:22:34 -0500
+Received: from wr-out-0506.google.com ([64.233.184.229]:29480 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752258AbYBHTWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 14:22:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=x8qrML19UZaL6sUa8FnqCCk/AKB1LYx9haMlAog/bpoHfES1td2rgX3RDlL9UgA1lo4pyikM3Q7smEO1s47QmcRzsO+az8QZJIUeL6I0bOsmOkP1C6RwUQesaIkOFcx55RkeWqIs3hdbc5njE0tC0chLkAQaN5wMPPVqfBX5fEM=
+Message-ID: <6d4bc9fc0802081122g5b9a9ee7lc85d6f18e0dee74@mail.gmail.com>
+Date: Fri, 8 Feb 2008 20:22:25 +0100
+From: "Maarten Maathuis" <madman2003@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [x86_64] Cannot get the NMI watchdog to work
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802081935.34666.s.L-H@gmx.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 07:35:33PM +0100, Stefan Lippers-Hollmann wrote:
-> Hi
-> 
-> On Donnerstag, 7. Februar 2008, Greg KH wrote:
-> > 2.6.24-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > The exception fixup for the futex macros __futex_atomic_op1/2 and
-> > futex_atomic_cmpxchg_inatomic() is missing an entry when the lock
-> > prefix is replaced by a NOP via SMP alternatives.
-> > 
-> > Chuck Ebert tracked this down from the information provided in:
-> > https://bugzilla.redhat.com/show_bug.cgi?id=429412
-> > 
-> > A possible solution would be to add another fixup after the
-> > LOCK_PREFIX, so both the LOCK and NOP case have their own entry in the
-> > exception table, but it's not really worth the trouble.
-> > 
-> > Simply replace LOCK_PREFIX with lock and keep those untouched by SMP
-> > alternatives.
-> > 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  include/asm-x86/futex_32.h |    6 +++---
-> >  include/asm-x86/futex_64.h |    6 +++---
-> >  2 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> This patch seems to break compilation on x86_64 (i386 builds fine).
-> 
-> [...]
->   CC      kernel/time/tick-sched.o
->   LD      kernel/time/built-in.o
->   CC      kernel/futex.o
-> In file included from include/asm/futex.h:4,
->                  from kernel/futex.c:59:
-> include/asm/futex_64.h: In function ???futex_atomic_op_inuser???:
-> include/asm/futex_64.h:69: error: expected ???:??? or ???)??? before ???lock???
-> include/asm/futex_64.h:69: error: stray ???\??? in program
-> In file included from include/asm/futex.h:4,
->                  from kernel/futex.c:59:
-> include/asm/futex_64.h:69:61: error: invalid suffix "b" on integer constant
-> include/asm/futex_64.h:69: error: stray ???\??? in program
-> include/asm/futex_64.h:69: error: stray ???\??? in program
-> include/asm/futex_64.h:72: error: expected ???:??? or ???)??? before ???lock???
-> include/asm/futex_64.h:72: error: stray ???\??? in program
-> include/asm/futex_64.h:72:63: error: invalid suffix "b" on integer constant
-> include/asm/futex_64.h:72: error: stray ???\??? in program
-> include/asm/futex_64.h:72: error: stray ???\??? in program
-> include/asm/futex_64.h:75: error: expected ???:??? or ???)??? before ???lock???
-> include/asm/futex_64.h:75: error: stray ???\??? in program
-> include/asm/futex_64.h:75:62: error: invalid suffix "b" on integer constant
-> include/asm/futex_64.h:75: error: stray ???\??? in program
-> include/asm/futex_64.h:75: error: stray ???\??? in program
-> include/asm/futex_64.h:51: warning: unused variable ???tem???
-> make[1]: *** [kernel/futex.o] Fehler 1
-> make: *** [kernel] Fehler 2
+Please CC me when replying.
 
-Ugh, my x86-64 assember knowledge sucks and I don't see how to easily
-fix this, so I'll drop it for now and wait for Thomas to send a new
-patch for the next .24 -stable release.
+Kernel is a 2.6.24-rt1.
 
-thanks a lot for the report,
+Summary:
+- 0 NMI interrupts occur by default (this remains true for any
+situation encountered).
+- nmi_watchdog=1 disables lapic for some reason.
+- I have no hpet it seems, hpet=force doesn't do any good (the oposite
+actually).
+- I never get any reference of hpet in my dmesg.
+- oprofile module is not loaded.
+- My interrupts seem to have IO-APIC-* mode.
+- My chipset is a nvidia CK804.
 
-greg k-h
+Can anyone shed some light on what is needed to get a working NMI watchdog?
+
+Sincerely,
+
+Maarten Maathuis.
