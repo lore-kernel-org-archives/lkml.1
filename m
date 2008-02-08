@@ -1,146 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbYBHQfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933337AbYBHQgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760764AbYBHQfa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbYBHQfN
+	id S933337AbYBHQgc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbYBHQgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:35:13 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57407 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758301AbYBHQfL (ORCPT
+	Fri, 8 Feb 2008 11:36:18 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:38879 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757252AbYBHQgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:35:11 -0500
-Date: Fri, 8 Feb 2008 17:35:15 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.24-mm1] IPC: use ipc_buildid() directly from ipc_addid()
-Message-Id: <20080208173515.e4545838.pierre.peiffer@bull.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 08/02/2008 17:44:02,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 08/02/2008 17:44:03,
-	Serialize complete at 08/02/2008 17:44:03
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 8 Feb 2008 11:36:16 -0500
+From: Andi Kleen <ak@suse.de>
+References: <20080208536.837219990@suse.de>
+In-Reply-To: <20080208536.837219990@suse.de>
+To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] [2/5] Support range checking for required/advisory protections
+Message-Id: <20080208163613.DB4EE1B41AA@basil.firstfloor.org>
+Date: Fri,  8 Feb 2008 17:36:13 +0100 (CET)
+X-OriginalArrivalTime: 08 Feb 2008 16:29:53.0808 (UTC) FILETIME=[D5A12100:01C86A6F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+Previously these checks would only check a single address, which is ok
+for 4k pages, but not for large pages
 
-By continuing to consolidate a little the IPC code, each id can be built
-directly in ipc_addid() instead of having it built from each callers of
-ipc_addid()
+Needed for followup patches
 
-And I also remove shm_addid() in order to have, as much as possible, the
-same code for shm/sem/msg.
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
 ---
- ipc/msg.c  |    2 --
- ipc/sem.c  |    2 --
- ipc/shm.c  |   10 +---------
- ipc/util.c |    1 +
- 4 files changed, 2 insertions(+), 13 deletions(-)
+ arch/x86/mm/pageattr.c |   34 +++++++++++++++++++++++-----------
+ 1 file changed, 23 insertions(+), 11 deletions(-)
 
-Index: b/ipc/msg.c
+Index: linux/arch/x86/mm/pageattr.c
 ===================================================================
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -70,7 +70,6 @@ struct msg_sender {
- #define msg_ids(ns)	((ns)->ids[IPC_MSG_IDS])
- 
- #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
--#define msg_buildid(id, seq)	ipc_buildid(id, seq)
- 
- static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
- static int newque(struct ipc_namespace *, struct ipc_params *);
-@@ -186,7 +185,6 @@ static int newque(struct ipc_namespace *
- 		return id;
- 	}
- 
--	msq->q_perm.id = msg_buildid(id, msq->q_perm.seq);
- 	msq->q_stime = msq->q_rtime = 0;
- 	msq->q_ctime = get_seconds();
- 	msq->q_cbytes = msq->q_qnum = 0;
-Index: b/ipc/sem.c
-===================================================================
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -91,7 +91,6 @@
- 
- #define sem_unlock(sma)		ipc_unlock(&(sma)->sem_perm)
- #define sem_checkid(sma, semid)	ipc_checkid(&sma->sem_perm, semid)
--#define sem_buildid(id, seq)	ipc_buildid(id, seq)
- 
- static int newary(struct ipc_namespace *, struct ipc_params *);
- static void freeary(struct ipc_namespace *, struct kern_ipc_perm *);
-@@ -268,7 +267,6 @@ static int newary(struct ipc_namespace *
- 	}
- 	ns->used_sems += nsems;
- 
--	sma->sem_perm.id = sem_buildid(id, sma->sem_perm.seq);
- 	sma->sem_base = (struct sem *) &sma[1];
- 	/* sma->sem_pending = NULL; */
- 	sma->sem_pending_last = &sma->sem_pending;
-Index: b/ipc/shm.c
-===================================================================
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -60,7 +60,6 @@ static struct vm_operations_struct shm_v
- 
- #define shm_unlock(shp)			\
- 	ipc_unlock(&(shp)->shm_perm)
--#define shm_buildid(id, seq)	ipc_buildid(id, seq)
- 
- static int newseg(struct ipc_namespace *, struct ipc_params *);
- static void shm_open(struct vm_area_struct *vma);
-@@ -169,12 +168,6 @@ static inline void shm_rmid(struct ipc_n
- 	ipc_rmid(&shm_ids(ns), &s->shm_perm);
+--- linux.orig/arch/x86/mm/pageattr.c
++++ linux/arch/x86/mm/pageattr.c
+@@ -35,6 +35,13 @@ within(unsigned long addr, unsigned long
+ 	return addr >= start && addr < end;
  }
  
--static inline int shm_addid(struct ipc_namespace *ns, struct shmid_kernel *shp)
--{
--	return ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
--}
--
--
++static inline int
++within_range(unsigned long addr_start, unsigned long addr_end,
++		unsigned long start, unsigned long end)
++{
++	return addr_end >= start && addr_start < end;
++}
++
+ /*
+  * Flushing functions
+  */
+@@ -149,7 +156,8 @@ static unsigned long virt_to_highmap(voi
+  * right (again, ioremap() on BIOS memory is not uncommon) so this function
+  * checks and fixes these known static required protection bits.
+  */
+-static inline pgprot_t required_static_prot(pgprot_t prot, unsigned long address)
++static inline pgprot_t
++required_static_prot(pgprot_t prot, unsigned long start, unsigned long end)
+ {
+ 	pgprot_t forbidden = __pgprot(0);
  
- /* This is called by fork, once for every shm attach. */
- static void shm_open(struct vm_area_struct *vma)
-@@ -417,7 +410,7 @@ static int newseg(struct ipc_namespace *
- 	if (IS_ERR(file))
- 		goto no_file;
+@@ -157,19 +165,21 @@ static inline pgprot_t required_static_p
+ 	 * The BIOS area between 640k and 1Mb needs to be executable for
+ 	 * PCI BIOS based config access (CONFIG_PCI_GOBIOS) support.
+ 	 */
+-	if (within(__pa(address), BIOS_BEGIN, BIOS_END))
++	if (within_range(__pa(start), __pa(end), BIOS_BEGIN, BIOS_END))
+ 		pgprot_val(forbidden) |= _PAGE_NX;
  
--	id = shm_addid(ns, shp);
-+	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
- 	if (id < 0) {
- 		error = id;
- 		goto no_id;
-@@ -429,7 +422,6 @@ static int newseg(struct ipc_namespace *
- 	shp->shm_ctim = get_seconds();
- 	shp->shm_segsz = size;
- 	shp->shm_nattch = 0;
--	shp->shm_perm.id = shm_buildid(id, shp->shm_perm.seq);
- 	shp->shm_file = file;
  	/*
- 	 * shmid gets reported as "inode#" in /proc/pid/maps.
-Index: b/ipc/util.c
-===================================================================
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -231,6 +231,7 @@ int ipc_addid(struct ipc_ids* ids, struc
- 	if(ids->seq > ids->seq_max)
- 		ids->seq = 0;
+ 	 * The kernel text needs to be executable for obvious reasons
+ 	 * Does not cover __inittext since that is gone later on
+ 	 */
+-	if (within(address, (unsigned long)_text, (unsigned long)_etext))
++	if (within_range(start, end,
++		(unsigned long)_text, (unsigned long)_etext))
+ 		pgprot_val(forbidden) |= _PAGE_NX;
+ 	/*
+ 	 * Do the same for the x86-64 high kernel mapping
+ 	 */
+-	if (within(address, virt_to_highmap(_text), virt_to_highmap(_etext)))
++	if (within_range(start, end,
++			virt_to_highmap(_text), virt_to_highmap(_etext)))
+ 		pgprot_val(forbidden) |= _PAGE_NX;
  
-+	new->id =  ipc_buildid(id, new->seq);
- 	spin_lock_init(&new->lock);
- 	new->deleted = 0;
- 	rcu_read_lock();
-
--- 
-Pierre Peiffer
+ 	prot = __pgprot(pgprot_val(prot) & ~pgprot_val(forbidden));
+@@ -177,18 +187,19 @@ static inline pgprot_t required_static_p
+ 	return prot;
+ }
+ 
+-static inline pgprot_t advised_static_prot(pgprot_t prot, unsigned long address)
++static inline pgprot_t
++advised_static_prot(pgprot_t prot, unsigned long start, unsigned long end)
+ {
+ 	pgprot_t forbidden = __pgprot(0);
+ 
+ 	/* The .rodata section needs to be read-only */
+-	if (within(address, (unsigned long)__start_rodata,
++	if (within_range(start, end, (unsigned long)__start_rodata,
+ 				(unsigned long)__end_rodata))
+ 		pgprot_val(forbidden) |= _PAGE_RW;
+ 	/*
+ 	 * Do the same for the x86-64 high kernel mapping
+ 	 */
+-	if (within(address, virt_to_highmap(__start_rodata),
++	if (within_range(start, end, virt_to_highmap(__start_rodata),
+ 				virt_to_highmap(__end_rodata)))
+ 		pgprot_val(forbidden) |= _PAGE_RW;
+ 
+@@ -313,8 +324,8 @@ try_preserve_large_page(pte_t *kpte, uns
+ 
+ 	pgprot_val(new_prot) &= ~pgprot_val(cpa->mask_clr);
+ 	pgprot_val(new_prot) |= pgprot_val(cpa->mask_set);
+-	new_prot = required_static_prot(new_prot, address);
+-	new_prot = advised_static_prot(new_prot, address);
++	new_prot = required_static_prot(new_prot, address, address + psize - 1);
++	new_prot = advised_static_prot(new_prot, address, address + psize - 1);
+ 
+ 	/*
+ 	 * If there are no changes, return. maxpages has been updated
+@@ -438,6 +449,7 @@ repeat:
+ 	BUG_ON(PageCompound(kpte_page));
+ 
+ 	if (level == PG_LEVEL_4K) {
++		unsigned long end = address + PAGE_SIZE - 1;
+ 		pte_t new_pte, old_pte = *kpte;
+ 		pgprot_t new_prot = pte_pgprot(old_pte);
+ 
+@@ -452,8 +464,8 @@ repeat:
+ 		pgprot_val(new_prot) &= ~pgprot_val(cpa->mask_clr);
+ 		pgprot_val(new_prot) |= pgprot_val(cpa->mask_set);
+ 
+-		new_prot = required_static_prot(new_prot, address);
+-		new_prot = advised_static_prot(new_prot, address);
++		new_prot = required_static_prot(new_prot, address, end);
++		new_prot = advised_static_prot(new_prot, address, end);
+ 
+ 		/*
+ 		 * We need to keep the pfn from the existing PTE,
