@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbYBHPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbYBHPS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933092AbYBHPOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 10:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbYBHPOY
+	id S932392AbYBHPS7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 10:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbYBHPSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 10:14:24 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:9467 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbYBHPOX (ORCPT
+	Fri, 8 Feb 2008 10:18:52 -0500
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:54290 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757950AbYBHPSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 10:14:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Mzp0juxy8Q7AbMu4kD7jEdsEtfKfrNDZlNGBYGcBwo00QsuHuuntI1DE3l8IBAw9J2S5RGivoEKG9NXtKkzOgcHEHLYs5uizwL2grmleAYpHglQ8JFT82qQV6OTBiS9ORHe8J7QRXB0yDls5qGw1R4QgaaQAcTpp7PZHLVL38H0=
-Message-ID: <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
-Date: Sat, 9 Feb 2008 00:14:17 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "rohit h" <hrohit85@gmail.com>
-Subject: Re: [LINUX-KERNEL] C++ in linux kernel
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
+	Fri, 8 Feb 2008 10:18:51 -0500
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
+Date: Fri, 8 Feb 2008 16:18:42 +0100
+User-Agent: KMail/1.9.7
+Cc: mingo@elte.hu, tglx@linutronix.de, lenb@kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080207195519.GA21772@basil.nowhere.org> <20080208113638.GA4745@one.firstfloor.org> <200802081613.39906.prakash@punnoor.de>
+In-Reply-To: <200802081613.39906.prakash@punnoor.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart75157192.SA54mOBiPZ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
+Message-Id: <200802081618.42961.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/2/8, rohit h <hrohit85@gmail.com>:
-> Hi,
->  I am a kernel newbie.
->  I tried to insmod a C++ module containing classes, inheritance.
->  I am getting 'unresolved symbol' error when I use the 'new' keyword.
->  What could the problem be?
->
->  What kind of runtime support is needed ( arm linux kernel)? Is a
-> patch available for it?
->
->  Thanks,
-> Rohit
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--nextPart75157192.SA54mOBiPZ
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Rohit,
-Please take a look at click modular router which is using c++ as a
-linux kernel module.
-http://www.read.cs.ucla.edu/click/
-The lib/glue.cc provides custom operator new.
+On the day of Friday 08 February 2008 Prakash Punnoor hast written:
+> On the day of Friday 08 February 2008 Andi Kleen hast written:
+> > On Thu, Feb 07, 2008 at 10:21:18PM +0100, Prakash Punnoor wrote:
+> > > On the day of Thursday 07 February 2008 Andi Kleen hast written:
+> > > > Replace the old "for all of nvidia" quirk with a quirk containing p=
+ci
+> > > > device ID. I goobled this list together from pci.ids and googling a=
+nd
+> > > > it may be incomplete, but so far I haven't had complaints.
+> > > >
+> > > > +	QBRIDGE(PCI_VENDOR_ID_NVIDIA, 0x02f0, nvidia_timer), /* mcp 51/nf4
+> > > > ? */
+> > >
+> > > If you want to skip timer override on this board, this is a *NAK* from
+> > > me. I told you the last time, it only works reliably here on MCP51 wi=
+th
+> > > timer
+> >
+> > Hmm, if you told me it got lost somewhere, sorry.
+>
+> I at least found this post: http://lkml.org/lkml/2006/8/13/2 though I
+> remeber we had some discussions. ;-)
 
-Thanks,
-Joonwoo
+http://lkml.org/lkml/2006/8/13/25
+
+I killed one digit by mistake...
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
+
+--nextPart75157192.SA54mOBiPZ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHrHLSxU2n/+9+t5gRAtf+AJsEHtPo7sA8Vdtp0xson4r4OzUGDQCg1Hm0
+dcjGFQUpYxdu8IYgCKbI558=
+=RCgL
+-----END PGP SIGNATURE-----
+
+--nextPart75157192.SA54mOBiPZ--
