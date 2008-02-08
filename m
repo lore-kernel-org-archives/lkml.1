@@ -1,47 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933847AbYBHIYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbYBHIZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933847AbYBHIYh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 03:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbYBHIYZ
+	id S933999AbYBHIZo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 03:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761427AbYBHIZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 03:24:25 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:16624 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761799AbYBHIYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 03:24:25 -0500
-Date: Fri, 8 Feb 2008 09:24:22 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
-       dgc@sgi.com
-Subject: Re: IO queuing and complete affinity with threads (was Re: [PATCH 0/8] IO queuing and complete affinity)
-Message-ID: <20080208082422.GB15220@kernel.dk>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <20080207182544.GM15220@kernel.dk> <20080208073859.GE9730@wotan.suse.de> <20080208074747.GY15220@kernel.dk> <20080208075324.GG9730@wotan.suse.de> <20080208075954.GA15220@kernel.dk> <20080208081226.GH9730@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080208081226.GH9730@wotan.suse.de>
+	Fri, 8 Feb 2008 03:25:36 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:34311 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761381AbYBHIZe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 03:25:34 -0500
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Artem Bityutskiy <dedekind@infradead.org>
+Date: Fri, 08 Feb 2008 12:17:04 +0200
+Message-Id: <20080208101704.3054.25217.sendpatchset@golum>
+Subject: [PATCH] Documentation: add UBI sysfs ABI docs
+X-OriginalArrivalTime: 08 Feb 2008 08:24:20.0121 (UTC) FILETIME=[00994890:01C86A2C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08 2008, Nick Piggin wrote:
-> On Fri, Feb 08, 2008 at 08:59:55AM +0100, Jens Axboe wrote:
-> > On Fri, Feb 08 2008, Nick Piggin wrote:
-> > > And if you don't?
-> > 
-> > Well if you don't ask for anything, you wont get anything :-)
-> > As I mentioned, the patch is a playing ground for trying various setups.
-> > Everything defaults to 'do as usual', set options to setup certain test
-> > scenarios.
-> 
-> I mean if you don't know the completing CPU.
+>From 1297e1e60ec1a3ac9c64370fd089aa6c4807b65a Mon Sep 17 00:00:00 2001
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Fri, 8 Feb 2008 12:13:08 +0200
+Subject: [PATCH] Documentation: add UBI sysfs ABI docs
 
-I still don't know quite what part of that patch you are referring to
-here. If you don't have queue_affinity set, queueing a new request with
-the hardware is generally done on the same CPU that just completed a
-request. That is true even without any patches.
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ Documentation/ABI/stable/sysfs-class-ubi |  212 ++++++++++++++++++++++++++++++
+ 1 files changed, 212 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-class-ubi
 
+diff --git a/Documentation/ABI/stable/sysfs-class-ubi b/Documentation/ABI/stable/sysfs-class-ubi
+new file mode 100644
+index 0000000..65556ab
+--- /dev/null
++++ b/Documentation/ABI/stable/sysfs-class-ubi
+@@ -0,0 +1,212 @@
++What:		/sys/class/ubi/
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		The ubi/ class sub-directory belongs to the UBI subsystem and
++		provides general UBI information, per-UBI device information
++		and per-UBI volume information.
++
++What:		/sys/class/ubi/version
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		This file contains version of the latest supported UBI on-media
++		format. Currently it is 1, and there is not plan to change this.
++		However, if in the future UBI needs on-flash format changes
++		which cannot be done in a compatible manner, a new format
++		version will be added. So this is a mechanism for possible
++		future backward-compatible (but forward-incompatible)
++		improvements.
++
++What:		/sys/class/ubiX/
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		The /sys/class/ubi0, /sys/class/ubi1, etc directories describe
++		UBI devices (UBI device 0, 1, etc). They contain general UBI
++		device information and per UBI volume information (each UBI
++		device may have many UBI volumes)
++
++What:		/sys/class/ubi/ubiX/avail_eraseblocks
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Amount of available logical eraseblock. For example, one may
++		create a new UBI volume which has this amount of logical
++		eraseblocks.
++
++What:		/sys/class/ubi/ubiX/bad_peb_count
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Count of bad physical eraseblocks on the underlying MTD device.
++
++What:		/sys/class/ubi/ubiX/bgt_enabled
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Contains ASCII "0\n" if the UBI background thread is disabled,
++		and ASCII "1\n" if it is enabled.
++
++What:		/sys/class/ubi/ubiX/dev
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Major and minor numbers of the character device corresponding
++		to this UBI device (in <major>:<minor> format).
++
++What:		/sys/class/ubi/ubiX/eraseblock_size
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Maximum logical eraseblock size this UBI device may provide. UBI
++		volume may have smaller logical eraseblock size	because of their
++		alignment.
++
++What:		/sys/class/ubi/ubiX/max_ec
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Maximum physical eraseblock erase counter value.
++
++What:		/sys/class/ubi/ubiX/max_vol_count
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Maximum number of volumes which this UBI device may have.
++
++What:		/sys/class/ubi/ubiX/min_io_size
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Minimum input/output unit size. All the I/O may only be done
++		in fractions of the contained number.
++
++What:		/sys/class/ubi/ubiX/mtd_num
++Date:		January 2008
++KernelVersion:	2.6.25
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Number of the underlying MTD device.
++
++What:		/sys/class/ubi/ubiX/reserved_for_bad
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Number of physical eraseblocks reserved for bad block handling.
++
++What:		/sys/class/ubi/ubiX/total_eraseblocks
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Total number of good (not marked as bad) physical eraseblocks on
++		the underlying MTD device.
++
++What:		/sys/class/ubi/ubiX/volumes_count
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Count of volumes on this UBI device
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		The /sys/class/ubi/ubiX/ubiX_0/, /sys/class/ubi/ubiX/ubiX_1/,
++		etc directories describe UBI volumes on UBI device X (volumes
++		0, 1, etc).
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/alignment
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Volume alignment - the value the logical eraseblock size of
++		this volume has to be aligned on. For example, 2048 means that
++		logical eraseblock size is multiple of 2048. In other words,
++		volume logical eraseblock size is UBI device logical eraseblock
++		size aligned to the alignment value.
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/corrupted
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Contains ASCII "0\n" if the UBI volume is OK, and ASCII "1\n"
++		if it is corrupted (e.g., due to an interrupted volume update).
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/data_bytes
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		The amount of data this volume contains. This value makes sense
++		only for static volumes, and for dynamic volume it equivalent
++		to the total volume size in bytes.
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/dev
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Major and minor numbers of the character device corresponding
++		to this UBI volume (in <major>:<minor> format).
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/name
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Volume name.
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/reserved_ebs
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Count of physical eraseblock reserved for this volume.
++		Equivalent to the volume size in logical eraseblocks.
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/type
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Volume type. Contains ASCII "dynamic\n" for dynamic volumes and
++		"static\n" for static volumes.
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/upd_marker
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Contains ASCII "0\n" if the update marker is not set for this
++		volume, and "1\n" if it is set. The update marker is set when
++		volume update starts, and cleaned when it ends. So the presence
++		of the update marker indicates that the volume is being updated
++		at the moment of the update was interrupted. The later may be
++		checked using the "corrupted" sysfs file.
++
++What:		/sys/class/ubi/ubiX/ubiX_Y/usable_eb_size
++Date:		July 2006
++KernelVersion:	2.6.22
++Contact:	Artem Bityutskiy <dedekind@infradead.org>
++Description:
++		Logical eraseblock size of this volume. Equivalent to logical
++		eraseblock size of the device aligned on the volume alignment
++		value.
 -- 
-Jens Axboe
+1.5.3.8
 
