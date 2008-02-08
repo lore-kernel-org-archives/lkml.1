@@ -1,69 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbYBHXRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYBHXVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbYBHXRK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYBHXQ4
+	id S1754856AbYBHXVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYBHXVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:16:56 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:12894 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbYBHXQz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:16:55 -0500
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 08 Feb 2008 15:16:53 -0800
-Message-ID: <adafxw36ntm.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Feb 2008 23:16:53.0910 (UTC) FILETIME=[B124FB60:01C86AA8]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Fri, 8 Feb 2008 18:21:00 -0500
+Received: from waste.org ([66.93.16.53]:48695 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752133AbYBHXU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 18:20:59 -0500
+Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some
+	processors
+From: Matt Mackall <mpm@selenic.com>
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com
+In-Reply-To: <200802082347.25364.michael-lists@free-electrons.com>
+References: <200802082347.25364.michael-lists@free-electrons.com>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 17:20:12 -0600
+Message-Id: <1202512812.17934.680.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+On Fri, 2008-02-08 at 23:47 +0100, Michael Opdenacker wrote:
+> This patch against x86/mm tries to revive an original patch
+> from Matt Mackall which didn't get merged at that time. It makes
+> it possible to disable support code for some processors. This can
+> be useful to support only the exact processor type used
+> in a given system.
+> 
+> I may have made wrong assumptions with the code handling
+> force_mwait. As force_mwait is only declared in
+> arch/x86/kernel/cpu/amd.c, which is only compiled
+> when CONFIG_X86_32 is set, I thought it was safe
+> to make the code depend on CONFIG_CPU_SUP_AMD,
+> but I could be wrong.
+> 
+> Your comments are more than welcome! To make the code
+> cleaner, I could use empty inline functions instead
+> of ifdef's, as suggested in Documentation/SubmittingPatches.
 
-This tree is also available from kernel.org mirrors at:
+Please include the output of size with all these options on and off.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index dabdbef..8f9a123 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -287,8 +287,10 @@ static void mwait_idle(void)
+>  
+>  static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+>  {
+> +#ifdef CONFIG_CPU_SUP_AMD
+>  	if (force_mwait)
+>  		return 1;
+> +#endif
 
-This will get the last batch of InfiniBand/RDMA merges for 2.6.25,
-mostly preparation for enabling stateless offloads for IP-over-InfiniBand.
+Probably makes sense to move force_mwait (one word) here and eliminate
+these ifdefs.
 
-Eli Cohen (3):
-      IPoIB: Add high DMA feature flag
-      IPoIB: Add send gather support
-      IB/core: Add IP checksum offload support
+> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+> index 347a8cd..812bfa0 100644
+> --- a/arch/x86/mm/init_32.c
+> +++ b/arch/x86/mm/init_32.c
+> @@ -211,12 +211,14 @@ static void __init kernel_physical_mapping_init(pgd_t *pgd_base)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_CPU_SUP_INTEL
+>  static inline int page_kills_ppro(unsigned long pagenr)
+>  {
+>  	if (pagenr >= 0x70000 && pagenr <= 0x7003F)
+>  		return 1;
+>  	return 0;
+>  }
+> +#endif
+>  /*
+>   * devmem_is_allowed() checks to see if /dev/mem access to a certain address
+> @@ -287,7 +289,11 @@ static void __meminit free_new_highpage(struct page *page)
+>  
+>  void __init add_one_highpage_init(struct page *page, int pfn, int bad_ppro)
+>  {
+> -	if (page_is_ram(pfn) && !(bad_ppro && page_kills_ppro(pfn))) {
+> +	if (page_is_ram(pfn)
+> +#ifdef CONFIG_CPU_SUP_INTEL
+> +	    && !(bad_ppro && page_kills_ppro(pfn))
+> +#endif
 
-Jack Morgenstein (2):
-      mlx4_core: For 64-bit systems, vmap() kernel queue buffers
-      IB/mlx4: Use multiple WQ blocks to post smaller send WQEs
+Yuck. A better way to do this is move the bad_ppro check into
+page_kills_ppro and then ifdef out -the body- of the inline.
 
-Roland Dreier (3):
-      IB/mlx4: Consolidate code to get an entry from a struct mlx4_buf
-      mlx4_core: Clean up struct mlx4_buf
-      IB/core: Remove unused struct ib_device.flags member
+> @@ -592,7 +598,11 @@ void __init mem_init(void)
+>  #ifdef CONFIG_FLATMEM
+>  	BUG_ON(!mem_map);
+>  #endif
+> +#ifdef CONFIG_CPU_SUP_INTEL
+>  	bad_ppro = ppro_with_ram_bug();
+> +#else
+> +	bad_ppro = 0;
+> +#endif
 
- drivers/infiniband/hw/mlx4/cq.c            |   20 ++--
- drivers/infiniband/hw/mlx4/mlx4_ib.h       |    2 +
- drivers/infiniband/hw/mlx4/qp.c            |  216 +++++++++++++++++++++++-----
- drivers/infiniband/hw/mlx4/srq.c           |    8 +-
- drivers/infiniband/ulp/ipoib/ipoib.h       |    4 +-
- drivers/infiniband/ulp/ipoib/ipoib_cm.c    |   10 +-
- drivers/infiniband/ulp/ipoib/ipoib_ib.c    |   89 +++++++++---
- drivers/infiniband/ulp/ipoib/ipoib_main.c  |    4 +-
- drivers/infiniband/ulp/ipoib/ipoib_verbs.c |   10 +-
- drivers/net/mlx4/alloc.c                   |   48 ++++--
- drivers/net/mlx4/mr.c                      |    4 +-
- include/linux/mlx4/device.h                |   19 ++-
- include/linux/mlx4/qp.h                    |    4 +
- include/rdma/ib_verbs.h                    |   16 ++-
- 14 files changed, 342 insertions(+), 112 deletions(-)
+Again, move the storage for this, let it get initialized to zero
+automatically, and initialize it in the CPU-specific code (if ordering
+allows).
+ 
+-- 
+Mathematics is the supreme nostalgia of our time.
+
