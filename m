@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965146AbYBHRP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbYBHRQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965146AbYBHRP4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934105AbYBHQzu
+	id S965365AbYBHRQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933274AbYBHQ4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:55:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52843 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:56:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35050 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933569AbYBHQys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:54:48 -0500
+	id S1761987AbYBHQ4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:56:49 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 29/37] NFS: Invalidate FsCache page flags when cache removed
+Subject: [PATCH 36/37] NFS: Display local caching state
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:54:32 +0000
-Message-ID: <20080208165432.15902.55962.stgit@warthog.procyon.org.uk>
+Date: Fri, 08 Feb 2008 16:55:10 +0000
+Message-ID: <20080208165509.15902.62438.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -31,72 +31,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Invalidate the FsCache page flags on the pages belonging to an inode when the
-cache backing that NFS inode is removed.
-
-This allows a live cache to be withdrawn.
+Display the local caching state in /proc/fs/nfsfs/volumes.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/fscache-index.c |   40 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 40 insertions(+), 0 deletions(-)
+ fs/nfs/client.c  |    7 ++++---
+ fs/nfs/fscache.h |   15 +++++++++++++++
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
 
-diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
-index c3c63fa..eec8e7e 100644
---- a/fs/nfs/fscache-index.c
-+++ b/fs/nfs/fscache-index.c
-@@ -246,6 +246,45 @@ static enum fscache_checkaux nfs_cache_inode_check_aux(void *cookie_netfs_data,
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index 51e9346..d67d52f 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -1451,7 +1451,7 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
+ 
+ 	/* display header on line 1 */
+ 	if (v == &nfs_volume_list) {
+-		seq_puts(m, "NV SERVER   PORT DEV     FSID\n");
++		seq_puts(m, "NV SERVER   PORT DEV     FSID              FSC\n");
+ 		return 0;
+ 	}
+ 	/* display one transport per line on subsequent lines */
+@@ -1465,12 +1465,13 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
+ 		 (unsigned long long) server->fsid.major,
+ 		 (unsigned long long) server->fsid.minor);
+ 
+-	seq_printf(m, "v%u %s %s %-7s %-17s\n",
++	seq_printf(m, "v%u %s %s %-7s %-17s %s\n",
+ 		   clp->rpc_ops->version,
+ 		   rpc_peeraddr2str(clp->cl_rpcclient, RPC_DISPLAY_HEX_ADDR),
+ 		   rpc_peeraddr2str(clp->cl_rpcclient, RPC_DISPLAY_HEX_PORT),
+ 		   dev,
+-		   fsid);
++		   fsid,
++		   nfs_server_fscache_state(server));
+ 
+ 	return 0;
+ }
+diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
+index 6264cd8..5f7806f 100644
+--- a/fs/nfs/fscache.h
++++ b/fs/nfs/fscache.h
+@@ -146,6 +146,16 @@ static inline void nfs_readpage_to_fscache(struct inode *inode,
+ 		__nfs_readpage_to_fscache(inode, page, sync);
  }
  
- /*
-+ * Indication from FS-Cache that the cookie is no longer cached
-+ * - This function is called when the backing store currently caching a cookie
-+ *   is removed
-+ * - The netfs should use this to clean up any markers indicating cached pages
-+ * - This is mandatory for any object that may have data
++/*
++ * indicate the client caching state as readable text
 + */
-+static void nfs_cache_inode_now_uncached(void *cookie_netfs_data)
++static inline const char *nfs_server_fscache_state(struct nfs_server *server)
 +{
-+	struct nfs_inode *nfsi = cookie_netfs_data;
-+	struct pagevec pvec;
-+	pgoff_t first;
-+	int loop, nr_pages;
-+
-+	pagevec_init(&pvec, 0);
-+	first = 0;
-+
-+	dprintk("NFS: nfs_inode_now_uncached: nfs_inode 0x%p\n", nfsi);
-+
-+	for (;;) {
-+		/* grab a bunch of pages to unmark */
-+		nr_pages = pagevec_lookup(&pvec,
-+					  nfsi->vfs_inode.i_mapping,
-+					  first,
-+					  PAGEVEC_SIZE - pagevec_count(&pvec));
-+		if (!nr_pages)
-+			break;
-+
-+		for (loop = 0; loop < nr_pages; loop++)
-+			ClearPageFsCache(pvec.pages[loop]);
-+
-+		first = pvec.pages[nr_pages - 1]->index + 1;
-+
-+		pvec.nr = nr_pages;
-+		pagevec_release(&pvec);
-+		cond_resched();
-+	}
++	if (server->fscache && (server->options & NFS_OPTION_FSCACHE))
++		return "yes";
++	return "no ";
 +}
 +
-+/*
-  * Define the inode object for FS-Cache.  This is used to describe an inode
-  * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
-  * an inode.
-@@ -261,4 +300,5 @@ const struct fscache_cookie_def nfs_cache_inode_object_def = {
- 	.get_attr	= nfs_cache_inode_get_attr,
- 	.get_aux	= nfs_cache_inode_get_aux,
- 	.check_aux	= nfs_cache_inode_check_aux,
-+	.now_uncached	= nfs_cache_inode_now_uncached,
- };
+ 
+ #else /* CONFIG_NFS_FSCACHE */
+ static inline int nfs_fscache_register(void) { return 0; }
+@@ -195,5 +205,10 @@ static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
+ static inline void nfs_readpage_to_fscache(struct inode *inode,
+ 					   struct page *page, int sync) {}
+ 
++static inline const char *nfs_server_fscache_state(struct nfs_server *server)
++{
++	return "no ";
++}
++
+ #endif /* CONFIG_NFS_FSCACHE */
+ #endif /* _NFS_FSCACHE_H */
 
