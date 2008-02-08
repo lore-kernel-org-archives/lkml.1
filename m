@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933995AbYBHEvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYBHFFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933995AbYBHEvb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 23:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932348AbYBHEvX
+	id S1752608AbYBHFFw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 00:05:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbYBHFFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 23:51:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59347 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932402AbYBHEvX (ORCPT
+	Fri, 8 Feb 2008 00:05:40 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:32916 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYBHFFj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 23:51:23 -0500
-Date: Thu, 7 Feb 2008 20:55:33 -0800
-From: Greg KH <greg@kroah.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
+	Fri, 8 Feb 2008 00:05:39 -0500
+Date: Fri, 8 Feb 2008 00:05:35 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [-mm PATCH] sysdev_unregister() should call kobject_del()
-Message-ID: <20080208045533.GA10988@kroah.com>
-References: <1202428618.26309.45.camel@dyn9047017100.beaverton.ibm.com> <20080208003825.GB27317@kroah.com> <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com>
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
+Message-ID: <20080208050535.GA4061@infradead.org>
+References: <1202432206.3171.53.camel@localhost.localdomain> <20080207184606.03b28a9c.akpm@linux-foundation.org> <alpine.LFD.1.00.0802071909350.2896@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.1.00.0802071909350.2896@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 05:25:46PM -0800, Badari Pulavarty wrote:
-> On Thu, 2008-02-07 at 16:38 -0800, Greg KH wrote:
-> > On Thu, Feb 07, 2008 at 03:56:58PM -0800, Badari Pulavarty wrote:
-> > > Hi Greg,
-> > > 
-> > > While playing with hotplug memory remove on 2.6.24-mm1, I 
-> > > noticed that /sysfs directory entries are not getting removed.
-> > > 
-> > > sysdev_unregister() used to call kobject_unregister().
-> > > But in 2.6.24-mm1, its only dropping the ref. It should
-> > > call kobject_del() to remove the object. Correct ?
-> > > 
-> > > With this change, the directories are getting removed
-> > > correctly. Comments ?
-> > 
-> > Ick, no, this shouldn't be needed, someone else must be holding a
-> > reference to the kobject device somewhere.  See the kobject documenation
-> > for more info.
-> > 
-> > I'll try to see where we grab 2 references...
+On Thu, Feb 07, 2008 at 07:11:33PM -0800, Linus Torvalds wrote:
 > 
-> I will take a closer look then. I was taking easy way out :(
+> 
+> On Thu, 7 Feb 2008, Andrew Morton wrote:
+> > 
+> > Sob.  Can we please merge "Convert SG from nopage to fault"?
+> 
+> Heh. I just took it directly then.
+> 
+> I think it's more of a VM patch than a SCSI patch anyway, so I don't think 
+> you really should even have tried to push it through the SCSI tree.
+> 
+> It's not like we ever do the low-level FS changes for VFS issues through 
+> the FS maintainers anyway (ie you sent me all those iget/read_inode things 
+> directly rather than trying to go through each filesystem). I don't think 
+> this is any different, really.
 
-Hm, I don't see anything obvious in the sys.c core.  What code is
-controlling these objects that you are creating and removing from the
-system?
-
-thanks,
-
-greg k-h
+Yes.  For ->faul Nick should just have sent on the whole batch after
+giving fs/driver people enough time to review it.
