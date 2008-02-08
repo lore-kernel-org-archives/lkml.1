@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbYBHMpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYBHMtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758967AbYBHMpf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 07:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYBHMpZ
+	id S1759548AbYBHMtq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 07:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYBHMti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 07:45:25 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:50422 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066AbYBHMpZ (ORCPT
+	Fri, 8 Feb 2008 07:49:38 -0500
+Received: from queueout04-winn.ispmail.ntl.com ([81.103.221.58]:29476 "EHLO
+	queueout04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752375AbYBHMth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 07:45:25 -0500
-Date: Fri, 8 Feb 2008 14:20:32 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 1/2] kmemcheck v3
-Message-ID: <20080208132032.GA6115@one.firstfloor.org>
-References: <47AB79D4.2070605@gmail.com> <20080208115542.GD4745@one.firstfloor.org> <19f34abd0802080418o75969480v3286da7a83ebc178@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0802080418o75969480v3286da7a83ebc178@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Feb 2008 07:49:37 -0500
+From: Daniel Drake <dsd@gentoo.org>
+To: marcel@holtmann.org
+Cc: bluez-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH RESEND] hci_usb: another device with buggy SCO support
+Message-Id: <20080208124505.434C69D412D@zog.reactivated.net>
+Date: Fri,  8 Feb 2008 12:45:05 +0000 (GMT)
+X-Cloudmark-Analysis: v=1.0 c=1 a=RuX7Chmrt_0A:10 a=6NZ8fVIUmUSsLoVjiD5+pA==:17 a=7mOBRU54AAAA:8 a=danhDmx_AAAA:8 a=8FeB8E8mQ5FogfOGJFoA:9 a=tFxMLJ3S0wvg-3dZ9nkA:7 a=ujtVTHZIOl4tdSdBoWNnMfLfAuoA:4 a=WeOa-AV5lc8A:10 a=9XSpoOj3B7kA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 01:18:37PM +0100, Vegard Nossum wrote:
-> On 2/8/08, Andi Kleen <andi@firstfloor.org> wrote:
-> > Your assumption that only the string instructions can take
-> > multiple page faults seems a little dangerous too.
-> 
-> Yes, this is true. I cannot guarantee that there are no other
-> instructions that could access more than one memory location but only
-> take one page fault. However, since the kernel does boot, we at least
-> know that these instructions are not very frequently used. (If you
-> know of any other instructions we might be missing, I'll be happy to
-> know about it!)
+As reported at:
+https://bugs.gentoo.org/show_bug.cgi?id=203196
+https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.22/+bug/152689
 
-Pretty much all in the right circumstances.
+This unbranded bluetooth USB dongle causes the following message to
+repeatedly appear in the kernel logs:
+    hci_scodata_packet: hci0 SCO packet for unknown connection handle 92
 
-e.g. consider a segment reload in tracked memory.
+This patch solves the issue. I'm not sure of its correctness, it is based
+on work by Ossi Berg and Tim Gardner on the Ubuntu bug tracker.
 
-Also there are various instructions which do all kinds of complicated
-things internally; like IRET or INT: often with many memory accesses.
-Just page through a instruction manual and look at the pseudo code
-describing what the various instructions do.
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
 
-> 
-> There is also the point that if kmemcheck doesn't handle all the
-> faulting addresses, it will simply fault again and again, without
-> making any progress. I mean, it won't go unnoticed for very long :-)
-> 
-> This is also why we depend on M386 and !X86_GENERIC, to avoid those
-> MMX, etc. instructions, as we have no support for those currently
+---
 
-I would not expect problems from MMX/SSE here (except for the generic
-ones all instructions have) 
+resending due to no response after 2 weeks
 
--Andi
-
+diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
+index 98a9cde..fa3f0de 100644
+--- a/drivers/bluetooth/hci_usb.c
++++ b/drivers/bluetooth/hci_usb.c
+@@ -161,6 +161,9 @@ static struct usb_device_id blacklist_ids[] = {
+ 	/* Frontline ComProbe Bluetooth Sniffer */
+ 	{ USB_DEVICE(0x16d3, 0x0002), .driver_info = HCI_SNIFFER },
+ 
++	/* Generic/no-name device with buggy SCO support */
++	{ USB_DEVICE(0x0e5e, 0x6622), .driver_info = HCI_BROKEN_ISOC },
++
+ 	{ }	/* Terminating entry */
+ };
+ 
