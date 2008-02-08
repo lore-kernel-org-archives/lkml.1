@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbYBHVOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbYBHVSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757622AbYBHVOr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYBHVOg
+	id S1755287AbYBHVSe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYBHVS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:14:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:64276 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYBHVOe (ORCPT
+	Fri, 8 Feb 2008 16:18:26 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42692 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751063AbYBHVSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:14:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JVglXHHTwwPt3rRoNS22lFJwVzGJjXTmGUN+HAW8Q1z7gco35yvHFzxhqS7uAfu9Dq32ypoanfym2myNEexmYv9g56zmc4soKFPwaUMmQD5oQVtGy8/hImStaN3xm2lYrhuMV3wfP3ewQvt2TNmqbp9cmZrR4VUqiC3KNPZ9H+8=
-Message-ID: <6101e8c40802081314q41a37a50o9d343aee569b9731@mail.gmail.com>
-Date: Fri, 8 Feb 2008 22:14:30 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: Linux 2.6.24.1
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-In-Reply-To: <20080208210756.GA5429@suse.de>
+	Fri, 8 Feb 2008 16:18:25 -0500
+Message-ID: <47ACC718.5060508@zytor.com>
+Date: Fri, 08 Feb 2008 13:18:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavel Machek <pavel@ucw.cz>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+References: <20080205190600.GB11613@elf.ucw.cz> <47AB975C.1010902@zytor.com> <20080208070419.GA4544@ucw.cz> <200802081723.16354.rjw@sisk.pl> <20080208210004.GA12923@elf.ucw.cz> <47ACC381.9070601@zytor.com> <20080208210905.GB12923@elf.ucw.cz>
+In-Reply-To: <20080208210905.GB12923@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080208203404.GC4520@kroah.com>
-	 <6101e8c40802081300o3a978d9axef5ca3040d6a5839@mail.gmail.com>
-	 <20080208210756.GA5429@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ok, the git pull methon worked with the begin, but the gitweb not, ok,
-than in a 30 min I checked
+Pavel Machek wrote:
 
-On 2/8/08, Greg KH <gregkh@suse.de> wrote:
-> On Fri, Feb 08, 2008 at 10:00:56PM +0100, Oliver Pinter wrote:
-> > Hi!
-> >
-> > the v2.6.24.y tree is not published or not visible with git-web on
-> >
-> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=summary
-> > address
->
-> Hm, that was odd, Chris created that tree in a different way than
-> normal, which worked to push and pull from directly through ssh, but
-> didn't work through the gitweb interface.
->
-> It should be fixed now, but might take 30 minutes or so to propagate.
->
-> If within an hour, it's still not working, please let me know.
->
-> thanks,
->
-> greg k-h
->
+> 
+> Indirect call from where?
+> 
+> BIOS jumps to address you provide.
+> 
+>> Where is this code?
+> 
+> arch/x86/kernel/acpi/realmode/wakeup.S
+> 
+> BIOS jumps to wakeup_code. With CS=something, IP=0. If wakeup code is
+> at other address than zero, I'll not be able to easily address data
+> below it.
+> 								Pavel
 
+Ah, okay.  Yes, the canonical way to deal with that is to put a short 
+jump at the top.
 
--- 
-Thanks,
-Oliver
+	-hpa
