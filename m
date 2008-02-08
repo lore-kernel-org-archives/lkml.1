@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934714AbYBHUBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934862AbYBHUDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934714AbYBHUBq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYBHUBj
+	id S934862AbYBHUDs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYBHUDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:01:39 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:43815 "EHLO pasmtpB.tele.dk"
+	Fri, 8 Feb 2008 15:03:40 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:56546 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758173AbYBHUBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:01:38 -0500
-Date: Fri, 8 Feb 2008 21:01:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       isdn4linux@listserv.isdn4linux.de, kkeil@suse.de, jgarzik@pobox.com
-Subject: Re: [PATCH] isdn: fix section mismatch warning in enpci_card_msg
-Message-ID: <20080208200144.GA31984@uranus.ravnborg.org>
-References: <1201873364-13475-3-git-send-email-sam@ravnborg.org> <20080207.182040.196977279.davem@davemloft.net> <20080208055833.GA26183@uranus.ravnborg.org> <20080207.222730.61110620.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080207.222730.61110620.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	id S1756369AbYBHUDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 15:03:39 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: mpm@selenic.com, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] stub out is_swap_pte for !MMU
+Date: Fri,  8 Feb 2008 15:02:39 -0500
+Message-Id: <1202500959-2727-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.5.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 10:27:30PM -0800, David Miller wrote:
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Fri, 8 Feb 2008 06:58:33 +0100
-> 
-> > Hi David - did you apply only this
-> > or all 5 patches?
-> > I can resend if you prefer with Karsten's ack included.
-> 
-> Only this one, I don't have the others so feel free to send
-> thos.
-> 
-> > PS. Do you usual take isdn patches?
-> 
-> Lately that has been the case.
-Fine - I just sent you the other four patches I had queued.
-With these isdn is now free of section mismatches.
+With commit 698dd4ba6b12e34e1e432c944c01478c0b2cd773, swap_pte() was moved
+into view of both MMU and !MMU, but uses functions only provided by MMU.
+Here we stub out the function for !MMU ports.
 
-	Sam
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ include/linux/swapops.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/swapops.h b/include/linux/swapops.h
+index 7bf2d14..e6b54f7 100644
+--- a/include/linux/swapops.h
++++ b/include/linux/swapops.h
+@@ -45,7 +45,11 @@ static inline pgoff_t swp_offset(swp_entry_t entry)
+ /* check whether a pte points to a swap entry */
+ static inline int is_swap_pte(pte_t pte)
+ {
++#ifdef CONFIG_MMU
+ 	return !pte_none(pte) && !pte_present(pte) && !pte_file(pte);
++#else
++	return 0;
++#endif
+ }
+ 
+ /*
+-- 
+1.5.4
+
