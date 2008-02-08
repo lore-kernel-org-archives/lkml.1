@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbYBHJxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934053AbYBHJ4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933447AbYBHJxO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 04:53:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbYBHJw5
+	id S934053AbYBHJ4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 04:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbYBHJ4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 04:52:57 -0500
-Received: from lizzard.sbs.de ([194.138.37.39]:20471 "EHLO lizzard.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932608AbYBHJw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 04:52:56 -0500
-Message-ID: <47AC2631.9080702@siemens.com>
-Date: Fri, 08 Feb 2008 10:51:45 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Phil Oester <kernel@linuxace.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [git pull] x86 arch updates for v2.6.25
-References: <20080130011550.GA31853@elte.hu> <200802050436.31070.maximlevitsky@gmail.com> <alpine.LFD.1.00.0802041922300.3237@woody.linux-foundation.org> <20080205041103.GA11240@linuxace.com> <20080208044800.GA32709@infradead.org>
-In-Reply-To: <20080208044800.GA32709@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 04:56:24 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54041 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760270AbYBHJ4X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 04:56:23 -0500
+Date: Fri, 8 Feb 2008 09:45:38 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Marcin Juszkiewicz <openembedded@haerwu.biz>,
+       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Message-ID: <20080208094538.GC21852@flint.arm.linux.org.uk>
+References: <20080207133805.13f092ff@dilbert.local> <20080207125824.GB7111@infradead.org> <20080207130117.GA18750@uranus.ravnborg.org> <200802071609.36960.openembedded@haerwu.biz> <20080207160557.GB28435@flint.arm.linux.org.uk> <20080207202329.GA21949@uranus.ravnborg.org> <1202461453.5469.217.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202461453.5469.217.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
-
-Christoph Hellwig wrote:
-> But kgdb traditionally was more than just a simple gdb stub and
-> contained hooks all over the place for additional functionality.
-> I don't think all this is a good idea and I'd be against it.
+On Fri, Feb 08, 2008 at 09:04:13AM +0000, David Woodhouse wrote:
+> On Thu, 2008-02-07 at 21:23 +0100, Sam Ravnborg wrote:
+> > Both situations are trivially fixable by introducing
+> > HAVE_IDE and HAVE_MTD.
+> > See attached patch.
 > 
-> I'd be really happy to see a common gdb stub with small arch support
-> that allows attaching gdb to the kernel through various transports.
-> 
-> Maybe someone is up to do just that?  Even the full blown kgdb with
-> all the hooks would benefit from having the gdb stub already in,
-> so maybe I could motivate some kgdb developers to do that work?
+> HAVE_MTD is wrong.
 
-For sure, every small step forward will help.
+If we are serious about allowing ARM to use drivers/Kconfig, then let's
+not get distracted by perfection - by trying to do too many changes in
+one go.
 
-Maybe you could have a look at current kgdb.git at kernel.org and
-comment on what you would like to see in a first submission round, what
-kind of hooks, specifically regarding the core, are not yet in an
-acceptable state, and so forth. We will listen.
+If, today, we conditionalise MTD or IDE on a certain set of symbols,
+then those conditions should be preserved in the first step - it should
+be a 1:1 translation.
 
-TiA,
-Jan
-
--- 
-Siemens AG, Corporate Technology, CT SE 2
-Corporate Competence Center Embedded Linux
+Later, if there's a need to improve it (as you're suggesting) that should
+be a *separate* change.
