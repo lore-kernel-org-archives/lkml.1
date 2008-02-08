@@ -1,55 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbYBHAuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932945AbYBHA5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933158AbYBHAuH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 19:50:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYBHAtz
+	id S932945AbYBHA5I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 19:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYBHA4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 19:49:55 -0500
-Received: from phoenix.slamd64.com ([217.10.145.2]:41248 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbYBHAtx (ORCPT
+	Thu, 7 Feb 2008 19:56:54 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49324 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753001AbYBHA4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 19:49:53 -0500
-X-Greylist: delayed 1227 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Feb 2008 19:49:53 EST
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: ACPI_WMI: worst config description of all times
-Date: Fri, 8 Feb 2008 00:27:53 +0000
-User-Agent: KMail/1.9.7
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <lenb@kernel.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       linux-acpi@vger.kernel.org
-References: <20080207214715.GA15211@elf.ucw.cz> <200802072351.32521.carlos@strangeworlds.co.uk> <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com>
-In-Reply-To: <2c0942db0802071612r1b32f996jc26ac3792b8c31fc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 7 Feb 2008 19:56:53 -0500
+Subject: [GIT PATCH] final SCSI updates for 2.6.24 merge window
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 18:56:46 -0600
+Message-Id: <1202432206.3171.53.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802080027.54576.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Fri, 08 Feb 2008 00:27:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 February 2008 00:12:24 Ray Lee wrote:
-> While I'm not trying to set you up for a firing squad, if you can show
-> that the only use this driver has is as underlying support for Acer/HP
-> xyz drivers, 
+Quite a bit of this is fixing things broken previously (the advansys fix
+is still pending resolution, but I'll send it as an -rc fix when we have
+it).  There's the final elimination of all drivers that are esp based
+but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
+the usual bunch of driver updates and the addition of a new enclosure
+services driver and the corresponding ULD.
 
-Certainly at the moment, this is the only real use it has (and the only reason 
-I spent any time working on a generic ACPI-WMI driver - probably one of the 
-reasons Kconfig is somewhat neglected - ACPI-WMI is a means to an end for me 
-(getting my laptop properly supported by another driver on top of it), not 
-the end itself).
+The patch is available from:
 
-Although, given most of the other laptop drivers in drivers/misc use 'select' 
-for various things, I don't see the harm here - unless anyone else has a 
-great objection to acer-wmi and tc1100-wmi having 'select ACPI_WMI'?
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+The short changelog is:
+
+Adrian Bunk (2):
+      advansys: make 3 functions static
+      libiscsi: make __iscsi_complete_pdu() static
+
+Aegis Lin (1):
+      ps3rom: sector size should be 512 bytes
+
+Andrew Morton (1):
+      dc395x: fix uninitialized var warning
+
+Andrew Vasquez (9):
+      qla2xxx: Update version number to 8.02.00-k8.
+      qla2xxx: Correct issue where incorrect init-fw mailbox command was used on
+      qla2xxx: Move RISC-interrupt-register modifications to qla2x00_request_irq
+      qla2xxx: Consolidate RISC-parity enablement codes.
+      qla2xxx: Cleanse memory allocation logic during probe.
+      qla2xxx: Clear EFT buffer before firmware reinitialization.
+      qla2xxx: Cleanup any outstanding SRB resources during shutdown.
+      qla2xxx: Add MODULE_FIRMWARE hint for ISP25XX firmware.
+      qla2xxx: Correct resource_size_t usages.
+
+Boaz Harrosh (1):
+      arm: convert to accessors and !use_sg cleanup
+
+James Bottomley (10):
+      ses: add new Enclosure ULD
+      enclosure: add support for enclosure services
+      sr: fix test unit ready responses
+      NCR53C9x: remove driver
+      remove m68k NCR53C9x based drivers
+      dec_esp: Remove driver
+      update my email address
+      add protocol definitions
+      sd: handle bad lba in sense information
+      mca_53c9x: remove driver
+
+Mike Christie (12):
+      iscsi: bump version to 2.0-868
+      libiscsi: fix session age rollover and remove cid encoding
+      iscsi: fix up iscsi printk prefix
+      iscsi class: fix iscsi conn attr counter
+      libiscsi: fix setting of nop timer
+      qla4xxx: add async scan support
+      iscsi class: add async scan helper
+      qla4xxx: fix recovery timer and session unblock race
+      iscsi class: add session scanning
+      qla4xxx: use iscsi class session state check ready
+      qla4xxx: directly call iscsi recovery functions
+      iscsi class, libiscsi: add iscsi sysfs session state file
+
+Nick Cheng (1):
+      arcmsr: updates (1.20.00.15)
+
+Pavel Machek (1):
+      Small cleanups for scsi_host.h
+
+Randy Dunlap (1):
+      kernel-doc: fix scsi docbook
+
+Roel Kluin (1):
+      u14-34f: fix data direction bug
+
+Salyzyn, Mark (3):
+      aacraid: do not set valid bit in sense information
+      aacraid: pci_set_dma_max_seg_size opened up for late model controllers
+      aacraid: fib context lock for management ioctls (take 2)
+
+Seokmann Ju (2):
+      qla2xxx: Access the proper 'physical' port in FC-transport callbacks.
+      qla2xxx: Correct issue where vport-state was not updated during an ISP_ABO
+
+Thomas Bogendoerfer (1):
+      sun3x_esp: convert to esp_scsi
+
+Tony Battersby (2):
+      fix BUG when sum(scatterlist) > bufflen
+      sym53c8xx: fix resid calculation
+
+and the diffstat:
+
+ Documentation/DocBook/scsi.tmpl         |    2 
+ Documentation/scsi/ChangeLog.arcmsr     |   41 
+ Documentation/scsi/scsi_mid_low_api.txt |    2 
+ drivers/misc/Kconfig                    |    9 
+ drivers/misc/Makefile                   |    1 
+ drivers/misc/enclosure.c                |  484 ++++
+ drivers/scsi/Kconfig                    |   93 
+ drivers/scsi/Makefile                   |   12 
+ drivers/scsi/NCR53C9x.c                 | 3654 --------------------------------
+ drivers/scsi/NCR53C9x.h                 |  668 -----
+ drivers/scsi/aacraid/aachba.c           |   81 
+ drivers/scsi/aacraid/commctrl.c         |   26 
+ drivers/scsi/aacraid/linit.c            |   28 
+ drivers/scsi/advansys.c                 |    6 
+ drivers/scsi/arcmsr/arcmsr.h            |    4 
+ drivers/scsi/arcmsr/arcmsr_hba.c        |   87 
+ drivers/scsi/arm/acornscsi.c            |   14 
+ drivers/scsi/arm/scsi.h                 |   87 
+ drivers/scsi/blz1230.c                  |  353 ---
+ drivers/scsi/blz2060.c                  |  306 --
+ drivers/scsi/cyberstorm.c               |  377 ---
+ drivers/scsi/cyberstormII.c             |  314 --
+ drivers/scsi/dc395x.c                   |    2 
+ drivers/scsi/dec_esp.c                  |  687 ------
+ drivers/scsi/fastlane.c                 |  421 ---
+ drivers/scsi/iscsi_tcp.c                |   57 
+ drivers/scsi/libiscsi.c                 |  137 -
+ drivers/scsi/mac_esp.c                  |  751 ------
+ drivers/scsi/mca_53c9x.c                |  520 ----
+ drivers/scsi/oktagon_esp.c              |  606 -----
+ drivers/scsi/oktagon_io.S               |  194 -
+ drivers/scsi/ps3rom.c                   |    2 
+ drivers/scsi/qla2xxx/qla_attr.c         |   24 
+ drivers/scsi/qla2xxx/qla_def.h          |    2 
+ drivers/scsi/qla2xxx/qla_gbl.h          |    1 
+ drivers/scsi/qla2xxx/qla_init.c         |   87 
+ drivers/scsi/qla2xxx/qla_inline.h       |    7 
+ drivers/scsi/qla2xxx/qla_isr.c          |   27 
+ drivers/scsi/qla2xxx/qla_mbx.c          |    2 
+ drivers/scsi/qla2xxx/qla_os.c           |  404 +--
+ drivers/scsi/qla2xxx/qla_sup.c          |   36 
+ drivers/scsi/qla2xxx/qla_version.h      |    2 
+ drivers/scsi/qla4xxx/ql4_init.c         |    1 
+ drivers/scsi/qla4xxx/ql4_os.c           |   75 
+ drivers/scsi/scsi.c                     |    5 
+ drivers/scsi/scsi_lib.c                 |    1 
+ drivers/scsi/scsi_transport_iscsi.c     |  238 +-
+ drivers/scsi/sd.c                       |   34 
+ drivers/scsi/ses.c                      |  689 ++++++
+ drivers/scsi/sr.c                       |   49 
+ drivers/scsi/sr.h                       |    1 
+ drivers/scsi/sr_ioctl.c                 |    3 
+ drivers/scsi/sun3x_esp.c                |  546 ++--
+ drivers/scsi/sym53c8xx_2/sym_hipd.c     |    2 
+ drivers/scsi/u14-34f.c                  |    2 
+ include/linux/enclosure.h               |  129 +
+ include/scsi/iscsi_proto.h              |    4 
+ include/scsi/libiscsi.h                 |   30 
+ include/scsi/scsi.h                     |   14 
+ include/scsi/scsi_host.h                |   44 
+ include/scsi/scsi_transport_iscsi.h     |   43 
+ 61 files changed, 2494 insertions(+), 10034 deletions(-)
+
+James
+
+
