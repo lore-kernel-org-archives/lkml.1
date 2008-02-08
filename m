@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933882AbYBHJEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933488AbYBHJKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933882AbYBHJEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 04:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759891AbYBHJEa
+	id S933488AbYBHJKc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 04:10:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759982AbYBHJKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 04:04:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36607 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758249AbYBHJE1 (ORCPT
+	Fri, 8 Feb 2008 04:10:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:22487 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759967AbYBHJKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 04:04:27 -0500
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM
-	architecture
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Marcin Juszkiewicz <openembedded@haerwu.biz>,
-       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20080207202329.GA21949@uranus.ravnborg.org>
-References: <20080207133805.13f092ff@dilbert.local>
-	 <20080207125824.GB7111@infradead.org>
-	 <20080207130117.GA18750@uranus.ravnborg.org>
-	 <200802071609.36960.openembedded@haerwu.biz>
-	 <20080207160557.GB28435@flint.arm.linux.org.uk>
-	 <20080207202329.GA21949@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 09:04:13 +0000
-Message-Id: <1202461453.5469.217.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8.dwmw2.1) 
+	Fri, 8 Feb 2008 04:10:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=rewuM0JsabsaYkrxLS11bgAVHDjDM5YWeAjQfiMt5QxPe+MoQZnKQgnhsq54sZsvkhQ2tgH8E/0b0PgTCtdsdAy5bhYi5eFZ2/sVWEl2QPqftAsf1XRK+720joCJkMC3DnsvtOqDqBbPAB9nm9RwljURCRB6YHYtYp6GLJWIPQk=
+Message-ID: <47AC1C6E.1090101@gmail.com>
+Date: Fri, 08 Feb 2008 10:10:06 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+CC: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
+References: <47AB6552.7040503@gmail.com> <20080208021747.92253161805C@mail10-sin.bigfish.com>
+In-Reply-To: <20080208021747.92253161805C@mail10-sin.bigfish.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/08/2008 03:17 AM, Stephen Neuendorffer wrote:
+> This includes code for new fifo-based xps_hwicap in addition to the
+> older opb_hwicap, which has a significantly different interface.  The
+> common code between the two drivers is largely shared.
+> 
+> Significant differences exists between this driver and what is
+> supported in the EDK drivers.  In particular, most of the
+> architecture-specific code for reconfiguring individual FPGA resources
+> has been removed.  This functionality is likely better provided in a
+> user-space support library.  In addition, read and write access is
+> supported.  In addition, although the xps_hwicap cores support
+> interrupt-driver mode, this driver only supports polled operation, in
+> order to make the code simpler, and since the interrupt processing
+> overhead is likely to slow down the throughput under Linux.
+> 
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> 
+> Fixed to add mutexes, and a few style issues.
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> 
+> The final update to xilinx_hwicap.h was missing.
+> 
+> fix some missing __user tags and incorrect section tags.
+> convert semaphores to mutexes.
+> make probed_devices re-entrancy and error condition safe.
+> fix some backwards memcpys.
+> some other minor cleanups.
 
-On Thu, 2008-02-07 at 21:23 +0100, Sam Ravnborg wrote:
-> Both situations are trivially fixable by introducing
-> HAVE_IDE and HAVE_MTD.
-> See attached patch.
+Looks good to me.
 
-HAVE_MTD is wrong. The actual problem we're trying to solve is that when
-the architecture lacks alignment fixups, certain patterns of write
-access to 16-bit or 32-bit NOR flash arrays are broken. So it's not
-'MTD' which should be conditional -- but only certain configurations of
-NOR flash, which could perhaps be prevented by disallowing any of the
-MTD_MAP_BANK_WIDTH_* options other than MTD_MAP_BANK_WIDTH_1 from being
-set.
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> ---
+[...]
+> diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> new file mode 100644
+> index 0000000..2caac31
+> --- /dev/null
+> +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> @@ -0,0 +1,923 @@
+[...]
+> +module_param(xhwicap_major, int, S_IRUGO);
+> +module_param(xhwicap_minor, int, S_IRUGO);
+> +
+> +/* An array, which is set to true when the device is registered. */
+> +static bool probed_devices[HWICAP_DEVICES];
+> +static struct mutex icap_sem;
 
-And it's not just an ARM-specific problem; a number of our MMU-less
-architectures also lack alignment traps now. It _used_ to be the case
-that platforms without alignment fixups were simply considered to be
-broken -- if the hardware didn't support unaligned access, either
-natively or through traps, it just wasn't supported by Linux. But since
-that isn't really the case any more, perhaps we should seek a better
-option than just disabling certain functionality (or _not_ disabling it,
-in the case of the network stack, and just kind of praying that it works
-even though we don't really think it does).
-
-We could add get_unaligned() in certain places in the code, but that
-isn't ideal for the majority of architectures. What we really want, I
-suppose, is get_something_which_may_be_but_probably_is_not_unaligned().
-
-With a better name.
-
--- 
-dwmw2
+Just a sideway note, static DEFINE_MUTEX(icap_sem); and you don't need to 
+runtime init it then.
 
