@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933741AbYBHEsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933995AbYBHEvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933741AbYBHEsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 23:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbYBHEsI
+	id S933995AbYBHEvb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 23:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932348AbYBHEvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 23:48:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44246 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932085AbYBHEsH (ORCPT
+	Thu, 7 Feb 2008 23:51:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59347 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932402AbYBHEvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 23:48:07 -0500
-Date: Thu, 7 Feb 2008 23:48:00 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Phil Oester <kernel@linuxace.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 arch updates for v2.6.25
-Message-ID: <20080208044800.GA32709@infradead.org>
-References: <20080130011550.GA31853@elte.hu> <200802050436.31070.maximlevitsky@gmail.com> <alpine.LFD.1.00.0802041922300.3237@woody.linux-foundation.org> <20080205041103.GA11240@linuxace.com>
+	Thu, 7 Feb 2008 23:51:23 -0500
+Date: Thu, 7 Feb 2008 20:55:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm PATCH] sysdev_unregister() should call kobject_del()
+Message-ID: <20080208045533.GA10988@kroah.com>
+References: <1202428618.26309.45.camel@dyn9047017100.beaverton.ibm.com> <20080208003825.GB27317@kroah.com> <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080205041103.GA11240@linuxace.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1202433946.26309.47.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 08:11:03PM -0800, Phil Oester wrote:
-> On Mon, Feb 04, 2008 at 07:27:53PM -0800, Linus Torvalds wrote:
-> > kgdb? Not so interesting. We have many more hard problems happening at 
-> > user sites, not in developer hands.
+On Thu, Feb 07, 2008 at 05:25:46PM -0800, Badari Pulavarty wrote:
+> On Thu, 2008-02-07 at 16:38 -0800, Greg KH wrote:
+> > On Thu, Feb 07, 2008 at 03:56:58PM -0800, Badari Pulavarty wrote:
+> > > Hi Greg,
+> > > 
+> > > While playing with hotplug memory remove on 2.6.24-mm1, I 
+> > > noticed that /sysfs directory entries are not getting removed.
+> > > 
+> > > sysdev_unregister() used to call kobject_unregister().
+> > > But in 2.6.24-mm1, its only dropping the ref. It should
+> > > call kobject_del() to remove the object. Correct ?
+> > > 
+> > > With this change, the directories are getting removed
+> > > correctly. Comments ?
+> > 
+> > Ick, no, this shouldn't be needed, someone else must be holding a
+> > reference to the kobject device somewhere.  See the kobject documenation
+> > for more info.
+> > 
+> > I'll try to see where we grab 2 references...
 > 
-> FWIW, I'm not a fulltime developer by any means, but on occasion
-> I have fixed a few bugs in the netfilter area of the kernel.
-> And in almost all cases, I used kgdb in my debugging and testing
-> of fixes.  
-> 
-> In doing so, it was a bit of a PITA to find/patch kgdb into the
-> kernel, and having it as a configurable option would have saved
-> me some time and effort and made the process much smoother.
-> 
-> So perhaps someone else out there would find it similarly useful,
-> and the extra time it takes to find/patch/compile kgdb in is
-> precluding them from participating?  Why would we ever want to do
-> that?
+> I will take a closer look then. I was taking easy way out :(
 
-Just as a note I find it extremly useful in some case to be able
-to run gdb on a kernel.  As said by Andrew it's less the tradition
-debugging but more to get a picture of what's going on.
+Hm, I don't see anything obvious in the sys.c core.  What code is
+controlling these objects that you are creating and removing from the
+system?
 
-But kgdb traditionally was more than just a simple gdb stub and
-contained hooks all over the place for additional functionality.
-I don't think all this is a good idea and I'd be against it.
+thanks,
 
-I'd be really happy to see a common gdb stub with small arch support
-that allows attaching gdb to the kernel through various transports.
-
-Maybe someone is up to do just that?  Even the full blown kgdb with
-all the hooks would benefit from having the gdb stub already in,
-so maybe I could motivate some kgdb developers to do that work?
+greg k-h
