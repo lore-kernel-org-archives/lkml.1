@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761766AbYBHDY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763468AbYBHD0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761766AbYBHDY5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 22:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbYBHDYr
+	id S1763468AbYBHD0M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 22:26:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760768AbYBHDZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 22:24:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49986 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756811AbYBHDYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 22:24:46 -0500
-Date: Thu, 7 Feb 2008 19:24:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
+	Thu, 7 Feb 2008 22:25:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54469 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758147AbYBHDZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 22:25:56 -0500
+Date: Fri, 8 Feb 2008 03:24:23 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, dougg@torque.net
-Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
-Message-Id: <20080207192458.77ea0778.akpm@linux-foundation.org>
-In-Reply-To: <1202440603.3171.72.camel@localhost.localdomain>
-References: <1202432206.3171.53.camel@localhost.localdomain>
-	<20080207184606.03b28a9c.akpm@linux-foundation.org>
-	<1202440603.3171.72.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+       Brian Wood <brian.j.wood@intel.com>, Daniel Walker <dwalker@mvista.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Jonathan Brassow <jbrassow@redhat.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Milan Broz <mbroz@redhat.com>, Paul Jimenez <pj@place.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>, Vasily Averin <vvs@sw.ru>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] device-mapper update for 2.6.25
+Message-ID: <20080208032423.GX8075@agk.fab.redhat.com>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Brian Wood <brian.j.wood@intel.com>,
+	Daniel Walker <dwalker@mvista.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Jonathan Brassow <jbrassow@redhat.com>,
+	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
+	Milan Broz <mbroz@redhat.com>, Paul Jimenez <pj@place.org>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Vasily Averin <vvs@sw.ru>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <20080208024532.GC24157@agk.fab.redhat.com> <20080207190447.b4dcfe0c.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080207190447.b4dcfe0c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 21:16:43 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> On Thu, 2008-02-07 at 18:46 -0800, Andrew Morton wrote:
-> > On Thu, 07 Feb 2008 18:56:46 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > > Quite a bit of this is fixing things broken previously (the advansys fix
-> > > is still pending resolution, but I'll send it as an -rc fix when we have
-> > > it).  There's the final elimination of all drivers that are esp based
-> > > but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
-> > > the usual bunch of driver updates and the addition of a new enclosure
-> > > services driver and the corresponding ULD.
-> > 
-> > Sob.  Can we please merge "Convert SG from nopage to fault"?  It has been
-> > sent three times, the first time was Dec 5 last year and it has thus far
-> > received the lead balloon treatment.  Despite my explicit request for
-> > consideration last time I sent it
-> > 
-> > If there is no movement here then I have to carry the moderately intrusive
-> > mm-remove-nopage.patch for another N months and we need to watch out for
-> > new ->nopage implementations popping up etc.
+On Thu, Feb 07, 2008 at 07:04:47PM -0800, Andrew Morton wrote:
+> On Fri, 8 Feb 2008 02:45:32 +0000 Alasdair G Kergon <agk@redhat.com> wrote:
 > 
-> I agree ... I've pinged Doug privately, this is publicly.
-> Unfortunately, it is an intrusive change and needs testing .. I just
-> don't have the tools that do this for SG.  
+> >       dm: move deferred bio flushing to workqueue
 > 
+> To my unpracticed eye this one looks fairly fundamental.  Unfortunately the
+> changelog:
+> 
+>   Add a single-thread workqueue for each mapped device and move flushing
+>   of the lists of pushback and deferred bios to this new workqueue.
+> 
+> tells us nothing of the reasons for this change.  (It should have done so!)
+> 
+> It _looks_ pretty unscalable.  Perhaps these deferred BIOs don't happen
+> very often?
+ 
+Indeed - it's a rare occurrence - happens when the dm device is
+suspended/resumed which usually means it was being reconfigured by something in
+userspace.
 
-I keep on forgetting that sg==dougg.
+It's the first patch of a series that will provide barrier support (slated for
+2.6.26).
 
-<looks in MAINTAINERS. Shifts blame.>
+The appearance of all these workqueues in dm goes back to this old change:
+  md-dm-reduce-stack-usage-with-stacked-block-devices.patch
 
-In fact scsi is the area in which I have the most who-maintains-what
-trouble.  I just don't believe what MAINTAINERS says about scsi drivers and
-I tend to resort to git-whatchanged to find out who's really doing stuff. 
-The number of people@lsil.com makes my head spin and I tend to cc as many
-as I can get my hands on.
-
-IOW: some care and attention to the ./MAINTAINERS file would really help
-here.
-
+Alasdair
+-- 
+agk@redhat.com
