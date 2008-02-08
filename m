@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934995AbYBHRDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934593AbYBHRDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934995AbYBHRDA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933727AbYBHQyO
+	id S934593AbYBHRDm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933732AbYBHQyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:54:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52729 "EHLO mx1.redhat.com"
+	Fri, 8 Feb 2008 11:54:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52733 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933613AbYBHQxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:53:51 -0500
+	id S933619AbYBHQxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:53:52 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 16/37] CacheFiles: Be consistent about the use of mapping vs
-	file->f_mapping in Ext3
+Subject: [PATCH 18/37] CacheFiles: Permit the page lock state to be monitored
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 08 Feb 2008 16:53:23 +0000
-Message-ID: <20080208165323.15902.97373.stgit@warthog.procyon.org.uk>
+Date: Fri, 08 Feb 2008 16:53:34 +0000
+Message-ID: <20080208165333.15902.9386.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,52 +31,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change all the usages of file->f_mapping in ext3_*write_end() functions to use
-the mapping argument directly.  This has two consequences:
+Add a function to install a monitor on the page lock waitqueue for a particular
+page, thus allowing the page being unlocked to be detected.
 
- (*) Consistency.  Without this patch sometimes one is used and sometimes the
-     other is.
-
- (*) A NULL file pointer can be passed.  This feature is then made use of by
-     the generic hook in the next patch, which is used by CacheFiles to write
-     pages to a file without setting up a file struct.
+This is used by CacheFiles to detect read completion on a page in the backing
+filesystem so that it can then copy the data to the waiting netfs page.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/ext3/inode.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/pagemap.h |    5 +++++
+ mm/filemap.c            |   18 ++++++++++++++++++
+ 2 files changed, 23 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index eb95670..c976123 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1215,7 +1215,7 @@ static int ext3_generic_write_end(struct file *file,
- 				loff_t pos, unsigned len, unsigned copied,
- 				struct page *page, void *fsdata)
- {
--	struct inode *inode = file->f_mapping->host;
-+	struct inode *inode = mapping->host;
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index d22e975..eb08fb8 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -242,6 +242,11 @@ static inline void wait_on_page_owner_priv_2(struct page *page)
+ extern void end_page_owner_priv_2(struct page *page);
  
- 	copied = block_write_end(file, mapping, pos, len, copied, page, fsdata);
+ /*
++ * Add an arbitrary waiter to a page's wait queue
++ */
++extern void add_page_wait_queue(struct page *page, wait_queue_t *waiter);
++
++/*
+  * Fault a userspace page into pagetables.  Return non-zero on a fault.
+  *
+  * This assumes that two userspace pages are always sufficient.  That's
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 6c6cd76..5c0241c 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -548,6 +548,24 @@ void wait_on_page_bit(struct page *page, int bit_nr)
+ EXPORT_SYMBOL(wait_on_page_bit);
  
-@@ -1240,7 +1240,7 @@ static int ext3_ordered_write_end(struct file *file,
- 				struct page *page, void *fsdata)
- {
- 	handle_t *handle = ext3_journal_current_handle();
--	struct inode *inode = file->f_mapping->host;
-+	struct inode *inode = mapping->host;
- 	unsigned from, to;
- 	int ret = 0, ret2;
- 
-@@ -1281,7 +1281,7 @@ static int ext3_writeback_write_end(struct file *file,
- 				struct page *page, void *fsdata)
- {
- 	handle_t *handle = ext3_journal_current_handle();
--	struct inode *inode = file->f_mapping->host;
-+	struct inode *inode = mapping->host;
- 	int ret = 0, ret2;
- 	loff_t new_i_size;
- 
+ /**
++ * add_page_wait_queue - Add an arbitrary waiter to a page's wait queue
++ * @page - Page defining the wait queue of interest
++ * @waiter - Waiter to add to the queue
++ *
++ * Add an arbitrary @waiter to the wait queue for the nominated @page.
++ */
++void add_page_wait_queue(struct page *page, wait_queue_t *waiter)
++{
++	wait_queue_head_t *q = page_waitqueue(page);
++	unsigned long flags;
++
++	spin_lock_irqsave(&q->lock, flags);
++	__add_wait_queue(q, waiter);
++	spin_unlock_irqrestore(&q->lock, flags);
++}
++EXPORT_SYMBOL_GPL(add_page_wait_queue);
++
++/**
+  * unlock_page - unlock a locked page
+  * @page: the page
+  *
 
