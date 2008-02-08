@@ -1,105 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964841AbYBHKho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934645AbYBHKiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964841AbYBHKho (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 05:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932976AbYBHKhb
+	id S934645AbYBHKiG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 05:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964820AbYBHKhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 05:37:31 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:48763 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932945AbYBHKh3 (ORCPT
+	Fri, 8 Feb 2008 05:37:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34726 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934046AbYBHKhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 05:37:29 -0500
-Message-ID: <47AC30E8.6010205@vlnb.net>
-Date: Fri, 08 Feb 2008 13:37:28 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Fri, 8 Feb 2008 05:37:41 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Holger Schurig <hs4233@mail.mn-solutions.de>,
+       Michael Opdenacker <michael-lists@free-electrons.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: allow embedded targets to disable sysctl_check.c
+References: <200802071438.58497.hs4233@mail.mn-solutions.de>
+	<20080207194735.35d87346.akpm@linux-foundation.org>
+Date: Fri, 08 Feb 2008 03:36:41 -0700
+In-Reply-To: <20080207194735.35d87346.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 7 Feb 2008 19:47:35 -0800")
+Message-ID: <m13as3d9ae.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>  <1202144767.3096.38.camel@localhost.localdomain>  <47A7488B.4080000@vlnb.net>  <1202145901.3096.49.camel@localhost.localdomain>  <47A751C5.60600@vlnb.net>  <1202149322.3096.66.camel@localhost.localdomain>  <47A75B8A.3020503@vlnb.net>  <1202151293.3096.80.camel@localhost.localdomain>  <47A8B210.8040202@vlnb.net>  <1202238802.3133.71.camel@localhost.localdomain> <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com> <47AB0B63.20500@vlnb.net> <alpine.DEB.1.00.0802071437404.12791@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.00.0802071437404.12791@asgard.lang.hm>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Thu, 7 Feb 2008, Vladislav Bolkhovitin wrote:
-> 
->> Bart Van Assche wrote:
->>
->>> - It has been discussed which iSCSI target implementation should be in
->>> the mainstream Linux kernel. There is no agreement on this subject
->>> yet. The short-term options are as follows:
->>> 1) Do not integrate any new iSCSI target implementation in the
->>> mainstream Linux kernel.
->>> 2) Add one of the existing in-kernel iSCSI target implementations to
->>> the kernel, e.g. SCST or PyX/LIO.
->>> 3) Create a new in-kernel iSCSI target implementation that combines
->>> the advantages of the existing iSCSI kernel target implementations
->>> (iETD, STGT, SCST and PyX/LIO).
->>>
->>> As an iSCSI user, I prefer option (3). The big question is whether the
->>> various storage target authors agree with this ?
->>
->>
->> I tend to agree with some important notes:
->>
->> 1. IET should be excluded from this list, iSCSI-SCST is IET updated 
->> for SCST framework with a lot of bugfixes and improvements.
->>
->> 2. I think, everybody will agree that Linux iSCSI target should work 
->> over some standard SCSI target framework. Hence the choice gets 
->> narrower: SCST vs STGT. I don't think there's a way for a dedicated 
->> iSCSI target (i.e. PyX/LIO) in the mainline, because of a lot of code 
->> duplication. Nicholas could decide to move to either existing 
->> framework (although, frankly, I don't think there's a possibility for 
->> in-kernel iSCSI target and user space SCSI target framework) and if he 
->> decide to go with SCST, I'll be glad to offer my help and support and 
->> wouldn't care if LIO-SCST eventually replaced iSCSI-SCST. The better 
->> one should win.
-> 
-> 
-> why should linux as an iSCSI target be limited to passthrough to a SCSI 
-> device.
-> 
-> the most common use of this sort of thing that I would see is to load up 
-> a bunch of 1TB SATA drives in a commodity PC, run software RAID, and 
-> then export the resulting volume to other servers via iSCSI. not a 
-> 'real' SCSI device in sight.
-> 
-> As far as how good a standard iSCSI is, at this point I don't think it 
-> really matters. There are too many devices and manufacturers out there 
-> that implement iSCSI as their storage protocol (from both sides, 
-> offering storage to other systems, and using external storage). 
-> Sometimes the best technology doesn't win, but Linux should be 
-> interoperable with as much as possible and be ready to support the 
-> winners and the loosers in technology options, for as long as anyone 
-> chooses to use the old equipment (after all, we support things like 
-> Arcnet networking, which lost to Ethernet many years ago)
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-David, your question surprises me a lot. From where have you decided 
-that SCST supports only pass-through backstorage? Does the RAM disk, 
-which Bart has been using for performance tests, look like a SCSI device?
+> On Thu, 7 Feb 2008 14:38:58 +0100 Holger Schurig <hs4233@mail.mn-solutions.de>
+> wrote:
+>
+>> Disable sysctl_check.c for embedded targets. This saves about about 11 kB
+>> in .text and another 11 kB in .data on a PXA255 embedded platform.
+>> 
+>
+> Nice improvement.  But iirc sysctl_check was overtly a temporary thing.
+> Eric, was that the intention?
 
-SCST supports all backstorage types you can imagine and Linux kernel 
-supports.
+Well so far sysctl_check has been a remarkably effective little piece of code
+in catching a great many long over looked bugs.
 
-> David Lang
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+I do agree that the static tables are big.  My current inclination is to modify
+sys_sysctl so that it does a look up in the binary tables to find the ascii
+names and then sys_sysctl can lookup the information in the ascii tables.
+
+If we do that we can completely remove ctl_name form the external sysctl data
+structures, which should save us quite a bit of space and make it absolutely
+impossible to add a new binary name.  And with the current ability to compile
+out sys_sysctl the embedded folks would get their space savings.
+
+I believe the only tricky bit is there are a few places in the network code
+where we need to translate from ifindex to interface name.  Otherwise
+the mapping is fixed.
+
+No that isn't quite right.  Getting the binary to ascii translation for the
+values is also a bit tricky.
+
+As for the rest of the checks I don't know if they are that big.  If they
+are then an option to compile them out on embedded platforms where you
+know what you are doing makes sense.  At the same time sysctl has been so
+badly abused in the past, and so very many bugs have been over looked
+that I am extremely reluctant to disable simple sanity checks at
+registration time.
+
+If we can remove the need for sysctl users to implement the binary
+interface many of those checks go completely away as the reason for their
+existence would be gone.
+
+I have seen to many absolutely horrible things in the usage of the sysctl
+tables to be happy with an option that removes the sanity checks at this
+point, although the patch likely makes sense from a code size perspective.
+
+Let's see if we can find a bit of time to make those big tables completely
+specific to sys_sysctl and kill ctl_name in the kernel.  Long term that is
+a whole lot more maintainable, and smaller for everyone who can disable
+sys_sysctl.
+
+Eric
 
