@@ -1,172 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935602AbYBHUGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934946AbYBHULU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935602AbYBHUGx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935115AbYBHUEp
+	id S934946AbYBHULU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbYBHULM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:04:45 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:49489 "EHLO
-	outbound8-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935086AbYBHUEl (ORCPT
+	Fri, 8 Feb 2008 15:11:12 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:28919 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932981AbYBHULJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:04:41 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-Message-ID: <47ACB571.8070507@amd.com>
-Date: Fri, 08 Feb 2008 15:02:57 -0500
-From: "Barry Kasindorf" <barry.kasindorf@amd.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-cc: barry.kasindorf@amd.com
-Subject: [PATCH 1/3] AMD Family10h IBS support for oProfile driver
-X-OriginalArrivalTime: 08 Feb 2008 20:02:57.0750 (UTC)
- FILETIME=[9973DF60:01C86A8D]
-X-WSS-ID: 6BB26AF32IW10897557-06-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
+	Fri, 8 Feb 2008 15:11:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=X+RjYbTocywylhxsP4vzQUaE4kISEE7kA1vTdWFq3/fge946Fwb0u3XDP8/0h9TxJyDUKq8Vp6QW4uZbKn1edlQoxYdvStFKC4FkmfH3j+HmDEioOA8HRAgrOq7zoIGjYNOKlilK8xPu7y1AazF80EYL6shiLmF4N2f9RIR6tGg=
+Subject: [PATCH 1/9] x86: change most X86_32 pt_regs members to unsigned
+	long
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 12:09:56 -0800
+Message-Id: <1202501396.12966.20.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+All but ax and orig_ax can move with no changes.
 
-Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-  nmi_int.c    |   43 +++++++++++++++++++++++++++++++++++++++++--
-  op_counter.h |    9 +++++++++
-  2 files changed, 50 insertions(+), 2 deletions(-)
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 9510b08..f47b614 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -31,6 +31,7 @@ static void nmi_stop(void);
+ arch/x86/kernel/process_32.c |    5 ++---
+ arch/x86/kernel/signal_32.c  |    4 ++--
+ include/asm-x86/ptrace.h     |   28 ++++++++++++++--------------
+ 3 files changed, 18 insertions(+), 19 deletions(-)
 
-  /* 0 == registered but off, 1 == registered and on */
-  static int nmi_enabled = 0;
-+int ibs_allowed;	/* AMD Family 10h+ */
-
-  #ifdef CONFIG_PM
-
-@@ -214,6 +215,11 @@ static int nmi_setup(void)
-  		}
-
-  	}
-+
-+	/*setup AMD Family10h IBS irq if needed */
-+	if (ibs_allowed)
-+		setup_ibs_nmi();
-+
-  	on_each_cpu(nmi_save_registers, NULL, 0, 1);
-  	on_each_cpu(nmi_cpu_setup, NULL, 0, 1);
-  	nmi_enabled = 1;
-@@ -270,6 +276,10 @@ static void nmi_shutdown(void)
-  	unregister_die_notifier(&profile_exceptions_nb);
-  	model->shutdown(cpu_msrs);
-  	free_msrs();
-+
-+	/*clear AMD Family 10h IBS irq if needed */
-+	if (ibs_allowed)
-+		clear_ibs_nmi();
-  }
-
-  static void nmi_cpu_start(void *dummy)
-@@ -296,13 +306,15 @@ static void nmi_stop(void)
-  }
-
-  struct op_counter_config counter_config[OP_MAX_COUNTER];
-+struct op_ibs_config ibs_config;
-
-  static int nmi_create_files(struct super_block *sb, struct dentry *root)
-  {
-  	unsigned int i;
-+	struct dentry *dir;
-
-  	for (i = 0; i < model->num_counters; ++i) {
--		struct dentry *dir;
-+
-  		char buf[4];
-
-  		/* quick little hack to _not_ expose a counter if it is not
-@@ -323,6 +335,31 @@ static int nmi_create_files(struct super_block *sb, struct dentry *root)
-  		oprofilefs_create_ulong(sb, dir, "user", &counter_config[i].user);
-  	}
-
-+	/* Setup AMD Family 10h IBS control if needed */
-+	if (ibs_allowed) {
-+		char buf[12];
-+
-+		/* setup some reasonable defaults */
-+		ibs_config.max_cnt_fetch = 250000;
-+		ibs_config.FETCH_enabled = 0;
-+		ibs_config.max_cnt_op = 250000;
-+		ibs_config.OP_enabled = 0;
-+		snprintf(buf,  sizeof(buf), "ibs_fetch");
-+		dir = oprofilefs_mkdir(sb, root, buf);
-+		oprofilefs_create_ulong(sb, dir, "ran_enable",
-+					&ibs_config.rand_en);
-+		oprofilefs_create_ulong(sb, dir, "enable",
-+					&ibs_config.FETCH_enabled);
-+		oprofilefs_create_ulong(sb, dir, "max_count",
-+					&ibs_config.max_cnt_fetch);
-+		snprintf(buf,  sizeof(buf), "ibs_uops");
-+		dir = oprofilefs_mkdir(sb, root, buf);
-+		oprofilefs_create_ulong(sb, dir, "enable",
-+					&ibs_config.OP_enabled);
-+		oprofilefs_create_ulong(sb, dir, "max_count",
-+					&ibs_config.max_cnt_op);
-+	}
-+
-  	return 0;
-  }
-
-@@ -391,6 +428,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
-  	__u8 vendor = boot_cpu_data.x86_vendor;
-  	__u8 family = boot_cpu_data.x86;
-  	char *cpu_type;
-+	uint32_t eax, ebx, ecx, edx;
-
-  	if (!cpu_has_apic)
-  		return -ENODEV;
-@@ -414,9 +452,17 @@ int __init op_nmi_init(struct oprofile_operations *ops)
-  			break;
-  		case 0x10:
-  			model = &op_athlon_spec;
--			cpu_type = "x86-64/family10";
-+			cpu_type = "x86-64/family10h";
-+			/* This CPU has IBS capability */
-+			ibs_allowed = 1;
-  			break;
-  		}
-+		/* see if IBS is available */
-+		if (family >= 0x10) {
-+			cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-+			if (ecx & 0x40)
-+				ibs_allowed = 1;
-+		}
-  		break;
-
-  	case X86_VENDOR_INTEL:
-diff --git a/arch/x86/oprofile/op_counter.h b/arch/x86/oprofile/op_counter.h
-index 2880b15..5681445 100644
---- a/arch/x86/oprofile/op_counter.h
-+++ b/arch/x86/oprofile/op_counter.h
-@@ -26,4 +26,13 @@ struct op_counter_config {
-
-  extern struct op_counter_config counter_config[];
-
-+struct op_ibs_config {
-+	unsigned long OP_enabled;
-+	unsigned long FETCH_enabled;
-+	unsigned long max_cnt_fetch;
-+	unsigned long max_cnt_op;
-+	unsigned long rand_en;
-+};
-+
-+extern struct op_ibs_config ibs_config;
-  #endif /* OP_COUNTER_H */
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index dabdbef..32247ad 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -358,7 +358,7 @@ void __show_registers(struct pt_regs *regs, int all)
+ 			init_utsname()->version);
+ 
+ 	printk("EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
+-			0xffff & regs->cs, regs->ip, regs->flags,
++			(u16)regs->cs, regs->ip, regs->flags,
+ 			smp_processor_id());
+ 	print_symbol("EIP is at %s\n", regs->ip);
+ 
+@@ -367,8 +367,7 @@ void __show_registers(struct pt_regs *regs, int all)
+ 	printk("ESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
+ 		regs->si, regs->di, regs->bp, sp);
+ 	printk(" DS: %04x ES: %04x FS: %04x GS: %04x SS: %04x\n",
+-	       regs->ds & 0xffff, regs->es & 0xffff,
+-	       regs->fs & 0xffff, gs, ss);
++	       (u16)regs->ds, (u16)regs->es, (u16)regs->fs, gs, ss);
+ 
+ 	if (!all)
+ 		return;
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index caee1f0..7718395 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -393,8 +393,8 @@ static int setup_frame(int sig, struct k_sigaction *ka,
+ 	regs->sp = (unsigned long) frame;
+ 	regs->ip = (unsigned long) ka->sa.sa_handler;
+ 	regs->ax = (unsigned long) sig;
+-	regs->dx = (unsigned long) 0;
+-	regs->cx = (unsigned long) 0;
++	regs->dx = 0;
++	regs->cx = 0;
+ 
+ 	regs->ds = __USER_DS;
+ 	regs->es = __USER_DS;
+diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
+index d9e04b4..708337a 100644
+--- a/include/asm-x86/ptrace.h
++++ b/include/asm-x86/ptrace.h
+@@ -36,23 +36,23 @@ struct pt_regs {
+ #else /* __KERNEL__ */
+ 
+ struct pt_regs {
+-	long bx;
+-	long cx;
+-	long dx;
+-	long si;
+-	long di;
+-	long bp;
++	unsigned long bx;
++	unsigned long cx;
++	unsigned long dx;
++	unsigned long si;
++	unsigned long di;
++	unsigned long bp;
+ 	long ax;
+-	int  ds;
+-	int  es;
+-	int  fs;
++	unsigned long ds;
++	unsigned long es;
++	unsigned long fs;
+ 	/* int  gs; */
+ 	long orig_ax;
+-	long ip;
+-	int  cs;
+-	long flags;
+-	long sp;
+-	int  ss;
++	unsigned long ip;
++	unsigned long cs;
++	unsigned long flags;
++	unsigned long sp;
++	unsigned long ss;
+ };
+ 
+ #include <asm/vm86.h>
+-- 
+1.5.4.1219.g65b9
 
 
