@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbYBHQjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933543AbYBHQjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933460AbYBHQjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933585AbYBHQhR
+	id S933543AbYBHQjq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933856AbYBHQij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:37:17 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:57760 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933577AbYBHQhL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:37:11 -0500
-Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802081001540.18242@anakin>
-References: <1202432206.3171.53.camel@localhost.localdomain>
-	 <1202432647.31361.26.camel@brick>
-	 <1202432873.3171.58.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0802081001540.18242@anakin>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 10:37:00 -0600
-Message-Id: <1202488620.3102.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 11:38:39 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43908 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933848AbYBHQii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 11:38:38 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: abelbg@m2grp.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Elf loader crash while zero-filling .bss
+References: <15577be70801300309k4eb84047peb4bffd4b41cbaa7@mail.gmail.com>
+	<15577be70801310738x3afcc393k6cf8f7151677528c@mail.gmail.com>
+	<15577be70802080814j1bb21b30r6f8a82e35aa8dc07@mail.gmail.com>
+X-Yow: As a FAD follower, my BEVERAGE choices are rich and fulfilling!
+Date: Fri, 08 Feb 2008 17:38:33 +0100
+In-Reply-To: <15577be70802080814j1bb21b30r6f8a82e35aa8dc07@mail.gmail.com>
+	(Abel Bernabeu's message of "Fri\, 8 Feb 2008 17\:14\:50 +0100")
+Message-ID: <jefxw3pfna.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-08 at 10:03 +0100, Geert Uytterhoeven wrote:
-> On Thu, 7 Feb 2008, James Bottomley wrote:
-> > On Thu, 2008-02-07 at 17:04 -0800, Harvey Harrison wrote:
-> > > On Thu, 2008-02-07 at 18:56 -0600, James Bottomley wrote:
-> > > > Quite a bit of this is fixing things broken previously (the advansys fix
-> > > > is still pending resolution, but I'll send it as an -rc fix when we have
-> > > > it).  There's the final elimination of all drivers that are esp based
-> > > > but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
-> > > > the usual bunch of driver updates and the addition of a new enclosure
-> > > > services driver and the corresponding ULD.
-> > > > 
-> > > > The patch is available from:
-> > > > 
-> > > 
-> > > I'm going to guess that this is the entry in feature-removal.txt
-> > > that need an update then:
-> > > 
-> > > ---------------------------
-> > > 
-> > > What:	old NCR53C9x driver
-> > > When:	October 2007
-> > > Why:	Replaced by the much better esp_scsi driver.  Actual low-level
-> > > 	driver can be ported over almost trivially.
-> > > Who:	David Miller <davem@davemloft.net>
-> > > 	Christoph Hellwig <hch@lst.de>
-> > 
-> > Not immediately ... I anticipate a few "where'd my driver go?" type
-> > questions from m68k for which this provides a useful reference to point
-> > to ...
-> 
-> Don't bother, we're fully aware of this.
-> 
-> The shortest feature removal notice in Linux's history (is it?) didn't go
-> unnoticed ;-)
+"Abel Bernabeu" <abelbg@m2grp.com> writes:
 
-I don't know where you get that from.  The notice went in on 30 April
-2007 and we gave you six months to convert the drivers, hence the
-October 2007 date for when the deletion will actually be done.  I've
-actually delayed removal until February 2007 giving you a further three
-months.  Even then I only removed the drivers because they no longer
-compile.
+> The offset of some sections fall in the middle of the .bss section. In
+> instance, look at the sections 12 (.comment) and 13 (.ARM.atributes).
+> Both sections are overlapping with 11 (.bss):
+>
+> [11] .bss                 NOBITS       0001143c 00143c 000048  0 WA     0   0  4
+> [12] .comment             PROGBITS     00000000 00143c 000094  0        0   0  1
+> [13] .ARM.attributes      SHT_LOPROC+3 00000000 0014d0 000010  0        0   0  1
+> [14] .shstrtab            STRTAB       00000000 0014e0 00007b  0        0   0  1
+> [15] .symtab              SYMTAB       00000000 001804 000c70 16       16  92  4
+> [16] .strtab              STRTAB       00000000 002474 000840  0        0   0  1
+>
+> Is this fact meaningful??
 
-I think nine months isn't unreasonable for a feature removal ... unless
-you work on a different time scale from me?
+The fifth column is the file offset.  Since the .bss section does not
+occupy any file space the other sections can be put directly behind it
+in the file.
 
-James
+Andreas.
 
-
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
