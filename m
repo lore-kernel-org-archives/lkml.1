@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763307AbYBHReD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764749AbYBHReg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763307AbYBHReD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 12:34:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758826AbYBHRdt
+	id S1764749AbYBHReg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 12:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758955AbYBHReX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:33:49 -0500
-Received: from homer.mvista.com ([63.81.120.155]:60976 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757178AbYBHRds (ORCPT
+	Fri, 8 Feb 2008 12:34:23 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:35559 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758826AbYBHReU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 12:33:48 -0500
-Message-ID: <47AC92B0.4080408@ru.mvista.com>
-Date: Fri, 08 Feb 2008 20:34:40 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Anton Salnikov <asalnikov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] palm_bk3710: factor out cable detection
-References: <200802071542.29628.bzolnier@gmail.com> <47AB1882.8060103@ru.mvista.com> <58cb370e0802070814y44e37cf4h91f57fd4bc993133@mail.gmail.com> <200802072151.49510.bzolnier@gmail.com>
-In-Reply-To: <200802072151.49510.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 8 Feb 2008 12:34:20 -0500
+Date: Fri, 8 Feb 2008 09:33:41 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Paul Clements <paul.clements@steeleye.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       nbd-general@lists.sourceforge.net
+Subject: Re: [PATCH 1/1] NBD: make nbd default to deadline I/O scheduler
+Message-Id: <20080208093341.b4d02e22.randy.dunlap@oracle.com>
+In-Reply-To: <47AC87AE.9040408@steeleye.com>
+References: <47AC87AE.9040408@steeleye.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Fri, 08 Feb 2008 11:47:42 -0500 Paul Clements wrote:
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] palm_bk3710: use struct ide_port_info
+> There have been numerous reports of problems with nbd and cfq. Deadline 
+> gives better performance for nbd, anyway, so let's use it by default.
 
-> * Factor out cable detection to palm_bk3710_cable_detect().
+so what happens with this patch on cfq-only or as-only kernels?
 
-> * Add palm_bk3710_init_hwif() (->init_hwif method implementation).
-
-> * Remove needless ->quirkproc initialization.
-
-> * Add missing ->pio_mask initialization.
-
-> * Use ATA_* defines for setting ->{ultra,mwdma}_mask.
-
-> * Add 'struct ide_port_info palm_bk3710_port_info' and pass it to
->   ide_device_add().  Then remove open-coded 'hwif' initialization.
-
-> Cc: Anton Salnikov <asalnikov@ru.mvista.com>
-> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
+---
+~Randy
