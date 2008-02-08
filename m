@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933184AbYBHJDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933882AbYBHJEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933184AbYBHJDy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 04:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYBHJDg
+	id S933882AbYBHJEs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 04:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759891AbYBHJEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 04:03:36 -0500
-Received: from edna.telenet-ops.be ([195.130.132.58]:51935 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753633AbYBHJDd (ORCPT
+	Fri, 8 Feb 2008 04:04:30 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36607 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758249AbYBHJE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 04:03:33 -0500
-Date: Fri, 8 Feb 2008 10:03:31 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
-In-Reply-To: <1202432873.3171.58.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0802081001540.18242@anakin>
-References: <1202432206.3171.53.camel@localhost.localdomain>
- <1202432647.31361.26.camel@brick> <1202432873.3171.58.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Feb 2008 04:04:27 -0500
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM
+	architecture
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Marcin Juszkiewicz <openembedded@haerwu.biz>,
+       Christoph Hellwig <hch@infradead.org>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20080207202329.GA21949@uranus.ravnborg.org>
+References: <20080207133805.13f092ff@dilbert.local>
+	 <20080207125824.GB7111@infradead.org>
+	 <20080207130117.GA18750@uranus.ravnborg.org>
+	 <200802071609.36960.openembedded@haerwu.biz>
+	 <20080207160557.GB28435@flint.arm.linux.org.uk>
+	 <20080207202329.GA21949@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 09:04:13 +0000
+Message-Id: <1202461453.5469.217.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Feb 2008, James Bottomley wrote:
-> On Thu, 2008-02-07 at 17:04 -0800, Harvey Harrison wrote:
-> > On Thu, 2008-02-07 at 18:56 -0600, James Bottomley wrote:
-> > > Quite a bit of this is fixing things broken previously (the advansys fix
-> > > is still pending resolution, but I'll send it as an -rc fix when we have
-> > > it).  There's the final elimination of all drivers that are esp based
-> > > but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
-> > > the usual bunch of driver updates and the addition of a new enclosure
-> > > services driver and the corresponding ULD.
-> > > 
-> > > The patch is available from:
-> > > 
-> > 
-> > I'm going to guess that this is the entry in feature-removal.txt
-> > that need an update then:
-> > 
-> > ---------------------------
-> > 
-> > What:	old NCR53C9x driver
-> > When:	October 2007
-> > Why:	Replaced by the much better esp_scsi driver.  Actual low-level
-> > 	driver can be ported over almost trivially.
-> > Who:	David Miller <davem@davemloft.net>
-> > 	Christoph Hellwig <hch@lst.de>
-> 
-> Not immediately ... I anticipate a few "where'd my driver go?" type
-> questions from m68k for which this provides a useful reference to point
-> to ...
 
-Don't bother, we're fully aware of this.
+On Thu, 2008-02-07 at 21:23 +0100, Sam Ravnborg wrote:
+> Both situations are trivially fixable by introducing
+> HAVE_IDE and HAVE_MTD.
+> See attached patch.
 
-The shortest feature removal notice in Linux's history (is it?) didn't go
-unnoticed ;-)
+HAVE_MTD is wrong. The actual problem we're trying to solve is that when
+the architecture lacks alignment fixups, certain patterns of write
+access to 16-bit or 32-bit NOR flash arrays are broken. So it's not
+'MTD' which should be conditional -- but only certain configurations of
+NOR flash, which could perhaps be prevented by disallowing any of the
+MTD_MAP_BANK_WIDTH_* options other than MTD_MAP_BANK_WIDTH_1 from being
+set.
 
-Gr{oetje,eeting}s,
+And it's not just an ARM-specific problem; a number of our MMU-less
+architectures also lack alignment traps now. It _used_ to be the case
+that platforms without alignment fixups were simply considered to be
+broken -- if the hardware didn't support unaligned access, either
+natively or through traps, it just wasn't supported by Linux. But since
+that isn't really the case any more, perhaps we should seek a better
+option than just disabling certain functionality (or _not_ disabling it,
+in the case of the network stack, and just kind of praying that it works
+even though we don't really think it does).
 
-						Geert
+We could add get_unaligned() in certain places in the code, but that
+isn't ideal for the majority of architectures. What we really want, I
+suppose, is get_something_which_may_be_but_probably_is_not_unaligned().
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+With a better name.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+dwmw2
+
