@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYBHWLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbYBHWLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbYBHWLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 17:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758404AbYBHWIR
+	id S1761495AbYBHWLo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 17:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbYBHWIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 17:08:17 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33498 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760733AbYBHWIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 17:08:15 -0500
-Date: Fri, 8 Feb 2008 23:08:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Message-ID: <20080208220834.GA1631@elf.ucw.cz>
-References: <20080205190600.GB11613@elf.ucw.cz> <47AB887E.7010000@zytor.com> <20080208215809.GN12923@elf.ucw.cz> <200802082301.51582.rjw@sisk.pl>
+	Fri, 8 Feb 2008 17:08:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33792 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760856AbYBHWIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 17:08:37 -0500
+Message-ID: <47ACD2D2.2000105@redhat.com>
+Date: Fri, 08 Feb 2008 17:08:18 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802082301.51582.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/9] x86: Use FIX_EFLAGS define in X86_64
+References: <1202501399.12966.24.camel@brick>
+In-Reply-To: <1202501399.12966.24.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-02-08 23:01:51, Rafael J. Wysocki wrote:
-> On Friday, 8 of February 2008, Pavel Machek wrote:
-> > Hi!
-> > 
-> > Rafael, this is for you.
-> 
-> Thanks.
-> 
-> > My cleanups, relative to your cleanup patch. You may need manual patching
-> > around rep/stosd.
-> 
-> OK, I'll try to merge it.
+On 02/08/2008 03:09 PM, Harvey Harrison wrote:
+> +#ifdef CONFIG_X86_32
+> +#define	FIX_EFLAGS	(X86_EFLAGS_AC | X86_EFLAGS_RF | X86_EFLAGS_OF | \
+> +			 X86_EFLAGS_DF | X86_EFLAGS_TF | X86_EFLAGS_SF | \
+> +			 X86_EFLAGS_ZF | X86_EFLAGS_AF | X86_EFLAGS_PF | \
+> +			 X86_EFLAGS_CF)
+> +#else
+> +#define	FIX_EFLAGS	(X86_EFLAGS_AC | X86_EFLAGS_OF | \
+> +			 X86_EFLAGS_DF | X86_EFLAGS_TF | X86_EFLAGS_SF | \
+> +			 X86_EFLAGS_ZF | X86_EFLAGS_AF | X86_EFLAGS_PF | \
+> +			 X86_EFLAGS_CF)
+> +#endif
 
-For the record, now it is even tested on 32-bit and test-compiled on
-64-bit.
-
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+A comment about some of these would be nice... like what this bitmask is for...
