@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbYBHT6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934523AbYBHUAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934118AbYBHT6X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 14:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYBHT6G
+	id S934523AbYBHUAj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbYBHUAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 14:58:06 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37680 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757040AbYBHT6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 14:58:03 -0500
-Message-ID: <47ACB449.3060200@s5r6.in-berlin.de>
-Date: Fri, 08 Feb 2008 20:58:01 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Fri, 8 Feb 2008 15:00:31 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49027 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751847AbYBHUA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 15:00:29 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/fU1wAttrf9y5YjqdOJ64qMraQp8EWShW18vgTCx
+	mlg0cDBi5FWI0P
+Date: Fri, 8 Feb 2008 21:00:48 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH] lib/scatterlist.o needed by a module only - link it in
+ unconditionally
+Message-ID: <Pine.LNX.4.64.0802081930590.8364@axis700.grange>
 MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 11/9] firewire: fw-sbp2: enforce a retry of __scsi_add_device
- if bus generation changed
-References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <47A9FBFD.50100@s5r6.in-berlin.de> <tkrat.b66856ee2df66cd4@s5r6.in-berlin.de> <200802081354.23299.jwilson@redhat.com>
-In-Reply-To: <200802081354.23299.jwilson@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding Cc: LSML)
+lib/scatterlist.c is needed by drivers/media/video/videobuf-dma-sg.c, and 
+we would like to be able to use the latter without PCI too, for example, 
+on PXA270 ARM CPU. It is then possible to create a configuration with 
+CONFIG_BLOCK=n, where only module code will need scatterlist.c. Therefore 
+it must be in obj-y.
 
-Jarod Wilson wrote:
-> On Wednesday 06 February 2008 04:09:47 pm Stefan Richter wrote:
->> take care that __scsi_add_device does not return success
->> even though the SCSI high-level driver probing failed (sd READ_CAPACITY
->> and friends) due to bus reset.  The trick to do so is to use a different
->> error indicator in the command completion as long as __scsi_add_device
->> did not return.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
-Or so did I guess, and...
+---
 
->> An actual failure of __scsi_add_device is easy to handle, but an
->> incomplete execution of __scsi_add_device with an sdev returned would
->> remain undetected and leave the SBP-2 target unusable.
->>
->> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
->> ---
->>
->> Jarod, does this work like I assume and fixes your setup of two OXFW911
->> based disks?
-> 
-> Well, it results in the dmesg spew saying "sd 6:0:0:0: [sdc] Result: 
-> hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK" -- i.e., 
-> DID_NO_CONNECT instead of DID_BUS_BUSY, but other than that, no change in 
-> behavior, sdc remains unusable just as before.
-
-...my guess was wrong then.
-
-Either I misunderstood the semantics of the various hostbyte codes in
-the command completion return (and then these semantics are
-insufficient) --- or SCSI mid layer or high-level implements them wrong.
-
-But before we dive into the SCSI stack or implement parellelism of SBP-2
-reconnect and SCSI probing in fw-sbp2, there is another simple and in
-hindsight obvious trick we can try.  Stay tuned.
-
-Background for LSML:
-
-In case of unrecoverable transport failures during the execution of
-__scsi_add_device, I would like to send appropriate error indicators
-from the LLD up to SCSI midlayer so that __scsi_add_device ends in
-failure (i.e. returns an error pointer rather than a scsi_device pointer).
-
-Sometimes SCSI core decides to let __scsi_add_device fail, sometimes it
-takes the scsi_device offline, sometimes it doesn't do either but
-pretends to the LLD that __scsi_add_device was an utter success.  Except
-that userspace can't do anything with the scsi_device because e.g. READ
-CAPACITY couldn't be executed.
--- 
-Stefan Richter
--=====-==--- --=- -=---
-http://arcgraph.de/sr/
+diff --git a/lib/Makefile b/lib/Makefile
+index 543f250..7475da4 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -6,7 +6,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o extable.o prio_tree.o \
+ 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+-	 proportions.o prio_heap.o scatterlist.o
++	 proportions.o prio_heap.o
+ 
+ lib-$(CONFIG_MMU) += ioremap.o
+ lib-$(CONFIG_SMP) += cpumask.o
+@@ -14,7 +14,7 @@ lib-$(CONFIG_SMP) += cpumask.o
+ lib-y	+= kobject.o kref.o klist.o
+ 
+ obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
+-	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o
++	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
