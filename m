@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbYBHSAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934691AbYBHSAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933537AbYBHSAH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933443AbYBHR5m
+	id S934691AbYBHSAp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbYBHR5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 12:57:42 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38118 "EHLO
+	Fri, 8 Feb 2008 12:57:43 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38130 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933295AbYBHR5h (ORCPT
+	with ESMTP id S933298AbYBHR5h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Feb 2008 12:57:37 -0500
 From: Rodolfo Giometti <giometti@linux.it>
@@ -15,254 +15,179 @@ To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Fri,  8 Feb 2008 19:00:40 +0100
-Message-Id: <12024936442967-git-send-email-giometti@linux.it>
+Date: Fri,  8 Feb 2008 19:00:44 +0100
+Message-Id: <12024936454121-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12024936441531-git-send-email-giometti@linux.it>
+In-Reply-To: <12024936442887-git-send-email-giometti@linux.it>
 References: <1202493644764-git-send-email-giometti@linux.it>
  <120249364418-git-send-email-giometti@linux.it>
  <12024936442252-git-send-email-giometti@linux.it>
  <12024936441531-git-send-email-giometti@linux.it>
+ <12024936442967-git-send-email-giometti@linux.it>
+ <1202493644247-git-send-email-giometti@linux.it>
+ <12024936441151-git-send-email-giometti@linux.it>
+ <12024936442887-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 4/8] PPS: documentation programs and examples.
+Subject: [PATCH 8/8] PPS: parallel port clients support.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here some utilities and examples about the PPS API and the LinuxPPS
-support.
-
-* ppsctl.c implements an useful testing program, while
-
-* ppsfind tries to help the user into finding a specific PPS source by
-  using its name or path.
+Adds support for the PPS sources connected with the interrupt pin of a
+parallel port.
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- Documentation/pps/Makefile  |   27 ++++++++
- Documentation/pps/ppsfind   |   17 +++++
- Documentation/pps/ppstest.c |  151 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 195 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/pps/Makefile
- create mode 100644 Documentation/pps/ppsfind
- create mode 100644 Documentation/pps/ppstest.c
+ drivers/char/lp.c           |   61 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/pps/clients/Kconfig |   10 +++++++
+ include/linux/parport.h     |   12 ++++++++
+ 3 files changed, 83 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
-new file mode 100644
-index 0000000..af4f9b4
---- /dev/null
-+++ b/Documentation/pps/Makefile
-@@ -0,0 +1,27 @@
-+TARGETS = ppstest
+diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+index 81674d7..edc5f9d 100644
+--- a/drivers/char/lp.c
++++ b/drivers/char/lp.c
+@@ -746,6 +746,27 @@ static struct console lpcons = {
+ 
+ #endif /* console on line printer */
+ 
++/* Support for PPS signal on the line printer */
 +
-+CFLAGS += -Wall -O2 -D_GNU_SOURCE
-+CFLAGS += -I .
-+CFLAGS += -ggdb
++#ifdef CONFIG_PPS_CLIENT_LP
 +
-+# -- Actions section --
-+
-+.PHONY : all depend dep
-+
-+all : .depend $(TARGETS)
-+
-+.depend depend dep :
-+	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
-+
-+ifeq (.depend,$(wildcard .depend))
-+include .depend
-+endif
-+
-+
-+# -- Clean section --
-+
-+.PHONY : clean
-+
-+clean :
-+	rm -f *.o *~ core .depend
-+	rm -f ${TARGETS}
-diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
-new file mode 100644
-index 0000000..93c0e17
---- /dev/null
-+++ b/Documentation/pps/ppsfind
-@@ -0,0 +1,17 @@
-+#!/bin/sh
-+
-+SYS="/sys/class/pps/"
-+
-+if [ $# -lt 1 ] ; then
-+	echo "usage: ppsfind <name>" >&2
-+	exit 1
-+fi
-+
-+for d in $(ls $SYS) ; do
-+	if grep $1 $SYS/$d/name >& /dev/null || \
-+	   grep $1 $SYS/$d/path >& /dev/null ; then
-+		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
-+	fi
-+done
-+
-+exit 0
-diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
-new file mode 100644
-index 0000000..d125ffa
---- /dev/null
-+++ b/Documentation/pps/ppstest.c
-@@ -0,0 +1,151 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <string.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+
-+#include <timepps.h>
-+
-+int find_source(char *path, pps_handle_t *handle, int *avail_mode)
++static void lp_pps_echo(int source, int event, void *data)
 +{
-+	pps_params_t params;
-+	int ret;
++	struct parport *port = data;
++	unsigned char status = parport_read_status(port);
 +
-+	printf("trying PPS source \"%s\"\n", path);
++	/* echo event via SEL bit */
++	parport_write_control(port,
++		parport_read_control(port) | PARPORT_CONTROL_SELECT);
 +
-+	/* Try to find the source by using the supplied "path" name */
-+	ret = open(path, O_RDWR);
-+	if (ret < 0) {
-+		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
-+		return ret;
-+	}
-+
-+	/* Open the PPS source (and check the file descriptor) */
-+	ret = time_pps_create(ret, handle);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot create a PPS source from device "
-+				"\"%s\" (%m)\n", path);
-+		return -1;
-+	}
-+	printf("found PPS source \"%s\"\n", path);
-+
-+	/* Find out what features are supported */
-+	ret = time_pps_getcap(*handle, avail_mode);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot get capabilities (%m)\n");
-+		return -1;
-+	}
-+	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
-+		fprintf(stderr, "cannot CAPTUREASSERT\n");
-+		return -1;
-+	}
-+	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
-+		fprintf(stderr, "cannot OFFSETASSERT\n");
-+		return -1;
-+	}
-+
-+	/* Capture assert timestamps, and compensate for a 675 nsec
-+	 * propagation delay */
-+	ret = time_pps_getparams(*handle, &params);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot get parameters (%m)\n");
-+		return -1;
-+	}
-+	params.assert_offset.tv_sec = 0;
-+	params.assert_offset.tv_nsec = 675;
-+	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
-+	ret = time_pps_setparams(*handle, &params);
-+	if (ret < 0) {
-+		fprintf(stderr, "cannot set parameters (%m)\n");
-+		return -1;
-+	}
-+
-+	return 0;
++	/* signal no event */
++	if ((status & PARPORT_STATUS_ACK) != 0)
++		parport_write_control(port,
++			parport_read_control(port) & ~PARPORT_CONTROL_SELECT);
 +}
 +
-+int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
-+{
-+	struct timespec timeout;
-+	pps_info_t infobuf;
-+	int ret;
++#endif
 +
-+	/* create a zero-valued timeout */
-+	timeout.tv_sec = 3;
-+	timeout.tv_nsec = 0;
+ /* --- initialisation code ------------------------------------- */
+ 
+ static int parport_nr[LP_NO] = { [0 ... LP_NO-1] = LP_PARPORT_UNSPEC };
+@@ -816,6 +837,38 @@ static int lp_register(int nr, struct parport *port)
+ 	}
+ #endif
+ 
++#ifdef CONFIG_PPS_CLIENT_LP
++	port->pps_info.owner = THIS_MODULE;
++	port->pps_info.dev = port->dev;
++	snprintf(port->pps_info.path, PPS_MAX_NAME_LEN, "/dev/lp%d", nr);
 +
-+retry:
-+	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
-+		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
-+				   &timeout);
-+	else {
-+		sleep(1);
-+		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
-+				   &timeout);
++	/* No PPS support if lp port has no IRQ line */
++	if (port->irq != PARPORT_IRQ_NONE) {
++		strncpy(port->pps_info.name, port->name, PPS_MAX_NAME_LEN);
++
++		port->pps_info.mode = PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++				PPS_ECHOASSERT | \
++				PPS_CANWAIT | PPS_TSFMT_TSPEC;
++
++		port->pps_info.echo = lp_pps_echo;
++
++		port->pps_source = pps_register_source(&(port->pps_info),
++				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
++		if (port->pps_source < 0)
++			dev_err(port->dev,
++					"cannot register PPS source \"%s\"\n",
++					port->pps_info.path);
++		else
++			dev_info(port->dev, "PPS source #%d \"%s\" added\n",
++					port->pps_source, port->pps_info.path);
++	} else {
++		port->pps_source = -1;
++		dev_err(port->dev, "PPS support disabled because port \"%s\" "
++					"is in polling mode\n",
++					port->pps_info.path);
 +	}
-+	if (ret < 0) {
-+		if (ret == -EINTR) {
-+			fprintf(stderr, "time_pps_fetch() got a signal!\n");
-+			goto retry;
-+		}
++#endif
 +
-+		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
-+		return -1;
+ 	return 0;
+ }
+ 
+@@ -858,6 +911,14 @@ static void lp_detach (struct parport *port)
+ 		console_registered = NULL;
+ 	}
+ #endif /* CONFIG_LP_CONSOLE */
++
++#ifdef CONFIG_PPS_CLIENT_LP
++	if (port->pps_source >= 0) {
++		pps_unregister_source(port->pps_source);
++		dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
++			port->pps_source, port->pps_info.path);
 +	}
++#endif
+ }
+ 
+ static struct parport_driver lp_driver = {
+diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
+index 517c338..09ba5c3 100644
+--- a/drivers/pps/clients/Kconfig
++++ b/drivers/pps/clients/Kconfig
+@@ -25,4 +25,14 @@ config PPS_CLIENT_UART
+ 	  If you say yes here you get support for a PPS source connected
+ 	  with the CD (Carrier Detect) pin of your serial port.
+ 
++comment "Parallel printer support (forced off)"
++	depends on !( PRINTER != n && !(PPS = m && PRINTER = y))
 +
-+	printf("source %d - "
-+	       "assert %ld.%09ld, sequence: %ld - "
-+	       "clear  %ld.%09ld, sequence: %ld\n",
-+	       i,
-+	       infobuf.assert_timestamp.tv_sec,
-+	       infobuf.assert_timestamp.tv_nsec,
-+	       infobuf.assert_sequence,
-+	       infobuf.clear_timestamp.tv_sec,
-+	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++config PPS_CLIENT_LP
++	bool "Parallel printer support"
++	depends on PRINTER != n && !(PPS = m && PRINTER = y)
++	help
++	  If you say yes here you get support for a PPS source connected
++	  with the interrupt pin of your parallel port.
 +
-+	return 0;
-+}
+ endif
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index d1ad546..501a9dc 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -100,6 +100,7 @@ typedef enum {
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
++#include <linux/pps.h>
+ #include <linux/irqreturn.h>
+ #include <asm/system.h>
+ #include <asm/ptrace.h>
+@@ -328,6 +329,11 @@ struct parport {
+ 
+ 	struct list_head full_list;
+ 	struct parport *slaves[3];
 +
-+void usage(char *name)
-+{
-+	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
-+	exit(EXIT_FAILURE);
-+}
++#ifdef CONFIG_PPS_CLIENT_LP
++	struct pps_source_info pps_info;
++	int pps_source;		/* PPS source ID */
++#endif
+ };
+ 
+ #define DEFAULT_SPIN_TIME 500 /* us */
+@@ -516,6 +522,12 @@ extern int parport_daisy_select (struct parport *port, int daisy, int mode);
+ /* Lowlevel drivers _can_ call this support function to handle irqs.  */
+ static inline void parport_generic_irq(struct parport *port)
+ {
++#ifdef CONFIG_PPS_CLIENT_LP
++	pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
++	dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
++		jiffies, port->pps_source);
++#endif
 +
-+int main(int argc, char *argv[])
-+{
-+	int num;
-+	pps_handle_t handle[4];
-+	int avail_mode[4];
-+	int i = 0;
-+	int ret;
-+
-+	/* Check the command line */
-+	if (argc < 2)
-+		usage(argv[0]);
-+
-+	for (i = 1; i < argc && i <= 4; i++) {
-+		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
-+		if (ret < 0)
-+			exit(EXIT_FAILURE);
-+	}
-+
-+	num = i - 1;
-+	printf("ok, found %d source(s), now start fetching data...\n", num);
-+
-+	/* loop, printing the most recent timestamp every second or so */
-+	while (1) {
-+		for (i = 0; i < num; i++) {
-+			ret = fetch_source(i, &handle[i], &avail_mode[i]);
-+			if (ret < 0 && errno != ETIMEDOUT)
-+				exit(EXIT_FAILURE);
-+		}
-+	}
-+
-+	for (; i >= 0; i--)
-+		time_pps_destroy(handle[i]);
-+
-+	return 0;
-+}
+ 	parport_ieee1284_interrupt (port);
+ 	read_lock(&port->cad_lock);
+ 	if (port->cad && port->cad->irq_func)
 -- 
 1.5.2.5
 
