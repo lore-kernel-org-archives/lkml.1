@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934082AbYBHB35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbYBHBcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934082AbYBHB35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 20:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbYBHB3t
+	id S933094AbYBHBcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 20:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbYBHBcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 20:29:49 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45533 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754952AbYBHB3s (ORCPT
+	Thu, 7 Feb 2008 20:32:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58289
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754006AbYBHBcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 20:29:48 -0500
-Date: Thu, 7 Feb 2008 17:28:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: mingo@elte.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com,
-       npiggin@suse.de, akpm@linux-foundation.org, vegard.nossum@gmail.com,
-       penberg@gmail.com
-Subject: Re: [patch] block layer: kmemcheck fixes
-In-Reply-To: <20080207.172246.31415231.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.00.0802071726120.2896@woody.linux-foundation.org>
-References: <20080207103136.GG15220@kernel.dk> <20080207104901.GF16735@elte.hu> <alpine.LFD.1.00.0802070940230.2883@woody.linux-foundation.org> <20080207.172246.31415231.davem@davemloft.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Feb 2008 20:32:31 -0500
+Date: Thu, 07 Feb 2008 17:33:02 -0800 (PST)
+Message-Id: <20080207.173302.149464314.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: paul.moore@hp.com, casey@schaufler-ca.com, jmorris@namei.org,
+       mingo@elte.hu, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: + smack-unlabeled-outgoing-ambient-packets.patch added to -mm
+ tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080207120459.d4994f44.akpm@linux-foundation.org>
+References: <200802071901.m17J1lAY016751@imap1.linux-foundation.org>
+	<200802071450.41529.paul.moore@hp.com>
+	<20080207120459.d4994f44.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 7 Feb 2008 12:04:59 -0800
 
+> It was on linux-kernel and netdev.  I've restored those cc's.
 
-On Thu, 7 Feb 2008, David Miller wrote:
-> 
-> Maybe cpus these days have so much store bandwith that doing
-> things like the above is OK, but I doubt it :-)
-
-I seriously doubt the same is true for the IO requests (which are 
-different anyway, and tend to happen at a much lower frequency than 
-high-speed networking).
-
-I also suspect that your timings were very hardware-dependent in the first 
-place (and yes, the long-term effect is likely working against that 
-"optimization"), and depend a lot on just how sparse the initialization 
-can to be.
-
-		Linus
+Perhaps Paul missed it because his email address was bouncing with
+"user unknown" errors a few days ago so he got removed from all the
+mailing lists @ vger :-)
