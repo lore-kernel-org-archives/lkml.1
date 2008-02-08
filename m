@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763383AbYBHCUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763617AbYBHCV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763383AbYBHCUX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 21:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbYBHCUK
+	id S1763617AbYBHCV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 21:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbYBHCVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 21:20:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60525
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753547AbYBHCUJ (ORCPT
+	Thu, 7 Feb 2008 21:21:15 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:33474 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbYBHCVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 21:20:09 -0500
-Date: Thu, 07 Feb 2008 18:20:40 -0800 (PST)
-Message-Id: <20080207.182040.196977279.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       isdn4linux@listserv.isdn4linux.de, kkeil@suse.de, jgarzik@pobox.com
-Subject: Re: [PATCH] isdn: fix section mismatch warning in enpci_card_msg
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1201873364-13475-3-git-send-email-sam@ravnborg.org>
-References: <20080201133838.GA13349@uranus.ravnborg.org>
-	<1201873364-13475-3-git-send-email-sam@ravnborg.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 7 Feb 2008 21:21:14 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett Packard
+To: David Miller <davem@davemloft.net>
+Subject: Re: + smack-unlabeled-outgoing-ambient-packets.patch added to -mm tree
+Date: Thu, 7 Feb 2008 21:21:05 -0500
+User-Agent: KMail/1.9.7
+Cc: akpm@linux-foundation.org, casey@schaufler-ca.com, jmorris@namei.org,
+       mingo@elte.hu, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <200802071514.34770.paul.moore@hp.com> <200802072054.57284.paul.moore@hp.com> <20080207.181519.209912794.davem@davemloft.net>
+In-Reply-To: <20080207.181519.209912794.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802072121.05831.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri,  1 Feb 2008 14:42:42 +0100
+On Thursday 07 February 2008 9:15:19 pm David Miller wrote:
+> From: Paul Moore <paul.moore@hp.com>
+> Date: Thu, 7 Feb 2008 20:54:56 -0500
+>
+> > I have no idea what was causing the mail problem, probably somebody
+> > in our IT department playing around with some new knobs, oh well.  I
+> > resubscribed this afternoon with both fingers crossed.
+>
+> In the future please contact postmaster@vger.kernel.org when you
+> notice you have been unsubscribed so we can work on fixing the
+> issue.
+>
+> Blind resubscriptions are severely frowned upon, we remove you for
+> good reason and if the problem isn't solved you'll just soil up my
+> inbox further with bounces....
 
-> Fix following warnings:
-> WARNING: drivers/isdn/hisax/built-in.o(.text+0x3cf50): Section mismatch in reference from the function enpci_card_msg() to the function .devinit.text:Amd7930_init()
-> WARNING: drivers/isdn/hisax/built-in.o(.text+0x3cf85): Section mismatch in reference from the function enpci_card_msg() to the function .devinit.text:Amd7930_init()
-> 
-> enpci_card_msg() can be called outside __devinit context
-> referenced function should not be annotated __devinit.
-> 
-> Remove annotation of Amd7930_init to fix this.
-> 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Both points noted for future reference.  While the end result is the same, I 
+can promise you my actions are not maliciously stupid, just ignorantly 
+stupid ;)
 
-Applied, thanks.
+-- 
+paul moore
+linux security @ hp
