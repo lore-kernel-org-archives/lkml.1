@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYBHX2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYBHX3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbYBHX2E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYBHX1w
+	id S1756646AbYBHX3p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYBHX3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:27:52 -0500
-Received: from keil-draco.com ([216.193.185.50]:50857 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbYBHX1v (ORCPT
+	Fri, 8 Feb 2008 18:29:35 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50150 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751704AbYBHX3f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:27:51 -0500
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Date: Fri, 8 Feb 2008 18:27:39 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: David Newall <davidn@davidnewall.com>,
-       Marcel Holtmann <marcel@holtmann.org>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080125180232.GA4613@kroah.com> <200802081436.53928.dhazelton@enter.net> <20080208213637.7abe50a0@core>
-In-Reply-To: <20080208213637.7abe50a0@core>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 8 Feb 2008 18:29:35 -0500
+Date: Fri, 8 Feb 2008 15:28:12 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Torokhov <dtor@insightbb.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] Input updates for 2.6.25-rc0
+Message-ID: <20080208152812.2bb14374@extreme>
+In-Reply-To: <20080208232536.GA15727@elte.hu>
+References: <200802060108.31644.dtor@insightbb.com>
+	<20080208232536.GA15727@elte.hu>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802081827.39984.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 February 2008 16:36:37 Alan Cox wrote:
-> > In other words "EXPORT_SYMBOL_GPL" isn't his idea of "a good legal idea",
-> > but people ignoring this and doing things that circumvent this will,
-> > eventually, have problems with the people who hold the copyright on the
-> > code. (In addition, he stated that circumventing the "EXPORT_SYMBOL_GPL"
-> > bit might also be in violation of the DMCA, but he isn't sure if a court
-> > would see it in the same light as someone cracking the CSS key on a DVD
-> > expressly for the purpose of creating pirated copies)
->
-> There was a good analysis of that argument on the list some time ago. I
-> think the conclusion was fairly definitively no as the GPL explicitly
-> gives the right to modify GPL code. You are therefore aready "authorised"
-> to make such a change.
->
-> It might have a significance in terms of intent but thats for lawyers to
-> argue over.
->
-> Alan
+On Sat, 9 Feb 2008 00:25:36 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-I think that's why he said he "Wasn't Sure" - as was pointed out in another 
-post, the Lexmark ruling appears to apply for more than the "interface" 
-portion of the ruling.
+> 
+> * Dmitry Torokhov <dtor@insightbb.com> wrote:
+> 
+> > Stephen Hemminger (2):
+> >       Input: add driver for Fujitsu application buttons
+> 
+> this change broke the build on x86 in randconfig testing:
+> 
+>   drivers/built-in.o: In function `apanel_detach_client':
+>   apanel.c:(.text+0x15c120): undefined reference to  `__led_classdev_unregister'
+>   drivers/built-in.o: In function `apanel_probe':
+>   apanel.c:(.text+0x15c30f): undefined reference to  `led_classdev_register'
+> 
+> .config attached.
+> 
+> the Kconfig dependencies seem incomplete:
+> 
+> > +config INPUT_APANEL
+> > +     tristate "Fujitsu Lifebook Application Panel buttons"
+> > +     depends on X86
+> > +     select I2C_I801
+> > +     select INPUT_POLLDEV
+> > +     select CHECK_SIGNATURE
+> > +     help
+> 
+> it doesnt list LEDS.
+> 
+> 	Ingo
 
-And Alan, while it might be legal to make the changes, making them for the 
-sole purpose of using them in a proprietary module - when the people who 
-actually hold the copyright have said "I think this is so core to the kernel 
-that anything using it is a derivative work" - is what he thought *MIGHT* be 
-legally actionable under the DMCA.
-
-DRH
+I think someone already sent a patch to select the LEDS
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Stephen Hemminger <stephen.hemminger@vyatta.com>
