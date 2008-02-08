@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbYBHSy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbYBHS7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934456AbYBHSy4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760794AbYBHSyt
+	id S933902AbYBHS7y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760599AbYBHS7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 13:54:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39832 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760790AbYBHSys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 13:54:48 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 11/9] firewire: fw-sbp2: enforce a retry of __scsi_add_device if bus generation changed
-Date: Fri, 8 Feb 2008 13:54:23 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <47A9FBFD.50100@s5r6.in-berlin.de> <tkrat.b66856ee2df66cd4@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.b66856ee2df66cd4@s5r6.in-berlin.de>
+	Fri, 8 Feb 2008 13:59:35 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:37475 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760326AbYBHS7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 13:59:33 -0500
+Message-ID: <47ACA693.9010407@s5r6.in-berlin.de>
+Date: Fri, 08 Feb 2008 19:59:31 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: ael <law_ence.dev@ntlworld.com>
+CC: linux-kernel@vger.kernel.org, andi@firstfloor.org, jikos@jikos.cz
+Subject: Re: git tree urls
+References: <foheti$vgb$1@ger.gmane.org>
+In-Reply-To: <foheti$vgb$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802081354.23299.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 February 2008 04:09:47 pm Stefan Richter wrote:
-> fw-sbp2 is unable to reconnect while performing __scsi_add_device
-> because there is only a single workqueue thread context available for
-> both at the moment.  This should be fixed eventually.
->
-> Until then, take care that __scsi_add_device does not return success
-> even though the SCSI high-level driver probing failed (sd READ_CAPACITY
-> and friends) due to bus reset.  The trick to do so is to use a different
-> error indicator in the command completion as long as __scsi_add_device
-> did not return.
->
-> An actual failure of __scsi_add_device is easy to handle, but an
-> incomplete execution of __scsi_add_device with an sdev returned would
-> remain undetected and leave the SBP-2 target unusable.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->
-> Jarod, does this work like I assume and fixes your setup of two OXFW911
-> based disks?
+ael wrote:
+> I have trouble locating some of the git urls (the mm repository, for
+> example).
 
-Well, it results in the dmesg spew saying "sd 6:0:0:0: [sdc] Result: 
-hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK,SUGGEST_OK" -- i.e., 
-DID_NO_CONNECT instead of DID_BUS_BUSY, but other than that, no change in 
-behavior, sdc remains unusable just as before.
+Have a look at Andrew's announcements of -mm when he releases one.
 
+[...]
+> I would guess that the main development repository is
+> pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
+> but that is speculation.
+> 
+> Can someone who knows take a minute or two to put a note of the main
+> urls on www.kernel.org
+[...]
 
+At www.kernel.org, click on "C" = "current changesets" of the 2.6 kernel
+series to get to the gitweb interface of Linus' tree.  There you find
+the URL to feed to "git clone" if you want to track Linus' tree.
 -- 
-Jarod Wilson
-jwilson@redhat.com
+Stefan Richter
+-=====-==--- --=- -=---
+http://arcgraph.de/sr/
