@@ -1,123 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbYBHEa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933741AbYBHEsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933853AbYBHEa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 23:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbYBHEaq
+	id S933741AbYBHEsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 23:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbYBHEsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 23:30:46 -0500
-Received: from rtr.ca ([76.10.145.34]:1075 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760329AbYBHEao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 23:30:44 -0500
-Message-ID: <47ABDAF2.7030209@rtr.ca>
-Date: Thu, 07 Feb 2008 23:30:42 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 7 Feb 2008 23:48:08 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44246 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932085AbYBHEsH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 23:48:07 -0500
+Date: Thu, 7 Feb 2008 23:48:00 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Phil Oester <kernel@linuxace.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 arch updates for v2.6.25
+Message-ID: <20080208044800.GA32709@infradead.org>
+References: <20080130011550.GA31853@elte.hu> <200802050436.31070.maximlevitsky@gmail.com> <alpine.LFD.1.00.0802041922300.3237@woody.linux-foundation.org> <20080205041103.GA11240@linuxace.com>
 MIME-Version: 1.0
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Jeff Garzik <jgarzik@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Saeed Bishara <saeed@marvell.com>
-Subject: Re: [PATCH] sata_mv: fix loop with last port
-References: <200802071506.17459.yinghai.lu@sun.com>
-In-Reply-To: <200802071506.17459.yinghai.lu@sun.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080205041103.GA11240@linuxace.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> [PATCH] sata_mv: fix loop with last port
+On Mon, Feb 04, 2008 at 08:11:03PM -0800, Phil Oester wrote:
+> On Mon, Feb 04, 2008 at 07:27:53PM -0800, Linus Torvalds wrote:
+> > kgdb? Not so interesting. We have many more hard problems happening at 
+> > user sites, not in developer hands.
 > 
-> commit f351b2d638c3cb0b95adde3549b7bfaf3f991dfa
->         sata_mv: Support SoC controllers
+> FWIW, I'm not a fulltime developer by any means, but on occasion
+> I have fixed a few bugs in the netfilter area of the kernel.
+> And in almost all cases, I used kgdb in my debugging and testing
+> of fixes.  
 > 
-> cause panic:
+> In doing so, it was a bit of a PITA to find/patch kgdb into the
+> kernel, and having it as a configurable option would have saved
+> me some time and effort and made the process much smoother.
 > 
-> scsi 4:0:0:0: Direct-Access     ATA      HITACHI HDS7225S V44O PQ: 0 ANSI: 5
-> sd 4:0:0:0: [sde] 488390625 512-byte hardware sectors (250056 MB)
-> sd 4:0:0:0: [sde] Write Protect is off
-> sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
-> sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> sd 4:0:0:0: [sde] 488390625 512-byte hardware sectors (250056 MB)
-> sd 4:0:0:0: [sde] Write Protect is off
-> sd 4:0:0:0: [sde] Mode Sense: 00 3a 00 00
-> sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
->  sde:<1>BUG: unable to handle kernel NULL pointer dereference at 000000000000001a
-> IP: [<ffffffff806262c7>] mv_interrupt+0x21c/0x4cc
-> PGD 0
-> Oops: 0000 [1] SMP
-> CPU 3
-> Modules linked in:
-> Pid: 0, comm: swapper Not tainted 2.6.24-smp-08636-g0afc2ed-dirty #26
-> RIP: 0010:[<ffffffff806262c7>]  [<ffffffff806262c7>] mv_interrupt+0x21c/0x4cc
-> RSP: 0000:ffff8102050bbec8  EFLAGS: 00010297
-> RAX: 0000000000000008 RBX: 0000000000000000 RCX: 0000000000000003
-> RDX: 0000000000008000 RSI: 0000000000000286 RDI: ffff8102035180e0
-> RBP: 0000000000000001 R08: 0000000000000003 R09: ffff8102036613e0
-> R10: 0000000000000002 R11: ffffffff8061474c R12: ffff8102035bf828
-> R13: 0000000000000008 R14: ffff81020348ece8 R15: ffffc20002cb2000
-> FS:  0000000000000000(0000) GS:ffff810405025700(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 000000000000001a CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 0, threadinfo ffff810405094000, task ffff8102050b28c0)
-> Stack:  000000010000000c 0002040000220400 0000001100000002 ffff81020348eda8
->  0000000000000001 ffff8102035f2cc0 0000000000000000 0000000000000000
->  0000000000000018 0000000000000000 0000000000000000 ffffffff80269ee8
-> Call Trace:
->  <IRQ>  [<ffffffff80269ee8>] ? handle_IRQ_event+0x25/0x53
->  [<ffffffff8026b393>] ? handle_fasteoi_irq+0x90/0xc8
->  [<ffffffff802218e2>] ? do_IRQ+0xf1/0x15f
->  [<ffffffff8021df24>] ? default_idle+0x0/0x55
->  [<ffffffff8021f361>] ? ret_from_intr+0x0/0xa
->  <EOI>  [<ffffffff8023010c>] ? lapic_next_event+0x0/0xa
->  [<ffffffff8021df55>] ? default_idle+0x31/0x55
->  [<ffffffff8021df50>] ? default_idle+0x2c/0x55
->  [<ffffffff8021df24>] ? default_idle+0x0/0x55
->  [<ffffffff8021e00b>] ? cpu_idle+0x92/0xb8
-> 
-> 
-> Code: 41 14 85 c0 89 44 24 14 0f 84 9d 02 00 00 f7 d0 01 d6 41 89 d5 89 41 14 8b 41 14 89 34 24 e9 7e 02 00 00 49 63 c5 49 8b 5c c6 48 <f6> 43 1a 80 4c 8b a3 20 37 00 00 0f 85 62 02 00 00 31 c9 41 83
-> RIP  [<ffffffff806262c7>] mv_interrupt+0x21c/0x4cc
->  RSP <ffff8102050bbec8>
-> CR2: 000000000000001a
-> ---[ end trace 2583b5f7a5350584 ]---
-> Kernel panic - not syncing: Aiee, killing interrupt handler!
-> 
-> last_port already include port0 base.
-> this patch change use last_port directly, and move pp assignment later.
-> 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-..
+> So perhaps someone else out there would find it similarly useful,
+> and the extra time it takes to find/patch/compile kgdb in is
+> precluding them from participating?  Why would we ever want to do
+> that?
 
-Yup, obvious bug fixes, thanks.
-Signed-off-by: Mark Lord <mlord@pobox.com>
+Just as a note I find it extremly useful in some case to be able
+to run gdb on a kernel.  As said by Andrew it's less the tradition
+debugging but more to get a picture of what's going on.
 
-> Index: linux-2.6/drivers/ata/sata_mv.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/ata/sata_mv.c
-> +++ linux-2.6/drivers/ata/sata_mv.c
-> @@ -1716,14 +1716,16 @@ static void mv_host_intr(struct ata_host
->  	VPRINTK("ENTER, hc%u relevant=0x%08x HC IRQ cause=0x%08x\n",
->  		hc, relevant, hc_irq_cause);
->  
-> -	for (port = port0; port < port0 + last_port; port++) {
-> +	for (port = port0; port < last_port; port++) {
->  		struct ata_port *ap = host->ports[port];
-> -		struct mv_port_priv *pp = ap->private_data;
-> +		struct mv_port_priv *pp;
->  		int have_err_bits, hard_port, shift;
->  
->  		if ((!ap) || (ap->flags & ATA_FLAG_DISABLED))
->  			continue;
->  
-> +		pp = ap->private_data;
-> +
->  		shift = port << 1;		/* (port * 2) */
->  		if (port >= MV_PORTS_PER_HC) {
->  			shift++;	/* skip bit 8 in the HC Main IRQ reg */
+But kgdb traditionally was more than just a simple gdb stub and
+contained hooks all over the place for additional functionality.
+I don't think all this is a good idea and I'd be against it.
+
+I'd be really happy to see a common gdb stub with small arch support
+that allows attaching gdb to the kernel through various transports.
+
+Maybe someone is up to do just that?  Even the full blown kgdb with
+all the hooks would benefit from having the gdb stub already in,
+so maybe I could motivate some kgdb developers to do that work?
