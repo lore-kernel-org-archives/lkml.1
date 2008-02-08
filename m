@@ -1,67 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763633AbYBHUYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763888AbYBHUZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763633AbYBHUYW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761366AbYBHUYI
+	id S1763888AbYBHUZe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762041AbYBHUZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:24:08 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:39672 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761473AbYBHUYG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:24:06 -0500
-To: zippel@linux-m68k.org
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sfrench@us.ibm.com, lachlan@sgi.com, jsipek@cs.sunysb.edu,
-       rmk@arm.linux.org.uk, dhowells@redhat.com, raven@themaw.net,
-       rathamahata@php4.ru, kkeil@suse.de, hpa@zytor.com, tytso@mit.edu,
-       hirofumi@mail.parknet.co.jp, jdike@addtoit.com,
-       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
-       shaggy@austin.ibm.com, vandrove@vc.cvut.cz, Trond.Myklebust@netapp.com,
-       jeffm@suse.com, paulus@samba.org, hugh@veritas.com, gorcunov@gmail.com,
-       gregkh@suse.de
-In-reply-to: <Pine.LNX.4.64.0802081849430.3378@scrub.home> (message from Roman
-	Zippel on Fri, 8 Feb 2008 20:20:39 +0100 (CET))
-Subject: Re: [patch 01/26] mount options: add documentation
-References: <20080124193341.166753833@szeredi.hu> <20080124193416.379218079@szeredi.hu>
- <200801300254.06363.zippel@linux-m68k.org> <E1JK8wJ-0007aA-Tt@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0802081849430.3378@scrub.home>
-Message-Id: <E1JNZky-0006lq-S7@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 08 Feb 2008 21:23:32 +0100
+	Fri, 8 Feb 2008 15:25:25 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:58599 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755210AbYBHUZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 15:25:24 -0500
+Date: Fri, 8 Feb 2008 12:25:21 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Joe Perches <joe@perches.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mm/slub.c - Use print_hex_dump
+In-Reply-To: <1202501739.27394.96.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0802081224100.5358@schroedinger.engr.sgi.com>
+References: <1202493808.27394.76.camel@localhost> 
+ <Pine.LNX.4.64.0802081006460.28568@schroedinger.engr.sgi.com> 
+ <1202495069.27394.85.camel@localhost>  <Pine.LNX.4.64.0802081031320.28862@schroedinger.engr.sgi.com>
+ <1202501739.27394.96.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Could also please explain why you want to go via user
-> > > mounts. Other OS use a daemon for that, which e.g. can maintain
-> > > access controls. How do you want to manage this?
-> > 
-> > The unprivileged mounts patches do contain a simple form of access
-> > control.  I don't think anything more is needed, but of course, having
-> > unprivileged mounts in the kernel does not prevent the use of a more
-> > sophisticated access control daemon in userspace, if that becomes
-> > necessary.
-> 
-> A "I don't think anything more is needed" lets go off all sorts of warning 
-> lights. Most things start out simple, so IMO it's very worth it to check 
-> where it might go to to know the limits beforehand. The main question here 
-> is why should a kernel based solution be preferable over a daemon based 
-> solution?
+Argh. You need to cut that into small pieces so that it is easier to 
+review. CCing Randy who was involved with prior art in this area.
 
-A daemon based solution would work for the "normal" case, where we
-have a single mount namespace and a single /etc/mtab file, and we hope
-it doesn't get too much out of sync with what is actually in the
-kernel (on remount the mount options do get out of sync, but hey, we
-seem to be able to live with that).
 
-However, once you start using multiple namespaces, the daemon based
-solution quickly becomes unusable, because you would need a separate
-daemon for each namespace, and it would have to somehow keep track of
-mount propagations in userspace (which is basically impossible), etc,
-etc...
 
-Does that answer your question?
-
-Thanks,
-Miklos
