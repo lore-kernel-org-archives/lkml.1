@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935136AbYBHS0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934643AbYBHS0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935136AbYBHS0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:26:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934835AbYBHSZY
+	id S934643AbYBHS0k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934694AbYBHSZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 13:25:24 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:37480 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934801AbYBHSZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 13:25:22 -0500
-Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Paul Jackson <pj@sgi.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       tony@bakeyournoodle.com
-In-Reply-To: <20080208120623.3ad74e3a.pj@sgi.com>
-References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
-	 <alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
-	 <20080208120623.3ad74e3a.pj@sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 08 Feb 2008 19:31:04 +0100
-Message-Id: <1202495464.6722.13.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 8bit
+	Fri, 8 Feb 2008 13:25:51 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45289 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934691AbYBHSZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 13:25:50 -0500
+Date: Fri, 8 Feb 2008 18:25:13 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Paul Mackerras <paulus@samba.org>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: fix DEBUG_PREEMPT warning when warning
+Message-ID: <Pine.LNX.4.64.0802081823400.6273@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The powerpc show_regs prints CPU using smp_processor_id: change that to
+raw_smp_processor_id, so that when it's showing a WARN_ON backtrace without
+preemption disabled, DEBUG_PREEMPT doesn't mess up that warning with its own.
 
-fre, 08 02 2008 kl. 12:06 -0600, skrev Paul Jackson:
-> Linus wrote:
-> > Please, when mentioning hex numbers, also do the one-liner shortlog.
-> > ...
-> > without _requiring_ people to be git users to get the gist of the 
-> > matter, ok?
-> 
-> 
-> Thanks for sticking up for us git-challenged contributors.
-> 
-> Can anyone point me at instructions providing the shortest
-> path for getting from one of those git hex numbers to the
-> log or change it represents, for non-git users?
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-Use gitweb [1], Linus' tree is here [2]. Just search for the hex.
+ powerpc/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[1] http://git.kernel.org/
-[2]
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=summary
-
-
-Simon Holm Thøgersen
-
+--- 2.6.24-git18/arch/powerpc/kernel/process.c	2008-01-24 22:58:37.000000000 +0000
++++ linux/arch/powerpc/kernel/process.c	2008-02-08 12:01:31.000000000 +0000
+@@ -462,7 +462,7 @@ void show_regs(struct pt_regs * regs)
+ 	       current, task_pid_nr(current), current->comm, task_thread_info(current));
+ 
+ #ifdef CONFIG_SMP
+-	printk(" CPU: %d", smp_processor_id());
++	printk(" CPU: %d", raw_smp_processor_id());
+ #endif /* CONFIG_SMP */
+ 
+ 	for (i = 0;  i < 32;  i++) {
