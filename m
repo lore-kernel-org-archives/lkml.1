@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761813AbYBHUUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbYBHUUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761813AbYBHUUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 15:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761140AbYBHUUQ
+	id S1763565AbYBHUUz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 15:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763310AbYBHUU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 15:20:16 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58958 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760366AbYBHUUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 15:20:14 -0500
-Date: Fri, 8 Feb 2008 21:20:22 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jeff Mahoney <jeffm@suse.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at kernel/power/snapshot.c:464!
-Message-ID: <20080208202022.GB13331@elf.ucw.cz>
-References: <47ACA77E.2030001@suse.com>
-MIME-Version: 1.0
+	Fri, 8 Feb 2008 15:20:28 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39778 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763283AbYBHUU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 15:20:26 -0500
+Date: Fri, 8 Feb 2008 21:20:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH 06/11] NFSD: Remove NFSv4 dependency on NFSv3
+Message-ID: <20080208202033.GD31984@uranus.ravnborg.org>
+References: <20080208175208.16261.74626.stgit@manray.1015granger.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47ACA77E.2030001@suse.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080208175208.16261.74626.stgit@manray.1015granger.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Our old friend kernel BUG at kernel/power/snapshot.c:464! is back, this
-> time from mainline. I can't reproduce with 2.6.24-final, but I can with
-> a git snapshot from a few days ago. I'm doing a git bisect run now, but
-> it's rather time consuming, so I thought I'd pass this on in the interim.
+On Fri, Feb 08, 2008 at 12:52:08PM -0500, Chuck Lever wrote:
+> Clean up: Because NFSD_V4 "depends on" NFSD_V3, it appears as a child of
+> the NFSD_V3 menu entry, and is not visible if NFSD_V3 is unselected.
 > 
-> I can reproduce this just by doing "cat /dev/snapshot".
+> Replace the dependency on NFSD_V3 with a "select NFSD_V3".  This makes
+> NFSD_V4 look and work just like NFS_V3, while ensuring that NFSD_V3 is
+> enabled if NFSD_V4 is.
 > 
-> Working output looks like:
-> swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
-> swsusp: Marking nosave pages: 00000000f7ff0000 - 0000000100000000
-> swsusp: Basic memory bitmaps created
-> swsusp: Basic memory bitmaps freed
+> Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+> ---
+> 
+>  fs/Kconfig |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index 9ad62a9..4c16789 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -1723,7 +1723,8 @@ config NFSD_V3_ACL
+>  
+>  config NFSD_V4
+>  	bool "NFS server support for NFS version 4 (EXPERIMENTAL)"
+> -	depends on NFSD && NFSD_V3 && EXPERIMENTAL
+> +	depends on NFSD && EXPERIMENTAL
+> +	select NFSD_V3
+>  	select RPCSEC_GSS_KRB5
+>  	help
+>  	  This option enables support in your system's NFS server for
 
-root@amd:~# cat /dev/snapshot
-cat: /dev/snapshot: No data available
-root@amd:~# 
+This use of select is questionable. In general it is bad to select
+a symbol with dependencies.
+In this case the dependencies of NFSD_V3 are duplicated for NFSD_V4
+so we will not se erratic configurations but do you remember to
+update NFSD_V4 when you add a depends on NFSD_V3?
 
-...on less than two days old 2.6.25-rc0-git. Rafael, do you have any
-ideas what may break?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+But I see no other clean way to do it rithg now.
+
+	Sam
