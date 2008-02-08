@@ -1,53 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935604AbYBHSJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935674AbYBHSKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935604AbYBHSJs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935041AbYBHSGb
+	id S935674AbYBHSKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934703AbYBHSHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 13:06:31 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:34273 "EHLO relay.sgi.com"
+	Fri, 8 Feb 2008 13:07:41 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:34528 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935034AbYBHSG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 13:06:29 -0500
-Date: Fri, 8 Feb 2008 12:06:23 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: paulus@samba.org, akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       tony@bakeyournoodle.com
-Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
-Message-Id: <20080208120623.3ad74e3a.pj@sgi.com>
-In-Reply-To: <alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
-References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
-	<alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932770AbYBHSHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 13:07:38 -0500
+Date: Fri, 8 Feb 2008 10:07:37 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Joe Perches <joe@perches.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] mm/slub.c - Use print_hex_dump
+In-Reply-To: <1202493808.27394.76.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0802081006460.28568@schroedinger.engr.sgi.com>
+References: <1202493808.27394.76.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus wrote:
-> Please, when mentioning hex numbers, also do the one-liner shortlog.
-> ...
-> without _requiring_ people to be git users to get the gist of the 
-> matter, ok?
+On Fri, 8 Feb 2008, Joe Perches wrote:
 
+> Use the library function to dump memory
 
-Thanks for sticking up for us git-challenged contributors.
+Could you please compare the formatting of the output before and 
+after? Last time we tried this we had issues because it became a bit ugly.
 
-Can anyone point me at instructions providing the shortest
-path for getting from one of those git hex numbers to the
-log or change it represents, for non-git users?
-
-Or do those instructions begin with a first step of:
-
-  1. become a git user
-  2. ...
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
