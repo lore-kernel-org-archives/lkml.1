@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbYBHVqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbYBHVra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760944AbYBHVqh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 16:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758324AbYBHVqN
+	id S1758377AbYBHVra (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 16:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYBHVrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 16:46:13 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38932 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758210AbYBHVqL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 16:46:11 -0500
-Date: Fri, 8 Feb 2008 13:45:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <liml@rtr.ca>
-Cc: Yinghai.Lu@Sun.COM, jgarzik@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, saeed@marvell.com
-Subject: Re: [PATCH] sata_mv: fix loop with last port
-Message-Id: <20080208134501.4222995e.akpm@linux-foundation.org>
-In-Reply-To: <47ABDAF2.7030209@rtr.ca>
-References: <200802071506.17459.yinghai.lu@sun.com>
-	<47ABDAF2.7030209@rtr.ca>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 8 Feb 2008 16:47:21 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:33197 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbYBHVrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 16:47:20 -0500
+Date: Fri, 8 Feb 2008 22:47:25 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Message-ID: <20080208214725.GA541@uranus.ravnborg.org>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802060227.14385.rjw@sisk.pl> <200802070049.00461.rjw@sisk.pl> <200802072312.31430.rjw@sisk.pl> <20080207222833.GA23004@uranus.ravnborg.org> <20080208214145.GJ12923@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080208214145.GJ12923@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 23:30:42 -0500
-Mark Lord <liml@rtr.ca> wrote:
-
-> > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-> ..
+On Fri, Feb 08, 2008 at 10:41:45PM +0100, Pavel Machek wrote:
+> > Do we never need data from a .h file?
+> > If we do name it wakeup.lds.S and kbuild
+> > will fix it (assuming we have wakeup.lds
+> > as a prerequisite where it is needed.
 > 
-> Yup, obvious bug fixes, thanks.
-> Signed-off-by: Mark Lord <mlord@pobox.com>
+> Ok, I got it to work... but notice the ugly #undef :-(.
+Great.
+We have the same issue with vmlinux_64.lds.S in x86/kernel/
 
-Typically we'll use Acked-by: here.  Because Signed-off-by: implies that
-you were in the delivery path, or that you worked on the patch.  afacit
-that is not the case.  Documentation/SubmittingPatches has some explanation.
-
-I made that change to my copy of the patch - please let me know if that
-was incorrect, thanks.
+	Sam
