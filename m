@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYBHMvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYBHNAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbYBHMvO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 07:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbYBHMu6
+	id S1757239AbYBHNAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 08:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYBHNAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 07:50:58 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:51438 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbYBHMu5 (ORCPT
+	Fri, 8 Feb 2008 08:00:00 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:41809 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbYBHM77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 07:50:57 -0500
-Message-ID: <47AC502C.70809@linux.vnet.ibm.com>
-Date: Fri, 08 Feb 2008 18:20:52 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Fri, 8 Feb 2008 07:59:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aUYCLvvzg1kSsz6bM8DKKK8TrwJ7LqeXsqRxreMRPM9lb3t7DYUvIkSMgpqmhUFZyTThKGduvhAq31I6eFIWzJp7Dk8mxU7M2mecsU5TOVLmrGq4GYrajFoWUXCVVP7a0fah2JUoVvATyIb8Fg7EaI5b6wXFgTvtAPmCF76lzyY=
+Message-ID: <19f34abd0802080459t4630c251q2a7cb3680e207e7a@mail.gmail.com>
+Date: Fri, 8 Feb 2008 13:59:57 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH 1/2] kmemcheck v3
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20080208132032.GA6115@one.firstfloor.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: rusty@rustcorp.com.au, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [BUILD_FAILURE] 2.6.24-git18 build fails section type conflict
- psmouse-base
-References: <47AC2FDB.7080104@linux.vnet.ibm.com> <20080208104851.GI7198@cs181133002.pp.htv.fi>
-In-Reply-To: <20080208104851.GI7198@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47AB79D4.2070605@gmail.com>
+	 <20080208115542.GD4745@one.firstfloor.org>
+	 <19f34abd0802080418o75969480v3286da7a83ebc178@mail.gmail.com>
+	 <20080208132032.GA6115@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Fri, Feb 08, 2008 at 04:02:59PM +0530, Kamalesh Babulal wrote:
->> Hi,
->>
->> The 2.6.24-git18 kernel build fails on the power machine with following message
->>
->> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
->> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
->> make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
->> make[2]: *** [drivers/input/mouse] Error 2
->> make[1]: *** [drivers/input] Error 2
->> make: *** [drivers] Error 2
->>
->> this failure was reported earlier http://lkml.org/lkml/2007/9/22/64
-> 
-> You need the patch from [1] manually applied (due to changed context) 
-> and with " || defined(__powerpc__)" added for getting it compiling.
-> 
-> @Rusty:
-> Can you look at this issue? It's a modules problem on 3 architectures.
-> 
-> cu
-> Adrian
-> 
-> [1] http://lkml.org/lkml/2007/12/27/29
-> 
-I tried manually applying the patch and added ||defined(__powerpc__), the above
-build failure was resolved but it started failing at another place, 
+On 2/8/08, Andi Kleen <andi@firstfloor.org> wrote:
+> On Fri, Feb 08, 2008 at 01:18:37PM +0100, Vegard Nossum wrote:
+> > On 2/8/08, Andi Kleen <andi@firstfloor.org> wrote:
+> > > Your assumption that only the string instructions can take
+> > > multiple page faults seems a little dangerous too.
+> >
+> > Yes, this is true. I cannot guarantee that there are no other
+> > instructions that could access more than one memory location but only
+> > take one page fault. However, since the kernel does boot, we at least
+> > know that these instructions are not very frequently used. (If you
+> > know of any other instructions we might be missing, I'll be happy to
+> > know about it!)
+>
+> Pretty much all in the right circumstances.
+>
+> e.g. consider a segment reload in tracked memory.
+>
+> Also there are various instructions which do all kinds of complicated
+> things internally; like IRET or INT: often with many memory accesses.
+> Just page through a instruction manual and look at the pseudo code
+> describing what the various instructions do.
 
-  CC      kernel/printk.o
-kernel/printk.c:568: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘static’
-make[1]: *** [kernel/printk.o] Error 1
-make: *** [kernel] Error 2
+Yes, this is true. Then our task is to make sure that this memory is
+never allocated from tracked caches. We do have some changes in this
+area, for instance we never track task structs. Keep in mind that only
+slab objects are tracked currently, so things like stacks never catch
+page faults. I am not sure if this is exactly what you had in mind,
+but I don't know other kernel code very well enough to come up with
+perhaps more relevant examples :-)
+
+For now, I am simply assuming that we never load task segments, GDTs,
+LDTs, or paging structures from tracked memory (e.g. regular
+kmalloc()).
+
+> > There is also the point that if kmemcheck doesn't handle all the
+> > faulting addresses, it will simply fault again and again, without
+> > making any progress. I mean, it won't go unnoticed for very long :-)
+> >
+> > This is also why we depend on M386 and !X86_GENERIC, to avoid those
+> > MMX, etc. instructions, as we have no support for those currently
+>
+> I would not expect problems from MMX/SSE here (except for the generic
+> ones all instructions have)
+
+The problem with these instructions is not that they take page faults,
+but that kmemcheck doesn't know how to handle them. Kmemcheck needs to
+parse the instruction stream at EIP to determine what addresses were
+accessed, their size, and the type (read or write). This can be done
+currently with surprisingly little amounts of code.
+
+But AFAIK the format for MMX and SSE is different from the "regular"
+instructions, and so I don't know how to parse them. But this is
+something we can look at later.
 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Vegard
+
+
+PS: Thanks for telling me about how change_page_attr() was wrong in
+kmemcheck v2. A lot of things were simply wrong in v2, but hopefully
+they are better now :-)
