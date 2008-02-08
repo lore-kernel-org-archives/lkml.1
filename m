@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYBHX3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbYBHXaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbYBHX3p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 18:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYBHX3f
+	id S1757774AbYBHXaE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 18:30:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbYBHX3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 18:29:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50150 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751704AbYBHX3f (ORCPT
+	Fri, 8 Feb 2008 18:29:40 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:43174 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754668AbYBHX3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 18:29:35 -0500
-Date: Fri, 8 Feb 2008 15:28:12 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dmitry Torokhov <dtor@insightbb.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] Input updates for 2.6.25-rc0
-Message-ID: <20080208152812.2bb14374@extreme>
-In-Reply-To: <20080208232536.GA15727@elte.hu>
-References: <200802060108.31644.dtor@insightbb.com>
-	<20080208232536.GA15727@elte.hu>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
+	Fri, 8 Feb 2008 18:29:39 -0500
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <12245.1202502098@turing-police.cc.vt.edu>
+References: <20080125180232.GA4613@kroah.com>
+	 <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com>
+	 <47A5D9CD.5070001@davidnewall.com>
+	 <84144f020802030743j1278ac64j2ee3e2cbc5c3fefc@mail.gmail.com>
+	 <47A5E67D.9040804@davidnewall.com>
+	 <84144f020802030848v160253feoa24c5ecefc7c91f5@mail.gmail.com>
+	 <courier.47A8497B.0000472E@hawking.rebel.net.au>
+	 <1202240590.15090.119.camel@violet> <47AB0A76.3000404@davidnewall.com>
+	 <1202411113.15090.263.camel@violet> <47ABD317.5060805@davidnewall.com>
+	 <1202462101.15090.300.camel@violet>
+	 <12245.1202502098@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Sat, 09 Feb 2008 00:30:20 +0100
+Message-Id: <1202513420.15090.350.camel@violet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008 00:25:36 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Hi Valdis,
 
+> > And while you are talking to a lawyer. Ask him/her if it is okay to
+> > create a binary only application that uses a GPL library. Tell him/her
 > 
-> * Dmitry Torokhov <dtor@insightbb.com> wrote:
+> It's perfectly legal to create such an application.
 > 
-> > Stephen Hemminger (2):
-> >       Input: add driver for Fujitsu application buttons
+> It only gets interesting if you *distribute* it...
 > 
-> this change broke the build on x86 in randconfig testing:
-> 
->   drivers/built-in.o: In function `apanel_detach_client':
->   apanel.c:(.text+0x15c120): undefined reference to  `__led_classdev_unregister'
->   drivers/built-in.o: In function `apanel_probe':
->   apanel.c:(.text+0x15c30f): undefined reference to  `led_classdev_register'
-> 
-> .config attached.
-> 
-> the Kconfig dependencies seem incomplete:
-> 
-> > +config INPUT_APANEL
-> > +     tristate "Fujitsu Lifebook Application Panel buttons"
-> > +     depends on X86
-> > +     select I2C_I801
-> > +     select INPUT_POLLDEV
-> > +     select CHECK_SIGNATURE
-> > +     help
-> 
-> it doesnt list LEDS.
-> 
-> 	Ingo
+> (And yes, this is where you *have* to be pedantic about the wording used)...
 
-I think someone already sent a patch to select the LEDS
+true, true and true. However I was under the impression we passed that
+discussion point, that you can do whatever inside your own walls :)
 
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
+Regards
+
+Marcel
+
+
