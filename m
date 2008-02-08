@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbYBHIdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbYBHIlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271AbYBHIdS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 03:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbYBHIdF
+	id S933404AbYBHIlV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 03:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbYBHIlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 03:33:05 -0500
-Received: from ns1.suse.de ([195.135.220.2]:42700 "EHLO mx1.suse.de"
+	Fri, 8 Feb 2008 03:41:06 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47937 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761704AbYBHIdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 03:33:03 -0500
-Date: Fri, 8 Feb 2008 09:33:02 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
-       dgc@sgi.com
-Subject: Re: IO queuing and complete affinity with threads (was Re: [PATCH 0/8] IO queuing and complete affinity)
-Message-ID: <20080208083302.GI9730@wotan.suse.de>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <20080207182544.GM15220@kernel.dk> <20080208073859.GE9730@wotan.suse.de> <20080208074747.GY15220@kernel.dk> <20080208075324.GG9730@wotan.suse.de> <20080208075954.GA15220@kernel.dk> <20080208081226.GH9730@wotan.suse.de> <20080208082422.GB15220@kernel.dk>
+	id S1755470AbYBHIlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 03:41:05 -0500
+Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other
+	goodies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 08 Feb 2008 19:40:43 +1100
+Message-Id: <1202460043.7079.157.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080208082422.GB15220@kernel.dk>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 09:24:22AM +0100, Jens Axboe wrote:
-> On Fri, Feb 08 2008, Nick Piggin wrote:
-> > On Fri, Feb 08, 2008 at 08:59:55AM +0100, Jens Axboe wrote:
-> > > On Fri, Feb 08 2008, Nick Piggin wrote:
-> > > > And if you don't?
-> > > 
-> > > Well if you don't ask for anything, you wont get anything :-)
-> > > As I mentioned, the patch is a playing ground for trying various setups.
-> > > Everything defaults to 'do as usual', set options to setup certain test
-> > > scenarios.
-> > 
-> > I mean if you don't know the completing CPU.
-> 
-> I still don't know quite what part of that patch you are referring to
-> here. If you don't have queue_affinity set, queueing a new request with
-> the hardware is generally done on the same CPU that just completed a
-> request. That is true even without any patches.
 
-Generally, but I guess not always. The database workloads in question
-(which you might know very well about ;)) apparently has a lot of
-queue empty and unplug conditions. Which I guess is the reason for
-Intel's initial patch.
+On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
+> - couple of fixes and preparatory patches
+> 
+> - rework of PowerMac media-bay support ([un]register IDE devices instead of
+>   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
+
+Interesting... I was thinking about doing a full remove of the device at
+a higher level instead but I suppose what you propose is easier.
+
+I'll have a look & test next week hopefully.
+
+Ben.
+
 
