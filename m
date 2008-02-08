@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934250AbYBHKcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934521AbYBHKdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934250AbYBHKcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 05:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761021AbYBHKcI
+	id S934521AbYBHKdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 05:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbYBHKdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 05:32:08 -0500
-Received: from mail-relay-02.mailcluster.net ([77.221.130.214]:54892 "EHLO
-	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760884AbYBHKcG (ORCPT
+	Fri, 8 Feb 2008 05:33:06 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:55549 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761139AbYBHKdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 05:32:06 -0500
-Message-ID: <47AC2FA7.7020700@vlnb.net>
-Date: Fri, 08 Feb 2008 13:32:07 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Fri, 8 Feb 2008 05:33:05 -0500
+Message-ID: <47AC2FDB.7080104@linux.vnet.ibm.com>
+Date: Fri, 08 Feb 2008 16:02:59 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: ltuikov@yahoo.com
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ming Zhang <blackmagic02881@gmail.com>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <393719.81864.qm@web31808.mail.mud.yahoo.com>
-In-Reply-To: <393719.81864.qm@web31808.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUILD_FAILURE] 2.6.24-git18 build fails section type conflict psmouse-base
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luben Tuikov wrote:
-> Is there an open iSCSI Target implementation which does NOT
-> issue commands to sub-target devices via the SCSI mid-layer, but
-> bypasses it completely?
+Hi,
 
-What do you mean? To call directly low level backstorage SCSI drivers 
-queuecommand() routine? What are advantages of it?
+The 2.6.24-git18 kernel build fails on the power machine with following message
 
->    Luben
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
+make[2]: *** [drivers/input/mouse] Error 2
+make[1]: *** [drivers/input] Error 2
+make: *** [drivers] Error 2
 
+this failure was reported earlier http://lkml.org/lkml/2007/9/22/64
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
