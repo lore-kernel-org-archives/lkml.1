@@ -1,127 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbYBHCqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbYBHCrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760773AbYBHCqI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Feb 2008 21:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886AbYBHCpx
+	id S1762851AbYBHCrV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Feb 2008 21:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbYBHCrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Feb 2008 21:45:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45060 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755779AbYBHCpv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Feb 2008 21:45:51 -0500
-Date: Thu, 7 Feb 2008 18:46:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [GIT PATCH] final SCSI updates for 2.6.24 merge window
-Message-Id: <20080207184606.03b28a9c.akpm@linux-foundation.org>
-In-Reply-To: <1202432206.3171.53.camel@localhost.localdomain>
-References: <1202432206.3171.53.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 7 Feb 2008 21:47:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45158 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755695AbYBHCrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Feb 2008 21:47:11 -0500
+Date: Fri, 8 Feb 2008 02:45:32 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Brian Wood <brian.j.wood@intel.com>, Daniel Walker <dwalker@mvista.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Jonathan Brassow <jbrassow@redhat.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Milan Broz <mbroz@redhat.com>, Paul Jimenez <pj@place.org>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>, Vasily Averin <vvs@sw.ru>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [git pull] device-mapper update for 2.6.25
+Message-ID: <20080208024532.GC24157@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Brian Wood <brian.j.wood@intel.com>,
+	Daniel Walker <dwalker@mvista.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Jonathan Brassow <jbrassow@redhat.com>,
+	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
+	Milan Broz <mbroz@redhat.com>, Paul Jimenez <pj@place.org>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Vasily Averin <vvs@sw.ru>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Feb 2008 18:56:46 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+Please pull from:
 
-> Quite a bit of this is fixing things broken previously (the advansys fix
-> is still pending resolution, but I'll send it as an -rc fix when we have
-> it).  There's the final elimination of all drivers that are esp based
-> but don't use the scsi_esp core (that's mostly m68k and alpha).  Plus
-> the usual bunch of driver updates and the addition of a new enclosure
-> services driver and the corresponding ULD.
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
 
-Sob.  Can we please merge "Convert SG from nopage to fault"?  It has been
-sent three times, the first time was Dec 5 last year and it has thus far
-received the lead balloon treatment.  Despite my explicit request for
-consideration last time I sent it
+to get the following device-mapper update for 2.6.25:
 
-If there is no movement here then I have to carry the moderately intrusive
-mm-remove-nopage.patch for another N months and we need to watch out for
-new ->nopage implementations popping up etc.
+Alasdair G Kergon (5):
+      dm: mark function lists static
+      dm ioctl: remove lock_kernel
+      dm: targets no longer experimental
+      dm mpath: add missing static
+      dm crypt: move queue functions
 
+Andrew Morton (3):
+      dm snapshot: use uninitialized_var
+      dm: table use uninitialized_var
+      dm ioctl: use uninitialized_var
 
+Brian Wood (2):
+      dm: stripe trigger event on failure
+      dm: stripe enhanced status return
 
+Daniel Walker (1):
+      dm: convert suspend_lock semaphore to mutex
 
-From: Nick Piggin <npiggin@suse.de>
+Jonathan Brassow (6):
+      dm log: auto load modules
+      dm raid1: handle write failures
+      dm raid1: handle recovery failures
+      dm raid1: fix EIO after log failure
+      dm raid1: handle read failures
+      dm raid1: report fault status
 
-Convert SG from nopage to fault.
+Jun'ichi Nomura (1):
+      dm: table remove unused total
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: Douglas Gilbert <dougg@torque.net>
-Cc: James Bottomley <James.Bottomley@steeleye.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Milan Broz (23):
+      dm: add missing memory barrier to dm_suspend
+      dm ioctl: move compat code
+      dm: tidy alloc_dev labels
+      dm: refactor deferred bio_list processing
+      dm: tidy dm_suspend
+      dm: split dm_suspend io_lock hold into two
+      dm: refactor dm_suspend completion wait
+      dm crypt: move convert_context inside dm_crypt_io
+      dm crypt: remove unnecessary crypt_context write parm
+      dm crypt: move error setting outside crypt_dec_pending
+      dm crypt: tidy crypt_endio
+      dm crypt: adjust io processing functions
+      dm crypt: store sector mapping in dm_crypt_io
+      dm crypt: abstract crypt_write_done
+      dm crypt: introduce crypt_write_io_loop
+      dm crypt: tidy io ref counting
+      dm crypt: extract scatterlist processing
+      dm crypt: add async request mempool
+      dm crypt: add completion for async
+      dm crypt: prepare async callback fn
+      dm crypt: use async crypto
+      dm: move deferred bio flushing to workqueue
+      dm snapshot: combine consecutive exceptions in memory
 
- drivers/scsi/sg.c |   23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+Paul Jimenez (1):
+      dm: table use list_for_each
 
-diff -puN drivers/scsi/sg.c~sg-nopage drivers/scsi/sg.c
---- a/drivers/scsi/sg.c~sg-nopage
-+++ a/drivers/scsi/sg.c
-@@ -1160,23 +1160,22 @@ sg_fasync(int fd, struct file *filp, int
- 	return (retval < 0) ? retval : 0;
- }
- 
--static struct page *
--sg_vma_nopage(struct vm_area_struct *vma, unsigned long addr, int *type)
-+static int
-+sg_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
- 	Sg_fd *sfp;
--	struct page *page = NOPAGE_SIGBUS;
- 	unsigned long offset, len, sa;
- 	Sg_scatter_hold *rsv_schp;
- 	struct scatterlist *sg;
- 	int k;
- 
- 	if ((NULL == vma) || (!(sfp = (Sg_fd *) vma->vm_private_data)))
--		return page;
-+		return VM_FAULT_SIGBUS;
- 	rsv_schp = &sfp->reserve;
--	offset = addr - vma->vm_start;
-+	offset = vmf->pgoff << PAGE_SHIFT;
- 	if (offset >= rsv_schp->bufflen)
--		return page;
--	SCSI_LOG_TIMEOUT(3, printk("sg_vma_nopage: offset=%lu, scatg=%d\n",
-+		return VM_FAULT_SIGBUS;
-+	SCSI_LOG_TIMEOUT(3, printk("sg_vma_fault: offset=%lu, scatg=%d\n",
- 				   offset, rsv_schp->k_use_sg));
- 	sg = rsv_schp->buffer;
- 	sa = vma->vm_start;
-@@ -1185,21 +1184,21 @@ sg_vma_nopage(struct vm_area_struct *vma
- 		len = vma->vm_end - sa;
- 		len = (len < sg->length) ? len : sg->length;
- 		if (offset < len) {
-+			struct page *page;
- 			page = virt_to_page(page_address(sg_page(sg)) + offset);
- 			get_page(page);	/* increment page count */
--			break;
-+			vmf->page = page;
-+			return 0; /* success */
- 		}
- 		sa += len;
- 		offset -= len;
- 	}
- 
--	if (type)
--		*type = VM_FAULT_MINOR;
--	return page;
-+	return VM_FAULT_SIGBUS;
- }
- 
- static struct vm_operations_struct sg_mmap_vm_ops = {
--	.nopage = sg_vma_nopage,
-+	.fault = sg_vma_fault,
- };
- 
- static int
-_
+Robert P. J. Day (1):
+      dm snapshot: use rounddown_pow_of_two
 
+Vasily Averin (1):
+      dm: table remove unused variable
+
+ drivers/md/Kconfig              |   24 +-
+ drivers/md/dm-crypt.c           |  486 +++++++++++++++++++----------
+ drivers/md/dm-exception-store.c |    2 +-
+ drivers/md/dm-ioctl.c           |   32 ++-
+ drivers/md/dm-log.c             |   51 +++-
+ drivers/md/dm-mpath.c           |    2 +-
+ drivers/md/dm-raid1.c           |  664 +++++++++++++++++++++++++++++++++-----
+ drivers/md/dm-snap.c            |   95 ++++--
+ drivers/md/dm-snap.h            |   50 +++-
+ drivers/md/dm-stripe.c          |  105 ++++++-
+ drivers/md/dm-table.c           |   20 +-
+ drivers/md/dm.c                 |  238 +++++++++------
+ fs/compat_ioctl.c               |   34 --
+ include/linux/device-mapper.h   |   18 +-
+ include/linux/dm-ioctl.h        |   34 +--
+ 15 files changed, 1372 insertions(+), 483 deletions(-)
+
+Alasdair
+-- 
+agk@redhat.com
