@@ -1,87 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYBHIAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbYBHIJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760769AbYBHIAN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 03:00:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYBHH76
+	id S1761266AbYBHIJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 03:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYBHIJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 02:59:58 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:7092 "EHLO kernel.dk"
+	Fri, 8 Feb 2008 03:09:26 -0500
+Received: from sacred.ru ([62.205.161.221]:59976 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751957AbYBHH75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 02:59:57 -0500
-Date: Fri, 8 Feb 2008 08:59:55 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, Alan.Brunelle@hp.com, arjan@linux.intel.com,
-       dgc@sgi.com
-Subject: Re: IO queuing and complete affinity with threads (was Re: [PATCH 0/8] IO queuing and complete affinity)
-Message-ID: <20080208075954.GA15220@kernel.dk>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <20080207182544.GM15220@kernel.dk> <20080208073859.GE9730@wotan.suse.de> <20080208074747.GY15220@kernel.dk> <20080208075324.GG9730@wotan.suse.de>
+	id S1753253AbYBHIJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 03:09:26 -0500
+Message-ID: <47AC0E25.1060603@openvz.org>
+Date: Fri, 08 Feb 2008 11:09:09 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080208075324.GG9730@wotan.suse.de>
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][DOCUMENTATION] Minimal controller code for a quick start
+References: <47AB25AD.30400@openvz.org> <6599ad830802071245r321efddat89a17b091cb5db4b@mail.gmail.com>
+In-Reply-To: <6599ad830802071245r321efddat89a17b091cb5db4b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 08 Feb 2008 11:08:57 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08 2008, Nick Piggin wrote:
-> On Fri, Feb 08, 2008 at 08:47:47AM +0100, Jens Axboe wrote:
-> > On Fri, Feb 08 2008, Nick Piggin wrote:
-> > > On Thu, Feb 07, 2008 at 07:25:45PM +0100, Jens Axboe wrote:
-> > > > Hi,
-> > > > 
-> > > > Here's a variant using kernel threads only, the nasty arch bits are then
-> > > > not needed. Works for me, no performance testing (that's a hint for Alan
-> > > > to try and queue up some testing for this variant as well :-)
-> > > 
-> > > Well this stuff looks pretty nice (although I'm not sure whether the
-> > > softirq->thread changes are a good idea for performance, I guess we'll
-> > > see).
-> > 
-> > Yeah, that is indeed an open question and why I have two seperate
-> > patches for now (io-cpu-affinity branch and io-cpu-affinity-kthread
-> > branch). As Ingo mentioned, this is how softirqs are handled in the -rt
-> > branch already.
->  
-> True, although there are some IO workloads where -rt falls behind
-> mainline. May not be purely due to irq threads though, of course.
-
-It's certainly an area that needs to be investigated.
-
-> > > You still don't have the option that the Intel patch gave, that is,
-> > > to submit on the completer. I guess that you could do it somewhat
-> > > generically by having a cpuid in the request queue, and update that
-> > > with the completing cpu.
-> > 
-> > Not sure what you mean, if setting queue_affinity doesn't accomplish it.
-> > If you know the completing CPU to begin with, surely you can just set
-> > the queuing affinity appropriately?
+Paul Menage wrote:
+> On Feb 7, 2008 7:37 AM, Pavel Emelyanov <xemul@openvz.org> wrote:
+>> The Documentation/cgroups.txt file contains the info on how
+>> to write some controller for cgroups subsystem, but even with
+>> this, one need to write quite a lot of code before developing
+>> the core (or copy-n-paste it from some other place).
 > 
-> And if you don't?
-
-Well if you don't ask for anything, you wont get anything :-)
-As I mentioned, the patch is a playing ground for trying various setups.
-Everything defaults to 'do as usual', set options to setup certain test
-scenarios.
-
-> > > At least they reported it to be the most efficient scheme in their
-> > > testing, and Dave thought that migrating completions out to submitters
-> > > might be a bottleneck in some cases.
-> > 
-> > More so than migrating submitters to completers? The advantage of only
-> > movign submitters is that you get rid of the completion locking. Apart
-> > from that, the cost should be the same, especially for the thread based
-> > solution.
+> Good idea.
 > 
-> Not specifically for the block layer, but higher layers like xfs.
+>> +
+>> +static ssize_t foo_bar_read(struct cgroup *cg, struct cftype *cft,
+>> +               struct file *file, char __user *userbuf,
+>> +               size_t nbytes, loff_t *ppos)
+>> +{
+>> +       struct foo_cgroup *foo;
+>> +
+>> +       foo = foo_from_cgroup(cg);
+>> +
+>> +       /*
+>> +        * produce some output
+>> +        */
+>> +
+>> +       return nbytes;
+>> +}
+>> +
+>> +static ssize_t foo_bar_write(struct cgroup *cg, struct cftype *cft,
+>> +               struct file *file, const char __user *userbuf,
+>> +               size_t nbytes, loff_t *ppos)
+>> +{
+>> +       struct foo_cgroup *foo;
+>> +
+>> +       foo = foo_from_cgroup(cg);
+>> +
+>> +       /*
+>> +        * read and tune the foo
+>> +        */
+>> +
+>> +       return nbytes;
+>> +}
+>> +
+>> +static struct cftype foo_files[] = {
+>> +       {
+>> +               .name = "bar",
+>> +               .read = foo_bar_read,
+>> +               .write = foo_bar_write,
+>> +       },
+>> +};
+> 
+> Can you structure this example so as to encourage people to use the
+> more formatted read/write routines, such as read_int64 and
+> write_int64?
 
-True, but that's parallel to the initial statement - that migrating
-completers is most costly than migrating submitters. So I'd like Dave to
-expand on why he thinks that migrating completers it more costly than
-submitters, APART from the locking associated with adding the request to
-a remote CPU list.
+And one more for ->read_strategy hints :) Well, I thought that
+it should be the _minimal_ controller.
 
--- 
-Jens Axboe
+>> +
+>> +static struct cgroup_subsys_state *foo_create(struct cgroup_subsys *cs,
+>> +               struct cgroup *cg)
+>> +{
+>> +       struct foo_cgroup *foo;
+>> +
+> 
+> Maybe add a comment here that mentions that if your cgroup needs very
+> early initialization, you can check for cg->parent being NULL, and
+> return a statically-constructed structure here. (And set
+> foo_subsys.early_init = 1)
+
+Yet again - this is rather a special feature, that your controller
+needs an early initialization - for a very minimal one this is not
+required.
+
+Maybe we can have two examples? One is the minimal one and the other
+is an advanced one with ->attach callbacks, etc?
+
+> Paul
+> 
 
