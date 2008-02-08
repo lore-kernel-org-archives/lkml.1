@@ -1,60 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932935AbYBHQeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbYBHQfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932935AbYBHQeu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 11:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759476AbYBHQeR
+	id S1760764AbYBHQfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 11:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbYBHQfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 11:34:17 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:35072 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758056AbYBHQeJ (ORCPT
+	Fri, 8 Feb 2008 11:35:13 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57407 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758301AbYBHQfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 11:34:09 -0500
-Message-ID: <47AC8482.3040804@davidnewall.com>
-Date: Sat, 09 Feb 2008 03:04:10 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com>	<20080202123710.42df1aa0@weinigel.se>	<20080202191930.GA19826@kroah.com>	<47A5D895.20300@davidnewall.com>	<47A6E742.80408@otello.alma.unibo.it>	<courier.47A8F072.000079E4@hawking.rebel.net.au>	<20080205232550.5d3d22ff@core>	<47AB0101.2050204@davidnewall.com>	<20080207141030.78958c29@core>	<47AB1A3E.3040703@davidnewall.com>	<20080207145817.181481e9@core>	<47AB2BE0.9030104@davidnewall.com>	<20080207182218.2a53cd8d@core>	<47ABC4A5.3050305@davidnewall.com> <20080208112938.5e3e12da@core>
-In-Reply-To: <20080208112938.5e3e12da@core>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 8 Feb 2008 11:35:11 -0500
+Date: Fri, 8 Feb 2008 17:35:15 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.24-mm1] IPC: use ipc_buildid() directly from ipc_addid()
+Message-Id: <20080208173515.e4545838.pierre.peiffer@bull.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 08/02/2008 17:44:02,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 08/02/2008 17:44:03,
+	Serialize complete at 08/02/2008 17:44:03
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Fri, 08 Feb 2008 13:25:33 +1030
-> David Newall <davidn@davidnewall.com> wrote:
->
->   
->> Alan Cox wrote:
->>     
->>>> It would not be improper to say that "such and such a lawyer said this
->>>> and that."  I'm not proposing that you breach their copyright in their
->>>>     
->>>>         
->>> It would be highly improper given these were business discussions
->>> involving companies using Linux.
->>>       
->> Then you should never have brought it up.  Since you never really said
->> what any lawyer told you, let's just forget that you did bring it up.
->>     
->
-> I thought you would care that lawyers had discussed the matter.
 
-I care, but I have no way of knowing what was advised.  I bet you a
-dollar they never said that all kernel modules are derivative.  You
-haven't said that they did, but the entire argument supporting, let me
-call it "pro-EXPORT_SYMBOL_GPL", is based on the concept that they did.
+Hi,
 
+By continuing to consolidate a little the IPC code, each id can be built
+directly in ipc_addid() instead of having it built from each callers of
+ipc_addid()
 
-> I hope it makes you very happy, welcome to
-> my killfile.
-Why would that bother me?  You said it before, anyway.  It was childish
-then, and is childish now.
+And I also remove shm_addid() in order to have, as much as possible, the
+same code for shm/sem/msg.
+
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+---
+ ipc/msg.c  |    2 --
+ ipc/sem.c  |    2 --
+ ipc/shm.c  |   10 +---------
+ ipc/util.c |    1 +
+ 4 files changed, 2 insertions(+), 13 deletions(-)
+
+Index: b/ipc/msg.c
+===================================================================
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -70,7 +70,6 @@ struct msg_sender {
+ #define msg_ids(ns)	((ns)->ids[IPC_MSG_IDS])
+ 
+ #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
+-#define msg_buildid(id, seq)	ipc_buildid(id, seq)
+ 
+ static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
+ static int newque(struct ipc_namespace *, struct ipc_params *);
+@@ -186,7 +185,6 @@ static int newque(struct ipc_namespace *
+ 		return id;
+ 	}
+ 
+-	msq->q_perm.id = msg_buildid(id, msq->q_perm.seq);
+ 	msq->q_stime = msq->q_rtime = 0;
+ 	msq->q_ctime = get_seconds();
+ 	msq->q_cbytes = msq->q_qnum = 0;
+Index: b/ipc/sem.c
+===================================================================
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -91,7 +91,6 @@
+ 
+ #define sem_unlock(sma)		ipc_unlock(&(sma)->sem_perm)
+ #define sem_checkid(sma, semid)	ipc_checkid(&sma->sem_perm, semid)
+-#define sem_buildid(id, seq)	ipc_buildid(id, seq)
+ 
+ static int newary(struct ipc_namespace *, struct ipc_params *);
+ static void freeary(struct ipc_namespace *, struct kern_ipc_perm *);
+@@ -268,7 +267,6 @@ static int newary(struct ipc_namespace *
+ 	}
+ 	ns->used_sems += nsems;
+ 
+-	sma->sem_perm.id = sem_buildid(id, sma->sem_perm.seq);
+ 	sma->sem_base = (struct sem *) &sma[1];
+ 	/* sma->sem_pending = NULL; */
+ 	sma->sem_pending_last = &sma->sem_pending;
+Index: b/ipc/shm.c
+===================================================================
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -60,7 +60,6 @@ static struct vm_operations_struct shm_v
+ 
+ #define shm_unlock(shp)			\
+ 	ipc_unlock(&(shp)->shm_perm)
+-#define shm_buildid(id, seq)	ipc_buildid(id, seq)
+ 
+ static int newseg(struct ipc_namespace *, struct ipc_params *);
+ static void shm_open(struct vm_area_struct *vma);
+@@ -169,12 +168,6 @@ static inline void shm_rmid(struct ipc_n
+ 	ipc_rmid(&shm_ids(ns), &s->shm_perm);
+ }
+ 
+-static inline int shm_addid(struct ipc_namespace *ns, struct shmid_kernel *shp)
+-{
+-	return ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+-}
+-
+-
+ 
+ /* This is called by fork, once for every shm attach. */
+ static void shm_open(struct vm_area_struct *vma)
+@@ -417,7 +410,7 @@ static int newseg(struct ipc_namespace *
+ 	if (IS_ERR(file))
+ 		goto no_file;
+ 
+-	id = shm_addid(ns, shp);
++	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+ 	if (id < 0) {
+ 		error = id;
+ 		goto no_id;
+@@ -429,7 +422,6 @@ static int newseg(struct ipc_namespace *
+ 	shp->shm_ctim = get_seconds();
+ 	shp->shm_segsz = size;
+ 	shp->shm_nattch = 0;
+-	shp->shm_perm.id = shm_buildid(id, shp->shm_perm.seq);
+ 	shp->shm_file = file;
+ 	/*
+ 	 * shmid gets reported as "inode#" in /proc/pid/maps.
+Index: b/ipc/util.c
+===================================================================
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -231,6 +231,7 @@ int ipc_addid(struct ipc_ids* ids, struc
+ 	if(ids->seq > ids->seq_max)
+ 		ids->seq = 0;
+ 
++	new->id =  ipc_buildid(id, new->seq);
+ 	spin_lock_init(&new->lock);
+ 	new->deleted = 0;
+ 	rcu_read_lock();
+
+-- 
+Pierre Peiffer
