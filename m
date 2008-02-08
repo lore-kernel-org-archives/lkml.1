@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbYBHHEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbYBHHFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932766AbYBHHEo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 02:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYBHHEe
+	id S1760767AbYBHHFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 02:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYBHHFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 02:04:34 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3452 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755128AbYBHHEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 02:04:33 -0500
-Date: Fri, 8 Feb 2008 07:04:19 +0000
-From: Pavel Machek <pavel@ucw.cz>
+	Fri, 8 Feb 2008 02:05:06 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52590
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755381AbYBHHFE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 02:05:04 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
-Message-ID: <20080208070419.GA4544@ucw.cz>
-References: <20080205190600.GB11613@elf.ucw.cz> <200802072312.31430.rjw@sisk.pl> <47AB887E.7010000@zytor.com> <200802080006.54151.rjw@sisk.pl> <20080207233509.GB21468@elf.ucw.cz> <47AB975C.1010902@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: 2.6.24 says "serial8250: too much work for irq4" a lot.
+Date: Fri, 8 Feb 2008 01:04:52 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <200802051455.10831.rob@landley.net> <200802071413.45085.rob@landley.net> <47AB75EB.3040405@zytor.com>
+In-Reply-To: <47AB75EB.3040405@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47AB975C.1010902@zytor.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200802080104.54081.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> >I really need the entry point to be at offset 0, so 
-> >that I can get
-> >pointers to my data. I could not figure out how to do 
-> >it any other
-> >way. And if 0 is taken, I thought I'd put header at the 
-> >end.
+On Thursday 07 February 2008 15:19:39 H. Peter Anvin wrote:
+> Rob Landley wrote:
+> > Specifically, qemu isn't paravirtualized, it's fully virtualized.  The
+> > same kernel can run on real hardware just fine.  (Sort of the point of
+> > the project...)
 > >
-> 
-> Why not just put the structure at 0, and put pointers in 
-> the structure to everything else you need?
+> > I can yank the warning for the kernels I build (or set PASS_LIMIT to
+> > 9999999), but I'd rather not carry any more patches than I can avoid...
+>
+> Patch attached, completely untested beyond compilation.
+>
+> In particular:
+>
+> 	- we should probably clear the burst counter when the interrupt
+> 	  line goes from inactive to active.
+> 	- there probably should be a timer which clears the burst
+>   	  counter.
+>
+> However, I think I've covered most of the bases...
 
-segments:offsets rear its ugly head here. I need %ds to point to my
-data, and the way to do it is copy it from %cs; that needs start to be
-at 0.
+Well, qemu still seems to work with the patch applied, and I haven't 
+reproduced the error message yet...
 
-If you can find a solution that does not need this (some
-segment/offset arithmetics at beggining of wakeup?) we could use it,
-but I was lost between relocations.
-
+Rob
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
