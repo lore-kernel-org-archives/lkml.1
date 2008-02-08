@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934690AbYBHSgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933065AbYBHSji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934690AbYBHSgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 13:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbYBHSgQ
+	id S933065AbYBHSji (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 13:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbYBHSja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 13:36:16 -0500
-Received: from saturn.eclipse1.net ([208.75.87.223]:37073 "EHLO
-	saturn.eclipse1.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbYBHSgP (ORCPT
+	Fri, 8 Feb 2008 13:39:30 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52802 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758559AbYBHSj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 13:36:15 -0500
-X-Greylist: delayed 385 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Feb 2008 13:36:15 EST
-DomainKey-Signature: a=rsa-sha1; s=saturn; d=eclipse1.net; c=nofws; q=dns;
-	h=dkim-signature:received:message-id:date:subject:from:to:
-	reply-to:user-agent:mime-version:content-type:
-	content-transfer-encoding:x-priority:importance;
-	b=SddA3vvVdRFjPclN1hm52llVI0xbIgf4aPSBssoRx3vuwarU8dBbI0ROvVlGhu5e9
-	PWKN3dGr4SOb8ELRJhvuxztxGsd+E/ltcu/8KkfHNz8vdXLscvn8zq0m7GUKpotR6Qk
-	bSWKkdNy9GRr0MH3WAlZ1iGdq23xZ7Otp0PCvB0=
-Message-ID: <51961.193.35.133.151.1202495388.squirrel@www.eclipse1.net>
-Date: Fri, 8 Feb 2008 18:29:48 -0000 (UTC)
-Subject: CGroup subsystem for enforcing hard cpu rate limits
-From: "Chris Brox" <lkml@orange.eclipse1.net>
-To: linux-kernel@vger.kernel.org
-Reply-To: "Chris Brox" <lkml@orange.eclipse1.net>
-User-Agent: SquirrelMail/1.4.13
-MIME-Version: 1.0
+	Fri, 8 Feb 2008 13:39:29 -0500
+Date: Fri, 8 Feb 2008 12:39:25 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Olof Johansson <olof@lixom.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
+Message-Id: <20080208123925.4c234aa8.pj@sgi.com>
+In-Reply-To: <20080208182343.GB10295@lixom.net>
+References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
+	<alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
+	<20080208120623.3ad74e3a.pj@sgi.com>
+	<20080208182154.GA10295@lixom.net>
+	<20080208182343.GB10295@lixom.net>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Back in 2006 Srivatsa Vaddagiri summarised proposals for CPU controllers,
-which variously offered to limit or guarantee CPU for a task group. Some
-of these supported both soft and hard limits.
+Thanks, Olof and Harvey.
 
-Now in 2008 we have FAIR_CGROUP_SCHED in mainline, which supports soft CPU
-limits per control group. Great stuff.
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=
 
-Unfortunately I am keenly looking for a hard CPU limit implementation -
-i.e. one that would constrain a control group to use no more than x% of
-the CPU, even when it is otherwise idle.
+Just what I was looking for.
 
-Has the hard limit idea been discarded, or is it still a planned feature
-(of either the Fair scheduler or a new subsystem)?
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
