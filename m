@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbYBIL0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYBILes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757080AbYBIL0e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYBIL01
+	id S1755453AbYBILes (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYBILej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:26:27 -0500
-Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:35460
-	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752195AbYBIL00 (ORCPT
+	Sat, 9 Feb 2008 06:34:39 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:3992 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752559AbYBILei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:26:26 -0500
-Message-ID: <47AD8DC6.30506@cosmosbay.com>
-Date: Sat, 09 Feb 2008 12:25:58 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sat, 9 Feb 2008 06:34:38 -0500
+Date: Sat, 9 Feb 2008 12:34:35 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: preempt rcu bug on s390
+Message-ID: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [git pull] more SLUB updates for 2.6.25
-References: <Pine.LNX.4.64.0802071755580.7473@schroedinger.engr.sgi.com> <200802081812.22513.nickpiggin@yahoo.com.au> <47AC04CD.9090407@cosmosbay.com> <Pine.LNX.4.64.0802080008560.22689@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0802080008560.22689@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Fri, 8 Feb 2008, Eric Dumazet wrote:
-> 
->> And SLAB/SLUB allocators, even if only used from process context, want to
->> disable/re-enable interrupts...
-> 
-> Not any more..... The new fastpath does allow avoiding interrupt 
-> enable/disable and we will be hopefully able to increase the scope of that 
-> over time.
-> 
-> 
+Using CONFIG_PREEMPT_RCU and CONFIG_NO_IDLE_HZ on s390 my system always
+gets stuck when running with more than one cpu.
+When booting with four cpus I get all four cpus caught withing cpu_idle
+and not advancing anymore. However there is the init process which is
+waitung for synchronize_rcu() to complete (lcrash output):
 
-Oh, I missed this new SLUB_FASTPATH stuff (not yet in net-2.6), thanks Christoph !
+STACK TRACE FOR TASK: 0xf84d968 (swapper)
 
+ STACK:
+ 0 schedule+842 [0x36c956]
+ 1 schedule_timeout+172 [0x36d0e4]
+ 2 wait_for_common+204 [0x36c398]
+ 3 synchronize_rcu+76 [0x567bc]
+ 4 netlink_change_ngroups+150 [0x2b4302]
+ 5 genl_register_mc_group+256 [0x2b6174]
+ 6 genl_init+188 [0x534e44]
+ 7 kernel_init+444 [0x518334]
+ 8 kernel_thread_starter+6 [0x192a6]
+
+If I change the code so that timer ticks won't be disabled everything
+runs fine. So my guess is that rcu_needs_cpu() doesn't do the right
+thing for the rcu preemptible case.
+
+Kernel version is git head of today.
+
+Any ideas?
