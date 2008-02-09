@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbYBIAXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYBIAZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760175AbYBIAXc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbYBIAXV
+	id S1759859AbYBIAZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbYBIAZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:23:21 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35980 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752827AbYBIAXT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:23:19 -0500
-Date: Fri, 8 Feb 2008 18:23:17 -0600
-From: Paul Jackson <pj@sgi.com>
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Documenting patch tags yet one more time
-Message-Id: <20080208182317.525c4d1f.pj@sgi.com>
-In-Reply-To: <27099.1202503342@vena.lwn.net>
-References: <20080208130126.e05be25d.pj@sgi.com>
-	<27099.1202503342@vena.lwn.net>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 19:25:18 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:39782 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752952AbYBIAZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 19:25:17 -0500
+Date: Sat, 9 Feb 2008 02:25:32 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Adrian Bunk <bunk@kernel.org>, Miklos Szeredi <mszeredi@suse.cz>,
+       jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: uml compile error
+Message-ID: <20080209002532.GG6505@cs181133002.pp.htv.fi>
+References: <20080208223228.GD6505@cs181133002.pp.htv.fi> <Pine.LNX.4.64.0802090102590.30873@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802090102590.30873@twin.jikos.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon wrote:
-> So here's a version which merges the information into
-> SubmittingPatches instead.
+On Sat, Feb 09, 2008 at 01:05:15AM +0100, Jiri Kosina wrote:
+> On Sat, 9 Feb 2008, Adrian Bunk wrote:
+> 
+> > Commit dd2cc4dff3b08ab54c4c177a080046bcc84ac41d broke uml:
+> > <-- snip  -->
+> > ...
+> >   CC      fs/hostfs/hostfs_kern.o
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/fs/hostfs/hostfs_kern.c: In function 'hostfs_show_options':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/fs/hostfs/hostfs_kern.c:328: error: dereferencing pointer to incomplete type
+> > make[3]: *** [fs/hostfs/hostfs_kern.o] Error 1
+> 
+> I guess we need this one?
+> 
+> 
+> 
+> From: Jiri Kosina <jkosina@suse.cz>
+> 
+> UML: fix hostfs build
+>...
 
-Reviewed-by: Paul Jackson <pj@sgi.com>
+Thanks that fixed it.
 
----
-
-That's my first time using that tag ... fun.  Now I'm wondering if there
-might be some improvements that you, me, or someone could make to the
-SubmittingPatches file that would explain more clearly that PATCH's
-should start off, right from the top or after the initial From: line if
-present, with:
-
-  - The body of the explanation, which will be copied to the
-    permanent changelog to describe this patch.
-
-rather than opening with ephemeral reactions to the discussion of the
-moment which will make little "sense to a competent reader who has long
-since forgotten the immediate details of the discussion that might have
-led to this patch."
-
-As best my legalistic mind understands the patch format, such ephemeral
-reactions should go after the "---" marker line, in the same section as
-the diffstat would be placed.
-
-Or perhaps the patch format should be changed in this regard, since it
-is cumbersome and unnatural to embed the ephemeral opening comments
-half way down the patch, rather than opening with them.  I don't know.
+cu
+Adrian
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
