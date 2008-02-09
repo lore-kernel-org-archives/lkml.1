@@ -1,122 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbYBIRPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbYBIRPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324AbYBIRPG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 12:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYBIRO4
+	id S1757126AbYBIRPc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 12:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYBIRPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 12:14:56 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:64355 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbYBIROy (ORCPT
+	Sat, 9 Feb 2008 12:15:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60520 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756073AbYBIRPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 12:14:54 -0500
-Date: Sat, 9 Feb 2008 18:14:51 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: preempt rcu bug on s390
-Message-ID: <20080209171451.GB8069@osiris.ibm.com>
-References: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com> <20080209140711.GA16205@linux.vnet.ibm.com>
+	Sat, 9 Feb 2008 12:15:04 -0500
+Date: Sat, 9 Feb 2008 12:15:03 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/8] kgdb, modules: Always allow module sect info for
+	KGDB
+Message-ID: <20080209171503.GB15568@infradead.org>
+References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com> <1202564114-18587-3-git-send-email-jason.wessel@windriver.com> <1202564114-18587-4-git-send-email-jason.wessel@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080209140711.GA16205@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1202564114-18587-4-git-send-email-jason.wessel@windriver.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 09, 2008 at 06:07:11AM -0800, Paul E. McKenney wrote:
-> On Sat, Feb 09, 2008 at 12:34:35PM +0100, Heiko Carstens wrote:
-> > Using CONFIG_PREEMPT_RCU and CONFIG_NO_IDLE_HZ on s390 my system always
-> > gets stuck when running with more than one cpu.
-> > When booting with four cpus I get all four cpus caught withing cpu_idle
-> > and not advancing anymore. However there is the init process which is
-> > waitung for synchronize_rcu() to complete (lcrash output):
-> > 
-> > STACK TRACE FOR TASK: 0xf84d968 (swapper)
-> > 
-> >  STACK:
-> >  0 schedule+842 [0x36c956]
-> >  1 schedule_timeout+172 [0x36d0e4]
-> >  2 wait_for_common+204 [0x36c398]
-> >  3 synchronize_rcu+76 [0x567bc]
-> >  4 netlink_change_ngroups+150 [0x2b4302]
-> >  5 genl_register_mc_group+256 [0x2b6174]
-> >  6 genl_init+188 [0x534e44]
-> >  7 kernel_init+444 [0x518334]
-> >  8 kernel_thread_starter+6 [0x192a6]
-> > 
-> > If I change the code so that timer ticks won't be disabled everything
-> > runs fine. So my guess is that rcu_needs_cpu() doesn't do the right
-> > thing for the rcu preemptible case.
-> > 
-> > Kernel version is git head of today.
-> > 
-> > Any ideas?
+On Sat, Feb 09, 2008 at 07:35:09AM -0600, jason.wessel@windriver.com wrote:
+> From: Jason Wessel <jason.wessel@windriver.com>
 > 
-> Does this tree have http://lkml.org/lkml/2008/1/29/208 applied?
+> With more information in the kernel, gdb can be modified in such a way
+> as to automatically read the kernel module section information and
+> allow for easy kernel module debugging.
 > 
-> If not, could you please check it out?
+> In gdb the solib-search-path must contain the location of any module
+> to be debugged.  When a module is loaded GDB acts like a shared
+> library has been loaded and will collect the information about the
+> memory location so the kernel module can be debugged or inspected.
+> 
+> Even when not using kgdb+gdb, it is quite useful for a
+> debugger+ICE/jtag to have the module section information.
 
-It's not applied, however it doesn't change anything. Also the patch
-is tied to the dynticks implementation which is differently from
-s390's nohz implementation.
-I had to add the patch below so it would make at least some sense.
-But it doesn't fix the problem.
+This patches doesn't match the description and seems quite odd in
+various ways:
 
----
- arch/s390/kernel/time.c |    2 ++
- include/linux/hardirq.h |    2 +-
- kernel/rcupreempt.c     |    2 +-
- 3 files changed, 4 insertions(+), 2 deletions(-)
+> --- a/include/linux/module.h
+> +++ b/include/linux/module.h
+> @@ -342,13 +342,16 @@ struct module
+>  	unsigned long num_symtab;
+>  	char *strtab;
+>  
+> -	/* Section attributes */
+> -	struct module_sect_attrs *sect_attrs;
+> -
+>  	/* Notes attributes */
+>  	struct module_notes_attrs *notes_attrs;
+>  #endif
+>  
+> +#if defined(CONFIG_KALLSYMS) || defined(CONFIG_KGDB)
+> +	/* Section attributes */
+> +	struct module_sect_attrs *sect_attrs;
+> +#endif
 
-Index: linux-2.6/kernel/rcupreempt.c
-===================================================================
---- linux-2.6.orig/kernel/rcupreempt.c
-+++ linux-2.6/kernel/rcupreempt.c
-@@ -413,7 +413,7 @@ static void __rcu_advance_callbacks(stru
- 	}
- }
- 
--#ifdef CONFIG_NO_HZ
-+#if defined(CONFIG_NO_HZ) || defined(CONFIG_NO_IDLE_HZ)
- 
- DEFINE_PER_CPU(long, dynticks_progress_counter) = 1;
- static DEFINE_PER_CPU(long, rcu_dyntick_snapshot);
-Index: linux-2.6/arch/s390/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/time.c
-+++ linux-2.6/arch/s390/kernel/time.c
-@@ -200,6 +200,7 @@ static void stop_hz_timer(void)
- 		if (timer >= jiffies_timer_cc)
- 			todval = timer;
- 	}
-+	rcu_enter_nohz();
- 	set_clock_comparator(todval);
- }
- 
-@@ -213,6 +214,7 @@ static void start_hz_timer(void)
- 
- 	if (!cpu_isset(smp_processor_id(), nohz_cpu_mask))
- 		return;
-+	rcu_exit_nohz();
- 	account_ticks(get_clock());
- 	set_clock_comparator(S390_lowcore.jiffy_timer + CPU_DEVIATION);
- 	cpu_clear(smp_processor_id(), nohz_cpu_mask);
-Index: linux-2.6/include/linux/hardirq.h
-===================================================================
---- linux-2.6.orig/include/linux/hardirq.h
-+++ linux-2.6/include/linux/hardirq.h
-@@ -109,7 +109,7 @@ static inline void account_system_vtime(
- }
- #endif
- 
--#if defined(CONFIG_PREEMPT_RCU) && defined(CONFIG_NO_HZ)
-+#if defined(CONFIG_PREEMPT_RCU) && (defined(CONFIG_NO_HZ) || defined(CONFIG_NO_IDLE_HZ))
- extern void rcu_irq_enter(void);
- extern void rcu_irq_exit(void);
- #else
+So here we make a member of struct module conditional.  Fine if
+that saves memory for non-debug configs, but that's not
+what the description mentions.  Also is there any reason why
+you'd want to build KGDB without KALLSYMS?
+
+> diff --git a/kernel/module.c b/kernel/module.c
+> index 4202da9..4a94d1a 100644
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -602,6 +602,9 @@ static void module_unload_free(struct module *mod)
+>  			}
+>  		}
+>  	}
+> +	blocking_notifier_call_chain(&module_notify_list,
+> +				MODULE_STATE_GOING,
+> +				mod);
+
+this adds a notifier for a module beeing unloaded.  This could vaguely
+be related to what's in the description at least..
+
+> +#if defined(CONFIG_KALLSYMS) || defined(CONFIG_KGDB)
+>  #ifdef CONFIG_KALLSYMS
+>  static ssize_t module_sect_show(struct module_attribute *mattr,
+>  				struct module *mod, char *buf)
+> @@ -1000,6 +1004,7 @@ static ssize_t module_sect_show(struct module_attribute *mattr,
+>  		container_of(mattr, struct module_sect_attr, mattr);
+>  	return sprintf(buf, "0x%lx\n", sattr->address);
+>  }
+> +#endif /* CONFIG_KALLSYMS */
+
+Now you add a CONFIG_KALLSYMS || KGDB ifdef around an CONFIG_KALLSYMS
+block that you shorten at the same time.  If you really want to allow
+kgdb without kallsyms the KALLSYMS should be left for this function and
+the KALLSYMS || KGDB move below it.  But with this ifdef mess I can
+only repeat that you should simply make kallsysm mandatory for kgdb.
+
