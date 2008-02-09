@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYBIPSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbYBIPUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYBIPSV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 10:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYBIPRF
+	id S1754949AbYBIPUT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 10:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYBIPUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 10:17:05 -0500
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:37653 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbYBIPRE (ORCPT
+	Sat, 9 Feb 2008 10:20:03 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:32704 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751214AbYBIPUA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 10:17:04 -0500
-From: Andi Kleen <ak@suse.de>
-References: <20080209416.271135970@suse.de>
-In-Reply-To: <20080209416.271135970@suse.de>
-To: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] [5/5] Enable ACPI extended century handling for 32bit too v2
-Message-Id: <20080209151701.56CAB1B41D1@basil.firstfloor.org>
-Date: Sat,  9 Feb 2008 16:17:01 +0100 (CET)
-X-OriginalArrivalTime: 09 Feb 2008 15:10:40.0674 (UTC) FILETIME=[EEF43020:01C86B2D]
+	Sat, 9 Feb 2008 10:20:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=fKO67EluNkO5AVa/VleCA8wxJBoM2Cepu1YRZTYJI0SgBLo5pSYB2i6JxKclPltnd+ruojGtLXJVa01TuS+rhzPyX7j1449SlKUj8P8Q13rrNcConpp06M3ml70FPxinAyZTZr6zWWEvGp589WmsLQJvHGe/vIURqh6sb69sy0M=
+Message-ID: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
+Date: Sun, 10 Feb 2008 00:19:58 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8][for -mm] mem_notify v6
+Cc: kosaki.motohiro@jp.fujitsu.com, "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Daniel Spang" <daniel.spang@gmail.com>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-fsdevel@vger.kernel.org,
+       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
+       "Jon Masters" <jonathan@jonmasters.org>, "Zan Lynx" <zlynx@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+X-Google-Sender-Auth: 6fafd3174901fae2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-Not that it matters much, see comment in the code.
+The /dev/mem_notify is low memory notification device.
+it can avoid swappness and oom by cooperationg with the user process.
 
-v2: Fix compilation on !ACPI, pointed out by tglx
+the Linux Today article is very nice description. (great works by Jake Edge)
+http://www.linuxworld.com/news/2008/020508-kernel.html
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+<quoted>
+When memory gets tight, it is quite possible that applications have memory
+allocated—often caches for better performance—that they could free.
+After all, it is generally better to lose some performance than to face the
+consequences of being chosen by the OOM killer.
+But, currently, there is no way for a process to know that the kernel is
+feeling memory pressure.
+The patch provides a way for interested programs to monitor the /dev/mem_notify
+ file to be notified if memory starts to run low.
+</quoted>
 
----
- arch/x86/kernel/rtc.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Index: linux/arch/x86/kernel/rtc.c
-===================================================================
---- linux.orig/arch/x86/kernel/rtc.c
-+++ linux/arch/x86/kernel/rtc.c
-@@ -112,8 +112,11 @@ unsigned long mach_get_cmos_time(void)
- 	mon = CMOS_READ(RTC_MONTH);
- 	year = CMOS_READ(RTC_YEAR);
- 
--#if defined(CONFIG_ACPI) && defined(CONFIG_X86_64)
--	/* CHECKME: Is this really 64bit only ??? */
-+#ifdef CONFIG_ACPI
-+	/*
-+	 * On 32bit not strictly needed because the world ends in 2038
-+	 * and the code can handle that with the 2 digit heuristics.
-+	 */
- 	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
- 	    acpi_gbl_FADT.century)
- 		century = CMOS_READ(acpi_gbl_FADT.century);
+You need not be annoyed by OOM any longer :)
+please any comments!
+
+patch list
+       [1/8] introduce poll_wait_exclusive() new API
+       [2/8] introduce wake_up_locked_nr() new API
+       [3/8] introduce /dev/mem_notify new device (the core of this
+patch series)
+       [4/8] memory_pressure_notify() caller
+       [5/8] add new mem_notify field to /proc/zoneinfo
+       [6/8] (optional) fixed incorrect shrink_zone
+       [7/8] ignore very small zone for prevent incorrect low mem notify.
+       [8/8] support fasync feature
+
+
+related discussion:
+--------------------------------------------------------------
+ LKML OOM notifications requirement discussion
+    http://www.gossamer-threads.com/lists/linux/kernel/832802?nohighlight=1#832802
+ OOM notifications patch [Marcelo Tosatti]
+    http://marc.info/?l=linux-kernel&m=119273914027743&w=2
+ mem notifications v3 [Marcelo Tosatti]
+    http://marc.info/?l=linux-mm&m=119852828327044&w=2
+ Thrashing notification patch  [Daniel Spang]
+    http://marc.info/?l=linux-mm&m=119427416315676&w=2
+ mem notification v4
+    http://marc.info/?l=linux-mm&m=120035840523718&w=2
+ mem notification v5
+    http://marc.info/?l=linux-mm&m=120114835421602&w=2
+
+Changelog
+-------------------------------------------------
+ v5 -> v6 (by KOSAKI Motohiro)
+   o rebase to 2.6.24-mm1
+   o fixed thundering herd guard formula.
+
+ v4 -> v5 (by KOSAKI Motohiro)
+   o rebase to 2.6.24-rc8-mm1
+   o change display order of /proc/zoneinfo
+   o ignore very small zone
+   o support fcntl(F_SETFL, FASYNC)
+   o fixed some trivial bugs.
+
+ v3 -> v4 (by KOSAKI Motohiro)
+   o rebase to 2.6.24-rc6-mm1
+   o avoid wake up all.
+   o add judgement point to __free_one_page().
+   o add zone awareness.
+
+ v2 -> v3 (by Marcelo Tosatti)
+   o changes the notification point to happen whenever
+     the VM moves an anonymous page to the inactive list.
+   o implement notification rate limit.
+
+ v1(oom notify) -> v2 (by Marcelo Tosatti)
+   o name change
+   o notify timing change from just swap thrashing to
+     just before thrashing.
+   o also works with swapless device.
