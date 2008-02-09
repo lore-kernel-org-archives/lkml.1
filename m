@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYBIKjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYBIKxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYBIKjc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 05:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYBIKjZ
+	id S1755331AbYBIKxg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 05:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYBIKx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 05:39:25 -0500
-Received: from www.tglx.de ([62.245.132.106]:59001 "EHLO www.tglx.de"
+	Sat, 9 Feb 2008 05:53:27 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:34272 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYBIKjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 05:39:24 -0500
-Date: Sat, 9 Feb 2008 11:39:11 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [3/3] Enable ACPI extended century handling for 32bit
- too
-In-Reply-To: <20080208121455.228C31B41BB@basil.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0802091136380.3145@apollo.tec.linutronix.de>
-References: <20080208114.066167427@suse.de> <20080208121455.228C31B41BB@basil.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1752432AbYBIKx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 05:53:26 -0500
+Date: Sat, 9 Feb 2008 12:53:44 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: m68knommu compile error
+Message-ID: <20080209105344.GH6505@cs181133002.pp.htv.fi>
+References: <20080208222516.GC6505@cs181133002.pp.htv.fi> <1202552472.8936.7.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1202552472.8936.7.camel@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008, Andi Kleen wrote:
+On Sat, Feb 09, 2008 at 11:21:12AM +0100, Martin Schwidefsky wrote:
+> On Sat, 2008-02-09 at 00:25 +0200, Adrian Bunk wrote:
+> > Commit 2f569afd9ced9ebec9a6eb3dbf6f83429be0a7b4 breaks m68knommu:
+> 
+> Does the patch below fixes the problem?
 
-> 
-> Not that it matters much, see comment in the code.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86/kernel/rtc.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> Index: linux/arch/x86/kernel/rtc.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/rtc.c
-> +++ linux/arch/x86/kernel/rtc.c
-> @@ -112,12 +112,13 @@ unsigned long mach_get_cmos_time(void)
->  	mon = CMOS_READ(RTC_MONTH);
->  	year = CMOS_READ(RTC_YEAR);
->  
-> -#if defined(CONFIG_ACPI) && defined(CONFIG_X86_64)
-> -	/* CHECKME: Is this really 64bit only ??? */
-> +	/*
-> +	 * On 32bit not strictly needed because the world ends in 2038
-> +	 * and the code can handle that with the 2 digit heuristics.
-> +	 */
->  	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
->  	    acpi_gbl_FADT.century)
->  		century = CMOS_READ(acpi_gbl_FADT.century);
+Thanks, it fixes it.
 
-How does this compile with CONFIG_ACPI=n ?
+> I tried to cross compile for
+> m68knommu but it seems like you need a special m68k compiler to get it
+> compile all the way through.
 
-Thanks,
-	tglx
+I'm using one from upstream svn head (= tree that will become gcc 4.3).
+
+> With the patch it did fail with a different
+> error, so I assume it is fixed.
+
+That's Matt's "break all no-MMU architectures in swapops.h" regression 
+for which a patch is already floating around.
+
+> The problem is that the pgtable_t is
+> simply missing for m68knommu, I must have overlooked a reject for one of
+> the constant regenerations of the patch to keep up with upstream. Sorry
+> about that.
+> 
+> blue skies,
+>   Martin.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
