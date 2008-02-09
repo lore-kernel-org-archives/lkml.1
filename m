@@ -1,146 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYBIO1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYBIOeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbYBIO1R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 09:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYBIO1G
+	id S1756660AbYBIOeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 09:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYBIOeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 09:27:06 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:60054 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066AbYBIO1F (ORCPT
+	Sat, 9 Feb 2008 09:34:04 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:58476 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421AbYBIOeC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 09:27:05 -0500
-Message-ID: <47ADB836.9030404@web.de>
-Date: Sat, 09 Feb 2008 15:27:02 +0100
+	Sat, 9 Feb 2008 09:34:02 -0500
+Message-ID: <47ADB9D3.6070604@web.de>
+Date: Sat, 09 Feb 2008 15:33:55 +0100
 From: Jan Kiszka <jan.kiszka@web.de>
 User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
 To: jason.wessel@windriver.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/8] kgdb: core API and gdb protocol handler
-References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
-In-Reply-To: <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
+CC: linux-kernel@vger.kernel.org, Jan Kiszka <jan.kiszka@web.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 5/8] kgdb, x86: Add arch specfic kgdb support
+References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com> <1202564114-18587-3-git-send-email-jason.wessel@windriver.com> <1202564114-18587-4-git-send-email-jason.wessel@windriver.com> <1202564114-18587-5-git-send-email-jason.wessel@windriver.com> <1202564114-18587-6-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1202564114-18587-6-git-send-email-jason.wessel@windriver.com>
 X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigEB8F57BA8B93AE837EF2EFB4"
-X-Provags-ID: V01U2FsdGVkX18Z+i4wYooY1KugX7JTgt0o2Pfz+g9mR3ucMLRs
-	+9VQSaAJc9EqLIhRzR6fawMRvIPYpwWzWhIg0BBcjduRs0jIK6
-	JJ5TxKOSE=
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18uhAlK9gKCLO4Av7NFemv6ihu1bLnlYzNc0SS2
+	4Ll2n1TpEBQxEuhMJFGVUXAwFohVpfYFX7ZlFhEiSj48ys1t9G
+	DjBc/7718=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEB8F57BA8B93AE837EF2EFB4
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
-
 jason.wessel@windriver.com wrote:
 > --- /dev/null
-> +++ b/include/asm-generic/kgdb.h
-> @@ -0,0 +1,105 @@
+> +++ b/include/asm-x86/kgdb.h
+> @@ -0,0 +1,79 @@
+> +#ifdef __KERNEL__
+> +#ifndef _ASM_KGDB_H_
+> +#define _ASM_KGDB_H_
+> +
 > +/*
-> + * include/asm-generic/kgdb.h
-> + *
-> + * This provides the assembly level information so that KGDB can provi=
-de
-> + * a GDB that has been patched with enough information to know to stop=
-
-> + * trying to unwind the function.
-> + *
-> + * Author: Tom Rini <trini@kernel.crashing.org>
-> + *
-> + * 2005 (c) MontaVista Software, Inc.
-> + * 2006 (c) Embedded Alley Solutions, Inc.
-> + *
-> + * This file is licensed under the terms of the GNU General Public Lic=
-ense
-> + * version 2. This program is licensed "as is" without any warranty of=
- any
-> + * kind, whether express or implied.
+> + * Copyright (C) 2001-2004 Amit S. Kale
+> + * Copyright (C) 2008 Wind River Systems, Inc.
 > + */
 > +
-> +#ifndef __ASM_GENERIC_KGDB_H__
-> +#define __ASM_GENERIC_KGDB_H__
+> +#include <asm-generic/kgdb.h>
 > +
-> +struct pt_regs;
+> +/*
+> + * BUFMAX defines the maximum number of characters in inbound/outbound
+> + * buffers at least NUMREGBYTES*2 are needed for register packets
+> + * Longer buffer is needed to list all threads
+> + */
+> +#define BUFMAX			1024
 > +
-> +#ifdef CONFIG_X86
-
-Hmm, I just realized that I didn't really looked at the arch interface
-in details yet. Now it appears a bit inconsistent to me in its way to
-tell "this arch supports that". Something in include/asm-generic that
-starts with #ifdef CONFIG_X86 looks ugly, to begin with.
-
-=2E..
-> +#ifdef CONFIG_KGDB_ARCH_HAS_SHADOW_INFO
-
-Then we have this KGDB_ARCH_HAS thing here, the second way to control
-arch-dependent stuff.
-
-=2E..
-> --- /dev/null
-> +++ b/include/linux/kgdb.h
-=2E..
-> +struct kgdb_arch {
-> +	unsigned char		gdb_bpt_instr[BREAK_INSTR_SIZE];
-> +	unsigned long		flags;
-> +	unsigned		shadowth;
-> +
-> +	int	(*set_breakpoint)(unsigned long, char *);
-> +	int	(*remove_breakpoint)(unsigned long, char *);
-> +	int	(*set_hw_breakpoint)(unsigned long, int, enum kgdb_bptype);
-> +	int	(*remove_hw_breakpoint)(unsigned long, int, enum kgdb_bptype);
-> +	void	(*remove_all_hw_break)(void);
-> +	void	(*correct_hw_break)(void);
+> +/*
+> + *  Note that this register image is in a different order than
+> + *  the register image that Linux produces at interrupt time.
+> + *
+> + *  Linux's register image is defined by struct pt_regs in ptrace.h.
+> + *  Just why GDB uses a different order is a historical mystery.
+> + */
+> +#ifdef CONFIG_X86_32
+> +enum regnames { _AX,	/* 0 */
+> +	_CX,	/* 1 */
+> +	_DX,	/* 2 */
+> +	_BX,	/* 3 */
+> +	_SP,	/* 4 */
+> +	_BP,	/* 5 */
+> +	_SI,	/* 6 */
+> +	_DI,	/* 7 */
+> +	_PC,	/* 8 also known as eip */
+> +	_PS,	/* 9 also known as eflags */
+> +	_CS,	/* 10 */
+> +	_SS,	/* 11 */
+> +	_DS,	/* 12 */
+> +	_ES,	/* 13 */
+> +	_FS,	/* 14 */
+> +	_GS		/* 15 */
 > +};
+> +#else /* ! CONFIG_X86_32 */
+> +enum regnames { _AX,	/* 0 */
+> +	_DX,	/* 1 */
+> +	_CX,	/* 2 */
+> +	_BX,	/* 3 */
+> +	_SI,	/* 4 */
+> +	_DI,	/* 5 */
+> +	_BP,	/* 6 */
+> +	_SP,	/* 7 */
+> +	_R8,	/* 8 */
+> +	_R9,	/* 9 */
+> +	_R10,	/* 10 */
+> +	_R11,	/* 11 */
+> +	_R12,	/* 12 */
+> +	_R13,	/* 13 */
+> +	_R14,	/* 14 */
+> +	_R15,	/* 15 */
+> +	_PC,	/* 16 */
+> +	_PS		/* 17 */
+> +};
+> +#endif /* CONFIG_X86_32 */
+> +
+> +/* Number of bytes for gdb registers */
+> +#ifdef CONFIG_X86_32
+> +#define NUMREGBYTES		64
+> +#else /* ! CONFIG_X86_32 */
+> +#define NUMREGBYTES		((_PS+1)*8)
+> +#endif /* CONFIG_X86_32 */
+> +
+> +#ifndef __ASSEMBLY__
+> +#define BREAKPOINT()		asm("   int $3");
+> +#define BREAK_INSTR_SIZE	1
+> +#define CACHE_FLUSH_IS_SAFE	1
+> +#endif				/* !__ASSEMBLY__ */
+> +#endif				/* _ASM_KGDB_H_ */
+> +#endif				/* __KERNEL__ */
 
-And this is the third way. Can we consolidate this?
+Please fold into the next version:
 
-=2E..
-> --- /dev/null
-> +++ b/kernel/kgdb.c
-=2E..
-> +/*
-> + * Convert the memory pointed to by mem into hex, placing result in bu=
-f.
-> + * Return a pointer to the last char put in buf (null). May return an =
-error.
-> + */
-> +char *kgdb_mem2hex(char *mem, char *buf, int count)
+diff --git a/include/asm-x86/kgdb.h b/include/asm-x86/kgdb.h
+index c2803a8..0ba150b 100644
+--- a/include/asm-x86/kgdb.h
++++ b/include/asm-x86/kgdb.h
+@@ -1,4 +1,3 @@
+-#ifdef __KERNEL__
+ #ifndef _ASM_KGDB_H_
+ #define _ASM_KGDB_H_
+ 
+@@ -70,10 +69,7 @@ enum regnames { _AX,	/* 0 */
+ #define NUMREGBYTES		((_PS+1)*8)
+ #endif /* CONFIG_X86_32 */
+ 
+-#ifndef __ASSEMBLY__
+ #define BREAKPOINT()		asm("   int $3");
+ #define BREAK_INSTR_SIZE	1
+ #define CACHE_FLUSH_IS_SAFE	1
+-#endif				/* !__ASSEMBLY__ */
+-#endif				/* _ASM_KGDB_H_ */
+-#endif				/* __KERNEL__ */
++#endif /* _ASM_KGDB_H_ */
 
-As Linus remarked, still pointer-based return values while only the
-error code is used by the callers (there are more of such cases in the
-core).
-
-=2E..
-> --- a/kernel/softlockup.c
-> +++ b/kernel/softlockup.c
-=2E..
-> @@ -52,7 +55,6 @@ static unsigned long get_timestamp(int this_cpu)
->  void touch_softlockup_watchdog(void)
->  {
->  	int this_cpu =3D raw_smp_processor_id();
-> -
-
-Probably some relic from older changes which should be killed.
-
-Jan
-
-
---------------enigEB8F57BA8B93AE837EF2EFB4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFHrbg2niDOoMHTA+kRAhPQAJ9DuDm1kYU0cw0P4IIza//0x3IRbQCdFH6H
-YX9hLONIEO4n5bb/DMhxuss=
-=RM78
------END PGP SIGNATURE-----
-
---------------enigEB8F57BA8B93AE837EF2EFB4--
