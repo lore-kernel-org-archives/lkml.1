@@ -1,119 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYBIJHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYBIJ0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbYBIJHF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 04:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYBIJGl
+	id S1755146AbYBIJ0g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 04:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYBIJ0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 04:06:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59438 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbYBIJGg convert rfc822-to-8bit (ORCPT
+	Sat, 9 Feb 2008 04:26:20 -0500
+Received: from mail.free-electrons.com ([88.191.46.45]:2580 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbYBIJ0S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 04:06:36 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0
-Date: Sat, 9 Feb 2008 04:04:32 -0500
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Zhang Rui <rui.zhang@intel.com>,
-       Thomas Sujith <sujith.thomas@intel.com>
-References: <200802070450.09098.lenb@kernel.org> <20080209082748.GA7792@elte.hu> <20080209083143.GA9634@elte.hu>
-In-Reply-To: <20080209083143.GA9634@elte.hu>
+	Sat, 9 Feb 2008 04:26:18 -0500
+Message-ID: <47AD71B3.5070906@free-electrons.com>
+Date: Sat, 09 Feb 2008 10:26:11 +0100
+From: Michael Opdenacker <michael-lists@free-electrons.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802090404.32835.lenb@kernel.org>
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com
+Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some	processors
+References: <200802082347.25364.michael-lists@free-electrons.com> <1202512812.17934.680.camel@cinder.waste.org>
+In-Reply-To: <1202512812.17934.680.camel@cinder.waste.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 February 2008 03:31, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > that fixed the build failure on 32-bit, but there's another one i just 
-> > hit on 64-bit x86:
-> > 
-> > drivers/built-in.o: In function `acpi_video_bus_put_devices':
-> > video.c:(.text+0x5540d): undefined reference to `thermal_cooling_device_unregister'
-> > drivers/built-in.o: In function `acpi_video_bus_add':
-> > video.c:(.text+0x56994): undefined reference to `thermal_cooling_device_register'
-> > 
-> > which is due to:
-> > 
-> >   commit 702ed512de9c8a67a69a981c73b7337c2131f198
-> >   Date:   Thu Jan 17 15:51:22 2008 +0800
-> > 
-> >       ACPI: register ACPI Video LCD as generic thermal cooling device
-> > 
-> > the commit couldnt be reverted cleanly, i've done a manual fixup of 
-> > the revert (find the patch below).
-> 
-> (config for that build breakage attached, in case you were wondering 
-> about how to trigger it.)
+On 02/09/2008 12:20 AM, Matt Mackall wrote:
+> Please include the output of size with all these options on and off.
+>   
+Oops, here they are:
 
->From a0dd25b2c83de4623487ca4de9c1d962b552ca0f Mon Sep 17 00:00:00 2001
-From: Len Brown <len.brown@intel.com>
-Date: Sat, 9 Feb 2008 04:01:48 -0500
-Subject: [PATCH] ACPI: thermal: buildfix for CONFIG_THERMAL=n
-Organization: Intel Open Source Technology Center
+Standard kernel (original config: make allnoconfig + CONFIG_EMBEDDED):
+> size vmlinux
+   text    data     bss     dec     hex filename
+ 966473  139000   90112 1195585  123e41 vmlinux
 
-This fixes the build, but acpi_fan_add() still needs
-to be updated to handle thermal_cooling_device_register()
-returning NULL as a non-fatal condition.
+Size of vmlinux: 1386005
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- include/linux/thermal.h |   23 ++++++++++++++++++++---
- 1 files changed, 20 insertions(+), 3 deletions(-)
+With the patch (using only CONFIG_CPU_SUP_INTEL):
+> size vmlinux
+   text    data     bss     dec     hex filename
+ 957561  136536   90112 1184209  1211d1 vmlinux
+(-9812) (-2464)
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index bba7712..818ca1c 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -79,7 +79,9 @@ struct thermal_zone_device {
- };
- 
- struct thermal_zone_device *thermal_zone_device_register(char *, int, void *,
--					struct thermal_zone_device_ops *);
-+							 struct
-+							 thermal_zone_device_ops
-+							 *);
- void thermal_zone_device_unregister(struct thermal_zone_device *);
- 
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
-@@ -87,8 +89,23 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
- int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
- 				       struct thermal_cooling_device *);
- 
-+#ifdef	CONFIG_THERMAL
- struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
--					struct thermal_cooling_device_ops *);
-+							       struct
-+							       thermal_cooling_device_ops
-+							       *);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
-+#else
-+static inline struct thermal_cooling_device
-+*thermal_cooling_device_register(char *c, void *v,
-+				 struct thermal_cooling_device_ops *t)
-+{
-+	return NULL;
-+}
-+static inline
-+    void thermal_cooling_device_unregister(struct thermal_cooling_device *t)
-+{
-+};
-+#endif
- 
--#endif				/* __THERMAL_H__ */
-+#endif /* __THERMAL_H__ */
+Size of vmlinux: 1373697 (-12308 bytes)
+
+-12K in the kernel size looks quite nice to me.
+
+Michael.
+
 -- 
-1.5.4.34.g053d9
+Michael Opdenacker, Free Electrons
+Free Embedded Linux Training Materials
+on http://free-electrons.com/training
+(More than 1500 pages!)
 
