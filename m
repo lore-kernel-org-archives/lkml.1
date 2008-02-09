@@ -1,51 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYBIDtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYBIEPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbYBIDtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 22:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYBIDtF
+	id S1756268AbYBIEPT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 23:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYBIEPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 22:49:05 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:12867 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbYBIDtE (ORCPT
+	Fri, 8 Feb 2008 23:15:06 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:34752 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754160AbYBIEPC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 22:49:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CO0xd3hPigbDMivCbJGPNEBpCjw0g1GqUapkkiacfypvEosaxFJELe3z9GRKAgVIFvO+pBLHzfd4pLMXvmjCvOrQ/zwes/Yd8ZM9LNNMTtOd1T/6RZIJsnC2UgNlTRujsh3Uk/V92e0OTjsK1qZqsXG7k+oJB32NgbGanMexkts=
-Message-ID: <fa0147d90802081948j3fc27647pa549bcf09c913003@mail.gmail.com>
-Date: Fri, 8 Feb 2008 19:48:58 -0800
-From: Taral <taralx@gmail.com>
-To: "Michael Opdenacker" <michael-lists@free-electrons.com>
-Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some processors
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       "Matt Mackall" <mpm@selenic.com>, Linux-tiny@selenic.com,
+	Fri, 8 Feb 2008 23:15:02 -0500
+Date: Fri, 8 Feb 2008 20:12:53 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru,
        linux-kernel@vger.kernel.org
-In-Reply-To: <200802082347.25364.michael-lists@free-electrons.com>
-MIME-Version: 1.0
+Subject: Re: [PATCH] keyboard notifier documentation
+Message-Id: <20080208201253.46c068ed.randy.dunlap@oracle.com>
+In-Reply-To: <20080209013322.GC4463@implementation>
+References: <20080209013322.GC4463@implementation>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200802082347.25364.michael-lists@free-electrons.com>
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/08, Michael Opdenacker <michael-lists@free-electrons.com> wrote:
-> +config CPU_SUP_INTEL
-> +       default y
-> +       bool "Support Intel processors" if PROCESSOR_SELECT
-> +       help
-> +         This enables extended support for Intel processors
+On Sat, 9 Feb 2008 01:33:22 +0000 Samuel Thibault wrote:
 
-> -obj-$(CONFIG_X86_32)   += intel.o
-> +obj-$(CONFIG_CPU_SUP_INTEL)    += intel.o
+> Document the keyboard notifier.
+> 
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> 
+> --- /dev/null	2008-02-09 01:22:34.790011677 +0000
+> +++ linux/Documentation/input/notifier.txt	2008-02-09 01:28:12.000000000 +0000
+> @@ -0,0 +1,52 @@
+> +Keyboard notifier
+> +
+> +One can use register_keyboard_notifier to get called back on keyboard
+> +events (see kbd_keycode() function for details).  The passed structure is
+> +keyboard_notifier_param:
+> +
+> +- 'vc' always provide the VC for which the keyboard event applies ;
+> +- 'down' is 1 for a key press event, 0 for a key release ;
+> +- 'shift' is the current modifier state, mask bit indexes are KG_* ;
 
-This config option should probably depend on X86_32.
+No space before the ';' (3 times).
 
--- 
-Taral <taralx@gmail.com>
-"Please let me know if there's any further trouble I can give you."
-    -- Unknown
+> +- 'value' depends on the type of event.
+> +
+> +- KBD_KEYCODE events are always sent before other events, value is the keycode.
+> +- KBD_UNBOUND_KEYCODE events are sent if the keycode is not bound to a keysym.
+> +  value is the keycode.
+> +- KBD_UNICODE events are sent if the keycode -> keysym translation produced a
+> +  unicode character. value is the unicode value.
+> +- KBD_KEYSYM events are sent if the keycode -> keysym translation produced a
+> +  non-unicode character. value is the keysym.
+> +- KBD_POST_KEYSYM events are sent after the treatment of non-unicode keysyms.
+> +  That permits to inspect the resulting LEDs for instance.
+
+     That permits (some object word here, like: you, one, code, etc.) to
+     inspect ...
+
+> +
+> +For each kind of event but the last, the callback may return NOTIFY_STOP in
+> +order to "eat" the event: the notify loop is stopped and the keyboard event is
+> +dropped.
+> +
+> +I a rough C snippet, we have:
+
+   In a rough (?)
+
+> +
+> +kbd_keycode(keycode) {
+> +	...
+> +	params.value = keycode;
+> +	if (notifier_call_chain(KBD_KEYCODE,&params) == NOTIFY_STOP)
+> +	    || !bound) {
+> +		notifier_call_chain(KBD_UNBOUND_KEYCODE,&params);
+> +		return;
+> +	}
+> +
+> +	if (unicode) {
+> +		param.value = unicode;
+> +		if (notifier_call_chain(KBD_UNICODE,&params) == NOTIFY_STOP)
+> +			return;
+> +		emit unicode;
+> +		return;
+> +	}
+> +
+> +	params.value = keysym;
+> +	if (notifier_call_chain(KBD_KEYSYM,&params) == NOTIFY_STOP)
+> +		return;
+> +	apply keysym;
+> +	notifier_call_chain(KBD_POST_KEYSYM,&params);
+> +}
+> +
+> +NOTE: This notifier is usually called from interrupt context.
+> --
+
+---
+~Randy
