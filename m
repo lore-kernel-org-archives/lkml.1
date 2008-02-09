@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYBIQX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYBIQeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755735AbYBIQX0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 11:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYBIQXS
+	id S1755157AbYBIQeE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 11:34:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYBIQdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 11:23:18 -0500
-Received: from data2.daybyday.de ([213.191.85.39]:45788 "EHLO
-	data2.daybyday.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753485AbYBIQXR (ORCPT
+	Sat, 9 Feb 2008 11:33:52 -0500
+Received: from qb-out-0506.google.com ([72.14.204.232]:40327 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752768AbYBIQdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 11:23:17 -0500
-X-Greylist: delayed 3605 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Feb 2008 11:23:16 EST
-From: Michael =?iso-8859-1?q?B=FCker?= <m.bueker@berlin.de>
-To: linux-kernel@vger.kernel.org
-Subject: Two comments on menuconfig usability
-Date: Sat, 9 Feb 2008 16:23:06 +0100
-User-Agent: KMail/1.9.7
+	Sat, 9 Feb 2008 11:33:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=YsgI7zti8Xb2X+SNdtnxLkD3UbkelmWFL68vsjhNMjwujB2VOixZMtpYXqDuGnihnQbgxxCJK+GmlHg0Zg0247xlbPjDxRGXpUPyEW+fdgV5m+2tKRUQWA2D3ABif4w6Mew1RhOE3Obf8D9JTShHlUET/ij5DNv91vEHcjfOAig=
+Message-ID: <2f11576a0802090833h7a600ee8x87edb423cbbb5d79@mail.gmail.com>
+Date: Sun, 10 Feb 2008 01:33:49 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Jon Masters" <jonathan@jonmasters.org>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Daniel Spang" <daniel.spang@gmail.com>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
+       "Zan Lynx" <zlynx@acm.org>
+In-Reply-To: <B846E82A-D513-40CD-A19C-B60653569269@jonmasters.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802091623.06504.m.bueker@berlin.de>
+References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
+	 <B846E82A-D513-40CD-A19C-B60653569269@jonmasters.org>
+X-Google-Sender-Auth: 128a6bd6d48dd66d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all, [please to CC me]
+Hi
 
-There's two things I want to comment on regarding menuconfig:
+> Interesting patch series (I am being yuppie and reading this thread
+> from my iPhone on a treadmill at the gym - so further comments later).
+> I think that this is broadly along the lines that I was thinking, but
+> this should be an RFC only patch series for now.
 
-1) I know of the purpose of oldconfig, but I prefer using menuconfig for 
-upgrading to newer kernel versions, because most of the time, I would select 
-the standard options for new features anyway. menuconfig has the "(NEW)" 
-string at the end of a feature's description. However, I find that hard to 
-see among all the names of various lenghts. My proposal would be to have 
-an "N" or a "NEW" appear to the _left_ of the selection boxes, so that, 
-browsing through the menus, one could more easily spot the interesting 
-places.
+sorry, I fixed at next post.
 
-2) When selecting "Ralink driver support" (CONFIG_RT2X00), the accompanying 
-drivers (CONFIG_RT2400PCI, CONFIG_RT61PC, ...) appear unindented. They should 
-be indented by four spaces.
 
-Cheers!
-~Mik
+> Some initial questions:
 
--- 
-Intrinsically unobtrusive antidisestablishmentarianistic
-inclinations cause considerable psychotic devastation
-among exasperated and marginally discomposed ornithologists.
+Thank you.
+welcome to any discussion.
+
+> Where is the netlink interface? Polling an FD is so last century :)
+
+to be honest, I don't know anyone use netlink and why hope receive
+low memory notify by netlink.
+
+poll() is old way, but it works good enough.
+
+and, netlink have a bit weak point.
+end up, netlink philosophy is read/write model.
+
+I afraid to many low-mem message queued in netlink buffer
+at under heavy pressure.
+it cause degrade memory pressure.
+
+
+> Still, it is good to start with some code - eventually we might just
+> have a full reservation API created. Rik and I and others have bounced
+> ideas around for a while and I hope we can pitch in. I will play with
+> these patches later.
+
+Great.
+Welcome to any idea and any discussion.
