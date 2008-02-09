@@ -1,145 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYBIBdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbYBIBdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbYBIBdX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 20:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYBIBdJ
+	id S1759018AbYBIBdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 20:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758360AbYBIBdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 20:33:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55497 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756068AbYBIBdH (ORCPT
+	Fri, 8 Feb 2008 20:33:43 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:20592 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758339AbYBIBdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 20:33:07 -0500
-Message-ID: <47AD02C6.70402@torque.net>
-Date: Fri, 08 Feb 2008 20:32:54 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 8 Feb 2008 20:33:41 -0500
+X-Greylist: delayed 96676 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Feb 2008 20:33:27 EST
+Date: Sat, 9 Feb 2008 01:33:22 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] keyboard notifier documentation
+Message-ID: <20080209013322.GC4463@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi_error: Fix language abuse.
-References: <20080208153217.5fc42a50@core>
-In-Reply-To: <20080208153217.5fc42a50@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Cloudmark-Analysis: v=1.0 c=1 a=vgUJB+MMWQXyFPPprAVJSw==:17 a=eOpj_Dqyrppc4suWQs4A:9 a=sZwwuO8ceSid-uJfSYKz5k4lMjQA:4 a=9B0AjoBSoiEA:10 a=3N6FRji80VMA:10 a=ziFrdkHw70AA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> The word "illegal" has a precise dictionary meaning of "prohibited by
-> law". 
+Document the keyboard notifier.
 
-Also "contrary to or forbidden by official rules, regulations, etc".
-So word meanings are like standards, there are so many to choose
-from.
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-The error messages are therefore incorrect as so far nobody has
-> made SCSI violations a criminal offence.
-
-Most USB mass storage implementations should result in jail
-terms for the responsible parties.
-
-> This corrects scsi to match various other subsystems I've slowly been
-> ridding of this.
-> 
-> Pedantically-signed-off-by: Alan Cox <alan@redhat.com>
-
-Please don't do this.
-
-> -	{0x2004, "Illegal command while in write capable state"},
-> +	{0x2004, "Invalid command while in write capable state"},
-
-Several reasons:
-  1) Those strings appear in an international standard.
-     In this case SPC-3 ANSI INCITS 408-2005.
-  2) The way that INCITS standard (and others) is structured,
-     the relevant part of the text refers to a specific
-     additional sense code + qualifier instance by _name_
-     (e.g. "Illegal command while in write capable state")
-     not by number (e.g. 0x20,0x4). So given the Alan Cox
-     rendition of that string in a log, a diligent debugger
-     would need to get to constants.c to find the corresponding
-     asc/ascq numeric sequence, then search Annex D of SPC-3
-     to find the t10.org version of that string, then search
-     the body of SPC-3 and other t10 device class specific
-     standards for a match on the t10 string.
-     Vendor product manuals would tend to use the t10.org
-     strings as well.
-  3) I maintain constants.c and I do that with the help
-     of a program that compares t10's tables (specifically
-     http://www.t10.org/lists/asc-num.txt ) with the table
-     in constants.c . I'm glad to send you a copy so you
-     can take over maintaining the sanitized list and
-     cope with the abuse that may follow.
-
-
-If you feel strongly about this then you could take it
-up with ANSI or BS (a great acronym IMO).
-
-Doug Gilbert
-
-
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-mm1/drivers/scsi/constants.c linux-2.6.24-mm1/drivers/scsi/constants.c
-> --- linux.vanilla-2.6.24-mm1/drivers/scsi/constants.c	2008-02-06 14:14:40.000000000 +0000
-> +++ linux-2.6.24-mm1/drivers/scsi/constants.c	2008-02-06 14:35:16.000000000 +0000
-> @@ -606,10 +606,10 @@
->  	{0x2001, "Access denied - initiator pending-enrolled"},
->  	{0x2002, "Access denied - no access rights"},
->  	{0x2003, "Access denied - invalid mgmt id key"},
-> -	{0x2004, "Illegal command while in write capable state"},
-> +	{0x2004, "Invalid command while in write capable state"},
->  	{0x2005, "Obsolete"},
-> -	{0x2006, "Illegal command while in explicit address mode"},
-> -	{0x2007, "Illegal command while in implicit address mode"},
-> +	{0x2006, "Invalid command while in explicit address mode"},
-> +	{0x2007, "Invalid command while in implicit address mode"},
->  	{0x2008, "Access denied - enrollment conflict"},
->  	{0x2009, "Access denied - invalid LU identifier"},
->  	{0x200A, "Access denied - invalid proxy token"},
-> @@ -620,7 +620,7 @@
->  	{0x2102, "Invalid address for write"},
->  	{0x2103, "Invalid write crossing layer jump"},
->  
-> -	{0x2200, "Illegal function (use 20 00, 24 00, or 26 00)"},
-> +	{0x2200, "Invalid function (use 20 00, 24 00, or 26 00)"},
->  
->  	{0x2400, "Invalid field in cdb"},
->  	{0x2401, "CDB decryption error"},
-> @@ -697,7 +697,7 @@
->  	{0x2C02, "Invalid combination of windows specified"},
->  	{0x2C03, "Current program area is not empty"},
->  	{0x2C04, "Current program area is empty"},
-> -	{0x2C05, "Illegal power condition request"},
-> +	{0x2C05, "Invalid power condition request"},
->  	{0x2C06, "Persistent prevent conflict"},
->  	{0x2C07, "Previous busy status"},
->  	{0x2C08, "Previous task set full status"},
-> @@ -1014,7 +1014,7 @@
->  	{0x6300, "End of user area encountered on this track"},
->  	{0x6301, "Packet does not fit in available space"},
->  
-> -	{0x6400, "Illegal mode for this track"},
-> +	{0x6400, "Invalid mode for this track"},
->  	{0x6401, "Invalid packet size"},
->  
->  	{0x6500, "Voltage fault"},
-> @@ -1124,7 +1124,7 @@
->  	"Not Ready",	    /* 2: The addressed target is not ready */
->  	"Medium Error",	    /* 3: Data error detected on the medium */
->  	"Hardware Error",   /* 4: Controller or device failure */
-> -	"Illegal Request",  /* 5: Error in request */
-> +	"Invalid Request",  /* 5: Error in request */
->  	"Unit Attention",   /* 6: Removable medium was changed, or
->  				  the target has been reset, or ... */
->  	"Data Protect",	    /* 7: Access to the data is blocked */
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
+--- /dev/null	2008-02-09 01:22:34.790011677 +0000
++++ linux/Documentation/input/notifier.txt	2008-02-09 01:28:12.000000000 +0000
+@@ -0,0 +1,52 @@
++Keyboard notifier
++
++One can use register_keyboard_notifier to get called back on keyboard
++events (see kbd_keycode() function for details).  The passed structure is
++keyboard_notifier_param:
++
++- 'vc' always provide the VC for which the keyboard event applies ;
++- 'down' is 1 for a key press event, 0 for a key release ;
++- 'shift' is the current modifier state, mask bit indexes are KG_* ;
++- 'value' depends on the type of event.
++
++- KBD_KEYCODE events are always sent before other events, value is the keycode.
++- KBD_UNBOUND_KEYCODE events are sent if the keycode is not bound to a keysym.
++  value is the keycode.
++- KBD_UNICODE events are sent if the keycode -> keysym translation produced a
++  unicode character. value is the unicode value.
++- KBD_KEYSYM events are sent if the keycode -> keysym translation produced a
++  non-unicode character. value is the keysym.
++- KBD_POST_KEYSYM events are sent after the treatment of non-unicode keysyms.
++  That permits to inspect the resulting LEDs for instance.
++
++For each kind of event but the last, the callback may return NOTIFY_STOP in
++order to "eat" the event: the notify loop is stopped and the keyboard event is
++dropped.
++
++I a rough C snippet, we have:
++
++kbd_keycode(keycode) {
++	...
++	params.value = keycode;
++	if (notifier_call_chain(KBD_KEYCODE,&params) == NOTIFY_STOP)
++	    || !bound) {
++		notifier_call_chain(KBD_UNBOUND_KEYCODE,&params);
++		return;
++	}
++
++	if (unicode) {
++		param.value = unicode;
++		if (notifier_call_chain(KBD_UNICODE,&params) == NOTIFY_STOP)
++			return;
++		emit unicode;
++		return;
++	}
++
++	params.value = keysym;
++	if (notifier_call_chain(KBD_KEYSYM,&params) == NOTIFY_STOP)
++		return;
++	apply keysym;
++	notifier_call_chain(KBD_POST_KEYSYM,&params);
++}
++
++NOTE: This notifier is usually called from interrupt context.
