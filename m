@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYBISko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYBISl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbYBISko (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 13:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbYBISkG
+	id S1752933AbYBISl7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 13:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYBISlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 13:40:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50053 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756044AbYBISkC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 13:40:02 -0500
-Subject: Re: [RFC PATCH] x86: explicit call to mmiotrace in do_page_fault()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Pekka Paalanen <pq@iki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080209100133.60406c00@laptopd505.fenrus.org>
-References: <1201660453.8837.13.camel@brick>
-	 <20080130200827.322c4f7d@daedalus.pq.iki.fi>
-	 <20080131150746.GB11996@elte.hu>
-	 <20080131180253.6c007852@daedalus.pq.iki.fi>
-	 <20080131081507.5edcde10@laptopd505.fenrus.org>
-	 <20080203085522.2b63e15b@daedalus.pq.iki.fi>
-	 <20080203070321.GA8293@elte.hu>
-	 <20080205222807.7b35ef2b@daedalus.pq.iki.fi>
-	 <20080205223958.2cab8ce3@daedalus.pq.iki.fi>
-	 <20080207125327.GB27234@elte.hu> <20080207125622.GA7111@infradead.org>
-	 <20080209195255.584d4157@daedalus.pq.iki.fi>
-	 <20080209100133.60406c00@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Sat, 09 Feb 2008 19:39:47 +0100
-Message-Id: <1202582388.16505.8.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Sat, 9 Feb 2008 13:41:50 -0500
+Received: from mail.windriver.com ([147.11.1.11]:57964 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751989AbYBISlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 13:41:49 -0500
+Message-ID: <47ADF3E5.6060006@windriver.com>
+Date: Sat, 09 Feb 2008 12:41:41 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Jan Kiszka <jan.kiszka@web.de>
+CC: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH][7/8] kgdb: exclusive use kgdb8250 uart I/O driver
+References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com> <1202564114-18587-3-git-send-email-jason.wessel@windriver.com> <1202564114-18587-4-git-send-email-jason.wessel@windriver.com> <1202564114-18587-5-git-send-email-jason.wessel@windriver.com> <1202564114-18587-6-git-send-email-jason.wessel@windriver.com> <1202564114-18587-7-git-send-email-jason.wessel@windriver.com> <1202564114-18587-8-git-send-email-jason.wessel@windriver.com> <47ADD762.1010206@web.de>
+In-Reply-To: <47ADD762.1010206@web.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Feb 2008 18:41:18.0979 (UTC) FILETIME=[5BF87D30:01C86B4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Kiszka wrote:
+> jason.wessel@windriver.com wrote:
+>   
+>> @@ -2175,9 +2187,9 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
+>>  
+>>  		/*
+>>  		 * Power down all ports by default, except the
+>> -		 * console if we have one.
+>> +		 * console (real or kgdb) if we have one.
+>>  		 */
+>> -		if (!uart_console(port))
+>> +		if (!uart_console(port) && !uart_kgdb(port))
+>>  			uart_change_pm(state, 3);
+>>     
+>
+> Jason, thinking about this hunk again, it appears broken to me. If we
+> needed it for 8250_kgdb, we would also need it without
+> CONFIG_KGDB_CONSOLE. However, powering on the UART with a special dance
+> after we took over with 8250_kgdb is a job that has to be done _there_,
+> not by this hook here. So let's drop the whole serial_core.c hunk from
+> this patch.
+>
+> Jan
+>   
+Chunk dropped and the patches are refreshed in the git archive.
 
-On Sat, 2008-02-09 at 10:01 -0800, Arjan van de Ven wrote:
-> >  	default n
-> >  	help
-> >  	  This will build a kernel module called mmiotrace.
-> > +	  Making this a built-in is heavily discouraged.
-> 
-> why is this? Wouldn't it be nice if distros just shipped with this in their kernel by default
-> for example?
-
-so default m?
-
-> > -#ifdef CONFIG_PAGE_FAULT_HANDLERS
-> > -static HLIST_HEAD(pf_handlers); /* protected by RCU */
-> > -static DEFINE_SPINLOCK(pf_handlers_writer);
-> > +#ifdef CONFIG_MMIOTRACE_HOOKS
-> > +static pf_handler_func mmiotrace_pf_handler; /* protected by RCU */
-> > +static DEFINE_SPINLOCK(mmiotrace_handler_lock);
-> >  
-> > -void register_page_fault_handler(struct pf_handler *new_pfh)
-> > +int mmiotrace_register_pf(pf_handler_func new_pfh)
-> >  {
-> > +	int ret = 0;
-> >  	unsigned long flags;
-> > -	spin_lock_irqsave(&pf_handlers_writer, flags);
-> > -	hlist_add_head_rcu(&new_pfh->hlist, &pf_handlers);
-> > -	spin_unlock_irqrestore(&pf_handlers_writer, flags);
-> > +	spin_lock_irqsave(&mmiotrace_handler_lock, flags);
-> > +	if (mmiotrace_pf_handler)
-> > +		ret = -EBUSY;
-> > +	else
-> > +		mmiotrace_pf_handler = new_pfh;
-> > +	spin_unlock_irqrestore(&mmiotrace_handler_lock, flags);
-> > +	return ret;
-> >  }
-> > -EXPORT_SYMBOL_GPL(register_page_fault_handler);
-> > +EXPORT_SYMBOL_GPL(mmiotrace_register_pf);
-> 
-> why not use a weak function instead? should be a ton simpler.
-
-AFAIC weak functions are a built time thing, not fixed up on module
-load. So I'm not seeing the applicability there.
-
-Also, it would force a function call, even for the unlikely case the
-tracer is set.
-
-
+Jason.
 
