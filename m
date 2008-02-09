@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYBIApo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbYBIBAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbYBIApo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758163AbYBIApb
+	id S1757034AbYBIBAY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 20:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYBIBAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:45:31 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:45116 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754104AbYBIAp1 (ORCPT
+	Fri, 8 Feb 2008 20:00:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47812 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754768AbYBIBAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:45:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=l2UOJ14YVH6U3rDrJyTpX4ztu8uzvCAkJQ1YOoq6HASb8VT3ECSNB2QVUXdmNb9StANvpHUv3STF8ChCORqH7B8Mu3qFoOI8TzxrQHubmlUos9EDRsNPtgvhEh1MX/zRazgvdgwUVzXJpaKG978deOpzd3Nul/i8d4/vU4VmvRQ=
-Message-ID: <b25c3fa70802081645p6aad3883s6d1b5e169b3cd091@mail.gmail.com>
-Date: Sat, 9 Feb 2008 09:45:26 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [LINUX-KERNEL] C++ in linux kernel
-Cc: "rohit h" <hrohit85@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
+	Fri, 8 Feb 2008 20:00:09 -0500
+Date: Fri, 8 Feb 2008 16:57:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Cc: "S.??a??lar Onur" <caglar@pardus.org.tr>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/45] 2.6.24-stable review
+Message-ID: <20080209005738.GA23276@kroah.com>
+References: <20080207204549.GA16389@suse.de> <200802072341.44001.caglar@pardus.org.tr> <20080207215834.GA19117@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
-	 <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
-	 <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20080207215834.GA19117@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/2/9, Jan Engelhardt <jengelh@computergmbh.de>:
->
-> On Feb 9 2008 00:14, Joonwoo Park wrote:
-> >2008/2/8, rohit h <hrohit85@gmail.com>:
-> >> Hi,
-> >>  I am a kernel newbie.
-> >>  I tried to insmod a C++ module containing classes, inheritance.
-> >>  I am getting 'unresolved symbol' error when I use the 'new' keyword.
-> >>  What could the problem be?
-> >>
-> >>  What kind of runtime support is needed ( arm linux kernel)? Is a
-> >> patch available for it?
-> >>
-> >Please take a look at click modular router which is using c++ as a
-> >linux kernel module.
-> >http://www.read.cs.ucla.edu/click/
-> >The lib/glue.cc provides custom operator new.
->
-> Uh, let's not make the world worse :)
-> Just call malloc from C++, and carefully select what C++ features
-> you are going to use. The VMware source for example does it right.
->
+On Thu, Feb 07, 2008 at 01:58:34PM -0800, Greg KH wrote:
+> On Thu, Feb 07, 2008 at 11:41:42PM +0200, S.??a??lar Onur wrote:
+> > Hi;
+> > 
+> > 07 ??ub 2008 Per tarihinde, Greg KH ??unlar?? yazm????t??: 
+> > > This is the start of the stable review cycle for the 2.6.24.1 release.
+> > > There are 45 patches in this series, all will be posted as a response to
+> > > this one.  If anyone has any issues with these being applied, please let
+> > > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > > to add a Signed-off-by: line to the patch, please respond with it.
+> > 
+> > If its possible could you please add [1] "mac80211: hardware scan rework" and [2] "mac80211: Restore rx.fc before every invocation of ieee80211_invoke_rx_handlers" into -stable too?
+> > 
+> > [1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ece8edddf067d21c4e5abfe3f1205da1588edbb2
+> > [2] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=69f817b654d683265118188bbfb8bc0d8978cce6
+> 
+> I can queue them up for the next one after this release.
 
-Yep, also I think that if kmalloc is possible it would better than the
-operator new.
+In looking at these, I would rather that either the wireless maintainer,
+or the network maintainer send these too us, to verify that they are
+needed, and the backport works properly.
 
-Rohit,
-Compiling the kernel module with g++ is not a simple work, you may
-need big patch for kernel itself.
-The c++ has more internal keywords than c.
-e.g) new, delete, and ::
-The new and delete should be re-spelled with another names.
-The '::' is used in inline assembly however in c++ it means global namespace.
+So please go ask them to send these in.
 
-In conclusion, I don't recommand c++ for linux kernel without very
-special goal like the click project :)
+thanks,
 
-Joonwoo
+greg k-h
