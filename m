@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbYBIANA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbYBIANZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbYBIANA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYBIAMw
+	id S1759398AbYBIANZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:13:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbYBIANO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:12:52 -0500
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:26521 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753555AbYBIAMv (ORCPT
+	Fri, 8 Feb 2008 19:13:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41222 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757150AbYBIANM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:12:51 -0500
+	Fri, 8 Feb 2008 19:13:12 -0500
+Date: Fri, 8 Feb 2008 16:12:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, andrea@qumranet.com,
-       a.p.zijlstra@chello.nl, linux-mm@kvack.org, izike@qumranet.com,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, avi@qumranet.com,
-       kvm-devel@lists.sourceforge.net, daniel.blueman@quadrics.com,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [patch 0/6] MMU Notifiers V6
-X-Message-Flag: Warning: May contain useful information
+Cc: Robin Holt <holt@sgi.com>, andrea@qumranet.com, avi@qumranet.com,
+       izike@qumranet.com, kvm-devel@lists.sourceforge.net,
+       a.p.zijlstra@chello.nl, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       general@lists.openfabrics.org
+Subject: Re: [patch 0/6] MMU Notifiers V6
+Message-Id: <20080208161248.506556b0.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
 References: <20080208220616.089936205@sgi.com>
 	<20080208142315.7fe4b95e.akpm@linux-foundation.org>
 	<Pine.LNX.4.64.0802081528070.4036@schroedinger.engr.sgi.com>
@@ -26,39 +29,27 @@ References: <20080208220616.089936205@sgi.com>
 	<20080208234302.GH26564@sgi.com>
 	<20080208155641.2258ad2c.akpm@linux-foundation.org>
 	<Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 08 Feb 2008 16:12:42 -0800
-In-Reply-To: <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Fri, 8 Feb 2008 16:05:00 -0800 (PST)")
-Message-ID: <adaprv70yyt.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Feb 2008 00:12:42.0816 (UTC) FILETIME=[7D3F7C00:01C86AB0]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > We have done several rounds of discussion on linux-kernel about this so 
- > far and the IB folks have not shown up to join in. I have tried to make 
- > this as general as possible.
+On Fri, 8 Feb 2008 16:05:00 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
 
-Sorry, this has been on my "things to look at" list for a while, but I
-haven't gotten a chance to really understand where things are yet.
+> On Fri, 8 Feb 2008, Andrew Morton wrote:
+> 
+> > You took it correctly, and I didn't understand the answer ;)
+> 
+> We have done several rounds of discussion on linux-kernel about this so 
+> far and the IB folks have not shown up to join in. I have tried to make 
+> this as general as possible.
 
-In general, this MMU notifier stuff will only be useful to a subset of
-InfiniBand/RDMA hardware.  Some adapters are smart enough to handle
-changing the IO virtual -> bus/physical mapping on the fly, but some
-aren't.  For the dumb adapters, I think the current ib_umem_get() is
-pretty close to as good as we can get: we have to keep the physical
-pages pinned for as long as the adapter is allowed to DMA into the
-memory region.
+infiniband would appear to be the major present in-kernel client of this new
+interface.  So as a part of proving its usefulness, correctness, etc we
+should surely work on converting infiniband to use it, and prove its
+goodness.
 
-For the smart adapters, we just need a chance to change the adapter's
-page table when the kernel/CPU's mapping changes, and naively, this
-stuff looks like it would work.
-
-Andrew, does that help?
-
-- R.
+Quite possibly none of the infiniband developers even know about it..
