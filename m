@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbYBINcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYBINfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989AbYBINcR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 08:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYBINcJ
+	id S1756781AbYBINfH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 08:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYBINey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 08:32:09 -0500
-Received: from psionic.psi5.com ([212.112.229.180]:1574 "EHLO
-	psionic8.psi5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbYBINcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 08:32:08 -0500
-X-Greylist: delayed 2089 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Feb 2008 08:32:08 EST
-Date: Sat, 9 Feb 2008 13:57:08 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
+	Sat, 9 Feb 2008 08:34:54 -0500
+Received: from mail.windriver.com ([147.11.1.11]:60343 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754587AbYBINex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 08:34:53 -0500
+From: jason.wessel@windriver.com
 To: linux-kernel@vger.kernel.org
-Subject: non-blocking behaviour with multiple readers
-Message-ID: <20080209125702.GA10739@honey>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Subject: [PATCH 0/8] kgdb 2.6.25 version
+Date: Sat,  9 Feb 2008 07:35:06 -0600
+Message-Id: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 09 Feb 2008 13:34:52.0368 (UTC) FILETIME=[8CB24D00:01C86B20]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Per reqest on lkml, here are the individual kgdb patches
+targeted at 2.6.25.
 
-[please CC me, I'm not subscribed to the list]
+The kgdb tree has been collapsed review.  It includes
+the kgdb core, the x86 arch, the kgdb8250 uart driver
+and the kgdb console sharing driver.
 
-I'm writing a driver for a pretty simple USB device, and most of what I
-need I can see in similar drivers; right now I'm lifting a lot of code
-from drivers/usb/class/usblp.c.
+Since the last time the kgdb patches were posted to LKML
+several months ago, the kgdb core has undergone some
+significant cleanup, as well as the kgdb I/O driver
+interface.
 
-In the read routine, this driver gathers a few locks, then checks
-whether data is present and in the non-blocking case returns -EAGAIN,
-otherwise waits for data to become available.
+All the kgdb hooks are initialized dynamically only when a
+kgdb I/O module is configured. When not configured
+kgdb will not exist in any kernel execution path.
 
-In the case of multiple readers, acquiring the locks might however
-block, so I'm not sure whether it'd be better to check for non-blocking
-first, and acquire the locks with trylock in this case, returning
--EAGAIN in case we fail to acquire any.
+Further comments, questions and patches are certainly
+welcome.
 
-The semantic difference seems to be minimal: I believe that it is
-acceptable to return -EAGAIN from read even if a previous poll()
-suggested that the fd was now readable. Blocking on a non-blocking
-read() until other tasks reading from the same fd have left the kernel
-seems more like an optimization to me, saving a few syscalls if the
-other reader doesn't read all the bytes.
+Thanks,
+Jason.
 
-The obvious consistency problem with multiple unsynchronized readers
-aside: is that optimization worth a (short) block inside a non-blocking
-read?
 
-   Simon
