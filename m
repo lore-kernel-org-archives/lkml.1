@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYBISGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYBISKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYBISGu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 13:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYBISGm
+	id S1756600AbYBISKP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 13:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYBISKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 13:06:42 -0500
-Received: from h155.mvista.com ([63.81.120.155]:5353 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751563AbYBISGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 13:06:41 -0500
-Message-ID: <47ADEBE4.1010607@ru.mvista.com>
-Date: Sat, 09 Feb 2008 21:07:32 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 9 Feb 2008 13:10:01 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34798 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbYBISKA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 13:10:00 -0500
+Date: Sat, 9 Feb 2008 10:06:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Chris Rankin <rankincj@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.og
+Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
+Message-ID: <20080209180633.GB20784@kroah.com>
+References: <20080209064810.GB29926@kroah.com> <842653.5028.qm@web52901.mail.re2.yahoo.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/18] ide: factor out code unregistering devices from
- ide_unregister()
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain> <20080208004502.17746.73284.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080208004502.17746.73284.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <842653.5028.qm@web52901.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Sat, Feb 09, 2008 at 12:06:06PM +0000, Chris Rankin wrote:
+> --- Greg KH <greg@kroah.com> wrote:
+> 
+> > On Fri, Feb 08, 2008 at 11:31:24PM +0000, Chris Rankin wrote:
+> > > I've just tried booting the 2.6.24.1 kernel, except without
+> > > nmi_watchdog being enabled. It looks like there are IRQs still not
+> > > being enabled.
+> > 
+> > Does 2.6.24 work?  Is this a 2.6.24.1 regression?
+> 
+> Nope, 2.6.24 doesn't work either. So there's an important fix needed
+> somewhere for 2.6.24.2 ...  ;-)
 
-> Factor out code unregistering devices from ide_unregister() to
-> ide_port_unregister_devices().
+Does any older kernel version work?  2.6.23?  Newer ones?  2.6.24-git15?
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Any chance at trying to bisect this down to where the problem might have
+occured?
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+thanks,
 
-MBR, Sergei
+greg k-h
