@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYBITMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbYBITPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbYBITMP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 14:12:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYBITMA
+	id S1756334AbYBITPP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 14:15:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbYBITPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 14:12:00 -0500
-Received: from smtp1.cc.lut.fi ([157.24.2.30]:43628 "EHLO smtp1.cc.lut.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754049AbYBITL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 14:11:59 -0500
-Date: Sat, 9 Feb 2008 21:11:55 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Arjan van de Ven" <arjan@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] x86: explicit call to mmiotrace in do_page_fault()
-Message-ID: <20080209211155.1dd8dc3b@daedalus.pq.iki.fi>
-In-Reply-To: <84144f020802091056hffc22eckbda461534e3a6072@mail.gmail.com>
-References: <1201660453.8837.13.camel@brick>
-	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
-	<20080203070321.GA8293@elte.hu>
-	<20080205222807.7b35ef2b@daedalus.pq.iki.fi>
-	<20080205223958.2cab8ce3@daedalus.pq.iki.fi>
-	<20080207125327.GB27234@elte.hu>
-	<20080207125622.GA7111@infradead.org>
-	<20080209195255.584d4157@daedalus.pq.iki.fi>
-	<20080209100133.60406c00@laptopd505.fenrus.org>
-	<20080209202353.0e83e337@daedalus.pq.iki.fi>
-	<84144f020802091056hffc22eckbda461534e3a6072@mail.gmail.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+	Sat, 9 Feb 2008 14:15:04 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1692 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754797AbYBITPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 14:15:02 -0500
+Date: Sat, 9 Feb 2008 19:12:07 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Alfred E. Heggestad" <aeh@db.org>
+Cc: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset
+Message-ID: <20080209191206.GD5139@ucw.cz>
+References: <47AB5012.20509@db.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AB5012.20509@db.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008 20:56:07 +0200
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+Hi!
 
-> Hi Pekka,
-> 
-> On Feb 9, 2008 8:23 PM, Pekka Paalanen <pq@iki.fi> wrote:
-> > By default it reserves 32 MB/cpu of relay buffers during module init.
-> > It's this big based on experimentation with the nvidia proprietary driver.
-> > There is no other way than unloading the module to free the buffers, or
-> > even to clear them. This means that every time you start the user space
-> > logger application, it gets old data first. Also poking the module
-> > parameters via /sys is not allowed.
-> 
-> So how is mmiotrace different from, say, blktrace that has an ioctl()
-> to setup/teardown the relay channels (for mmiotrace it can be a
-> "status" file that does the setup/teardown when written some
-> appropriate values)?
+> + Komunikate KIP1000 Keyboard Matrix
+> +
+> +     -> -- 1 -- 2 -- 3  --> GPI pin 4 (0x10)
+> +      |    |    |    |
+> +     <- -- 4 -- 5 -- 6  --> GPI pin 5 (0x20)
+> +      |    |    |    |
+> +     END - 7 -- 8 -- 9  --> GPI pin 6 (0x40)
+> +      |    |    |    |
+> +     OK -- * -- 0 -- #  --> GPI pin 7 (0x80)
+> +      |    |    |    |
+> +
+> +     /|\  /|\  /|\  /|\
+> +      |    |    |    |
+> +GPO
+> +pin:  3    2    1    0
+> +     0x8  0x4  0x2  0x1
+> +
+> + */
+> +static int keymap_kip1000(int scancode)
+> +{
+> +	switch (scancode) {			 /* phone 
+> key:   */
+> +	case 0x82: return KEY_0;		 /*   0   
+> */
+> +	case 0x14: return KEY_1;		 /*   1   
+> */
+> +	case 0x12: return KEY_2;		 /*   2   
+> */
+> +	case 0x11: return KEY_3;		 /*   3   
+> */
+> +	case 0x24: return KEY_4;		 /*   4   
+> */
+> +	case 0x22: return KEY_5;		 /*   5   
+> */
+> +	case 0x21: return KEY_6;		 /*   6   
+> */
+> +	case 0x44: return KEY_7;		 /*   7   
+> */
+> +	case 0x42: return KEY_8;		 /*   8   
+> */
+> +	case 0x41: return KEY_9;		 /*   9   
+> */
+> +	case 0x81: return KEY_LEFTSHIFT | KEY_3 << 8; /*  
+> #          */
 
-No difference. I just have to do it at some point. I can't work on this
-every day and when it comes to kernel, I'm a complete newbie. So things
-will take time. If people want that I fix this before mmiotrace goes into
-mainline, then so be it.
-
-blktrace, thanks for the hint, I should take a look at that.
+That's a very dirty hack, right?
 
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
