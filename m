@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYBIK40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYBIK6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbYBIK40 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 05:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYBIK4T
+	id S1755593AbYBIK6w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 05:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYBIK6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 05:56:19 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:3172 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbYBIK4S (ORCPT
+	Sat, 9 Feb 2008 05:58:45 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:3253 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbYBIK6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 05:56:18 -0500
-Subject: Re: CONFIG_HIGHPTE vs. sub-page page tables.
+	Sat, 9 Feb 2008 05:58:44 -0500
+Subject: Re: m68knommu compile error
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+To: Adrian Bunk <bunk@kernel.org>
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080209103728.GA29375@elte.hu>
-References: <200802081902.m18J2nOm005840@hera.kernel.org>
-	 <20080208230433.GA8524@elte.hu> <20080208231506.GA13350@elte.hu>
-	 <1202551589.8936.1.camel@localhost>  <20080209103728.GA29375@elte.hu>
+In-Reply-To: <1202552472.8936.7.camel@localhost>
+References: <20080208222516.GC6505@cs181133002.pp.htv.fi>
+	 <1202552472.8936.7.camel@localhost>
 Content-Type: text/plain
 Organization: IBM Corporation
-Date: Sat, 09 Feb 2008 11:56:14 +0100
-Message-Id: <1202554574.8936.15.camel@localhost>
+Date: Sat, 09 Feb 2008 11:58:35 +0100
+Message-Id: <1202554715.8936.18.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
@@ -32,32 +30,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-02-09 at 11:37 +0100, Ingo Molnar wrote:
-> i think the worst is over already and i'm reasonably sure that there are 
-> no more bugs in it - this _is_ a 1:1 patch after all, so in theory the 
-> worst side-effect should be build breakages due to include file 
-> spaghetti. The window for this particular breakage was just 256 commits, 
-> that's OK i think.
+On Sat, 2008-02-09 at 11:21 +0100, Martin Schwidefsky wrote:
+> On Sat, 2008-02-09 at 00:25 +0200, Adrian Bunk wrote:
+> > Commit 2f569afd9ced9ebec9a6eb3dbf6f83429be0a7b4 breaks m68knommu:
+> 
+> Does the patch below fixes the problem? I tried to cross compile for
+> m68knommu but it seems like you need a special m68k compiler to get it
+> compile all the way through. With the patch it did fail with a different
+> error, so I assume it is fixed. The problem is that the pgtable_t is
+> simply missing for m68knommu, I must have overlooked a reject for one of
+> the constant regenerations of the patch to keep up with upstream. Sorry
+> about that.
 
-Except for the breakage of all nommu architectures .. they need the
-pgtable_t as well due to the pte_fn_t type.
-
-> If you want less stress next time around you might want to consider 
-> pushing such patches via individual architectures, so that it can all be 
-> shaken out (and such build bugs are found quickly) and pushed via the 
-> architecture trees. (Even such a patch that changes the number of 
-> cross-arch function arguments and introduces a new type can be 
-> architectured in a way to make it per arch.)
-
-I'll try that with the __pte_free_tlb macro to inline conversion patch.
-This one is really driving me nuts, the dependencies of the macros in
-asm/pgalloc, asm/tlb.h and asm-generic/tlb.h for the different archs are
-pure evil.
+This is a problem for all nommu architectures. The patch fixed all four
+of them.
 
 -- 
 blue skies,
   Martin.
 
 "Reality continues to ruin my life." - Calvin.
+
+---
+[PATCH] Add pgtable_t to nommu architectures.
+    
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+    
+The pte_fn_t in include/linux/mm.h make it necessary for all
+architecture to define a pgtable_t type, even those that do
+not have an mmu.
+    
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ include/asm-blackfin/page.h  |    1 +
+ include/asm-h8300/page.h     |    1 +
+ include/asm-m68knommu/page.h |    1 +
+ include/asm-v850/page.h      |    1 +
+ 4 files changed, 4 insertions(+)
+
+diff -urpN linux-2.6/include/asm-blackfin/page.h linux-2.6-patched/include/asm-blackfin/page.h
+--- linux-2.6/include/asm-blackfin/page.h	2008-02-09 11:46:28.000000000 +0100
++++ linux-2.6-patched/include/asm-blackfin/page.h	2008-02-09 11:46:36.000000000 +0100
+@@ -39,6 +39,7 @@ typedef struct {
+ typedef struct {
+ 	unsigned long pgprot;
+ } pgprot_t;
++typedef struct page *pgtable_t;
+ 
+ #define pte_val(x)	((x).pte)
+ #define pmd_val(x)	((&x)->pmd[0])
+diff -urpN linux-2.6/include/asm-h8300/page.h linux-2.6-patched/include/asm-h8300/page.h
+--- linux-2.6/include/asm-h8300/page.h	2008-02-09 11:46:28.000000000 +0100
++++ linux-2.6-patched/include/asm-h8300/page.h	2008-02-09 11:46:36.000000000 +0100
+@@ -31,6 +31,7 @@ typedef struct { unsigned long pte; } pt
+ typedef struct { unsigned long pmd[16]; } pmd_t;
+ typedef struct { unsigned long pgd; } pgd_t;
+ typedef struct { unsigned long pgprot; } pgprot_t;
++typedef struct page *pgtable_t;
+ 
+ #define pte_val(x)	((x).pte)
+ #define pmd_val(x)	((&x)->pmd[0])
+diff -urpN linux-2.6/include/asm-m68knommu/page.h linux-2.6-patched/include/asm-m68knommu/page.h
+--- linux-2.6/include/asm-m68knommu/page.h	2008-02-09 11:46:28.000000000 +0100
++++ linux-2.6-patched/include/asm-m68knommu/page.h	2008-02-09 11:46:36.000000000 +0100
+@@ -31,6 +31,7 @@ typedef struct { unsigned long pte; } pt
+ typedef struct { unsigned long pmd[16]; } pmd_t;
+ typedef struct { unsigned long pgd; } pgd_t;
+ typedef struct { unsigned long pgprot; } pgprot_t;
++typedef struct page *pgtable_t;
+ 
+ #define pte_val(x)	((x).pte)
+ #define pmd_val(x)	((&x)->pmd[0])
+diff -urpN linux-2.6/include/asm-v850/page.h linux-2.6-patched/include/asm-v850/page.h
+--- linux-2.6/include/asm-v850/page.h	2008-02-09 11:46:29.000000000 +0100
++++ linux-2.6-patched/include/asm-v850/page.h	2008-02-09 11:46:36.000000000 +0100
+@@ -57,6 +57,7 @@ typedef struct { unsigned long pte; } pt
+ typedef struct { unsigned long pmd; } pmd_t;
+ typedef struct { unsigned long pgd; } pgd_t;
+ typedef struct { unsigned long pgprot; } pgprot_t;
++typedef struct page *pgtable_t;
+ 
+ #define pte_val(x)      ((x).pte)
+ #define pmd_val(x)      ((x).pmd)
 
 
