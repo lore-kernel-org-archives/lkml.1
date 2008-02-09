@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYBILFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYBILHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYBILFY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYBILFL
+	id S1756156AbYBILHS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYBILHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:05:11 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57412 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750823AbYBILFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:05:10 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+c2wcVjsmcVx4KUmaFwG9/Ko+wvxKQ4SA6GcC1FQ
-	pGeJnaDSThwNrN
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived
-	threads
-From: Mike Galbraith <efault@gmx.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080209080319.GO8953@1wt.eu>
-References: <20080209000456.GA21021@lixom.net>
-	 <1202543920.9578.3.camel@homer.simson.net>  <20080209080319.GO8953@1wt.eu>
-Content-Type: text/plain
-Date: Sat, 09 Feb 2008 11:58:25 +0100
-Message-Id: <1202554705.10287.12.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 9 Feb 2008 06:07:05 -0500
+Received: from www.tglx.de ([62.245.132.106]:51668 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751259AbYBILHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 06:07:03 -0500
+Date: Sat, 9 Feb 2008 12:06:37 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Prakash Punnoor <prakash@punnoor.de>
+cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, lenb@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
+In-Reply-To: <200802090008.05430.prakash@punnoor.de>
+Message-ID: <alpine.LFD.1.00.0802091140170.3145@apollo.tec.linutronix.de>
+References: <20080207195519.GA21772@basil.nowhere.org> <200802082000.39919.prakash@punnoor.de> <20080208210258.GA13058@one.firstfloor.org> <200802090008.05430.prakash@punnoor.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 9 Feb 2008, Prakash Punnoor wrote:
 
-On Sat, 2008-02-09 at 09:03 +0100, Willy Tarreau wrote:
-
-> How many CPUs do you have ?
-
-It's a P4/HT, so 1 plus $CHUMP_CHANGE_MAYBE
-
-> > 2.6.25-smp (git today)
-> > time 29 ms
-> > time 61 ms
-> > time 72 ms
+> On the day of Friday 08 February 2008 Andi Kleen hast written:
+> > On Fri, Feb 08, 2008 at 08:00:39PM +0100, Prakash Punnoor wrote:
+> > > On the day of Friday 08 February 2008 Andi Kleen hast written:
+> > > > On Fri, Feb 08, 2008 at 06:39:17PM +0100, Prakash Punnoor wrote:
+> > > > >
+> > > > > Yes, confirmed. timer w/o the skipping stays XT-PIC on nforce2.
+> > > >
+> > > > Confirmed what? Did you test my patch on both machines?
+> > > > What was the result?
+> > >
+> > > I confirmed that it (nforce2) needed the acpi_skip_timer_override. If you
+> > > read my mail, you knew I didn't test your patch.
+> >
+> > Ok can you please do so then?  Or stop your obstructism?
 > 
-> These ones look rather strange. What type of workload is it ? Can you
-> publish the program for others to test it ?
+> Grr, I don't know why I am discussing with stubborn and/or arrogant devs like 
+> you seem to be. But I actually did what you wanted and as *expected* - as I 
+> said I understand that trivial piece of code you posted - your patch fails 
+> here for my nforce2:
 
-It's the proglet posted in this thread.
+No worry, this patch wont go anywhere near mainline as long as it
+breaks stuff and obviously you are under no obligation to re-test
+patches that have not been changed just re-submitted.
 
-	-Mike
+x86 changes, which are considered for mainline are staged in the mm
+branch of the x86 git tree:
 
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=shortlog;h=mm
+
+Instructions for checking it out are here:
+http://people.redhat.com/mingo/x86.git/README
+
+Please let us know, if there is anything which breaks your box(en).
+
+Thanks for your feedback and patience.
+
+	tglx
