@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbYBIEPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYBIEYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756268AbYBIEPT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 23:15:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYBIEPG
+	id S1756125AbYBIEYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 23:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYBIEY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 23:15:06 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:34752 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754160AbYBIEPC convert rfc822-to-8bit (ORCPT
+	Fri, 8 Feb 2008 23:24:28 -0500
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:13360 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753535AbYBIEY1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 23:15:02 -0500
-Date: Fri, 8 Feb 2008 20:12:53 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] keyboard notifier documentation
-Message-Id: <20080208201253.46c068ed.randy.dunlap@oracle.com>
-In-Reply-To: <20080209013322.GC4463@implementation>
-References: <20080209013322.GC4463@implementation>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 8 Feb 2008 23:24:27 -0500
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: kobject must be initialized before calling kobject_init()?!
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 08 Feb 2008 20:24:25 -0800
+Message-ID: <adaabma21vq.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Feb 2008 04:24:25.0632 (UTC) FILETIME=[A73A5200:01C86AD3]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008 01:33:22 +0000 Samuel Thibault wrote:
+So I was perusing the code in lib/kobject.c, and I saw this:
 
-> Document the keyboard notifier.
-> 
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> 
-> --- /dev/null	2008-02-09 01:22:34.790011677 +0000
-> +++ linux/Documentation/input/notifier.txt	2008-02-09 01:28:12.000000000 +0000
-> @@ -0,0 +1,52 @@
-> +Keyboard notifier
-> +
-> +One can use register_keyboard_notifier to get called back on keyboard
-> +events (see kbd_keycode() function for details).  The passed structure is
-> +keyboard_notifier_param:
-> +
-> +- 'vc' always provide the VC for which the keyboard event applies ;
-> +- 'down' is 1 for a key press event, 0 for a key release ;
-> +- 'shift' is the current modifier state, mask bit indexes are KG_* ;
+	void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
+	{
+		// [a couple of of parameter checks...]
+		if (kobj->state_initialized) {
+			/* do not error out as sometimes we can recover */
+			printk(KERN_ERR "kobject (%p): tried to init an initialized "
+			       "object, something is seriously wrong.\n", kobj);
+			dump_stack();
+		}
 
-No space before the ';' (3 times).
+in other words the first thing you do is check a member of the
+structure you're supposed to be initializing -- if someone just
+kmalloc()s a struct kobject and passes it into this function, there's
+a good chance that state_initialized won't be zero.  In fact, with
+slab debugging on, it's guaranteed to be poisoned with a non-zero
+value.
 
-> +- 'value' depends on the type of event.
-> +
-> +- KBD_KEYCODE events are always sent before other events, value is the keycode.
-> +- KBD_UNBOUND_KEYCODE events are sent if the keycode is not bound to a keysym.
-> +  value is the keycode.
-> +- KBD_UNICODE events are sent if the keycode -> keysym translation produced a
-> +  unicode character. value is the unicode value.
-> +- KBD_KEYSYM events are sent if the keycode -> keysym translation produced a
-> +  non-unicode character. value is the keysym.
-> +- KBD_POST_KEYSYM events are sent after the treatment of non-unicode keysyms.
-> +  That permits to inspect the resulting LEDs for instance.
+So are users supposed to be zeroing out struct kobjects before
+initializing them?  If so, this should probably be documented.
+And also the code in kobject_init() that sets other fields to be zero
+can also be removed:
 
-     That permits (some object word here, like: you, one, code, etc.) to
-     inspect ...
+	kobj->state_in_sysfs = 0;
+	kobj->state_add_uevent_sent = 0;
+	kobj->state_remove_uevent_sent = 0;
 
-> +
-> +For each kind of event but the last, the callback may return NOTIFY_STOP in
-> +order to "eat" the event: the notify loop is stopped and the keyboard event is
-> +dropped.
-> +
-> +I a rough C snippet, we have:
+Let me know if the intention is that everyone should zero out their
+kobjects when they initialize them, and I'll send a patch updating the
+documentation.
 
-   In a rough (?)
+There's another similar booby-trap in kobject_init_and_add(), which
+ends up calling into kobject_set_name_vargs(), which does
 
-> +
-> +kbd_keycode(keycode) {
-> +	...
-> +	params.value = keycode;
-> +	if (notifier_call_chain(KBD_KEYCODE,&params) == NOTIFY_STOP)
-> +	    || !bound) {
-> +		notifier_call_chain(KBD_UNBOUND_KEYCODE,&params);
-> +		return;
-> +	}
-> +
-> +	if (unicode) {
-> +		param.value = unicode;
-> +		if (notifier_call_chain(KBD_UNICODE,&params) == NOTIFY_STOP)
-> +			return;
-> +		emit unicode;
-> +		return;
-> +	}
-> +
-> +	params.value = keysym;
-> +	if (notifier_call_chain(KBD_KEYSYM,&params) == NOTIFY_STOP)
-> +		return;
-> +	apply keysym;
-> +	notifier_call_chain(KBD_POST_KEYSYM,&params);
-> +}
-> +
-> +NOTE: This notifier is usually called from interrupt context.
-> --
+	/* Free the old name, if necessary. */
+	kfree(kobj->name);
 
----
-~Randy
+which is generally a bad thing if kobj->name has not been initialized.
+
+Thanks,
+  Roland
