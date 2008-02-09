@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYBIPvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYBIPxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbYBIPvY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 10:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYBIPvQ
+	id S1755461AbYBIPxk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 10:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYBIPxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 10:51:16 -0500
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:46972 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751993AbYBIPvP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 10:51:15 -0500
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
-Date: Sat, 9 Feb 2008 16:51:05 +0100
-User-Agent: KMail/1.9.7
-Cc: mingo@elte.hu, tglx@linutronix.de, lenb@kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080207195519.GA21772@basil.nowhere.org> <200802091253.11478.prakash@punnoor.de> <20080209143131.GD22569@one.firstfloor.org>
-In-Reply-To: <20080209143131.GD22569@one.firstfloor.org>
+	Sat, 9 Feb 2008 10:53:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48569 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751993AbYBIPxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 10:53:32 -0500
+Date: Sat, 9 Feb 2008 23:53:17 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, lguest@ozlabs.org
+Subject: [PATCH] lguest: make sure cpu is initialized before accessing it
+Message-ID: <20080209155317.GA12841@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5207852.obDV9ALrLV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802091651.06240.prakash@punnoor.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5207852.obDV9ALrLV
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+If req is LHREQ_INITIALIZE, and the guest has been initialized before
+(unlikely), it will attempt to access cpu->tsk even though cpu is not yet
+initialized.
 
-On the day of Saturday 09 February 2008 Andi Kleen hast written:
-> We discussed this back then with Nvidia engineers and they stated
-> that only NF5 would need timer overrides.
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ drivers/lguest/lguest_user.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-Can I get a link which verifies your statement? I provided one which kind o=
-f=20
-contradicts yours.
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
+index 85d42d3..9cbb285 100644
+--- a/drivers/lguest/lguest_user.c
++++ b/drivers/lguest/lguest_user.c
+@@ -241,15 +241,15 @@ static ssize_t write(struct file *file, const char __user *in,
+ 		cpu = &lg->cpus[cpu_id];
+ 		if (!cpu)
+ 			return -EINVAL;
+-	}
+ 
+-	/* Once the Guest is dead, all you can do is read() why it died. */
+-	if (lg && lg->dead)
+-		return -ENOENT;
++		/* Once the Guest is dead, all you can do is read() why it died. */
++		if (lg && lg->dead)
++			return -ENOENT;
+ 
+-	/* If you're not the task which owns the Guest, you can only break */
+-	if (lg && current != cpu->tsk && req != LHREQ_BREAK)
+-		return -EPERM;
++		/* If you're not the task which owns the Guest, you can only break */
++		if (lg && current != cpu->tsk && req != LHREQ_BREAK)
++			return -EPERM;
++	}
+ 
+ 	switch (req) {
+ 	case LHREQ_INITIALIZE:
 
---nextPart5207852.obDV9ALrLV
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHrcvqxU2n/+9+t5gRAmqaAKDEtKnwSn1/C01QgMJXUGK8EINAKwCgzLqX
-w7kW67a7HHsR1Huo7enEuLQ=
-=pDzx
------END PGP SIGNATURE-----
-
---nextPart5207852.obDV9ALrLV--
