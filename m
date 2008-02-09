@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbYBIS4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYBITDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755718AbYBIS4V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 13:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbYBIS4K
+	id S1755693AbYBITDk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 14:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYBITD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 13:56:10 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:42733 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754226AbYBIS4J (ORCPT
+	Sat, 9 Feb 2008 14:03:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:47059 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbYBITD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 13:56:09 -0500
+	Sat, 9 Feb 2008 14:03:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ItufZ6nPAbyT1VAnGmHpmY/aX7URN8nxPPSCeM6w/ZjwuJSM53Pfq06nkBsAsscImLDUI9VyGmLHjt7qH4kVFW3XDtc5F4Gu937NZly6MKlsG+vFk3TQSMjyFn4prXt/5YHICFy5Sd5OUNUMZIaUZ/itI5qbj3x4c9WqhsFW5Z8=
-Message-ID: <84144f020802091056hffc22eckbda461534e3a6072@mail.gmail.com>
-Date: Sat, 9 Feb 2008 20:56:07 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Pekka Paalanen" <pq@iki.fi>
-Subject: Re: [RFC PATCH] x86: explicit call to mmiotrace in do_page_fault()
-Cc: "Arjan van de Ven" <arjan@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080209202353.0e83e337@daedalus.pq.iki.fi>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J6YPgWWicEbqfeNbBANlXnWLMcT52m7c5iR99y6ZMJ64w/N7QuJFL4uGB/9exfB/k2tYcFcj2DIKO06v2tEBAYEgEW9S6aVQzY4+NKNZON2RTiyLSMSGGPCdcbBrOWyGXGLXDYF+Q5EwbhfDa6ykTVYOobrlvpwe4Uv2Xzjkz3E=
+Message-ID: <6101e8c40802091103l66d1cb00ubbf4579c44bfcde6@mail.gmail.com>
+Date: Sat, 9 Feb 2008 20:03:26 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Chris Rankin" <rankincj@yahoo.com>
+Subject: Re: Linux 2.6.24.1 - kernel does not boot; IRQ trouble?
+Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <869708.29623.qm@web52902.mail.re2.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1201660453.8837.13.camel@brick>
-	 <20080203085522.2b63e15b@daedalus.pq.iki.fi>
-	 <20080203070321.GA8293@elte.hu>
-	 <20080205222807.7b35ef2b@daedalus.pq.iki.fi>
-	 <20080205223958.2cab8ce3@daedalus.pq.iki.fi>
-	 <20080207125327.GB27234@elte.hu> <20080207125622.GA7111@infradead.org>
-	 <20080209195255.584d4157@daedalus.pq.iki.fi>
-	 <20080209100133.60406c00@laptopd505.fenrus.org>
-	 <20080209202353.0e83e337@daedalus.pq.iki.fi>
-X-Google-Sender-Auth: 7de33be52839cddc
+References: <20080209180633.GB20784@kroah.com>
+	 <869708.29623.qm@web52902.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka,
+Hi!
 
-On Feb 9, 2008 8:23 PM, Pekka Paalanen <pq@iki.fi> wrote:
-> By default it reserves 32 MB/cpu of relay buffers during module init.
-> It's this big based on experimentation with the nvidia proprietary driver.
-> There is no other way than unloading the module to free the buffers, or
-> even to clear them. This means that every time you start the user space
-> logger application, it gets old data first. Also poking the module
-> parameters via /sys is not allowed.
+here is the snapshots in patch format:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots
 
-So how is mmiotrace different from, say, blktrace that has an ioctl()
-to setup/teardown the relay channels (for mmiotrace it can be a
-"status" file that does the setup/teardown when written some
-appropriate values)?
+On 2/9/08, Chris Rankin <rankincj@yahoo.com> wrote:
+> --- Greg KH <greg@kroah.com> wrote:
+> > Does any older kernel version work?  2.6.23?  Newer ones?
+> Everything up to and including 2.6.23.11 works fine. I never tried
+> 2.6.23.{12,13,14,15}, but I
+> expect they're fine too.
+>
+> >  2.6.24-git15?
+> No idea. This box isn't really set up to use git. Anyway, I would refer you
+> to this thread:
+> http://www.uwsg.iu.edu/hypermail/linux/kernel/0802.0/0898.html
+>
+> Cheers,
+> Chris
+>
+>
+>
+>       ___________________________________________________________
+> Support the World Aids Awareness campaign this month with Yahoo! For Good
+> http://uk.promotions.yahoo.com/forgood/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-                             Pekka
+
+-- 
+Thanks,
+Oliver
