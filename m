@@ -1,47 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbYBIVqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYBIVsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbYBIVqs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 16:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYBIVqi
+	id S1756829AbYBIVsb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 16:48:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYBIVsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 16:46:38 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:59784 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752667AbYBIVqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 16:46:37 -0500
-Date: Sat, 9 Feb 2008 13:46:34 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Rik van Riel <riel@redhat.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Roland Dreier <rdreier@cisco.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: [patch 0/6] MMU Notifiers V6
-In-Reply-To: <20080209075556.63062452@bree.surriel.com>
-Message-ID: <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
- <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
- <adaprv70yyt.fsf@cisco.com> <Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
- <adalk5v0yi6.fsf@cisco.com> <Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
- <20080209012446.GB7051@v2.random> <Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
- <20080209015659.GC7051@v2.random> <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
- <20080209075556.63062452@bree.surriel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 9 Feb 2008 16:48:23 -0500
+Received: from main.gmane.org ([80.91.229.2]:58252 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347AbYBIVsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 16:48:22 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v4
+Date: Sat, 9 Feb 2008 13:48:05 -0800
+Organization: Linux Foundation
+Message-ID: <20080209134805.29cbc8ae@extreme>
+References: <200801312012.43447.linux@rainbow-software.org>
+	<200802061909.37452.linux@rainbow-software.org>
+	<wrphcglx9w0.fsf@hina.wild-wind.fr.eu.org>
+	<200802092233.10239.linux@rainbow-software.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 75-175-37-168.ptld.qwest.net
+In-Reply-To: <200802092233.10239.linux@rainbow-software.org>
+X-Newsreader: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008, Rik van Riel wrote:
+On Sat, 9 Feb 2008 22:33:07 +0100
+Ondrej Zary <linux@rainbow-software.org> wrote:
 
-> PG_mlock is on the way and can easily be reused for this, too.
+> Hello,
+> this patch converts 3c509 driver to isa_driver and pnp_driver. The result is 
+> that autoloading using udev and hibernation works with ISA PnP cards. It also 
+> adds hibernation support for non-PnP ISA cards.
+> 
+> xcvr module parameter was removed as its value was not used.
+> 
+> Tested using 3 ISA cards in various combinations of PnP and non-PnP modes. 
+> EISA and MCA only compile-tested.
+> 
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> 
+> --- linux-2.6.24-orig/drivers/net/3c509.c	2008-01-27 19:48:19.000000000 +0100
+> +++ linux-2.6.24-pentium/drivers/net/3c509.c	2008-02-07 17:58:45.000000000 +0100
+> @@ -54,25 +54,24 @@
+>  		v1.19a 28Oct2002 Davud Ruggiero <jdr@farfalle.com>
+>  			- Increase *read_eeprom udelay to workaround oops with 2 cards.
+>  		v1.19b 08Nov2002 Marc Zyngier <maz@wild-wind.fr.eu.org>
+> -		    - Introduce driver model for EISA cards.
+> +			- Introduce driver model for EISA cards.
+> +		v1.20  04Feb2008 Ondrej Zary <linux@rainbow-software.org>
+> +			- convert to isa_driver and pnp_driver and some cleanups
+>  */
 
-Note that a pinned page is different from an mlocked page. A mlocked page 
-can be moved through page migration and/or memory hotplug. A pinned page 
-must make both fail.
+Don't bother with comment, kernel uses git change log to figure out
+who to blame.
+
+
+>  #define DRV_NAME	"3c509"
+> -#define DRV_VERSION	"1.19b"
+> -#define DRV_RELDATE	"08Nov2002"
+> +#define DRV_VERSION	"1.20"
+> +#define DRV_RELDATE	"04Feb2008"
+>  
+>  /* A few values that may be tweaked. */
+>  
+>  /* Time in jiffies before concluding the transmitter is hung. */
+>  #define TX_TIMEOUT  (400*HZ/1000)
+> -/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
+> -static int max_interrupt_work = 10;
+>  
+>  #include <linux/module.h>
+> -#ifdef CONFIG_MCA
+>  #include <linux/mca.h>
+> -#endif
+> -#include <linux/isapnp.h>
+> +#include <linux/isa.h>
+> +#include <linux/pnp.h>
+>  #include <linux/string.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/errno.h>
+> @@ -97,10 +96,6 @@
+>  
+>  static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
+>  
+> -#if defined(CONFIG_PM) && (defined(CONFIG_MCA) || defined(CONFIG_EISA))
+> -#define EL3_SUSPEND
+> -#endif
+> -
+>  #ifdef EL3_DEBUG
+>  static int el3_debug = EL3_DEBUG;
+>  #else
+> @@ -111,6 +106,7 @@
+>   * a global variable so that the mca/eisa probe routines can increment
+>   * it */
+>  static int el3_cards = 0;
+> +#define EL3_MAX_CARDS 8
+>  
+>  /* To minimize the size of the driver source I only define operating
+>     constants if they are used several times.  You'll need the manual
+> @@ -119,7 +115,7 @@
+>  #define EL3_DATA 0x00
+>  #define EL3_CMD 0x0e
+>  #define EL3_STATUS 0x0e
+> -#define	 EEPROM_READ 0x80
+> +#define	EEPROM_READ 0x80
+>  
+>  #define EL3_IO_EXTENT	16
+>  
+> @@ -168,23 +164,31 @@
+>   */
+>  #define SKB_QUEUE_SIZE	64
+>  
+> +typedef enum { EL3_ISA, EL3_PNP, EL3_MCA, EL3_EISA } el3_cardtype;
+> +
+
+No typedef please (see checkpatch)
+
+>  struct el3_private {
+>  	struct net_device_stats stats;
+
+Use network device stats in net_device now
+> -	struct net_device *next_dev;
+>  	spinlock_t lock;
+>  	/* skb send-queue */
+>  	int head, size;
+>  	struct sk_buff *queue[SKB_QUEUE_SIZE];
+
+What about sk_buff_head (linked list instead)?
+> -	enum {
+> -		EL3_MCA,
+> -		EL3_PNP,
+> -		EL3_EISA,
+> -	} type;						/* type of device */
+> -	struct device *dev;
+> +	el3_cardtype type;
+>  };
+> -static int id_port __initdata = 0x110;	/* Start with 0x110 to avoid new sound cards.*/
+> -static struct net_device *el3_root_dev;
+> +static int id_port;
+> +static int current_tag;
+> +static struct net_device *el3_devs[EL3_MAX_CARDS];
+
+I know is only ISA, but having a limit seems silly, can't the device just
+use allocated space like other drivers.
+
+> +
+> +/* Parameters that may be passed into the module. */
+> +static int debug = -1;
+> +static int irq[] = {-1, -1, -1, -1, -1, -1, -1, -1};
+> +/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
+> +static int max_interrupt_work = 10;
+> +#ifdef CONFIG_PNP
+> +static int nopnp;
+> +#endif
+>  
+
+
+-- 
+Stephen Hemminger <stephen.hemminger@vyatta.com>
+
 
