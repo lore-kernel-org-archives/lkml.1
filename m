@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYBILjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbYBILkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbYBILjg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYBILja
+	id S1757163AbYBILkp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYBILkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:39:30 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50662 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751811AbYBILj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:39:28 -0500
-Date: Sat, 9 Feb 2008 12:39:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-Message-ID: <20080209113935.GB5776@uranus.ravnborg.org>
-References: <20080207133805.13f092ff@dilbert.local> <20080207125824.GB7111@infradead.org> <20080207130117.GA18750@uranus.ravnborg.org> <200802071609.36960.openembedded@haerwu.biz> <20080207160557.GB28435@flint.arm.linux.org.uk> <20080207202329.GA21949@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 9 Feb 2008 06:40:37 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:24030 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752745AbYBILkg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 06:40:36 -0500
+Date: Sat, 9 Feb 2008 11:40:31 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] keyboard notifier documentation
+Message-ID: <20080209114031.GC4379@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>, torvalds@osdl.org,
+	linux-input@vger.kernel.org, dtor@mail.ru,
+	linux-kernel@vger.kernel.org
+References: <20080209013322.GC4463@implementation> <20080208201253.46c068ed.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080207202329.GA21949@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080208201253.46c068ed.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Cloudmark-Analysis: v=1.0 c=1 a=vgUJB+MMWQXyFPPprAVJSw==:17 a=i5GPv-AnR8DnFnD64JYA:9 a=2r5TSfjIWfJnzaeqYznjyes3nZ8A:4 a=QJAqVYndk0IA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 09:23:29PM +0100, Sam Ravnborg wrote:
-> On Thu, Feb 07, 2008 at 04:05:58PM +0000, Russell King - ARM Linux wrote:
-> > On Thu, Feb 07, 2008 at 04:09:34PM +0100, Marcin Juszkiewicz wrote:
-> > > Dnia Thursday, 7 of February 2008, Sam Ravnborg napisaÅ‚:
-> > > > On Thu, Feb 07, 2008 at 07:58:24AM -0500, Christoph Hellwig wrote:
-> > > 
-> > > > > Any chance to make arm finally use drivers/Kconfig?  It's a bit silly
-> > > > > that arm still is crapping around while even s390 uses it.
-> > > 
-> > > > rmk said that it should be easy to check the amount of work needed to
-> > > > do so. But I have not had time to look into it yet - hopefully someone
-> > > > in ARM land could fix it.
-> > > 
-> > > I looked at it and 'arch/arm/Kconfig' does not source few entries: 
-> > 
-> > diff -u arch/arm/Kconfig drivers/Kconfig shows the situation.  This is
-> > why I insist that new entries to arch/arm/Kconfig should be in the same
-> > order as drivers/Kconfig.
-> > 
-> > > Including of 'drivers/mtd' depends on "ALIGNMENT_TRAP || !CPU_CP15_MMU".
-> > 
-> > It's this which is the main issue.
-> > 
-> > > Including of 'drivers/ide' depends on "PCMCIA || ARCH_CLPS7500 || 
-> > > ARCH_IOP32X || ARCH_IOP33X || ARCH_IXP4XX || ARCH_L7200 || 
-> > > ARCH_LH7A40X || ARCH_PXA || ARCH_RPC || ARCH_S3C2410 || ARCH_SA1100 || 
-> > > ARCH_SHARK || FOOTBRIDGE || ARCH_IXP23XX" but 'drivers/ata' (which can be 
-> > > used instead on PCMCIA enabled platforms) does not depend on such set.
-> > 
-> > IDE people insisted that we _will_ have that silly conditional for IDE.
-> > I personally do not want it and would be happy to see it go - but I
-> > don't have the authority to do that.  Take this one up with Bart.
+Randy Dunlap, le Fri 08 Feb 2008 20:12:53 -0800, a écrit :
+> On Sat, 9 Feb 2008 01:33:22 +0000 Samuel Thibault wrote:
+> > +- 'vc' always provide the VC for which the keyboard event applies ;
+> > +- 'down' is 1 for a key press event, 0 for a key release ;
+> > +- 'shift' is the current modifier state, mask bit indexes are KG_* ;
 > 
-> Both situations are trivially fixable by introducing
-> HAVE_IDE and HAVE_MTD.
-> See attached patch.
+> No space before the ';' (3 times).
+
+Well, as expected in French...  I'll fix that.
+
+> > +For each kind of event but the last, the callback may return NOTIFY_STOP in
+> > +order to "eat" the event: the notify loop is stopped and the keyboard event is
+> > +dropped.
+> > +
+> > +I a rough C snippet, we have:
 > 
-> My quick scan told me that only S390 and UM did not
-> support IDE neither MTD.
-> ARM is the only one where IDE and MTD support is conditional
-> and the rest you select them unconditionally.
+>    In a rough (?)
 
-Quick status on this.
-I have submitted a corrected patch containing only the
-HAVE_IDE stuff via kbuild.git and considering the
-comment from David the mtd bits are trivial done.
-So I expect someone that better can check the arm stuff
-to do the final conversion bits to introduce drivers/Kconfig
-when kbuild.git hits mainline.
+Yes, rough as "something that a C compiler will never accept, but that
+you, human, will make sense out of it".
 
-	Sam
+Samuel
