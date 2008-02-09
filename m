@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYBISjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbYBISkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbYBISjg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 13:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYBISj2
+	id S1756163AbYBISkL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 13:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYBISj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 13:39:28 -0500
-Received: from www17.your-server.de ([213.133.104.17]:47069 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYBISj1 (ORCPT
+	Sat, 9 Feb 2008 13:39:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50049 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755729AbYBISjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 13:39:27 -0500
-Message-ID: <47ADF34A.6010804@m3y3r.de>
-Date: Sat, 09 Feb 2008 19:39:06 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071118)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
-       jason.fleischli@hp.com
-Subject: Re: Latest kernel doesn't boot
-References: <1202249704.47a8dfe89a99c@213.133.104.17> <47A8E427.6040205@zytor.com> <47AA1633.4000309@m3y3r.de> <47AA2082.4000402@zytor.com> <47AA2634.7020907@m3y3r.de> <47AA2A75.80909@zytor.com>
-In-Reply-To: <47AA2A75.80909@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 9 Feb 2008 13:39:49 -0500
+Subject: Re: [RFC PATCH] x86: explicit call to mmiotrace in do_page_fault()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080209195255.584d4157@daedalus.pq.iki.fi>
+References: <1201660453.8837.13.camel@brick>
+	 <20080130200827.322c4f7d@daedalus.pq.iki.fi>
+	 <20080131150746.GB11996@elte.hu>
+	 <20080131180253.6c007852@daedalus.pq.iki.fi>
+	 <20080131081507.5edcde10@laptopd505.fenrus.org>
+	 <20080203085522.2b63e15b@daedalus.pq.iki.fi>
+	 <20080203070321.GA8293@elte.hu>
+	 <20080205222807.7b35ef2b@daedalus.pq.iki.fi>
+	 <20080205223958.2cab8ce3@daedalus.pq.iki.fi>
+	 <20080207125327.GB27234@elte.hu> <20080207125622.GA7111@infradead.org>
+	 <20080209195255.584d4157@daedalus.pq.iki.fi>
+Content-Type: text/plain
+Date: Sat, 09 Feb 2008 19:39:30 +0100
+Message-Id: <1202582370.16505.6.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin schrieb:
-> Thomas Meyer wrote:
->> H. Peter Anvin schrieb:
->>> Thomas Meyer wrote:
->>>>
->>>> I can not revert the commit 
->>>> e429795c68d3001ecae74f6465420c9f043b0ece. it gave me errors.
->>>> but i'm also not sure what could be wrong with this commit!
->>>>
->>>> my first idea was that the commit 
->>>> "[2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 
->>>> memory map on EFI 32 platform" is the offender, because the macbook 
->>>> pro doesn't provide a e820 memory map at all. but bisect showed 
->>>> that i'm wrong here?!
->>>>
->>>
->>> ELILO is expected to convert the memory map from EFI to e820 format.
->> I'm using elilo-3.6-ia32.efi provided at the elilo homepage.  i 
->> wasn't able to create a working efi toolchain :-(
->> Does elilo-3.6 already do the converting of the memory map, or not?
->
-> Don't know.
-3.6 doesn't do the mapping in ia32/system.c create_boot_params().
-3.8 does.
 
-The problem is, that i wasn't able to produce a working elilo.efi files 
-with my gentoo toolchain. the files elilo-3.8.efi provided by the elilo 
-project also doesn't work (gives a load error from the efi runtime).
+On Sat, 2008-02-09 at 19:52 +0200, Pekka Paalanen wrote:
 
-So i guess i'm stuck here.
+> +int mmiotrace_register_pf(pf_handler_func new_pfh)
+>  {
+> +	int ret = 0;
+>  	unsigned long flags;
 
-It should be noted somewhere that with Huangs patches, elilo version 3.8 
-is needed.
+> +	spin_lock_irqsave(&mmiotrace_handler_lock, flags);
+> +	if (mmiotrace_pf_handler)
+> +		ret = -EBUSY;
+> +	else
+> +		mmiotrace_pf_handler = new_pfh;
+> +	spin_unlock_irqrestore(&mmiotrace_handler_lock, flags);
+> +	return ret;
+>  }
+> +EXPORT_SYMBOL_GPL(mmiotrace_register_pf);
+>  
+>  /**
+> + * mmiotrace_unregister_pf:
+>   * The caller must ensure @old_pfh is not in use anymore before freeing it.
+> + * This function does not guarantee it. The handler function pointer is
+> + * protected by RCU, so you can do this by e.g. calling synchronize_rcu().
+>   */
+> +int mmiotrace_unregister_pf(pf_handler_func old_pfh)
+>  {
+> +	int ret = 0;
+>  	unsigned long flags;
+
+> +	spin_lock_irqsave(&mmiotrace_handler_lock, flags);
+> +	if (mmiotrace_pf_handler != old_pfh)
+> +		ret = -EPERM;
+> +	else
+> +		mmiotrace_pf_handler = NULL;
+> +	spin_unlock_irqrestore(&mmiotrace_handler_lock, flags);
+> +	return ret;
+>  }
+
+So here you set/unset mmiotrace_pf_handler under protection of a
+spinlock.
+
+ 
+>  /* returns non-zero if do_page_fault() should return */
+> +static inline int call_mmiotrace(struct pt_regs *regs,
+> +					unsigned long error_code,
+> +					unsigned long address)
+>  {
+> +#ifdef CONFIG_MMIOTRACE_HOOKS
+>  	int ret = 0;
+>  	rcu_read_lock();
+> +	if (mmiotrace_pf_handler)
+> +		ret = mmiotrace_pf_handler(regs, error_code, address);
+>  	rcu_read_unlock();
+>  	return ret;
+>  #else
+
+But here you use it under rcu_read_lock(). This doesn't match.
+
+
 
