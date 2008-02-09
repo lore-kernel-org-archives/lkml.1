@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYBIAa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbYBIAda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbYBIAa5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBIAau
+	id S1758697AbYBIAda (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbYBIAdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:30:50 -0500
-Received: from lixom.net ([66.141.50.11]:45202 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754272AbYBIAat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:30:49 -0500
-Date: Fri, 8 Feb 2008 18:32:20 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived
-	threads
-Message-ID: <20080209003220.GA21395@lixom.net>
-References: <20080209000456.GA21021@lixom.net> <20080209000829.GA29986@elte.hu>
+	Fri, 8 Feb 2008 19:33:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46875 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217AbYBIAdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 19:33:23 -0500
+Message-ID: <47ACF488.7070502@zytor.com>
+Date: Fri, 08 Feb 2008 16:32:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080209000829.GA29986@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+References: <20080205190600.GB11613@elf.ucw.cz> <200802082301.51582.rjw@sisk.pl> <20080208220834.GA1631@elf.ucw.cz> <200802090118.50418.rjw@sisk.pl>
+In-Reply-To: <200802090118.50418.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 09, 2008 at 01:08:30AM +0100, Ingo Molnar wrote:
+Rafael J. Wysocki wrote:
 > 
-> * Olof Johansson <olof@lixom.net> wrote:
+> Consolidated patch is appended.  I'll test it tomorrow on x86-64.
 > 
-> > 2.6.22: 3332 ms
-> > 2.6.23: 4397 ms
-> > 2.6.24: 8953 ms
-> > 2.6.24-git19: 8986 ms
+> I'd like to add the cleaned up beeping code to it and perhaps try to push it
+> for -mm testing without any further changes.  We can still do more cleanups in
+> followup patches.
 > 
-> if you enable SCHED_DEBUG, and subtract 4 from the value of 
-> /proc/sys/kernel/sched_features, does it get any better?
-> 
-> if not, does writing 0 into /proc/sys/kernel/sched_features have any 
-> impact?
 
-Doesn't seem to make a difference, either of them. I can unfortunately
-not retest on x86 at the moment, only powerpc. But it made no noticable
-difference in runtime w/ pasemi_defconfig and current mainline.
+The other thing to figure out is to what extent we can clean up the 
+conditionals in the video mode code by refactoring.  All they really do 
+here is save space by removing functionality not needed for wakeup, 
+because I didn't know how much space was realistic.
 
+It's possible we can remove them altogether by having a dummy 
+boot_params structure (4K).
 
--Olof
+	-hpa
