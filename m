@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYBIQTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYBIQTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbYBIQTe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 11:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbYBIQSn
+	id S1756674AbYBIQTv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 11:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYBIQSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 11:18:43 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:3771 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbYBIQSS (ORCPT
+	Sat, 9 Feb 2008 11:18:47 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:43343 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755358AbYBIQS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 11:18:18 -0500
+	Sat, 9 Feb 2008 11:18:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=Ytd7xjSuicdYx6vSVptscMd6qw4hY+KaZWvx9dbL7jiam7nmVFDfmc/w3fPK1IMuItWUtIyCtodZXrllLLGHX2LrW4vVOyR31M6IJ1HSZbd4KKAlS4CNSugv8VwBvCyNUYGWB6RutCTg/6oH9CL26r3somZhlWPra6rDp0gGEJo=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=xBq/qnte7zkPmGxA8/aNdOg9fJWifcsFLtuoakB3sIK6XQfVWTrgkjkdoOwidbRs/DNlq6QI2x00Z/IMf4f2weKZ2c6SbCO7cXO3KwdpCWZ6n/0wLnh3laGHhouNmKPteIzvL5LK2GgMR7Dk5AXZd5kMfMimAWAQxCmKcftJVZ4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] ide: add ide_atapi_{discard_data,write_zeros} inline helpers
-Date: Sat, 9 Feb 2008 16:23:52 +0100
+To: petkovbb@gmail.com
+Subject: Re: ide-tape redux (was: Re:)
+Date: Sat, 9 Feb 2008 17:25:23 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1202132440-26648-1-git-send-email-petkovbb@gmail.com> <200802050220.22637.bzolnier@gmail.com> <20080206052343.GA14349@gollum.tnic>
+In-Reply-To: <20080206052343.GA14349@gollum.tnic>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200802091623.52674.bzolnier@gmail.com>
+Message-Id: <200802091725.23372.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -31,187 +33,164 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add ide_atapi_{discard_data,write_zeros} inline helpers to <linux/ide.h>
-and use them instead of home-brewn helpers in ide-{floppy,tape,scsi}.
+Hi,
 
-There should be no functional changes caused by this patch.
+On Wednesday 06 February 2008, Borislav Petkov wrote:
+> On Tue, Feb 05, 2008 at 02:20:22AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> 
+> [...]
+> 
+> > w.r.t. #11 ide-tape uses char devices and supports DSC so it is not as obvious
+> > as in ide-floppy case that all atomic bitops can be just removed (extra audit
+> > and some time -mm are required) so please resync/resubmit
+> 
+> Ok, here's what i think we should do here: There are two flags that handle DSC:
+> PC_FL_WAIT_FOR_DSC and IDETAPE_FL_IGNORE_DSC. The first one is per pc and is set in
+> all the packet command init functions ..create_bla_cmd() after their callers have
+> created a pc on the stack and reached its ptr down for initialization. This case
+> is carefree since the bit will be tested first in the interrupt handler and this
+> happens only after the pc is queued (ide_do_drive_cmd()) into the request buffer.
+> 
+> The other flag, IDETAPE_FL_IGNORE_DSC, is polled for in the request handler and
+> can be set when a pc is being retried and we should leave only those atomic
+> tests intact, imho, but i'm definitely gonna need a second opinion here.
 
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-floppy.c |   24 +++---------------------
- drivers/ide/ide-tape.c   |   14 ++------------
- drivers/scsi/ide-scsi.c  |   18 +++---------------
- include/linux/ide.h      |   22 ++++++++++++++++++++++
- 4 files changed, 30 insertions(+), 48 deletions(-)
+Actually for this flag it looks safe because the new request shouldn't be
+queued while the old one is still active (IOW there should be no simultaneous
+idetape_do_request() and idetape_end_request() calls).  OTOH some other
+flags (especially IDETAPE_PIPELINE_ACTIVE) looks un-safe (pileline can be
+active while ->open on character device happens).
 
-Index: b/drivers/ide/ide-floppy.c
-===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -230,23 +230,6 @@ static void ide_floppy_put(struct ide_fl
- }
- 
- /*
-- * Too bad. The drive wants to send us data which we are not ready to accept.
-- * Just throw it away.
-- */
--static void idefloppy_discard_data(ide_drive_t *drive, unsigned int bcount)
--{
--	while (bcount--)
--		(void) HWIF(drive)->INB(IDE_DATA_REG);
--}
--
--static void idefloppy_write_zeros(ide_drive_t *drive, unsigned int bcount)
--{
--	while (bcount--)
--		HWIF(drive)->OUTB(0, IDE_DATA_REG);
--}
--
--
--/*
-  * Used to finish servicing a request. For read/write requests, we will call
-  * ide_end_request to pass to the next buffer.
-  */
-@@ -313,10 +296,9 @@ static void ide_floppy_io_buffers(ide_dr
- 		printk(KERN_ERR "%s: leftover data in %s, bcount == %d\n",
- 				drive->name, __func__, bcount);
- 		if (direction)
--			idefloppy_write_zeros(drive, bcount);
-+			ide_atapi_write_zeros(drive, bcount);
- 		else
--			idefloppy_discard_data(drive, bcount);
--
-+			ide_atapi_discard_data(drive, bcount);
- 	}
- }
- 
-@@ -541,7 +523,7 @@ static ide_startstop_t idefloppy_pc_intr
- 				printk(KERN_ERR "ide-floppy: The floppy wants "
- 					"to send us more data than expected "
- 					"- discarding data\n");
--				idefloppy_discard_data(drive, bcount);
-+				ide_atapi_discard_data(drive, bcount);
- 
- 				ide_set_handler(drive,
- 						&idefloppy_pc_intr,
-Index: b/drivers/ide/ide-tape.c
-===================================================================
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -518,16 +518,6 @@ static struct ide_tape_obj *ide_tape_chr
- 	return tape;
- }
- 
--/*
-- * Too bad. The drive wants to send us data which we are not ready to accept.
-- * Just throw it away.
-- */
--static void idetape_discard_data(ide_drive_t *drive, unsigned int bcount)
--{
--	while (bcount--)
--		(void) HWIF(drive)->INB(IDE_DATA_REG);
--}
--
- static void idetape_input_buffers(ide_drive_t *drive, idetape_pc_t *pc,
- 				  unsigned int bcount)
- {
-@@ -538,7 +528,7 @@ static void idetape_input_buffers(ide_dr
- 		if (bh == NULL) {
- 			printk(KERN_ERR "ide-tape: bh == NULL in "
- 				"idetape_input_buffers\n");
--			idetape_discard_data(drive, bcount);
-+			ide_atapi_discard_data(drive, bcount);
- 			return;
- 		}
- 		count = min(
-@@ -1152,7 +1142,7 @@ static ide_startstop_t idetape_pc_intr(i
- 				printk(KERN_ERR "ide-tape: The tape wants to "
- 					"send us more data than expected "
- 					"- discarding data\n");
--				idetape_discard_data(drive, bcount);
-+				ide_atapi_discard_data(drive, bcount);
- 				ide_set_handler(drive, &idetape_pc_intr,
- 						IDETAPE_WAIT_CMD, NULL);
- 				return ide_started;
-Index: b/drivers/scsi/ide-scsi.c
-===================================================================
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -152,18 +152,6 @@ static inline idescsi_scsi_t *drive_to_i
-  */
- #define IDESCSI_PC_RQ			90
- 
--static void idescsi_discard_data (ide_drive_t *drive, unsigned int bcount)
--{
--	while (bcount--)
--		(void) HWIF(drive)->INB(IDE_DATA_REG);
--}
--
--static void idescsi_output_zeros (ide_drive_t *drive, unsigned int bcount)
--{
--	while (bcount--)
--		HWIF(drive)->OUTB(0, IDE_DATA_REG);
--}
--
- /*
-  *	PIO data transfer routines using the scatter gather table.
-  */
-@@ -200,7 +188,7 @@ static void idescsi_input_buffers (ide_d
- 
- 	if (bcount) {
- 		printk (KERN_ERR "ide-scsi: scatter gather table too small, discarding data\n");
--		idescsi_discard_data (drive, bcount);
-+		ide_atapi_discard_data(drive, bcount);
- 	}
- }
- 
-@@ -237,7 +225,7 @@ static void idescsi_output_buffers (ide_
- 
- 	if (bcount) {
- 		printk (KERN_ERR "ide-scsi: scatter gather table too small, padding with zeros\n");
--		idescsi_output_zeros (drive, bcount);
-+		ide_atapi_write_zeros(drive, bcount);
- 	}
- }
- 
-@@ -463,7 +451,7 @@ static ide_startstop_t idescsi_pc_intr (
- 				}
- 				pc->actually_transferred += temp;
- 				pc->current_position += temp;
--				idescsi_discard_data(drive, bcount - temp);
-+				ide_atapi_discard_data(drive, bcount - temp);
- 				ide_set_handler(drive, &idescsi_pc_intr, get_timeout(pc), idescsi_expiry);
- 				return ide_started;
- 			}
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1299,4 +1299,26 @@ static inline u8 ide_read_error(ide_driv
- 	return hwif->INB(hwif->io_ports[IDE_ERROR_OFFSET]);
- }
- 
-+/*
-+ * Too bad. The drive wants to send us data which we are not ready to accept.
-+ * Just throw it away.
-+ */
-+static inline void ide_atapi_discard_data(ide_drive_t *drive, unsigned bcount)
-+{
-+	ide_hwif_t *hwif = drive->hwif;
-+
-+	/* FIXME: use ->atapi_input_bytes */
-+	while (bcount--)
-+		(void)hwif->INB(hwif->io_ports[IDE_DATA_OFFSET]);
-+}
-+
-+static inline void ide_atapi_write_zeros(ide_drive_t *drive, unsigned bcount)
-+{
-+	ide_hwif_t *hwif = drive->hwif;
-+
-+	/* FIXME: use ->atapi_output_bytes */
-+	while (bcount--)
-+		hwif->OUTB(0, hwif->io_ports[IDE_DATA_OFFSET]);
-+}
-+
- #endif /* _IDE_H */
+Given that this driver is currently scheduled for removal and that complete
+audit/analysis would be quite costly I don't think that removing atomic bitops
+from tape->flags is worth it (for pc->flags it is fine).
+
+Could you please recast the patch accordingly?
+
+[ + some minor issues below ]
+
+> ---
+> 
+> commit 1ed8ae92249d5dff7af4ee88710ea08ff3f3356f
+> Author: Borislav Petkov <petkovbb@gmail.com>
+> Date:   Tue Feb 5 08:05:35 2008 +0100
+> 
+>     ide-tape: remove atomic test/set macros
+>     
+>     Also, since the driver supports DSC, leave the atomic tests
+>     for the IDETAPE_FL_IGNORE_DSC bit untouched because this is polled
+>     for in the request handler and can be set in the interrupt
+>     handler through idetape_retry_pc() after enabling interrupts.
+>     
+>     Finally, remove flag IDETAPE_READ_ERROR since it is unused.
+>     
+>     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> 
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index e59e49e..9455ce4 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -206,24 +206,24 @@ typedef struct idetape_packet_command_s {
+>  	/* Temporary buffer */
+>  	u8 pc_buffer[IDETAPE_PC_BUFFER_SIZE];
+>  	/* Status/Action bit flags: long for set_bit */
+> -	unsigned long flags;
+> +	unsigned int flags;
+
+please leave it as 'unsigned long' to match other drivers
+
+>  } idetape_pc_t;
+>  
+> -/*
+> - *	Packet command flag bits.
+> - */
+> -/* Set when an error is considered normal - We won't retry */
+> -#define	PC_ABORT			0
+> -/* 1 When polling for DSC on a media access command */
+> -#define PC_WAIT_FOR_DSC			1
+> -/* 1 when we prefer to use DMA if possible */
+> -#define PC_DMA_RECOMMENDED		2
+> -/* 1 while DMA in progress */
+> -#define	PC_DMA_IN_PROGRESS		3
+> -/* 1 when encountered problem during DMA */
+> -#define	PC_DMA_ERROR			4
+> -/* Data direction */
+> -#define	PC_WRITING			5
+> +/* Packet command flag bits. */
+> +enum {
+> +	/* Set when an error is considered normal - We won't retry */
+> +	PC_FL_ABORT		= (1 << 0),
+> +	/* 1 When polling for DSC on a media access command */
+> +	PC_FL_WAIT_FOR_DSC	= (1 << 1),
+> +	/* 1 when we prefer to use DMA if possible */
+> +	PC_FL_DMA_RECOMMENDED	= (1 << 2),
+> +	/* 1 while DMA in progress */
+> +	PC_FL_DMA_IN_PROGRESS	= (1 << 3),
+> +	/* 1 when encountered problem during DMA */
+> +	PC_FL_DMA_ERROR		= (1 << 4),
+> +	/* Data direction */
+> +	PC_FL_WRITING		= (1 <<	5),
+
+Why not PC_FLAG_*?  [ It would match flags in ide-floppy ]
+
+> +};
+>  
+>  /* A pipeline stage. */
+>  typedef struct idetape_stage_s {
+> @@ -357,8 +357,7 @@ typedef struct ide_tape_obj {
+>  	/* Wasted space in each stage */
+>  	int excess_bh_size;
+>  
+> -	/* Status/Action flags: long for set_bit */
+> -	unsigned long flags;
+> +	unsigned int flags;
+
+please leave it as 'unsigned long'
+
+[ besides I don't think that mixing atomic and non-atomic access on
+  the _same_ variable is OK ]
+
+>  	/* protects the ide-tape queue */
+>  	spinlock_t lock;
+>  
+> @@ -451,20 +450,26 @@ static void ide_tape_put(struct ide_tape_obj *tape)
+>  #define DOOR_LOCKED			1
+>  #define DOOR_EXPLICITLY_LOCKED		2
+>  
+> -/*
+> - *	Tape flag bits values.
+> - */
+> -#define IDETAPE_IGNORE_DSC		0
+> -#define IDETAPE_ADDRESS_VALID		1	/* 0 When the tape position is unknown */
+> -#define IDETAPE_BUSY			2	/* Device already opened */
+> -#define IDETAPE_PIPELINE_ERROR		3	/* Error detected in a pipeline stage */
+> -#define IDETAPE_DETECT_BS		4	/* Attempt to auto-detect the current user block size */
+> -#define IDETAPE_FILEMARK		5	/* Currently on a filemark */
+> -#define IDETAPE_DRQ_INTERRUPT		6	/* DRQ interrupt device */
+> -#define IDETAPE_READ_ERROR		7
+> -#define IDETAPE_PIPELINE_ACTIVE		8	/* pipeline active */
+> -/* 0 = no tape is loaded, so we don't rewind after ejecting */
+> -#define IDETAPE_MEDIUM_PRESENT		9
+> +/* Tape flag bits values. */
+> +enum {
+> +	IDETAPE_FL_IGNORE_DSC		= (1 << 0),
+> +	/* 0 When the tape position is unknown */
+> +	IDETAPE_FL_ADDRESS_VALID	= (1 <<	1),
+> +	/* Device already opened */
+> +	IDETAPE_FL_BUSY			= (1 << 2),
+> +	/* Error detected in a pipeline stage */
+> +	IDETAPE_FL_PIPELINE_ERR	= (1 <<	3),
+> +	/* Attempt to auto-detect the current user block size */
+> +	IDETAPE_FL_DETECT_BS		= (1 << 4),
+> +	/* Currently on a filemark */
+> +	IDETAPE_FL_FILEMARK		= (1 << 5),
+> +	/* DRQ interrupt device */
+> +	IDETAPE_FL_DRQ_INTERRUPT	= (1 << 6),
+> +	/* pipeline active */
+> +	IDETAPE_FL_PIPELINE_ACTIVE	= (1 << 7),
+> +	/* 0 = no tape is loaded, so we don't rewind after ejecting */
+> +	IDETAPE_FL_MEDIUM_PRESENT	= (1 << 8),
+
+Why not IDETAPE_FLAG_*?
+
+The rest of the patch looks good.
