@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbYBILkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYBILlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbYBILkp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYBILkh
+	id S1757372AbYBILlp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:41:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbYBILli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:40:37 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:24030 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752745AbYBILkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:40:36 -0500
-Date: Sat, 9 Feb 2008 11:40:31 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] keyboard notifier documentation
-Message-ID: <20080209114031.GC4379@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>, torvalds@osdl.org,
-	linux-input@vger.kernel.org, dtor@mail.ru,
-	linux-kernel@vger.kernel.org
-References: <20080209013322.GC4463@implementation> <20080208201253.46c068ed.randy.dunlap@oracle.com>
+	Sat, 9 Feb 2008 06:41:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42985 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752775AbYBILlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 06:41:37 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+8HgchWn+8Tv4tymrxPa2wSjXeMoJJNZsp5Tf4Ib
+	Bg4r5LHPzgvzAZ
+Date: Sat, 9 Feb 2008 12:41:45 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: David Brownell <david-b@pacbell.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] prevent gpio chip drivers from unloading while used
+In-Reply-To: <200802081714.18795.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.64.0802091240160.4147@axis700.grange>
+References: <Pine.LNX.4.64.0802081159580.5301@axis700.grange>
+ <200802081601.10673.david-b@pacbell.net> <Pine.LNX.4.64.0802090132010.8364@axis700.grange>
+ <200802081714.18795.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080208201253.46c068ed.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Cloudmark-Analysis: v=1.0 c=1 a=vgUJB+MMWQXyFPPprAVJSw==:17 a=i5GPv-AnR8DnFnD64JYA:9 a=2r5TSfjIWfJnzaeqYznjyes3nZ8A:4 a=QJAqVYndk0IA:10
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap, le Fri 08 Feb 2008 20:12:53 -0800, a écrit :
-> On Sat, 9 Feb 2008 01:33:22 +0000 Samuel Thibault wrote:
-> > +- 'vc' always provide the VC for which the keyboard event applies ;
-> > +- 'down' is 1 for a key press event, 0 for a key release ;
-> > +- 'shift' is the current modifier state, mask bit indexes are KG_* ;
+On Fri, 8 Feb 2008, David Brownell wrote:
+
+> > Yes, that's what I'm saying. I had a GPIO in use and rmmod-ed pca953x. It 
+> > did produce an error message
+> > 
+> > pca953x 0-0041: gpiochip_remove() failed, -16
+> > 
+> > , but rmmod completed.
 > 
-> No space before the ';' (3 times).
-
-Well, as expected in French...  I'll fix that.
-
-> > +For each kind of event but the last, the callback may return NOTIFY_STOP in
-> > +order to "eat" the event: the notify loop is stopped and the keyboard event is
-> > +dropped.
-> > +
-> > +I a rough C snippet, we have:
+> Doesn't that seem buglike to you?
 > 
->    In a rough (?)
+> Oh, right -- the module exit code will ignore that status, it doesn't
+> even have a way to report failures any more.  Crap.
+> 
+> So it looks like we have no choice but to do this.  Can you make sure
+> all the rmmod-capable gpio_chip drivers support this?  Ignore the SOC
+> support, that never supports rmmod -- just the stuff in drivers/gpio.
 
-Yes, rough as "something that a C compiler will never accept, but that
-you, human, will make sense out of it".
+As long as you find these two patches acceptable, I'll cook up an 
+incremental patch to fix those.
 
-Samuel
+> > AFAIU, the only 2 ways currently to prevent rmmod  
+> > from completing, are: increment module use-count, then the respective 
+> > module_exit() function is not called at all and rmmod fails with -EBUSY. 
+> > Or block in rmmod until the resource becomes free. None of these has 
+> > happened. BTW, I think, there's the same problem with i2c adapter drivers.
+> 
+> Right.  In fact, every time you'd expect driver removal errors to
+> cause module removal to fail.   Maybe this is part of that whole
+> "should we even *support* rmmod" discussion, which I tuned out.
+
+We don't want to start another one here, do we?:-)
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
