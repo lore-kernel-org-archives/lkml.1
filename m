@@ -1,96 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYBIIzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYBIJHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbYBIIzF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 03:55:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYBIIyw
+	id S1755971AbYBIJHF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 04:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYBIJGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 03:54:52 -0500
-Received: from 1wt.eu ([62.212.114.60]:1776 "EHLO 1wt.eu"
+	Sat, 9 Feb 2008 04:06:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59438 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbYBIIyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 03:54:51 -0500
-Date: Sat, 9 Feb 2008 09:03:20 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived threads
-Message-ID: <20080209080319.GO8953@1wt.eu>
-References: <20080209000456.GA21021@lixom.net> <1202543920.9578.3.camel@homer.simson.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752841AbYBIJGg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 04:06:36 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0
+Date: Sat, 9 Feb 2008 04:04:32 -0500
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Zhang Rui <rui.zhang@intel.com>,
+       Thomas Sujith <sujith.thomas@intel.com>
+References: <200802070450.09098.lenb@kernel.org> <20080209082748.GA7792@elte.hu> <20080209083143.GA9634@elte.hu>
+In-Reply-To: <20080209083143.GA9634@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1202543920.9578.3.camel@homer.simson.net>
-User-Agent: Mutt/1.5.11
+Message-Id: <200802090404.32835.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
-
-On Sat, Feb 09, 2008 at 08:58:39AM +0100, Mike Galbraith wrote:
+On Saturday 09 February 2008 03:31, Ingo Molnar wrote:
 > 
-> On Fri, 2008-02-08 at 18:04 -0600, Olof Johansson wrote:
-> > Hi,
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > that fixed the build failure on 32-bit, but there's another one i just 
+> > hit on 64-bit x86:
 > > 
-> > I ended up with a customer benchmark in my lap this week that doesn't
-> > do well on recent kernels. :(
+> > drivers/built-in.o: In function `acpi_video_bus_put_devices':
+> > video.c:(.text+0x5540d): undefined reference to `thermal_cooling_device_unregister'
+> > drivers/built-in.o: In function `acpi_video_bus_add':
+> > video.c:(.text+0x56994): undefined reference to `thermal_cooling_device_register'
 > > 
-> > After cutting it down to a simple testcase/microbenchmark, it seems like
-> > recent kernels don't do as well with short-lived threads competing
-> > with the thread it's cloned off of. The CFS scheduler changes come to
-> > mind, but I suppose it could be caused by something else as well.
+> > which is due to:
 > > 
-> > The pared-down testcase is included below. Reported runtime for the
-> > testcase has increased almost 3x between 2.6.22 and 2.6.24:
+> >   commit 702ed512de9c8a67a69a981c73b7337c2131f198
+> >   Date:   Thu Jan 17 15:51:22 2008 +0800
 > > 
-> > 2.6.22: 3332 ms
-> > 2.6.23: 4397 ms
-> > 2.6.24: 8953 ms
-> > 2.6.24-git19: 8986 ms
+> >       ACPI: register ACPI Video LCD as generic thermal cooling device
+> > 
+> > the commit couldnt be reverted cleanly, i've done a manual fixup of 
+> > the revert (find the patch below).
 > 
-> My 3GHz P4 shows disjointed results.
-> 
-> 2.6.22.17-smp
-> time 798 ms
-> time 780 ms
-> time 702 ms
-> 
-> 2.6.22.17-cfs-v24.1-smp
-> time 562 ms
-> time 551 ms
-> time 551 ms
-> 
-> 2.6.23.15-smp
-> time 254 ms
-> time 254 ms
-> time 293 ms
-> 
-> 2.6.23.15-cfs-v24-smp
-> time 764 ms
-> time 791 ms
-> time 780 ms
-> 
-> 2.6.24.1-smp
-> time 815 ms
-> time 820 ms
-> time 771 ms
+> (config for that build breakage attached, in case you were wondering 
+> about how to trigger it.)
 
-How many CPUs do you have ? It's impressive to see such important variations.
-I would guess from the numbers that you sometimes have 1 or 2 CPUs doing
-nothing. I've already observed strange CPU usage patterns while building
-kernels (bound to 50% usage on a dual-athlon), but I can't say for sure
-that it was only on 2.6, so it may be related to make dependencies instead
-(at least it's what I've been suspecting till now).
+>From a0dd25b2c83de4623487ca4de9c1d962b552ca0f Mon Sep 17 00:00:00 2001
+From: Len Brown <len.brown@intel.com>
+Date: Sat, 9 Feb 2008 04:01:48 -0500
+Subject: [PATCH] ACPI: thermal: buildfix for CONFIG_THERMAL=n
+Organization: Intel Open Source Technology Center
 
-> 2.6.25-smp (git today)
-> time 29 ms
-> time 61 ms
-> time 72 ms
+This fixes the build, but acpi_fan_add() still needs
+to be updated to handle thermal_cooling_device_register()
+returning NULL as a non-fatal condition.
 
-These ones look rather strange. What type of workload is it ? Can you
-publish the program for others to test it ?
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ include/linux/thermal.h |   23 ++++++++++++++++++++---
+ 1 files changed, 20 insertions(+), 3 deletions(-)
 
-Regards,
-Willy
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index bba7712..818ca1c 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -79,7 +79,9 @@ struct thermal_zone_device {
+ };
+ 
+ struct thermal_zone_device *thermal_zone_device_register(char *, int, void *,
+-					struct thermal_zone_device_ops *);
++							 struct
++							 thermal_zone_device_ops
++							 *);
+ void thermal_zone_device_unregister(struct thermal_zone_device *);
+ 
+ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+@@ -87,8 +89,23 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+ 				       struct thermal_cooling_device *);
+ 
++#ifdef	CONFIG_THERMAL
+ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+-					struct thermal_cooling_device_ops *);
++							       struct
++							       thermal_cooling_device_ops
++							       *);
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
++#else
++static inline struct thermal_cooling_device
++*thermal_cooling_device_register(char *c, void *v,
++				 struct thermal_cooling_device_ops *t)
++{
++	return NULL;
++}
++static inline
++    void thermal_cooling_device_unregister(struct thermal_cooling_device *t)
++{
++};
++#endif
+ 
+-#endif				/* __THERMAL_H__ */
++#endif /* __THERMAL_H__ */
+-- 
+1.5.4.34.g053d9
 
