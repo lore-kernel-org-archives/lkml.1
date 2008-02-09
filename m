@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYBIIiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYBIIzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbYBIIiw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 03:38:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYBIIio
+	id S1755828AbYBIIzF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 03:55:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYBIIyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 03:38:44 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41746 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYBIIin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 03:38:43 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47AD6631.8070800@s5r6.in-berlin.de>
-Date: Sat, 09 Feb 2008 09:37:05 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Jonathan Corbet <corbet@lwn.net>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Documenting patch tags yet one more time
-References: <20080208130126.e05be25d.pj@sgi.com>	<27099.1202503342@vena.lwn.net> <20080208182317.525c4d1f.pj@sgi.com>
-In-Reply-To: <20080208182317.525c4d1f.pj@sgi.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Feb 2008 03:54:52 -0500
+Received: from 1wt.eu ([62.212.114.60]:1776 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751718AbYBIIyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 03:54:51 -0500
+Date: Sat, 9 Feb 2008 09:03:20 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived threads
+Message-ID: <20080209080319.GO8953@1wt.eu>
+References: <20080209000456.GA21021@lixom.net> <1202543920.9578.3.camel@homer.simson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202543920.9578.3.camel@homer.simson.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson would like to:
-> explain more clearly that PATCH's
-> should start off, right from the top or after the initial From: line if
-> present, with:
-> 
->   - The body of the explanation, which will be copied to the
->     permanent changelog to describe this patch.
-> 
-> rather than opening with ephemeral reactions to the discussion of the
-> moment which will make little "sense to a competent reader who has long
-> since forgotten the immediate details of the discussion that might have
-> led to this patch."
-> 
-> As best my legalistic mind understands the patch format, such ephemeral
-> reactions should go after the "---" marker line, in the same section as
-> the diffstat would be placed.
-> 
-> Or perhaps the patch format should be changed in this regard, since it
-> is cumbersome and unnatural to embed the ephemeral opening comments
-> half way down the patch, rather than opening with them.
+Hi Mike,
 
-In common practice, the changelog does not start before the _last_ From:
-line (rather than the initial From: line).
+On Sat, Feb 09, 2008 at 08:58:39AM +0100, Mike Galbraith wrote:
+> 
+> On Fri, 2008-02-08 at 18:04 -0600, Olof Johansson wrote:
+> > Hi,
+> > 
+> > I ended up with a customer benchmark in my lap this week that doesn't
+> > do well on recent kernels. :(
+> > 
+> > After cutting it down to a simple testcase/microbenchmark, it seems like
+> > recent kernels don't do as well with short-lived threads competing
+> > with the thread it's cloned off of. The CFS scheduler changes come to
+> > mind, but I suppose it could be caused by something else as well.
+> > 
+> > The pared-down testcase is included below. Reported runtime for the
+> > testcase has increased almost 3x between 2.6.22 and 2.6.24:
+> > 
+> > 2.6.22: 3332 ms
+> > 2.6.23: 4397 ms
+> > 2.6.24: 8953 ms
+> > 2.6.24-git19: 8986 ms
+> 
+> My 3GHz P4 shows disjointed results.
+> 
+> 2.6.22.17-smp
+> time 798 ms
+> time 780 ms
+> time 702 ms
+> 
+> 2.6.22.17-cfs-v24.1-smp
+> time 562 ms
+> time 551 ms
+> time 551 ms
+> 
+> 2.6.23.15-smp
+> time 254 ms
+> time 254 ms
+> time 293 ms
+> 
+> 2.6.23.15-cfs-v24-smp
+> time 764 ms
+> time 791 ms
+> time 780 ms
+> 
+> 2.6.24.1-smp
+> time 815 ms
+> time 820 ms
+> time 771 ms
 
-	ephemera
-	From: author
-	changelog
-	tags
-	changelog, continued
-	tags
-	---
-	ephemera, diffstat
-	diff
-	ephemera
+How many CPUs do you have ? It's impressive to see such important variations.
+I would guess from the numbers that you sometimes have 1 or 2 CPUs doing
+nothing. I've already observed strange CPU usage patterns while building
+kernels (bound to 50% usage on a dual-athlon), but I can't say for sure
+that it was only on 2.6, so it may be related to make dependencies instead
+(at least it's what I've been suspecting till now).
 
-There may be a Date: somewhere before the changelog as well.  The first
-line of the changelog is the one to appear in shortlogs.  It may be
-preceded by Subject:.
--- 
-Stefan Richter
--=====-==--- --=- -=--=
-http://arcgraph.de/sr/
+> 2.6.25-smp (git today)
+> time 29 ms
+> time 61 ms
+> time 72 ms
+
+These ones look rather strange. What type of workload is it ? Can you
+publish the program for others to test it ?
+
+Regards,
+Willy
+
