@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbYBIN77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbYBIOH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbYBIN77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 08:59:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbYBIN7u
+	id S1756965AbYBIOH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 09:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYBIOHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 08:59:50 -0500
-Received: from www.tglx.de ([62.245.132.106]:52625 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755300AbYBIN7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 08:59:49 -0500
-Date: Sat, 9 Feb 2008 14:59:24 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Holvenstot <cholvenstot@comcast.net>
-cc: Jiri Kosina <jkosina@suse.cz>, Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-git15 Keyboard Issue?
-In-Reply-To: <1202553464.6386.7.camel@popeye>
-Message-ID: <alpine.LFD.1.00.0802091255190.3145@apollo.tec.linutronix.de>
-References: <1202302978.9058.13.camel@popeye>  <Pine.LNX.4.64.0802061427410.30873@twin.jikos.cz>  <1202305740.9058.22.camel@popeye>  <Pine.LNX.4.64.0802061452210.30873@twin.jikos.cz>  <1202318666.6406.13.camel@popeye>  <Pine.LNX.4.64.0802071016220.30873@twin.jikos.cz>
-  <1202381094.6179.0.camel@popeye>  <Pine.LNX.4.64.0802071149260.30955@jikos.suse.cz>  <alpine.LFD.1.00.0802071324410.9204@apollo.tec.linutronix.de>  <1202396868.6087.8.camel@popeye>  <alpine.LFD.1.00.0802071629350.9204@apollo.tec.linutronix.de> 
- <1202402704.6087.12.camel@popeye>  <alpine.LFD.1.00.0802071838110.9204@apollo.tec.linutronix.de>  <1202448975.6538.2.camel@popeye>  <alpine.LFD.1.00.0802091053350.3145@apollo.tec.linutronix.de> <1202553464.6386.7.camel@popeye>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sat, 9 Feb 2008 09:07:16 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53895 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbYBIOHO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 09:07:14 -0500
+Date: Sat, 9 Feb 2008 06:07:11 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: preempt rcu bug on s390
+Message-ID: <20080209140711.GA16205@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008, Chris Holvenstot wrote:
-
-> Thomas - 
+On Sat, Feb 09, 2008 at 12:34:35PM +0100, Heiko Carstens wrote:
+> Using CONFIG_PREEMPT_RCU and CONFIG_NO_IDLE_HZ on s390 my system always
+> gets stuck when running with more than one cpu.
+> When booting with four cpus I get all four cpus caught withing cpu_idle
+> and not advancing anymore. However there is the init process which is
+> waitung for synchronize_rcu() to complete (lcrash output):
 > 
-> Attached is the output I believe you requested (standard boot - ommiting
-> the NOHPET directive)
+> STACK TRACE FOR TASK: 0xf84d968 (swapper)
 > 
-> Unless you want to try something else i will run in this configuration
-> today to try and verify that the problem is still with us.
+>  STACK:
+>  0 schedule+842 [0x36c956]
+>  1 schedule_timeout+172 [0x36d0e4]
+>  2 wait_for_common+204 [0x36c398]
+>  3 synchronize_rcu+76 [0x567bc]
+>  4 netlink_change_ngroups+150 [0x2b4302]
+>  5 genl_register_mc_group+256 [0x2b6174]
+>  6 genl_init+188 [0x534e44]
+>  7 kernel_init+444 [0x518334]
+>  8 kernel_thread_starter+6 [0x192a6]
 > 
-> Thanks for th good wishes - it is going to be a while - I had an open
-> heart procedure about two weeks ago and they are not subtle  when they
-> split your chest open.
+> If I change the code so that timer ticks won't be disabled everything
+> runs fine. So my guess is that rcu_needs_cpu() doesn't do the right
+> thing for the rcu preemptible case.
 > 
-> This is why I said that I would be more than happy to do the bisect
-> thing if it comes to that - since I can't go out and chase the ladies I
-> might as well do something useful.
+> Kernel version is git head of today.
+> 
+> Any ideas?
 
-That'd be cool.
- 
-> However, as previously stated I would need a little instruction on how
-> to accoomplish this.
+Does this tree have http://lkml.org/lkml/2008/1/29/208 applied?
 
-Linus gave instructions here:
+If not, could you please check it out?
 
-http://marc.info/?l=linux-kernel&m=118408208816556&w=2
-
-If you have further questions, I'm happy to help.
- 
-> [    0.000000] Kernel command line: root=UUID=4dc2e6b0-c980-418b-8ad0-98358e7ec47d ro quiet splash
-....
-> [    0.004000] HPET not available
-
-Ok. That confirms, that we never even try to touch hpet at all. So the
-mystery why "nohpet" on the kernel command line makes your problem go
-away is yet more mysterious.
-
-Thanks,
-	tglx
+						Thanx, Paul
