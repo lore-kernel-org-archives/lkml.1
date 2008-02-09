@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYBIKV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbYBIK2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbYBIKV1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 05:21:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYBIKVR
+	id S1755610AbYBIK2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 05:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYBIK2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 05:21:17 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:2623 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbYBIKVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 05:21:16 -0500
-Subject: Re: m68knommu compile error
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Adrian Bunk <bunk@kernel.org>
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080208222516.GC6505@cs181133002.pp.htv.fi>
-References: <20080208222516.GC6505@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sat, 09 Feb 2008 11:21:12 +0100
-Message-Id: <1202552472.8936.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Feb 2008 05:28:15 -0500
+Received: from www.tglx.de ([62.245.132.106]:34884 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751032AbYBIK2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 05:28:14 -0500
+Date: Sat, 9 Feb 2008 11:28:01 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/3] Only do century BCD conversion when we know the
+ RTC is BCD
+In-Reply-To: <20080208114.066167427@suse.de>
+Message-ID: <alpine.LFD.1.00.0802091108170.3145@apollo.tec.linutronix.de>
+References: <20080208114.066167427@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-02-09 at 00:25 +0200, Adrian Bunk wrote:
-> Commit 2f569afd9ced9ebec9a6eb3dbf6f83429be0a7b4 breaks m68knommu:
+On Fri, 8 Feb 2008, Andi Kleen wrote:
 
-Does the patch below fixes the problem? I tried to cross compile for
-m68knommu but it seems like you need a special m68k compiler to get it
-compile all the way through. With the patch it did fail with a different
-error, so I assume it is fixed. The problem is that the pgtable_t is
-simply missing for m68knommu, I must have overlooked a reject for one of
-the constant regenerations of the patch to keep up with upstream. Sorry
-about that.
+> 
+> Minor logic fix. The century change was previously always BCD,
+> even when the CMOS data would report itself not being BCD.
 
--- 
-blue skies,
-  Martin.
+Where was it previously always BCD ?
 
-"Reality continues to ruin my life." - Calvin.
+The code flow is taken 1:1 from the original x8664 code. Just the
+BCD_TO_BIN code has been made conditional for i386, which is not
+chanining the logic at all, because RTC_ALWAYS_BCD is always true on
+x8664.
 
----
-[m68knommu] Add pgtable_t.
-    
-Fix the compile error:
-    
-  CC      init/main.o
-In file included from include2/asm/uaccess.h:8,
-                 from include/linux/poll.h:13,
-                 from include/linux/rtc.h:113,
-                 from include/linux/efi.h:19,
-                 from linux-2.6/init/main.c:43:
-include/linux/mm.h:1151:
-error: expected declaration specifiers or '...' before 'pgtable_t'
-make[2]: *** [init/main.o] Error 1
-    
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+While your change does not do any harm due to BCD_TO_BIN(0) = 0, it
+is just not fixing anything.
 
- include/asm-m68knommu/page.h |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -urpN linux-2.6/include/asm-m68knommu/page.h linux-2.6-patched/include/asm-m68knommu/page.h
---- linux-2.6/include/asm-m68knommu/page.h	2008-02-09 11:15:14.000000000 +0100
-+++ linux-2.6-patched/include/asm-m68knommu/page.h	2008-02-09 11:15:21.000000000 +0100
-@@ -31,6 +31,7 @@ typedef struct { unsigned long pte; } pt
- typedef struct { unsigned long pmd[16]; } pmd_t;
- typedef struct { unsigned long pgd; } pgd_t;
- typedef struct { unsigned long pgprot; } pgprot_t;
-+typedef struct page *pgtable_t;
+Thanks,
+	tglx
  
- #define pte_val(x)	((x).pte)
- #define pmd_val(x)	((&x)->pmd[0])
-
-
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  arch/x86/kernel/rtc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux/arch/x86/kernel/rtc.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/rtc.c
+> +++ linux/arch/x86/kernel/rtc.c
+> @@ -130,10 +130,10 @@ unsigned long mach_get_cmos_time(void)
+>  		BCD_TO_BIN(day);
+>  		BCD_TO_BIN(mon);
+>  		BCD_TO_BIN(year);
+> +		BCD_TO_BIN(century);
+>  	}
+>  
+>  	if (century) {
+> -		BCD_TO_BIN(century);
+>  		year += century * 100;
+>  		printk(KERN_INFO "Extended CMOS year: %d\n", century * 100);
+>  	} else {
+> 
