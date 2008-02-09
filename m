@@ -1,169 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYBIVsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYBIVvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbYBIVsb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 16:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYBIVsX
+	id S1756864AbYBIVvR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 16:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYBIVvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 16:48:23 -0500
-Received: from main.gmane.org ([80.91.229.2]:58252 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbYBIVsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 16:48:22 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v4
-Date: Sat, 9 Feb 2008 13:48:05 -0800
-Organization: Linux Foundation
-Message-ID: <20080209134805.29cbc8ae@extreme>
-References: <200801312012.43447.linux@rainbow-software.org>
-	<200802061909.37452.linux@rainbow-software.org>
-	<wrphcglx9w0.fsf@hina.wild-wind.fr.eu.org>
-	<200802092233.10239.linux@rainbow-software.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Feb 2008 16:51:04 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:40157 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216AbYBIVvC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 16:51:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=OdZz+trsYG4s1JBV2WsdV5Jb81nwPFIYmVOL7MUjCJw9zm5FjjU4dtg+Y+l4N8/g1h5JV2pT4bvl3uja0K4an6Q3m6svnzTHL3+vH3/E+PPTjKOW0e14FYl5tUbN0lYsq7wxpQoMZwZXy8ZOsxcqqZs1JhKmXIqyMGX8JvBlw9Y=
+Message-ID: <2c0942db0802091351k6ceb2d28h9f9d5c0fb16e1484@mail.gmail.com>
+Date: Sat, 9 Feb 2008 13:51:00 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Christoph Hellwig" <hch@infradead.org>
+Subject: Re: [PATCH 1/8] kgdb: core API and gdb protocol handler
+Cc: jason.wessel@windriver.com, linux-kernel@vger.kernel.org
+In-Reply-To: <2c0942db0802091146v7b780b7dl4bd745caef900ae7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 75-175-37-168.ptld.qwest.net
-In-Reply-To: <200802092233.10239.linux@rainbow-software.org>
-X-Newsreader: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
-Cc: netdev@vger.kernel.org
+Content-Disposition: inline
+References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com>
+	 <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
+	 <20080209172713.GD15568@infradead.org>
+	 <2c0942db0802091146v7b780b7dl4bd745caef900ae7@mail.gmail.com>
+X-Google-Sender-Auth: 0be1b841806901d1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008 22:33:07 +0100
-Ondrej Zary <linux@rainbow-software.org> wrote:
+2008/2/9 Ray Lee <ray-lk@madrabbit.org>:
+> On Feb 9, 2008 9:27 AM, Christoph Hellwig <hch@infradead.org> wrote:
+> > On Sat, Feb 09, 2008 at 07:35:07AM -0600, jason.wessel@windriver.com wrote:
+> > > +#ifdef __BIG_ENDIAN
+> > > +             *buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> > > +             *buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> > > +             *buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> > > +             *buf++ = hexchars[tmp_s & 0xf];
+> > > +#else
+> > > +             *buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> > > +             *buf++ = hexchars[tmp_s & 0xf];
+> > > +             *buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> > > +             *buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> > > +#endif
+> >
+> > This is really ugly, but I don't really know a good way around it
+> > either.
+>
+> void u32_to_hex(u32 val, unsigned char *buf)
+> {
+>          int i;
+>
+>          for (i=7; i>=0; i--) {
+>                   buf[i] = hexchars[ val & 0x0f ];
+>                   val >>= 4;
+>          }
+> }
+>
+>          u32_to_hex(tmp_s, buf);
+>          buf += 8;
+>
 
-> Hello,
-> this patch converts 3c509 driver to isa_driver and pnp_driver. The result is 
-> that autoloading using udev and hibernation works with ISA PnP cards. It also 
-> adds hibernation support for non-PnP ISA cards.
-> 
-> xcvr module parameter was removed as its value was not used.
-> 
-> Tested using 3 ISA cards in various combinations of PnP and non-PnP modes. 
-> EISA and MCA only compile-tested.
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> 
-> --- linux-2.6.24-orig/drivers/net/3c509.c	2008-01-27 19:48:19.000000000 +0100
-> +++ linux-2.6.24-pentium/drivers/net/3c509.c	2008-02-07 17:58:45.000000000 +0100
-> @@ -54,25 +54,24 @@
->  		v1.19a 28Oct2002 Davud Ruggiero <jdr@farfalle.com>
->  			- Increase *read_eeprom udelay to workaround oops with 2 cards.
->  		v1.19b 08Nov2002 Marc Zyngier <maz@wild-wind.fr.eu.org>
-> -		    - Introduce driver model for EISA cards.
-> +			- Introduce driver model for EISA cards.
-> +		v1.20  04Feb2008 Ondrej Zary <linux@rainbow-software.org>
-> +			- convert to isa_driver and pnp_driver and some cleanups
->  */
+Sorry, rewrote what I thought I read, not what was there. I guess
+you'd want it more along the lines of
 
-Don't bother with comment, kernel uses git change log to figure out
-who to blame.
+   void u32_to_hex(u32 x, unsigned char *buf)
+   {
+          int i;
+          int val = cpu_to_be32( x );
 
-
->  #define DRV_NAME	"3c509"
-> -#define DRV_VERSION	"1.19b"
-> -#define DRV_RELDATE	"08Nov2002"
-> +#define DRV_VERSION	"1.20"
-> +#define DRV_RELDATE	"04Feb2008"
->  
->  /* A few values that may be tweaked. */
->  
->  /* Time in jiffies before concluding the transmitter is hung. */
->  #define TX_TIMEOUT  (400*HZ/1000)
-> -/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
-> -static int max_interrupt_work = 10;
->  
->  #include <linux/module.h>
-> -#ifdef CONFIG_MCA
->  #include <linux/mca.h>
-> -#endif
-> -#include <linux/isapnp.h>
-> +#include <linux/isa.h>
-> +#include <linux/pnp.h>
->  #include <linux/string.h>
->  #include <linux/interrupt.h>
->  #include <linux/errno.h>
-> @@ -97,10 +96,6 @@
->  
->  static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
->  
-> -#if defined(CONFIG_PM) && (defined(CONFIG_MCA) || defined(CONFIG_EISA))
-> -#define EL3_SUSPEND
-> -#endif
-> -
->  #ifdef EL3_DEBUG
->  static int el3_debug = EL3_DEBUG;
->  #else
-> @@ -111,6 +106,7 @@
->   * a global variable so that the mca/eisa probe routines can increment
->   * it */
->  static int el3_cards = 0;
-> +#define EL3_MAX_CARDS 8
->  
->  /* To minimize the size of the driver source I only define operating
->     constants if they are used several times.  You'll need the manual
-> @@ -119,7 +115,7 @@
->  #define EL3_DATA 0x00
->  #define EL3_CMD 0x0e
->  #define EL3_STATUS 0x0e
-> -#define	 EEPROM_READ 0x80
-> +#define	EEPROM_READ 0x80
->  
->  #define EL3_IO_EXTENT	16
->  
-> @@ -168,23 +164,31 @@
->   */
->  #define SKB_QUEUE_SIZE	64
->  
-> +typedef enum { EL3_ISA, EL3_PNP, EL3_MCA, EL3_EISA } el3_cardtype;
-> +
-
-No typedef please (see checkpatch)
-
->  struct el3_private {
->  	struct net_device_stats stats;
-
-Use network device stats in net_device now
-> -	struct net_device *next_dev;
->  	spinlock_t lock;
->  	/* skb send-queue */
->  	int head, size;
->  	struct sk_buff *queue[SKB_QUEUE_SIZE];
-
-What about sk_buff_head (linked list instead)?
-> -	enum {
-> -		EL3_MCA,
-> -		EL3_PNP,
-> -		EL3_EISA,
-> -	} type;						/* type of device */
-> -	struct device *dev;
-> +	el3_cardtype type;
->  };
-> -static int id_port __initdata = 0x110;	/* Start with 0x110 to avoid new sound cards.*/
-> -static struct net_device *el3_root_dev;
-> +static int id_port;
-> +static int current_tag;
-> +static struct net_device *el3_devs[EL3_MAX_CARDS];
-
-I know is only ISA, but having a limit seems silly, can't the device just
-use allocated space like other drivers.
-
-> +
-> +/* Parameters that may be passed into the module. */
-> +static int debug = -1;
-> +static int irq[] = {-1, -1, -1, -1, -1, -1, -1, -1};
-> +/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
-> +static int max_interrupt_work = 10;
-> +#ifdef CONFIG_PNP
-> +static int nopnp;
-> +#endif
->  
-
-
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
-
-
+          for (i=7; ...
