@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYBIQUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYBIQVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbYBIQUy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 11:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYBIQSw
+	id S1757330AbYBIQVX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 11:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYBIQVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 11:18:52 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:35087 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755378AbYBIQS3 (ORCPT
+	Sat, 9 Feb 2008 11:21:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47268 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754142AbYBIQVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 11:18:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=Gc2ZcomYM4Vi/id1q2jFjUV7YqvWLM2u1HVnY6vZe8SVwk46LuIWFwR3N9JpDJ4bOT2jcJY+BOgVJONU+7MU7SPJAbRlWSzqHtyJGFZYncjOb5eBg14DK//1G++zjvQgUKXcAw7MGjGLfb6gXizEGqLNlVh/UL+DW/bDuQGAxS4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: ide-tape redux (was: Re:)
-Date: Sat, 9 Feb 2008 17:25:29 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1202132440-26648-1-git-send-email-petkovbb@gmail.com> <20080206052343.GA14349@gollum.tnic> <20080206052715.GB14349@gollum.tnic>
-In-Reply-To: <20080206052715.GB14349@gollum.tnic>
-MIME-Version: 1.0
+	Sat, 9 Feb 2008 11:21:05 -0500
+Date: Sat, 9 Feb 2008 17:56:19 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Prakash Punnoor <prakash@punnoor.de>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       lenb@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
+Message-ID: <20080209165619.GB24548@one.firstfloor.org>
+References: <20080207195519.GA21772@basil.nowhere.org> <200802091253.11478.prakash@punnoor.de> <20080209143131.GD22569@one.firstfloor.org> <200802091651.06240.prakash@punnoor.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802091725.29207.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200802091651.06240.prakash@punnoor.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 February 2008, Borislav Petkov wrote:
-> ... and while we're at it ...
+On Sat, Feb 09, 2008 at 04:51:05PM +0100, Prakash Punnoor wrote:
+> On the day of Saturday 09 February 2008 Andi Kleen hast written:
+> > We discussed this back then with Nvidia engineers and they stated
+> > that only NF5 would need timer overrides.
 > 
-> commit c824f79fe4040f7541d7e35c546bb57a22d2fe11
-> Author: Borislav Petkov <petkovbb@gmail.com>
-> Date:   Wed Feb 6 06:23:10 2008 +0100
-> 
->     ide-tape: move all struct and other defs to the top
->     
->     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> Can I get a link which verifies your statement? I provided one which kind of 
+> contradicts yours.
 
-looks good, but please do it before
-"remove atomic test/set macros" patch
+Sorry cannot supply links to them, they were private mail. For some
+reason the Nvidia people seem to be shy to post to mailing lists.
+
+iirc the thread which inspired this patch (together with several
+bugs in both novell and kernel.org bugzilla) was 
+
+http://marc.info/?t=116175224500001&r=1&w=2
+http://marc.info/?t=116230518000004&r=1&w=2
+
+but you won't find the ultimate conclusion in there unfortunately.
+
+So you have to trust me on that -- it's a bit similar to as to I have
+to trust your not yet produced boot log and test results.
+
+-Andi
