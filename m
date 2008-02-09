@@ -1,91 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbYBILoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYBILpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756875AbYBILoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYBILoL
+	id S1757485AbYBILpR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYBILpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:44:11 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:43016 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752193AbYBILoJ (ORCPT
+	Sat, 9 Feb 2008 06:45:01 -0500
+Received: from phoenix.slamd64.com ([217.10.145.2]:47303 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbYBILo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:44:09 -0500
-Date: Sat, 9 Feb 2008 11:44:05 +0000
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH2] keyboard notifier documentation
-Message-ID: <20080209114405.GD4379@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	torvalds@osdl.org, linux-input@vger.kernel.org, dtor@mail.ru,
-	linux-kernel@vger.kernel.org
-References: <20080209013322.GC4463@implementation>
+	Sat, 9 Feb 2008 06:44:58 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0 (#2)
+Date: Sat, 9 Feb 2008 11:42:17 +0000
+User-Agent: KMail/1.9.7
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <200802080145.16774.lenb@kernel.org> <20080209061718.GA14200@elte.hu> <20080209061936.GA16849@elte.hu>
+In-Reply-To: <20080209061936.GA16849@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080209013322.GC4463@implementation>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Cloudmark-Analysis: v=1.0 c=1 a=vgUJB+MMWQXyFPPprAVJSw==:17 a=j-pWxYJx8N1VQ14GBN0A:9 a=sZwwuO8ceSid-uJfSYKz5k4lMjQA:4 a=9B0AjoBSoiEA:10 a=3N6FRji80VMA:10 a=ziFrdkHw70AA:10
+Message-Id: <200802091142.18596.carlos@strangeworlds.co.uk>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Sat, 09 Feb 2008 11:42:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the keyboard notifier.
+On Saturday 09 February 2008 06:19:36 Ingo Molnar wrote:
+> (Carlos Cc:-ed too)
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> > * Len Brown <lenb@kernel.org> wrote:
+> > > Len Brown (6):
+> > >       ACPI: add newline to printk
+> > >       ACPI: build WMI on X86 only
+> > >       acer-wmi, tc1100-wmi: select ACPI_WMI
+> >
+> > hm, this new WMI code caused a bootup crash in the overnight x86.git
+> > tests:
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+I suspect this is a problem on systems without ACPI-WMI in the DSDT - though I 
+can't reproduce this here on my other box that lacks ACPI-WMI.
 
---- /dev/null	2008-02-09 01:22:34.790011677 +0000
-+++ linux/Documentation/input/notifier.txt	2008-02-09 01:28:12.000000000 +0000
-@@ -0,0 +1,52 @@
-+Keyboard notifier
+Ingo, can you try the patch below and see if this cures it?
+---
+ACPI: WMI: Fix crash on WMI free systems
+
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+
+We have two pointers in the find_guid() code that aren't checked before
+we use them. On ACPI-WMI free systems, this can sometimes cause a crash if
+another driver tries to use any of the methods provided by WMI.
+
+Also throw in an extra early check to see if the GUID list is empty, so we
+can try to bail out before reaching this code as well.
+
+Spotted by Ingo Molnar.
+
+Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Len Brown <lenb@kernel.org>
+---
+
+ drivers/acpi/wmi.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
+index 36b84ab..b54e734 100644
+--- a/drivers/acpi/wmi.c
++++ b/drivers/acpi/wmi.c
+@@ -201,12 +201,20 @@ static bool find_guid(const char *guid_string, struct wmi_block **out)
+ 	struct guid_block *block;
+ 	struct list_head *p;
+ 
++	if (list_empty(&wmi_blocks.list))
++		return 0;
 +
-+One can use register_keyboard_notifier to get called back on keyboard
-+events (see kbd_keycode() function for details).  The passed structure is
-+keyboard_notifier_param:
+ 	wmi_parse_guid(guid_string, tmp);
+ 	wmi_swap_bytes(tmp, guid_input);
+ 
+ 	list_for_each(p, &wmi_blocks.list) {
+ 		wblock = list_entry(p, struct wmi_block, list);
++		if (!wblock)
++			return 0;
 +
-+- 'vc' always provide the VC for which the keyboard event applies;
-+- 'down' is 1 for a key press event, 0 for a key release;
-+- 'shift' is the current modifier state, mask bit indexes are KG_*;
-+- 'value' depends on the type of event.
-+
-+- KBD_KEYCODE events are always sent before other events, value is the keycode.
-+- KBD_UNBOUND_KEYCODE events are sent if the keycode is not bound to a keysym.
-+  value is the keycode.
-+- KBD_UNICODE events are sent if the keycode -> keysym translation produced a
-+  unicode character. value is the unicode value.
-+- KBD_KEYSYM events are sent if the keycode -> keysym translation produced a
-+  non-unicode character. value is the keysym.
-+- KBD_POST_KEYSYM events are sent after the treatment of non-unicode keysyms.
-+  That permits one to inspect the resulting LEDs for instance.
-+
-+For each kind of event but the last, the callback may return NOTIFY_STOP in
-+order to "eat" the event: the notify loop is stopped and the keyboard event is
-+dropped.
-+
-+In a rough C snippet, we have:
-+
-+kbd_keycode(keycode) {
-+	...
-+	params.value = keycode;
-+	if (notifier_call_chain(KBD_KEYCODE,&params) == NOTIFY_STOP)
-+	    || !bound) {
-+		notifier_call_chain(KBD_UNBOUND_KEYCODE,&params);
-+		return;
-+	}
-+
-+	if (unicode) {
-+		param.value = unicode;
-+		if (notifier_call_chain(KBD_UNICODE,&params) == NOTIFY_STOP)
-+			return;
-+		emit unicode;
-+		return;
-+	}
-+
-+	params.value = keysym;
-+	if (notifier_call_chain(KBD_KEYSYM,&params) == NOTIFY_STOP)
-+		return;
-+	apply keysym;
-+	notifier_call_chain(KBD_POST_KEYSYM,&params);
-+}
-+
-+NOTE: This notifier is usually called from interrupt context.
+ 		block = &wblock->gblock;
++		if (!block)
++			return 0;
+ 
+ 		if (memcmp(block->guid, guid_input, 16) == 0) {
+ 			if (out)
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
