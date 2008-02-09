@@ -1,98 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbYBIABb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYBIABx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759367AbYBIABb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbYBIABR
+	id S1758778AbYBIABx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbYBIAB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:01:17 -0500
-Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:41808 "HELO
-	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755610AbYBIABP (ORCPT
+	Fri, 8 Feb 2008 19:01:27 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:32499 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759206AbYBIABZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:01:15 -0500
-X-YMail-OSG: 4XVLOqkVM1lm4rja6cRjftoQSrwR_wHPAdCRxXxxnycX3x_SgG19MC2ypCTCrJQ8tFXoPgNneck4y2324UJxk2vz5X1jTytqk7sj7byDsCDa1doGtSo-
+	Fri, 8 Feb 2008 19:01:25 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=yAPqU8GNwGKg4P2n1i+xmLvkbJFrxgJKqJ8Ae0lzEMN99CBOZOWD8DeWVZts8M1CYNv59k8YMOkybuCnVRqDhSlfMc64aizNuqqP34+6fm5Qs60nxJrOkdO6S/y9rUpaU1Q4I9KNPBNHUY8X1erNB8Df4l9Wz3f0HbO067pafLA=  ;
+X-YMail-OSG: DFfp.H0VM1ldAhIE2t9AK7ybY9tac6ctKAj_tHobEE7K7lC56qwieQuyiYUK6WTov4UtaeBbiw--
 X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: ltuikov@yahoo.com, Bart Van Assche <bart.vanassche@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ming Zhang <blackmagic02881@gmail.com>
-In-Reply-To: <47AC6A6A.90905@vlnb.net>
-References: <393719.81864.qm@web31808.mail.mud.yahoo.com>
-	 <1202471639.1805.149.camel@haakon2.linux-iscsi.org>
-	 <47AC6A6A.90905@vlnb.net>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 16:00:27 -0800
-Message-Id: <1202515227.1805.167.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+From: David Brownell <david-b@pacbell.net>
+To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+Subject: Re: [PATCH 1/2] prevent gpio chip drivers from unloading while used
+Date: Fri, 8 Feb 2008 16:01:10 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0802081159580.5301@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.0802081159580.5301@axis700.grange>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802081601.10673.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-08 at 17:42 +0300, Vladislav Bolkhovitin wrote:
-> Nicholas A. Bellinger wrote:
-> > On Thu, 2008-02-07 at 12:37 -0800, Luben Tuikov wrote:
-> > 
-> >>Is there an open iSCSI Target implementation which does NOT
-> >>issue commands to sub-target devices via the SCSI mid-layer, but
-> >>bypasses it completely?
-> >>
-> >>   Luben
-> >>
-> > 
-> > 
-> > Hi Luben,
-> > 
-> > I am guessing you mean futher down the stack, which I don't know this to
-> > be the case.  Going futher up the layers is the design of v2.9 LIO-SE.
-> > There is a diagram explaining the basic concepts from a 10,000 foot
-> > level.
-> > 
-> > http://linux-iscsi.org/builds/user/nab/storage-engine-concept.pdf
-> > 
-> > Note that only traditional iSCSI target is currently implemented in v2.9
-> > LIO-SE codebase in the list of target mode fabrics on left side of the
-> > layout.  The API between the protocol headers that does
-> > encoding/decoding target mode storage packets is probably the least
-> > mature area of the LIO stack (because it has always been iSCSI looking
-> > towards iSER :).  I don't know who has the most mature API between the
-> > storage engine and target storage protocol for doing this between SCST
-> > and STGT, I am guessing SCST because of the difference in age of the
-> > projects.  Could someone be so kind to fill me in on this..?
+On Friday 08 February 2008, Guennadi Liakhovetski wrote:
+> As long as one or more GPIOs on a gpio chip are used its driver should not 
+> be unloaded.
+
+The mechanism currently in place is to have gpiochip_remove() fail
+if the platform's teardown() logic doesn't reject it.  (It may be
+practical to have the teardown code get rid of the users...)  That
+would be reflected as an "rmmod" failure.
+
+Are you saying that doesn't work?
+
+
+I'm not a huge fan of explicit manipulation of module refcounts,
+though there can be a place for such things.
+
+Supporting removal of a gpio_chip is my least favorite feature of
+this framework.  Especially for controller drivers which could
+realistically manage per-GPIO IRQs ... since genirq doesn't seem to
+like the notion of irq_chip removal.  (The MCP23s08 and its I2C
+sibling the MCP23008 have real IRQ control logic, but the pca953x
+and pcf857x chips have a much less functional IRQ mechanism.)
+
+
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 > 
-> SCST uses scsi_execute_async_fifo() function to submit commands to SCSI 
-> devices in the pass-through mode. This function is slightly modified 
-> version of scsi_execute_async(), which submits requests in FIFO order 
-> instead of LIFO as scsi_execute_async() does (so with 
-> scsi_execute_async() they are executed in the reverse order). 
-> Scsi_execute_async_fifo() added as a separate patch to the kernel.
+> ---
+> 
+> Note, that existing drivers do not have to be modified,
 
-The LIO-SE PSCSI Plugin also depends on scsi_execute_async() for builds
-on >= 2.6.18.  Note in the core LIO storage engine code (would be
-iscsi_target_transport.c), there is no subsystem dependence logic.  The
-LIO-SE API is what allows the SE plugins to remain simple and small:
+If they call gpiochip_remove(), they should be modified to ensure
+they initialize this new "owner" field.  That would be all of the
+drivers currently in drivers/gpio (not just pca953x).
 
--rw-r--r-- 1 root root 35008 2008-02-02 03:25 iscsi_target_pscsi.c
--rw-r--r-- 1 root root  7537 2008-02-02 17:27 iscsi_target_pscsi.h
--rw-r--r-- 1 root root 18269 2008-02-04 02:23 iscsi_target_iblock.c
--rw-r--r-- 1 root root  6834 2008-02-04 02:25 iscsi_target_iblock.h
--rw-r--r-- 1 root root 30611 2008-02-02 03:25 iscsi_target_file.c
--rw-r--r-- 1 root root  7833 2008-02-02 17:27 iscsi_target_file.h
--rw-r--r-- 1 root root 35154 2008-02-02 04:01 iscsi_target_rd.c
--rw-r--r-- 1 root root  9900 2008-02-02 17:27 iscsi_target_rd.h
 
-It also means that the core LIO-SE code does not have to change when the
-subsystem APIs change.  This has been important in the past for the
-project, but for upstream code, probably would not make a huge
-difference.
+> for example those,  
+> that are always statically linked in the kernel, as long as the respective 
+> struct gpio_chip is nullified before calling gpiochip_add().
 
---nab
+By "nullified", I presume you mean to suggest that the "owner" field
+be initialized to NULL ... which will normally be the case, when the
+gpio_chip is a static data structure or comes from kzalloc().
+
+ 
+> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> index d8db2f8..dd535e1 100644
+> --- a/drivers/gpio/gpiolib.c
+> +++ b/drivers/gpio/gpiolib.c
+> @@ -177,6 +177,9 @@ int gpio_request(unsigned gpio, const char *label)
+>  	if (desc->chip == NULL)
+>  		goto done;
+>  
+> +	if (!try_module_get(desc->chip->owner))
+> +		goto done;
+> +
+>  	/* NOTE:  gpio_request() can be called in early boot,
+>  	 * before IRQs are enabled.
+>  	 */
+> @@ -184,8 +187,10 @@ int gpio_request(unsigned gpio, const char *label)
+>  	if (test_and_set_bit(FLAG_REQUESTED, &desc->flags) == 0) {
+>  		desc_set_label(desc, label ? : "?");
+>  		status = 0;
+> -	} else
+> +	} else {
+>  		status = -EBUSY;
+> +		module_put(desc->chip->owner);
+> +	}
+>  
+>  done:
+>  	if (status)
+> @@ -209,9 +214,10 @@ void gpio_free(unsigned gpio)
+>  	spin_lock_irqsave(&gpio_lock, flags);
+>  
+>  	desc = &gpio_desc[gpio];
+> -	if (desc->chip && test_and_clear_bit(FLAG_REQUESTED, &desc->flags))
+> +	if (desc->chip && test_and_clear_bit(FLAG_REQUESTED, &desc->flags)) {
+>  		desc_set_label(desc, NULL);
+> -	else
+> +		module_put(desc->chip->owner);
+> +	} else
+>  		WARN_ON(extra_checks);
+>  
+>  	spin_unlock_irqrestore(&gpio_lock, flags);
+> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+> index 806b86c..f6d389a 100644
+> --- a/include/asm-generic/gpio.h
+> +++ b/include/asm-generic/gpio.h
+> @@ -3,6 +3,8 @@
+>  
+>  #ifdef CONFIG_HAVE_GPIO_LIB
+>  
+> +#include <linux/module.h>
+> +
+>  /* Platforms may implement their GPIO interface with library code,
+>   * at a small performance cost for non-inlined operations and some
+>   * extra memory (for code and for per-GPIO table entries).
+> @@ -52,6 +54,7 @@ struct seq_file;
+>   */
+>  struct gpio_chip {
+>  	char			*label;
+> +	struct module		*owner;
+>  
+>  	int			(*direction_input)(struct gpio_chip *chip,
+>  						unsigned offset);
+> 
+
 
