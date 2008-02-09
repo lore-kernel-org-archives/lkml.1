@@ -1,84 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYBIIYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYBII3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbYBIIYp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 03:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYBIIYf
+	id S1755247AbYBII3r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 03:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYBII3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 03:24:35 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:38570 "EHLO smtp.cs.aau.dk"
+	Sat, 9 Feb 2008 03:29:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48720 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbYBIIYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 03:24:34 -0500
-Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some
-	processors
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com
-In-Reply-To: <1202512812.17934.680.camel@cinder.waste.org>
-References: <200802082347.25364.michael-lists@free-electrons.com>
-	 <1202512812.17934.680.camel@cinder.waste.org>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 09 Feb 2008 09:30:17 +0100
-Message-Id: <1202545817.6722.24.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 8bit
+	id S1751072AbYBII3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 03:29:38 -0500
+Date: Sat, 9 Feb 2008 09:27:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Zhang Rui <rui.zhang@intel.com>,
+       Thomas Sujith <sujith.thomas@intel.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0
+Message-ID: <20080209082748.GA7792@elte.hu>
+References: <200802070450.09098.lenb@kernel.org> <20080209063439.GA19995@elte.hu> <20080209063619.GA20225@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080209063619.GA20225@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fre, 08 02 2008 kl. 17:20 -0600, skrev Matt Mackall:
-> On Fri, 2008-02-08 at 23:47 +0100, Michael Opdenacker wrote:
-> > This patch against x86/mm tries to revive an original patch
-> > from Matt Mackall which didn't get merged at that time. It makes
-> > it possible to disable support code for some processors. This can
-> > be useful to support only the exact processor type used
-> > in a given system.
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > i suspect it might be this one:
 > > 
-> > I may have made wrong assumptions with the code handling
-> > force_mwait. As force_mwait is only declared in
-> > arch/x86/kernel/cpu/amd.c, which is only compiled
-> > when CONFIG_X86_32 is set, I thought it was safe
-> > to make the code depend on CONFIG_CPU_SUP_AMD,
-> > but I could be wrong.
+> > >       ACPI: register ACPI thermal zone as generic thermal zone devices
 > > 
-> > Your comments are more than welcome! To make the code
-> > cleaner, I could use empty inline functions instead
-> > of ifdef's, as suggested in Documentation/SubmittingPatches.
+> > config attached.
 > 
-> Please include the output of size with all these options on and off.
+> yep, reverting 05a83d972293f3 fixes the build failure.
 
-The build of my currently running kernel for my laptop has
-$ size -t amd.o cyrix.o centaur.o transmeta.o intel.o nexgen.o umc.o
-   text	   data	    bss	    dec	    hex	filename
-   2809	    316	      0	   3125	    c35	amd.o
-   2387	    856	      0	   3243	    cab	cyrix.o
-   1514	    312	      0	   1826	    722	centaur.o
-   1279	    312	      0	   1591	    637	transmeta.o
-   1783	    316	      0	   2099	    833	intel.o
-    126	    312	      0	    438	    1b6	nexgen.o
-     41	    312	      0	    353	    161	umc.o
-   9939	   2736	      0	  12675	   3183	(TOTALS)
+that fixed the build failure on 32-bit, but there's another one i just 
+hit on 64-bit x86:
 
-That is without optimize for size compilation, with that set I get
-$ size -t amd.o cyrix.o centaur.o transmeta.o intel.o nexgen.o umc.o
-   text	   data	    bss	    dec	    hex	filename
-   2300	    316	      0	   2616	    a38	amd.o
-   2132	    820	      0	   2952	    b88	cyrix.o
-   1325	    312	      0	   1637	    665	centaur.o
-   1151	    312	      0	   1463	    5b7	transmeta.o
-   1575	    316	      0	   1891	    763	intel.o
-    107	    312	      0	    419	    1a3	nexgen.o
-     41	    312	      0	    353	    161	umc.o
-   8631	   2700	      0	  11331	   2c43	(TOTALS)
+drivers/built-in.o: In function `acpi_video_bus_put_devices':
+video.c:(.text+0x5540d): undefined reference to `thermal_cooling_device_unregister'
+drivers/built-in.o: In function `acpi_video_bus_add':
+video.c:(.text+0x56994): undefined reference to `thermal_cooling_device_register'
 
-I don't think the code changes in the patch do much with respect to
-size.
+which is due to:
 
+  commit 702ed512de9c8a67a69a981c73b7337c2131f198
+  Date:   Thu Jan 17 15:51:22 2008 +0800
 
-Simon Holm Thøgersen
+      ACPI: register ACPI Video LCD as generic thermal cooling device
 
+the commit couldnt be reverted cleanly, i've done a manual fixup of the 
+revert (find the patch below).
+
+but i suspect the third "generic thermal cooling device" patch might be 
+broken too:
+
+  commit d9460fd227ed2ce52941b6a12ad4de05c195f6aa
+  Date:   Thu Jan 17 15:51:23 2008 +0800
+
+      ACPI: register ACPI Processor as generic thermal cooling device
+
+so i've preventively reverted that too, to keep x86-qa running. (that 
+reverts cleanly without manual merging)
+
+	Ingo
+
+-------------------->
+Subject: x86: acpi-revert2
+From: Ingo Molnar <mingo@elte.hu>
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/acpi/video.c |   78 ---------------------------------------------------
+ 1 file changed, 1 insertion(+), 77 deletions(-)
+
+Index: linux/drivers/acpi/video.c
+===================================================================
+--- linux.orig/drivers/acpi/video.c
++++ linux/drivers/acpi/video.c
+@@ -34,7 +34,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/input.h>
+ #include <linux/backlight.h>
+-#include <linux/thermal.h>
+ #include <linux/video_output.h>
+ #include <asm/uaccess.h>
+ 
+@@ -185,7 +184,6 @@ struct acpi_video_device {
+ 	struct acpi_device *dev;
+ 	struct acpi_video_device_brightness *brightness;
+ 	struct backlight_device *backlight;
+-	struct thermal_cooling_device *cdev;
+ 	struct output_device *output_dev;
+ };
+ 
+@@ -348,54 +346,6 @@ static struct output_properties acpi_out
+ 	.set_state = acpi_video_output_set,
+ 	.get_status = acpi_video_output_get,
+ };
+-
+-
+-/* thermal cooling device callbacks */
+-static int video_get_max_state(struct thermal_cooling_device *cdev, char *buf)
+-{
+-	struct acpi_device *device = cdev->devdata;
+-	struct acpi_video_device *video = acpi_driver_data(device);
+-
+-	return sprintf(buf, "%d\n", video->brightness->count - 3);
+-}
+-
+-static int video_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
+-{
+-	struct acpi_device *device = cdev->devdata;
+-	struct acpi_video_device *video = acpi_driver_data(device);
+-	unsigned long level;
+-	int state;
+-
+-	acpi_video_device_lcd_get_level_current(video, &level);
+-	for (state = 2; state < video->brightness->count; state++)
+-		if (level == video->brightness->levels[state])
+-			return sprintf(buf, "%d\n",
+-				       video->brightness->count - state - 1);
+-
+-	return -EINVAL;
+-}
+-
+-static int
+-video_set_cur_state(struct thermal_cooling_device *cdev, unsigned int state)
+-{
+-	struct acpi_device *device = cdev->devdata;
+-	struct acpi_video_device *video = acpi_driver_data(device);
+-	int level;
+-
+-	if ( state >= video->brightness->count - 2)
+-		return -EINVAL;
+-
+-	state = video->brightness->count - state;
+-	level = video->brightness->levels[state -1];
+-	return acpi_video_device_lcd_set_level(video, level);
+-}
+-
+-static struct thermal_cooling_device_ops video_cooling_ops = {
+-	.get_max_state = video_get_max_state,
+-	.get_cur_state = video_get_cur_state,
+-	.set_cur_state = video_set_cur_state,
+-};
+-
+ /* --------------------------------------------------------------------------
+                                Video Management
+    -------------------------------------------------------------------------- */
+@@ -714,7 +664,6 @@ static void acpi_video_device_find_cap(s
+ 	kfree(obj);
+ 
+ 	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
+-		int result;
+ 		static int count = 0;
+ 		char *name;
+ 		name = kzalloc(MAX_NAME_LEN, GFP_KERNEL);
+@@ -727,25 +676,8 @@ static void acpi_video_device_find_cap(s
+ 		device->backlight->props.max_brightness = device->brightness->count-3;
+ 		device->backlight->props.brightness = acpi_video_get_brightness(device->backlight);
+ 		backlight_update_status(device->backlight);
+-		kfree(name);
+ 
+-		device->cdev = thermal_cooling_device_register("LCD",
+-					device->dev, &video_cooling_ops);
+-		if (device->cdev) {
+-			printk(KERN_INFO PREFIX
+-				"%s is registered as cooling_device%d\n",
+-				device->dev->dev.bus_id, device->cdev->id);
+-			result = sysfs_create_link(&device->dev->dev.kobj,
+-					  &device->cdev->device.kobj,
+-					  "thermal_cooling");
+-			if (result)
+-				printk(KERN_ERR PREFIX "Create sysfs link\n");
+-			result = sysfs_create_link(&device->cdev->device.kobj,
+-					  &device->dev->dev.kobj,
+-					  "device");
+-                        if (result)
+-				printk(KERN_ERR PREFIX "Create sysfs link\n");
+-		}
++		kfree(name);
+ 	}
+ 	if (device->cap._DCS && device->cap._DSS){
+ 		static int count = 0;
+@@ -1807,14 +1739,6 @@ static int acpi_video_bus_put_one_device
+ 					    ACPI_DEVICE_NOTIFY,
+ 					    acpi_video_device_notify);
+ 	backlight_device_unregister(device->backlight);
+-	if (device->cdev) {
+-		sysfs_remove_link(&device->dev->dev.kobj,
+-				  "thermal_cooling");
+-		sysfs_remove_link(&device->cdev->device.kobj,
+-				  "device");
+-		thermal_cooling_device_unregister(device->cdev);
+-		device->cdev = NULL;
+-	}
+ 	video_output_unregister(device->output_dev);
+ 
+ 	return 0;
