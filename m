@@ -1,198 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbYBIMIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbYBIMJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760289AbYBIMIw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 07:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYBIMGY
+	id S1760488AbYBIMJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 07:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbYBIMG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 07:06:24 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:37331 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758656AbYBIMGV (ORCPT
+	Sat, 9 Feb 2008 07:06:58 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:27191 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759398AbYBIMG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 07:06:21 -0500
-Date: Sat, 09 Feb 2008 04:13:52 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] scsi: ses fix for len and mem leaking when fail to add intf
-To: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       kristen.c.accardi@intel.com
-Message-id: <200802090413.53275.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Sat, 9 Feb 2008 07:06:57 -0500
+X-YMail-OSG: VGFBVk8VM1m33QFOVdwogTwhZqTKN66OTJGJGoSnWz8sPhBP5weY9y47wp48MyukmriLbQjK7MWCs1u7dMnBt07iGjMkJKZ6kKOqwsuYP2aekzUkog--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: struct page vs page_link
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Mark Tuttle <marklinux@tuttlelabs.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9803672c0802082228h2c3f543ak8c631fcd3a8077ea@mail.gmail.com>
+References: <9803672c0802082228h2c3f543ak8c631fcd3a8077ea@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 09 Feb 2008 04:06:17 -0800
+Message-Id: <1202558777.1805.220.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] scsi: ses fix for len and mem leaking when fail to add intf
+On Sat, 2008-02-09 at 01:28 -0500, Mark Tuttle wrote:
+> Regarding:
+> commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+> 
+> This actually breaks the 802.11 subsystem (http://80211.sf.net) which
+> relies on the page struct. (ieee80211_crypt_wep.c, line 190) Can
+> anyone suggest an alternative kernel function or method? As of 2.6.24,
+> the 802.11 subsystem cannot compile.
+> 
 
-change to u32 before left shifting char
-also fix leaking with scomp leaking when failing.
+Greetings Mark,
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+I have been updating the LIO-Target codebase to 2.6.24 recently, and
+posted some information about what I ended up doing for struct
+scatterlist->page changing to scatterlist->page_link and
+include/linux/scatterlist.h
 
-Index: linux-2.6/drivers/scsi/ses.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/ses.c
-+++ linux-2.6/drivers/scsi/ses.c
-@@ -369,7 +369,7 @@ static void ses_match_to_enclosure(struc
- 			     VPD_INQUIRY_SIZE, NULL, SES_TIMEOUT, SES_RETRIES))
- 		goto free;
- 
--	len = (buf[2] << 8) + buf[3];
-+	len = ((u32)buf[2] << 8) + buf[3];
- 	desc = buf + 4;
- 	while (desc < buf + len) {
- 		enum scsi_protocol proto = desc[0] >> 4;
-@@ -420,7 +420,7 @@ static int ses_intf_add(struct class_dev
- 
- 	if (!scsi_device_enclosure(sdev)) {
- 		/* not an enclosure, but might be in one */
--		edev = 	enclosure_find(&sdev->host->shost_gendev);
-+		edev = enclosure_find(&sdev->host->shost_gendev);
- 		if (edev) {
- 			ses_match_to_enclosure(edev, sdev);
- 			class_device_put(&edev->cdev);
-@@ -451,18 +451,18 @@ static int ses_intf_add(struct class_dev
- 		goto err_free;
- 	}
- 
--	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
-+	len = ((u32)hdr_buf[2] << 8) + hdr_buf[3] + 4;
- 	buf = kzalloc(len, GFP_KERNEL);
- 	if (!buf)
- 		goto err_free;
- 
--	ses_dev->page1 = buf;
--	ses_dev->page1_len = len;
--
- 	result = ses_recv_diag(sdev, 1, buf, len);
- 	if (result)
- 		goto recv_failed;
- 
-+	ses_dev->page1 = buf;
-+	ses_dev->page1_len = len;
-+
- 	types = buf[10];
- 	len = buf[11];
- 
-@@ -474,11 +474,12 @@ static int ses_intf_add(struct class_dev
- 			components += type_ptr[1];
- 	}
- 
-+	buf = NULL;
- 	result = ses_recv_diag(sdev, 2, hdr_buf, INIT_ALLOC_SIZE);
- 	if (result)
- 		goto recv_failed;
- 
--	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
-+	len = ((u32)hdr_buf[2] << 8) + hdr_buf[3] + 4;
- 	buf = kzalloc(len, GFP_KERNEL);
- 	if (!buf)
- 		goto err_free;
-@@ -492,11 +493,12 @@ static int ses_intf_add(struct class_dev
- 
- 	/* The additional information page --- allows us
- 	 * to match up the devices */
-+	buf = NULL;
- 	result = ses_recv_diag(sdev, 10, hdr_buf, INIT_ALLOC_SIZE);
- 	if (result)
- 		goto no_page10;
- 
--	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
-+	len = ((u32)hdr_buf[2] << 8) + hdr_buf[3] + 4;
- 	buf = kzalloc(len, GFP_KERNEL);
- 	if (!buf)
- 		goto err_free;
-@@ -506,16 +508,18 @@ static int ses_intf_add(struct class_dev
- 		goto recv_failed;
- 	ses_dev->page10 = buf;
- 	ses_dev->page10_len = len;
-+	buf = NULL;
- 
-  no_page10:
- 	scomp = kmalloc(sizeof(struct ses_component) * components, GFP_KERNEL);
- 	if (!scomp)
--		goto  err_free;
-+		goto err_free;
- 
- 	edev = enclosure_register(cdev->dev, sdev->sdev_gendev.bus_id,
- 				  components, &ses_enclosure_callbacks);
- 	if (IS_ERR(edev)) {
- 		err = PTR_ERR(edev);
-+		kfree(scomp);
- 		goto err_free;
- 	}
- 
-@@ -524,24 +528,27 @@ static int ses_intf_add(struct class_dev
- 		edev->component[i].scratch = scomp++;
- 
- 	/* Page 7 for the descriptors is optional */
--	buf = NULL;
- 	result = ses_recv_diag(sdev, 7, hdr_buf, INIT_ALLOC_SIZE);
- 	if (result)
- 		goto simple_populate;
- 
--	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
-+	len = ((u32)hdr_buf[2] << 8) + hdr_buf[3] + 4;
- 	/* add 1 for trailing '\0' we'll use */
- 	buf = kzalloc(len + 1, GFP_KERNEL);
--	result = ses_recv_diag(sdev, 7, buf, len);
--	if (result) {
-+	if (buf)
-+		result = ses_recv_diag(sdev, 7, buf, len);
-+	else
-+		result = 7;
-+
-  simple_populate:
-+	if (result) {
- 		kfree(buf);
- 		buf = NULL;
- 		desc_ptr = NULL;
- 		addl_desc_ptr = NULL;
- 	} else {
- 		desc_ptr = buf + 8;
--		len = (desc_ptr[2] << 8) + desc_ptr[3];
-+		len = ((u32)desc_ptr[2] << 8) + desc_ptr[3];
- 		/* skip past overall descriptor */
- 		desc_ptr += len + 4;
- 		addl_desc_ptr = ses_dev->page10 + 8;
-@@ -554,7 +561,7 @@ static int ses_intf_add(struct class_dev
- 			struct enclosure_component *ecomp;
- 
- 			if (desc_ptr) {
--				len = (desc_ptr[2] << 8) + desc_ptr[3];
-+				len = ((u32)desc_ptr[2] << 8) + desc_ptr[3];
- 				desc_ptr += 4;
- 				/* Add trailing zero - pushes into
- 				 * reserved space */
-@@ -575,7 +582,7 @@ static int ses_intf_add(struct class_dev
- 							       addl_desc_ptr);
- 
- 				if (addl_desc_ptr)
--					addl_desc_ptr += addl_desc_ptr[1] + 2;
-+					addl_desc_ptr += 2 + addl_desc_ptr[1];
- 			}
- 		}
- 	}
-@@ -597,7 +604,6 @@ static int ses_intf_add(struct class_dev
- 		    result);
- 	err = -ENODEV;
-  err_free:
--	kfree(buf);
- 	kfree(ses_dev->page10);
- 	kfree(ses_dev->page2);
- 	kfree(ses_dev->page1);
-@@ -630,6 +636,7 @@ static void ses_intf_remove(struct class
- 	ses_dev = edev->scratch;
- 	edev->scratch = NULL;
- 
-+	kfree(ses_dev->page10);
- 	kfree(ses_dev->page1);
- 	kfree(ses_dev->page2);
- 	kfree(ses_dev);
+http://lkml.org/lkml/2008/2/4/111
+
+Hope this helps,
+
+--nab
+
