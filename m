@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbYBILQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbYBILVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756260AbYBILQc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYBILQZ
+	id S1756761AbYBILVp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:21:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYBILVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:16:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40527 "EHLO mx3.mail.elte.hu"
+	Sat, 9 Feb 2008 06:21:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:56295 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbYBILQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:16:24 -0500
-Date: Sat, 9 Feb 2008 12:16:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] [1/2] Use standard global TLB flushes in MTRR code v2
-Message-ID: <20080209111612.GA5273@elte.hu>
-References: <20080208122.996401758@suse.de>
+	id S1751132AbYBILVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 06:21:34 -0500
+Date: Sat, 9 Feb 2008 12:21:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: mingo@elte.hu, arjan@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: CPA spam in dmesg (no pte level 0)
+In-Reply-To: <20080208213121.GC15571@martell.zuzino.mipt.ru>
+Message-ID: <alpine.LFD.1.00.0802091217440.3145@apollo.tec.linutronix.de>
+References: <20080208213121.GC15571@martell.zuzino.mipt.ru>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080208122.996401758@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 9 Feb 2008, Alexey Dobriyan wrote:
 
-* Andi Kleen <ak@suse.de> wrote:
-
-> This is more idiomatic and it does not really make sense for this code 
-> to implement a own TLB flushing variant.
+> I enabled pretty much all debugging on
+> 2.6.24-0cf975e16927fd70f34cee20d3856246c13bb4c8 and CPA code
+> continuosly spams dmesg like this:
 > 
-> The control registers will be read/written a few times more, but that 
-> should not really matter for this code.
+> [   24.100000] CPA ffff810080000000 no pte level 0
+> [   24.520000] PGD 8063 PUD 0
+> [   24.520000] CPA ffff810080000000 no pte level 0
+> [   24.540000] PGD 8063 PUD 0
+> 
+> This is E6400 box with 4G of RAM, x86_64 is used.
+> dmesg and .config below:
 
-what you do not point out in the changelog, and what i've mentioned to 
-you in past replies but you still ignore it: that the patch changes what 
-the code does - we now keep PGE enabled in cr4 during the MTRR changing.
+Hmm, that's the self test code. The PUD is 0 (i guess it's a memory
+hole) and it complains loudly about that. This printk is pretty
+useless, will remove it.
 
-the MTRR code is historically fragile, rarely triggered code, laced with 
-CPU errata. The change brings us absolutely nothing (it in fact 
-increases the code size a bit) and it is just not worth the risk at this 
-stage.
+Thanks,
+	tglx
 
-	Ingo
+
