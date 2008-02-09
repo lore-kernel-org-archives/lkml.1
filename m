@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYBITHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYBITMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYBITHz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 14:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbYBITHs
+	id S1756104AbYBITMP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 14:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYBITMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 14:07:48 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:37975 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754425AbYBITHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 14:07:46 -0500
-Date: Sat, 9 Feb 2008 14:07:39 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: some questions about generated headers
-Message-ID: <alpine.LFD.1.00.0802091345150.14859@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sat, 9 Feb 2008 14:12:00 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:43628 "EHLO smtp1.cc.lut.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754049AbYBITL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 14:11:59 -0500
+Date: Sat, 9 Feb 2008 21:11:55 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "Arjan van de Ven" <arjan@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] x86: explicit call to mmiotrace in do_page_fault()
+Message-ID: <20080209211155.1dd8dc3b@daedalus.pq.iki.fi>
+In-Reply-To: <84144f020802091056hffc22eckbda461534e3a6072@mail.gmail.com>
+References: <1201660453.8837.13.camel@brick>
+	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
+	<20080203070321.GA8293@elte.hu>
+	<20080205222807.7b35ef2b@daedalus.pq.iki.fi>
+	<20080205223958.2cab8ce3@daedalus.pq.iki.fi>
+	<20080207125327.GB27234@elte.hu>
+	<20080207125622.GA7111@infradead.org>
+	<20080209195255.584d4157@daedalus.pq.iki.fi>
+	<20080209100133.60406c00@laptopd505.fenrus.org>
+	<20080209202353.0e83e337@daedalus.pq.iki.fi>
+	<84144f020802091056hffc22eckbda461534e3a6072@mail.gmail.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 9 Feb 2008 20:56:07 +0200
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
 
-  just a few observations about the generated headers and whether
-there's some cleanup to be done there.
+> Hi Pekka,
+> 
+> On Feb 9, 2008 8:23 PM, Pekka Paalanen <pq@iki.fi> wrote:
+> > By default it reserves 32 MB/cpu of relay buffers during module init.
+> > It's this big based on experimentation with the nvidia proprietary driver.
+> > There is no other way than unloading the module to free the buffers, or
+> > even to clear them. This means that every time you start the user space
+> > logger application, it gets old data first. Also poking the module
+> > parameters via /sys is not allowed.
+> 
+> So how is mmiotrace different from, say, blktrace that has an ioctl()
+> to setup/teardown the relay channels (for mmiotrace it can be a
+> "status" file that does the setup/teardown when written some
+> appropriate values)?
 
-1)
+No difference. I just have to do it at some point. I can't work on this
+every day and when it comes to kernel, I'm a complete newbie. So things
+will take time. If people want that I fix this before mmiotrace goes into
+mainline, then so be it.
 
-  the generated header linux/tty.h consists solely of:
+blktrace, thanks for the hint, I should take a look at that.
 
-=====
-#ifndef _LINUX_TTY_H
-#define _LINUX_TTY_H
-
-/*
- * 'tty.h' defines some structures used by tty_io.c and some defines.
- */
-
-#endif
-=====
-
-  i once submitted a patch that, if this header were included from
-userspace, would print, "Don't include me from user space, I'm empty."
-or something to that effect.  is that worth doing?  or should user
-space code be including that header at all?  (should an empty header
-even be *exported* to user space?)
-
-2)
-
-  include/linux/soundcard.h still contains some weird, non-standard
-checks:
-
-...
-#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) &&
-!defined(_KERNEL)) || defined(USE_SEQ_MACROS)
-...
-
-  so what's with KERNEL or INKERNEL or _KERNEL?  do those tests still
-have any value?  or can they be tossed?
-
-3)
-
-  related to 2), what's up with __KERNEL as well?  it still shows up
-in a number of places in the kernel source.   for example, see
-include/linux/hdsmart.h:
-
-...
-#ifndef __KERNEL
-...
-#endif /* __KERNEL__ *
-
-(and that missing trailing slash creeps me out, too.)
-
-4)
-
-  any chance of replacing the current unifdef with sunifdef (son of
-unifdef), which is smarter and can simplify some of the compound
-logical preprocessor checks to get rid of more junk in those generated
-headers?
-
-  http://www.sunifdef.strudl.org/
-
-
-  that should do for now.
-
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-Home page:                                         http://crashcourse.ca
-Fedora Cookbook:    http://crashcourse.ca/wiki/index.php/Fedora_Cookbook
-========================================================================
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
