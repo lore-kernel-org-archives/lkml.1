@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbYBIPYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbYBIPZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbYBIPYl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 10:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYBIPYb
+	id S1756064AbYBIPZm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 10:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYBIPZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 10:24:31 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:38753 "EHLO
+	Sat, 9 Feb 2008 10:25:34 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:39644 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbYBIPY3 (ORCPT
+	with ESMTP id S1752190AbYBIPZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 10:24:29 -0500
+	Sat, 9 Feb 2008 10:25:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=vzy5hKfOY8p/I0YyNlc4SX6THI/N4cymDul7kX7tMDFvo1A3uVNOKJMD2IzQpBWO1F5Cw/g1QX+QOvkX0NxeIh7jJIIiQOPRvUYha1L7waknr/9CvigwtLO3hrlZy7Y6xZ06k8/zxAqNIc2YCCxTV1J0TFyl47W+Z/8EKb0utAY=
-Message-ID: <2f11576a0802090724s679258c4g7414e0a6983f4706@mail.gmail.com>
-Date: Sun, 10 Feb 2008 00:24:28 +0900
+        b=IwG//UJp0PZTYoainnefYnUp/OQLJgO1KVGZcRAe/Ze90A/RbvLZwhS0ew6A7tlZRMJFNUAngfBmZ8Ei6hGwz72ghThxh/pIrUoO5KVbST90CVwlaNsugvQJE3ZGBe3w04BUF5KJt2jcyQ7tfqB1+rEDTeKnaBl0TYqARd8coQ8=
+Message-ID: <2f11576a0802090725w6437bcc5vde2392c794095f6b@mail.gmail.com>
+Date: Sun, 10 Feb 2008 00:25:31 +0900
 From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/8][for -mm] mem_notify v6: memory_pressure_notify() caller
+Subject: [PATCH 5/8][for -mm] mem_notify v6: add new mem_notify field to /proc/zoneinfo
 Cc: kosaki.motohiro@jp.fujitsu.com, "Marcelo Tosatti" <marcelo@kvack.org>,
        "Daniel Spang" <daniel.spang@gmail.com>,
        "Rik van Riel" <riel@redhat.com>,
@@ -30,153 +30,40 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: a433460513b42680
+X-Google-Sender-Auth: 23cfcf84ff713034
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the notification point to happen whenever the VM moves an
-anonymous page to the inactive list - this is a pretty good indication
-that there are unused anonymous pages present which will be very likely
-swapped out soon.
-
-and, It is judged out of trouble at the fllowing situations.
- o memory pressure decrease and stop moves an anonymous page to the
-inactive list.
- o free pages increase than (pages_high+lowmem_reserve)*2.
-
+show new member of zone struct by /proc/zoneinfo.
 
 ChangeLog:
-	v5: add out of trouble notify to exit of balance_pgdat().
+	v5: change display order to at last.
 
 
 Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
 ---
- mm/page_alloc.c |   12 ++++++++++++
- mm/vmscan.c     |   26 ++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+)
+ mm/vmstat.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Index: b/mm/vmscan.c
+Index: b/mm/vmstat.c
 ===================================================================
---- a/mm/vmscan.c	2008-01-23 22:06:08.000000000 +0900
-+++ b/mm/vmscan.c	2008-01-23 22:07:57.000000000 +0900
-@@ -39,6 +39,7 @@
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- #include <linux/memcontrol.h>
-+#include <linux/mem_notify.h>
-
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -1089,10 +1090,14 @@ static void shrink_active_list(unsigned
- 	struct page *page;
- 	struct pagevec pvec;
- 	int reclaim_mapped = 0;
-+	bool inactivated_anon = 0;
-
- 	if (sc->may_swap)
- 		reclaim_mapped = calc_reclaim_mapped(sc, zone, priority);
-
-+	if (!reclaim_mapped)
-+		memory_pressure_notify(zone, 0);
-+
- 	lru_add_drain();
- 	spin_lock_irq(&zone->lru_lock);
- 	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
-@@ -1116,6 +1121,13 @@ static void shrink_active_list(unsigned
- 			if (!reclaim_mapped ||
- 			    (total_swap_pages == 0 && PageAnon(page)) ||
- 			    page_referenced(page, 0, sc->mem_cgroup)) {
-+				/* deal with the case where there is no
-+				 * swap but an anonymous page would be
-+				 * moved to the inactive list.
-+				 */
-+				if (!total_swap_pages && reclaim_mapped &&
-+				    PageAnon(page))
-+					inactivated_anon = 1;
- 				list_add(&page->lru, &l_active);
- 				continue;
- 			}
-@@ -1123,8 +1135,12 @@ static void shrink_active_list(unsigned
- 			list_add(&page->lru, &l_active);
- 			continue;
- 		}
-+		if (PageAnon(page))
-+			inactivated_anon = 1;
- 		list_add(&page->lru, &l_inactive);
- 	}
-+	if (inactivated_anon)
-+		memory_pressure_notify(zone, 1);
-
- 	pagevec_init(&pvec, 1);
- 	pgmoved = 0;
-@@ -1158,6 +1174,8 @@ static void shrink_active_list(unsigned
- 		pagevec_strip(&pvec);
- 		spin_lock_irq(&zone->lru_lock);
- 	}
-+	if (!reclaim_mapped)
-+		memory_pressure_notify(zone, 0);
-
- 	pgmoved = 0;
- 	while (!list_empty(&l_active)) {
-@@ -1659,6 +1677,14 @@ out:
- 		goto loop_again;
- 	}
-
-+	for (i = pgdat->nr_zones - 1; i >= 0; i--) {
-+		struct zone *zone = pgdat->node_zones + i;
-+
-+		if (!populated_zone(zone))
-+			continue;
-+		memory_pressure_notify(zone, 0);
-+	}
-+
- 	return nr_reclaimed;
+--- a/mm/vmstat.c	2008-01-23 22:06:05.000000000 +0900
++++ b/mm/vmstat.c	2008-01-23 22:08:00.000000000 +0900
+@@ -795,10 +795,12 @@ static void zoneinfo_show_print(struct s
+ 	seq_printf(m,
+ 		   "\n  all_unreclaimable: %u"
+ 		   "\n  prev_priority:     %i"
+-		   "\n  start_pfn:         %lu",
+-			   zone_is_all_unreclaimable(zone),
++		   "\n  start_pfn:         %lu"
++		   "\n  mem_notify_status: %i",
++		   zone_is_all_unreclaimable(zone),
+ 		   zone->prev_priority,
+-		   zone->zone_start_pfn);
++		   zone->zone_start_pfn,
++		   zone->mem_notify_status);
+ 	seq_putc(m, '\n');
  }
-
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c	2008-01-23 22:06:08.000000000 +0900
-+++ b/mm/page_alloc.c	2008-01-23 23:09:32.000000000 +0900
-@@ -44,6 +44,7 @@
- #include <linux/fault-inject.h>
- #include <linux/page-isolation.h>
- #include <linux/memcontrol.h>
-+#include <linux/mem_notify.h>
-
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -435,6 +436,8 @@ static inline void __free_one_page(struc
- 	unsigned long page_idx;
- 	int order_size = 1 << order;
- 	int migratetype = get_pageblock_migratetype(page);
-+	unsigned long prev_free;
-+	unsigned long notify_threshold;
-
- 	if (unlikely(PageCompound(page)))
- 		destroy_compound_page(page, order);
-@@ -444,6 +447,7 @@ static inline void __free_one_page(struc
- 	VM_BUG_ON(page_idx & (order_size - 1));
- 	VM_BUG_ON(bad_range(zone, page));
-
-+	prev_free = zone_page_state(zone, NR_FREE_PAGES);
- 	__mod_zone_page_state(zone, NR_FREE_PAGES, order_size);
- 	while (order < MAX_ORDER-1) {
- 		unsigned long combined_idx;
-@@ -465,6 +469,14 @@ static inline void __free_one_page(struc
- 	list_add(&page->lru,
- 		&zone->free_area[order].free_list[migratetype]);
- 	zone->free_area[order].nr_free++;
-+
-+	notify_threshold = (zone->pages_high +
-+			    zone->lowmem_reserve[MAX_NR_ZONES-1]) * 2;
-+
-+	if (unlikely((zone->mem_notify_status == 1) &&
-+		     (prev_free <= notify_threshold) &&
-+		     (zone_page_state(zone, NR_FREE_PAGES) > notify_threshold)))
-+		memory_pressure_notify(zone, 0);
- }
-
- static inline int free_pages_check(struct page *page)
