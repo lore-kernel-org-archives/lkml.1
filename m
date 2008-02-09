@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbYBIAEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761184AbYBIAF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761047AbYBIAEp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbYBIAEe
+	id S1761184AbYBIAF0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbYBIAFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:04:34 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:55821 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756818AbYBIAEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:04:33 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.719
-Date: Fri, 8 Feb 2008 16:04:27 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] KVM binary incompatiablity
-Message-ID: <20080208160427.7594c837@extreme>
-In-Reply-To: <47ACD614.2080000@codemonkey.ws>
-References: <20080208113236.55b2ead1@extreme>
-	<47ACD614.2080000@codemonkey.ws>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Feb 2008 19:05:05 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33278 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757970AbYBIAFB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 19:05:01 -0500
+Date: Fri, 8 Feb 2008 16:05:00 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Robin Holt <holt@sgi.com>, andrea@qumranet.com, avi@qumranet.com,
+       izike@qumranet.com, kvm-devel@lists.sourceforge.net,
+       a.p.zijlstra@chello.nl, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       general@lists.openfabrics.org
+Subject: Re: [patch 0/6] MMU Notifiers V6
+In-Reply-To: <20080208155641.2258ad2c.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
+References: <20080208220616.089936205@sgi.com> <20080208142315.7fe4b95e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0802081528070.4036@schroedinger.engr.sgi.com>
+ <20080208233636.GG26564@sgi.com> <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
+ <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Feb 2008 16:22:12 -0600
-Anthony Liguori <anthony@codemonkey.ws> wrote:
+On Fri, 8 Feb 2008, Andrew Morton wrote:
 
-> Stephen Hemminger wrote:
-> > I notice that recent KVM is incompatiable with older versions.
-> >
-> > Using a KVM image created on 2.6.24 will crash on 2.6.25 (or
-> > vice versa). It appears that Ubuntu Hardy has incorporated the 2.6.25
-> > update even though it claims to be 2.6.24.
-> >   
-> 
-> This isn't intentional.  What is the guest and how does it crash?
-> 
-> I've been using the same image for most of KVM's development life cycle 
-> without having issues.
-> 
-> Regards,
-> 
-> Anthony Liguori
->
-I'll see if I can get a backtrace, it isn't reliably reproducible.
+> You took it correctly, and I didn't understand the answer ;)
 
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
+We have done several rounds of discussion on linux-kernel about this so 
+far and the IB folks have not shown up to join in. I have tried to make 
+this as general as possible.
