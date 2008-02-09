@@ -1,83 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYBIU73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbYBIVNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYBIU73 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 15:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYBIU7U
+	id S1756433AbYBIVNq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 16:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbYBIVNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 15:59:20 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:57203 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778AbYBIU7T (ORCPT
+	Sat, 9 Feb 2008 16:13:37 -0500
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:55341 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755033AbYBIVNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 15:59:19 -0500
-Subject: [PATCH] make KVM selectable again
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Avi Kivity <avi@argo.co.il>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 09 Feb 2008 12:59:15 -0800
-Message-Id: <1202590755.14165.11.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 9 Feb 2008 16:13:36 -0500
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
+Date: Sat, 9 Feb 2008 22:13:30 +0100
+User-Agent: KMail/1.9.7
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       lenb@kernel.org, linux-kernel@vger.kernel.org
+References: <20080207195519.GA21772@basil.nowhere.org> <200802091911.25730.prakash@punnoor.de> <200802091505.31567.gene.heskett@gmail.com>
+In-Reply-To: <200802091505.31567.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart6045087.lkmW1no4AL";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200802092213.30814.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current git for me (b1d0e4f535e10775cffde922208b49629169aeaa) doesn't
-let me build KVM.  In fact, I don't seem to have *ANY* kvm-related
-symbols in my .config at all.
+--nextPart6045087.lkmW1no4AL
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I've verified that arch/x86/kvm/Kconfig was getting run by putting some
-comments in it.  It seems to me like just putting:
+On the day of Saturday 09 February 2008 Gene Heskett hast written:
+> On Saturday 09 February 2008, Prakash Punnoor wrote:
+> >On the day of Saturday 09 February 2008 Gene Heskett hast written:
+> >> This has killed me both at boot time twice, once before NASH was
+> >> running, and several times when uptimes were a day plus, but has never
+> >> reappeared since the first time I used the acpi_user_timer_override
+> >> argument, and this includes several boots without it including 2
+> >> complete, 2 or 3 minute power downs.
+> >
+> >Are you saying that on your nforce2 you need the override
+> >(acpi_use_timer_override) to have a stable system? Because that would be
+> > in contrast to all previous findings regarding nforce2. Could you provi=
+de
+> >
+> >cat /proc/interrupts
+> >lspci
+> >lspci -n
+>
+> Currently booted with it, uptime 38 hours, only diff visible is in dmesg =
+as
+> has been posted here in another thread.
+>
+> [root@coyote ~]# cat /proc/interrupts
+>            CPU0
+>   0:        869    XT-PIC-XT        timer
+>   1:         18   IO-APIC-edge      i8042
 
-	config HAVE_KVM
-	       bool
+Thanks for providing the info. According to the IDs your and my board are=20
+quite alike. If you don't pass acpi_use_timer_override to vanilla kernel,=20
+does your timer get connected to IO-APIC? Ie:
 
-isn't letting anything come into my .config at all.  I'm not sure why we
-do that, and then have:
+           CPU0
+  0:      47834   IO-APIC-edge      timer
 
-	select HAVE_KVM
+In this mode, is your board stable? I never run my hw longer than 10h, so I=
+=20
+cannot say anything about long-term stability, but lately my nforce2 didn't=
+=20
+make any troubles and (when it did, it usally was related to PSU). I am=20
+skipping the override, ie. my timer is connected to IO-APIC.
 
-in arch/x86/Kconfig.
+If in the latter mode your hw is instable, we have a problem...
+=2D-=20
+(=C2=B0=3D                 =3D=C2=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
 
-This patch just defines HAVE_KVM in the x86 Kconfig and is done with it.
-Seems to work for me.
+--nextPart6045087.lkmW1no4AL
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Was there some reason that it was done this way?  Was it ever tested?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
--- Dave
+iD8DBQBHrhd6xU2n/+9+t5gRAjT0AKDO/ToCCA9LFvzDi1EABVe62eNmRACgzDm7
+0slnwk/B6XGYPYSuII/5WtE=
+=vB4a
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 65a70b7..cbbf35d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -115,7 +115,8 @@ config ARCH_HAS_CPU_RELAX
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool X86_64
- 
--select HAVE_KVM
-+config HAVE_KVM
-+	def_bool y
- 
- config ARCH_HIBERNATION_POSSIBLE
- 	def_bool y
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index 41962e7..f2177ec 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -1,8 +1,6 @@
- #
- # KVM configuration
- #
--config HAVE_KVM
--       bool
- 
- menuconfig VIRTUALIZATION
- 	bool "Virtualization"
-
-
+--nextPart6045087.lkmW1no4AL--
