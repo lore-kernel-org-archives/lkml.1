@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYBIEp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYBIErj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbYBIEp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 23:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYBIEpR
+	id S1756972AbYBIErj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 23:47:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYBIErc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 23:45:17 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:35494 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbYBIEpP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 23:45:15 -0500
-To: Dmitry Torokhov <dtor@mail.ru>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Input: i8042 - Fix warning on non-x86 builds
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-Date: Fri, 08 Feb 2008 20:45:11 -0800
-Message-ID: <ada4pci20x4.fsf@cisco.com>
+	Fri, 8 Feb 2008 23:47:32 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:2181 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752108AbYBIErc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 23:47:32 -0500
+Date: Sat, 9 Feb 2008 05:47:18 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: john stultz <johnstul@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
+In-Reply-To: <1202523452.6174.45.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0802090543150.3378@scrub.home>
+References: <1201142334.6383.40.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0801251349120.17507@scrub.home>  <1201573686.6766.13.camel@localhost>
+  <Pine.LNX.4.64.0801290439480.17507@scrub.home>  <1201659263.6766.40.camel@localhost>
+  <Pine.LNX.4.64.0801310251090.17507@scrub.home>  <1201745776.6195.14.camel@localhost.localdomain>
+  <Pine.LNX.4.64.0801310404480.17507@scrub.home>  <1201914175.6216.46.camel@jstultz-laptop>
+  <Pine.LNX.4.64.0802081718040.3378@scrub.home> <1202523452.6174.45.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Feb 2008 04:45:12.0054 (UTC) FILETIME=[8E273960:01C86AD6]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit c18bab80 ("Input: i8042 - non-x86 build fix") introduced the
-following warning on non-x86 builds:
+Hi,
 
-    drivers/input/serio/i8042.c: In function 'i8042_probe':
-    drivers/input/serio/i8042.c:1154: warning: unused variable 'param'
+On Fri, 8 Feb 2008, john stultz wrote:
 
-Fix this by moving the parameter variable declaration into the #ifdef too.
+>  
+>  	clock = clocksource_get_next();
+> -	clocksource_calculate_interval(clock,
+> -		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
+> +	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+>  	clock->cycle_last = clocksource_read(clock);
+>  
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
-diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-index 2763394..65a74cf 100644
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -1151,7 +1151,6 @@ static int __devinit i8042_setup_kbd(void)
- static int __devinit i8042_probe(struct platform_device *dev)
- {
- 	int error;
--	char param;
- 
- 	error = i8042_controller_selftest();
- 	if (error)
-@@ -1174,7 +1173,7 @@ static int __devinit i8042_probe(struct platform_device *dev)
- 	}
- #ifdef CONFIG_X86
- 	if (i8042_dritek) {
--		param = 0x90;
-+		char param = 0x90;
- 		error = i8042_command(&param, 0x1059);
- 		if (error)
- 			goto out_fail;
+Only now I noticed that the first patch had been merged without any 
+further question. :-(
+What point is there in reviewing patches, if everything is merged anyway. :-(
+
+bye, Roman
