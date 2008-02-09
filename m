@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYBIH6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYBIICt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbYBIH6w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 02:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbYBIH6p
+	id S1756251AbYBIICt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 03:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYBIICk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 02:58:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45517 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752048AbYBIH6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 02:58:44 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/0IbxBhAf0pUDgrPEXjlRdQOqZzyqBw4qinvGjAB
-	kI3FJJmKXM0lL8
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived
-	threads
-From: Mike Galbraith <efault@gmx.de>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080209000456.GA21021@lixom.net>
-References: <20080209000456.GA21021@lixom.net>
-Content-Type: text/plain
-Date: Sat, 09 Feb 2008 08:58:39 +0100
-Message-Id: <1202543920.9578.3.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 9 Feb 2008 03:02:40 -0500
+Received: from web31801.mail.mud.yahoo.com ([68.142.207.64]:28054 "HELO
+	web31801.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752101AbYBIICi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 03:02:38 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=k1AXJz0Xi7XmOwsz60LFtexSu5DnYvoeg2Unl0GB3rqMiPyVRalMKf0yyqvPXX/iym8+rHa0vjf/yBZp6LARQl4/B6tjiXHRNGUTHvOi8AY2XNLikxj1qoQvl+qPTAgUtFN9wjHzMxdhIrZZ+F1BWSBSl/K2neOOtbDGgO1FzdY=;
+X-YMail-OSG: h5L3TT8VM1l_ZaVf77AcezZYa2TcZ2IZEc9G0fDCAf1f8RguB0KPNknPqSNVSenGyOSlmQ--
+X-Mailer: YahooMailWebService/0.7.162
+Date: Sat, 9 Feb 2008 00:02:33 -0800 (PST)
+From: Luben Tuikov <ltuikov@yahoo.com>
+Reply-To: ltuikov@yahoo.com
+Subject: Re: [PATCH] scsi_error: Fix language abuse.
+To: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080208153217.5fc42a50@core>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <949768.13992.qm@web31801.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-02-08 at 18:04 -0600, Olof Johansson wrote:
-> Hi,
+--- On Fri, 2/8/08, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> The word "illegal" has a precise dictionary
+> meaning of "prohibited by
+> law". The error messages are therefore incorrect as so
+> far nobody has
+> made SCSI violations a criminal offence.
 > 
-> I ended up with a customer benchmark in my lap this week that doesn't
-> do well on recent kernels. :(
+> This corrects scsi to match various other subsystems
+> I've slowly been
+> ridding of this.
 > 
-> After cutting it down to a simple testcase/microbenchmark, it seems like
-> recent kernels don't do as well with short-lived threads competing
-> with the thread it's cloned off of. The CFS scheduler changes come to
-> mind, but I suppose it could be caused by something else as well.
-> 
-> The pared-down testcase is included below. Reported runtime for the
-> testcase has increased almost 3x between 2.6.22 and 2.6.24:
-> 
-> 2.6.22: 3332 ms
-> 2.6.23: 4397 ms
-> 2.6.24: 8953 ms
-> 2.6.24-git19: 8986 ms
+> Pedantically-signed-off-by: Alan Cox
+> <alan@redhat.com>
 
-My 3GHz P4 shows disjointed results.
+Alan,
 
-2.6.22.17-smp
-time 798 ms
-time 780 ms
-time 702 ms
+In standards and in hardware specs, from which the meaning of
+"illegal" is borrowed from (into standards), "illegal" doesn't
+necessarily mean "invalid", and cannot be substituted for.
+This is exactly why this particular word is used in the ASC/ASCQ
+assignments.  It exposes an underlying behaviour.
 
-2.6.22.17-cfs-v24.1-smp
-time 562 ms
-time 551 ms
-time 551 ms
+For example:
 
-2.6.23.15-smp
-time 254 ms
-time 254 ms
-time 293 ms
+> -	{0x2004, "Illegal command while in write capable state"},
+> +	{0x2004, "Invalid command while in write capable state"},
 
-2.6.23.15-cfs-v24-smp
-time 764 ms
-time 791 ms
-time 780 ms
+Consider this: the command itself can be very perfectly "valid",
+e.g. the SCB contents, format, etc., but certainly "illegal".
 
-2.6.24.1-smp
-time 815 ms
-time 820 ms
-time 771 ms
+Similarly for the rest of this patch.
 
-2.6.25-smp (git today)
-time 29 ms
-time 61 ms
-time 72 ms
-
+   Luben
 
