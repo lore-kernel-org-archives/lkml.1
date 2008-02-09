@@ -1,95 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbYBIRjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYBIRk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757139AbYBIRjS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 12:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYBIRjF
+	id S1757356AbYBIRk3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 12:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbYBIRkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 12:39:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:32926 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbYBIRjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 12:39:02 -0500
-Date: Sat, 9 Feb 2008 18:38:50 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [3/5] CPA: Make advised protection check truly
- advisory
-In-Reply-To: <200802091756.06553.ak@suse.de>
-Message-ID: <alpine.LFD.1.00.0802091809480.3145@apollo.tec.linutronix.de>
-References: <20080208536.837219990@suse.de> <20080208163614.DF4FC1B41AA@basil.firstfloor.org> <alpine.LFD.1.00.0802091602260.3145@apollo.tec.linutronix.de> <200802091756.06553.ak@suse.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sat, 9 Feb 2008 12:40:18 -0500
+Received: from wx-out-0506.google.com ([66.249.82.238]:12540 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754950AbYBIRkP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 12:40:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=c52pUzniVrOW1aeW5Vwf0f1BgmpjfbItsNFjQ3TXT+hh0U+K2RYa5BseYC3c2OM6f5pnaoRHkAY/2gsuySEJKDaH03RhNLHMwA8iNQ7Hz9PorIdwS2g9f9AO4fjk38+b+bnWDB+Uqpz6m2kh+ruvSmzdEADqFJYb0gsExQwtk2M=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide: remove ->hold field from ide_hwif_t (take 2)
+Date: Sat, 9 Feb 2008 18:54:07 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802091854.07310.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008, Andi Kleen wrote:
-> On Saturday 09 February 2008 16:38:35 Thomas Gleixner wrote:
-> > On Fri, 8 Feb 2008, Andi Kleen wrote:
-> > 
-> > > 
-> > > Only force RO in the advisory protection checks when all pages in the 
-> > > range are RO. Previously it would trigger when any page in the range
-> > > was ro.
-> > > 
-> > > I believe this will make try_preserve_large_page much safer to use.
-> > 
-> > It might be quite useful to know it for sure.
-> 
-> I wrote that originally when you still had the bogus "AMD fix" 
-> in the tree.  I think it was because I hoped it would fix that one,
-> but I wasn't sure because I couldn't reproduce it. But Hugh's
-> patch fixed that anyways.
 
-The AMD limiting was due to a testing failure on a 64bit X2 and had
-nothing to do with the 32bit wreckage, which was fixed by Hugh. 
+->hold is write-only now, remove it.
 
-The fix for the X2 was a missing check for large pmds/puds in the
-spurious fault code.
+v2:
+* v1 missed bast-ide, palm_bk3710, ide-cs and delkin_cb host drivers.
 
-> > Thinking about the whole set of changes, you are right, that the
-> > current check for the first page only is not correct, but I don't see
-> > how your changes make it more correct.
-> 
-> With my patch at least NX should be always correct and that is 
-> the more important one because it is default and has to be cleared
-> and things go horribly wrong when it is incorrect.
-> 
-> RO on the other hand defaults to off and is only sometimes forced.
->  
-> > The correct way to fix this is to check, whether all the small pages,
-> > which fit in the range of the large page, which we want to preserve,
-> > have the same resulting pgprot flags.
-> 
-> Ok if you don't like the try_preserve_large_page change
-> feel free to drop it or implement it differently.
-> 
-> My main goal here was to clean up the 32bit direct mapping
-> anyways (last patch) and that does just require splitting out the 
-> NX checks from the RO checks and having a range (first patches)
-> 
-> I think at least the range checks are definitely needed
-> for correctness though.
-> 
-> If I cared particularly I would probably implement two modi: 
-> one with DEBUG_RODATA and another without. With DEBUG_RODATA 
-> advisory protections should be forced (and large pages split),
-> without not.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/arm/bast-ide.c    |    2 +-
+ drivers/ide/arm/palm_bk3710.c |    2 +-
+ drivers/ide/legacy/ide-cs.c   |    2 +-
+ drivers/ide/mips/au1xxx-ide.c |    3 ---
+ drivers/ide/pci/delkin_cb.c   |    2 +-
+ drivers/ide/ppc/pmac.c        |    1 -
+ include/linux/ide.h           |    1 -
+ 7 files changed, 4 insertions(+), 9 deletions(-)
 
-I can understand, what you want to achieve, but I really do not like
-the result for following reasons:
-
-1) If there is a bug in some code, then we fix the bug and do not
-intermingle it with something else.
-
-2) I care about RO as much as I care about the NX correctness. That's
-the same logic and the same problem. If we have overlapping regions,
-then we need to split large pages. Otherwise both protections are
-useless to a certain degree.
-
-3) For correctness reasons I even ponder to make the NX/RO mandatory.
-
-Thanks,
-	tglx
+Index: b/drivers/ide/arm/bast-ide.c
+===================================================================
+--- a/drivers/ide/arm/bast-ide.c
++++ b/drivers/ide/arm/bast-ide.c
+@@ -54,7 +54,7 @@ bastide_register(unsigned int base, unsi
+ 
+ 	if (hwif->present)
+ 		ide_unregister(i);
+-	else if (!hwif->hold)
++	else
+ 		ide_init_port_data(hwif, i);
+ 
+ 	ide_init_port_hw(hwif, &hw);
+Index: b/drivers/ide/arm/palm_bk3710.c
+===================================================================
+--- a/drivers/ide/arm/palm_bk3710.c
++++ b/drivers/ide/arm/palm_bk3710.c
+@@ -386,7 +386,7 @@ static int __devinit palm_bk3710_probe(s
+ 
+ 	if (hwif->present)
+ 		ide_unregister(i, 0, 0);
+-	else if (!hwif->hold)
++	else
+ 		ide_init_port_data(hwif, i);
+ 
+ 	ide_init_port_hw(hwif, &hw);
+Index: b/drivers/ide/legacy/ide-cs.c
+===================================================================
+--- a/drivers/ide/legacy/ide-cs.c
++++ b/drivers/ide/legacy/ide-cs.c
+@@ -164,7 +164,7 @@ static int idecs_register(unsigned long 
+ 
+     if (hwif->present)
+ 	ide_unregister(i);
+-    else if (!hwif->hold)
++    else
+ 	ide_init_port_data(hwif, i);
+ 
+     ide_init_port_hw(hwif, &hw);
+Index: b/drivers/ide/mips/au1xxx-ide.c
+===================================================================
+--- a/drivers/ide/mips/au1xxx-ide.c
++++ b/drivers/ide/mips/au1xxx-ide.c
+@@ -617,9 +617,6 @@ static int au_ide_probe(struct device *d
+ 
+ 	hwif->dev = dev;
+ 
+-	/* hold should be on in all cases */
+-	hwif->hold                      = 1;
+-
+ 	hwif->mmio  = 1;
+ 
+ 	/* If the user has selected DDMA assisted copies,
+Index: b/drivers/ide/pci/delkin_cb.c
+===================================================================
+--- a/drivers/ide/pci/delkin_cb.c
++++ b/drivers/ide/pci/delkin_cb.c
+@@ -86,7 +86,7 @@ delkin_cb_probe (struct pci_dev *dev, co
+ 
+ 	if (hwif->present)
+ 		ide_unregister(i);
+-	else if (!hwif->hold)
++	else
+ 		ide_init_port_data(hwif, i);
+ 
+ 	ide_init_port_hw(hwif, &hw);
+Index: b/drivers/ide/ppc/pmac.c
+===================================================================
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -1120,7 +1120,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	hwif->hwif_data = pmif;
+ 	ide_init_port_hw(hwif, hw);
+ 	hwif->noprobe = pmif->mediabay;
+-	hwif->hold = pmif->mediabay;
+ 	hwif->cbl = pmif->cable_80 ? ATA_CBL_PATA80 : ATA_CBL_PATA40;
+ 	hwif->set_pio_mode = pmac_ide_set_pio_mode;
+ 	if (pmif->kind == controller_un_ata6
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -573,7 +573,6 @@ typedef struct hwif_s {
+ 
+ 	unsigned	noprobe    : 1;	/* don't probe for this interface */
+ 	unsigned	present    : 1;	/* this interface exists */
+-	unsigned	hold       : 1; /* this interface is always present */
+ 	unsigned	serialized : 1;	/* serialized all channel operation */
+ 	unsigned	sharing_irq: 1;	/* 1 = sharing irq with another hwif */
+ 	unsigned	reset      : 1;	/* reset after probe */
