@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYBILes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYBILjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbYBILes (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYBILej
+	id S1756156AbYBILjg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 06:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYBILja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:34:39 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:3992 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559AbYBILei (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:34:38 -0500
-Date: Sat, 9 Feb 2008 12:34:35 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: preempt rcu bug on s390
-Message-ID: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 9 Feb 2008 06:39:30 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50662 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751811AbYBILj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 06:39:28 -0500
+Date: Sat, 9 Feb 2008 12:39:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Message-ID: <20080209113935.GB5776@uranus.ravnborg.org>
+References: <20080207133805.13f092ff@dilbert.local> <20080207125824.GB7111@infradead.org> <20080207130117.GA18750@uranus.ravnborg.org> <200802071609.36960.openembedded@haerwu.biz> <20080207160557.GB28435@flint.arm.linux.org.uk> <20080207202329.GA21949@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080207202329.GA21949@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using CONFIG_PREEMPT_RCU and CONFIG_NO_IDLE_HZ on s390 my system always
-gets stuck when running with more than one cpu.
-When booting with four cpus I get all four cpus caught withing cpu_idle
-and not advancing anymore. However there is the init process which is
-waitung for synchronize_rcu() to complete (lcrash output):
+On Thu, Feb 07, 2008 at 09:23:29PM +0100, Sam Ravnborg wrote:
+> On Thu, Feb 07, 2008 at 04:05:58PM +0000, Russell King - ARM Linux wrote:
+> > On Thu, Feb 07, 2008 at 04:09:34PM +0100, Marcin Juszkiewicz wrote:
+> > > Dnia Thursday, 7 of February 2008, Sam Ravnborg napisał:
+> > > > On Thu, Feb 07, 2008 at 07:58:24AM -0500, Christoph Hellwig wrote:
+> > > 
+> > > > > Any chance to make arm finally use drivers/Kconfig?  It's a bit silly
+> > > > > that arm still is crapping around while even s390 uses it.
+> > > 
+> > > > rmk said that it should be easy to check the amount of work needed to
+> > > > do so. But I have not had time to look into it yet - hopefully someone
+> > > > in ARM land could fix it.
+> > > 
+> > > I looked at it and 'arch/arm/Kconfig' does not source few entries: 
+> > 
+> > diff -u arch/arm/Kconfig drivers/Kconfig shows the situation.  This is
+> > why I insist that new entries to arch/arm/Kconfig should be in the same
+> > order as drivers/Kconfig.
+> > 
+> > > Including of 'drivers/mtd' depends on "ALIGNMENT_TRAP || !CPU_CP15_MMU".
+> > 
+> > It's this which is the main issue.
+> > 
+> > > Including of 'drivers/ide' depends on "PCMCIA || ARCH_CLPS7500 || 
+> > > ARCH_IOP32X || ARCH_IOP33X || ARCH_IXP4XX || ARCH_L7200 || 
+> > > ARCH_LH7A40X || ARCH_PXA || ARCH_RPC || ARCH_S3C2410 || ARCH_SA1100 || 
+> > > ARCH_SHARK || FOOTBRIDGE || ARCH_IXP23XX" but 'drivers/ata' (which can be 
+> > > used instead on PCMCIA enabled platforms) does not depend on such set.
+> > 
+> > IDE people insisted that we _will_ have that silly conditional for IDE.
+> > I personally do not want it and would be happy to see it go - but I
+> > don't have the authority to do that.  Take this one up with Bart.
+> 
+> Both situations are trivially fixable by introducing
+> HAVE_IDE and HAVE_MTD.
+> See attached patch.
+> 
+> My quick scan told me that only S390 and UM did not
+> support IDE neither MTD.
+> ARM is the only one where IDE and MTD support is conditional
+> and the rest you select them unconditionally.
 
-STACK TRACE FOR TASK: 0xf84d968 (swapper)
+Quick status on this.
+I have submitted a corrected patch containing only the
+HAVE_IDE stuff via kbuild.git and considering the
+comment from David the mtd bits are trivial done.
+So I expect someone that better can check the arm stuff
+to do the final conversion bits to introduce drivers/Kconfig
+when kbuild.git hits mainline.
 
- STACK:
- 0 schedule+842 [0x36c956]
- 1 schedule_timeout+172 [0x36d0e4]
- 2 wait_for_common+204 [0x36c398]
- 3 synchronize_rcu+76 [0x567bc]
- 4 netlink_change_ngroups+150 [0x2b4302]
- 5 genl_register_mc_group+256 [0x2b6174]
- 6 genl_init+188 [0x534e44]
- 7 kernel_init+444 [0x518334]
- 8 kernel_thread_starter+6 [0x192a6]
-
-If I change the code so that timer ticks won't be disabled everything
-runs fine. So my guess is that rcu_needs_cpu() doesn't do the right
-thing for the rcu preemptible case.
-
-Kernel version is git head of today.
-
-Any ideas?
+	Sam
