@@ -1,158 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYBIR1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYBIR3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbYBIR1Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 12:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYBIR1P
+	id S1756601AbYBIR3s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 12:29:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYBIR3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 12:27:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42050 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754353AbYBIR1O (ORCPT
+	Sat, 9 Feb 2008 12:29:40 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:48654 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754646AbYBIR3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 12:27:14 -0500
-Date: Sat, 9 Feb 2008 12:27:13 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: jason.wessel@windriver.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/8] kgdb: core API and gdb protocol handler
-Message-ID: <20080209172713.GD15568@infradead.org>
-References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
+	Sat, 9 Feb 2008 12:29:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=lEqlA/DT6Y0HZgKesXvvQiAaHfNlFb7CodCz38RPdB058O0/cPwFmh/HQQ2NwXc9hOE+EIxoOz0PzDc3fP7EYkDOV7jOhVa5wWMC9ttXmS3mK4ONjfyjf1bxI13BNv2ZtCd67BhPeo4upm1xRjc/9jwHAp1PoSkrIaSyJaUBoKs=
+Message-ID: <84144f020802090929k6b246c13tef9f64bfbfb14c5@mail.gmail.com>
+Date: Sat, 9 Feb 2008 19:29:37 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christer Weinigel" <christer@weinigel.se>
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Cc: "=?ISO-8859-1?Q?Hans-J=FCrgen_Koch?=" <hjk@linutronix.de>,
+       "David Newall" <davidn@davidnewall.com>,
+       "Marcel Holtmann" <marcel@holtmann.org>,
+       "Diego Zuccato" <diego@otello.alma.unibo.it>,
+       "Greg KH" <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080209175051.59715a17@weinigel.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20080125180232.GA4613@kroah.com> <47AB056E.70802@davidnewall.com>
+	 <20080207150612.21ba60df@dilbert.local>
+	 <47AB163C.5070107@davidnewall.com>
+	 <20080207171322.40eb7c95@dilbert.local>
+	 <47AB36D2.5050602@davidnewall.com>
+	 <20080207184939.17030887@dilbert.local>
+	 <20080209161322.6ccd9d4d@weinigel.se>
+	 <84144f020802090741k6fe3324cu99d70f13d9fd54ec@mail.gmail.com>
+	 <20080209175051.59715a17@weinigel.se>
+X-Google-Sender-Auth: 0fe8548bfc10d261
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 09, 2008 at 07:35:07AM -0600, jason.wessel@windriver.com wrote:
-> index 0000000..24e0b6c
-> --- /dev/null
-> +++ b/include/asm-generic/kgdb.h
-> @@ -0,0 +1,105 @@
-> +/*
-> + * include/asm-generic/kgdb.h
+On Feb 9, 2008 6:50 PM, Christer Weinigel <christer@weinigel.se> wrote:
+> A device driver isn't that hard either.  I can write a device driver
+> with a hand tied behind my back, to write a good balancing tree, I'd
+> have to spend a lot more time reading up on algorithms.  So "trivial" is
+> a matter of background.
 
-Please don't mention the file name in the top-of-file comments.  This
-information is redundant and will easily get out of date when moving
-files around or copying them.  Note that this applies to basically
-any file in this patch.
-
-> +#ifdef CONFIG_X86
-> +/**
-> + *	kgdb_skipexception - Bail of of KGDB when we've been triggered.
-> + *	@exception: Exception vector number
-> + *	@regs: Current &struct pt_regs.
-> + *
-> + *	On some architectures we need to skip a breakpoint exception when
-> + *	it occurs after a breakpoint has been removed.
-> + */
-> +int kgdb_skipexception(int exception, struct pt_regs *regs);
-> +#else
-> +static inline int kgdb_skipexception(int exception, struct pt_regs *regs)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
-> +#if defined(CONFIG_X86)
-
-arch ifdefs don't belong into an asm-generic/ file.  Please have a
-proper asm-x86/kgdb.h that defines these things.
-
-> +/**
-> + *	kgdb_post_master_code - Save error vector/code numbers.
-> + *	@regs: Original pt_regs.
-> + *	@e_vector: Original error vector.
-> + *	@err_code: Original error code.
-> + *
-> + *	This is needed on architectures which support SMP and KGDB.
-> + *	This function is called after all the slave cpus have been put
-> + *	to a know spin state and the master CPU has control over KGDB.
-> + */
-> +extern void kgdb_post_master_code(struct pt_regs *regs, int e_vector,
-> +				  int err_code);
-
-Kerneldoc comments don't belong above the prototype of a function but
-the function body.
-
-> +#ifdef CONFIG_KGDB_ARCH_HAS_SHADOW_INFO
-> +/**
-> + *	kgdb_shadowinfo - Get shadowed information on @threadid.
-> + *	@regs: The &struct pt_regs of the current process.
-> + *	@buffer: A buffer of %BUFMAX size.
-> + *	@threadid: The thread id of the shadowed process to get information on.
-> + */
-> +extern void kgdb_shadowinfo(struct pt_regs *regs, char *buffer,
-> +			    unsigned threadid);
-
-I don't really thing this belongs into an asm-generic header, again.
-ARchitectures having shadow info should just provide this in their
-own asm-foo/kgdb.h.  Or better yet just kill it for the first
-submission.
-
-> +struct debuggerinfo_struct {
-> +	void			*debuggerinfo;
-> +	struct task_struct	*task;
-> +} kgdb_info[NR_CPUS];
-
-shouldn't this use per-cpu data?  Or is that in some way to
-fragile for a debugger?
-
-> +/* reboot notifier block */
-> +static struct notifier_block kgdb_reboot_notifier = {
-> +	.notifier_call		= kgdb_notify_reboot,
-> +	.next			= NULL,
-> +	.priority		= INT_MAX,
-> +};
-
-No need to initialize fields to 0 or NULL in static variables.
-
-> +{
-> +	if ((ch >= 'a') && (ch <= 'f'))
-> +		return ch - 'a' + 10;
-> +	if ((ch >= '0') && (ch <= '9'))
-> +		return ch - '0';
-> +	if ((ch >= 'A') && (ch <= 'F'))
-> +		return ch - 'A' + 10;
-
-lots of superflous braces.  More of them later in this file
-in the same style.
-
-> +#ifdef __BIG_ENDIAN
-> +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
-> +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
-> +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
-> +		*buf++ = hexchars[tmp_s & 0xf];
-> +#else
-> +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
-> +		*buf++ = hexchars[tmp_s & 0xf];
-> +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
-> +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
-> +#endif
-
-This is really ugly, but I don't really know a good way around it
-either.
-
-> +	if (arch_kgdb_ops.shadowth &&
-> +			ks->kgdb_usethreadid >= pid_max + num_online_cpus()) {
-
-	if (arch_kgdb_ops.shadowth &&
-	    ks->kgdb_usethreadid >= pid_max + num_online_cpus()) {
-
-similar odd indentation in a few other spots.
-
-> +menuconfig KGDB
-> +	bool "KGDB: kernel debugging with remote gdb"
-> +	select KGDB_ARCH_HAS_SHADOW_INFO if X86_64
-
-Why can't this be set in the X86_64 config?
-
-> +	select DEBUG_INFO
-> +	select FRAME_POINTER
-
-I think these two would be better as depends on
-
+It doesn't matter how "hard" it was to write that code. What matters
+is whether your code requires enough copyrighted aspects of the
+original work to constitute as derived work. There's a huge difference
+between using kmalloc and spin_lock and writing a driver that is built
+on to of the full USB stack of Linux kernel, for example.
