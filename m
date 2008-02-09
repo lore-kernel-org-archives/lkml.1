@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYBIFLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYBIFM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbYBIFLd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 00:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYBIFL0
+	id S1755217AbYBIFM7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 00:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYBIFMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 00:11:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44718 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbYBIFL0 (ORCPT
+	Sat, 9 Feb 2008 00:12:51 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40099 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751001AbYBIFMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 00:11:26 -0500
-Date: Fri, 8 Feb 2008 21:15:39 -0800
-From: Greg KH <greg@kroah.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kobject must be initialized before calling kobject_init()?!
-Message-ID: <20080209051539.GA28565@kroah.com>
-References: <adaabma21vq.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adaabma21vq.fsf@cisco.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 9 Feb 2008 00:12:50 -0500
+Date: Fri, 8 Feb 2008 21:04:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
+Message-Id: <20080208210403.a78502ea.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802090543150.3378@scrub.home>
+References: <1201142334.6383.40.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0801251349120.17507@scrub.home>
+	<1201573686.6766.13.camel@localhost>
+	<Pine.LNX.4.64.0801290439480.17507@scrub.home>
+	<1201659263.6766.40.camel@localhost>
+	<Pine.LNX.4.64.0801310251090.17507@scrub.home>
+	<1201745776.6195.14.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0801310404480.17507@scrub.home>
+	<1201914175.6216.46.camel@jstultz-laptop>
+	<Pine.LNX.4.64.0802081718040.3378@scrub.home>
+	<1202523452.6174.45.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0802090543150.3378@scrub.home>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 08:24:25PM -0800, Roland Dreier wrote:
-> So I was perusing the code in lib/kobject.c, and I saw this:
+On Sat, 9 Feb 2008 05:47:18 +0100 (CET) Roman Zippel <zippel@linux-m68k.org> wrote:
+
+> Hi,
 > 
-> 	void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
-> 	{
-> 		// [a couple of of parameter checks...]
-> 		if (kobj->state_initialized) {
-> 			/* do not error out as sometimes we can recover */
-> 			printk(KERN_ERR "kobject (%p): tried to init an initialized "
-> 			       "object, something is seriously wrong.\n", kobj);
-> 			dump_stack();
-> 		}
+> On Fri, 8 Feb 2008, john stultz wrote:
 > 
-> in other words the first thing you do is check a member of the
-> structure you're supposed to be initializing -- if someone just
-> kmalloc()s a struct kobject and passes it into this function, there's
-> a good chance that state_initialized won't be zero.  In fact, with
-> slab debugging on, it's guaranteed to be poisoned with a non-zero
-> value.
+> >  
+> >  	clock = clocksource_get_next();
+> > -	clocksource_calculate_interval(clock,
+> > -		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
+> > +	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+> >  	clock->cycle_last = clocksource_read(clock);
+> >  
 > 
-> So are users supposed to be zeroing out struct kobjects before
-> initializing them?
+> Only now I noticed that the first patch had been merged without any 
+> further question. :-(
+> What point is there in reviewing patches, if everything is merged anyway. :-(
+> 
 
-Yes.  See also the check about the non-zero reference count when
-initializing the kref, that too will trip.
-
-> If so, this should probably be documented.
-
-You're right.  Patches gladly accepted :)
-
-thanks,
-
-greg k-h
+oops, mistake, sorry.  There's plenty of time to fix it though.
