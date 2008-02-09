@@ -1,89 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbYBIBwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbYBIB5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757901AbYBIBwB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 20:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbYBIBvw
+	id S1757947AbYBIB5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 20:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYBIB5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 20:51:52 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:57359 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754920AbYBIBvv (ORCPT
+	Fri, 8 Feb 2008 20:57:06 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56940
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508AbYBIB5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 20:51:51 -0500
-Date: Fri, 08 Feb 2008 19:49:49 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived
- threads
-In-reply-to: <fa.6N2dhyJ1cmBqiuFKgCaYfwduM+0@ifi.uio.no>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>
-Message-id: <47AD06BD.7040702@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.6N2dhyJ1cmBqiuFKgCaYfwduM+0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 8 Feb 2008 20:57:05 -0500
+Date: Sat, 9 Feb 2008 02:56:59 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Roland Dreier <rdreier@cisco.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       avi@qumranet.com, linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net, Rik van Riel <riel@redhat.com>
+Subject: Re: [ofa-general] Re: [patch 0/6] MMU Notifiers V6
+Message-ID: <20080209015659.GC7051@v2.random>
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com> <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org> <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com> <adaprv70yyt.fsf@cisco.com> <Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com> <adalk5v0yi6.fsf@cisco.com> <Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com> <20080209012446.GB7051@v2.random> <Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof Johansson wrote:
-> Hi,
-> 
-> I ended up with a customer benchmark in my lap this week that doesn't
-> do well on recent kernels. :(
-> 
-> After cutting it down to a simple testcase/microbenchmark, it seems like
-> recent kernels don't do as well with short-lived threads competing
-> with the thread it's cloned off of. The CFS scheduler changes come to
-> mind, but I suppose it could be caused by something else as well.
-> 
-> The pared-down testcase is included below. Reported runtime for the
-> testcase has increased almost 3x between 2.6.22 and 2.6.24:
-> 
-> 2.6.22: 3332 ms
-> 2.6.23: 4397 ms
-> 2.6.24: 8953 ms
-> 2.6.24-git19: 8986 ms
-> 
-> While running, it'll fork off a bunch of threads, each doing just a little
-> work, then busy-waiting on the original thread to finish as well. Yes,
-> it's incredibly stupidly coded but that's not my point here.
-> 
-> During run, (runtime 10s on my 1.5GHz Core2 Duo laptop), vmstat 2  shows:
-> 
->  0  0      0 115196 364748 2248396    0    0     0     0  163   89  0  0 100  0
->  2  0      0 115172 364748 2248396    0    0     0     0  270  178 24  0 76  0
->  2  0      0 115172 364748 2248396    0    0     0     0  402  283 52  0 48  0
->  2  0      0 115180 364748 2248396    0    0     0     0  402  281 50  0 50  0
->  2  0      0 115180 364764 2248396    0    0     0    22  403  295 51  0 48  1
->  2  0      0 115056 364764 2248396    0    0     0     0  399  280 52  0 48  0
->  0  0      0 115196 364764 2248396    0    0     0     0  241  141 17  0 83  0
->  0  0      0 115196 364768 2248396    0    0     0     2  155   67  0  0 100  0
->  0  0      0 115196 364768 2248396    0    0     0     0  148   62  0  0 100  0
-> 
-> I.e. runqueue is 2, but only one cpu is busy. However, this still seems
-> true on the kernel that runs the testcase in more reasonable time.
-> 
-> Also, 'time' reports real and user time roughly the same on all kernels,
-> so it's not that the older kernels are better at spreading out the load
-> between the two cores (either that or it doesn't account for stuff right).
-> 
-> I've included the config files, runtime output and vmstat output at
-> http://lixom.net/~olof/threadtest/. I see similar behaviour on PPC as
-> well as x86, so it's not architecture-specific.
-> 
-> Testcase below. Yes, I know, there's a bunch of stuff that could be done
-> differently and better, but it still doesn't motivate why there's a 3x
-> slowdown between kernel versions...
+On Fri, Feb 08, 2008 at 05:27:03PM -0800, Christoph Lameter wrote:
+> Pages will still be on the LRU and cycle through rmap again and again. 
+> If page migration is used on those pages then the code may make repeated 
+> attempt to migrate the page thinking that the page count must at some 
+> point drop.
+>
+> I do not think that the page count was intended to be used to pin pages 
+> permanently. If we had a marker on such pages then we could take them off 
+> the LRU and not try to migrate them.
 
-I would say that something coded this bizarrely is really an application 
-bug and not something that one could call a kernel regression. Any 
-change in how the parent and child threads get scheduled will have a 
-huge impact on this test. I bet if you replace that busy wait with a 
-pthread_cond_wait or something similar, this problem goes away.
-
-Hopefully it doesn't have to be pointed out that spawning off threads to 
-do so little work before terminating is inefficient, a thread pool or 
-even just a single thread would likely do a much better job..
+The VM shouldn't break if try_to_unmap doesn't actually make the page
+freeable for whatever reason. Permanent pins shouldn't happen anyway,
+so defining an ad-hoc API for that doesn't sound too appealing. Not
+sure if old hardware deserves those special lru-size-reduction
+optimizations but it's not my call (certainly swapoff/mlock would get
+higher priority in that lru-size-reduction area).
