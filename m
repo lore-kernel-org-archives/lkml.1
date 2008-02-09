@@ -1,144 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbYBIPBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbYBIPNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758214AbYBIPBA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 10:01:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYBIPAu
+	id S1752805AbYBIPNg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 10:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYBIPN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 10:00:50 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:36835 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753988AbYBIPAs (ORCPT
+	Sat, 9 Feb 2008 10:13:26 -0500
+Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:33369 "EHLO
+	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbYBIPNY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 10:00:48 -0500
-Subject: Re: [PATCH] scsi: ses fix for len and mem leaking when fail to add
-	intf
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       kristen.c.accardi@intel.com
-In-Reply-To: <200802090413.53275.yinghai.lu@sun.com>
-References: <200802090413.53275.yinghai.lu@sun.com>
-Content-Type: text/plain
-Date: Sat, 09 Feb 2008 09:00:42 -0600
-Message-Id: <1202569242.4254.9.camel@localhost.localdomain>
+	Sat, 9 Feb 2008 10:13:24 -0500
+Date: Sat, 9 Feb 2008 16:13:22 +0100
+From: Christer Weinigel <christer@weinigel.se>
+To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+Cc: David Newall <davidn@davidnewall.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Diego Zuccato <diego@otello.alma.unibo.it>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080209161322.6ccd9d4d@weinigel.se>
+In-Reply-To: <20080207184939.17030887@dilbert.local>
+References: <20080125180232.GA4613@kroah.com>
+	<20080202123710.42df1aa0@weinigel.se>
+	<20080202191930.GA19826@kroah.com>
+	<47A5D895.20300@davidnewall.com>
+	<47A6E742.80408@otello.alma.unibo.it>
+	<47A764ED.8030605@weinigel.se>
+	<1202161091.15090.84.camel@violet>
+	<20080206213449.6614efea@weinigel.se>
+	<20080206215442.63c94cf3@dilbert.local>
+	<47AB056E.70802@davidnewall.com>
+	<20080207150612.21ba60df@dilbert.local>
+	<47AB163C.5070107@davidnewall.com>
+	<20080207171322.40eb7c95@dilbert.local>
+	<47AB36D2.5050602@davidnewall.com>
+	<20080207184939.17030887@dilbert.local>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 Feb 2008 18:49:39 +0100
+Hans-Jürgen Koch <hjk@linutronix.de> wrote:
 
-On Sat, 2008-02-09 at 04:13 -0800, Yinghai Lu wrote:
-> [PATCH] scsi: ses fix for len and mem leaking when fail to add intf
+> > It requires software that is *distributed* as part of a GPL
+> > work to itself be GPL.  At time of distribution, a kernel module is
+> > neither using nor linked to the kernel.
 > 
-> change to u32 before left shifting char
+> Oh, come on! You cannot turn a derived work into an original work just
+> by distributing them seperately.
 
-This one is a bit unnecessary; C promotion rules guarantee that
-everything is promoted to int (or above) before doing arithmetic.  Since
-it's only ever done on 16 bits, signed or unsigned int is adequate for
-the conversion.
+No, but the other way doesn't work either.  
 
-> also fix leaking with scomp leaking when failing.
+Lets say that I write a piece of code, a B-tree algorithm.  If I take
+that piece of code and put it in the Linux kernel and distribute it as
+a statically linked binary kernel, then quite obviously the whole is a
+derived work of the original Linux kernel and my b-tree code.  If I
+refuse to give the source code to my b-tree code [1] I have obviously
+violated the GPL.  That is very clear and I don't think anyone disputes
+that.
 
-Yes, I see that, thanks!  There's also the kmalloc of scomp which should
-be kzalloc if you care to fix that up in the resend.
+What is more disputed is if my b-tree code is a derivative work of the
+kernel or not.  In my opinion it is not, that b-tree code is my
+original work and I can ship it as a part of a proprietary product if I
+want to.  If I distribute it as a .o file and somebody links it into
+the kernel, that is the end users decision, and the GPL explicitly says
+"Activities other than copying, distribution and modification are not
+covered by this License; they are outside its scope.  The act of
+running the Program is not restricted [...]".  
 
-> -		edev = 	enclosure_find(&sdev->host->shost_gendev);
-> +		edev = enclosure_find(&sdev->host->shost_gendev);
+But lets say that the b-tree code uses Linux-only primitives such as
+kmalloc or spinlocks, and that I wrote the code specifically for the
+Linux kernel, does that make it into a derivative work?  kmalloc is
+only a function call, so I'd say that is too trivial to be
+copyrightable, APIs or just directories mapping names to numbers are
+not copyrightable.  The spinlocks are a bit more troublesome since they
+are implemented as macros or inline functions so they do pull in some
+code from the header files.  On the other hand, since they in a way form
+an API, and are the only way of interoperating with the kernel, they
+might not be copyrightable either.  Then there's the question of fair
+use which might also make it possible to legally use those functions
+anyway, even if they are copyrightable.  
 
-Space cleanups also need mention in the changelog.
+What if I do a trivial replace of the kmalloc calls with malloc and the
+spinlock calls with pthread locks instead, has my code been forever
+tainted by being written for Linux so that I can't do that anymore?
+What if I go the other way and write my code using the posix functions
+to begin with and do the equally trivial replace of malloc with
+kmalloc?  
 
-> -	ses_dev->page1 = buf;
-> -	ses_dev->page1_len = len;
-> -
->  	result = ses_recv_diag(sdev, 1, buf, len);
->  	if (result)
->  		goto recv_failed;
->  
-> +	ses_dev->page1 = buf;
-> +	ses_dev->page1_len = len;
-> +
+So static linking vs dynamic linking really isn't the question.  But 
+linking something statically and distributing the resulting binary
+without providing source, that is a very blatant violation of the GPL,
+so that is fairly easy to bring to court.   As far as I know, the
+question if using the kernel header files creates a derivative work or
+not has not been decided in court though, and until it has it is a bit
+of a gray zone.  And even if it is decided in a court in Germany for
+example, that ruling might not apply in the states or in Australia.
+The Berne convention is supposed to harmonise the copyright laws all
+over the world, but there are still differences between countries.
 
-Neither of us gets this right.  By removing the kfree(buf) from the
-err_free path, you cause a leak here.  I cause a double free.  I think
-putting back the kfree(buf) and keeping this hunk is the fix.
+Every time Harald Welte sues a company and that company settles by
+paying up, it strengthens the position that the GPL is valid, but since
+those settlements are made outside of court, no outsider can tell why
+they settled.  Was it because the company had blatantly violated the
+GPL by refusing to give away source (a lot of WLAN routers made by
+Chinese companies seemed to fall into that category), was it because
+they were using GPLed source in their drivers (a lot of binary modem
+drivers was modified versions of the serial driver straight from the
+Linux kernel, an obvious violation), or was it because the court hinted 
+that they would actually consider an original device driver written for
+Linux as a derivative work?  Or was it just because the companies felt
+that the fight wasn't worth the time and money, and it's easier to
+settle than to spend a lot of money on a fight, especially since
+there's always a small risk that you can get hurt in a fight?
 
->  	types = buf[10];
->  	len = buf[11];
->  
-> @@ -474,11 +474,12 @@ static int ses_intf_add(struct class_dev
->  			components += type_ptr[1];
->  	}
->  
-> +	buf = NULL;
+Patent trolls use the same tactics, they sue small companies and offer
+them settlements which are less risky than fighting it out in court, so
+most small companies settle.  The trolls then use those settlements as
+"proof" that their claims are valid, and with the settlement money they
+take on bigger victims.  Now, I do consider Welte's suits a wee bit [2]
+more valid than patent trolls, and I'm happy he has the energy to do
+that.  But using his victories, which usually seem to be regarding very
+blatant GPL violations, as some kind of proof in the
+derivative-work-or-not debate, isn't really valid.
 
-Yes, prevents double free (but only if buf is freed).
+   /Christer (rambling again)
 
->  	result = ses_recv_diag(sdev, 2, hdr_buf, INIT_ALLOC_SIZE);
->  	if (result)
->  		goto recv_failed;
->  
-> @@ -492,11 +493,12 @@ static int ses_intf_add(struct class_dev
->  
->  	/* The additional information page --- allows us
->  	 * to match up the devices */
-> +	buf = NULL;
+[1] Or if I give the source code to the recipient and say "here's the
+source code, but you can't give it to someone else".
 
-It's probably better to move these closer to the statements that make
-them necessary (in this case above the comment).
-
->  	if (IS_ERR(edev)) {
->  		err = PTR_ERR(edev);
-> +		kfree(scomp);
->  		goto err_free;
->  	}
-
-kfree(scomp) should be in the err_free path just in case someone else
-adds something to this.
- 
->  	/* add 1 for trailing '\0' we'll use */
->  	buf = kzalloc(len + 1, GFP_KERNEL);
-> -	result = ses_recv_diag(sdev, 7, buf, len);
-> -	if (result) {
-> +	if (buf)
-> +		result = ses_recv_diag(sdev, 7, buf, len);
-> +	else
-> +		result = 7;
-> +
-
-What exactly is this supposed to be doing, and why 7?  If you're
-thinking of conditioning the page 7 receive on the success of the
-allocation, we really need the allocation failure report more than we
-need the driver to attach.
-
-> -					addl_desc_ptr += addl_desc_ptr[1] + 2;
-> +					addl_desc_ptr += 2 + addl_desc_ptr[1];
-
-This is rather pointless, isn't it?
-
->   err_free:
-> -	kfree(buf);
-
-You can't remove this.  Also add kfree(scomp) here.
-
->  	kfree(ses_dev->page10);
->  	kfree(ses_dev->page2);
->  	kfree(ses_dev->page1);
-> @@ -630,6 +636,7 @@ static void ses_intf_remove(struct class
->  	ses_dev = edev->scratch;
->  	edev->scratch = NULL;
->  
-> +	kfree(ses_dev->page10);
-
-Yes, a bug, thanks.
-
->  	kfree(ses_dev->page1);
->  	kfree(ses_dev->page2);
->  	kfree(ses_dev);
-
-James
-
-
+[2] That is an understatement, ok?
