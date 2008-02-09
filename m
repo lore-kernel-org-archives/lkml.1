@@ -1,141 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYBIOeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYBIOyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbYBIOeQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 09:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYBIOeE
+	id S1756080AbYBIOyI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 09:54:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYBIOx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 09:34:04 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:58476 "EHLO
+	Sat, 9 Feb 2008 09:53:56 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:43154 "EHLO
 	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751421AbYBIOeC (ORCPT
+	with ESMTP id S1751127AbYBIOxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 09:34:02 -0500
-Message-ID: <47ADB9D3.6070604@web.de>
-Date: Sat, 09 Feb 2008 15:33:55 +0100
+	Sat, 9 Feb 2008 09:53:55 -0500
+Message-ID: <47ADBE81.8000506@web.de>
+Date: Sat, 09 Feb 2008 15:53:53 +0100
 From: Jan Kiszka <jan.kiszka@web.de>
 User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
 To: jason.wessel@windriver.com
-CC: linux-kernel@vger.kernel.org, Jan Kiszka <jan.kiszka@web.de>,
+CC: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 5/8] kgdb, x86: Add arch specfic kgdb support
-References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com> <1202564114-18587-3-git-send-email-jason.wessel@windriver.com> <1202564114-18587-4-git-send-email-jason.wessel@windriver.com> <1202564114-18587-5-git-send-email-jason.wessel@windriver.com> <1202564114-18587-6-git-send-email-jason.wessel@windriver.com>
-In-Reply-To: <1202564114-18587-6-git-send-email-jason.wessel@windriver.com>
+Subject: Re: [PATCH][7/8] kgdb: exclusive use kgdb8250 uart I/O driver
+References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com> <1202564114-18587-3-git-send-email-jason.wessel@windriver.com> <1202564114-18587-4-git-send-email-jason.wessel@windriver.com> <1202564114-18587-5-git-send-email-jason.wessel@windriver.com> <1202564114-18587-6-git-send-email-jason.wessel@windriver.com> <1202564114-18587-7-git-send-email-jason.wessel@windriver.com> <1202564114-18587-8-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1202564114-18587-8-git-send-email-jason.wessel@windriver.com>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18uhAlK9gKCLO4Av7NFemv6ihu1bLnlYzNc0SS2
-	4Ll2n1TpEBQxEuhMJFGVUXAwFohVpfYFX7ZlFhEiSj48ys1t9G
-	DjBc/7718=
+X-Provags-ID: V01U2FsdGVkX19xUmMoZHZbuUgaV7GzQ4mWAvmdv1FtsNoEpIOq
+	tDi/NpBDaS9CT/0hypeTSzH/mkehmklg+RxnhzMn14wvLKopQy
+	JPz7Cl7Fk=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 jason.wessel@windriver.com wrote:
-> --- /dev/null
-> +++ b/include/asm-x86/kgdb.h
-> @@ -0,0 +1,79 @@
-> +#ifdef __KERNEL__
-> +#ifndef _ASM_KGDB_H_
-> +#define _ASM_KGDB_H_
-> +
-> +/*
-> + * Copyright (C) 2001-2004 Amit S. Kale
-> + * Copyright (C) 2008 Wind River Systems, Inc.
-> + */
-> +
-> +#include <asm-generic/kgdb.h>
-> +
-> +/*
-> + * BUFMAX defines the maximum number of characters in inbound/outbound
-> + * buffers at least NUMREGBYTES*2 are needed for register packets
-> + * Longer buffer is needed to list all threads
-> + */
-> +#define BUFMAX			1024
-> +
-> +/*
-> + *  Note that this register image is in a different order than
-> + *  the register image that Linux produces at interrupt time.
-> + *
-> + *  Linux's register image is defined by struct pt_regs in ptrace.h.
-> + *  Just why GDB uses a different order is a historical mystery.
-> + */
-> +#ifdef CONFIG_X86_32
-> +enum regnames { _AX,	/* 0 */
-> +	_CX,	/* 1 */
-> +	_DX,	/* 2 */
-> +	_BX,	/* 3 */
-> +	_SP,	/* 4 */
-> +	_BP,	/* 5 */
-> +	_SI,	/* 6 */
-> +	_DI,	/* 7 */
-> +	_PC,	/* 8 also known as eip */
-> +	_PS,	/* 9 also known as eflags */
-> +	_CS,	/* 10 */
-> +	_SS,	/* 11 */
-> +	_DS,	/* 12 */
-> +	_ES,	/* 13 */
-> +	_FS,	/* 14 */
-> +	_GS		/* 15 */
-> +};
-> +#else /* ! CONFIG_X86_32 */
-> +enum regnames { _AX,	/* 0 */
-> +	_DX,	/* 1 */
-> +	_CX,	/* 2 */
-> +	_BX,	/* 3 */
-> +	_SI,	/* 4 */
-> +	_DI,	/* 5 */
-> +	_BP,	/* 6 */
-> +	_SP,	/* 7 */
-> +	_R8,	/* 8 */
-> +	_R9,	/* 9 */
-> +	_R10,	/* 10 */
-> +	_R11,	/* 11 */
-> +	_R12,	/* 12 */
-> +	_R13,	/* 13 */
-> +	_R14,	/* 14 */
-> +	_R15,	/* 15 */
-> +	_PC,	/* 16 */
-> +	_PS		/* 17 */
-> +};
-> +#endif /* CONFIG_X86_32 */
-> +
-> +/* Number of bytes for gdb registers */
-> +#ifdef CONFIG_X86_32
-> +#define NUMREGBYTES		64
-> +#else /* ! CONFIG_X86_32 */
-> +#define NUMREGBYTES		((_PS+1)*8)
-> +#endif /* CONFIG_X86_32 */
-> +
-> +#ifndef __ASSEMBLY__
-> +#define BREAKPOINT()		asm("   int $3");
-> +#define BREAK_INSTR_SIZE	1
-> +#define CACHE_FLUSH_IS_SAFE	1
-> +#endif				/* !__ASSEMBLY__ */
-> +#endif				/* _ASM_KGDB_H_ */
-> +#endif				/* __KERNEL__ */
+> From: Jason Wessel <jason.wessel@windriver.com>
+> 
+> This patch some small hooks into the normal serial core so that a uart
+> can be unregistered to be exclusively used for KGDB.  These changes
+> allow for registering and unregistering a port with a struct
+> uart_port. From that point on KGDB does raw accesses to the serial
+> IO ports it has taken over.
+> 
+> CC: linux-serial@vger.kernel.org
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  Documentation/DocBook/kgdb.tmpl |   44 ++++
+>  drivers/serial/8250.c           |   30 +++
+>  drivers/serial/8250_kgdb.c      |  489 +++++++++++++++++++++++++++++++++++++++
+>  drivers/serial/Kconfig          |    2 +-
+>  drivers/serial/Makefile         |    1 +
+>  drivers/serial/serial_core.c    |   18 ++-
+>  include/linux/serial_8250.h     |    2 +
+>  lib/Kconfig.kgdb                |   21 ++
+>  8 files changed, 603 insertions(+), 4 deletions(-)
+>  create mode 100644 drivers/serial/8250_kgdb.c
 
-Please fold into the next version:
+There are a few things I missed in my last cleanup round, please fold
+them in, they reduce the changes outside kgdb. (I bet that membase
+dumping was related to mmio vs. mmap configuration, right?)
 
-diff --git a/include/asm-x86/kgdb.h b/include/asm-x86/kgdb.h
-index c2803a8..0ba150b 100644
---- a/include/asm-x86/kgdb.h
-+++ b/include/asm-x86/kgdb.h
-@@ -1,4 +1,3 @@
--#ifdef __KERNEL__
- #ifndef _ASM_KGDB_H_
- #define _ASM_KGDB_H_
+--- linux-2.6-kgdb.orig/drivers/serial/Kconfig
++++ linux-2.6-kgdb/drivers/serial/Kconfig
+@@ -121,7 +121,7 @@ config SERIAL_8250_CS
  
-@@ -70,10 +69,7 @@ enum regnames { _AX,	/* 0 */
- #define NUMREGBYTES		((_PS+1)*8)
- #endif /* CONFIG_X86_32 */
+ config SERIAL_8250_NR_UARTS
+ 	int "Maximum number of 8250/16550 serial ports"
+-	depends on SERIAL_8250 || KGDB_8250
++	depends on SERIAL_8250
+ 	default "4"
+ 	help
+ 	  Set this to the number of serial ports you want the driver
+--- linux-2.6-kgdb.orig/drivers/serial/serial_core.c
++++ linux-2.6-kgdb/drivers/serial/serial_core.c
+@@ -1685,9 +1685,6 @@ static int uart_line_info(char *buf, str
+ 			mmio ? (unsigned long long)port->mapbase
+ 			     : (unsigned long long) port->iobase,
+ 			port->irq);
+-	if (port->iotype == UPIO_MEM)
+-		ret += sprintf(buf+ret, " membase 0x%08lX",
+-					   (unsigned long) port->membase);
  
--#ifndef __ASSEMBLY__
- #define BREAKPOINT()		asm("   int $3");
- #define BREAK_INSTR_SIZE	1
- #define CACHE_FLUSH_IS_SAFE	1
--#endif				/* !__ASSEMBLY__ */
--#endif				/* _ASM_KGDB_H_ */
--#endif				/* __KERNEL__ */
-+#endif /* _ASM_KGDB_H_ */
-
+ 	if (port->type == PORT_UNKNOWN) {
+ 		strcat(buf, "\n");
+@@ -2130,9 +2127,7 @@ uart_report_port(struct uart_driver *drv
+ 	case UPIO_TSI:
+ 	case UPIO_DWAPB:
+ 		snprintf(address, sizeof(address),
+-			 "MMIO 0x%llx mem 0x%p",
+-			 (unsigned long long)port->mapbase,
+-			 port->membase);
++			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
+ 		break;
+ 	default:
+ 		strlcpy(address, "*unknown*", sizeof(address));
+--- linux-2.6-kgdb.orig/include/linux/serial_8250.h
++++ linux-2.6-kgdb/include/linux/serial_8250.h
+@@ -58,7 +58,6 @@ struct uart_port;
+ 
+ int serial8250_register_port(struct uart_port *);
+ void serial8250_unregister_port(int line);
+-void serial8250_unregister_by_port(struct uart_port *port);
+ void serial8250_suspend_port(int line);
+ void serial8250_resume_port(int line);
+ int serial8250_get_port_def(struct uart_port *port, int line);
