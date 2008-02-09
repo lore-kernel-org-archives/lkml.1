@@ -1,113 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYBILxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYBIMCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYBILxY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 06:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbYBILxQ
+	id S1754855AbYBIMCV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 07:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYBIMCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 06:53:16 -0500
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:54115 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753552AbYBILxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 06:53:15 -0500
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
-Date: Sat, 9 Feb 2008 12:53:11 +0100
-User-Agent: KMail/1.9.7
-Cc: mingo@elte.hu, tglx@linutronix.de, lenb@kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080207195519.GA21772@basil.nowhere.org> <200802090008.05430.prakash@punnoor.de> <20080209115920.GB21172@one.firstfloor.org>
-In-Reply-To: <20080209115920.GB21172@one.firstfloor.org>
+	Sat, 9 Feb 2008 07:02:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42790 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750796AbYBIMCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 07:02:09 -0500
+Date: Sat, 9 Feb 2008 20:01:57 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: linux-kernel@vger.kernel.org
+Cc: Miklos Szeredi <mszeredi@suse.cz>
+Subject: [PATCH] proc: extend /proc/<pid>/fdinfo/<fd>
+Message-ID: <20080209120157.GA3035@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6168876.ZRLq9DBlDl";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802091253.11478.prakash@punnoor.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6168876.ZRLq9DBlDl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch extends /proc/<pid>/fdinfo/<fd> to report information about open
+files, and pathname. This information can be useful to know when debugging an
+application.
 
-On the day of Saturday 09 February 2008 Andi Kleen hast written:
-> > Grr, I don't know why I am discussing with stubborn and/or arrogant devs
-> > like you seem to be. But I actually did what you wanted and as *expecte=
-d*
-> > - as I
->
-> Thanks.
->
-> > said I understand that trivial piece of code you posted - your patch
-> > fails here for my nforce2:
->
-> That is 2.6.24 + my patch?  And system didn't boot?
->
-> > cat /proc/interrupts
-> >            CPU0
-> >   0:        832    XT-PIC-XT        timer <---------------- seeing this?
->
-> Well it looks like it is ticking. What are the symptoms?
+For each file descriptor, the information is provided in the following format:
 
-You are seeing it. If you read my other mails you would comprehend it as we=
-ll.
+kerndev: ~/code/kernel# cat /proc/`pgrep pickup`/fdinfo/6
+mode:   0622
+dev:    253,0
+ino:    21463057
+uid:    89
+gid:    89
+rdev:   0,0
+pos:    0
+flags:  04002 FD_CLOEXEC # if close-on-exec flag is set
+path:   /var/spool/postfix/public/pickup
 
-> Do you have a full boot log of the failure?
+You can also use this to find out more information about locked open files:
 
-As I said inform yourself, what the intention of the quirk is about. I am=20
-tired of this.
+kerndev: /proc# cat /proc/locks
+1: POSIX  ADVISORY  WRITE 2663 fd:00:21398205 0 EOF
+                          ^^^^       ^^^^^^^^
+2: FLOCK  ADVISORY  WRITE 2654 fd:00:21398203 0 EOF
+3: FLOCK  ADVISORY  WRITE 2564 fd:00:21463056 0 EOF
+4: FLOCK  ADVISORY  WRITE 2266 fd:00:21398151 0 EOF
+kerndev: /proc# cd 2663/fdinfo/
+kerndev: /proc/2663/fdinfo# grep 21398205 * -B2 -A6
+               ^^^^
+3-mode:	0644
+3-dev:	253,0
+3:ino:	21398205
+        ^^^^^^^^
+3-uid:	0
+3-gid:	0
+3-rdev:	0,0
+3-pos:	5
+3-flags:	02 FD_CLOEXEC
+3-path:	/var/run/atd.pid
 
->
-> > And no, I won't test it on my MCP51 as I *know* what happens: As soon as
-> > I disable hpet, the quirk gets triggered and will lock up my system.
->
-> I readded the HPET check in v2 especially for you so if HPET is enabled
-> no quirk is triggered.
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ fs/proc/base.c |   47 +++++++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 41 insertions(+), 6 deletions(-)
 
-Still you didn't give *any* proof that mcp51 needs quirk at all. I therefor=
-e=20
-want that line *removed*:
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index c59852b..dde617f 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1402,7 +1402,7 @@ out:
+ 	return ~0U;
+ }
+ 
+-#define PROC_FDINFO_MAX 64
++#define PROC_FDINFO_MAX 256
+ 
+ static int proc_fd_info(struct inode *inode, struct dentry **dentry,
+ 			struct vfsmount **mnt, char *info)
+@@ -1411,6 +1411,7 @@ static int proc_fd_info(struct inode *inode, struct dentry **dentry,
+ 	struct files_struct *files = NULL;
+ 	struct file *file;
+ 	int fd = proc_fd(inode);
++	int ret = -ENOENT;
+ 
+ 	if (task) {
+ 		files = get_files_struct(task);
+@@ -1424,24 +1425,58 @@ static int proc_fd_info(struct inode *inode, struct dentry **dentry,
+ 		spin_lock(&files->file_lock);
+ 		file = fcheck_files(files, fd);
+ 		if (file) {
++			ret = 0;
++
+ 			if (mnt)
+ 				*mnt = mntget(file->f_path.mnt);
+ 			if (dentry)
+ 				*dentry = dget(file->f_path.dentry);
+-			if (info)
++			/* called by proc_fdinfo_read() */
++			if (info) {
++				struct fdtable *fdt = files_fdtable(files);
++				struct dentry *d = dget(file->f_path.dentry);
++				struct vfsmount *v = mntget(file->f_path.mnt);
++				char *page = (char *)__get_free_page(GFP_TEMPORARY);
++				int gcoe = FD_ISSET(fd, fdt->close_on_exec);
++				int dev_nr = d->d_inode->i_sb->s_dev;
++				int rdev_nr = d->d_inode->i_rdev;
++
++				if (!page) {
++					ret = -ENOMEM;
++					goto out;
++				}
++
+ 				snprintf(info, PROC_FDINFO_MAX,
++					 "mode:\t0%o\n"
++					 "dev:\t%d,%d\n"
++					 "ino:\t%ld\n"
++					 "uid:\t%d\n"
++					 "gid:\t%d\n"
++					 "rdev:\t%d,%d\n"
+ 					 "pos:\t%lli\n"
+-					 "flags:\t0%o\n",
++					 "flags:\t0%o %s\n"
++					 "path:\t%s\n",
++					 d->d_inode->i_mode & 0777,
++					 MAJOR(dev_nr), MINOR(dev_nr),
++					 d->d_inode->i_ino,
++					 file->f_uid, file->f_gid,
++					 MAJOR(rdev_nr), MINOR(rdev_nr),
+ 					 (long long) file->f_pos,
+-					 file->f_flags);
++					 file->f_flags, gcoe ? "FD_CLOEXEC" : "",
++					 d_path(d, v, page, PAGE_SIZE));
++				free_page((unsigned long)page);
++out:
++				mntput(v);
++				dput(d);
++			}
+ 			spin_unlock(&files->file_lock);
+ 			put_files_struct(files);
+-			return 0;
++			return ret;
+ 		}
+ 		spin_unlock(&files->file_lock);
+ 		put_files_struct(files);
+ 	}
+-	return -ENOENT;
++	return ret;
+ }
+ 
+ static int proc_fd_link(struct inode *inode, struct dentry **dentry,
 
-+       QBRIDGE(PCI_VENDOR_ID_NVIDIA, 0x02f0, nvidia_timer), /* mcp 51/nf4 =
-?=20
-*/
-
-=46urthermore my original bios didn't have option to enable hpet. What then=
-?=20
-Kernel hangs unless I specify acpi_use_timer_override. Great.
-
-Hint: The correct way of quirking would be *only having this one* line:
-
-+       QBRIDGE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE2,=20
-nvidia_timer),
-
-According to Len Brown's comment this would work for every nforce2. For eve=
-ry=20
-other nforceX use DMI Scan and only quirk known broken bioses instead of=20
-messing up working boxes.
-
-bye,
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
-
---nextPart6168876.ZRLq9DBlDl
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHrZQnxU2n/+9+t5gRAsu0AJ9JBv/cACGkVufMEo0tnkOrCRouuACglPxy
-IRI9uTAVq1J9kyRdeMl2bnM=
-=gllH
------END PGP SIGNATURE-----
-
---nextPart6168876.ZRLq9DBlDl--
