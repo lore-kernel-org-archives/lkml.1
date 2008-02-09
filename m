@@ -1,233 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbYBIP2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbYBIP3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbYBIP2X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 10:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYBIP2O
+	id S1756485AbYBIP3X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 10:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYBIP3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 10:28:14 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:42530 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbYBIP2M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 10:28:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=VfpKd1VA0nW9zdcKhX3aO/TkarORok8dOv+F5aeRRDf7TGYQ5AoJUwZtdReYU12iRLO9w6hEnbWReqgZ7AXLtVdgi9EENB6vwH7qY5JY2d6TtRAjkvIG1z0WGlBVjox5eB+IOPclUfTNjaPj+e+MrhsjdRkwwZNDL5QQsNnMxx8=
-Message-ID: <2f11576a0802090728x3e4e429dgcdceefd12213a987@mail.gmail.com>
-Date: Sun, 10 Feb 2008 00:28:11 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 8/8][for -mm] mem_notify v6: support fasync feature
-Cc: kosaki.motohiro@jp.fujitsu.com, "Marcelo Tosatti" <marcelo@kvack.org>,
-       "Daniel Spang" <daniel.spang@gmail.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-fsdevel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
-       "Jon Masters" <jonathan@jonmasters.org>, "Zan Lynx" <zlynx@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Feb 2008 10:29:16 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48360 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbYBIP3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 10:29:15 -0500
+Date: Sat, 9 Feb 2008 16:29:20 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/8] kgdb: core API and gdb protocol handler
+Message-ID: <20080209152920.GA7492@uranus.ravnborg.org>
+References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: 73b3976743ee4b46
+In-Reply-To: <1202564114-18587-2-git-send-email-jason.wessel@windriver.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-implement FASYNC capability to /dev/mem_notify.
+Hi Jason.
 
-<usage example>
-        fd = open("/dev/mem_notify", O_RDONLY);
+> --- /dev/null
+> +++ b/kernel/kgdb.c
+> +
+> +struct debuggerinfo_struct {
+> +	void			*debuggerinfo;
+> +	struct task_struct	*task;
+> +} kgdb_info[NR_CPUS];
+static?
 
-	fcntl(fd, F_SETOWN, getpid());
-	fcntl(fd, F_SETSIG, SIGUSR1);
+> +
+> +/* Is a host GDB connected to us? */
+> +int				kgdb_connected;
+> +EXPORT_SYMBOL_GPL(kgdb_connected);
+Drop additional spaces.
+Add kernel-doc comments explaining the usage.
 
-	flags = fcntl(fd, F_GETFL);
-	fcntl(fd, F_SETFL, flags|FASYNC);  /* when low memory, receive SIGUSR1 */
-</usage example>
+> +/* All the KGDB handlers are installed */
+> +int				kgdb_io_module_registered;
+static? drop spaces.
 
+> +
+> +/* Guard for recursive entry */
+> +static int			exception_level;
+drop spaces. In more places below - but they are obvious.
 
-ChangeLog
-	v5 -> v6:
-	   o rewrite usage example
-	   o cleanups number of wakeup tasks calculation.	
+> +struct kgdb_bkpt		kgdb_break[KGDB_MAX_BREAKPOINTS] = {
+> +	[0 ... KGDB_MAX_BREAKPOINTS-1] = { .state = BP_UNDEFINED }
+> +};
+static?
 
-	v5:  new
+> +
+> +extern int pid_max;
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+extern must be moved to a .h file.
 
----
- mm/mem_notify.c |  109 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 104 insertions(+), 5 deletions(-)
+> +atomic_t			kgdb_setting_breakpoint;
+static?
+Many more variables are static candidates. I will not repeat it.
+Did you run this through sparse?
 
-Index: b/mm/mem_notify.c
-===================================================================
---- a/mm/mem_notify.c	2008-02-03 20:37:25.000000000 +0900
-+++ b/mm/mem_notify.c	2008-02-03 20:48:04.000000000 +0900
-@@ -24,18 +24,58 @@
- #define MAX_WAKEUP_TASKS (100)
+> +#ifdef __BIG_ENDIAN
+> +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> +		*buf++ = hexchars[tmp_s & 0xf];
+> +#else
+> +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> +		*buf++ = hexchars[tmp_s & 0xf];
+> +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> +#endif
+small helper function?
 
- struct mem_notify_file_info {
--	unsigned long last_proc_notify;
-+	unsigned long     last_proc_notify;
-+	struct file      *file;
-+
-+	/* for fasync */
-+	struct list_head  fa_list;
-+	int	          fa_fd;
- };
+> +	} else if ((count == 4) && (((long)mem & 3) == 0)) {
+> +		u32 tmp_l;
+> +		if (kgdb_mem_cpy(&tmp_l, mem, count))
+> +			return ERR_PTR(-EINVAL);
+> +
+> +		mem += 4;
+> +#ifdef __BIG_ENDIAN
+> +		*buf++ = hexchars[(tmp_l >> 28) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 24) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 20) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 16) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 12) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 8) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 4) & 0xf];
+> +		*buf++ = hexchars[tmp_l & 0xf];
+> +#else
+> +		*buf++ = hexchars[(tmp_l >> 4) & 0xf];
+> +		*buf++ = hexchars[tmp_l & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 12) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 8) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 20) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 16) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 28) & 0xf];
+> +		*buf++ = hexchars[(tmp_l >> 24) & 0xf];
+> +#endif
+that could be used here too.
+And again below.
 
- static DECLARE_WAIT_QUEUE_HEAD(mem_wait);
- static atomic_long_t nr_under_memory_pressure_zones = ATOMIC_LONG_INIT(0);
- static atomic_t nr_watcher_task = ATOMIC_INIT(0);
-+static LIST_HEAD(mem_notify_fasync_list);
-+static DEFINE_SPINLOCK(mem_notify_fasync_lock);
-+static atomic_t nr_fasync_task = ATOMIC_INIT(0);
+> + * Convert the hex array pointed to by buf into binary to be placed in mem.
+> + * Return a pointer to the character AFTER the last byte written.
+> + * May return an error.
+> + */
+> +char *kgdb_hex2mem(char *buf, char *mem, int count)
+> +{
+> +	if ((count == 2) && (((long)mem & 1) == 0)) {
+> +		u16 tmp_s = 0;
+> +
+> +#ifdef __BIG_ENDIAN
+> +		tmp_s |= hex(*buf++) << 12;
+> +		tmp_s |= hex(*buf++) << 8;
+> +		tmp_s |= hex(*buf++) << 4;
+> +		tmp_s |= hex(*buf++);
+> +#else
+> +		tmp_s |= hex(*buf++) << 4;
+> +		tmp_s |= hex(*buf++);
+> +		tmp_s |= hex(*buf++) << 12;
+> +		tmp_s |= hex(*buf++) << 8;
+> +#endif
+small helper function again.
 
- atomic_long_t last_mem_notify = ATOMIC_LONG_INIT(INITIAL_JIFFIES);
+> +int kgdb_isremovedbreak(unsigned long addr)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < KGDB_MAX_BREAKPOINTS; i++) {
+> +		if ((kgdb_break[i].state == BP_REMOVED) &&
+> +					(kgdb_break[i].bpt_addr == addr))
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+static?
 
-+static void mem_notify_kill_fasync_nr(int nr)
-+{
-+	struct mem_notify_file_info *iter, *saved_iter;
-+	LIST_HEAD(l_fired);
-+
-+	if (!nr)
-+		return;
-+
-+	spin_lock(&mem_notify_fasync_lock);
-+
-+	list_for_each_entry_safe_reverse(iter, saved_iter,
-+					 &mem_notify_fasync_list,
-+					 fa_list) {
-+		struct fown_struct *fown;
-+
-+		fown = &iter->file->f_owner;
-+		send_sigio(fown, iter->fa_fd, POLL_IN);
-+
-+		list_del(&iter->fa_list);
-+		list_add(&iter->fa_list, &l_fired);
-+		if (!--nr)
-+			break;
-+	}
-+
-+	/* rotate moving for FIFO wakeup */
-+	list_splice(&l_fired, &mem_notify_fasync_list);
-+
-+	spin_unlock(&mem_notify_fasync_lock);
-+}
-+
- void __memory_pressure_notify(struct zone *zone, int pressure)
- {
- 	int nr_wakeup;
-+	int nr_poll_wakeup = 0;
-+	int nr_fasync_wakeup = 0;
- 	int flags;
+> +
+> +int remove_all_break(void)
+> +{
+> +	unsigned long addr;
+> +	int error;
+> +	int i;
+> +
+> +	/* Clear memory breakpoints. */
+> +	for (i = 0; i < KGDB_MAX_BREAKPOINTS; i++) {
+> +		if (kgdb_break[i].state != BP_SET)
+> +			continue;
+> +		addr = kgdb_break[i].bpt_addr;
+> +		error = kgdb_arch_remove_breakpoint(addr,
+> +				kgdb_break[i].saved_instr);
+> +		if (error)
+> +			return error;
+> +		kgdb_break[i].state = BP_REMOVED;
+> +	}
+> +
+> +	/* Clear hardware breakpoints. */
+> +	if (arch_kgdb_ops.remove_all_hw_break)
+> +		arch_kgdb_ops.remove_all_hw_break();
+> +
+> +	return 0;
+> +}
+static?
 
- 	spin_lock_irqsave(&mem_wait.lock, flags);
-@@ -48,6 +88,8 @@ void __memory_pressure_notify(struct zon
+> +/*
+> + * Return true if there is a valid kgdb I/O module.  Also if no
+> + * debugger is attached a message can be printed to the console about
+> + * waiting for the debugger to attach.
+> + *
+> + * The print_wait argument is only to be true when called from inside
+> + * the core kgdb_handle_exception, because it will wait for the
+> + * debugger to attach.
+> + */
+> +int kgdb_io_ready(int print_wait)
+> +{
+> +	if (!kgdb_io_ops)
+> +		return 0;
+> +	if (kgdb_connected)
+> +		return 1;
+> +	if (atomic_read(&kgdb_setting_breakpoint))
+> +		return 1;
+> +	if (print_wait)
+> +		printk(KERN_CRIT "KGDB: Waiting for remote debugger\n");
+> +	return 1;
+> +}
+static?
+Please review the rest of the code-base for static candidates.
 
- 	if (pressure) {
- 		int nr_watcher = atomic_read(&nr_watcher_task);
-+		int nr_fasync_wait_tasks = atomic_read(&nr_fasync_task);
-+		int nr_poll_wait_tasks = nr_watcher - nr_fasync_wait_tasks;
+> new file mode 100644
+> index 0000000..afa61bb
+> --- /dev/null
+> +++ b/lib/Kconfig.kgdb
+> @@ -0,0 +1,32 @@
+> +
+> +menuconfig KGDB
+> +	bool "KGDB: kernel debugging with remote gdb"
+> +	select KGDB_ARCH_HAS_SHADOW_INFO if X86_64
+> +	select DEBUG_INFO
+> +	select FRAME_POINTER
+> +	depends on DEBUG_KERNEL && ADD_A_KGDB_ARCH
 
- 		atomic_long_set(&last_mem_notify, jiffies);
- 		if (!nr_watcher)
-@@ -57,10 +99,27 @@ void __memory_pressure_notify(struct zon
- 		if (unlikely(nr_wakeup > MAX_WAKEUP_TASKS))
- 			nr_wakeup = MAX_WAKEUP_TASKS;
+Replace ADD_A_...
+with
+HAVE_KGDB
 
--		wake_up_locked_nr(&mem_wait, nr_wakeup);
-+		/*                                               nr_wakeup
-+		       nr_fasync_wakeup = nr_fasync_wait_taks x ------------
-+								 nr_watcher
-+		*/
-+		nr_fasync_wakeup = DIV_ROUND_UP(nr_fasync_wait_tasks *
-+						nr_wakeup, nr_watcher);
-+		if (unlikely(nr_fasync_wakeup > nr_fasync_wait_tasks))
-+			nr_fasync_wakeup = nr_fasync_wait_tasks;
-+
-+		nr_poll_wakeup = DIV_ROUND_UP(nr_poll_wait_tasks *
-+					      nr_wakeup, nr_watcher);
-+		if (unlikely(nr_poll_wakeup > nr_poll_wait_tasks))
-+			nr_poll_wakeup = nr_poll_wait_tasks;
-+
-+		wake_up_locked_nr(&mem_wait, nr_poll_wakeup);
- 	}
- out:
- 	spin_unlock_irqrestore(&mem_wait.lock, flags);
-+
-+	if (nr_fasync_wakeup)
-+		mem_notify_kill_fasync_nr(nr_fasync_wakeup);
- }
+and then let arch do:
+	select HAVE_KGDB if they support KGDB
 
- static int mem_notify_open(struct inode *inode, struct file *file)
-@@ -75,6 +134,9 @@ static int mem_notify_open(struct inode
- 	}
+See Documentation/kbuild/kconfig-language.txt
 
- 	info->last_proc_notify = INITIAL_JIFFIES;
-+	INIT_LIST_HEAD(&info->fa_list);
-+	info->file = file;
-+	info->fa_fd = -1;
- 	file->private_data = info;
- 	atomic_inc(&nr_watcher_task);
- out:
-@@ -83,7 +145,16 @@ out:
-
- static int mem_notify_release(struct inode *inode, struct file *file)
- {
--	kfree(file->private_data);
-+	struct mem_notify_file_info *info = file->private_data;
-+
-+	spin_lock(&mem_notify_fasync_lock);
-+	if (!list_empty(&info->fa_list)) {
-+		list_del(&info->fa_list);
-+		atomic_dec(&nr_fasync_task);
-+	}
-+	spin_unlock(&mem_notify_fasync_lock);
-+
-+	kfree(info);
- 	atomic_dec(&nr_watcher_task);
- 	return 0;
- }
-@@ -114,9 +185,37 @@ out:
- 	return retval;
- }
-
-+static int mem_notify_fasync(int fd, struct file *filp, int on)
-+{
-+	struct mem_notify_file_info *info = filp->private_data;
-+	int result = 0;
-+
-+	spin_lock(&mem_notify_fasync_lock);
-+	if (on) {
-+		if (list_empty(&info->fa_list)) {
-+			info->fa_fd = fd;
-+			list_add(&info->fa_list, &mem_notify_fasync_list);
-+			result = 1;
-+		} else {
-+			info->fa_fd = fd;
-+		}
-+	} else {
-+		if (!list_empty(&info->fa_list)) {
-+			list_del_init(&info->fa_list);
-+			info->fa_fd = -1;
-+			result = -1;
-+		}
-+	}
-+	if (result != 0)
-+		atomic_add(result, &nr_fasync_task);
-+	spin_unlock(&mem_notify_fasync_lock);
-+	return abs(result);
-+}
-+
- struct file_operations mem_notify_fops = {
--	.open = mem_notify_open,
-+	.open    = mem_notify_open,
- 	.release = mem_notify_release,
--	.poll = mem_notify_poll,
-+	.poll    = mem_notify_poll,
-+	.fasync  = mem_notify_fasync,
- };
- EXPORT_SYMBOL(mem_notify_fops);
+	Sam
