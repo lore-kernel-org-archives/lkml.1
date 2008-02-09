@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYBIAPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYBIAQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbYBIAPO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:15:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbYBIAO7
+	id S1755008AbYBIAQn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbYBIAQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:14:59 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38378 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753686AbYBIAO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:14:59 -0500
-Date: Sat, 9 Feb 2008 02:15:15 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, rmk@arm.linux.org.uk
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: ide/arm/bast-ide.c compile error
-Message-ID: <20080209001515.GF6505@cs181133002.pp.htv.fi>
+	Fri, 8 Feb 2008 19:16:36 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:58624 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752286AbYBIAQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 19:16:35 -0500
+Date: Fri, 8 Feb 2008 16:16:34 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Roland Dreier <rdreier@cisco.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, andrea@qumranet.com,
+       a.p.zijlstra@chello.nl, linux-mm@kvack.org, izike@qumranet.com,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, avi@qumranet.com,
+       kvm-devel@lists.sourceforge.net, daniel.blueman@quadrics.com,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [patch 0/6] MMU Notifiers V6
+In-Reply-To: <adaprv70yyt.fsf@cisco.com>
+Message-ID: <Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
+References: <20080208220616.089936205@sgi.com> <20080208142315.7fe4b95e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0802081528070.4036@schroedinger.engr.sgi.com>
+ <20080208233636.GG26564@sgi.com> <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
+ <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
+ <adaprv70yyt.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 9e016a719209d95338e314b46c3012cc7feaaeec causes the following 
-compile error:
+On Fri, 8 Feb 2008, Roland Dreier wrote:
 
-<--  snip  -->
+> In general, this MMU notifier stuff will only be useful to a subset of
+> InfiniBand/RDMA hardware.  Some adapters are smart enough to handle
+> changing the IO virtual -> bus/physical mapping on the fly, but some
+> aren't.  For the dumb adapters, I think the current ib_umem_get() is
+> pretty close to as good as we can get: we have to keep the physical
+> pages pinned for as long as the adapter is allowed to DMA into the
+> memory region.
 
-...
-  CC      drivers/ide/arm/bast-ide.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/arm/bast-ide.c: In function 'bastide_register':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/arm/bast-ide.c:31: error: 'hwif' redeclared as different kind of symbol
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/arm/bast-ide.c:29: error: previous definition of 'hwif' was here
-make[4]: *** [drivers/ide/arm/bast-ide.o] Error 1
+I thought the adaptor can always remove the mapping by renegotiating 
+with the remote side? Even if its dumb then a callback could notify the 
+driver that it may be required to tear down the mapping. We then hold the 
+pages until we get okay by the driver that the mapping has been removed.
 
-<--  snip  -->
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+We could also let the unmapping fail if the driver indicates that the 
+mapping must stay.
