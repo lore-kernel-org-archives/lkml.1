@@ -1,111 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYBIX0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYBIX1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbYBIX0u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 18:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYBIX0k
+	id S1757463AbYBIX1f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 18:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbYBIX10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 18:26:40 -0500
-Received: from www.tglx.de ([62.245.132.106]:42449 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755250AbYBIX0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 18:26:39 -0500
-Date: Sun, 10 Feb 2008 00:24:50 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 updates
-Message-ID: <alpine.LFD.1.00.0802092246390.3145@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sat, 9 Feb 2008 18:27:26 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:20133 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756553AbYBIX1Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 18:27:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=nRodydWtkg2gnCrRXISbozlqmjKaxzSKwTFr9UOiSWsIwwYL8XcaKohw/6bN8EhJd+xCdQTxysNZAdsh+LL0pQUzSwa/vfZBvQCEiPkAnNwWdwmpYI73dQnJDpdPW3Y2ewhWmR9d6LVi3uHVg10ljpFxDrTFzSeqvKv+dwTsRkY=
+Message-ID: <76366b180802091527n4ee2eeacu9d41193bba4701b3@mail.gmail.com>
+Date: Sat, 9 Feb 2008 18:27:23 -0500
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
+Cc: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       "Balaji Rao" <balajirrao@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, clemens@ladisch.de,
+       venkatesh.pallipadi@intel.com, bob.picco@hp.com
+In-Reply-To: <alpine.LFD.0.99999.0801181111430.4642@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>
+	 <20080113120337.GA5548@linux.vnet.ibm.com>
+	 <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com>
+	 <20080113140620.GA22507@linux.vnet.ibm.com>
+	 <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>
+	 <alpine.LFD.0.99999.0801161524250.3764@localhost.localdomain>
+	 <alpine.LFD.0.99999.0801161618380.3764@localhost.localdomain>
+	 <76366b180801161139o24599152obb01cd6e9cc6148@mail.gmail.com>
+	 <alpine.LFD.0.99999.0801181111430.4642@localhost.localdomain>
+X-Google-Sender-Auth: 91e097f951bf1cc3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Thomas,
 
-please pull the pending x86 updates from:
+I haven't found a good way to capture the SysRq output for this. I
+found that when it locks up at boot time, even SysRq is unresponsive.
+I don't have another way of getting console on the machine right now
+to get the output off of it. I have since upgraded to 2.6.24 and the
+problem still persists.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git master
-
-The update contains:
-
-    - a couple of bugfixes
-    - CPA and DEBUG_PAGEALLOC improvements
-    - x86 power management consolidation 
-    - GEODE updates
-    - 32bit boot time page table construction rework
-    - sparse and compile warning fixes
-    - trivial cleanups
-
-There are two patches out of x86 scope as well:
-
-    - lguest bugfix: x86 broke it, fix is obviously correct and Rusty
-      is away
-
-    - randomization docs: resulted out of a x86 randomization
-      discussion
+Another interesting twist though.. I just rebuilt my kernel with
+ARCH=x86_64 and HPET works perfectly. So this only appears to break
+when in 32-bit mode. For some reason it picks tsc at boot time, but if
+I install hpet afterwards under x86_64 it no longer hangs when I run
+'sleep 1'. Does that shed any more light on the problem?
 
 Thanks,
+-Andrew
 
-	tglx
+# uname -a
+Linux am2 2.6.24 #7 Sat Feb 9 18:06:50 EST 2008 x86_64 GNU/Linux
+# dmesg | egrep -i clock\|hpet
+ACPI: HPET 3DFE7780, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
+ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+hpet clockevent registered
+TSC calibrated against HPET
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
+hpet0: 4 32-bit timers, 14318180 Hz
+Time: tsc clocksource has been installed.
+Real Time Clock Driver v1.12ac
+hpet_resources: 0xfed00000 is busy
+# echo -n hpet >
+/sys/devices/system/clocksource/clocksource0/current_clocksource
+# dmesg | tail -1
+Time: hpet clocksource has been installed.
+# time sleep 1
 
-----
+real    0m1.001s
+user    0m0.000s
+sys     0m0.000s
 
-Ahmed S. Darwish (1):
-      lguest: accept guest _PAGE_PWT page table entries
-
-Andres Salomon (5):
-      x86: GEODE: MFGPT: Minor cleanups
-      x86: GEODE: MFGPT: drop module owner usage from MFGPT API
-      x86: GEODE: MFGPT: replace 'flags' field with 'avail' bit
-      x86: GEODE: MFGPT: make mfgpt_timer_setup available outside of mfgpt_32.c
-      x86: GEODE: MFGPT: fix a potential race when disabling a timer
-
-Arnd Hannemann (1):
-      x86: GEODE: MFGPT: fix typo in printk in mfgpt_timer_setup
-
-Denys Vlasenko (1):
-      x86: trivial printk optimizations
-
-Harvey Harrison (6):
-      x86: fix sparse warning in xen/time.c
-      x86: sparse warning in therm_throt.c
-      x86: sparse warnings in pageattr.c
-      x86: fix sparse warning in topology.c
-      x86: fix sparse warnings in acpi/bus.c
-      x86, core: remove CONFIG_FORCED_INLINING
-
-Ian Campbell (2):
-      x86: construct 32-bit boot time page tables in native format.
-      x86: fix early_ioremap pagetable ops
-
-Ingo Molnar (2):
-      x86: fixup more paravirt fallout
-      brk: help text typo fix
-
-Jiri Kosina (1):
-      brk: document randomize_va_space and CONFIG_COMPAT_BRK (was Re:
-
-Jordan Crouse (2):
-      x86: GEODE: MFGPT: Use "just-in-time" detection for the MFGPT timers
-      x86: GEODE: make sure the right MFGPT timer fired the timer tick
-
-Rafael J. Wysocki (4):
-      x86 PM: move 64-bit hibernation files to arch/x86/power
-      x86 PM: rename 32-bit files in arch/x86/power
-      x86 PM: consolidate suspend and hibernation code
-      x86 PM: update stale comments
-
-Thomas Gleixner (6):
-      x86: avoid unused variable warning in mm/init_64.c
-      x86: DEBUG_PAGEALLOC: enable after mem_init()
-      x86: introduce page pool in cpa
-      x86: cpa, use page pool
-      x86: cpa, enable CONFIG_DEBUG_PAGEALLOC on 64-bit
-      x86: cpa, strict range check in try_preserve_large_page()
-
-Willy Tarreau (1):
-      x86: GEODE fix MFGPT input clock value
-
+On Jan 18, 2008 5:26 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 16 Jan 2008, Andrew Paprocki wrote:
+>
+> > I applied the patch and I am still locking up after
+> > Time: hpet clocksource has been installed.
+>
+> That was expected :)
+>
+> > I rebooted with "clocksource=tsc" to get the logs of the trace which
+> > was added. I'm assuming the grep below gets all the interesting parts.
+> > I enabled the HPET character device as mentioned before, which is why
+> > the hpet0 lines appear now.
+> >
+> > # dmesg | egrep -i "(hpet|time|clock)"
+> > ACPI: HPET 37FE7400, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
+> > ATI board detected. Disabling timer routing over 8254.
+> > ACPI: PM-Timer IO Port: 0x4008
+> > ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+> > Kernel command line: vga=0x31a root=/dev/sda1 ro clocksource=tsc
+> > HPET check: t1=5 t2=1139 s=56226339975 n=56226539985
+>
+> Ok, the counter works when we initialize the HPET.
+>
+> t2-t1 = 1134 ticks ~= 79us
+> s-n = 200010 ~= 2525MHz --> That should be the frequency of your CPU.
+>
+> > Jan 16 14:44:43 am2 kernel: Call Trace:
+> > Jan 16 14:44:48 am2 kernel:  [<c01371be>] enqueue_hrtimer+0xd7/0xe2
+> > Jan 16 14:44:48 am2 kernel:  [<c0137803>] hrtimer_start+0xe8/0xf4
+> > Jan 16 14:44:48 am2 kernel:  [<c03ac8d3>] do_nanosleep+0x48/0x73
+> > Jan 16 14:44:48 am2 kernel:  [<c03ac932>] hrtimer_nanosleep_restart+0x34/0xa1
+> > Jan 16 14:44:48 am2 kernel:  [<c013735d>] hrtimer_wakeup+0x0/0x18
+> > Jan 16 14:44:48 am2 kernel:  [<c012e837>] sys_restart_syscall+0xe/0xf
+> > Jan 16 14:44:48 am2 kernel:  [<c0103d0a>] sysenter_past_esp+0x5f/0x85
+>
+> When the system is hung, can you please hit SysRq-Q wait a bit and hit
+> SysRq-Q again. Please provide the output.
+>
+> Thanks,
+>         tglx
+>
+>
