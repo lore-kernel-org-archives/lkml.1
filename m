@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYBISLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYBISLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbYBISLf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 13:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYBISL0
+	id S1757899AbYBISLs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 13:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbYBISL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 13:11:26 -0500
-Received: from qb-out-0506.google.com ([72.14.204.234]:26532 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbYBISLY (ORCPT
+	Sat, 9 Feb 2008 13:11:29 -0500
+Received: from mail-in-05.arcor-online.net ([151.189.21.45]:49067 "EHLO
+	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755440AbYBISL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 13:11:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=M8SvZIwBM6glg2CT3ouK5r4UWKd2lq4e+FeCcNxYJAuqYmbcUf6ZVbJiC3EDlVcbm5poDuSlxtr2ekBmg1KcJ0vDCp0u/z3qmWQcFXDtkqEP0LQCyILqnDNow9nPsHDuc6CgP6cfMdkmLedy7ccmsvv51d/SW0FCNhCn7GhvVb0=
-Message-ID: <2f11576a0802091011r61da1d67q3b7b114f495d780a@mail.gmail.com>
-Date: Sun, 10 Feb 2008 03:11:22 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
-Subject: Re: [PATCH 2.6.24-mm1] Mempolicy: silently restrict nodemask to allowed nodes V3
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Lameter" <clameter@sgi.com>, "Paul Jackson" <pj@sgi.com>,
-       "David Rientjes" <rientjes@google.com>, "Mel Gorman" <mel@csn.ul.ie>,
-       linux-mm <linux-mm@kvack.org>, torvalds@linux-foundation.org,
-       "Eric Whitney" <eric.whitney@hp.com>
-In-Reply-To: <1202499913.5346.60.camel@localhost>
+	Sat, 9 Feb 2008 13:11:28 -0500
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] Replace nvidia timer override quirk with pci id list
+Date: Sat, 9 Feb 2008 19:11:25 +0100
+User-Agent: KMail/1.9.7
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       lenb@kernel.org, linux-kernel@vger.kernel.org
+References: <20080207195519.GA21772@basil.nowhere.org> <20080209141852.GC22569@one.firstfloor.org> <200802091302.51863.gene.heskett@gmail.com>
+In-Reply-To: <200802091302.51863.gene.heskett@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <200802091911.25730.prakash@punnoor.de>
+Content-Type: multipart/signed;
+  boundary="nextPart1313343.GUVkYT5ZL9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080202180536.F494.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <1202149243.5028.61.camel@localhost>
-	 <20080205163406.270B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <1202499913.5346.60.camel@localhost>
-X-Google-Sender-Auth: e8a0c04c6d419e2d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lee-san
+--nextPart1313343.GUVkYT5ZL9
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-looks good for me.
-I'll test about the head of week and report it by another mail.
+On the day of Saturday 09 February 2008 Gene Heskett hast written:
+> This has killed me both at boot time twice, once before NASH was running,
+> and several times when uptimes were a day plus, but has never reappeared
+> since the first time I used the acpi_user_timer_override argument, and th=
+is
+> includes several boots without it including 2 complete, 2 or 3 minute pow=
+er
+> downs.
 
-Thanks!
+Are you saying that on your nforce2 you need the override=20
+(acpi_use_timer_override) to have a stable system? Because that would be in=
+=20
+contrast to all previous findings regarding nforce2. Could you provide=20
 
-> Was "Re: [2.6.24 regression][BUGFIX] numactl --interleave=all doesn't
-> works on memoryless node."
->
-> [Aside:  I noticed there were two slightly different distributions for
-> this topic.  I've unified the distribution lists w/o dropping anyone, I
-> think.  Apologies if you'd rather have been dropped...]
->
-> Here's V3 of the patch, accomodating Kosaki Motohiro's suggestion for
-> folding contextualize_policy() into mpol_check_policy() [because my
-> "was_empty" argument "was ugly" ;-)].  It does seem to clean up the
-> code.
+cat /proc/interrupts
+lspci
+lspci -n
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
+
+--nextPart1313343.GUVkYT5ZL9
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHrezNxU2n/+9+t5gRAhJ8AKDUWeuhtXIRtZi6niPBTU9ZX+7avQCgw+Mi
+ajTnOAkBFd35PsL0EzNLIMw=
+=xOEQ
+-----END PGP SIGNATURE-----
+
+--nextPart1313343.GUVkYT5ZL9--
