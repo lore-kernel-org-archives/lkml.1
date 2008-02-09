@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYBIRia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbYBIRjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264AbYBIRia (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 12:38:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYBIRiX
+	id S1757139AbYBIRjS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 12:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYBIRjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 12:38:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53758 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754165AbYBIRiX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 12:38:23 -0500
-Date: Sat, 9 Feb 2008 12:38:22 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: jason.wessel@windriver.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8] kgdb 2.6.25 version
-Message-ID: <20080209173822.GA19519@infradead.org>
-References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com>
+	Sat, 9 Feb 2008 12:39:05 -0500
+Received: from www.tglx.de ([62.245.132.106]:32926 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753942AbYBIRjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 12:39:02 -0500
+Date: Sat, 9 Feb 2008 18:38:50 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [3/5] CPA: Make advised protection check truly
+ advisory
+In-Reply-To: <200802091756.06553.ak@suse.de>
+Message-ID: <alpine.LFD.1.00.0802091809480.3145@apollo.tec.linutronix.de>
+References: <20080208536.837219990@suse.de> <20080208163614.DF4FC1B41AA@basil.firstfloor.org> <alpine.LFD.1.00.0802091602260.3145@apollo.tec.linutronix.de> <200802091756.06553.ak@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 09, 2008 at 07:35:06AM -0600, jason.wessel@windriver.com wrote:
-> Per reqest on lkml, here are the individual kgdb patches
-> targeted at 2.6.25.
+On Sat, 9 Feb 2008, Andi Kleen wrote:
+> On Saturday 09 February 2008 16:38:35 Thomas Gleixner wrote:
+> > On Fri, 8 Feb 2008, Andi Kleen wrote:
+> > 
+> > > 
+> > > Only force RO in the advisory protection checks when all pages in the 
+> > > range are RO. Previously it would trigger when any page in the range
+> > > was ro.
+> > > 
+> > > I believe this will make try_preserve_large_page much safer to use.
+> > 
+> > It might be quite useful to know it for sure.
 > 
-> The kgdb tree has been collapsed review.  It includes
-> the kgdb core, the x86 arch, the kgdb8250 uart driver
-> and the kgdb console sharing driver.
-> 
-> Since the last time the kgdb patches were posted to LKML
-> several months ago, the kgdb core has undergone some
-> significant cleanup, as well as the kgdb I/O driver
-> interface.
-> 
-> All the kgdb hooks are initialized dynamically only when a
-> kgdb I/O module is configured. When not configured
-> kgdb will not exist in any kernel execution path.
-> 
-> Further comments, questions and patches are certainly
-> welcome.
+> I wrote that originally when you still had the bogus "AMD fix" 
+> in the tree.  I think it was because I hoped it would fix that one,
+> but I wasn't sure because I couldn't reproduce it. But Hugh's
+> patch fixed that anyways.
 
-I think this looks a lot nicer than all the kgdb patches I've seen
-before.  Of course I'd really love to see support for ethernet using
-netpoll and/or firewire eventually, but keeping things simple for
-now is good.
+The AMD limiting was due to a testing failure on a 64bit X2 and had
+nothing to do with the 32bit wreckage, which was fixed by Hugh. 
+
+The fix for the X2 was a missing check for large pmds/puds in the
+spurious fault code.
+
+> > Thinking about the whole set of changes, you are right, that the
+> > current check for the first page only is not correct, but I don't see
+> > how your changes make it more correct.
+> 
+> With my patch at least NX should be always correct and that is 
+> the more important one because it is default and has to be cleared
+> and things go horribly wrong when it is incorrect.
+> 
+> RO on the other hand defaults to off and is only sometimes forced.
+>  
+> > The correct way to fix this is to check, whether all the small pages,
+> > which fit in the range of the large page, which we want to preserve,
+> > have the same resulting pgprot flags.
+> 
+> Ok if you don't like the try_preserve_large_page change
+> feel free to drop it or implement it differently.
+> 
+> My main goal here was to clean up the 32bit direct mapping
+> anyways (last patch) and that does just require splitting out the 
+> NX checks from the RO checks and having a range (first patches)
+> 
+> I think at least the range checks are definitely needed
+> for correctness though.
+> 
+> If I cared particularly I would probably implement two modi: 
+> one with DEBUG_RODATA and another without. With DEBUG_RODATA 
+> advisory protections should be forced (and large pages split),
+> without not.
+
+I can understand, what you want to achieve, but I really do not like
+the result for following reasons:
+
+1) If there is a bug in some code, then we fix the bug and do not
+intermingle it with something else.
+
+2) I care about RO as much as I care about the NX correctness. That's
+the same logic and the same problem. If we have overlapping regions,
+then we need to split large pages. Otherwise both protections are
+useless to a certain degree.
+
+3) For correctness reasons I even ponder to make the NX/RO mandatory.
+
+Thanks,
+	tglx
