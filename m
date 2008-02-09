@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbYBIM6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbYBINTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755641AbYBIM6a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 07:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYBIM6V
+	id S1755785AbYBINTA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 08:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbYBINSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 07:58:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59005 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754078AbYBIM6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 07:58:20 -0500
-Date: Sat, 9 Feb 2008 07:55:56 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Roland Dreier <rdreier@cisco.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: [patch 0/6] MMU Notifiers V6
-Message-ID: <20080209075556.63062452@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
-	<20080208234302.GH26564@sgi.com>
-	<20080208155641.2258ad2c.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
-	<adaprv70yyt.fsf@cisco.com>
-	<Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
-	<adalk5v0yi6.fsf@cisco.com>
-	<Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
-	<20080209012446.GB7051@v2.random>
-	<Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
-	<20080209015659.GC7051@v2.random>
-	<Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Sat, 9 Feb 2008 08:18:51 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3683 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753873AbYBINSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 08:18:51 -0500
+Date: Sat, 9 Feb 2008 13:18:39 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: Re: [patch] x86: add code to dump the (kernel) page tables for visual inspection
+Message-ID: <20080209131838.GC5139@ucw.cz>
+References: <20080204222641.4488e6a7@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080204222641.4488e6a7@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008 18:16:16 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-> On Sat, 9 Feb 2008, Andrea Arcangeli wrote:
+On Mon 2008-02-04 22:26:41, Arjan van de Ven wrote:
+> Subject: x86: add code to dump the (kernel) page tables for visual inspection by kernel developers
+> From: Arjan van de Ven <arjan@linux.intel.com>
 > 
-> > The VM shouldn't break if try_to_unmap doesn't actually make the page
-> > freeable for whatever reason. Permanent pins shouldn't happen anyway,
-> 
-> VM is livelocking if too many page are pinned that way right now.
+> This patch adds code to the kernel to have an (optional)
+> /proc/kernel_page_tables debug file that basically dumps the kernel
 
-> Rik has a patchset under development that addresses issues like this
+'No new crap goes to /proc?'
 
-PG_mlock is on the way and can easily be reused for this, too.
+It does not seem to be per process -> it should probably go to
+debugfs.
 
 -- 
-All rights reversed.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
