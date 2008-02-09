@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYBIAQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYBIASr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbYBIAQn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Feb 2008 19:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbYBIAQg
+	id S1758227AbYBIASr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Feb 2008 19:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYBIASj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Feb 2008 19:16:36 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:58624 "EHLO relay.sgi.com"
+	Fri, 8 Feb 2008 19:18:39 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:33564 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752286AbYBIAQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Feb 2008 19:16:35 -0500
-Date: Fri, 8 Feb 2008 16:16:34 -0800 (PST)
+	id S1752286AbYBIASj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Feb 2008 19:18:39 -0500
+Date: Fri, 8 Feb 2008 16:18:38 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Roland Dreier <rdreier@cisco.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, andrea@qumranet.com,
-       a.p.zijlstra@chello.nl, linux-mm@kvack.org, izike@qumranet.com,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, avi@qumranet.com,
-       kvm-devel@lists.sourceforge.net, daniel.blueman@quadrics.com,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: [patch 0/6] MMU Notifiers V6
-In-Reply-To: <adaprv70yyt.fsf@cisco.com>
-Message-ID: <Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Robin Holt <holt@sgi.com>, andrea@qumranet.com, avi@qumranet.com,
+       izike@qumranet.com, kvm-devel@lists.sourceforge.net,
+       a.p.zijlstra@chello.nl, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       general@lists.openfabrics.org
+Subject: Re: [patch 0/6] MMU Notifiers V6
+In-Reply-To: <20080208161248.506556b0.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0802081616530.5115@schroedinger.engr.sgi.com>
 References: <20080208220616.089936205@sgi.com> <20080208142315.7fe4b95e.akpm@linux-foundation.org>
  <Pine.LNX.4.64.0802081528070.4036@schroedinger.engr.sgi.com>
  <20080208233636.GG26564@sgi.com> <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
  <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org>
  <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
- <adaprv70yyt.fsf@cisco.com>
+ <20080208161248.506556b0.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008, Roland Dreier wrote:
+On Fri, 8 Feb 2008, Andrew Morton wrote:
 
-> In general, this MMU notifier stuff will only be useful to a subset of
-> InfiniBand/RDMA hardware.  Some adapters are smart enough to handle
-> changing the IO virtual -> bus/physical mapping on the fly, but some
-> aren't.  For the dumb adapters, I think the current ib_umem_get() is
-> pretty close to as good as we can get: we have to keep the physical
-> pages pinned for as long as the adapter is allowed to DMA into the
-> memory region.
+> Quite possibly none of the infiniband developers even know about it..
 
-I thought the adaptor can always remove the mapping by renegotiating 
-with the remote side? Even if its dumb then a callback could notify the 
-driver that it may be required to tear down the mapping. We then hold the 
-pages until we get okay by the driver that the mapping has been removed.
+Well Andrea's initial approach was even featured on LWN a couple of 
+weeks back.
 
-We could also let the unmapping fail if the driver indicates that the 
-mapping must stay.
