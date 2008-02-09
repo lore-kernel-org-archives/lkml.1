@@ -1,175 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYBIP4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYBIQEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbYBIP4M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 10:56:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYBIPz5
+	id S1754863AbYBIQEB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 11:04:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYBIQDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 10:55:57 -0500
-Received: from qb-out-0506.google.com ([72.14.204.226]:34096 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbYBIPzz (ORCPT
+	Sat, 9 Feb 2008 11:03:51 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:50070 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbYBIQDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 10:55:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=c0wuZXnkjmSTZuOWqNOUvgQGGfK7t5g5ThvgJkO4pxLwLjncLeLs47KO0JLoVY267VbUHYcYfc4M0X9O82zsOeWZsQkpq1Bmir5ijH0v3NcenHZTUih+Br0eFrJrPbsq4HwH6SlC2Uhq6vxI2RrLqLl0vTv5CN4Yptsb1mFi3Jc=
-Message-ID: <2f11576a0802090755n123c9b7dh26e0af6a2fef28af@mail.gmail.com>
-Date: Sun, 10 Feb 2008 00:55:54 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [sample] mem_notify v6: usage example
-Cc: kosaki.motohiro@jp.fujitsu.com, "Marcelo Tosatti" <marcelo@kvack.org>,
-       "Daniel Spang" <daniel.spang@gmail.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-fsdevel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
-       "Jon Masters" <jonathan@jonmasters.org>, "Zan Lynx" <zlynx@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Feb 2008 11:03:50 -0500
+Date: Sat, 9 Feb 2008 17:39:04 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@suse.de>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/5] CPA: Split static_protections into required_static_prot and advised_static_prot
+Message-ID: <20080209163904.GA24548@one.firstfloor.org>
+References: <20080208536.837219990@suse.de> <20080208163612.D76421B41AA@basil.firstfloor.org> <alpine.LFD.1.00.0802091525400.3145@apollo.tec.linutronix.de> <20080209151322.GB6773@basil.nowhere.org> <alpine.LFD.1.00.0802091639200.3145@apollo.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: f52375eb7243644f
+In-Reply-To: <alpine.LFD.1.00.0802091639200.3145@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this is usage example of /dev/mem_notify.
+On Sat, Feb 09, 2008 at 04:50:14PM +0100, Thomas Gleixner wrote:
+> On Sat, 9 Feb 2008, Andi Kleen wrote:
+> > On Sat, Feb 09, 2008 at 03:56:02PM +0100, Thomas Gleixner wrote:
+> > > On Fri, 8 Feb 2008, Andi Kleen wrote:
+> > > > There is a big difference between NX and RO. NX absolutely has to be cleared
+> > > > or the kernel will fail while RO just can be set, but does not need to.
+> > > > And for a large page area not setting NX if there is a area below 
+> > > > it that needs it is essential, while making it ro is optional again.
+> > 
+> > Optional as in it doesn't need to be forced.
+> > 
+> > > 
+> > > No, it's not optional. Making the PMD RO will write protect all 4k
+> > > PTEs below independent of their setting. So there is the same
+> > > restriction as we have with NX.
+> > 
+> > If there is a boundary between a RO area
+> > and a RW area and you want to map it with 2MB pages then NX is required,
+> > but RO is optional on the page and if you prefer TLB use minimalization
+> > over debugging it is optional. Is it clear now? 
+> 
+> No, it is not clear at all. Why is there a requirement for NX, when I
 
-Daniel Spang create original version.
-kosaki add fasync related code.
+Sorry the requirement is no NX, not NX. I left out the "no"
+in the second sentence.
 
+> have an overlapping area of RO and RW in a large page mapping? If I
+> want to preserve the large page mapping in such a case, then its
+> required to make the mapping RW and omit the protection of the RO
+> area, nothing else.
 
-Signed-off-by: Daniel Spang <daniel.spang@gmail.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Yes that is what my patch (or rather a followup) patch implements.
 
----
- Documentation/mem_notify.c |  120 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 120 insertions(+)
+> > Note the behaviour for pageattr and thus DEBUG_RODATA / debugging
+> > sitations where you don't care about your TLB this
+> > does not change, this makes only a difference for the initial init_32
+> > direct mapping setup.
+> 
+> Your patches do change the behaviour. The range checking breaks the
+> enforcement of some restrictions for the sake of keeping the large
+> page intact.
 
-Index: b/Documentation/mem_notify.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/Documentation/mem_notify.c	2008-02-10 00:44:00.000000000 +0900
-@@ -0,0 +1,120 @@
-+/*
-+ * Allocate 10 MB each second. Exit on notification.
-+ */
-+
-+#define _GNU_SOURCE
-+
-+#include <sys/mman.h>
-+#include <fcntl.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <string.h>
-+#include <poll.h>
-+#include <pthread.h>
-+#include <errno.h>
-+#include <signal.h>
-+
-+int count = 0;
-+int size = 10;
-+
-+void *do_alloc()
-+{
-+        for(;;) {
-+                int *buffer;
-+                buffer = mmap(NULL,  size*1024*1024,
-+                              PROT_READ | PROT_WRITE,
-+                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+                if (buffer == MAP_FAILED) {
-+                        perror("mmap");
-+                        exit(EXIT_FAILURE);
-+                }
-+                memset(buffer, 1 , size*1024*1024);
-+
-+                printf("-");
-+                fflush(stdout);
-+
-+                count++;
-+                sleep(1);
-+        }
-+}
-+
-+int wait_for_notification(struct pollfd *pfd)
-+{
-+        int ret;
-+        read(pfd->fd, 0, 0);
-+        ret = poll(pfd, 1, -1);              /* wake up when low memory */
-+        if (ret == -1 && errno != EINTR) {
-+                perror("poll");
-+                exit(EXIT_FAILURE);
-+        }
-+        return ret;
-+}
-+
-+void do_free()
-+{
-+	int fd;
-+	struct pollfd pfd;
-+
-+        fd = open("/dev/mem_notify", O_RDONLY);
-+        if (fd == -1) {
-+                perror("open");
-+                exit(EXIT_FAILURE);
-+        }
-+
-+	pfd.fd = fd;
-+        pfd.events = POLLIN;
-+        for(;;)
-+                if (wait_for_notification(&pfd) > 0) {
-+                        printf("\nGot notification, allocated %d MB\n",
-+                               size * count);
-+                        exit(EXIT_SUCCESS);
-+                }
-+}
-+
-+void do_free_signal()
-+{
-+	int fd;
-+	int flags;
-+
-+        fd = open("/dev/mem_notify", O_RDONLY);
-+        if (fd == -1) {
-+                perror("open");
-+                exit(EXIT_FAILURE);
-+        }
-+
-+	fcntl(fd, F_SETOWN, getpid());
-+	fcntl(fd, F_SETSIG, SIGUSR1);
-+
-+	flags = fcntl(fd, F_GETFL);
-+	fcntl(fd, F_SETFL, flags|FASYNC); /* when low memory, receive SIGUSR1 */
-+
-+	for(;;)
-+		sleep(1);
-+}
-+
-+
-+void daniel_exit(int signo)
-+{
-+	printf("\nGot notification %d, allocated %d MB\n",
-+	       signo, size * count);
-+	exit(EXIT_SUCCESS);
-+
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+        pthread_t allocator;
-+
-+	if(argc == 2 && (strcmp(argv[1], "-sig") == 0)) {
-+		printf("run signal mode\n");
-+		signal(SIGUSR1, daniel_exit);
-+		pthread_create(&allocator, NULL, do_alloc, NULL);
-+		do_free_signal();
-+	} else {
-+		printf("run poll mode\n");
-+		pthread_create(&allocator, NULL, do_alloc, NULL);
-+		do_free();
-+	}
-+	return 0;
-+}
+You mean in try_preserve_large_page()?
+
+No actually they were not completely enforced previously at all, because
+it did only check the restrictions of the first page.
+
+On the end of my patch series the enforcement is actually stricter
+than it was before, although not 100%.
+
+-Andi
+
