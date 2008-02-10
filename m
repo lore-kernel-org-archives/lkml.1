@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYBJXc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYBJXjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbYBJXc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 18:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYBJXcv
+	id S1756521AbYBJXjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 18:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYBJXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 18:32:51 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:44986 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbYBJXcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 18:32:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Jh98wK4GZnJxeQ1D7XmP9t6B0TQvm1pxTTJh3RTOJTfXDaNemv327YZ8YeQ8jKbHNgJaamLpODfmBRQngOhc9rzl/bqbP3jfYBQ4vs3HFyyozBIKbyw8EzbiDBjANNWk48u2KKpVTNQw8ueYWDDZjTmikRNxfIT09CyywDSCxhw=
-Message-ID: <76366b180802101532k35a56e89g4c498e30834461f8@mail.gmail.com>
-Date: Sun, 10 Feb 2008 18:32:49 -0500
-From: "Andrew Paprocki" <andrew@ishiboo.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: I/O collisions w/ hwmon/it87.c and watchdog/it8712f_wdt.c? (Super I/O chips in general..)
-Cc: linux-kernel@vger.kernel.org, "Jorge Boncompte" <jorge@dti2.net>,
-       "Jean Delvare" <khali@linux-fr.org>
-In-Reply-To: <20080210230538.3f5743f6@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Feb 2008 18:39:09 -0500
+Received: from 1wt.eu ([62.212.114.60]:1833 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbYBJXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 18:39:08 -0500
+Date: Mon, 11 Feb 2008 00:37:04 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       bastian@waldi.eu.org, ndenev@gmail.com, oliver.pntr@gmail.com
+Subject: Re: [PATCH] splice: fix user pointer access in get_iovec_page_array()
+Message-ID: <20080210233703.GR8953@1wt.eu>
+References: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <76366b180802101304j359e2873vd9dd974920bf6745@mail.gmail.com>
-	 <20080210230538.3f5743f6@core>
-X-Google-Sender-Auth: ad34d2a9d57c6808
+In-Reply-To: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does it make sense to use the drivers/mfd directory for Super I/O
-chips then? Is there any problem with having other hwmon, watchdog,
-etc depend on drivers/mfd? Should this kind of setup for platform
-devices be documented in the driver-model?
+On Sun, Feb 10, 2008 at 04:47:57PM +0200, Pekka J Enberg wrote:
+> From: Bastian Blank <bastian@waldi.eu.org>
+> 
+> The commit 8811930dc74a503415b35c4a79d14fb0b408a361 ("splice: missing user
+> pointer access verification") added access_ok() to copy_from_user_mmap_sem()
+> which only ensures we can copy the struct iovecs from userspace to the kernel
+> but we also must check whether we can access the actual memory region pointed
+> to by the struct iovec to close the local root exploit.
+> 
+> Cc: <stable@kernel.org>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+> Bastian, can I have your Signed-off-by for this, please? Oliver, Niki, can 
+> you please confirm this closes the hole?
 
--Andrew
+Pekka, I confirm that it also closes the hole once backported to 2.6.22.
 
-On Feb 10, 2008 6:05 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > Since these chips touch many different parts of traditionally separate
-> > driver areas, how should the drivers be structured so that they can
-> > all talk to the chip? Should the low level communications routines for
-> > the chip live in a library which all the drivers could use?
->
-> Probably yes. And that if possible should manage all the locking. Thats
-> roughly how the majority of drivers do it. Some export the lock from base
-> code and inline the accessors depending how complex it is.
+Willy
+
