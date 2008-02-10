@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYBJThp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYBJTib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbYBJThp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 14:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYBJThh
+	id S1753747AbYBJTib (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 14:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYBJTiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 14:37:37 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:60241 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256AbYBJThg (ORCPT
+	Sun, 10 Feb 2008 14:38:21 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54787 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbYBJTiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 14:37:36 -0500
-Date: Sun, 10 Feb 2008 12:37:34 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Greg KH <greg@kroah.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
-Message-ID: <20080210193734.GD5299@parisc-linux.org>
-References: <20080128225334.GD4720@kroah.com> <20080129025615.GC20198@parisc-linux.org> <20080129030340.GE20198@parisc-linux.org> <86802c440802022330o771cf98btcf750c790668b6e9@mail.gmail.com> <47AB299D.4000500@redhat.com> <20080209124138.GA28967@parisc-linux.org> <86802c440802092225u5a901ab2i66b952382a999fa@mail.gmail.com> <20080210072116.GA12375@kroah.com> <20080210145122.GC5299@parisc-linux.org> <20080210191313.GA9045@colo.lackof.org>
+	Sun, 10 Feb 2008 14:38:21 -0500
+Date: Sun, 10 Feb 2008 20:38:19 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Faster way to run through building single modules
+In-Reply-To: <20080210192821.GB13733@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0802102035000.7915@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0802101950020.7915@fbirervta.pbzchgretzou.qr>
+ <20080210192821.GB13733@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080210191313.GA9045@colo.lackof.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 12:13:13PM -0700, Grant Grundler wrote:
-> Just wondering...why don't we just pass "struct bus*" through to the
-> raw_pci* ops?
-> My thinking is if a PCI bus controller or bridge is discovered, then we should
-> always create a matching "struct bus *".
 
-ACPI may need to access PCI config space before we've done a PCI bus
-walk.  There's an opregion that AML may access that is for PCI config
-space, and an apparently unrelated method might happen to contain such a
-piece of AML.
+On Feb 10 2008 20:28, Sam Ravnborg wrote:
+>On Sun, Feb 10, 2008 at 07:51:29PM +0100, Jan Engelhardt wrote:
+>> 
+>> I was wondering whether there is a shortcut in kbuild I can take if I 
+>> just want to rebuild one module. Currently, I have:
+>> 
+>> make net/bridge/netfilter/ebtables.ko
+>
+>Fool kbuild to think this is an external module using:
+>make M=`pwd` net/bridge/netfilter/ebtables.ko
+>
+>That should do the trick.
 
-> > --- a/arch/x86/kernel/quirks.c
-> > +++ b/arch/x86/kernel/quirks.c
-> > @@ -27,7 +27,7 @@ static void __devinit quirk_intel_irqbalance(struct pci_dev *dev)
-> >  	pci_write_config_byte(dev, 0xf4, config|0x2);
-> >  
-> >  	/* read xTPR register */
-> > -	raw_pci_ops->read(0, 0, 0x40, 0x4c, 2, &word);
-> > +	raw_pci_read(0, 0, 0x40, 0x4c, 2, &word);
-> 
-> Why are we using raw_pci_read here instead of pci_read_config_dword()?
-> If the pci_write_config_byte() above works, then I expect the read
-> to work too.
+How would I combine that with O=? Not quite doing the right thing yet.
 
-I have no idea.  I didn't want to change the semantics in this patch.
-Presumably the original author would have an idea why they needed to do
-this.
+linux$ touch net/bridge/netfilter/ebtables.c 
+linux$ make O=/home/jengelh/Coding/linux-obj M=$PWD
+       net/bridge/netfilter/ebtables.ko
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+make[2]: Nothing to be done for `net/bridge/netfilter/ebtables.o'.
+  MODPOST 0 modules
+  CC      arch/x86/kernel/asm-offsets.s
+  GEN     /home/jengelh/Coding/linux_nosov/include/asm-x86/asm-offsets.h
+  Building modules, stage 2.
+  MODPOST 0 modules
+
+
+And:
+
+$ touch net/bridge/netfilter/ebtables.c 
+$ make O=... M=$PWD net/bridge/netfilter/ebtables.o
+  CC [M]  /home/jengelh/Coding/linux_nosov/net/bridge/netfilter/ebtables.o
+$ make O=... M=$PWD net/bridge/netfilter/ebtables.ko
+make[2]: Nothing to be done for `net/bridge/netfilter/ebtables.o'.
+  MODPOST 0 modules
