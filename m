@@ -1,115 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYBJIF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbYBJIWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYBJIF6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 03:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYBJIFv
+	id S1756940AbYBJIWO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 03:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYBJIWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 03:05:51 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51795 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751255AbYBJIFu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 03:05:50 -0500
-Date: Sun, 10 Feb 2008 00:03:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates
-In-Reply-To: <20080209172538.87994c61.randy.dunlap@oracle.com>
-Message-ID: <alpine.LFD.1.00.0802092344070.2896@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0802092246390.3145@apollo.tec.linutronix.de> <20080209172538.87994c61.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sun, 10 Feb 2008 03:22:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53812 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752510AbYBJIWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 03:22:00 -0500
+Date: Sun, 10 Feb 2008 09:21:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [3/6] kgdb: core
+Message-ID: <20080210082132.GA9878@elte.hu>
+References: <20080210071331.GC3851@elte.hu> <20080210073542.GB26666@infradead.org> <20080210074352.GA7188@elte.hu> <20080210075732.GA9349@infradead.org> <20080210080225.GC7188@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080210080225.GC7188@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-On Sat, 9 Feb 2008, Randy Dunlap wrote:
-
-> On Sun, 10 Feb 2008 00:24:50 +0100 (CET) Thomas Gleixner wrote:
+> > It's all in the thread starting with '[PATCH 0/8] kgdb 2.6.25 
+> > version', msgid 
+> > 1202564114-18587-1-git-send-email-jason.wessel@windriver.com or at 
+> > http://lkml.org/lkml/2008/2/9/104
 > 
-> > Linus,
-> > 
-> > please pull the pending x86 updates from:
-> > 
-> >   ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git master
+> thanks - i found Sam's mail meanwhile and addressed most of the 
+> observations and updated the kgdb.git tree. I'll now check the threads 
+> above whether i missed anything. (feel free to point it out if you 
+> notice anything outright) As the changes have been janitorial only i 
+> refrain from reposting the series once again. The latest shortlog is 
+> below.
+
+i've read all that thread now and i think all your observations are 
+addressed in the latest tree i posted. In fact, most of the 
+non-syntactic observations you made i already addressed in my series 
+from yesterday. Find the latest tree at:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
+
+with tip commit 8fbf71f7636bd26843de01b4bdf819c9a9777427. Shortlog and 
+diffstat below. I backmerged all the fixlets into their original 
+commits, to keep the splitup clean.
+
+Here are my replies to your feedback:
+
+ Date: Sat, 9 Feb 2008 12:10:26 -0500
+ From: Christoph Hellwig <hch@infradead.org>
+ To: jason.wessel@windriver.com
+ Subject: Re: [PATCH 2/8] pid, kgdb: add pid_max prototype
+
+addressed.
+
+ Date: Sat, 9 Feb 2008 12:15:03 -0500
+ From: Christoph Hellwig <hch@infradead.org>
+ Subject: Re: [PATCH 3/8] kgdb, modules: Always allow module sect info for
+
+addressed: this was mooted by my original posting from yesterday 
+already - i removed this complication.
+
+ Date: Sat, 9 Feb 2008 12:16:05 -0500
+ From: Christoph Hellwig <hch@infradead.org>
+ Subject: Re: [PATCH 4/8] kgdb: COPTIMIZE flag
+
+addressed: this was mooted by my original posting from yesterday 
+already - i removed this complication.
+
+> > + * include/asm-generic/kgdb.h
 > 
-> Hi Thomas,
-> can we please get diffstats with git pull requests?
+> Please don't mention the file name in the top-of-file comments.  This 
+> information is redundant and will easily get out of date when moving 
+> files around or copying them.  Note that this applies to basically any 
+> file in this patch.
 
-Well, not only that, but I actually pulled it once, then ended up undoing 
-my pull, and had to think twice about whether I want to pull it at all.
+fixed.
 
-I do *not* like it when subsystem maintainers start mixing in stuff into 
-their subsystem pull that has absolutely _zero_ to do with that subsystem. 
-In this case, we have commit 9b706aee7d92d6ac3002547aea12e3eaa0a750ae, 
-which calls itself "x86: trivial printk optimizations", but it really has 
-nothing AT ALL to do with x86 except that it also did the same things to 
-the bogus x86 version of those routines.
+> > +#ifdef CONFIG_X86
+> > +/**
+> > + *	kgdb_skipexception - Bail of of KGDB when we've been triggered.
+> 
+> arch ifdefs don't belong into an asm-generic/ file.  Please have a
+> proper asm-x86/kgdb.h that defines these things.
 
-The thing is, trying to mix up things like that into a subsystem pull 
-means that now I cannot trust the subsystem maintainer as much! And what 
-should be a simple "git pull" becomes not just the pull, but also me 
-having to then scrounge around in the result to see if I really want to do 
-the pull in the first place.
+addressed: this was fixed in my submission yesterday.
 
-That's the point where the subsystem maintainer just makes me do 
-unnecessary extra and stupid work!
+> Kerneldoc comments don't belong above the prototype of a function but 
+> the function body.
 
-In other words: DO NOT DO THINGS LIKE THAT!
+disagree - the best is to have it in both places - and in many places we 
+do that. Anyway, this is up to maintainer discretion.
 
-That vsnprintf() optimization looks ok, but it really doesn't have 
-anything what-so-ever to do with x86, and some of it is rather dubious and 
-too clever by half for its own good, for rather little gain. For example, 
-we have:
+> > +#ifdef CONFIG_KGDB_ARCH_HAS_SHADOW_INFO
+> > +/**
+> > + *	kgdb_shadowinfo - Get shadowed information on @threadid.
+> > + *	@regs: The &struct pt_regs of the current process.
+> > + *	@buffer: A buffer of %BUFMAX size.
+> > + *	@threadid: The thread id of the shadowed process to get information on.
+> > + */
+> > +extern void kgdb_shadowinfo(struct pt_regs *regs, char *buffer,
+> > +			    unsigned threadid);
+> 
+> I don't really thing this belongs into an asm-generic header, again. 
+> ARchitectures having shadow info should just provide this in their own 
+> asm-foo/kgdb.h.  Or better yet just kill it for the first submission.
 
-	+/* Works only for digits and letters, but small and fast */
-	+#define TOLOWER(x) ((x) | 0x20)
+disagree. Many architectures will select shadow-info support so having 
+this in asm-generic/kgdb.h is straightforward. I am actually an 
+architecture who had to deal with this stuff in 32-bit (no shadow info 
+support) and 64-bit (shadow info support) and this was handy and 
+obvious. (But note that the patch submitted by Jason had a few 
+uglinesses in this area that i fixed so please re-check the ones in my 
+tree.)
 
-but then later on we have:
+> > +struct debuggerinfo_struct {
+> > +	void			*debuggerinfo;
+> > +	struct task_struct	*task;
+> > +} kgdb_info[NR_CPUS];
+> 
+> shouldn't this use per-cpu data?  Or is that in some way to fragile 
+> for a debugger?
 
-	-               if (cp[0] == '0' && toupper(cp[1]) == 'X')
-	+               if (cp[0] == '0' && TOLOWER(cp[1]) == 'x')
+yes, eventually we might want to use kgdb earlier than the per CPU areas 
+are set up.
 
-where we now use that new TOLOWER() macro on a character that is *not* 
-guaranteed to be a digit or a letter at all!
+> > +/* reboot notifier block */
+> > +static struct notifier_block kgdb_reboot_notifier = {
+> > +	.notifier_call		= kgdb_notify_reboot,
+> > +	.next			= NULL,
+> > +	.priority		= INT_MAX,
+> > +};
+> 
+> No need to initialize fields to 0 or NULL in static variables.
 
-Does it work? Yes, it does happen to work. If it's a non-character or a 
-non-letter, it will do essentially random things, but it will never turn 
-that non-character/letter into 'x' unless it was 'X' or 'x' before. So 
-yes, it works, but let's face it, that clever trick saved something like 
-two instructions and a branch from a code-path that wasn't really even 
-critical!
+agreed, fixed.
 
-In general, I don't disagree with being clever. People enjoy tricks like 
-that, and I don't really disagree with the patch. That's not the problem I 
-have. The problem I have is that I shouldn't be taken by surprise by these 
-things, and start having to worry whether I can trust the person who sends 
-me mis-labeled patches without even warning me.
+> > +	if ((ch >= 'a') && (ch <= 'f'))
+> > +		return ch - 'a' + 10;
+> > +	if ((ch >= '0') && (ch <= '9'))
+> > +		return ch - '0';
+> > +	if ((ch >= 'A') && (ch <= 'F'))
+> > +		return ch - 'A' + 10;
+> 
+> lots of superflous braces.  More of them later in this file in the 
+> same style.
 
-So I had this thing in my tree, went out to dinner, came back and decided 
-I don't want to pull it after all. Did some other work, and decided I have 
-the time to look through it, and then re-pulled it.
+maintainer discretion item. I prefer having such clarity in operator 
+ordering.
 
-But I was *this* close to just deciding that "ok, I'm ready to release the 
--rc1 kernel, I don't need this kind of aggravation" and just decided to 
-not bother pulling something dubious.
+> > +#ifdef __BIG_ENDIAN
+> > +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> > +		*buf++ = hexchars[tmp_s & 0xf];
+> > +#else
+> > +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> > +		*buf++ = hexchars[tmp_s & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> > +#endif
+> 
+> This is really ugly, but I don't really know a good way around it
+> either.
 
-So Thomas, don't do this. I don't like it. The same way I didn't like 
-seeing Ingo trying to mix in a kgdb pull into his x86 pull. Keep these 
-things separate - git is *really* good at having multiple branches with 
-different lines of development, use it that way (or send odd-ball misc 
-patches just as emails).
+yeah. Agreed about the ugliness and i volunteer to implement any 
+sensible suggestions later on :-)
 
-But it's merged now.
+> > +	if (arch_kgdb_ops.shadowth &&
+> > +			ks->kgdb_usethreadid >= pid_max + num_online_cpus()) {
+> 
+> 	if (arch_kgdb_ops.shadowth &&
+> 	    ks->kgdb_usethreadid >= pid_max + num_online_cpus()) {
+> 
+> similar odd indentation in a few other spots.
 
-			Linus
+check out the full context, not just the patch. It's often done for a 
+reason to make the full visual appearance of that particular code nice.
 
-PS. And no, maybe I don't always notice. I bet maintainers can slip things 
-by me all the time without me waking up to it. The fact that it sometimes 
-works doesn't mean that it's a good idea, though - it just means that if I 
-catch it, my level of trust goes down. 
+> > +menuconfig KGDB
+> > +	bool "KGDB: kernel debugging with remote gdb"
+> > +	select KGDB_ARCH_HAS_SHADOW_INFO if X86_64
+> 
+> Why can't this be set in the X86_64 config?
+
+addressed: it is in my series.
+
+> > +	select DEBUG_INFO
+> > +	select FRAME_POINTER
+> 
+> I think these two would be better as depends on
+
+selecting FRAME_POINTER is totally sensible and other debugging code 
+does it too. I agree about the DEBUG_INFO and it was addressed in 
+yesterday's series already.
+
+	Ingo
+
+------------------>
+Ingo Molnar (3):
+      pids: add pid_max prototype
+      uaccess: add probe_kernel_write()
+      x86: kgdb support
+
+Jan Kiszka (1):
+      consoles: polling support, kgdboc
+
+Jason Wessel (2):
+      kgdb: core
+      kgdb: document parameters
+
+ Documentation/kernel-parameters.txt |    5 +
+ arch/x86/Kconfig                    |    4 +
+ arch/x86/kernel/Makefile            |    1 +
+ arch/x86/kernel/kgdb.c              |  550 ++++++++++
+ drivers/char/tty_io.c               |   47 +
+ drivers/serial/8250.c               |   62 ++
+ drivers/serial/Kconfig              |    3 +
+ drivers/serial/Makefile             |    1 +
+ drivers/serial/kgdboc.c             |  164 +++
+ drivers/serial/serial_core.c        |   67 ++-
+ include/asm-generic/kgdb.h          |   91 ++
+ include/asm-x86/kgdb.h              |   87 ++
+ include/linux/kgdb.h                |  264 +++++
+ include/linux/pid.h                 |    2 +
+ include/linux/serial_core.h         |    4 +
+ include/linux/tty_driver.h          |   12 +
+ include/linux/uaccess.h             |   22 +
+ kernel/Makefile                     |    1 +
+ kernel/kgdb.c                       | 2019 +++++++++++++++++++++++++++++++++++
+ kernel/sysctl.c                     |    2 +-
+ lib/Kconfig.debug                   |    2 +
+ lib/Kconfig.kgdb                    |   37 +
+ 22 files changed, 3445 insertions(+), 2 deletions(-)
+ create mode 100644 arch/x86/kernel/kgdb.c
+ create mode 100644 drivers/serial/kgdboc.c
+ create mode 100644 include/asm-generic/kgdb.h
+ create mode 100644 include/asm-x86/kgdb.h
+ create mode 100644 include/linux/kgdb.h
+ create mode 100644 kernel/kgdb.c
+ create mode 100644 lib/Kconfig.kgdb
+
