@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYBJVRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYBJVRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbYBJVRN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYBJVQ6
+	id S1757420AbYBJVRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbYBJVRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:16:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34328 "EHLO mx2.mail.elte.hu"
+	Sun, 10 Feb 2008 16:17:07 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:54488 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYBJVQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:16:57 -0500
-Date: Sun, 10 Feb 2008 22:16:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jan Kiszka <jan.kiszka@web.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [0/6] kgdb light
-Message-ID: <20080210211641.GC29507@elte.hu>
-References: <20080210071304.GA3788@elte.hu> <20080210104709.GB10790@uranus.ravnborg.org> <47AEFB40.5070208@web.de> <20080210193153.GC13733@uranus.ravnborg.org>
+	id S1756464AbYBJVRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 16:17:05 -0500
+Date: Sun, 10 Feb 2008 21:13:11 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dale@farnsworth.org, mlachwani@mvista.com, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/8] drivers/net/mv643xx_eth.c: Use FIELD_SIZEOF
+Message-ID: <Pine.LNX.4.64.0802102112330.23906@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080210193153.GC13733@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julia Lawall <julia@diku.dk>
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+Robert P.J. Day proposed to use the macro FIELD_SIZEOF in replace of code
+that matches its definition.
 
-> > Is the patch below OK? I also added an "if KGB" to unbreak kgdb's 
-> > kconfig menu again and included two minor cleanups I posted 
-> > yesterday.
-> 
-> Looks OK - but I think Ingo already addressed this.
+The modification was made using the following semantic patch
+(http://www.emn.fr/x-info/coccinelle/)
 
-i picked up everything from Jan that would apply - please yell if you 
-still see something not absolutely squeeky clean ;-)
+// <smpl>
+@haskernel@
+@@
 
-btw., we should convert all those current:
+#include <linux/kernel.h>
 
- config ARCH_POPULATES_NODE_MAP
-         def_bool y
+@depends on haskernel@
+type t;
+identifier f;
+@@
 
- config AUDIT_ARCH
-         bool
-         default X86_64
+- (sizeof(((t*)0)->f))
++ FIELD_SIZEOF(t, f)
 
- config ARCH_SUPPORTS_AOUT
-         def_bool y
+@depends on haskernel@
+type t;
+identifier f;
+@@
 
-instances to select lines after config X86 / config X86_64.
+- sizeof(((t*)0)->f)
++ FIELD_SIZEOF(t, f)
+// </smpl>
 
-KGDB just followed the current Kconfig style status quo.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-	Ingo
+---
+
+diff -u -p a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
+--- a/drivers/net/mv643xx_eth.c 2008-02-08 08:58:12.000000000 +0100
++++ b/drivers/net/mv643xx_eth.c 2008-02-10 18:00:09.000000000 +0100
+@@ -3155,7 +3155,7 @@ struct mv643xx_stats {
+ 	int stat_offset;
+ };
+ 
+-#define MV643XX_STAT(m) sizeof(((struct mv643xx_private *)0)->m), \
++#define MV643XX_STAT(m) FIELD_SIZEOF(struct mv643xx_private, m), \
+ 					offsetof(struct mv643xx_private, m)
+ 
+ static const struct mv643xx_stats mv643xx_gstrings_stats[] = {
