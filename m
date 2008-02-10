@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYBJHO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbYBJHPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYBJHO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757519AbYBJHOJ
+	id S1755824AbYBJHPn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 02:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbYBJHOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:14:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39713 "EHLO mx3.mail.elte.hu"
+	Sun, 10 Feb 2008 02:14:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49458 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757422AbYBJHN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:13:57 -0500
-Date: Sun, 10 Feb 2008 08:13:40 +0100
+	id S1757488AbYBJHOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 02:14:03 -0500
+Date: Sun, 10 Feb 2008 08:13:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [4/6] consoles: polling support, kgdboc
-Message-ID: <20080210071339.GD3851@elte.hu>
+Subject: [5/6] x86: kgdb support
+Message-ID: <20080210071345.GE3851@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,519 +33,703 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kiszka <jan.kiszka@siemens.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-polled console handling support, to access a console in an irq-less
-way while in debug or irq context.
+simplified and streamlined kgdb support on x86, both 32-bit and 64-bit,
+based on patch from:
 
-absolutely zero impact as long as CONFIG_CONSOLE_POLL is disabled.
-(which is the default)
+  Subject: kgdb: core-lite
+  From: Jason Wessel <jason.wessel@windriver.com>
 
-kgdb over consoles support from:
-
-   Jason Wessel <jason.wessel@windriver.com>
-
-[ mingo@elte.hu: redesign, splitups, cleanups. ]
+[ and countless other authors - see the patch for details. ]
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/char/tty_io.c        |   47 ++++++++++++
- drivers/serial/8250.c        |   62 ++++++++++++++++
- drivers/serial/Kconfig       |    3 
- drivers/serial/Makefile      |    1 
- drivers/serial/kgdboc.c      |  164 +++++++++++++++++++++++++++++++++++++++++++
- drivers/serial/serial_core.c |   67 +++++++++++++++++
- include/linux/serial_core.h  |    4 +
- include/linux/tty_driver.h   |   12 +++
- 8 files changed, 359 insertions(+), 1 deletion(-)
+ arch/x86/Kconfig         |    4 
+ arch/x86/kernel/Makefile |    1 
+ arch/x86/kernel/kgdb.c   |  550 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/kgdb.h   |   87 +++++++
+ 4 files changed, 642 insertions(+)
 
-Index: linux-kgdb.q/drivers/char/tty_io.c
+Index: linux-kgdb.q/arch/x86/Kconfig
 ===================================================================
---- linux-kgdb.q.orig/drivers/char/tty_io.c
-+++ linux-kgdb.q/drivers/char/tty_io.c
-@@ -1155,6 +1155,48 @@ static struct tty_driver *get_tty_driver
- 	return NULL;
- }
+--- linux-kgdb.q.orig/arch/x86/Kconfig
++++ linux-kgdb.q/arch/x86/Kconfig
+@@ -14,6 +14,7 @@ config X86_32
  
-+#ifdef CONFIG_CONSOLE_POLL
-+
-+/**
-+ *	tty_find_polling_driver	-	find device of a polled tty
-+ *	@name: name string to match
-+ *	@line: pointer to resulting tty line nr
-+ *
-+ *	This routine returns a tty driver structure, given a name
-+ *	and the condition that the tty driver is capable of polled
-+ *	operation.
-+ */
-+struct tty_driver *tty_find_polling_driver(char *name, int *line)
-+{
-+	struct tty_driver *p, *res = NULL;
-+	int tty_line = 0;
-+	char *str;
-+
-+	mutex_lock(&tty_mutex);
-+	/* Search through the tty devices to look for a match */
-+	list_for_each_entry(p, &tty_drivers, tty_drivers) {
-+		str = name + strlen(p->name);
-+		tty_line = simple_strtoul(str, &str, 10);
-+		if (*str == ',')
-+			str++;
-+		if (*str == '\0')
-+			str = 0;
-+
-+		if (tty_line >= 0 && tty_line <= p->num && p->poll_init &&
-+				!p->poll_init(p, tty_line, str)) {
-+
-+			res = p;
-+			*line = tty_line;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&tty_mutex);
-+
-+	return res;
-+}
-+EXPORT_SYMBOL_GPL(tty_find_polling_driver);
-+#endif
-+
- /**
-  *	tty_check_change	-	check for POSIX terminal changes
-  *	@tty: tty to check
-@@ -3850,6 +3892,11 @@ void tty_set_operations(struct tty_drive
- 	driver->write_proc = op->write_proc;
- 	driver->tiocmget = op->tiocmget;
- 	driver->tiocmset = op->tiocmset;
-+#ifdef CONFIG_CONSOLE_POLL
-+	driver->poll_init = op->poll_init;
-+	driver->poll_get_char = op->poll_get_char;
-+	driver->poll_put_char = op->poll_put_char;
-+#endif
- }
+ config X86_64
+ 	def_bool 64BIT
++	select KGDB_ARCH_HAS_SHADOW_INFO
  
+ ### Arch settings
+ config X86
+@@ -139,6 +140,9 @@ config AUDIT_ARCH
+ config ARCH_SUPPORTS_AOUT
+ 	def_bool y
  
-Index: linux-kgdb.q/drivers/serial/8250.c
-===================================================================
---- linux-kgdb.q.orig/drivers/serial/8250.c
-+++ linux-kgdb.q/drivers/serial/8250.c
-@@ -1740,6 +1740,64 @@ static inline void wait_for_xmitr(struct
- 	}
- }
- 
-+#ifdef CONFIG_CONSOLE_POLL
-+/*
-+ * Console polling routines for writing and reading from the uart while
-+ * in an interrupt or debug context.
-+ */
++config ARCH_SUPPORTS_KGDB
++	def_bool y
 +
-+static int serial8250_get_poll_char(struct uart_port *port)
-+{
-+	struct uart_8250_port *up = (struct uart_8250_port *)port;
-+	unsigned char lsr = serial_inp(up, UART_LSR);
-+
-+	while (!(lsr & UART_LSR_DR))
-+		lsr = serial_inp(up, UART_LSR);
-+
-+	return serial_inp(up, UART_RX);
-+}
-+
-+
-+static void serial8250_put_poll_char(struct uart_port *port,
-+			 unsigned char c)
-+{
-+	unsigned int ier;
-+	struct uart_8250_port *up = (struct uart_8250_port *)port;
-+
-+	/*
-+	 *	First save the IER then disable the interrupts
-+	 */
-+	ier = serial_in(up, UART_IER);
-+#ifdef UART_CAP_UUE
-+	if (up->capabilities & UART_CAP_UUE)
-+#else
-+	if (up->port.type == PORT_XSCALE)
-+#endif
-+		serial_out(up, UART_IER, UART_IER_UUE);
-+	else
-+		serial_out(up, UART_IER, 0);
-+
-+	wait_for_xmitr(up, BOTH_EMPTY);
-+	/*
-+	 *	Send the character out.
-+	 *	If a LF, also do CR...
-+	 */
-+	serial_out(up, UART_TX, c);
-+	if (c == 10) {
-+		wait_for_xmitr(up, BOTH_EMPTY);
-+		serial_out(up, UART_TX, 13);
-+	}
-+
-+	/*
-+	 *	Finally, wait for transmitter to become empty
-+	 *	and restore the IER
-+	 */
-+	wait_for_xmitr(up, BOTH_EMPTY);
-+	serial_out(up, UART_IER, ier);
-+}
-+
-+#endif /* CONFIG_CONSOLE_POLL */
-+
- static int serial8250_startup(struct uart_port *port)
- {
- 	struct uart_8250_port *up = (struct uart_8250_port *)port;
-@@ -2386,6 +2444,10 @@ static struct uart_ops serial8250_pops =
- 	.request_port	= serial8250_request_port,
- 	.config_port	= serial8250_config_port,
- 	.verify_port	= serial8250_verify_port,
-+#ifdef CONFIG_CONSOLE_POLL
-+	.poll_get_char = serial8250_get_poll_char,
-+	.poll_put_char = serial8250_put_poll_char,
-+#endif
- };
- 
- static struct uart_8250_port serial8250_ports[UART_NR];
-Index: linux-kgdb.q/drivers/serial/Kconfig
-===================================================================
---- linux-kgdb.q.orig/drivers/serial/Kconfig
-+++ linux-kgdb.q/drivers/serial/Kconfig
-@@ -961,6 +961,9 @@ config SERIAL_CORE
- config SERIAL_CORE_CONSOLE
+ # Use the generic interrupt handling code in kernel/irq/:
+ config GENERIC_HARDIRQS
  	bool
- 
-+config CONSOLE_POLL
-+	bool
-+
- config SERIAL_68328
- 	bool "68328 serial support"
- 	depends on M68328 || M68EZ328 || M68VZ328
-Index: linux-kgdb.q/drivers/serial/Makefile
+Index: linux-kgdb.q/arch/x86/kernel/Makefile
 ===================================================================
---- linux-kgdb.q.orig/drivers/serial/Makefile
-+++ linux-kgdb.q/drivers/serial/Makefile
-@@ -66,4 +66,5 @@ obj-$(CONFIG_SERIAL_UARTLITE) += uartlit
- obj-$(CONFIG_SERIAL_NETX) += netx-serial.o
- obj-$(CONFIG_SERIAL_OF_PLATFORM) += of_serial.o
- obj-$(CONFIG_SERIAL_KS8695) += serial_ks8695.o
-+obj-$(CONFIG_KGDBOC) += kgdboc.o
- obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
-Index: linux-kgdb.q/drivers/serial/kgdboc.c
+--- linux-kgdb.q.orig/arch/x86/kernel/Makefile
++++ linux-kgdb.q/arch/x86/kernel/Makefile
+@@ -58,6 +58,7 @@ obj-$(CONFIG_MODULES)		+= module_$(BITS)
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
++obj-$(CONFIG_KGDB)		+= kgdb.o
+ obj-$(CONFIG_VM86)		+= vm86_32.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ 
+Index: linux-kgdb.q/arch/x86/kernel/kgdb.c
 ===================================================================
 --- /dev/null
-+++ linux-kgdb.q/drivers/serial/kgdboc.c
-@@ -0,0 +1,164 @@
++++ linux-kgdb.q/arch/x86/kernel/kgdb.c
+@@ -0,0 +1,550 @@
 +/*
-+ * drivers/serial/kgdboc.c
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2, or (at your option) any
++ * later version.
 + *
-+ * Based on the same principle as kgdboe using the NETPOLL api, this
-+ * driver uses a console polling api to implement a gdb serial inteface
-+ * which is multiplexed on a console port.
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
 + *
-+ * Maintainer: Jason Wessel <jason.wessel@windriver.com>
-+ *
-+ * 2007-2008 (c) Jason Wessel - Wind River Systems, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
 + */
++
++/*
++ * Copyright (C) 2004 Amit S. Kale <amitkale@linsyssoft.com>
++ * Copyright (C) 2000-2001 VERITAS Software Corporation.
++ * Copyright (C) 2002 Andi Kleen, SuSE Labs
++ * Copyright (C) 2004 LinSysSoft Technologies Pvt. Ltd.
++ * Copyright (C) 2007 MontaVista Software, Inc.
++ * Copyright (C) 2007-2008 Jason Wessel, Wind River Systems, Inc.
++ */
++/****************************************************************************
++ *  Contributor:     Lake Stevens Instrument Division$
++ *  Written by:      Glenn Engel $
++ *  Updated by:	     Amit Kale<akale@veritas.com>
++ *  Updated by:	     Tom Rini <trini@kernel.crashing.org>
++ *  Updated by:	     Jason Wessel <jason.wessel@windriver.com>
++ *  Modified for 386 by Jim Kingdon, Cygnus Support.
++ *  Origianl kgdb, compatibility with 2.1.xx kernel by
++ *  David Grothe <dave@gcom.com>
++ *  Integrated into 2.2.5 kernel by Tigran Aivazian <tigran@sco.com>
++ *  X86_64 changes from Andi Kleen's patch merged by Jim Houston
++ */
++#include <linux/spinlock.h>
++#include <linux/kdebug.h>
++#include <linux/string.h>
 +#include <linux/kernel.h>
-+#include <linux/ctype.h>
++#include <linux/ptrace.h>
++#include <linux/sched.h>
++#include <linux/delay.h>
 +#include <linux/kgdb.h>
-+#include <linux/tty.h>
++#include <linux/init.h>
++#include <linux/smp.h>
 +
-+#define MAX_KGDBOC_CONFIG_STR	40
++#include <asm/apicdef.h>
++#include <asm/system.h>
 +
-+static struct kgdb_io		kgdboc_io_ops;
++#ifdef CONFIG_X86_32
++# include <mach_ipi.h>
++#else
++# include <asm/mach_apic.h>
++#endif
 +
-+/* -1 = init not run yet, 0 = unconfigured, 1 = configured. */
-+static int configured = -1;
++/*
++ * Put the error code here just in case the user cares:
++ */
++static int gdb_x86errcode;
 +
-+MODULE_DESCRIPTION("KGDB Console TTY Driver");
-+MODULE_LICENSE("GPL");
-+static char config[MAX_KGDBOC_CONFIG_STR];
-+static struct kparam_string kps = {
-+	.string			= config,
-+	.maxlen			= MAX_KGDBOC_CONFIG_STR,
++/*
++ * Likewise, the vector number here (since GDB only gets the signal
++ * number through the usual means, and that's not very specific):
++ */
++static int gdb_x86vector = -1;
++
++void pt_regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	gdb_regs[GDB_AX]	= regs->ax;
++	gdb_regs[GDB_BX]	= regs->bx;
++	gdb_regs[GDB_CX]	= regs->cx;
++	gdb_regs[GDB_DX]	= regs->dx;
++	gdb_regs[GDB_SI]	= regs->si;
++	gdb_regs[GDB_DI]	= regs->di;
++	gdb_regs[GDB_BP]	= regs->bp;
++	gdb_regs[GDB_PS]	= regs->flags;
++	gdb_regs[GDB_PC]	= regs->ip;
++#ifdef CONFIG_X86_32
++	gdb_regs[GDB_DS]	= regs->ds;
++	gdb_regs[GDB_ES]	= regs->es;
++	gdb_regs[GDB_CS]	= regs->cs;
++	gdb_regs[GDB_SS]	= __KERNEL_DS;
++	gdb_regs[GDB_FS]	= 0xFFFF;
++	gdb_regs[GDB_GS]	= 0xFFFF;
++#else
++	gdb_regs[GDB_R8]	= regs->r8;
++	gdb_regs[GDB_R9]	= regs->r9;
++	gdb_regs[GDB_R10]	= regs->r10;
++	gdb_regs[GDB_R11]	= regs->r11;
++	gdb_regs[GDB_R12]	= regs->r12;
++	gdb_regs[GDB_R13]	= regs->r13;
++	gdb_regs[GDB_R14]	= regs->r14;
++	gdb_regs[GDB_R15]	= regs->r15;
++#endif
++	gdb_regs[GDB_SP]	= regs->sp;
++}
++
++void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
++{
++	gdb_regs[GDB_AX]	= 0;
++	gdb_regs[GDB_BX]	= 0;
++	gdb_regs[GDB_CX]	= 0;
++	gdb_regs[GDB_DX]	= 0;
++	gdb_regs[GDB_SI]	= 0;
++	gdb_regs[GDB_DI]	= 0;
++	gdb_regs[GDB_BP]	= *(unsigned long *)p->thread.sp;
++#ifdef CONFIG_X86_32
++	gdb_regs[GDB_DS]	= __KERNEL_DS;
++	gdb_regs[GDB_ES]	= __KERNEL_DS;
++	gdb_regs[GDB_PS]	= 0;
++	gdb_regs[GDB_CS]	= __KERNEL_CS;
++	gdb_regs[GDB_PC]	= p->thread.ip;
++	gdb_regs[GDB_SS]	= __KERNEL_DS;
++	gdb_regs[GDB_FS]	= 0xFFFF;
++	gdb_regs[GDB_GS]	= 0xFFFF;
++#else
++	gdb_regs[GDB_PS]	= *(unsigned long *)(p->thread.sp + 8);
++	gdb_regs[GDB_PC]	= 0;
++	gdb_regs[GDB_R8]	= 0;
++	gdb_regs[GDB_R9]	= 0;
++	gdb_regs[GDB_R10]	= 0;
++	gdb_regs[GDB_R11]	= 0;
++	gdb_regs[GDB_R12]	= 0;
++	gdb_regs[GDB_R13]	= 0;
++	gdb_regs[GDB_R14]	= 0;
++	gdb_regs[GDB_R15]	= 0;
++#endif
++	gdb_regs[GDB_SP]	= p->thread.sp;
++}
++
++void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	regs->ax		= gdb_regs[GDB_AX];
++	regs->bx		= gdb_regs[GDB_BX];
++	regs->cx		= gdb_regs[GDB_CX];
++	regs->dx		= gdb_regs[GDB_DX];
++	regs->si		= gdb_regs[GDB_SI];
++	regs->di		= gdb_regs[GDB_DI];
++	regs->bp		= gdb_regs[GDB_BP];
++	regs->flags		= gdb_regs[GDB_PS];
++	regs->ip		= gdb_regs[GDB_PC];
++#ifdef CONFIG_X86_32
++	regs->ds		= gdb_regs[GDB_DS];
++	regs->es		= gdb_regs[GDB_ES];
++	regs->cs		= gdb_regs[GDB_CS];
++#else
++	regs->r8		= gdb_regs[GDB_R8];
++	regs->r9		= gdb_regs[GDB_R9];
++	regs->r10		= gdb_regs[GDB_R10];
++	regs->r11		= gdb_regs[GDB_R11];
++	regs->r12		= gdb_regs[GDB_R12];
++	regs->r13		= gdb_regs[GDB_R13];
++	regs->r14		= gdb_regs[GDB_R14];
++	regs->r15		= gdb_regs[GDB_R15];
++#endif
++}
++
++static struct hw_breakpoint {
++	unsigned		enabled;
++	unsigned		type;
++	unsigned		len;
++	unsigned long		addr;
++} breakinfo[4] = {
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
 +};
 +
-+static struct tty_driver	*kgdb_tty_driver;
-+static int			kgdb_tty_line;
-+
-+static int kgdboc_option_setup(char *opt)
++static void kgdb_correct_hw_break(void)
 +{
-+	if (strlen(opt) > MAX_KGDBOC_CONFIG_STR) {
-+		printk(KERN_ERR "kgdboc: config string too long\n");
-+		return -ENOSPC;
++	unsigned long dr7;
++	int correctit = 0;
++	int breakbit;
++	int breakno;
++
++	get_debugreg(dr7, 7);
++	for (breakno = 0; breakno < 4; breakno++) {
++		breakbit = 2 << (breakno << 1);
++		if (!(dr7 & breakbit) && breakinfo[breakno].enabled) {
++			correctit = 1;
++			dr7 |= breakbit;
++			dr7 &= ~(0xf0000 << (breakno << 2));
++			dr7 |= ((breakinfo[breakno].len << 2) |
++				 breakinfo[breakno].type) <<
++			       ((breakno << 2) + 16);
++			switch (breakno) {
++			case 0:
++				set_debugreg(breakinfo[0].addr, 0);
++				break;
++
++			case 1:
++				set_debugreg(breakinfo[1].addr, 1);
++				break;
++
++			case 2:
++				set_debugreg(breakinfo[2].addr, 2);
++				break;
++
++			case 3:
++				set_debugreg(breakinfo[3].addr, 3);
++				break;
++			}
++		} else if ((dr7 & breakbit) && !breakinfo[breakno].enabled) {
++			correctit = 1;
++			dr7 &= ~breakbit;
++			dr7 &= ~(0xf0000 << (breakno << 2));
++		}
 +	}
-+	strcpy(config, opt);
++	if (correctit)
++		set_debugreg(dr7, 7);
++}
++
++static int
++kgdb_remove_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
++{
++	int i;
++
++	for (i = 0; i < 4; i++)
++		if (breakinfo[i].addr == addr && breakinfo[i].enabled)
++			break;
++	if (i == 4)
++		return -1;
++
++	breakinfo[i].enabled = 0;
 +
 +	return 0;
 +}
-+__setup("kgdboc=", kgdboc_option_setup);
 +
-+static int configure_kgdboc(void)
++static void kgdb_remove_all_hw_break(void)
 +{
-+	struct tty_driver *p;
-+	int tty_line = 0;
-+	int err;
++	int i;
 +
-+	err = kgdboc_option_setup(config);
-+	if (err || !strlen(config) || isspace(config[0]))
-+		goto noconfig;
++	for (i = 0; i < 4; i++)
++		memset(&breakinfo[i], 0, sizeof(struct hw_breakpoint));
++}
 +
-+	err = -ENODEV;
++static int
++kgdb_set_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
++{
++	unsigned type;
++	int i;
 +
-+	p = tty_find_polling_driver(config, &tty_line);
-+	if (!p)
-+		goto noconfig;
++	for (i = 0; i < 4; i++)
++		if (!breakinfo[i].enabled)
++			break;
++	if (i == 4)
++		return -1;
 +
-+	kgdb_tty_driver = p;
-+	kgdb_tty_line = tty_line;
++	switch (bptype) {
++	case BP_HARDWARE_BREAKPOINT:
++		type = 0;
++		len  = 1;
++		break;
++	case BP_WRITE_WATCHPOINT:
++		type = 1;
++		break;
++	case BP_ACCESS_WATCHPOINT:
++		type = 3;
++		break;
++	default:
++		return -1;
++	}
 +
-+	err = kgdb_register_io_module(&kgdboc_io_ops);
-+	if (err)
-+		goto noconfig;
++	if (len == 1 || len == 2 || len == 4)
++		breakinfo[i].len  = len - 1;
++	else
++		return -1;
 +
-+	configured = 1;
++	breakinfo[i].enabled = 1;
++	breakinfo[i].addr = addr;
++	breakinfo[i].type = type;
 +
 +	return 0;
-+
-+noconfig:
-+	config[0] = 0;
-+	configured = 0;
-+
-+	return err;
 +}
 +
-+static int init_kgdboc(void)
++void kgdb_disable_hw_debug(struct pt_regs *regs)
 +{
-+	/* Already configured? */
-+	if (configured == 1)
++	/* Disable hardware debugging while we are in kgdb: */
++	set_debugreg(0UL, 7);
++}
++
++void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
++{
++	/* Master processor is completely in the debugger */
++	gdb_x86vector = e_vector;
++	gdb_x86errcode = err_code;
++}
++
++#ifdef CONFIG_SMP
++void kgdb_roundup_cpus(unsigned long flags)
++{
++	send_IPI_allbutself(APIC_DM_NMI);
++}
++#endif
++
++int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
++			       char *remcomInBuffer, char *remcomOutBuffer,
++			       struct pt_regs *linux_regs)
++{
++	unsigned long addr;
++	unsigned long dr6;
++	char *ptr;
++	int newPC;
++
++	switch (remcomInBuffer[0]) {
++	case 'c':
++	case 's':
++		/* try to read optional parameter, pc unchanged if no parm */
++		ptr = &remcomInBuffer[1];
++		if (kgdb_hex2long(&ptr, &addr))
++			linux_regs->ip = addr;
++		newPC = linux_regs->ip;
++
++		/* clear the trace bit */
++		linux_regs->flags &= ~TF_MASK;
++		atomic_set(&cpu_doing_single_step, -1);
++
++		/* set the trace bit if we're stepping */
++		if (remcomInBuffer[0] == 's') {
++			linux_regs->flags |= TF_MASK;
++			debugger_step = 1;
++			if (kgdb_contthread) {
++				atomic_set(&cpu_doing_single_step,
++					   raw_smp_processor_id());
++			}
++		}
++
++		get_debugreg(dr6, 6);
++		if (!(dr6 & 0x4000)) {
++			int breakno;
++
++			for (breakno = 0; breakno < 4; breakno++) {
++				if (dr6 & (1 << breakno) &&
++				    breakinfo[breakno].type == 0) {
++					/* Set restore flag: */
++					linux_regs->flags |= X86_EFLAGS_RF;
++					break;
++				}
++			}
++		}
++		set_debugreg(0UL, 6);
++		kgdb_correct_hw_break();
++
 +		return 0;
-+
-+	return configure_kgdboc();
-+}
-+
-+static void cleanup_kgdboc(void)
-+{
-+	if (configured == 1)
-+		kgdb_unregister_io_module(&kgdboc_io_ops);
-+}
-+
-+static int kgdboc_get_char(void)
-+{
-+	return kgdb_tty_driver->poll_get_char(kgdb_tty_driver, kgdb_tty_line);
-+}
-+
-+static void kgdboc_put_char(u8 chr)
-+{
-+	kgdb_tty_driver->poll_put_char(kgdb_tty_driver, kgdb_tty_line, chr);
-+}
-+
-+static int param_set_kgdboc_var(const char *kmessage, struct kernel_param *kp)
-+{
-+	if (strlen(kmessage) >= MAX_KGDBOC_CONFIG_STR) {
-+		printk(KERN_ERR "kgdboc: config string too long\n");
-+		return -ENOSPC;
 +	}
 +
-+	/* Only copy in the string if the init function has not run yet */
-+	if (configured < 0) {
-+		strcpy(config, kmessage);
-+		return 0;
++	/* this means that we do not want to exit from the handler: */
++	return -1;
++}
++
++#ifdef CONFIG_X86_64
++
++static struct pt_regs *in_interrupt_stack(unsigned long rsp, int cpu)
++{
++	struct pt_regs *regs = NULL;
++	unsigned long end = (unsigned long)cpu_pda(cpu)->irqstackptr;
++
++	if (rsp <= end && rsp >= end - IRQSTACKSIZE + 8)
++		regs = *(((struct pt_regs **)end) - 1);
++
++	return regs;
++}
++
++static struct pt_regs *in_exception_stack(unsigned long rsp, int cpu)
++{
++	struct tss_struct *init_tss = &__get_cpu_var(init_tss);
++	struct pt_regs *regs;
++	int i;
++
++	for (i = 0; i < N_EXCEPTION_STACKS; i++)
++		if (rsp >= init_tss[cpu].x86_tss.ist[i] &&
++		    rsp <= init_tss[cpu].x86_tss.ist[i] + EXCEPTION_STKSZ) {
++			regs = (void *) init_tss[cpu].x86_tss.ist[i] +\
++				EXCEPTION_STKSZ;
++			return regs - 1;
++		}
++
++	return NULL;
++}
++
++void kgdb_shadowinfo(struct pt_regs *regs, char *buffer, unsigned threadid)
++{
++	static char intr_desc[] = "Stack at interrupt entrypoint";
++	static char exc_desc[] = "Stack at exception entrypoint";
++	int cpu = raw_smp_processor_id();
++	struct pt_regs *stregs;
++
++	stregs = in_interrupt_stack(regs->sp, cpu);
++	if (stregs) {
++		kgdb_mem2hex(intr_desc, buffer, strlen(intr_desc));
++	} else {
++		stregs = in_exception_stack(regs->sp, cpu);
++		if (stregs)
++			kgdb_mem2hex(exc_desc, buffer, strlen(exc_desc));
++	}
++}
++
++struct task_struct *kgdb_get_shadow_thread(struct pt_regs *regs, int threadid)
++{
++	int cpu = raw_smp_processor_id();
++	struct pt_regs *stregs;
++
++	stregs = in_interrupt_stack(regs->sp, cpu);
++	if (stregs) {
++		return current;
++	} else {
++		stregs = in_exception_stack(regs->sp, cpu);
++		if (stregs)
++			return current;
 +	}
 +
-+	if (kgdb_connected) {
-+		printk(KERN_ERR
-+		       "kgdboc: Cannot reconfigure while KGDB is connected.\n");
++	return NULL;
++}
 +
-+		return -EBUSY;
++struct pt_regs *kgdb_shadow_regs(struct pt_regs *regs, int threadid)
++{
++	int cpu = raw_smp_processor_id();
++	struct pt_regs *stregs;
++
++	stregs = in_interrupt_stack(regs->sp, cpu);
++	if (stregs) {
++		return stregs;
++	} else {
++		stregs = in_exception_stack(regs->sp, cpu);
++		if (stregs)
++			return stregs;
 +	}
 +
-+	strcpy(config, kmessage);
-+
-+	if (configured == 1)
-+		cleanup_kgdboc();
-+
-+	/* Go and configure with the new params. */
-+	return configure_kgdboc();
++	return NULL;
 +}
 +
-+static void kgdboc_pre_exp_handler(void)
++#endif /* CONFIG_X86_64 */
++
++static inline int
++single_step_cont(struct pt_regs *regs, struct die_args *args)
 +{
-+	/* Increment the module count when the debugger is active */
-+	if (!kgdb_connected)
-+		try_module_get(THIS_MODULE);
-+}
-+
-+static void kgdboc_post_exp_handler(void)
-+{
-+	/* decrement the module count when the debugger detaches */
-+	if (!kgdb_connected)
-+		module_put(THIS_MODULE);
-+}
-+
-+static struct kgdb_io kgdboc_io_ops = {
-+	.name			= "kgdboc",
-+	.read_char		= kgdboc_get_char,
-+	.write_char		= kgdboc_put_char,
-+	.pre_exception		= kgdboc_pre_exp_handler,
-+	.post_exception		= kgdboc_post_exp_handler,
-+};
-+
-+module_init(init_kgdboc);
-+module_exit(cleanup_kgdboc);
-+module_param_call(kgdboc, param_set_kgdboc_var, param_get_string, &kps, 0644);
-+MODULE_PARM_DESC(kgdboc, "<serial_device>[,baud]");
-Index: linux-kgdb.q/drivers/serial/serial_core.c
-===================================================================
---- linux-kgdb.q.orig/drivers/serial/serial_core.c
-+++ linux-kgdb.q/drivers/serial/serial_core.c
-@@ -1924,7 +1924,12 @@ uart_set_options(struct uart_port *port,
- 	port->mctrl |= TIOCM_DTR;
- 
- 	port->ops->set_termios(port, &termios, &dummy);
--	co->cflag = termios.c_cflag;
 +	/*
-+	 * Allow the setting of the UART parameters with a NULL console
-+	 * too:
++	 * Single step exception from kernel space to user space so
++	 * eat the exception and continue the process:
 +	 */
-+	if (co)
-+		co->cflag = termios.c_cflag;
- 
- 	return 0;
- }
-@@ -2182,6 +2187,61 @@ uart_configure_port(struct uart_driver *
- 	}
- }
- 
-+#ifdef CONFIG_CONSOLE_POLL
++	printk(KERN_ERR "KGDB: trap/step from kernel to user space, "
++			"resuming...\n");
++	kgdb_arch_handle_exception(args->trapnr, args->signr,
++				   args->err, "c", "", regs);
 +
-+static int uart_poll_init(struct tty_driver *driver, int line, char *options)
++	return NOTIFY_STOP;
++}
++
++static int
++kgdb_notify(struct notifier_block *self, unsigned long cmd, void *ptr)
 +{
-+	struct uart_driver *drv = driver->driver_state;
-+	struct uart_state *state = drv->state + line;
-+	struct uart_port *port;
-+	int baud = 9600;
-+	int bits = 8;
-+	int parity = 'n';
-+	int flow = 'n';
++	struct die_args *args = ptr;
++	struct pt_regs *regs = args->regs;
 +
-+	if (!state || !state->port)
-+		return -1;
++	switch (cmd) {
++	case DIE_NMI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmicallback(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
 +
-+	port = state->port;
-+	if (!(port->ops->poll_get_char &&
-+		  port->ops->poll_put_char))
-+		return -1;
++	case DIE_NMI_IPI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup: */
++			if (kgdb_nmicallback(raw_smp_processor_id(), regs))
++				return NOTIFY_DONE;
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
 +
-+	if (options) {
-+		uart_parse_options(options, &baud, &parity, &bits, &flow);
-+		return uart_set_options(port, NULL, baud, parity, bits, flow);
++	case DIE_NMIWATCHDOG:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup: */
++			kgdb_nmicallback(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		/* Enter debugger: */
++		break;
++
++	case DIE_DEBUG:
++		if (atomic_read(&cpu_doing_single_step) ==
++			raw_smp_processor_id() &&
++			user_mode(regs))
++			return single_step_cont(regs, args);
++		/* fall through */
++	default:
++		if (user_mode(regs))
++			return NOTIFY_DONE;
 +	}
 +
++	if (kgdb_handle_exception(args->trapnr, args->signr, args->err, regs))
++		return NOTIFY_DONE;
++
++	return NOTIFY_STOP;
++}
++
++static struct notifier_block kgdb_notifier = {
++	.notifier_call	= kgdb_notify,
++
++	/*
++	 * Lowest-prio notifier priority, we want to be notified last:
++	 */
++	.priority	= -INT_MAX,
++};
++
++int kgdb_arch_init(void)
++{
++	register_die_notifier(&kgdb_notifier);
 +	return 0;
 +}
 +
-+static int uart_poll_get_char(struct tty_driver *driver, int line)
++void kgdb_arch_uninit(void)
 +{
-+	struct uart_driver *drv = driver->driver_state;
-+	struct uart_state *state = drv->state + line;
-+	struct uart_port *port;
-+
-+	if (!state || !state->port)
-+		return -1;
-+
-+	port = state->port;
-+	return port->ops->poll_get_char(port);
++	unregister_die_notifier(&kgdb_notifier);
 +}
 +
-+static void uart_poll_put_char(struct tty_driver *driver, int line, char ch)
++/*
++ * Skip an int3 exception when it occurs after a breakpoint has been
++ * removed. Backtrack eip by 1 since the int3 would have caused it to
++ * increment by 1.
++ */
++int kgdb_skipexception(int exception, struct pt_regs *regs)
 +{
-+	struct uart_driver *drv = driver->driver_state;
-+	struct uart_state *state = drv->state + line;
-+	struct uart_port *port;
-+
-+	if (!state || !state->port)
-+		return;
-+
-+	port = state->port;
-+	port->ops->poll_put_char(port, ch);
++	if (exception == 3 && kgdb_isremovedbreak(regs->ip - 1)) {
++		regs->ip -= 1;
++		return 1;
++	}
++	return 0;
 +}
++
++unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
++{
++	if (exception == 3)
++		return instruction_pointer(regs) - 1;
++	return instruction_pointer(regs);
++}
++
++struct kgdb_arch arch_kgdb_ops = {
++	/* Breakpoint instruction: */
++	.gdb_bpt_instr		= { 0xcc },
++	.flags			= KGDB_HW_BREAKPOINT,
++#ifndef CONFIG_X86_32
++	.shadowth		= 1,
++#endif
++	.set_hw_breakpoint	= kgdb_set_hw_break,
++	.remove_hw_breakpoint	= kgdb_remove_hw_break,
++	.remove_all_hw_break	= kgdb_remove_all_hw_break,
++	.correct_hw_break	= kgdb_correct_hw_break,
++};
+Index: linux-kgdb.q/include/asm-x86/kgdb.h
+===================================================================
+--- /dev/null
++++ linux-kgdb.q/include/asm-x86/kgdb.h
+@@ -0,0 +1,87 @@
++#ifdef __KERNEL__
++#ifndef _ASM_KGDB_H_
++#define _ASM_KGDB_H_
++
++/*
++ * Copyright (C) 2001-2004 Amit S. Kale
++ * Copyright (C) 2008 Wind River Systems, Inc.
++ */
++
++#include <asm-generic/kgdb.h>
++
++/*
++ * BUFMAX defines the maximum number of characters in inbound/outbound
++ * buffers at least NUMREGBYTES*2 are needed for register packets
++ * Longer buffer is needed to list all threads
++ */
++#define BUFMAX			1024
++
++/*
++ *  Note that this register image is in a different order than
++ *  the register image that Linux produces at interrupt time.
++ *
++ *  Linux's register image is defined by struct pt_regs in ptrace.h.
++ *  Just why GDB uses a different order is a historical mystery.
++ */
++#ifdef CONFIG_X86_32
++enum regnames {
++	GDB_AX,			/* 0 */
++	GDB_CX,			/* 1 */
++	GDB_DX,			/* 2 */
++	GDB_BX,			/* 3 */
++	GDB_SP,			/* 4 */
++	GDB_BP,			/* 5 */
++	GDB_SI,			/* 6 */
++	GDB_DI,			/* 7 */
++	GDB_PC,			/* 8 also known as eip */
++	GDB_PS,			/* 9 also known as eflags */
++	GDB_CS,			/* 10 */
++	GDB_SS,			/* 11 */
++	GDB_DS,			/* 12 */
++	GDB_ES,			/* 13 */
++	GDB_FS,			/* 14 */
++	GDB_GS,			/* 15 */
++};
++#else /* ! CONFIG_X86_32 */
++enum regnames {
++	GDB_AX,			/* 0 */
++	GDB_DX,			/* 1 */
++	GDB_CX,			/* 2 */
++	GDB_BX,			/* 3 */
++	GDB_SI,			/* 4 */
++	GDB_DI,			/* 5 */
++	GDB_BP,			/* 6 */
++	GDB_SP,			/* 7 */
++	GDB_R8,			/* 8 */
++	GDB_R9,			/* 9 */
++	GDB_R10,		/* 10 */
++	GDB_R11,		/* 11 */
++	GDB_R12,		/* 12 */
++	GDB_R13,		/* 13 */
++	GDB_R14,		/* 14 */
++	GDB_R15,		/* 15 */
++	GDB_PC,			/* 16 */
++	GDB_PS,			/* 17 */
++};
++#endif /* CONFIG_X86_32 */
++
++/*
++ * Number of bytes of registers:
++ */
++#ifdef CONFIG_X86_32
++# define NUMREGBYTES		64
++#else
++# define NUMREGBYTES		((GDB_PS+1)*8)
 +#endif
 +
- static const struct tty_operations uart_ops = {
- 	.open		= uart_open,
- 	.close		= uart_close,
-@@ -2206,6 +2266,11 @@ static const struct tty_operations uart_
- #endif
- 	.tiocmget	= uart_tiocmget,
- 	.tiocmset	= uart_tiocmset,
-+#ifdef CONFIG_CONSOLE_POLL
-+	.poll_init	= uart_poll_init,
-+	.poll_get_char	= uart_poll_get_char,
-+	.poll_put_char	= uart_poll_put_char,
++#ifndef __ASSEMBLY__
++static inline void arch_kgdb_breakpoint(void)
++{
++	asm("   int $3");
++}
++# define BREAK_INSTR_SIZE	1
++# define CACHE_FLUSH_IS_SAFE	1
 +#endif
- };
- 
- /**
-Index: linux-kgdb.q/include/linux/serial_core.h
-===================================================================
---- linux-kgdb.q.orig/include/linux/serial_core.h
-+++ linux-kgdb.q/include/linux/serial_core.h
-@@ -211,6 +211,10 @@ struct uart_ops {
- 	void		(*config_port)(struct uart_port *, int);
- 	int		(*verify_port)(struct uart_port *, struct serial_struct *);
- 	int		(*ioctl)(struct uart_port *, unsigned int, unsigned long);
-+#ifdef CONFIG_CONSOLE_POLL
-+	void	(*poll_put_char)(struct uart_port *, unsigned char);
-+	int		(*poll_get_char)(struct uart_port *);
-+#endif
- };
- 
- #define UART_CONFIG_TYPE	(1 << 0)
-Index: linux-kgdb.q/include/linux/tty_driver.h
-===================================================================
---- linux-kgdb.q.orig/include/linux/tty_driver.h
-+++ linux-kgdb.q/include/linux/tty_driver.h
-@@ -125,6 +125,7 @@
- #include <linux/cdev.h>
- 
- struct tty_struct;
-+struct tty_driver;
- 
- struct tty_operations {
- 	int  (*open)(struct tty_struct * tty, struct file * filp);
-@@ -157,6 +158,11 @@ struct tty_operations {
- 	int (*tiocmget)(struct tty_struct *tty, struct file *file);
- 	int (*tiocmset)(struct tty_struct *tty, struct file *file,
- 			unsigned int set, unsigned int clear);
-+#ifdef CONFIG_CONSOLE_POLL
-+	int (*poll_init)(struct tty_driver *driver, int line, char *options);
-+	int (*poll_get_char)(struct tty_driver *driver, int line);
-+	void (*poll_put_char)(struct tty_driver *driver, int line, char ch);
-+#endif
- };
- 
- struct tty_driver {
-@@ -220,6 +226,11 @@ struct tty_driver {
- 	int (*tiocmget)(struct tty_struct *tty, struct file *file);
- 	int (*tiocmset)(struct tty_struct *tty, struct file *file,
- 			unsigned int set, unsigned int clear);
-+#ifdef CONFIG_CONSOLE_POLL
-+	int (*poll_init)(struct tty_driver *driver, int line, char *options);
-+	int (*poll_get_char)(struct tty_driver *driver, int line);
-+	void (*poll_put_char)(struct tty_driver *driver, int line, char ch);
-+#endif
- 
- 	struct list_head tty_drivers;
- };
-@@ -230,6 +241,7 @@ struct tty_driver *alloc_tty_driver(int 
- void put_tty_driver(struct tty_driver *driver);
- void tty_set_operations(struct tty_driver *driver,
- 			const struct tty_operations *op);
-+extern struct tty_driver *tty_find_polling_driver(char *name, int *line);
- 
- /* tty driver magic number */
- #define TTY_DRIVER_MAGIC		0x5402
++
++#endif				/* _ASM_KGDB_H_ */
++#endif				/* __KERNEL__ */
