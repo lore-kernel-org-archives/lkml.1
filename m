@@ -1,166 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbYBJWoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbYBJW5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755750AbYBJWoe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 17:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYBJWoY
+	id S1753812AbYBJW5j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 17:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYBJW52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 17:44:24 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:57292 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751275AbYBJWoX (ORCPT
+	Sun, 10 Feb 2008 17:57:28 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:13784 "EHLO
+	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752699AbYBJW51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 17:44:23 -0500
-Subject: Re: scsi/arm/fas216.c compile error
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, Adrian Bunk <adrian.bunk@movial.fi>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20080210220200.GA26654@flint.arm.linux.org.uk>
-References: <20080209000413.GE6505@cs181133002.pp.htv.fi>
-	 <47AEF6FD.8080801@panasas.com>
-	 <20080210135851.GB25703@flint.arm.linux.org.uk>
-	 <1202653224.3136.20.camel@localhost.localdomain>
-	 <20080210220200.GA26654@flint.arm.linux.org.uk>
+	Sun, 10 Feb 2008 17:57:27 -0500
+X-Trace: 681490072/mk-filter-3.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAEYQr0dRAVlC/2dsb2JhbACBWaRQgXQ
+Subject: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: dtor@insightbb.com
+Cc: Paul Mundt <lethal@users.sourceforge.net>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sun, 10 Feb 2008 16:44:16 -0600
-Message-Id: <1202683456.3136.77.camel@localhost.localdomain>
+Date: Sun, 10 Feb 2008 22:57:01 +0000
+Message-Id: <1202684222.6237.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-02-10 at 22:02 +0000, Russell King wrote:
-> On Sun, Feb 10, 2008 at 08:20:24AM -0600, James Bottomley wrote:
-> > 
-> > On Sun, 2008-02-10 at 13:58 +0000, Russell King wrote:
-> > > On Sun, Feb 10, 2008 at 03:07:09PM +0200, Boaz Harrosh wrote:
-> > > > It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
-> > > >   [SCSI] arm: convert to accessors and !use_sg cleanup
-> > > > 
-> > > > Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
-> > > > to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
-> > > > we finally managed a Tested-by:.
-> > > > 
-> > > > I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
-> > > > schedule.
-> > > 
-> > > Oh, I was ill for most of December, particularly at the time that you
-> > > sent the patch, and by the time I recovered, it was buried in my mailbox.
-> > > 
-> > > Suggest you have some consideration for others who might not be able to
-> > > do your beg and call at the immediate moment that you want it, and
-> > > consider that their email management skills may not be as l33t as yours.
-> > 
-> > OK, sorry about this, it's a bit of a cockup all around.  The patch that
-> > fixes this problem is still in SCSI pending largely because it's patch
-> > description:
-> > 
-> >     [SCSI] fas216: Use scsi_eh API for REQUEST_SENSE invocation
-> > 
-> > Doesn't lead one to think it might be build critical, so I concentrated
-> > on getting the other arm patch out.
-> > 
-> > Russell, could you give it a quick test, and I'll put it in with a
-> > tested-by tag?
-> 
-> It's not looking good:
-> 
->   CC      drivers/scsi/arm/fas216.o
-> drivers/scsi/arm/fas216.c: In function `fas216_rq_sns_done':
-> drivers/scsi/arm/fas216.c:2021: warning: passing arg 2 of `scsi_eh_restore_cmnd' from incompatible pointer type
-> drivers/scsi/arm/fas216.c: In function `fas216_std_done':
-> drivers/scsi/arm/fas216.c:2107: warning: passing arg 2 of `scsi_eh_prep_cmnd' from incompatible pointer type
-> 
-> Since the second argument of scsi_eh_prep_cmnd is 'struct scsi_eh_save *ses'
-> this patch is most definitely bad.  Not even booted it.
+Adds support for the Dreamcast control pad.
 
-Yes, there looks to be a fatal screw up in the definition in
-FAS216_Info.  Could you try this ... I think I've corrected it.
+This is a port of the 2.4 driver (never in mainline) by Yaegashi
+Takeshi.
 
-James
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
----
+======
 
->From 35be7297dc581b42c05ea7751ee595b0ce78f669 Mon Sep 17 00:00:00 2001
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Mon, 10 Sep 2007 22:39:11 +0300
-Subject: [SCSI] fas216: Use scsi_eh API for REQUEST_SENSE invocation
-
-  - Use new scsi_eh_prep/restor_cmnd() for synchronous
-    REQUEST_SENSE invocation.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- drivers/scsi/arm/fas216.c |   16 +++-------------
- drivers/scsi/arm/fas216.h |    3 +++
- 2 files changed, 6 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/scsi/arm/fas216.c b/drivers/scsi/arm/fas216.c
-index fb5f202..a715632 100644
---- a/drivers/scsi/arm/fas216.c
-+++ b/drivers/scsi/arm/fas216.c
-@@ -2018,6 +2018,7 @@ static void fas216_rq_sns_done(FAS216_Info *info, struct scsi_cmnd *SCpnt,
- 	 * the upper layers to process.  This would have been set
- 	 * correctly by fas216_std_done.
- 	 */
-+	scsi_eh_restore_cmnd(SCpnt, &info->ses);
- 	SCpnt->scsi_done(SCpnt);
- }
- 
-@@ -2103,23 +2104,12 @@ request_sense:
- 	if (SCpnt->cmnd[0] == REQUEST_SENSE)
- 		goto done;
- 
-+	scsi_eh_prep_cmnd(SCpnt, &info->ses, NULL, 0, ~0);
- 	fas216_log_target(info, LOG_CONNECT, SCpnt->device->id,
- 			  "requesting sense");
--	memset(SCpnt->cmnd, 0, sizeof (SCpnt->cmnd));
--	SCpnt->cmnd[0] = REQUEST_SENSE;
--	SCpnt->cmnd[1] = SCpnt->device->lun << 5;
--	SCpnt->cmnd[4] = sizeof(SCpnt->sense_buffer);
--	SCpnt->cmd_len = COMMAND_SIZE(SCpnt->cmnd[0]);
--	SCpnt->SCp.buffer = NULL;
--	SCpnt->SCp.buffers_residual = 0;
--	SCpnt->SCp.ptr = (char *)SCpnt->sense_buffer;
--	SCpnt->SCp.this_residual = sizeof(SCpnt->sense_buffer);
--	SCpnt->SCp.phase = sizeof(SCpnt->sense_buffer);
-+	init_SCp(SCpnt);
- 	SCpnt->SCp.Message = 0;
- 	SCpnt->SCp.Status = 0;
--	SCpnt->request_bufflen = sizeof(SCpnt->sense_buffer);
--	SCpnt->sc_data_direction = DMA_FROM_DEVICE;
--	SCpnt->use_sg = 0;
- 	SCpnt->tag = 0;
- 	SCpnt->host_scribble = (void *)fas216_rq_sns_done;
- 
-diff --git a/drivers/scsi/arm/fas216.h b/drivers/scsi/arm/fas216.h
-index 00e5f05..b65f4cf 100644
---- a/drivers/scsi/arm/fas216.h
-+++ b/drivers/scsi/arm/fas216.h
-@@ -16,6 +16,8 @@
- #define NO_IRQ 255
- #endif
- 
-+#include <scsi/scsi_eh.h>
+--- /dev/null	2007-10-16 19:02:41.000000000 +0100
++++ drivers/input/joystick/maplecontrol.c	2008-02-10 22:50:17.000000000 +0000
+@@ -0,0 +1,215 @@
++/*
++ * 	SEGA Dreamcast controller driver
++ *	Based on drivers/usb/iforce.c
++ *
++ * 	Copyright Yaegashi Takeshi, 2001
++ *	Ported to 2.6 by Adrian McMenamin, 2008
++ */
 +
- #include "queue.h"
- #include "msgqueue.h"
- 
-@@ -311,6 +313,7 @@ typedef struct {
- 
- 	/* miscellaneous */
- 	int			internal_done;		/* flag to indicate request done */
-+	struct scsi_eh_save	ses;		/* holds request sense restore info */
- 	unsigned long		magic_end;
- } FAS216_Info;
- 
--- 
-1.5.3.8
-
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/input.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/timer.h>
++#include <linux/maple.h>
++#include <asm/mach/maple.h>
++
++MODULE_AUTHOR("YAEGASHI Takeshi <t@keshi.org>");
++MODULE_DESCRIPTION("SEGA Dreamcast controller driver");
++MODULE_LICENSE("GPL");
++
++struct dc_pad {
++	struct input_dev *dev;
++	int open;
++};
++
++static void dc_pad_callback(struct mapleq *mq)
++{
++	unsigned short buttons;
++	struct maple_device *mapledev = mq->dev;
++	struct dc_pad *pad = mapledev->private_data;
++	struct input_dev *dev = pad->dev;
++	unsigned char *res = mq->recvbuf;
++
++	buttons = ~*(unsigned short *)(res+8);
++
++	input_report_abs(dev, ABS_HAT0Y,
++			 (buttons & 0x0010 ? -1:0) + (buttons & 0x0020 ? 1:0));
++	input_report_abs(dev, ABS_HAT0X,
++			 (buttons & 0x0040 ? -1:0) + (buttons & 0x0080 ? 1:0));
++	input_report_abs(dev, ABS_HAT1Y,
++			 (buttons & 0x1000 ? -1:0) + (buttons & 0x2000 ? 1:0));
++	input_report_abs(dev, ABS_HAT1X,
++			 (buttons & 0x4000 ? -1:0) + (buttons & 0x8000 ? 1:0));
++
++	input_report_key(dev, BTN_C,      buttons & 0x0001);
++	input_report_key(dev, BTN_B,      buttons & 0x0002);
++	input_report_key(dev, BTN_A,      buttons & 0x0004);
++	input_report_key(dev, BTN_START,  buttons & 0x0008);
++	input_report_key(dev, BTN_Z,      buttons & 0x0100);
++	input_report_key(dev, BTN_Y,      buttons & 0x0200);
++	input_report_key(dev, BTN_X,      buttons & 0x0400);
++	input_report_key(dev, BTN_SELECT, buttons & 0x0800);
++
++	input_report_abs(dev, ABS_GAS,   res[10]);
++	input_report_abs(dev, ABS_BRAKE, res[11]);
++	input_report_abs(dev, ABS_X,     res[12]);
++	input_report_abs(dev, ABS_Y,     res[13]);
++	input_report_abs(dev, ABS_RX,    res[14]);
++	input_report_abs(dev, ABS_RY,    res[15]);
++}
++
++static int dc_pad_open(struct input_dev *dev)
++{
++	struct dc_pad *pad = dev->private;
++	pad->open++;
++	return 0;
++}
++
++static void dc_pad_close(struct input_dev *dev)
++{
++	struct dc_pad *pad = dev->private;
++	pad->open--;
++}
++
++static int dc_pad_connect(struct maple_device *mdev)
++{
++	int i, error;
++	unsigned long data = be32_to_cpu(mdev->devinfo.function_data[0]);
++	struct dc_pad *pad;
++	struct input_dev *dev;
++
++	const short btn_bit[32] = {
++		BTN_C, BTN_B, BTN_A, BTN_START, -1, -1, -1, -1,
++		BTN_Z, BTN_Y, BTN_X, BTN_SELECT, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++	};
++
++	const short abs_bit[32] = {
++		-1, -1, -1, -1, ABS_HAT0Y, ABS_HAT0Y, ABS_HAT0X, ABS_HAT0X,
++		-1, -1, -1, -1, ABS_HAT1Y, ABS_HAT1Y, ABS_HAT1X, ABS_HAT1X,
++		ABS_GAS, ABS_BRAKE, ABS_X, ABS_Y, ABS_RX, ABS_RY, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++	};
++
++	pad = kzalloc(sizeof(struct dc_pad), GFP_KERNEL);
++	if (!pad)
++		return -ENOMEM;
++
++	dev = input_allocate_device();
++	if (!dev) {
++		kfree(pad);
++		return -ENOMEM;
++	}
++
++	pad->dev = dev;
++
++	mdev->private_data = pad;
++
++	for (i = 0; i < 32; i++)
++		if (data & (1<<i) && btn_bit[i] >= 0)
++			pad->dev->keybit[BTN_JOYSTICK/32] |= BIT(btn_bit[i]);
++
++	if (pad->dev->keybit[BTN_JOYSTICK/32])
++		pad->dev->evbit[0] |= BIT(EV_KEY);
++
++	for (i = 0; i < 32; i++)
++		if (data&(1<<i) && abs_bit[i] >= 0)
++			pad->dev->absbit[0] |= BIT(abs_bit[i]);
++
++	if (pad->dev->absbit[0])
++		pad->dev->evbit[0] |= BIT(EV_ABS);
++
++	for (i = ABS_X; i <= ABS_BRAKE; i++) {
++		pad->dev->absmax[i] = 255;
++		pad->dev->absmin[i] = 0;
++		pad->dev->absfuzz[i] = 0;
++		pad->dev->absflat[i] = 0;
++	}
++
++	for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++) {
++		pad->dev->absmax[i] = 1;
++		pad->dev->absmin[i] = -1;
++		pad->dev->absfuzz[i] = 0;
++		pad->dev->absflat[i] = 0;
++	}
++
++	pad->dev->private = pad;
++	pad->dev->open = dc_pad_open;
++	pad->dev->close = dc_pad_close;
++	pad->dev->event = NULL;
++	pad->dev->dev.parent = &mdev->dev;
++	pad->dev->name = mdev->product_name;
++	pad->dev->id.bustype = BUS_HOST;
++	input_set_capability(pad->dev, EV_ABS, MSC_SCAN);
++	input_set_drvdata(dev, pad);
++
++	error = input_register_device(pad->dev);
++	if (error) {
++		input_free_device(pad->dev);
++		kfree(pad);
++		return -ENODEV;
++	}
++
++	maple_getcond_callback(mdev, dc_pad_callback, HZ/50,
++		MAPLE_FUNC_CONTROLLER);
++
++	return 0;
++}
++
++static void dc_pad_disconnect(struct maple_device *mdev)
++{
++	struct dc_pad *pad = mdev->private_data;
++
++	input_unregister_device(pad->dev);
++	kfree(pad);
++}
++
++/* allow the controller to be used */
++static int probe_maple_controller(struct device *dev)
++{
++	struct maple_device *mdev = to_maple_dev(dev);
++	struct maple_driver *mdrv = to_maple_driver(dev->driver);
++	int error;
++
++	error = dc_pad_connect(mdev);
++	if (error)
++		return error;
++
++	mdev->driver = mdrv;
++
++	return 0;
++}
++
++static struct maple_driver dc_pad_driver = {
++	.function =	MAPLE_FUNC_CONTROLLER,
++	.connect =	dc_pad_connect,
++	.disconnect =	dc_pad_disconnect,
++	.drv = {
++		.name = "Dreamcast_controller",
++		.probe = probe_maple_controller,
++	},
++};
++
++static int __init dc_pad_init(void)
++{
++	return 	maple_driver_register(&dc_pad_driver.drv);
++}
++
++static void __exit dc_pad_exit(void)
++{
++	driver_unregister(&dc_pad_driver.drv);
++}
++
++module_init(dc_pad_init);
++module_exit(dc_pad_exit);
 
 
