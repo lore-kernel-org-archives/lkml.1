@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYBJVPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYBJVQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYBJVPh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYBJVP2
+	id S1755969AbYBJVQf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYBJVQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:15:28 -0500
-Received: from styx.suse.cz ([82.119.242.94]:36634 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751038AbYBJVP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:15:28 -0500
-Date: Sun, 10 Feb 2008 22:15:26 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Abel Bernabeu <abel.bernabeu@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Bug report in the elf loader
-In-Reply-To: <15577be70802081123w7df93c09l31d99a8140e7a28e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802102150070.30955@jikos.suse.cz>
-References: <15577be70802081123w7df93c09l31d99a8140e7a28e@mail.gmail.com>
+	Sun, 10 Feb 2008 16:16:24 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:49527 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbYBJVQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 16:16:23 -0500
+Date: Sun, 10 Feb 2008 21:12:29 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: e1000-devel@lists.sourceforge.net, john.ronciak@intel.com,
+       jeffrey.t.kirsher@intel.com
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/8] : Use FIELD_SIZEOF
+Message-ID: <Pine.LNX.4.64.0802102111270.23906@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008, Abel Bernabeu wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> What is the official forum to report bugs in the kernel?
+Robert P.J. Day proposed to use the macro FIELD_SIZEOF in replace of code
+that matches its definition.
 
-Hi Abel,
+The modification was made using the following semantic patch
+(http://www.emn.fr/x-info/coccinelle/)
 
-lkml is the most official forum you can find.
+// <smpl>
+@haskernel@
+@@
 
-> I've making some testing of the elf loader in my host system (an x86
-> PC with Linux version 2.6.18)... and I have finally found a bug.
-> The elf loader does not always return the correct error code when
-> trying to load incorrect binaries.
-> The execution with 2 badly formed elf binaries leads to different error codes:
-[ ... ]
-> # ls ./bb386 ./bb386nc
-> ./bb386  ./bb386nc  <------ Both files exist!!
-> # ./execve ./bb386
-> Executing ./bb386
-> The result of exec is 2    <--------- Bad!!
-> # ./execve ./bb386nc
-> Executing ./bb386nc
-> The result of exec is 8
-> Execve should return 8 in both cases.
-> I attach the two binaries so anyone familiar with the elf loader can
-> try to figure out the problem... I can supply some details about how I
-> produced the binaries if needed.
+#include <linux/kernel.h>
 
-Well, bb386nc has its e_flags set to 0x2, which means that the binary is 
-of type EF_BFIN_FDPIC.
+@depends on haskernel@
+type t;
+identifier f;
+@@
 
-The fdpic handler returns ENOENT if the PT_INTERP field of the binary is 
-malformed, which is what you are probabling hitting here:
+- (sizeof(((t*)0)->f))
++ FIELD_SIZEOF(t, f)
 
-                        retval = -ENOENT;
-                        if (interpreter_name[phdr->p_filesz - 1] != '\0')
-                                goto error;
+@depends on haskernel@
+type t;
+identifier f;
+@@
 
-The 'standard' ELF binary handler returns ENOEXEC in such cases, and this 
-is the difference you are seeing here.
+- sizeof(((t*)0)->f)
++ FIELD_SIZEOF(t, f)
+// </smpl>
 
-I basically think that both errnos are allowed here:
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-ENOENT The file filename or a script or ELF interpreter does not exist, or 
-a shared library needed for file or interpreter cannot be found.
+---
 
-ENOEXEC An executable is not in a recognized format, is for the wrong 
-architecture, or has some other format error that means it cannot be 
-executed.
-
--- 
-Jiri Kosina
-SUSE Labs
+diff -u -p a/drivers/net/ixgb/ixgb_ethtool.c b/drivers/net/ixgb/ixgb_ethtool.c
+--- a/drivers/net/ixgb/ixgb_ethtool.c 2007-11-08 18:33:36.000000000 +0100
++++ b/drivers/net/ixgb/ixgb_ethtool.c 2008-02-10 17:59:49.000000000 +0100
+@@ -49,7 +49,7 @@ struct ixgb_stats {
+ 	int stat_offset;
+ };
+ 
+-#define IXGB_STAT(m) sizeof(((struct ixgb_adapter *)0)->m), \
++#define IXGB_STAT(m) FIELD_SIZEOF(struct ixgb_adapter, m), \
+ 		      offsetof(struct ixgb_adapter, m)
+ static struct ixgb_stats ixgb_gstrings_stats[] = {
+ 	{"rx_packets", IXGB_STAT(net_stats.rx_packets)},
