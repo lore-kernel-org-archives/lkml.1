@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbYBJPGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbYBJPL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbYBJPGw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 10:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYBJPGm
+	id S1752829AbYBJPL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 10:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYBJPLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 10:06:42 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:54489 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbYBJPGl (ORCPT
+	Sun, 10 Feb 2008 10:11:18 -0500
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:38508 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751362AbYBJPLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 10:06:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
-        b=ZFNUvvPARwx2G4KX1RcPE4mUe+lpI0r/vEjSGeZezK1M0tu59qGYCI9DprkHNO11hwWHQ5/31dszdPZtSh/N8ljd7K2CgKbGTrG1Sr814aIGAYrt8VOE+VoCGVsnxzKVUmQIKovmb3/hML+fvc2HxNObBy0RkALTvc1ogKYzfHw=
-Date: Sun, 10 Feb 2008 23:06:35 +0800 (SGT)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-X-X-Sender: root@boston.corp.fedex.com
-To: Patrick McHardy <kaber@trash.net>
-cc: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Krzysztof Piotr Oledzki <ole@ans.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       cups-bugs <cups-bugs@easysw.com>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: cups slow on linux-2.6.24
-Message-ID: <Pine.LNX.4.64.0802102257420.14442@boston.corp.fedex.com>
+	Sun, 10 Feb 2008 10:11:18 -0500
+Message-ID: <47AF1412.4090908@tiscali.nl>
+Date: Sun, 10 Feb 2008 16:11:14 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: vitalywool@gmail.com
+CC: i2c@lm-sensors.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [arch/arm/mach-pnx4008/gpio.c] duplication in if ... else
+ if branches
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There is a duplication of code in the following section. Possibly it was
+copy-pasted and it was forgotten to edit these lines? otherwise consider
+removing the duplicate lines with the patch below.
+---
+Different if ... else if branches do the same, remove duplication
 
-On Feb 5, 2008 9:47 PM, Patrick McHardy wrote:
->> On Feb 5, 2008 4:16 PM, Jozsef Kadlecsik wrote:
->> Patrick, I suppose you need a patch against the latest git, don't you?
-> Yes, please. I'll take you first patch for -stable though if you
-> send me a Signed-off-by: line.
-
-Please note the lastest git commit is missing one part (which was in 
-Jozsef's original patch).
-
- 	commit b2155e7f70b3f058efe94c0c459db023b05057bd
- 	Author: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
- 	Date:   Thu Feb 7 17:54:56 2008 -0800
-
- 	    [NETFILTER]: nf_conntrack: TCP conntrack reopening fix
-
-
-I've tested the following missing patch, and it solves the cups slow 
-printing problem.
-
-
-Thanks,
-Jeff
-
---- a/net/netfilter/nf_conntrack_proto_tcp.c.org	2008-02-10 22:45:49 +0800
-+++ a/net/netfilter/nf_conntrack_proto_tcp.c	2008-02-10 22:45:56 +0800
-@@ -945,7 +945,7 @@
-
-  	ct->proto.tcp.state = new_state;
-  	if (old_state != new_state
--	    && new_state == TCP_CONNTRACK_CLOSE)
-+	    && new_state == TCP_CONNTRACK_FIN_WAIT)
-  		ct->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
-  	timeout = ct->proto.tcp.retrans >= nf_ct_tcp_max_retrans
-  		  && tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/arm/mach-pnx4008/gpio.c b/arch/arm/mach-pnx4008/gpio.c
+index 1ab84ce..7a3b190 100644
+--- a/arch/arm/mach-pnx4008/gpio.c
++++ b/arch/arm/mach-pnx4008/gpio.c
+@@ -122,16 +122,11 @@ int pnx4008_gpio_register_pin(unsigned short pin)
+ 	unsigned long bit = GPIO_BIT(pin);
+ 	int ret = -EBUSY;	/* Already in use */
+ 
+ 	gpio_lock();
+ 
+-	if (GPIO_ISBID(pin)) {
+-		if (access_map[GPIO_INDEX] & bit)
+-			goto out;
+-		access_map[GPIO_INDEX] |= bit;
+-
+-	} else if (GPIO_ISRAM(pin)) {
++	if (GPIO_ISBID(pin) || GPIO_ISRAM(pin)) {
+ 		if (access_map[GPIO_INDEX] & bit)
+ 			goto out;
+ 		access_map[GPIO_INDEX] |= bit;
+ 
+ 	} else if (GPIO_ISMUX(pin)) {
