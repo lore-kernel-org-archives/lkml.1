@@ -1,56 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYBJWAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYBJWCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbYBJWAK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 17:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYBJV74
+	id S1754535AbYBJWCq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 17:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYBJWCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:59:56 -0500
-Received: from fall-curlleaf.atl.sa.earthlink.net ([207.69.195.105]:33278 "EHLO
-	fall-curlleaf.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751625AbYBJV7z (ORCPT
+	Sun, 10 Feb 2008 17:02:35 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46045 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbYBJWCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:59:55 -0500
-X-Greylist: delayed 900 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Feb 2008 16:59:55 EST
-Message-ID: <47AF7048.3060200@earthlink.net>
-Date: Sun, 10 Feb 2008 16:44:40 -0500
-From: Robert Reif <reif@earthlink.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4.2) Gecko/20040308
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Martin Habets <errandir_news@mph.eclipse.co.uk>,
-       Adrian Bunk <bunk@kernel.org>, wli@holomorphy.com,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: sparc compile error
-References: <20080207231230.GE7198@cs181133002.pp.htv.fi> <alpine.DEB.1.00.0802071538440.15050@chino.kir.corp.google.com> <20080210153355.GA6737@palantir8> <alpine.DEB.1.00.0802101117510.5043@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0802101117510.5043@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Feb 2008 17:02:33 -0500
+Date: Sun, 10 Feb 2008 22:02:00 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Adrian Bunk <adrian.bunk@movial.fi>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: scsi/arm/fas216.c compile error
+Message-ID: <20080210220200.GA26654@flint.arm.linux.org.uk>
+References: <20080209000413.GE6505@cs181133002.pp.htv.fi> <47AEF6FD.8080801@panasas.com> <20080210135851.GB25703@flint.arm.linux.org.uk> <1202653224.3136.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202653224.3136.20.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
+On Sun, Feb 10, 2008 at 08:20:24AM -0600, James Bottomley wrote:
+> 
+> On Sun, 2008-02-10 at 13:58 +0000, Russell King wrote:
+> > On Sun, Feb 10, 2008 at 03:07:09PM +0200, Boaz Harrosh wrote:
+> > > It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
+> > >   [SCSI] arm: convert to accessors and !use_sg cleanup
+> > > 
+> > > Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
+> > > to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
+> > > we finally managed a Tested-by:.
+> > > 
+> > > I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
+> > > schedule.
+> > 
+> > Oh, I was ill for most of December, particularly at the time that you
+> > sent the patch, and by the time I recovered, it was buried in my mailbox.
+> > 
+> > Suggest you have some consideration for others who might not be able to
+> > do your beg and call at the immediate moment that you want it, and
+> > consider that their email management skills may not be as l33t as yours.
+> 
+> OK, sorry about this, it's a bit of a cockup all around.  The patch that
+> fixes this problem is still in SCSI pending largely because it's patch
+> description:
+> 
+>     [SCSI] fas216: Use scsi_eh API for REQUEST_SENSE invocation
+> 
+> Doesn't lead one to think it might be build critical, so I concentrated
+> on getting the other arm patch out.
+> 
+> Russell, could you give it a quick test, and I'll put it in with a
+> tested-by tag?
 
->Please try Linus' latest git that includes 60c12b12 (from yesterday) that 
->fixes this issue.
->
+It's not looking good:
+
+  CC      drivers/scsi/arm/fas216.o
+drivers/scsi/arm/fas216.c: In function `fas216_rq_sns_done':
+drivers/scsi/arm/fas216.c:2021: warning: passing arg 2 of `scsi_eh_restore_cmnd' from incompatible pointer type
+drivers/scsi/arm/fas216.c: In function `fas216_std_done':
+drivers/scsi/arm/fas216.c:2107: warning: passing arg 2 of `scsi_eh_prep_cmnd' from incompatible pointer type
+
+Since the second argument of scsi_eh_prep_cmnd is 'struct scsi_eh_save *ses'
+this patch is most definitely bad.  Not even booted it.
+
+> 
+> Thanks,
+> 
+> James
+> 
+> ---
+> 
+> From: Boaz Harrosh <bharrosh@panasas.com>
+> Date: Mon, 10 Sep 2007 22:39:11 +0300
+> Subject: [SCSI] fas216: Use scsi_eh API for REQUEST_SENSE invocation
+> 
+>   - Use new scsi_eh_prep/restor_cmnd() for synchronous
+>     REQUEST_SENSE invocation.
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> Cc: Russell King <rmk@arm.linux.org.uk>
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+>  drivers/scsi/arm/fas216.c |   16 +++-------------
+>  drivers/scsi/arm/fas216.h |    3 +++
+>  2 files changed, 6 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/scsi/arm/fas216.c b/drivers/scsi/arm/fas216.c
+> index fb5f202..a715632 100644
+> --- a/drivers/scsi/arm/fas216.c
+> +++ b/drivers/scsi/arm/fas216.c
+> @@ -2018,6 +2018,7 @@ static void fas216_rq_sns_done(FAS216_Info *info, struct scsi_cmnd *SCpnt,
+>  	 * the upper layers to process.  This would have been set
+>  	 * correctly by fas216_std_done.
+>  	 */
+> +	scsi_eh_restore_cmnd(SCpnt, &info->ses);
+>  	SCpnt->scsi_done(SCpnt);
+>  }
 >  
->
-I get this with latest git:
+> @@ -2103,23 +2104,12 @@ request_sense:
+>  	if (SCpnt->cmnd[0] == REQUEST_SENSE)
+>  		goto done;
+>  
+> +	scsi_eh_prep_cmnd(SCpnt, &info->ses, NULL, 0, ~0);
+>  	fas216_log_target(info, LOG_CONNECT, SCpnt->device->id,
+>  			  "requesting sense");
+> -	memset(SCpnt->cmnd, 0, sizeof (SCpnt->cmnd));
+> -	SCpnt->cmnd[0] = REQUEST_SENSE;
+> -	SCpnt->cmnd[1] = SCpnt->device->lun << 5;
+> -	SCpnt->cmnd[4] = sizeof(SCpnt->sense_buffer);
+> -	SCpnt->cmd_len = COMMAND_SIZE(SCpnt->cmnd[0]);
+> -	SCpnt->SCp.buffer = NULL;
+> -	SCpnt->SCp.buffers_residual = 0;
+> -	SCpnt->SCp.ptr = (char *)SCpnt->sense_buffer;
+> -	SCpnt->SCp.this_residual = sizeof(SCpnt->sense_buffer);
+> -	SCpnt->SCp.phase = sizeof(SCpnt->sense_buffer);
+> +	init_SCp(SCpnt);
+>  	SCpnt->SCp.Message = 0;
+>  	SCpnt->SCp.Status = 0;
+> -	SCpnt->request_bufflen = sizeof(SCpnt->sense_buffer);
+> -	SCpnt->sc_data_direction = DMA_FROM_DEVICE;
+> -	SCpnt->use_sg = 0;
+>  	SCpnt->tag = 0;
+>  	SCpnt->host_scribble = (void *)fas216_rq_sns_done;
+>  
+> diff --git a/drivers/scsi/arm/fas216.h b/drivers/scsi/arm/fas216.h
+> index 00e5f05..3e73e26 100644
+> --- a/drivers/scsi/arm/fas216.h
+> +++ b/drivers/scsi/arm/fas216.h
+> @@ -16,6 +16,8 @@
+>  #define NO_IRQ 255
+>  #endif
+>  
+> +#include <scsi/scsi_eh.h>
+> +
+>  #include "queue.h"
+>  #include "msgqueue.h"
+>  
+> @@ -311,6 +313,7 @@ typedef struct {
+>  
+>  	/* miscellaneous */
+>  	int			internal_done;		/* flag to indicate request done */
+> +	struct scsi_eh_save	*ses;		/* holds request sense restore info */
 
-  CC      init/do_mounts.o
-In file included from include/linux/mm.h:39,
-                 from include/linux/memcontrol.h:24,
-                 from include/linux/swap.h:8,
-                 from include/linux/suspend.h:7,
-                 from init/do_mounts.c:6:
-include/asm/pgtable.h:344: warning: parameter names (without types) in 
-function declaration
-include/asm/pgtable.h:345: warning: parameter names (without types) in 
-function declaration
-include/asm/pgtable.h:346: error: expected '=', ',', ';', 'asm' or 
-'__attribute__' before '___f___swp_entry'
-make[1]: *** [init/do_mounts.o] Error 1
+Looks to me like this line has a stray '*' on?
 
+>  	unsigned long		magic_end;
+>  } FAS216_Info;
 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
