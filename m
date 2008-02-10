@@ -1,119 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYBJXcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYBJXc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbYBJXcR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 18:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYBJXb7
+	id S1756687AbYBJXc6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 18:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYBJXcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 18:31:59 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:11965 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbYBJXb6 (ORCPT
+	Sun, 10 Feb 2008 18:32:51 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:44986 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbYBJXcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 18:31:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=lhkTR54hQ6j7O0QdbgJlWXu1j9CwXvzguSvcEJ6OhnTsWbVR9G+g+8akL8Vt/fpk1
-	tILHgmySB3N4P1zVZLssQ==
-Date: Sun, 10 Feb 2008 15:30:51 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org, Robert Reif <reif@earthlink.net>
-Subject: [patch] sparc: fix build
-In-Reply-To: <47AF7048.3060200@earthlink.net>
-Message-ID: <alpine.DEB.1.00.0802101529310.17892@chino.kir.corp.google.com>
-References: <20080207231230.GE7198@cs181133002.pp.htv.fi> <alpine.DEB.1.00.0802071538440.15050@chino.kir.corp.google.com> <20080210153355.GA6737@palantir8> <alpine.DEB.1.00.0802101117510.5043@chino.kir.corp.google.com> <47AF7048.3060200@earthlink.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sun, 10 Feb 2008 18:32:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Jh98wK4GZnJxeQ1D7XmP9t6B0TQvm1pxTTJh3RTOJTfXDaNemv327YZ8YeQ8jKbHNgJaamLpODfmBRQngOhc9rzl/bqbP3jfYBQ4vs3HFyyozBIKbyw8EzbiDBjANNWk48u2KKpVTNQw8ueYWDDZjTmikRNxfIT09CyywDSCxhw=
+Message-ID: <76366b180802101532k35a56e89g4c498e30834461f8@mail.gmail.com>
+Date: Sun, 10 Feb 2008 18:32:49 -0500
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: I/O collisions w/ hwmon/it87.c and watchdog/it8712f_wdt.c? (Super I/O chips in general..)
+Cc: linux-kernel@vger.kernel.org, "Jorge Boncompte" <jorge@dti2.net>,
+       "Jean Delvare" <khali@linux-fr.org>
+In-Reply-To: <20080210230538.3f5743f6@core>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <76366b180802101304j359e2873vd9dd974920bf6745@mail.gmail.com>
+	 <20080210230538.3f5743f6@core>
+X-Google-Sender-Auth: ad34d2a9d57c6808
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix build failures on sparc:
+Does it make sense to use the drivers/mfd directory for Super I/O
+chips then? Is there any problem with having other hwmon, watchdog,
+etc depend on drivers/mfd? Should this kind of setup for platform
+devices be documented in the driver-model?
 
-	In file included from include/linux/mm.h:39,
-	                from include/linux/memcontrol.h:24,
-	                from include/linux/swap.h:8,
-	                from include/linux/suspend.h:7,
-	                from init/do_mounts.c:6:
-	include/asm/pgtable.h:344: warning: parameter names (without
-		types) in function declaration
-	include/asm/pgtable.h:345: warning: parameter names (without
-		types) in function declaration
-	include/asm/pgtable.h:346: error: expected '=', ',', ';', 'asm' or
-		'__attribute__' before '___f___swp_entry'
+-Andrew
 
-and
-
-	arch/sparc/kernel/led.c: In function 'led_blink':
-	arch/sparc/kernel/led.c:35: error: invalid use of undefined type
-		'struct timer_list'
-	arch/sparc/kernel/led.c:35: error: 'jiffies' undeclared (first use
-		in this function)
-	arch/sparc/kernel/led.c:35: error: (Each undeclared identifier is
-		reported only once
-	arch/sparc/kernel/led.c:35: error: for each function it appears
-		in.)
-	arch/sparc/kernel/led.c:36: error: 'avenrun' undeclared (first use
-		in this function)
-	arch/sparc/kernel/led.c:36: error: 'FSHIFT' undeclared (first use
-		in this function)
-	arch/sparc/kernel/led.c:36: error: 'HZ' undeclared (first use in
-		this function)
-	arch/sparc/kernel/led.c:37: error: invalid use of undefined type
-		'struct timer_list'
-	arch/sparc/kernel/led.c:39: error: invalid use of undefined type
-		'struct timer_list'
-	arch/sparc/kernel/led.c:40: error: invalid use of undefined type
-		'struct timer_list'
-	arch/sparc/kernel/led.c:42: error: implicit declaration of
-		function 'add_timer'
-	arch/sparc/kernel/led.c: In function 'led_write_proc':
-	arch/sparc/kernel/led.c:70: error: implicit declaration of
-		function 'copy_from_user'
-	arch/sparc/kernel/led.c:84: error: implicit declaration of
-		function 'del_timer_sync'
-	arch/sparc/kernel/led.c: In function 'led_init':
-	arch/sparc/kernel/led.c:109: error: implicit declaration of
-		function 'init_timer'
-	arch/sparc/kernel/led.c:110: error: invalid use of undefined type
-		'struct timer_list'
-
-Cc: Adrian Bunk <bunk@kernel.org>
-Cc: Robert Reif <reif@earthlink.net>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- arch/sparc/kernel/led.c    |    3 ++-
- include/linux/memcontrol.h |    3 ---
- 2 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/arch/sparc/kernel/led.c b/arch/sparc/kernel/led.c
---- a/arch/sparc/kernel/led.c
-+++ b/arch/sparc/kernel/led.c
-@@ -1,8 +1,9 @@
--#include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/proc_fs.h>
- #include <linux/string.h>
-+#include <linux/sched.h>
-+#include <linux/uaccess.h>
- 
- #include <asm/auxio.h>
- 
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -20,9 +20,6 @@
- #ifndef _LINUX_MEMCONTROL_H
- #define _LINUX_MEMCONTROL_H
- 
--#include <linux/rcupdate.h>
--#include <linux/mm.h>
--
- struct mem_cgroup;
- struct page_cgroup;
- struct page;
+On Feb 10, 2008 6:05 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Since these chips touch many different parts of traditionally separate
+> > driver areas, how should the drivers be structured so that they can
+> > all talk to the chip? Should the low level communications routines for
+> > the chip live in a library which all the drivers could use?
+>
+> Probably yes. And that if possible should manage all the locking. Thats
+> roughly how the majority of drivers do it. Some export the lock from base
+> code and inline the accessors depending how complex it is.
