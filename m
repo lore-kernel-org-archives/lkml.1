@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYBJEua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751365AbYBJFAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbYBJEua (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 23:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbYBJEuU
+	id S1751365AbYBJFAK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 00:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbYBJE7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 23:50:20 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:34439 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754473AbYBJEuS (ORCPT
+	Sat, 9 Feb 2008 23:59:55 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46584 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbYBJE7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 23:50:18 -0500
-Subject: RE: [PATCH] USB: mark USB drivers as being GPL only
-From: Marcel Holtmann <marcel@holtmann.org>
-To: davids@webmaster.com
-Cc: David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEJHKDAC.davids@webmaster.com>
-References: <MDEHLPKNGKAHNMBLJOLKGEJHKDAC.davids@webmaster.com>
-Content-Type: text/plain
-Date: Sun, 10 Feb 2008 05:50:17 +0100
-Message-Id: <1202619017.7664.53.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Feb 2008 23:59:53 -0500
+Date: Sat, 9 Feb 2008 23:59:52 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ipvs: Cleanup sync daemon code
+Message-ID: <20080210045952.GA8255@infradead.org>
+References: <Pine.LNX.4.64.0802100029150.15729@titan.stealer.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802100029150.15729@titan.stealer.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Sun, Feb 10, 2008 at 12:38:11AM +0100, Sven Wegener wrote:
+>  struct ip_vs_sync_thread_data {
+> -	struct completion *startup;
+> +	struct completion *startup; /* set to NULL once completed */
 
-> > Lets phrase this in better words as Valdis pointed out: You can't
-> > distribute an application (binary or source form) under anything else
-> > than GPL if it uses a GPL library.
-> 
-> This simply cannot be correct. The only way it could be true is if the work
-> was a derivative work of a GPL'd work. There is no other way it could become
-> subject to the GPL.
-> 
-> So this argument reduces to -- any work that uses a library is a derivative
-> work of that library. But this is clearly wrong. For work X to be a
-> derivative work of work Y, it must contain substantial protected expression
-> from work Y, but an application need not have any expression from the
-> libraries it uses.
-> 
-> > It makes no difference if you
-> > distribute the GPL library with it or not.
-> 
-> If you do not distribute the GPL library, the library is simply being used
-> in the intended, ordinary way. You do not need to agree to, nor can you
-> violate, the GPL simply by using a work in its ordinary intended way.
-> 
-> If the application contains insufficient copyrightable expression from the
-> library to be considered a derivative work (and purely functional things do
-> not count), then it cannot be a derivative work. The library is not being
-> copied or distributed. So how can its copyright be infringed?
+This is not needed anmore.  kthread_run guarantees that the newly
+creates thread is run before returning to the caller.
 
-go ahead and create an application that uses a GPL only library. Then
-ask a lawyer if it is okay to distribute your application in binary only
-form without making the source code available (according to the GPL).
+> +/* wait queue for master sync daemon */
+> +static DECLARE_WAIT_QUEUE_HEAD(sync_master_wait);
 
-http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html#IfLibraryIsGPL
+I don't think you need this one either.  You can use wake_up_process
+on the task_struct pointer instead.
 
-http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html#LinkingWithGPL
+>  	spin_lock(&ip_vs_sync_lock);
+>  	list_add_tail(&sb->list, &ip_vs_sync_queue);
+> +	if (++ip_vs_sync_count == 10)
+> +		wake_up_interruptible(&sync_master_wait);
+>  	spin_unlock(&ip_vs_sync_lock);
+>  }
 
-Regards
+> -static int sync_thread(void *startup)
+> +static int sync_thread(void *data)
 
-Marcel
+Btw, it might make sense to remove sync_thread and just call the
+master and backup threads directly.
+> +void __init ip_vs_sync_init(void)
+> +{
+> +	/* set up multicast address */
+> +	mcast_addr.sin_family = AF_INET;
+> +	mcast_addr.sin_port = htons(IP_VS_SYNC_PORT);
+> +	mcast_addr.sin_addr.s_addr = htonl(IP_VS_SYNC_GROUP);
+>  }
 
+Why can't this be initialized at compile time by:
+
+static struct sockaddr_in mcast_addr = {
+	.sin_family		= AF_INET,
+	.sin_port		= htons(IP_VS_SYNC_PORT),
+	.sin_addr.s_addr	= htonl(IP_VS_SYNC_GROUP),
+}
+
+(the hton* might need __constant_hton* also I'm not sure without trying)
 
