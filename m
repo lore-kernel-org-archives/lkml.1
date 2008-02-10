@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbYBJJLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYBJJPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757043AbYBJJLs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 04:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYBJJLb
+	id S1757478AbYBJJPn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 04:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYBJJPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 04:11:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56690 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbYBJJL3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 04:11:29 -0500
-Date: Sun, 10 Feb 2008 04:11:23 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [3/6] kgdb: core
-Message-ID: <20080210091123.GA19912@infradead.org>
-References: <20080210071331.GC3851@elte.hu> <20080210073542.GB26666@infradead.org> <20080210074352.GA7188@elte.hu> <20080210075732.GA9349@infradead.org> <20080210080225.GC7188@elte.hu> <20080210082408.GA10479@infradead.org> <20080210085735.GA13466@elte.hu>
+	Sun, 10 Feb 2008 04:15:30 -0500
+Received: from www.tglx.de ([62.245.132.106]:39121 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751323AbYBJJP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 04:15:28 -0500
+Date: Sun, 10 Feb 2008 10:14:07 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 updates
+In-Reply-To: <alpine.LFD.1.00.0802092344070.2896@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0802101003340.12988@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.00.0802092246390.3145@apollo.tec.linutronix.de> <20080209172538.87994c61.randy.dunlap@oracle.com> <alpine.LFD.1.00.0802092344070.2896@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080210085735.GA13466@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 09:57:35AM +0100, Ingo Molnar wrote:
-> > It would be nice if you could move the kerneldoc comments to the 
-> > proper place at least. [...]
+On Sun, 10 Feb 2008, Linus Torvalds wrote:
+> On Sat, 9 Feb 2008, Randy Dunlap wrote:
 > 
-> i'd agree in general but this is really a special case, please look at 
-> the context. This would duplicate all the kerneldoc headers for all 
-> architectures. We'd have to move the same kerneldoc header to all 
-> architecture arch/*/kernel/kgdb.c files. It's much nicer in 
-> asm-generic/kgdb.h.
+> So Thomas, don't do this. I don't like it. The same way I didn't like 
+> seeing Ingo trying to mix in a kgdb pull into his x86 pull. Keep these 
+> things separate - git is *really* good at having multiple branches with 
+> different lines of development, use it that way (or send odd-ball misc 
+> patches just as emails).
 
-Well, the point of kerneldoc comments is that they're reasily
-extractable.  If you want to document the arch interface a pure
-text document in Documentation/ might be a better choice.
+Please accept my apologies. 
 
-> > Also it seems at least some of Jan's patches are missing aswell.
-> 
-> i dont think so. Which ones do you mean? I just reviewed them and they 
-> are either already done, or moot (for kgdb complications that i objected 
-> to and removed from this kgdb-x86 tree).
+I went through the content, pointed out the other two non x86 patches
+and did not notice the vsprintf one. My bad.
 
-The one I noticed quickly is the __ASSEMBLY__ removal from
-asm-x86/kgdb.h.  I haven't looked at the serial bits because I don't
-think I'm qualified to comment on those, but I'm also not seeing any
-replies to any of his patches.  Especially the comments on the arch
-interface seem like something that should be acted upon to me.
+> PS. And no, maybe I don't always notice. I bet maintainers can slip things 
+> by me all the time without me waking up to it. The fact that it sometimes 
+> works doesn't mean that it's a good idea, though - it just means that if I 
+> catch it, my level of trust goes down. 
+
+I know. And I have no intention to sneak stuff in that way.
+
+Conclusions:
+1) add diffstat to the pull request generator
+2) add alert about non x86 stuff to it and send it separate
+3) postpone pull requests to the morning hours, even if time is short
+
+Thanks,
+
+	tglx
