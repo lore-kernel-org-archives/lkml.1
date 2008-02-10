@@ -1,128 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYBJSyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYBJSy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbYBJSyo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 13:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYBJSye
+	id S1752955AbYBJSy5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 13:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYBJSyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 13:54:34 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:18709 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbYBJSyd convert rfc822-to-8bit (ORCPT
+	Sun, 10 Feb 2008 13:54:37 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:57730 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753066AbYBJSyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 13:54:33 -0500
-Date: Sun, 10 Feb 2008 10:52:52 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linville@tuxdriver.com, akpm <akpm@linux-foundation.org>
-Subject: [PATCH] wireless: rt2x00: fix driver menu indenting
-Message-Id: <20080210105252.e0a433ee.randy.dunlap@oracle.com>
-In-Reply-To: <200802091623.06504.m.bueker@berlin.de>
-References: <200802091623.06504.m.bueker@berlin.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Sun, 10 Feb 2008 13:54:36 -0500
+Message-ID: <47AF483E.2060202@web.de>
+Date: Sun, 10 Feb 2008 19:53:50 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [2/6] uaccess: add probe_kernel_write()
+References: <20080210071326.GB3851@elte.hu>
+In-Reply-To: <20080210071326.GB3851@elte.hu>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/KfHb4xL5B7a7n6L9UVeG8geFYpr5aC1Oln9tA
+	q2Qtg7WiDLvhKEqI9XS7wuLfHGTyoKt7imXtj7hEP+/fwxa6jA
+	d77WhS3P0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008 16:23:06 +0100 Michael Büker wrote:
+Ingo Molnar wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> add probe_kernel_write() - copy & paste of the existing
+> probe_kernel_access(), extended to writes.
 
-> 2) When selecting "Ralink driver support" (CONFIG_RT2X00), the accompanying 
-> drivers (CONFIG_RT2400PCI, CONFIG_RT61PC, ...) appear unindented. They should 
-> be indented by four spaces.
+Along Linus' suggestion to work on larger chunks in kgdb, here are
+improved probe_kernel_read/write helpers that take a size argument.
 
-Yes, patch is below.
+I'm leaving the original probe_kernel_read as is for now, but maybe it
+can be converted to probe_kernel_read (I don't want to dive into this as
+well :) ).
+
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
 ---
-From: Randy Dunlap <randy.dunlap@oracle.com>
+ uaccess.h |   38 +++++++++++++++++++++++++++++++-------
+ 1 file changed, 31 insertions(+), 7 deletions(-)
 
-Michael Büker <m.bueker@berlin.de> reports that the RT2x00 drivers
-are not indented as they should be, so use proper dependencies to make
-them be indented as expected.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/wireless/rt2x00/Kconfig |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
---- linux-2.6.24-git21.orig/drivers/net/wireless/rt2x00/Kconfig
-+++ linux-2.6.24-git21/drivers/net/wireless/rt2x00/Kconfig
-@@ -11,18 +11,17 @@ config RT2X00
- 	  will also be created. That library (when the driver is built as
- 	  a module) will be called "rt2x00lib.ko".
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index 98cfe02..ef75869 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -85,25 +85,49 @@ static inline unsigned long __copy_from_user_nocache(void *to,
+ 	})
  
-+if RT2X00
+ /**
++ * probe_kernel_read(): safely attempt to read from a location
++ * @dst: pointer to the buffer that shall take the data
++ * @src: address to read from
++ * @size: size of the data chunk
++ *
++ * Safely read from address @src to the buffer at @dst.  If a kernel fault
++ * happens, handle that and return -EFAULT.
++ */
++#define probe_kernel_read(dst, src, size)		\
++	({						\
++		long ret;				\
++		mm_segment_t old_fs = get_fs();		\
++							\
++		set_fs(KERNEL_DS);			\
++		pagefault_disable();			\
++		ret = __copy_from_user_inatomic((dst),	\
++	 (__force const void __user *)(src), (size));	\
++		pagefault_enable();			\
++		set_fs(old_fs);				\
++		ret ? -EFAULT : 0;			\
++	})
 +
- config RT2X00_LIB
- 	tristate
--	depends on RT2X00
++/**
+  * probe_kernel_write(): safely attempt to write to a location
+- * @addr: address to write to - its type is type typeof(rdval)*
+- * @rdval: write to this variable
++ * @dst: address to write to
++ * @src: pointer to the data that shall be written
++ * @size: size of the data chunk
+  *
+- * Safely write to address @addr from variable @rdval.  If a kernel fault
++ * Safely write to address @dst from the buffer at @src.  If a kernel fault
+  * happens, handle that and return -EFAULT.
+  */
+-#define probe_kernel_write(addr, rdval)			\
++#define probe_kernel_write(dst, src, size)		\
+ 	({						\
+ 		long ret;				\
+ 		mm_segment_t old_fs = get_fs();		\
+ 							\
+ 		set_fs(KERNEL_DS);			\
+ 		pagefault_disable();			\
+-		ret = __put_user(rdval,			\
+-	 (__force typeof(rdval) __user *)(addr));	\
++		ret = __copy_to_user_inatomic(		\
++	 (__force void __user *)(dst), (src), (size));	\
+ 		pagefault_enable();			\
+ 		set_fs(old_fs);				\
+-		ret;					\
++		ret ? -EFAULT : 0;			\
+ 	})
  
- config RT2X00_LIB_PCI
- 	tristate
--	depends on RT2X00
- 	select RT2X00_LIB
- 
- config RT2X00_LIB_USB
- 	tristate
--	depends on RT2X00
- 	select RT2X00_LIB
- 
- config RT2X00_LIB_FIRMWARE
-@@ -39,7 +38,7 @@ config RT2X00_LIB_RFKILL
- 
- config RT2400PCI
- 	tristate "Ralink rt2400 pci/pcmcia support"
--	depends on RT2X00 && PCI
-+	depends on PCI
- 	select RT2X00_LIB_PCI
- 	select EEPROM_93CX6
- 	---help---
-@@ -58,7 +57,7 @@ config RT2400PCI_RFKILL
- 
- config RT2500PCI
- 	tristate "Ralink rt2500 pci/pcmcia support"
--	depends on RT2X00 && PCI
-+	depends on PCI
- 	select RT2X00_LIB_PCI
- 	select EEPROM_93CX6
- 	---help---
-@@ -77,7 +76,7 @@ config RT2500PCI_RFKILL
- 
- config RT61PCI
- 	tristate "Ralink rt61 pci/pcmcia support"
--	depends on RT2X00 && PCI
-+	depends on PCI
- 	select RT2X00_LIB_PCI
- 	select RT2X00_LIB_FIRMWARE
- 	select EEPROM_93CX6
-@@ -97,7 +96,7 @@ config RT61PCI_RFKILL
- 
- config RT2500USB
- 	tristate "Ralink rt2500 usb support"
--	depends on RT2X00 && USB
-+	depends on USB
- 	select RT2X00_LIB_USB
- 	---help---
- 	  This is an experimental driver for the Ralink rt2500 wireless chip.
-@@ -106,7 +105,7 @@ config RT2500USB
- 
- config RT73USB
- 	tristate "Ralink rt73 usb support"
--	depends on RT2X00 && USB
-+	depends on USB
- 	select RT2X00_LIB_USB
- 	select RT2X00_LIB_FIRMWARE
- 	---help---
-@@ -128,3 +127,4 @@ config RT2X00_DEBUG
- 	---help---
- 	  Enable debugging output for all rt2x00 modules
- 
-+endif
+ #endif		/* __LINUX_UACCESS_H__ */
