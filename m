@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYBJSN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYBJShe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbYBJSN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 13:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYBJSNs
+	id S1753215AbYBJShe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 13:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBJShY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 13:13:48 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:61194 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYBJSNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 13:13:47 -0500
-Date: Sun, 10 Feb 2008 12:12:19 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: pata_sil680 regression 2.6.22->2.6.24
-In-reply-to: <fa.VTsuPmDh8g6L8kkfHY3j5Qvl65c@ifi.uio.no>
-To: Robert Lowery <rglowery@exemail.com.au>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <47AF3E83.5060003@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.VTsuPmDh8g6L8kkfHY3j5Qvl65c@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sun, 10 Feb 2008 13:37:24 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38418 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752060AbYBJShX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 13:37:23 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 11/9 update] firewire: fw-sbp2: enforce a retry of __scsi_add_device if bus generation changed
+Date: Sun, 10 Feb 2008 13:36:57 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <47ACB449.3060200@s5r6.in-berlin.de> <tkrat.e02d667ba3320993@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.e02d667ba3320993@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802101336.57689.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Lowery wrote:
-> Hi Folks,
-> 
-> Having recently upgaded my Ubuntu install from Gutsy to Hardy, my 750GB
-> Seagate disk connected via a SiI680 PCI card is no longer detected.  I
-> suspect this is caused by the MMIO changes in 2.6.24.  Strangely in 2.6.22
-> the drive appears as sda1, but on 2.6.24 it appears as a non functioning
-> hde.
-> 
-> A working 2.6.22 based system reports
-> 
-> Feb 10 01:49:22 myth-backend kernel: [   88.296373] sil680: BA5_EN = 1
-> clock = 00
-> Feb 10 01:49:22 myth-backend kernel: [   88.296401] sil680: BA5_EN = 1
-> clock = 10
-> Feb 10 01:49:22 myth-backend kernel: [   88.296479] sil680: 133MHz clock.
-> Feb 10 01:49:22 myth-backend kernel: [   88.296672] ACPI: PCI Interrupt
-> 0000:00:0d.0[A] -> GSI 19 (level, low) -> IRQ 19
-> Feb 10 01:49:22 myth-backend kernel: [   88.297584] scsi2 : pata_sil680
-> Feb 10 01:49:22 myth-backend kernel: [   88.298142] scsi3 : pata_sil680
-> Feb 10 01:49:22 myth-backend kernel: [   88.298398] ata1: PATA max
-> UDMA/133 cmd 0x00019000 ctl 0x00018802 bmdma 0x00017800 irq 19
-> Feb 10 01:49:22 myth-backend kernel: [   88.298409] ata2: PATA max
-> UDMA/133 cmd 0x00018400 ctl 0x00018002 bmdma 0x00017808 irq 19
-> Feb 10 01:49:22 myth-backend kernel: [   88.530102] ata1.00: ATA-7:
-> ST3750640A, 3.AAE, max UDMA/100
-> Feb 10 01:49:22 myth-backend kernel: [   88.530139] ata1.00: 1465149168
-> sectors, multi 0: LBA48
-> Feb 10 01:49:22 myth-backend kernel: [   88.604735] ata1.00: configured
-> for UDMA/100
-> 
-> A non working 2.6.24 based system reports
-> 
-> Feb  9 16:19:28 myth-backend kernel: [   81.149973] SiI680: IDE controller
-> (0x1095:0x0680 rev 0x02) at  PCI slot 0000:00:0d.0
-> Feb  9 16:19:28 myth-backend kernel: [   81.150031] ACPI: PCI Interrupt
-> 0000:00:0d.0[A] -> GSI 19 (level, low) -> IRQ 19
-> Feb  9 16:19:28 myth-backend kernel: [   81.150094] SiI680: BASE CLOCK == 133
-> Feb  9 16:19:28 myth-backend kernel: [   81.150104] SiI680: 100% native
-> mode on irq 19
-> Feb  9 16:19:28 myth-backend kernel: [   81.150121]     ide2: MMIO-DMA ,
-> BIOS settings: hde:pio, hdf:pio
-> Feb  9 16:19:28 myth-backend kernel: [   81.150145]     ide3: MMIO-DMA ,
-> BIOS settings: hdg:pio, hdh:pio
-> Feb  9 16:19:28 myth-backend kernel: [   82.113860] hde: þþÿþ`KÐ, ATA DISK
-> drive
-> Feb  9 16:19:28 myth-backend kernel: [   82.114038] ide2 at
-> 0xf882a080-0xf882a087,0xf882a08a on irq 19
+On Friday 08 February 2008 04:33:29 pm Stefan Richter wrote:
+> fw-sbp2 is unable to reconnect while performing __scsi_add_device
+> because there is only a single workqueue thread context available for
+> both at the moment.  This should be fixed eventually.
+>
+> An actual failure of __scsi_add_device is easy to handle, but an
+> incomplete execution of __scsi_add_device with an sdev returned would
+> remain undetected and leave the SBP-2 target unusable.
+>
+> Therefore we use a workaround:  If there was a bus reset during
+> __scsi_add_device (i.e. during the SCSI probe), we remove the new sdev
+> immediately, log out, and attempt login and SCSI probe again.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-This is not pata_sil680, this is drivers/ide trying to operate this 
-card. Has something changed in your kernel config?
+Now *this* does the trick. I get the 'READ CAPACITY failed' as before, 
+then 'firewire_sbp2: fw1.0: error status: 0:4', followed by a new login and 
+SCSI probe, both of which are successful this time, disk is available for use 
+and all that good stuff.
 
-> 
-> Note, my bios does not support 750GB drives, so the drive is not
-> configured in the card BIOS.  This has not stopped linux detecting it ok
-> in the past.
-> 
-> Please let me know if I need to provide any more information or additional
-> testing.
-> 
-> Thanks
-> 
-> -Rob
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
