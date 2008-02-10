@@ -1,131 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbYBJUXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYBJUYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755803AbYBJUXS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 15:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYBJUXI
+	id S1756199AbYBJUYP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 15:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbYBJUYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 15:23:08 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:50679 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753132AbYBJUXH (ORCPT
+	Sun, 10 Feb 2008 15:24:00 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:46091 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997AbYBJUX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 15:23:07 -0500
-Message-ID: <47AF5D21.6010400@web.de>
-Date: Sun, 10 Feb 2008 21:22:57 +0100
+	Sun, 10 Feb 2008 15:23:59 -0500
+Message-ID: <47AF5D58.8030303@web.de>
+Date: Sun, 10 Feb 2008 21:23:52 +0100
 From: Jan Kiszka <jan.kiszka@web.de>
 User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ray Lee <ray-lk@madrabbit.org>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [git pull] kgdb light, v5
-References: <20080210071304.GA3788@elte.hu>  <20080210104709.GB10790@uranus.ravnborg.org>  <20080210163603.GB28201@elte.hu> <2c0942db0802100930y5338e545k808d996f9a19bac@mail.gmail.com> <47AF483E.10905@web.de> <alpine.LFD.1.00.0802101134470.2896@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802101134470.2896@woody.linux-foundation.org>
+Subject: Re: [0/6] kgdb light
+References: <20080210071304.GA3788@elte.hu> <20080210104709.GB10790@uranus.ravnborg.org> <47AEFB40.5070208@web.de> <20080210193153.GC13733@uranus.ravnborg.org>
+In-Reply-To: <20080210193153.GC13733@uranus.ravnborg.org>
 X-Enigmail-Version: 0.95.6
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="------------enigEB212984CBE10AC0BC5FDE9B"
-X-Provags-ID: V01U2FsdGVkX1/x8N9eYXdjxHrPBfqo817os5s3guHTN7Tknaqb
-	JuL3fLXWwsQBcIR10dU4zfbEXJdZ9RxiqYX9SvB22l6BFxYLyO
-	jw6XkEa6s=
+ boundary="------------enigBA1B0D6773F5B317BC4D4BAB"
+X-Provags-ID: V01U2FsdGVkX1+rh7mxos7/7Z+gRxrosbmPtKdHdCGB3sDdTorc
+	IkcKuwpRlqSIiiqSU3KeOsdA96NmRYCNL/DgcwLWLvSdESqpdI
+	2QMMLhcmo=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEB212984CBE10AC0BC5FDE9B
+--------------enigBA1B0D6773F5B317BC4D4BAB
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: quoted-printable
 
-Linus Torvalds wrote:
->=20
-> On Sun, 10 Feb 2008, Jan Kiszka wrote:
->> +static int kgdb_get_mem(char *addr, unsigned char *buf, int count)
->>  {
->> +	if ((unsigned long)addr < TASK_SIZE)
->> +		return -EFAULT;
->> =20
->> +	return probe_kernel_read(buf, addr, count);
->>  }
->=20
-> Ok, so this is a pretty function after all the cleanups, but I actually=
-=20
-> don't think that "if ((unsigned long)addr < TASK_SIZE)" is really even =
+Sam Ravnborg wrote:
+> On Sun, Feb 10, 2008 at 02:25:20PM +0100, Jan Kiszka wrote:
+>> Sam Ravnborg wrote:
+>>> ...
+>>> +extern int kgdb_may_fault;
+>>> I searched but I could not find any places this
+>>> variable were set to anuthing else than 0 neither where it was tested=
+=2E
+>> This is a leftover from the old jmp-on-fault logic that was missed by
+>> this tree. I have a patch under test that kills this (and further 150
+>> LOC) from the core.
+>>
+>>> diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
+>>> new file mode 100644
+>>> index 0000000..00263c0
+>>> --- /dev/null
+>>> +++ b/lib/Kconfig.kgdb
+>>> @@ -0,0 +1,37 @@
+>>> +
+>>> +menuconfig KGDB
+>>> +	bool "KGDB: kernel debugging with remote gdb"
+>>> +	select FRAME_POINTER
+>>> +	depends on HAVE_ARCH_KGDB
+>>> +	depends on DEBUG_KERNEL && EXPERIMENTAL
+>>> +	help
+>>> +	  If you say Y here, it will be possible to remotely debug the
+>>> +	  kernel using gdb.  Documentation of kernel debugger is available
+>>> +	  at http://kgdb.sourceforge.net as well as in DocBook form
+>>> +	  in Documentation/DocBook/.  If unsure, say N.
+>>> +
+>>> +config HAVE_ARCH_KGDB_SHADOW_INFO
+>>> +	bool
+>>> +
+>>>
+>>> Please add:
+>>> config HAVE_ARCH_KGDB
+>>> 	bool
+>>>
+>>> So we later in x86/Kconfig can do:
+>>> config X86
+>>> 	select HAVE_ARCH_KGDB
+>>>
+>>> And we can get rid of (from x86/Kconfig):
+>>> +config HAVE_ARCH_KGDB
+>>> +	def_bool y
+>>>
+>>>
+>>> Back to Kconfig.kgdb:
+>>>
+>>> +config KGDBOC
+>>> +	tristate "KGDB: use kgdb over the serial console"
+>>> +	depends on KGDB
+>>>
+>>> Can we have a more descriptive name here.
+>>> For example:
+>>> config KGDB_SERIAL_CONSOLE
+>>> It is only used in one place so there is no
+>>> specific need for such a magic short name.
+>>>
+>> Is the patch below OK? I also added an "if KGB" to unbreak kgdb's
+>> kconfig menu again and included two minor cleanups I posted yesterday.=
 
-> asked for.
 >=20
-> Why not let kgdb look at user memory? I'd argue that in a lot of cases,=
- it=20
-> might be quite nice to do, to see what user arguments in memory are etc=
-=20
-> etc (think things like futexes, where user memory contents really do=20
-> matter).
->=20
-> So I'd suggest getting rid of the whole "kgdb_{get|set}_mem()" function=
-s,=20
-> and just using "probe_kernel_{read|write}()" directly instead.
+> Looks OK - but I think Ingo already addressed this.
 
-Makes indeed more sense.
+Should be merged meanwhile.
 
->=20
-> (Not that I necessarily love those names either, but whatever..)
->=20
-> The TASK_SIZE checks make more sense in kgdb_validate_break_address() a=
-nd=20
-> friends, where it actually does make sense to check that it's really a =
-
-> *kernel* address.
->=20
-> But even there, I'm not sure if the right check is to compare against=20
-> TASK_SIZE, since kernel and user memory addresses can in theory be=20
-> distinct (that's why we have "set_fs()" historically, and while it's no=
-=20
-> longer true on x86 and hasn't been in a long time, the kernel conceptua=
-lly=20
-> allows it - see my previous reply about that whole get_fs/set_fs thing =
-in=20
-> the definition of probe_kernel_read/write).
->=20
->> +	if (count =3D=3D 2 && ((long)mem & 1) =3D=3D 0)
->> +		err =3D probe_kernel_read(tmp, mem, 2);
->> +	else if (count =3D=3D 4 && ((long)mem & 3) =3D=3D 0)
->> +		err =3D probe_kernel_read(tmp, mem, 4);
->> +	else if (count =3D=3D 8 && ((long)mem & 7) =3D=3D 0)
->> +		err =3D probe_kernel_read(tmp, mem, 8);
->> +	else
->> +		err =3D probe_kernel_read(tmp, mem, count);
->=20
-> There's absolutely no reason to care about the alignment, since if you =
-now=20
-> use "probe_kernel_read()", the sane thing to do is to just do
->=20
-> 	err =3D probe_kernel_read(tmp, mem, count);
-> 	if (!err) {
-> 		while (count > 0) {
-> 			buf =3D pack_hex_byte(buf, *tmp);
-> 			tmp++;
-> 			count--;
-> 	}
->=20
-> and you're all done. No?
-
-Maybe, maybe not. I followed the comment in the original code, saying=20
-that we need word-wise access for I/O memory poking. Can I assume across =
-
-a all archs that __copy_to/from_user will not perform byte accesses if=20
-count is 2, 4, or 8? I would be glad if we can kill other couple of line.=
-
-
-Ingo, if you are close to an editor, please pick those up? Here are some =
-
-offline things cooking on my side...
+At this chance: Is it necessary that prompt-less configs like=20
+HAVE_ARCH_KGDB break the menu indention? I had to work around this via=20
+"if KGDB" (or even "depends on"). This is easy to miss IMHO.
 
 Jan
 
 
---------------enigEB212984CBE10AC0BC5FDE9B
+--------------enigBA1B0D6773F5B317BC4D4BAB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -134,9 +122,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.6 (MingW32)
 Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFHr10hniDOoMHTA+kRAh1pAJwKR6O5zfakW/3t6xN1eJZSeKa5FgCfdnAy
-g+gD2VZOk0LsN2xRb5DRRfI=
-=1Ilc
+iD8DBQFHr11YniDOoMHTA+kRAsnFAJ0f5bhJ1xy5znF2PIBAU3C0P4KsogCdHxWj
+RHZRW3Cf0i6iMO9bgJZGFWw=
+=IIqu
 -----END PGP SIGNATURE-----
 
---------------enigEB212984CBE10AC0BC5FDE9B--
+--------------enigBA1B0D6773F5B317BC4D4BAB--
