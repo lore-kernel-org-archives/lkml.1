@@ -1,98 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYBJMY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbYBJMZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbYBJMY0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 07:24:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYBJMYS
+	id S1757343AbYBJMZs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 07:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYBJMZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 07:24:18 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:13921 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754550AbYBJMYR (ORCPT
+	Sun, 10 Feb 2008 07:25:41 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:1565 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754875AbYBJMZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 07:24:17 -0500
-X-Greylist: delayed 1556 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Feb 2008 07:24:16 EST
-X-Spam-Flag: NO
-X-Spam-Score: -4.389
-Message-ID: <47AEE6D1.4070402@tremplin-utc.net>
-Date: Sun, 10 Feb 2008 12:58:09 +0100
-From: Eric Piel <eric.piel@tremplin-utc.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080207)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Cc: dsdt@gaugusch.at, len.brown@intel.com, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, trenn@suse.de
-Subject: Re: acpi dsts loading and populate_rootfs
-References: <20080210071226.GA23360@lst.de> <20080210071454.GA23428@lst.de>
-In-Reply-To: <20080210071454.GA23428@lst.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 10 Feb 2008 07:25:40 -0500
+Date: Sun, 10 Feb 2008 13:25:36 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: trenn@suse.de, linux-acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Mark M. Hoffman" <mhoffman@lightlink.com>
+Subject: Re: [PATCH 2/5] Provide acpi_check_{mem_}region.
+Message-ID: <20080210132536.7c4d1cb1@hyperion.delvare>
+In-Reply-To: <20080207234002.e31563be.akpm@linux-foundation.org>
+References: <1193236379.4590.229.camel@queen.suse.de>
+	<20080207234002.e31563be.akpm@linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(adding some CC's)
-Christoph Hellwig wrote:
-> On Sun, Feb 10, 2008 at 08:12:26AM +0100, Christoph Hellwig wrote:
->> Folks, moving this call around hidden behing in completely unreviewed
->> acpi junk is not acceptable.
->>
->> Either populate_rootfs _is_ safe to be called earlier and then we should
->> do it always or it's not.  Either way such a change should be posted
->> separately and reviewd on lkml.
-Hi,
+Hi Andrew,
 
-I agree with you, the order of the initialization should not be changed 
-by some config options. Either it works, or it doesn't! So the question 
-now is : "is fine to move populate_rootfs() earlier?"
-
-Some data points:
-* It used to be called earlier. It was moved to be called later about a 
-year ago by Linus (8d610dd52dd1da696e199e4b4545f33a2a5de5c6) with this log:
->     Make sure we populate the initroot filesystem late enough
->     
->     We should not initialize rootfs before all the core initializers have
->     run.  So do it as a separate stage just before starting the regular
->     driver initializers.
-So there must be some good reasons to keep it late enough...
-
-* This patch is used in SuSE, and it seems noone has ever had a problem 
-with the initramfs early init.
-
-I guess the problem that Linus solved by moving populate_rootfs() 
-happens only rarely or on only few configurations. Linus, do you 
-remember what kind of problem it was? How can I reproduce it?
-
-One different solution that I implemented [1] was to have an 
-"early_populate_rootfs()" before the acpi_early_init(), leaving 
-populate_rootfs() at the normal place. If the early version fails, it's 
-ok: we can't override the DSDT, but the later version will work as usual 
-anyway. This solution also seems to work quite often (it's used in 
-Ubuntu, Mandriva and PCLinuxOS)
-
-Would that seem an acceptable solution? Or what other way exists?
-
-
->> Len, can you please revert "ACPI: basic initramfs DSDT override support"
->> aka commit 71fc47a9adf8ee89e5c96a47222915c5485ac437 until we've sorted
->> this out properly?  Thanks.
+On Thu, 7 Feb 2008 23:40:02 -0800, Andrew Morton wrote:
+> On Wed, 24 Oct 2007 16:32:59 +0200 Thomas Renninger <trenn@suse.de> wrote:
 > 
-> And while we're at it the file reading thing in there is utter crap
-> aswell.  You really should be using the firmware loader which works
-> perfectly fine if you initramfs is set up for it.  So please folks,
-> back to the drawing board, do it properly and send it out to lkml
-> for review please.
-Christoph, if you have seen this part of the code, you have probably 
-also read the big fat warning explaining why this cannot be done by 
-firmware loader (ie: userspace cannot be run at this early time, 
-corresponding to acpi_early_init()). However, you probably know the 
-kernel ten times better than me. Could you explain what I misunderstood 
-when writing this warning, and give me some hints about how to use the 
-firmware loader in this case?
+> > Provide acpi_check_{mem_}region.
+> > 
+> > Drivers can additionally check against possible ACPI interference by also
+> > invoking this shortly before they call request_region.
+> > If -EBUSY is returned, the driver must not load.
+> > Use acpi_enforce_resources=strict/lax/no options to:
+> >   - strict: let conflicting drivers fail to load with an error message
+> >   - lax:    let conflicting driver work normal with a warning message
+> >   - no:     no functional change at all
+> > 
+> > 
+> 
+> OK, so Len has merged these into the acpi test tree.  My understanding is
+> that once this work hits mainline, we can then merge
+> check-for-acpi-resource-conflicts-in-hwmon-drivers.patch.
 
-See you,
-Eric
+Correct. Same applies to a second patch:
+check-for-acpi-resource-conflicts-in-i2c-bus-drivers.patch
+Both patches should be merged upstream at the same time.
 
+> My normal approach would be to send
+> check-for-acpi-resource-conflicts-in-hwmon-drivers.patch to Mark for
+> inclusion in git-hwmon one Len has merged the prerequisites into mainline. 
+> 
+> Problem is, if Len merges late in the 2.6.26 merge window, Mark might not
+> have time to gets these changes into mainline before 2.6.27.  Which is all
+> getting a bit dumb considering I first merged everything in October. 
+> Fortunately things aren't mormally _this_ inefficient when one follows the
+> rules - this was an unusual patchset.
+> 
+> But still, I think we could afford to speed things up a bit more than that.
+>  We could ask Len to consider merging this work into 2.6.25 and then if
+> Mark can ack check-for-acpi-resource-conflicts-in-hwmon-drivers.patch
+> (below) for an akpm-merge, we're good to go.  But I do recall that people
+> were a bit uncertain about it all back in October.
+> 
+> Please share your thoughts with us.
 
-[1] : 
-http://gaugusch.at/acpi-dsdt-initrd-patches/acpi-dsdt-initrd-v0.8.4-2.6.21.patch
+Len already merged all the acpi bits for 2.6.25 as far as I can see, so
+all that is missing now is these two patches:
+check-for-acpi-resource-conflicts-in-hwmon-drivers.patch
+check-for-acpi-resource-conflicts-in-i2c-bus-drivers.patch
+Both have been in -mm for quite some time.
 
+In the default mode (acpi_enforce_resources=lax) these patches simply
+print warnings but still let the drivers load, so they are safe to
+merge, and the sooner, the better. The idea is to get feedback on how
+many systems out there have ACPI resource conflicts. Then we'll see how
+we can address them (if at all.)
+
+I don't remember anyone objecting to these patches, and anyway the
+problem has been there for years and nobody took care, so if anyone
+really isn't happy with the solution designed by Thomas, that person
+will have to do the work and submit something better later. That
+shouldn't delay the merge of what we have now.
+
+Andrew, both patches are
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+and I am totally fine with you pushing them to Linus now. But of course
+having Mark's ack would be good too.
+
+Thanks,
+-- 
+Jean Delvare
