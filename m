@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbYBJOiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbYBJOsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286AbYBJOiT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 09:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYBJOiF
+	id S1752092AbYBJOsR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 09:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYBJOsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 09:38:05 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:16669 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751154AbYBJOiD (ORCPT
+	Sun, 10 Feb 2008 09:48:00 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48450 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbYBJOr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 09:38:03 -0500
-Message-ID: <47AF0C33.5020505@panasas.com>
-Date: Sun, 10 Feb 2008 16:37:39 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: scsi/arm/fas216.c compile error
-References: <20080209000413.GE6505@cs181133002.pp.htv.fi>	 <47AEF6FD.8080801@panasas.com>	 <20080210135851.GB25703@flint.arm.linux.org.uk> <1202653224.3136.20.camel@localhost.localdomain>
-In-Reply-To: <1202653224.3136.20.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 10 Feb 2008 09:47:59 -0500
+Date: Sun, 10 Feb 2008 16:47:57 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, stable@kernel.org, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, bastian@waldi.eu.org, ndenev@gmail.com,
+       oliver.pntr@gmail.com
+Subject: [PATCH] splice: fix user pointer access in get_iovec_page_array()
+Message-ID: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Feb 2008 14:37:42.0637 (UTC) FILETIME=[7E5D71D0:01C86BF2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10 2008 at 16:20 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> On Sun, 2008-02-10 at 13:58 +0000, Russell King wrote:
->> On Sun, Feb 10, 2008 at 03:07:09PM +0200, Boaz Harrosh wrote:
->>> It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
->>>   [SCSI] arm: convert to accessors and !use_sg cleanup
->>>
->>> Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
->>> to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
->>> we finally managed a Tested-by:.
->>>
->>> I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
->>> schedule.
->> Oh, I was ill for most of December, particularly at the time that you
->> sent the patch, and by the time I recovered, it was buried in my mailbox.
->>
->> Suggest you have some consideration for others who might not be able to
->> do your beg and call at the immediate moment that you want it, and
->> consider that their email management skills may not be as l33t as yours.
-> 
-> OK, sorry about this, it's a bit of a cockup all around.  The patch that
-> fixes this problem is still in SCSI pending largely because it's patch
-> description:
-> 
->     [SCSI] fas216: Use scsi_eh API for REQUEST_SENSE invocation
-> 
-> Doesn't lead one to think it might be build critical, so I concentrated
-> on getting the other arm patch out.
-> 
-All the patches I pushed are build critical. The complete
-"Use scsi_eh API for REQUEST_SENSE" and the error refactoring patches 
-were in support for the scsi_data_buffer effort. Well that was the last 
-one so all is well I guess.
+From: Bastian Blank <bastian@waldi.eu.org>
 
-(With out these patches, code is still pushing none-use_sg requests,
-apart from the members rename of scsi_cmnd)
+The commit 8811930dc74a503415b35c4a79d14fb0b408a361 ("splice: missing user
+pointer access verification") added access_ok() to copy_from_user_mmap_sem()
+which only ensures we can copy the struct iovecs from userspace to the kernel
+but we also must check whether we can access the actual memory region pointed
+to by the struct iovec to close the local root exploit.
 
-> Russell, could you give it a quick test, and I'll put it in with a
-> tested-by tag?
-> 
-> Thanks,
-> 
-> James
-> 
+Cc: <stable@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Bastian, can I have your Signed-off-by for this, please? Oliver, Niki, can 
+you please confirm this closes the hole?
 
-Thanks to all
-Boaz
+ fs/splice.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: linux-2.6/fs/splice.c
+===================================================================
+--- linux-2.6.orig/fs/splice.c
++++ linux-2.6/fs/splice.c
+@@ -1237,6 +1237,9 @@ static int get_iovec_page_array(const st
+ 		if (unlikely(!base))
+ 			break;
+ 
++		if (unlikely(!access_ok(VERIFY_READ, base, len)))
++			break;
++
+ 		/*
+ 		 * Get this base offset and number of pages, then map
+ 		 * in the user pages.
