@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbYBJTbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYBJTb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbYBJTbm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 14:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYBJTbe
+	id S1755509AbYBJTb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 14:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYBJTbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 14:31:34 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:21946 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbYBJTbd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 14:31:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=dE3tAWec2fLG6+ya/q8ne61Q/GZM6pUMPRLub/EKLxdZISYLzIEOmwVJejVL3+SaYQ9WVKBDKBC0WId58scKn+J3PoRN0cTppi6jUj16zyJSonUYqI2v6nyVXu2t8/AspuMsIjNqQ/0Ixq40WvR/bRmekyBFadjP6py69fQmiew=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] kgdb light, v6
-Date: Sun, 10 Feb 2008 20:43:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+	Sun, 10 Feb 2008 14:31:48 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57514 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752023AbYBJTbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 14:31:47 -0500
+Date: Sun, 10 Feb 2008 20:31:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
        Jason Wessel <jason.wessel@windriver.com>
-References: <20080210071331.GC3851@elte.hu> <20080210093128.GA11350@infradead.org> <20080210171742.GF7088@elte.hu>
-In-Reply-To: <20080210171742.GF7088@elte.hu>
-MIME-Version: 1.0
+Subject: Re: [0/6] kgdb light
+Message-ID: <20080210193153.GC13733@uranus.ravnborg.org>
+References: <20080210071304.GA3788@elte.hu> <20080210104709.GB10790@uranus.ravnborg.org> <47AEFB40.5070208@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802102043.58895.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <47AEFB40.5070208@web.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 February 2008, Ingo Molnar wrote:
-
-[...]
-
-> > > +/*
-> > > + *	kgdb_get_shadow_thread - Get the shadowed &task_struct of @threadid.
-> > > + *	@regs: The &struct pt_regs of the current thread.
-> > > + *	@threadid: The thread id of the shadowed process to get information on.
-> > > + *
-> > > + *	RETURN:
-> > > + *	This returns a pointer to the &struct task_struct of the shadowed
-> > > + *	thread, @threadid.
-> > > + */
-> > > +extern struct task_struct *kgdb_get_shadow_thread(struct pt_regs *regs,
-> > > +						  int threadid);
-> > 
-> > So we have kerneldoc comments in both places now?  Didn't you say
-> > you converted these to something else?
+On Sun, Feb 10, 2008 at 02:25:20PM +0100, Jan Kiszka wrote:
+> Sam Ravnborg wrote:
+> > ...
+> > +extern int kgdb_may_fault;
+> > I searched but I could not find any places this
+> > variable were set to anuthing else than 0 neither where it was tested.
 > 
-> no. These are not DocBook comments, if you look carefully at the format 
-> [it's not a leading '/**' comment block]. But obviously documenting this 
-> in the include file is very useful, because that's where people look 
-> first, so i kept it. (the APIs will not deviate across architectures)
+> This is a leftover from the old jmp-on-fault logic that was missed by
+> this tree. I have a patch under test that kills this (and further 150
+> LOC) from the core.
+> 
+> > 
+> > diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
+> > new file mode 100644
+> > index 0000000..00263c0
+> > --- /dev/null
+> > +++ b/lib/Kconfig.kgdb
+> > @@ -0,0 +1,37 @@
+> > +
+> > +menuconfig KGDB
+> > +	bool "KGDB: kernel debugging with remote gdb"
+> > +	select FRAME_POINTER
+> > +	depends on HAVE_ARCH_KGDB
+> > +	depends on DEBUG_KERNEL && EXPERIMENTAL
+> > +	help
+> > +	  If you say Y here, it will be possible to remotely debug the
+> > +	  kernel using gdb.  Documentation of kernel debugger is available
+> > +	  at http://kgdb.sourceforge.net as well as in DocBook form
+> > +	  in Documentation/DocBook/.  If unsure, say N.
+> > +
+> > +config HAVE_ARCH_KGDB_SHADOW_INFO
+> > +	bool
+> > +
+> > 
+> > Please add:
+> > config HAVE_ARCH_KGDB
+> > 	bool
+> > 
+> > So we later in x86/Kconfig can do:
+> > config X86
+> > 	select HAVE_ARCH_KGDB
+> > 
+> > And we can get rid of (from x86/Kconfig):
+> > +config HAVE_ARCH_KGDB
+> > +	def_bool y
+> > 
+> > 
+> > Back to Kconfig.kgdb:
+> > 
+> > +config KGDBOC
+> > +	tristate "KGDB: use kgdb over the serial console"
+> > +	depends on KGDB
+> > 
+> > Can we have a more descriptive name here.
+> > For example:
+> > config KGDB_SERIAL_CONSOLE
+> > It is only used in one place so there is no
+> > specific need for such a magic short name.
+> > 
+> 
+> Is the patch below OK? I also added an "if KGB" to unbreak kgdb's
+> kconfig menu again and included two minor cleanups I posted yesterday.
 
-comments and variable names in include files have a tendency for going
-out-of-sync in the long term so IMO having a DocBook to point people at
-would be a better solution (+ it would shrink <linux/kgdb.h> by 122 lines)
+Looks OK - but I think Ingo already addressed this.
 
-while at it:
-
---- x86/kernel/kgdb.c	2008-02-10 20:30:39.000000000 +0100
-+++ linux/kgdb.h	2008-02-10 20:25:21.000000000 +0100
-@@ -128,11 +131,13 @@
-  *	process more packets, and a %0 or %1 if it wants to exit from the
-  *	kgdb callback.
-  */
--int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
--			       char *remcomInBuffer, char *remcomOutBuffer,
--			       struct pt_regs *linux_regs)
-+extern int
-+kgdb_arch_handle_exception(int vector, int signo, int err_code,
-+			   char *remcom_in_buffer,
-+			   char *remcom_out_buffer,
-+			   struct pt_regs *regs);
+	Sam
