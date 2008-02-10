@@ -1,83 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYBJMXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYBJMY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYBJMXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 07:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYBJMXN
+	id S1757205AbYBJMY0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 07:24:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYBJMYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 07:23:13 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:36293 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754181AbYBJMXN (ORCPT
+	Sun, 10 Feb 2008 07:24:18 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:13921 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550AbYBJMYR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 07:23:13 -0500
-Date: Sun, 10 Feb 2008 13:22:50 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: Niki Denev <ndenev@gmail.com>, Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] kernel 2.6.24.1 still vulnerable to the vmsplice local root exploit
-Message-ID: <20080210122250.GA24048@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Niki Denev <ndenev@gmail.com>, Willy Tarreau <w@1wt.eu>,
-	linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-References: <2e77fc10802092204t7764ff12s65304f70500e2090@mail.gmail.com> <20080210063247.GQ8953@1wt.eu> <2e77fc10802092238k13efb111ifcd298daaf7b4aba@mail.gmail.com> <2e77fc10802100140q5c8adfb4k7db88d48cbd5f8b2@mail.gmail.com>
+	Sun, 10 Feb 2008 07:24:17 -0500
+X-Greylist: delayed 1556 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Feb 2008 07:24:16 EST
+X-Spam-Flag: NO
+X-Spam-Score: -4.389
+Message-ID: <47AEE6D1.4070402@tremplin-utc.net>
+Date: Sun, 10 Feb 2008 12:58:09 +0100
+From: Eric Piel <eric.piel@tremplin-utc.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080207)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2e77fc10802100140q5c8adfb4k7db88d48cbd5f8b2@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Christoph Hellwig <hch@lst.de>
+Cc: dsdt@gaugusch.at, len.brown@intel.com, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, trenn@suse.de
+Subject: Re: acpi dsts loading and populate_rootfs
+References: <20080210071226.GA23360@lst.de> <20080210071454.GA23428@lst.de>
+In-Reply-To: <20080210071454.GA23428@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 04:40:53AM -0500, Niki Denev wrote:
-> this fixed the problem for me (kernel 2.6.24.1) :
-> It appears that the initial patch checked the input to vmsplice_to_user,
-> but the exploit used vmsplice_to_pipe which remained open to the attack.
+(adding some CC's)
+Christoph Hellwig wrote:
+> On Sun, Feb 10, 2008 at 08:12:26AM +0100, Christoph Hellwig wrote:
+>> Folks, moving this call around hidden behing in completely unreviewed
+>> acpi junk is not acceptable.
+>>
+>> Either populate_rootfs _is_ safe to be called earlier and then we should
+>> do it always or it's not.  Either way such a change should be posted
+>> separately and reviewd on lkml.
+Hi,
 
-This patch is broken. It opens the old hole again.
+I agree with you, the order of the initialization should not be changed 
+by some config options. Either it works, or it doesn't! So the question 
+now is : "is fine to move populate_rootfs() earlier?"
 
-> @@ -1450,6 +1454,31 @@
->  		.ops = &user_page_pipe_buf_ops,
->  	};
+Some data points:
+* It used to be called earlier. It was moved to be called later about a 
+year ago by Linus (8d610dd52dd1da696e199e4b4545f33a2a5de5c6) with this log:
+>     Make sure we populate the initroot filesystem late enough
+>     
+>     We should not initialize rootfs before all the core initializers have
+>     run.  So do it as a separate stage just before starting the regular
+>     driver initializers.
+So there must be some good reasons to keep it late enough...
+
+* This patch is used in SuSE, and it seems noone has ever had a problem 
+with the initramfs early init.
+
+I guess the problem that Linus solved by moving populate_rootfs() 
+happens only rarely or on only few configurations. Linus, do you 
+remember what kind of problem it was? How can I reproduce it?
+
+One different solution that I implemented [1] was to have an 
+"early_populate_rootfs()" before the acpi_early_init(), leaving 
+populate_rootfs() at the normal place. If the early version fails, it's 
+ok: we can't override the DSDT, but the later version will work as usual 
+anyway. This solution also seems to work quite often (it's used in 
+Ubuntu, Mandriva and PCLinuxOS)
+
+Would that seem an acceptable solution? Or what other way exists?
+
+
+>> Len, can you please revert "ACPI: basic initramfs DSDT override support"
+>> aka commit 71fc47a9adf8ee89e5c96a47222915c5485ac437 until we've sorted
+>> this out properly?  Thanks.
 > 
-> +	error = ret = 0;
-> +
-> +	/*
-> +	 * Get user address base and length for this iovec.
-> +	 */
-> +	error = get_user(base, &iov->iov_base);
-> +	if (unlikely(error))
-> +		return error;
-> +	error = get_user(len, &iov->iov_len);
-> +	if (unlikely(error))
-> +		return error;
+> And while we're at it the file reading thing in there is utter crap
+> aswell.  You really should be using the firmware loader which works
+> perfectly fine if you initramfs is set up for it.  So please folks,
+> back to the drawing board, do it properly and send it out to lkml
+> for review please.
+Christoph, if you have seen this part of the code, you have probably 
+also read the big fat warning explaining why this cannot be done by 
+firmware loader (ie: userspace cannot be run at this early time, 
+corresponding to acpi_early_init()). However, you probably know the 
+kernel ten times better than me. Could you explain what I misunderstood 
+when writing this warning, and give me some hints about how to use the 
+firmware loader in this case?
 
-iov is unchecked.
+See you,
+Eric
 
-> +	if (unlikely(!access_ok(VERIFY_WRITE, base, len))) {
-> +		return -EFAULT;
-> +	}
 
-Use VERIFY_READ and this only checks the first entry.
+[1] : 
+http://gaugusch.at/acpi-dsdt-initrd-patches/acpi-dsdt-initrd-v0.8.4-2.6.21.patch
 
-I checked the following patch and it at least fixes the known exploit.
-
-diff --git a/fs/splice.c b/fs/splice.c
-index 14e2262..80beb2b 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1237,6 +1237,11 @@ static int get_iovec_page_array(const struct iovec __user *iov,
- 		if (unlikely(!base))
- 			break;
- 
-+		if (!access_ok(VERIFY_READ, base, len)) {
-+			error = -EFAULT;
-+			break;
-+		}
-+
- 		/*
- 		 * Get this base offset and number of pages, then map
- 		 * in the user pages.
--- 
-Even historians fail to learn from history -- they repeat the same mistakes.
-		-- John Gill, "Patterns of Force", stardate 2534.7
