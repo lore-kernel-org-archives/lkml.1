@@ -1,144 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbYBJRk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYBJRoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751941AbYBJRk3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 12:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYBJRkL
+	id S1753544AbYBJRoR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 12:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYBJRoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 12:40:11 -0500
-Received: from bizon.gios.gov.pl ([212.244.124.8]:57259 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbYBJRkI (ORCPT
+	Sun, 10 Feb 2008 12:44:01 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:40141 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYBJRoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 12:40:08 -0500
-Date: Sun, 10 Feb 2008 18:39:54 +0100 (CET)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: olel@bizon.gios.gov.pl
-To: Joe Maloy <Joe.Maloy@lsi.com>, DL-MPTFusionLinux@lsi.com,
-       linux-scsi@vger.kernel.org
-cc: linux-kernel@vger.kernel.org, Eric.Moore@lsi.com,
-       Maximilian Wilhelm <max@rfc2324.org>
-Subject: Re: Kernel Panic in MPT SAS on 2.6.24 (and 2.6.23.14, 2.6.23.9)
- (fwd)
-Message-ID: <Pine.LNX.4.64.0802101834010.23589@bizon.gios.gov.pl>
+	Sun, 10 Feb 2008 12:44:00 -0500
+Date: Sun, 10 Feb 2008 09:43:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: preempt rcu bug on s390
+Message-ID: <20080210174355.GE16205@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com> <20080209140711.GA16205@linux.vnet.ibm.com> <20080209171451.GB8069@osiris.ibm.com> <20080209220226.GB16205@linux.vnet.ibm.com> <20080210130150.GA9044@osiris.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; BOUNDARY="-187430788-1702972562-1202664339=:22894"
-Content-ID: <Pine.LNX.4.64.0802101834011.23589@bizon.gios.gov.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080210130150.GA9044@osiris.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, Feb 10, 2008 at 02:01:50PM +0100, Heiko Carstens wrote:
+> > > > > Using CONFIG_PREEMPT_RCU and CONFIG_NO_IDLE_HZ on s390 my system always
+> > > > > gets stuck when running with more than one cpu.
+> > > > > When booting with four cpus I get all four cpus caught withing cpu_idle
+> > > > > and not advancing anymore. However there is the init process which is
+> > > > > waitung for synchronize_rcu() to complete (lcrash output):
+> > > > > 
+> > > > > If I change the code so that timer ticks won't be disabled everything
+> > > > > runs fine. So my guess is that rcu_needs_cpu() doesn't do the right
+> > > > > thing for the rcu preemptible case.
+> > > > > 
+> > > > > Kernel version is git head of today.
+> > > > > 
+> > > > > Any ideas?
+> > > > 
+> > > > Does this tree have http://lkml.org/lkml/2008/1/29/208 applied?
+> > > > 
+> > > > If not, could you please check it out?
+> > > 
+> > > It's not applied, however it doesn't change anything. Also the patch
+> > > is tied to the dynticks implementation which is differently from
+> > > s390's nohz implementation.
+> > > I had to add the patch below so it would make at least some sense.
+> > > But it doesn't fix the problem.
+> > 
+> > OK, I was afraid of that.  ;-)
+> > 
+> > Does s390 start out in nohz mode?  The reason I ask is that it feels like
+> > an off-by-one error for the dynticks_progress_counter.
+> 
+> Actually I forgot to add a few ifdefs to make the code do something :)
+> That just reveals that we have a conflict with the dynticks implementation
+> and s390's nohz that shows up in what rcu_irq_enter/exit assume.
+> I didn't patch s390 and common code so it will work, but I think the
+> patch you mentionened will fix the problem I reported.
+> So I guess we should either convert s390 to use the generic dynticks
+> implementation or disable preemptible rcu on s390 until we converted
+> our code.
 
----187430788-1702972562-1202664339=:22894
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2; FORMAT=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <Pine.LNX.4.64.0802101834012.23589@bizon.gios.gov.pl>
+Sounds good to me!!!  (Especially converting s390 to generic algorithm.)
 
-Hello,
+I believe that the generic implementation will do what you need, but
+I am sure you will let me know of any problems that arise.
 
-Eric Moore is on vacation, adding some CCs and TOs.
+> Thanks for helping debugging this!
 
----------- Forwarded message ----------
-Date: Sun, 10 Feb 2008 18:25:39 +0100 (CET)
-From: Krzysztof Oledzki <olel@ans.pl>
-To: Maximilian Wilhelm <max@rfc2324.org>
-Cc: linux-kernel@vger.kernel.org, Eric.Moore@lsi.com
-Subject: Re: Kernel Panic in MPT SAS on 2.6.24 (and 2.6.23.14, 2.6.23.9)
+Thank you for tracking it down!
 
-
-
-On Sun, 10 Feb 2008, Maximilian Wilhelm wrote:
-
-> Am Friday, den  8 February hub Maximilian Wilhelm folgendes in die Tasten=
-:
->=20
->> Just noticed that Eric's address was wrong, so resend with corrected Cc.
->=20
->> Eric, my intial report was http://lkml.org/lkml/2008/2/6/300
->>=20
->>> Am Thursday, den  7 February hub Krzysztof Oledzki folgendes in die Tas=
-ten:
->>>=20
->>> Hi!
->>>=20
->>>>> While installing my new firewall I got the following kernel panic in
->>>>> the MPT SAS driver which I need for the disks.
->>>=20
->>>>> The first kernel I bootet was 2.6.23.14 which did panic so I tried a
->>>>> 2.6.24 which panics, too. Our usual FAI kernel (2.6.23.9) is also
->>>>> affected.
->>>=20
->>>> Could you please try 2.6.22-stable?
->>>=20
->>> Yes it works :-/
->>>=20
->>> I've put some things which on the web which might be helpful:
->>>=20
->>> dmesg=09=09http://files.rfc2324.org/mptsas_panic/2.6.22-dmesg
->>> lspci -v=09http://files.rfc2324.org/mptsas_panic/2.6.22-lspci-v
->>> .config=09=09http://files.rfc2324.org/mptsas_panic/2.6.22-config
->>>=20
->>> I'll search for the last working kernel and try to break it down to a
->>> commit tommorow when I can get a serial console or direct access.
->>> The Java driven console redirection is everything else than fulfilling =
-:-(
->>>=20
->>>> It looks *very* similar to my problem:
->>>=20
->>>> http://bugzilla.kernel.org/show_bug.cgi?id=3D9909
->>>=20
->>> It seems to be the same controller:
->>>=20
->>> 01:00.0 SCSI storage controller: LSI Logic / Symbios Logic SAS1068E=20
->>> PCI-Express Fusion-MPT SAS (rev 08)
->>> =09Subsystem: Dell Unknown device 1f10
->>> =09Flags: bus master, fast devsel, latency 0, IRQ 16
->>> =09I/O ports at ec00 [size=3D256]
->>> =09Memory at fc8fc000 (64-bit, non-prefetchable) [size=3D16K]
->>> =09Memory at fc8e0000 (64-bit, non-prefetchable) [size=3D64K]
->>> =09Expansion ROM at fc900000 [disabled] [size=3D1M]
->>> =09Capabilities: [50] Power Management version 2
->>> =09Capabilities: [68] Express Endpoint IRQ 0
->>> =09Capabilities: [98] Message Signalled Interrupts: Mask- 64bit+ Queue=
-=3D0/0=20
->>> Enable-
->>> =09Capabilities: [b0] MSI-X: Enable- Mask- TabSize=3D1
->=20
-> I did a git bisect between v2.6.22 v2.6.23 and it seems that
->  6cb8f91320d3e720351c21741da795fed580b21b
-> introduced some badness.
-
-Thanks! This was *really* useful!
-
-Now, how about attached patch? Should work with both 2.6.23 and 2.6.24.
-
-Best regards,
-
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-1702972562-1202664339=:22894
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=scsi-mpt-fusion-dont-oops-if-NumPhys-0.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0802101825390.22894@bizon.gios.gov.pl>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=scsi-mpt-fusion-dont-oops-if-NumPhys-0.patch
-
-W1NDU0ldIG1wdCBmdXNpb246IERvbid0IG9vcHMgaWYgTnVtUGh5cz09MA0K
-DQpEb24ndCBvb3BzIGlmIE51bVBoeXM9PTAsIGluc3RlYWQgcmV0dXJuIC1F
-Tk9ERVYuDQpUaGlzIHBhdGNoIGZpeGVzIGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD05OTA5DQoNClNpZ25lZC1vZmYtYnk6
-IEtyenlzenRvZiBQaW90ciBPbGVkemtpIDxvbGVAYW5zLnBsPg0KDQpkaWZm
-IC1OdXIgYS9kcml2ZXJzL21lc3NhZ2UvZnVzaW9uL21wdHNhcy5jIGIvZHJp
-dmVycy9tZXNzYWdlL2Z1c2lvbi9tcHRzYXMuYw0KLS0tIGEvZHJpdmVycy9t
-ZXNzYWdlL2Z1c2lvbi9tcHRzYXMuYwkyMDA3LTEwLTA5IDIyOjMxOjM4LjAw
-MDAwMDAwMCArMDIwMA0KKysrIGIvZHJpdmVycy9tZXNzYWdlL2Z1c2lvbi9t
-cHRzYXMuYwkyMDA4LTAyLTEwIDE3OjM4OjUxLjAwMDAwMDAwMCArMDEwMA0K
-QEAgLTE3NzIsNiArMTc3MiwxMSBAQA0KIAlpZiAoZXJyb3IpDQogCQlnb3Rv
-IG91dF9mcmVlX2NvbnNpc3RlbnQ7DQogDQorCWlmICghYnVmZmVyLT5OdW1Q
-aHlzKSB7DQorCQllcnJvciA9IC1FTk9ERVY7DQorCQlnb3RvIG91dF9mcmVl
-X2NvbnNpc3RlbnQ7DQorCX0NCisNCiAJLyogc2F2ZSBjb25maWcgZGF0YSAq
-Lw0KIAlwb3J0X2luZm8tPm51bV9waHlzID0gYnVmZmVyLT5OdW1QaHlzOw0K
-IAlwb3J0X2luZm8tPnBoeV9pbmZvID0ga2NhbGxvYyhwb3J0X2luZm8tPm51
-bV9waHlzLA0K
-
----187430788-1702972562-1202664339=:22894--
+							Thanx, Paul
