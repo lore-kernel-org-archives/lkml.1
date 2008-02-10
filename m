@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYBJVcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYBJVdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbYBJVcX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYBJVcI
+	id S1756683AbYBJVdW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYBJVdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:32:08 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:59094 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbYBJVcH (ORCPT
+	Sun, 10 Feb 2008 16:33:04 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:23025 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbYBJVdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:32:07 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 10 Feb 2008 13:32:01 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: [patch] avoid kmemcheck warning in epoll
-Message-ID: <Pine.LNX.4.64.0802101323140.27286@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 10 Feb 2008 16:33:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wBmozkSd/Zoj3bMYED1M94XGwxF45KL8umBWxupuXKaT5x/3S+JOO7g2pZSkCfo/YqAzhJvoUYXfiWGlFs52NBbftxsJT8vYH+ORzh6RFDxdzLaxFi8rVj2Jrf5ufbN4JhWeKt1wP86YF0F7ijzltAB+po+oosJFhCWfkpbzRAs=
+Message-ID: <29495f1d0802101332p6b39b331ye2f6fb488b63e228@mail.gmail.com>
+Date: Sun, 10 Feb 2008 13:32:58 -0800
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: 2.6.26-git0: IDE oops during boot
+Cc: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
+       "Pavel Machek" <pavel@ucw.cz>,
+       "kernel list" <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+In-Reply-To: <200802071501.09318.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080206105334.GA3664@elf.ucw.cz>
+	 <200802062105.42929.bzolnier@gmail.com>
+	 <47AAD0CB.3090305@linux.vnet.ibm.com>
+	 <200802071501.09318.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Epoll calls rb_set_parent(n, n) to initialize the rb-tree node, but 
-rb_set_parent() accesses node's pointer in its code. This creates a 
-warning in kmemcheck (reported by Vegard Nossum) about an uninitialized 
-memory access. The warning is harmless since the following rb-tree node 
-insert is going to overwrite the node data. In any case I think it's 
-better to not have that happening at all, and fix it by properly 
-initializing the data.
+On 2/7/08, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+>
+> On Thursday 07 February 2008, Kamalesh Babulal wrote:
+> > Bartlomiej Zolnierkiewicz wrote:
+> > > Hi,
+> > >
+> > > On Wednesday 06 February 2008, Pavel Machek wrote:
+> > >> On Wed 2008-02-06 11:53:34, Pavel Machek wrote:
+> > >>> Hi!
+> > >>>
+> > >>> Trying to boot 2.6.25-git0 (few days old), I get
+> > >>>
+> > >>> BUG: unable to handle kernel paging request at ffff..ffb0
+> > >>> IP at init_irq+0x42e
+> > >
+> > > init_irq? hmm...
+> > >
+> > >>> Call trace:
+> > >>> ide_device_add_all
+> > >
+> > > this comes from ide-generic
+> > > (Generic IDE host driver)
+> > >
+> > >>> ide_generic_init
+> > >>> kernel_init
+> > >>> child_rip
+> > >>> vgacon_cursor
+> > >>> kernel_init
+> > >>> child_rip
+> > >>>
+> > >>> Excerpt from config:
+> > >>>
+> > >>> CONFIG_IDE=y
+> > >>> CONFIG_BLK_DEV_IDE=y
+> > >> Disabling CONFIG_IDE made my machine boot, as it was using libata
+> > >> anyway.
+> > >
+> > > Kamalesh/Pavel:
+> > >
+> > > Could you try latest git and see if the OOPS is still there?
+> > >
+> > > [ Yeah, I'm unable to reproduce it. :( ]
+> > >
+> > > Thanks,
+> > > Bart
+> > Hi Bart,
+> >
+> > The panic is reproducible with the 2.6.24-git16 kernel, the call trace is
+> > similar to the previous one
+>
+> Thanks, I again reviewed ide-probe.c changes but nothing seems wrong...
+>
+> Could you please bisect it down to the guilty commit?
 
+Kamalesh, were you able to bisect this down? I just got hit by the
+same panic on a 4-way x86_64, with 2.6.24-git22.
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
----
- fs/eventpoll.c         |    2 +-
- include/linux/rbtree.h |   12 ++++++++++++
- 2 files changed, 13 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.mod/fs/eventpoll.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventpoll.c	2008-02-10 12:36:20.000000000 -0800
-+++ linux-2.6.mod/fs/eventpoll.c	2008-02-10 12:50:41.000000000 -0800
-@@ -260,7 +260,7 @@
- /* Special initialization for the RB tree node to detect linkage */
- static inline void ep_rb_initnode(struct rb_node *n)
- {
--	rb_set_parent(n, n);
-+	rb_init_node(n, n);
- }
- 
- /* Removes a node from the RB tree and marks it for a fast is-linked check */
-Index: linux-2.6.mod/include/linux/rbtree.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/rbtree.h	2008-02-10 12:36:13.000000000 -0800
-+++ linux-2.6.mod/include/linux/rbtree.h	2008-02-10 12:51:57.000000000 -0800
-@@ -112,6 +112,18 @@
- 	struct rb_node *rb_node;
- };
- 
-+/**
-+ * rb_init_node - Initializes the node internal data
-+ *
-+ * @node: Pointer to the RB-Tree node
-+ * @parent: Pointer to the parent node, or NULL
-+ *
-+ */
-+static inline void rb_init_node(struct rb_node *node, struct rb_node *parent)
-+{
-+	node->rb_parent_color = (unsigned long) parent;
-+	node->rb_left = node->rb_right = NULL;
-+}
- 
- #define rb_parent(r)   ((struct rb_node *)((r)->rb_parent_color & ~3))
- #define rb_color(r)   ((r)->rb_parent_color & 1)
+Thanks,
+Nish
