@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbYBJH1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbYBJH1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbYBJH1V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbYBJHVU
+	id S1760044AbYBJH1k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 02:27:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbYBJHVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:21:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56928 "EHLO mx2.mail.elte.hu"
+	Sun, 10 Feb 2008 02:21:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56935 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758164AbYBJHVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:21:18 -0500
-Date: Sun, 10 Feb 2008 08:21:04 +0100
+	id S1758174AbYBJHVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 02:21:21 -0500
+Date: Sun, 10 Feb 2008 08:21:09 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Steven Rostedt <rostedt@goodmis.org>
-Subject: [16/19] ftrace: trace preempt off critical timings
-Message-ID: <20080210072104.GQ4100@elte.hu>
+Subject: [17/19] ftrace: dynamic enabling/disabling of function calls
+Message-ID: <20080210072109.GR4100@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,528 +34,779 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Add preempt off timings. A lot of kernel core code is taken from the RT patch
-latency trace that was written by Ingo Molnar.
+This patch adds a feature to dynamically replace the ftrace code
+with the jmps to allow a kernel with ftrace configured to run
+as fast as it can without it configured.
 
-This adds "preemptoff" and "preemptirqsoff" to /debugfs/tracing/available_tracers
+The way this works, is on bootup, a ftrace function is registered
+to record the instruction pointer of all places that call the
+function.
 
-Now instead of just tracing irqs off, preemption off can be selected
-to be recorded.
+Later, a kthread is awoken once a second that performs a stop_machine,
+and replaces all the code that was called with a jmp over the call
+to ftrace. It only replaces what was found the previous time.
 
-When this is selected, it shares the same files as irqs off timings.
-One can either trace preemption off, irqs off, or one or the other off.
+e.g.
 
-By echoing "preemptoff" into /debugfs/tracing/current_tracer, recording
-of preempt off only is performed. "irqsoff" will only record the time
-irqs are disabled, but "preemptirqsoff" will take the total time irqs
-or preemption are disabled. Runtime switching of these options is now
-supported by simpling echoing in the appropriate trace name into
-/debugfs/tracing/current_tracer.
+  call ftrace  /* 5 bytes */
+
+is replaced with
+
+  jmp 3f  /* jmp is 2 bytes and we jump 3 forward */
+3:
+
+When we want to enable ftrace for function tracing, the IP recording
+is removed, and stop_machine is called again to replace all the locations
+of that were recorded back to the call of ftrace.  When it is disabled,
+we replace the code back to the jmp.
+
+Allocation is done by the kthread. If the ftrace recording function is
+called, and we don't have any record slots available, then we simply
+skip that call. Once a second a new page (if needed) is allocated for
+recording new ftrace function calls.  A large batch is allocated at
+boot up to get most of the calls there.
+
+Because we do this via stop_machine, we don't have to worry about another
+CPU executing a ftrace call as we modify it. But we do need to worry
+about NMI's so all functions that might be called via nmi must be
+annotated with notrace_nmi. When this code is configured in, the NMI code
+will not call notrace.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/process_32.c |    3 
- include/linux/ftrace.h       |    8 +
- include/linux/irqflags.h     |    3 
- include/linux/preempt.h      |    2 
- kernel/sched.c               |   24 +++++
- kernel/trace/Kconfig         |   25 +++++
- kernel/trace/Makefile        |    1 
- kernel/trace/trace_irqsoff.c |  184 +++++++++++++++++++++++++++++++------------
- 8 files changed, 197 insertions(+), 53 deletions(-)
+ arch/x86/kernel/Makefile |    1 
+ arch/x86/kernel/ftrace.c |  237 +++++++++++++++++++++++++++++++
+ include/linux/ftrace.h   |   18 ++
+ kernel/trace/Kconfig     |   17 ++
+ kernel/trace/ftrace.c    |  356 ++++++++++++++++++++++++++++++++++++++++++-----
+ 5 files changed, 597 insertions(+), 32 deletions(-)
 
-Index: linux/arch/x86/kernel/process_32.c
+Index: linux/arch/x86/kernel/Makefile
 ===================================================================
---- linux.orig/arch/x86/kernel/process_32.c
-+++ linux/arch/x86/kernel/process_32.c
-@@ -207,7 +207,10 @@ void cpu_idle(void)
- 				play_dead();
- 
- 			__get_cpu_var(irq_stat).idle_timestamp = jiffies;
-+			/* Don't trace irqs off for idle */
-+			stop_critical_timings();
- 			idle();
-+			start_critical_timings();
- 		}
- 		tick_nohz_restart_sched_tick();
- 		preempt_enable_no_resched();
+--- linux.orig/arch/x86/kernel/Makefile
++++ linux/arch/x86/kernel/Makefile
+@@ -54,6 +54,7 @@ obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+ obj-$(CONFIG_X86_SUMMIT_NUMA)	+= summit_32.o
+ obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
++obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_MODULES)		+= module_$(BITS).o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
+Index: linux/arch/x86/kernel/ftrace.c
+===================================================================
+--- /dev/null
++++ linux/arch/x86/kernel/ftrace.c
+@@ -0,0 +1,237 @@
++/*
++ * Code for replacing ftrace calls with jumps.
++ *
++ * Copyright (C) 2007-2008 Steven Rostedt <srostedt@redhat.com>
++ *
++ * Thanks goes to Ingo Molnar, for suggesting the idea.
++ * Mathieu Desnoyers, for suggesting postponing the modifications.
++ * Arjan van de Ven, for keeping me straight, and explaining to me
++ * the dangers of modifying code on the run.
++ */
++
++#include <linux/spinlock.h>
++#include <linux/hardirq.h>
++#include <linux/ftrace.h>
++#include <linux/percpu.h>
++#include <linux/init.h>
++#include <linux/list.h>
++
++#define CALL_BACK		5
++
++#define JMPFWD			0x03eb
++
++static unsigned short ftrace_jmp = JMPFWD;
++
++struct ftrace_record {
++	struct dyn_ftrace	rec;
++	int			failed;
++} __attribute__((packed));
++
++struct ftrace_page {
++	struct ftrace_page	*next;
++	int			index;
++	struct ftrace_record	records[];
++} __attribute__((packed));
++
++#define ENTRIES_PER_PAGE \
++  ((PAGE_SIZE - sizeof(struct ftrace_page)) / sizeof(struct ftrace_record))
++
++/* estimate from running different kernels */
++#define NR_TO_INIT		10000
++
++#define MCOUNT_ADDR ((long)(&mcount))
++
++union ftrace_code_union {
++	char code[5];
++	struct {
++		char e8;
++		int offset;
++	} __attribute__((packed));
++};
++
++static struct ftrace_page	*ftrace_pages_start;
++static struct ftrace_page	*ftrace_pages;
++
++notrace struct dyn_ftrace *ftrace_alloc_shutdown_node(unsigned long ip)
++{
++	struct ftrace_record *rec;
++	unsigned short save;
++
++	ip -= CALL_BACK;
++	save = *(short *)ip;
++
++	/* If this was already converted, skip it */
++	if (save == JMPFWD)
++		return NULL;
++
++	if (ftrace_pages->index == ENTRIES_PER_PAGE) {
++		if (!ftrace_pages->next)
++			return NULL;
++		ftrace_pages = ftrace_pages->next;
++	}
++
++	rec = &ftrace_pages->records[ftrace_pages->index++];
++
++	return &rec->rec;
++}
++
++static int notrace
++ftrace_modify_code(unsigned long ip, unsigned char *old_code,
++		   unsigned char *new_code)
++{
++	unsigned short old = *(unsigned short *)old_code;
++	unsigned short new = *(unsigned short *)new_code;
++	unsigned short replaced;
++	int faulted = 0;
++
++	/*
++	 * Note: Due to modules and __init, code can
++	 *  disappear and change, we need to protect against faulting
++	 *  as well as code changing.
++	 *
++	 * No real locking needed, this code is run through
++	 * kstop_machine.
++	 */
++	asm volatile (
++		"1: lock\n"
++		"   cmpxchg %w3, (%2)\n"
++		"2:\n"
++		".section .fixup, \"ax\"\n"
++		"	movl $1, %0\n"
++		"3:	jmp 2b\n"
++		".previous\n"
++		_ASM_EXTABLE(1b, 3b)
++		: "=r"(faulted), "=a"(replaced)
++		: "r"(ip), "r"(new), "0"(faulted), "a"(old)
++		: "memory");
++	sync_core();
++
++	if (replaced != old)
++		faulted = 2;
++
++	return faulted;
++}
++
++static int notrace ftrace_calc_offset(long ip)
++{
++	return (int)(MCOUNT_ADDR - ip);
++}
++
++notrace void ftrace_code_disable(struct dyn_ftrace *rec)
++{
++	unsigned long ip;
++	union ftrace_code_union save;
++	struct ftrace_record *r =
++		container_of(rec, struct ftrace_record, rec);
++
++	ip = rec->ip;
++
++	save.e8		= 0xe8;
++	save.offset 	= ftrace_calc_offset(ip);
++
++	/* move the IP back to the start of the call */
++	ip -= CALL_BACK;
++
++	r->failed = ftrace_modify_code(ip, save.code, (char *)&ftrace_jmp);
++}
++
++static void notrace ftrace_replace_code(int saved)
++{
++	unsigned char *new = NULL, *old = NULL;
++	struct ftrace_record *rec;
++	struct ftrace_page *pg;
++	unsigned long ip;
++	int i;
++
++	if (saved)
++		old = (char *)&ftrace_jmp;
++	else
++		new = (char *)&ftrace_jmp;
++
++	for (pg = ftrace_pages_start; pg; pg = pg->next) {
++		for (i = 0; i < pg->index; i++) {
++			union ftrace_code_union calc;
++			rec = &pg->records[i];
++
++			/* don't modify code that has already faulted */
++			if (rec->failed)
++				continue;
++
++			ip = rec->rec.ip;
++
++			calc.e8		= 0xe8;
++			calc.offset	= ftrace_calc_offset(ip);
++
++			if (saved)
++				new = calc.code;
++			else
++				old = calc.code;
++
++			ip -= CALL_BACK;
++
++			rec->failed = ftrace_modify_code(ip, old, new);
++		}
++	}
++
++}
++
++notrace void ftrace_startup_code(void)
++{
++	ftrace_replace_code(1);
++}
++
++notrace void ftrace_shutdown_code(void)
++{
++	ftrace_replace_code(0);
++}
++
++notrace void ftrace_shutdown_replenish(void)
++{
++	if (ftrace_pages->next)
++		return;
++
++	/* allocate another page */
++	ftrace_pages->next = (void *)get_zeroed_page(GFP_KERNEL);
++}
++
++notrace int ftrace_shutdown_arch_init(void)
++{
++	struct ftrace_page *pg;
++	int cnt;
++	int i;
++
++	/* allocate a few pages */
++	ftrace_pages_start = (void *)get_zeroed_page(GFP_KERNEL);
++	if (!ftrace_pages_start)
++		return -1;
++
++	/*
++	 * Allocate a few more pages.
++	 *
++	 * TODO: have some parser search vmlinux before
++	 *   final linking to find all calls to ftrace.
++	 *   Then we can:
++	 *    a) know how many pages to allocate.
++	 *     and/or
++	 *    b) set up the table then.
++	 *
++	 *  The dynamic code is still necessary for
++	 *  modules.
++	 */
++
++	pg = ftrace_pages = ftrace_pages_start;
++
++	cnt = NR_TO_INIT / ENTRIES_PER_PAGE;
++
++	for (i = 0; i < cnt; i++) {
++		pg->next = (void *)get_zeroed_page(GFP_KERNEL);
++
++		/* If we fail, we'll try later anyway */
++		if (!pg->next)
++			break;
++
++		pg = pg->next;
++	}
++
++	return 0;
++}
 Index: linux/include/linux/ftrace.h
 ===================================================================
 --- linux.orig/include/linux/ftrace.h
 +++ linux/include/linux/ftrace.h
-@@ -58,4 +58,12 @@ extern void mcount(void);
- # define time_hardirqs_off(a0, a1)		do { } while (0)
- #endif
+@@ -32,6 +32,24 @@ extern void mcount(void);
+ # define clear_ftrace_function(ops) do { } while (0)
+ #endif /* CONFIG_FTRACE */
  
-+#ifdef CONFIG_PREEMPT_TRACER
-+  extern void notrace trace_preempt_on(unsigned long a0, unsigned long a1);
-+  extern void notrace trace_preempt_off(unsigned long a0, unsigned long a1);
-+#else
-+# define trace_preempt_on(a0, a1)		do { } while (0)
-+# define trace_preempt_off(a0, a1)		do { } while (0)
-+#endif
++#ifdef CONFIG_DYNAMIC_FTRACE
++# define FTRACE_HASHBITS	10
++# define FTRACE_HASHSIZE	(1<<FTRACE_HASHBITS)
 +
- #endif /* _LINUX_FTRACE_H */
-Index: linux/include/linux/irqflags.h
-===================================================================
---- linux.orig/include/linux/irqflags.h
-+++ linux/include/linux/irqflags.h
-@@ -41,7 +41,8 @@
- # define INIT_TRACE_IRQFLAGS
- #endif
- 
--#ifdef CONFIG_IRQSOFF_TRACER
-+#if defined(CONFIG_IRQSOFF_TRACER) || \
-+	defined(CONFIG_PREEMPT_TRACER)
-  extern void stop_critical_timings(void);
-  extern void start_critical_timings(void);
- #else
-Index: linux/include/linux/preempt.h
-===================================================================
---- linux.orig/include/linux/preempt.h
-+++ linux/include/linux/preempt.h
-@@ -10,7 +10,7 @@
- #include <linux/linkage.h>
- #include <linux/list.h>
- 
--#ifdef CONFIG_DEBUG_PREEMPT
-+#if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_PREEMPT_TRACER)
-   extern void add_preempt_count(int val);
-   extern void sub_preempt_count(int val);
- #else
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -66,6 +66,7 @@
- #include <linux/unistd.h>
- #include <linux/pagemap.h>
- #include <linux/hrtimer.h>
-+#include <linux/ftrace.h>
- 
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
-@@ -3772,26 +3773,44 @@ void scheduler_tick(void)
- #endif
- }
- 
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_DEBUG_PREEMPT)
-+#if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
-+				defined(CONFIG_PREEMPT_TRACER))
++struct dyn_ftrace {
++	struct hlist_node node;
++	unsigned long	  ip;
++};
 +
-+static inline unsigned long get_parent_ip(unsigned long addr)
-+{
-+	if (in_lock_functions(addr)) {
-+		addr = CALLER_ADDR2;
-+		if (in_lock_functions(addr))
-+			addr = CALLER_ADDR3;
-+	}
-+	return addr;
-+}
- 
- void add_preempt_count(int val)
- {
-+#ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Underflow?
- 	 */
- 	if (DEBUG_LOCKS_WARN_ON((preempt_count() < 0)))
- 		return;
-+#endif
- 	preempt_count() += val;
-+#ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Spinlock count overflowing soon?
- 	 */
- 	DEBUG_LOCKS_WARN_ON((preempt_count() & PREEMPT_MASK) >=
- 				PREEMPT_MASK - 10);
-+#endif
-+	if (preempt_count() == val)
-+		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
- }
- EXPORT_SYMBOL(add_preempt_count);
- 
- void sub_preempt_count(int val)
- {
-+#ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Underflow?
- 	 */
-@@ -3803,7 +3822,10 @@ void sub_preempt_count(int val)
- 	if (DEBUG_LOCKS_WARN_ON((val < PREEMPT_MASK) &&
- 			!(preempt_count() & PREEMPT_MASK)))
- 		return;
++/* defined in arch */
++extern struct dyn_ftrace *
++ftrace_alloc_shutdown_node(unsigned long ip);
++extern int ftrace_shutdown_arch_init(void);
++extern void ftrace_code_disable(struct dyn_ftrace *rec);
++extern void ftrace_startup_code(void);
++extern void ftrace_shutdown_code(void);
++extern void ftrace_shutdown_replenish(void);
 +#endif
  
-+	if (preempt_count() == val)
-+		trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
- 	preempt_count() -= val;
- }
- EXPORT_SYMBOL(sub_preempt_count);
+ #ifdef CONFIG_FRAME_POINTER
+ /* TODO: need to fix this for ARM */
 Index: linux/kernel/trace/Kconfig
 ===================================================================
 --- linux.orig/kernel/trace/Kconfig
 +++ linux/kernel/trace/Kconfig
-@@ -44,6 +44,31 @@ config IRQSOFF_TRACER
+@@ -88,3 +88,20 @@ config CONTEXT_SWITCH_TRACER
+ 	  This tracer gets called from the context switch and records
+ 	  all switching of tasks.
  
- 	      echo 0 > /debugfs/tracing/tracing_max_latency
- 
-+	  (Note that kernel size and overhead increases with this option
-+	  enabled. This option and the preempt-off timing option can be
-+	  used together or separately.)
-+
-+config PREEMPT_TRACER
-+	bool "Preemption-off Latency Tracer"
-+	default n
-+	depends on GENERIC_TIME
-+	depends on PREEMPT
-+	select TRACING
-+	select TRACER_MAX_TRACE
++config DYNAMIC_FTRACE
++	bool "enable/disable ftrace tracepoints dynamically"
++	depends on FTRACE
++	default y
 +	help
-+	  This option measures the time spent in preemption off critical
-+	  sections, with microsecond accuracy.
++         This option will modify all the calls to ftrace dynamically
++	 (will patch them out of the binary image and replaces them
++	 with a No-Op instruction) as they are called. A table is
++	 created to dynamically enable them again.
 +
-+	  The default measurement method is a maximum search, which is
-+	  disabled by default and can be runtime (re-)started
-+	  via:
++	 This way a CONFIG_FTRACE kernel is slightly larger, but otherwise
++	 has native performance as long as no tracing is active.
 +
-+	      echo 0 > /debugfs/tracing/tracing_max_latency
-+
-+	  (Note that kernel size and overhead increases with this option
-+	  enabled. This option and the irqs-off timing option can be
-+	  used together or separately.)
-+
- config SCHED_TRACER
- 	bool "Scheduling Latency Tracer"
- 	depends on DEBUG_KERNEL
-Index: linux/kernel/trace/Makefile
++	 The changes to the code are done by a kernel thread that
++	 wakes up once a second and checks to see if any ftrace calls
++	 were made. If so, it runs stop_machine (stops all CPUS)
++	 and modifies the code to jump over the call to ftrace.
+Index: linux/kernel/trace/ftrace.c
 ===================================================================
---- linux.orig/kernel/trace/Makefile
-+++ linux/kernel/trace/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_TRACING) += trace.o
- obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
- obj-$(CONFIG_FTRACE) += trace_functions.o
- obj-$(CONFIG_IRQSOFF_TRACER) += trace_irqsoff.o
-+obj-$(CONFIG_PREEMPT_TRACER) += trace_irqsoff.o
- obj-$(CONFIG_SCHED_TRACER) += trace_sched_wakeup.o
- 
- libftrace-y := ftrace.o
-Index: linux/kernel/trace/trace_irqsoff.c
-===================================================================
---- linux.orig/kernel/trace/trace_irqsoff.c
-+++ linux/kernel/trace/trace_irqsoff.c
-@@ -21,6 +21,36 @@
- static struct trace_array		*irqsoff_trace __read_mostly;
- static int				tracer_enabled __read_mostly;
- 
-+static DEFINE_PER_CPU(int, tracing_cpu);
-+
-+enum {
-+	TRACER_IRQS_OFF		= (1 << 1),
-+	TRACER_PREEMPT_OFF	= (1 << 2),
-+};
-+
-+static int trace_type __read_mostly;
-+
-+#ifdef CONFIG_PREEMPT_TRACER
-+static inline int notrace
-+preempt_trace(void)
-+{
-+	return ((trace_type & TRACER_PREEMPT_OFF) && preempt_count());
-+}
-+#else
-+# define preempt_trace() (0)
-+#endif
-+
-+#ifdef CONFIG_IRQSOFF_TRACER
-+static inline int notrace
-+irq_trace(void)
-+{
-+	return ((trace_type & TRACER_IRQS_OFF) &&
-+		irqs_disabled());
-+}
-+#else
-+# define irq_trace() (0)
-+#endif
-+
- /*
-  * Sequence count - we record it when starting a measurement and
-  * skip the latency if the sequence has changed - some other section
-@@ -44,14 +74,11 @@ irqsoff_tracer_call(unsigned long ip, un
- 	long disabled;
- 	int cpu;
- 
--	if (likely(!tracer_enabled))
-+	if (likely(!__get_cpu_var(tracing_cpu)))
- 		return;
- 
- 	local_save_flags(flags);
- 
--	if (!irqs_disabled_flags(flags))
--		return;
--
- 	cpu = raw_smp_processor_id();
- 	data = tr->data[cpu];
- 	disabled = atomic_inc_return(&data->disabled);
-@@ -171,23 +198,29 @@ start_critical_timing(unsigned long ip, 
- 	if (likely(!tracer_enabled))
- 		return;
- 
-+	if (__get_cpu_var(tracing_cpu))
-+		return;
-+
- 	cpu = raw_smp_processor_id();
- 	data = tr->data[cpu];
- 
- 	if (unlikely(!data) || unlikely(!data->trace) ||
--	    data->critical_start || atomic_read(&data->disabled))
-+	    atomic_read(&data->disabled))
- 		return;
- 
- 	atomic_inc(&data->disabled);
- 
- 	data->critical_sequence = max_sequence;
- 	data->preempt_timestamp = now(cpu);
--	data->critical_start = parent_ip;
-+	data->critical_start = parent_ip ? : ip;
- 	tracing_reset(data);
- 
- 	local_save_flags(flags);
-+
- 	ftrace(tr, data, ip, parent_ip, flags);
- 
-+	__get_cpu_var(tracing_cpu) = 1;
-+
- 	atomic_dec(&data->disabled);
- }
- 
-@@ -199,7 +232,13 @@ stop_critical_timing(unsigned long ip, u
- 	struct trace_array_cpu *data;
- 	unsigned long flags;
- 
--	if (likely(!tracer_enabled))
-+	/* Always clear the tracing cpu on stopping the trace */
-+	if (unlikely(__get_cpu_var(tracing_cpu)))
-+		__get_cpu_var(tracing_cpu) = 0;
-+	else
-+		return;
-+
-+	if (!tracer_enabled)
- 		return;
- 
- 	cpu = raw_smp_processor_id();
-@@ -212,49 +251,35 @@ stop_critical_timing(unsigned long ip, u
- 	atomic_inc(&data->disabled);
- 	local_save_flags(flags);
- 	ftrace(tr, data, ip, parent_ip, flags);
--	check_critical_timing(tr, data, parent_ip, cpu);
-+	check_critical_timing(tr, data, parent_ip ? : ip, cpu);
- 	data->critical_start = 0;
- 	atomic_dec(&data->disabled);
- }
- 
-+/* start and stop critical timings used to for stoppage (in idle) */
- void notrace start_critical_timings(void)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (preempt_trace() || irq_trace())
- 		start_critical_timing(CALLER_ADDR0, CALLER_ADDR1);
- }
- 
- void notrace stop_critical_timings(void)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (preempt_trace() || irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, CALLER_ADDR1);
- }
- 
-+#ifdef CONFIG_IRQSOFF_TRACER
- #ifdef CONFIG_PROVE_LOCKING
- void notrace time_hardirqs_on(unsigned long a0, unsigned long a1)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irq_trace())
- 		stop_critical_timing(a0, a1);
- }
- 
- void notrace time_hardirqs_off(unsigned long a0, unsigned long a1)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irq_trace())
- 		start_critical_timing(a0, a1);
- }
- 
-@@ -289,49 +314,46 @@ inline void print_irqtrace_events(struct
+--- linux.orig/kernel/trace/ftrace.c
++++ linux/kernel/trace/ftrace.c
+@@ -13,10 +13,19 @@
+  *  Copyright (C) 2004 William Lee Irwin III
   */
- void notrace trace_hardirqs_on(void)
+ 
+-#include <linux/module.h>
++#include <linux/stop_machine.h>
++#include <linux/clocksource.h>
++#include <linux/kallsyms.h>
++#include <linux/kthread.h>
++#include <linux/hardirq.h>
+ #include <linux/ftrace.h>
++#include <linux/module.h>
++#include <linux/hash.h>
++#include <linux/list.h>
++
++#include "trace.h"
+ 
+-static DEFINE_SPINLOCK(ftrace_func_lock);
++static DEFINE_SPINLOCK(ftrace_lock);
+ static struct ftrace_ops ftrace_list_end __read_mostly =
+ {
+ 	.func = ftrace_stub,
+@@ -44,21 +53,21 @@ notrace void ftrace_list_func(unsigned l
+ }
+ 
+ /**
+- * register_ftrace_function - register a function for profiling
+- * @ops - ops structure that holds the function for profiling.
+- *
+- * Register a function to be called by all functions in the
+- * kernel.
++ * clear_ftrace_function - reset the ftrace function
+  *
+- * Note: @ops->func and all the functions it calls must be labeled
+- *       with "notrace", otherwise it will go into a
+- *       recursive loop.
++ * This NULLs the ftrace function and in essence stops
++ * tracing.  There may be lag
+  */
+-int register_ftrace_function(struct ftrace_ops *ops)
++void clear_ftrace_function(void)
  {
 -	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, CALLER_ADDR1);
- }
- EXPORT_SYMBOL(trace_hardirqs_on);
- 
- void notrace trace_hardirqs_off(void)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irq_trace())
- 		start_critical_timing(CALLER_ADDR0, CALLER_ADDR1);
- }
- EXPORT_SYMBOL(trace_hardirqs_off);
- 
- void notrace trace_hardirqs_on_caller(unsigned long caller_addr)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irq_trace())
- 		stop_critical_timing(CALLER_ADDR0, caller_addr);
- }
- EXPORT_SYMBOL(trace_hardirqs_on_caller);
- 
- void notrace trace_hardirqs_off_caller(unsigned long caller_addr)
- {
--	unsigned long flags;
--
--	local_save_flags(flags);
--
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irq_trace())
- 		start_critical_timing(CALLER_ADDR0, caller_addr);
- }
- EXPORT_SYMBOL(trace_hardirqs_off_caller);
- 
- #endif /* CONFIG_PROVE_LOCKING */
-+#endif /*  CONFIG_IRQSOFF_TRACER */
-+
-+#ifdef CONFIG_PREEMPT_TRACER
-+void notrace trace_preempt_on(unsigned long a0, unsigned long a1)
-+{
-+	stop_critical_timing(a0, a1);
++	ftrace_trace_function = ftrace_stub;
 +}
 +
-+void notrace trace_preempt_off(unsigned long a0, unsigned long a1)
++static int notrace __register_ftrace_function(struct ftrace_ops *ops)
 +{
-+	start_critical_timing(a0, a1);
-+}
-+#endif /* CONFIG_PREEMPT_TRACER */
++	/* Should never be called by interrupts */
++	spin_lock(&ftrace_lock);
  
- static void start_irqsoff_tracer(struct trace_array *tr)
- {
-@@ -345,7 +367,7 @@ static void stop_irqsoff_tracer(struct t
- 	tracer_enabled = 0;
- }
- 
--static void irqsoff_tracer_init(struct trace_array *tr)
-+static void __irqsoff_tracer_init(struct trace_array *tr)
- {
- 	irqsoff_trace = tr;
- 	/* make sure that the tracer is visibel */
-@@ -382,6 +404,13 @@ static void notrace irqsoff_tracer_close
- 		start_irqsoff_tracer(iter->tr);
- }
- 
-+#ifdef CONFIG_IRQSOFF_TRACER
-+static void irqsoff_tracer_init(struct trace_array *tr)
-+{
-+	trace_type = TRACER_IRQS_OFF;
+-	spin_lock_irqsave(&ftrace_func_lock, flags);
+ 	ops->next = ftrace_list;
+ 	/*
+ 	 * We are entering ops into the ftrace_list but another
+@@ -68,6 +77,7 @@ int register_ftrace_function(struct ftra
+ 	 */
+ 	smp_wmb();
+ 	ftrace_list = ops;
 +
-+	__irqsoff_tracer_init(tr);
-+}
- static struct tracer irqsoff_tracer __read_mostly =
- {
- 	.name		= "irqsoff",
-@@ -392,10 +421,65 @@ static struct tracer irqsoff_tracer __re
- 	.ctrl_update	= irqsoff_tracer_ctrl_update,
- 	.print_max	= 1,
- };
-+# define register_irqsoff(trace) register_tracer(&trace)
-+#else
-+# define register_irqsoff(trace) do { } while (0)
-+#endif
+ 	/*
+ 	 * For one func, simply call it directly.
+ 	 * For more than one func, call the chain.
+@@ -76,28 +86,22 @@ int register_ftrace_function(struct ftra
+ 		ftrace_trace_function = ops->func;
+ 	else
+ 		ftrace_trace_function = ftrace_list_func;
+-	spin_unlock_irqrestore(&ftrace_func_lock, flags);
 +
-+#ifdef CONFIG_PREEMPT_TRACER
-+static void preemptoff_tracer_init(struct trace_array *tr)
-+{
-+	trace_type = TRACER_PREEMPT_OFF;
-+
-+	__irqsoff_tracer_init(tr);
-+}
-+
-+static struct tracer preemptoff_tracer __read_mostly =
-+{
-+	.name		= "preemptoff",
-+	.init		= preemptoff_tracer_init,
-+	.reset		= irqsoff_tracer_reset,
-+	.open		= irqsoff_tracer_open,
-+	.close		= irqsoff_tracer_close,
-+	.ctrl_update	= irqsoff_tracer_ctrl_update,
-+	.print_max	= 1,
-+};
-+# define register_preemptoff(trace) register_tracer(&trace)
-+#else
-+# define register_preemptoff(trace) do { } while (0)
-+#endif
-+
-+#if defined(CONFIG_IRQSOFF_TRACER) && \
-+	defined(CONFIG_PREEMPT_TRACER)
-+
-+static void preemptirqsoff_tracer_init(struct trace_array *tr)
-+{
-+	trace_type = TRACER_IRQS_OFF | TRACER_PREEMPT_OFF;
-+
-+	__irqsoff_tracer_init(tr);
-+}
-+
-+static struct tracer preemptirqsoff_tracer __read_mostly =
-+{
-+	.name		= "preemptirqsoff",
-+	.init		= preemptirqsoff_tracer_init,
-+	.reset		= irqsoff_tracer_reset,
-+	.open		= irqsoff_tracer_open,
-+	.close		= irqsoff_tracer_close,
-+	.ctrl_update	= irqsoff_tracer_ctrl_update,
-+	.print_max	= 1,
-+};
-+
-+# define register_preemptirqsoff(trace) register_tracer(&trace)
-+#else
-+# define register_preemptirqsoff(trace) do { } while (0)
-+#endif
- 
- __init static int init_irqsoff_tracer(void)
- {
--	register_tracer(&irqsoff_tracer);
-+	register_irqsoff(irqsoff_tracer);
-+	register_preemptoff(preemptoff_tracer);
-+	register_preemptirqsoff(preemptirqsoff_tracer);
++	spin_unlock(&ftrace_lock);
  
  	return 0;
+ }
+ 
+-/**
+- * unregister_ftrace_function - unresgister a function for profiling.
+- * @ops - ops structure that holds the function to unregister
+- *
+- * Unregister a function that was added to be called by ftrace profiling.
+- */
+-int unregister_ftrace_function(struct ftrace_ops *ops)
++static int notrace __unregister_ftrace_function(struct ftrace_ops *ops)
+ {
+-	unsigned long flags;
+ 	struct ftrace_ops **p;
+ 	int ret = 0;
+ 
+-	spin_lock_irqsave(&ftrace_func_lock, flags);
++	spin_lock(&ftrace_lock);
+ 
+ 	/*
+-	 * If we are the only function, then the ftrace pointer is
+-	 * pointing directly to that function.
++	 * If we are removing the last function, then simply point
++	 * to the ftrace_stub.
+ 	 */
+ 	if (ftrace_list == ops && ops->next == &ftrace_list_end) {
+ 		ftrace_trace_function = ftrace_stub;
+@@ -117,22 +121,310 @@ int unregister_ftrace_function(struct ft
+ 	*p = (*p)->next;
+ 
+ 	/* If we only have one func left, then call that directly */
+-	if (ftrace_list->next == &ftrace_list_end)
++	if (ftrace_list == &ftrace_list_end ||
++	    ftrace_list->next == &ftrace_list_end)
+ 		ftrace_trace_function = ftrace_list->func;
+ 
+  out:
+-	spin_unlock_irqrestore(&ftrace_func_lock, flags);
++	spin_unlock(&ftrace_lock);
++
++	return ret;
++}
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++
++static struct hlist_head ftrace_hash[FTRACE_HASHSIZE];
+ 
++static DEFINE_PER_CPU(int, ftrace_shutdown_disable_cpu);
++
++static DEFINE_SPINLOCK(ftrace_shutdown_lock);
++static DEFINE_MUTEX(ftraced_lock);
++
++static int ftraced_trigger;
++static int ftraced_suspend;
++
++static int ftrace_record_suspend;
++
++static inline int
++notrace ftrace_ip_in_hash(unsigned long ip, unsigned long key)
++{
++	struct dyn_ftrace *p;
++	struct hlist_node *t;
++	int found = 0;
++
++	hlist_for_each_entry(p, t, &ftrace_hash[key], node) {
++		if (p->ip == ip) {
++			found = 1;
++			break;
++		}
++	}
++
++	return found;
++}
++
++static inline void notrace
++ftrace_add_hash(struct dyn_ftrace *node, unsigned long key)
++{
++	hlist_add_head(&node->node, &ftrace_hash[key]);
++}
++
++static void notrace
++ftrace_record_ip(unsigned long ip, unsigned long parent_ip)
++{
++	struct dyn_ftrace *node;
++	unsigned long flags;
++	unsigned long key;
++	int resched;
++	int atomic;
++
++	resched = need_resched();
++	preempt_disable_notrace();
++
++	/* We simply need to protect against recursion */
++	__get_cpu_var(ftrace_shutdown_disable_cpu)++;
++	if (__get_cpu_var(ftrace_shutdown_disable_cpu) != 1)
++		goto out;
++
++	if (unlikely(ftrace_record_suspend))
++		goto out;
++
++	key = hash_long(ip, FTRACE_HASHBITS);
++
++	WARN_ON_ONCE(key >= FTRACE_HASHSIZE);
++
++	if (ftrace_ip_in_hash(ip, key))
++		goto out;
++
++	atomic = irqs_disabled();
++
++	spin_lock_irqsave(&ftrace_shutdown_lock, flags);
++
++	/* This ip may have hit the hash before the lock */
++	if (ftrace_ip_in_hash(ip, key))
++		goto out_unlock;
++
++	/*
++	 * There's a slight race that the ftraced will update the
++	 * hash and reset here. The arch alloc is responsible
++	 * for seeing if the IP has already changed, and if
++	 * it has, the alloc will fail.
++	 */
++	node = ftrace_alloc_shutdown_node(ip);
++	if (!node)
++		goto out_unlock;
++
++	node->ip = ip;
++
++	ftrace_add_hash(node, key);
++
++	ftraced_trigger = 1;
++
++ out_unlock:
++	spin_unlock_irqrestore(&ftrace_shutdown_lock, flags);
++ out:
++	__get_cpu_var(ftrace_shutdown_disable_cpu)--;
++
++	/* prevent recursion with scheduler */
++	if (resched)
++		preempt_enable_no_resched_notrace();
++	else
++		preempt_enable_notrace();
++}
++
++static struct ftrace_ops ftrace_shutdown_ops __read_mostly =
++{
++	.func = ftrace_record_ip,
++};
++
++
++static int notrace __ftrace_modify_code(void *data)
++{
++	void (*func)(void) = data;
++
++	func();
+ 	return 0;
+ }
+ 
++static void notrace ftrace_run_startup_code(void)
++{
++	stop_machine_run(__ftrace_modify_code, ftrace_startup_code, NR_CPUS);
++}
++
++static void notrace ftrace_run_shutdown_code(void)
++{
++	stop_machine_run(__ftrace_modify_code, ftrace_shutdown_code, NR_CPUS);
++}
++
++static void notrace ftrace_startup(void)
++{
++	mutex_lock(&ftraced_lock);
++	ftraced_suspend++;
++	if (ftraced_suspend != 1)
++		goto out;
++	__unregister_ftrace_function(&ftrace_shutdown_ops);
++
++	ftrace_run_startup_code();
++ out:
++	mutex_unlock(&ftraced_lock);
++}
++
++static void notrace ftrace_shutdown(void)
++{
++	mutex_lock(&ftraced_lock);
++	ftraced_suspend--;
++	if (ftraced_suspend)
++		goto out;
++
++	ftrace_run_shutdown_code();
++
++	__register_ftrace_function(&ftrace_shutdown_ops);
++ out:
++	mutex_unlock(&ftraced_lock);
++}
++
++static cycle_t		ftrace_update_time;
++static unsigned long	ftrace_update_cnt;
++unsigned long		ftrace_update_tot_cnt;
++
++static int notrace __ftrace_update_code(void *ignore)
++{
++	struct dyn_ftrace *p;
++	struct hlist_head head;
++	struct hlist_node *t;
++	cycle_t start, stop;
++	int i;
++
++	/* Don't be calling ftrace ops now */
++	__unregister_ftrace_function(&ftrace_shutdown_ops);
++
++	start = now(raw_smp_processor_id());
++	ftrace_update_cnt = 0;
++
++	/* No locks needed, the machine is stopped! */
++	for (i = 0; i < FTRACE_HASHSIZE; i++) {
++		if (hlist_empty(&ftrace_hash[i]))
++			continue;
++
++		head = ftrace_hash[i];
++		INIT_HLIST_HEAD(&ftrace_hash[i]);
++
++		/* all CPUS are stopped, we are safe to modify code */
++		hlist_for_each_entry(p, t, &head, node) {
++			ftrace_code_disable(p);
++			ftrace_update_cnt++;
++		}
++
++	}
++
++	stop = now(raw_smp_processor_id());
++	ftrace_update_time = stop - start;
++	ftrace_update_tot_cnt += ftrace_update_cnt;
++
++	__register_ftrace_function(&ftrace_shutdown_ops);
++
++	return 0;
++}
++
++static void notrace ftrace_update_code(void)
++{
++	stop_machine_run(__ftrace_update_code, NULL, NR_CPUS);
++}
++
++static int notrace ftraced(void *ignore)
++{
++	unsigned long usecs;
++
++	set_current_state(TASK_INTERRUPTIBLE);
++
++	while (!kthread_should_stop()) {
++
++		/* check once a second */
++		schedule_timeout(HZ);
++
++		mutex_lock(&ftraced_lock);
++		if (ftraced_trigger && !ftraced_suspend) {
++			ftrace_record_suspend++;
++			ftrace_update_code();
++			usecs = nsecs_to_usecs(ftrace_update_time);
++			if (ftrace_update_tot_cnt > 100000) {
++				ftrace_update_tot_cnt = 0;
++				pr_info("hm, dftrace overflow: %lu change%s"
++					 " (%lu total) in %lu usec%s\n",
++					ftrace_update_cnt,
++					ftrace_update_cnt != 1 ? "s" : "",
++					ftrace_update_tot_cnt,
++					usecs, usecs != 1 ? "s" : "");
++				WARN_ON_ONCE(1);
++			}
++			ftraced_trigger = 0;
++			ftrace_record_suspend--;
++		}
++		mutex_unlock(&ftraced_lock);
++
++		ftrace_shutdown_replenish();
++
++		set_current_state(TASK_INTERRUPTIBLE);
++	}
++	__set_current_state(TASK_RUNNING);
++	return 0;
++}
++
++static int __init notrace ftrace_shutdown_init(void)
++{
++	struct task_struct *p;
++	int ret;
++
++	ret = ftrace_shutdown_arch_init();
++	if (ret)
++		return ret;
++
++	p = kthread_run(ftraced, NULL, "ftraced");
++	if (IS_ERR(p))
++		return -1;
++
++	__register_ftrace_function(&ftrace_shutdown_ops);
++
++	return 0;
++}
++
++core_initcall(ftrace_shutdown_init);
++#else
++# define ftrace_startup()	do { } while (0)
++# define ftrace_shutdown()	do { } while (0)
++#endif /* CONFIG_DYNAMIC_FTRACE */
++
+ /**
+- * clear_ftrace_function - reset the ftrace function
++ * register_ftrace_function - register a function for profiling
++ * @ops - ops structure that holds the function for profiling.
+  *
+- * This NULLs the ftrace function and in essence stops
+- * tracing.  There may be lag
++ * Register a function to be called by all functions in the
++ * kernel.
++ *
++ * Note: @ops->func and all the functions it calls must be labeled
++ *       with "notrace", otherwise it will go into a
++ *       recursive loop.
+  */
+-void clear_ftrace_function(void)
++int register_ftrace_function(struct ftrace_ops *ops)
+ {
+-	ftrace_trace_function = ftrace_stub;
++	ftrace_startup();
++
++	return __register_ftrace_function(ops);
++}
++
++/**
++ * unregister_ftrace_function - unresgister a function for profiling.
++ * @ops - ops structure that holds the function to unregister
++ *
++ * Unregister a function that was added to be called by ftrace profiling.
++ */
++int unregister_ftrace_function(struct ftrace_ops *ops)
++{
++	int ret;
++
++	ret = __unregister_ftrace_function(ops);
++
++	if (ftrace_list == &ftrace_list_end)
++		ftrace_shutdown();
++
++	return ret;
  }
