@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYBJXjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYBJXqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYBJXjV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 18:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYBJXjJ
+	id S1756182AbYBJXqE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 18:46:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYBJXpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 18:39:09 -0500
-Received: from 1wt.eu ([62.212.114.60]:1833 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751698AbYBJXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 18:39:08 -0500
-Date: Mon, 11 Feb 2008 00:37:04 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       bastian@waldi.eu.org, ndenev@gmail.com, oliver.pntr@gmail.com
-Subject: Re: [PATCH] splice: fix user pointer access in get_iovec_page_array()
-Message-ID: <20080210233703.GR8953@1wt.eu>
-References: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 10 Feb 2008 18:45:54 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:37660 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752328AbYBJXpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 18:45:53 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH] Silent compiler warning introduced by commit 801c135ce73d5df1caf3eca35b66a10824ae0707 (UBI: Unsorted Block Images)
+Date: Mon, 11 Feb 2008 01:44:05 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20080201.769323)
+Cc: linux-kernel@vger.kernel.org, dedekind@linutronix.de, haver@vnet.ibm.com,
+       torvalds@linux-foundation.org
+References: <200802100537.47634.caglar@pardus.org.tr> <47AEB829.8060104@gmail.com>
+In-Reply-To: <47AEB829.8060104@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.11
+Message-Id: <200802110144.07549.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 04:47:57PM +0200, Pekka J Enberg wrote:
-> From: Bastian Blank <bastian@waldi.eu.org>
-> 
-> The commit 8811930dc74a503415b35c4a79d14fb0b408a361 ("splice: missing user
-> pointer access verification") added access_ok() to copy_from_user_mmap_sem()
-> which only ensures we can copy the struct iovecs from userspace to the kernel
-> but we also must check whether we can access the actual memory region pointed
-> to by the struct iovec to close the local root exploit.
-> 
-> Cc: <stable@kernel.org>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
-> Bastian, can I have your Signed-off-by for this, please? Oliver, Niki, can 
-> you please confirm this closes the hole?
+Hi;
 
-Pekka, I confirm that it also closes the hole once backported to 2.6.22.
+10 Şub 2008 Paz tarihinde, Jiri Slaby şunları yazmıştı: 
+> I think this is not correct. You change the err which caused the failure. You 
+> change it even to 0 if it doesn't fail and the whole function will seem like 
+> non-failing.
 
-Willy
+My bad, sorry for not looking carefully. Assuming a refactoring is not desired for just a compiler warning, is following acceptable (this kind of plain messages seems heavily used in vmt.c, so i'm again assuming its OK to use such style)?
 
+commit 801c135ce73d5df1caf3eca35b66a10824ae0707 (UBI: Unsorted Block Images) introduced the warning
+
+drivers/mtd/ubi/vmt.c: In function `ubi_create_volume':
+drivers/mtd/ubi/vmt.c:379: warning: statement with no effect
+
+
+ drivers/mtd/ubi/vmt.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mtd/ubi/vmt.c b/drivers/mtd/ubi/vmt.c
+index a3ca225..46410f6 100644
+--- a/drivers/mtd/ubi/vmt.c
++++ b/drivers/mtd/ubi/vmt.c
+@@ -376,7 +376,8 @@ out_sysfs:
+ 	get_device(&vol->dev);
+ 	volume_sysfs_close(vol);
+ out_gluebi:
+-	ubi_destroy_gluebi(vol);
++	if(ubi_destroy_gluebi(vol))
++		ubi_err("cannot destroy device");
+ out_cdev:
+ 	cdev_del(&vol->cdev);
+ out_mapping:
+
+
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
