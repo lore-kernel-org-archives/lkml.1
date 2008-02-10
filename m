@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbYBJDVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbYBJDWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbYBJDVR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 22:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbYBJDVF
+	id S1755770AbYBJDWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 22:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755614AbYBJDWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 22:21:05 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:57501 "EHLO uludag.org.tr"
+	Sat, 9 Feb 2008 22:22:03 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:41943 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755560AbYBJDVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 22:21:04 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Update kernel/.gitignore with new generated files
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, tglx@linutronix.de
-Content-Disposition: inline
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-Date: Sun, 10 Feb 2008 05:19:03 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <200802100519.06720.caglar@pardus.org.tr>
+	id S1755560AbYBJDWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 22:22:02 -0500
+Date: Sat, 9 Feb 2008 21:21:56 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       gregkh@suse.de, rusty@rustcorp.com.au
+Subject: Re: [git pull] CPU isolation extensions (updated)
+Message-Id: <20080209212156.ecc72fee.pj@sgi.com>
+In-Reply-To: <47AE6A8B.6030908@qualcomm.com>
+References: <47AE6A8B.6030908@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+Max wrote:
+> Linus, please pull CPU isolation extensions from
 
-Following patch updates kernel/.gitignore with new auto-generated files
+Did I miss something in this discussion?  I thought
+Ingo was quite clear, and Linus pretty clear too,
+that this patch should bake in *-mm or some such
+place for a bit first.
 
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
-
- kernel/.gitignore |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/.gitignore b/kernel/.gitignore
-index f2ab700..ab4f109 100644
---- a/kernel/.gitignore
-+++ b/kernel/.gitignore
-@@ -3,3 +3,4 @@
- #
- config_data.h
- config_data.gz
-+timeconst.h
-
-Cheers
 -- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
