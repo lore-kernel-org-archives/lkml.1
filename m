@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbYBJN7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbYBJN7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751923AbYBJN7W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 08:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYBJN7L
+	id S1752570AbYBJN7l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 08:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYBJN7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 08:59:11 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46695 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYBJN7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 08:59:09 -0500
-Date: Sun, 10 Feb 2008 15:59:05 +0200
-From: Adrian Bunk <bunk@kernel.org>
+	Sun, 10 Feb 2008 08:59:22 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54135 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611AbYBJN7V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 08:59:21 -0500
+Date: Sun, 10 Feb 2008 13:58:52 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Boaz Harrosh <bharrosh@panasas.com>
 Cc: Adrian Bunk <adrian.bunk@movial.fi>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
-       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Subject: Re: scsi/arm/fas216.c compile error
-Message-ID: <20080210135905.GB2436@cs181133002.pp.htv.fi>
+Message-ID: <20080210135851.GB25703@flint.arm.linux.org.uk>
 References: <20080209000413.GE6505@cs181133002.pp.htv.fi> <47AEF6FD.8080801@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <47AEF6FD.8080801@panasas.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sun, Feb 10, 2008 at 03:07:09PM +0200, Boaz Harrosh wrote:
-> On Sat, Feb 09 2008 at 2:04 +0200, Adrian Bunk <adrian.bunk@movial.fi> wrote:
-> > Commit 30b0c37b27485a9cb897bfe3824f6f517b8c80d6 causes the following 
-> > compile error:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      drivers/scsi/arm/fas216.o
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/arm/fas216.c: In function 'fas216_std_done':
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/arm/fas216.c:2120: error: 'struct scsi_cmnd' has no member named 'request_bufflen'
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/arm/fas216.c:2122: error: 'struct scsi_cmnd' has no member named 'use_sg'
-> > make[4]: *** [drivers/scsi/arm/fas216.o] Error 1
-> > 
-> > <--  snip  -->
-> > 
-> > cu
-> > Adrian
-> > 
 > It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
 >   [SCSI] arm: convert to accessors and !use_sg cleanup
->...
+> 
+> Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
+> to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
+> we finally managed a Tested-by:.
+> 
+> I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
+> schedule.
 
-fas216.c != acornscsi.c
+Oh, I was ill for most of December, particularly at the time that you
+sent the patch, and by the time I recovered, it was buried in my mailbox.
 
-> Boaz
-
-cu
-Adrian
+Suggest you have some consideration for others who might not be able to
+do your beg and call at the immediate moment that you want it, and
+consider that their email management skills may not be as l33t as yours.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
