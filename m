@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbYBJTST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbYBJTUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbYBJTST (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 14:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYBJTSJ
+	id S1755151AbYBJTUW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 14:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYBJTUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 14:18:09 -0500
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:42620 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752914AbYBJTSI (ORCPT
+	Sun, 10 Feb 2008 14:20:09 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:11916 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbYBJTUH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 14:18:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=r9IpajrATzjwWatCA1ftQsqxU7AY9g3YPS87gqelGKhCFQRnCtMThSaRkzKq6QE0sbp23d4Qxo79l72rXUmNNp56/10yXuOGvmVcz3piVhB6QNQoUsH4EEN162YjTl1Brak9iGXpM5T1vayTNCnN+eo3H9cYUqYKkeElv8Yh58g=  ;
-X-YMail-OSG: wkQkUt4VM1mAHeUg_rU0Ajw3LDRmIGCUwbjNjt1kGkU7j_Cxz81MZx9pqSZUdiZAr9vm4.dKuw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Subject: Re: [PATCH] introduce is_valid_gpio() predicate and use it in gpiolib.c
-Date: Sun, 10 Feb 2008 11:18:04 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0802102002270.4417@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0802102002270.4417@axis700.grange>
+	Sun, 10 Feb 2008 14:20:07 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=ffrYZ8jwQWnxM7t4DiJ29xXZgtfqW60Pc0fwpVSakh+3VY5gECqxT26Be0IFuXX3T
+	V12yi99XibfuIpNtEbong==
+Date: Sun, 10 Feb 2008 11:19:41 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Martin Habets <errandir_news@mph.eclipse.co.uk>
+cc: Adrian Bunk <bunk@kernel.org>, wli@holomorphy.com,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: sparc compile error
+In-Reply-To: <20080210153355.GA6737@palantir8>
+Message-ID: <alpine.DEB.1.00.0802101117510.5043@chino.kir.corp.google.com>
+References: <20080207231230.GE7198@cs181133002.pp.htv.fi> <alpine.DEB.1.00.0802071538440.15050@chino.kir.corp.google.com> <20080210153355.GA6737@palantir8>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802101118.04476.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I like this, but can't resist making the "Andrew Comment":
+On Sun, 10 Feb 2008, Martin Habets wrote:
 
-> --- a/include/asm-generic/gpio.h
-> +++ b/include/asm-generic/gpio.h
-> @@ -16,6 +16,8 @@
->  #define ARCH_NR_GPIOS		256
->  #endif
->  
-> +#define is_valid_gpio(gpio)	((unsigned int)(gpio) < ARCH_NR_GPIOS)
-
-Please make this an inline C function.  :)
-
-
-> +
->  struct seq_file;
->  
->  /**
+> This still gives build errors with CGROUP_MEM_CONT off.
+> Some ifdef-ing will fix that.
 > 
 
+Please try Linus' latest git that includes 60c12b12 (from yesterday) that 
+fixes this issue.
 
+		David
