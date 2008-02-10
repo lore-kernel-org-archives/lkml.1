@@ -1,116 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbYBJVRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYBJVV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757517AbYBJVRy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYBJVRm
+	id S1755353AbYBJVV2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:21:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbYBJVVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:17:42 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:28890 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbYBJVRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:17:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=KXP8xP1v0STwz5wxUUqwCEizw9UfvN720T58cOqmXROh5/DGhw0UHQfExQr3qnSLEz6ULrkrO7Prxz0hH6g7NVwX4hkouOUv4J9bA0DpA3PedhkBq2H/tbm0Z/CbX0TzUUcole/BigC0I5Ec7WrkXpsS47Fx+D1eq8+5pbOeULw=
-Date: Sun, 10 Feb 2008 21:17:30 +0000 (GMT)
-To: jgarzik@pobox.com, linux-ide@vger.kernel.org
-cc: linux-kernel@vger.kernel.org, saeed@marvell.com, mlord@pobox.com
-Subject: [PATCH] sata_mv: platform driver allocs dma without create
-Message-ID: <alpine.DEB.1.00.0802102117150.9668@git.byronbradley.co.uk>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Byron Bradley <byron.bbradley@gmail.com>
+	Sun, 10 Feb 2008 16:21:20 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56006 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750722AbYBJVVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 16:21:19 -0500
+Date: Sun, 10 Feb 2008 22:21:24 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [rft] s2ram wakeup moves to .c, could fix few machines
+Message-ID: <20080210212124.GA14739@uranus.ravnborg.org>
+References: <20080205190600.GB11613@elf.ucw.cz> <200802082301.51582.rjw@sisk.pl> <20080208220834.GA1631@elf.ucw.cz> <200802090118.50418.rjw@sisk.pl> <47ACF488.7070502@zytor.com> <20080210211457.GJ15662@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080210211457.GJ15662@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the sata_mv driver is used as a platform driver,
-mv_create_dma_pools() is never called so it fails when trying
-to alloc in mv_pool_start().
+On Sun, Feb 10, 2008 at 10:14:57PM +0100, Pavel Machek wrote:
+> On Fri 2008-02-08 16:32:08, H. Peter Anvin wrote:
+> > Rafael J. Wysocki wrote:
+> >>
+> >> Consolidated patch is appended.  I'll test it tomorrow on x86-64.
+> >>
+> >> I'd like to add the cleaned up beeping code to it and perhaps try to push it
+> >> for -mm testing without any further changes.  We can still do more cleanups in
+> >> followup patches.
+> >>
+> >
+> > The other thing to figure out is to what extent we can clean up the 
+> > conditionals in the video mode code by refactoring.  All they really do 
+> > here is save space by removing functionality not needed for wakeup, because 
+> > I didn't know how much space was realistic.
+> >
+> > It's possible we can remove them altogether by having a dummy boot_params 
+> > structure (4K).
+> 
+> I'd say that few #ifdefs are acceptable if we save 4K, but...
+> 
+> Sam... is there something that urgently needs fixing?
 
-Signed-off-by: Byron Bradley <byron.bbradley@gmail.com>
-Acked-by: Mark Lord <mlord@pobox.com>
----
+I will prepare some build system bits later.
+So please use what you have today and I can always clean it up
+when I have something better.
 
-Mark, based on the comment from Andrew Morton on the "sata_mv: fix loop
-with last port" patch I have changed your Signed-off-by to an Acked-by.
-Hopefully thats correct.
+So for the bits I have competence in - no issues.
 
- drivers/ata/sata_mv.c |   44 ++++++++++++++++++++++++--------------------
- 1 files changed, 24 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index f5333ce..04b5717 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -2881,6 +2881,26 @@ done:
- 	return rc;
- }
-
-+static int mv_create_dma_pools(struct mv_host_priv *hpriv, struct device *dev)
-+{
-+	hpriv->crqb_pool   = dmam_pool_create("crqb_q", dev, MV_CRQB_Q_SZ,
-+							     MV_CRQB_Q_SZ, 0);
-+	if (!hpriv->crqb_pool)
-+		return -ENOMEM;
-+
-+	hpriv->crpb_pool   = dmam_pool_create("crpb_q", dev, MV_CRPB_Q_SZ,
-+							     MV_CRPB_Q_SZ, 0);
-+	if (!hpriv->crpb_pool)
-+		return -ENOMEM;
-+
-+	hpriv->sg_tbl_pool = dmam_pool_create("sg_tbl", dev, MV_SG_TBL_SZ,
-+							     MV_SG_TBL_SZ, 0);
-+	if (!hpriv->sg_tbl_pool)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
- /**
-  *      mv_platform_probe - handle a positive probe of an soc Marvell
-  *      host
-@@ -2934,6 +2954,10 @@ static int mv_platform_probe(struct platform_device *pdev)
- 	hpriv->base = ioremap(res->start, res->end - res->start + 1);
- 	hpriv->base -= MV_SATAHC0_REG_BASE;
-
-+	rc = mv_create_dma_pools(hpriv, &pdev->dev);
-+	if (rc)
-+		return rc;
-+
- 	/* initialize adapter */
- 	rc = mv_init_host(host, chip_soc);
- 	if (rc)
-@@ -3070,26 +3094,6 @@ static void mv_print_info(struct ata_host *host)
- 	       scc_s, (MV_HP_FLAG_MSI & hpriv->hp_flags) ? "MSI" : "INTx");
- }
-
--static int mv_create_dma_pools(struct mv_host_priv *hpriv, struct device *dev)
--{
--	hpriv->crqb_pool   = dmam_pool_create("crqb_q", dev, MV_CRQB_Q_SZ,
--							     MV_CRQB_Q_SZ, 0);
--	if (!hpriv->crqb_pool)
--		return -ENOMEM;
--
--	hpriv->crpb_pool   = dmam_pool_create("crpb_q", dev, MV_CRPB_Q_SZ,
--							     MV_CRPB_Q_SZ, 0);
--	if (!hpriv->crpb_pool)
--		return -ENOMEM;
--
--	hpriv->sg_tbl_pool = dmam_pool_create("sg_tbl", dev, MV_SG_TBL_SZ,
--							     MV_SG_TBL_SZ, 0);
--	if (!hpriv->sg_tbl_pool)
--		return -ENOMEM;
--
--	return 0;
--}
--
- /**
-  *      mv_pci_init_one - handle a positive probe of a PCI Marvell host
-  *      @pdev: PCI device found
--- 
-1.5.4.rc2.38.gd6da3
-
+	Sam
