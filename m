@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYBJV0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYBJVaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYBJV0U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYBJV0L
+	id S1754631AbYBJVaQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:30:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYBJVaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:26:11 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:51598 "EHLO e1.ny.us.ibm.com"
+	Sun, 10 Feb 2008 16:30:05 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56756 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYBJV0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:26:10 -0500
-Date: Sun, 10 Feb 2008 13:26:05 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Adam Litke <agl@us.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: 2.6.24-git20 -- BUG: sleeping function called from invalid
-	context at include/asm/uaccess_32.h:449
-Message-ID: <20080210212605.GB17442@us.ibm.com>
-References: <a44ae5cd0802091103s4c24c70fyc747d9c4ab9a9897@mail.gmail.com> <20080209162643.fd3822f1.akpm@linux-foundation.org> <20080209163812.704cf282@laptopd505.fenrus.org>
-MIME-Version: 1.0
+	id S1751051AbYBJVaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 16:30:04 -0500
+Date: Sun, 10 Feb 2008 22:30:10 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Kiszka <jan.kiszka@web.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [0/6] kgdb light
+Message-ID: <20080210213010.GB14739@uranus.ravnborg.org>
+References: <20080210071304.GA3788@elte.hu> <20080210104709.GB10790@uranus.ravnborg.org> <47AEFB40.5070208@web.de> <20080210193153.GC13733@uranus.ravnborg.org> <20080210211641.GC29507@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080209163812.704cf282@laptopd505.fenrus.org>
-X-Operating-System: Linux 2.6.24-g8561b089 (x86_64)
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080210211641.GC29507@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09.02.2008 [16:38:12 -0800], Arjan van de Ven wrote:
-> On Sat, 9 Feb 2008 16:26:43 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > Ugh, how did I let that one through?
-> > 
-> > Guys, how often mut it be said?  PLEASE always test all code with all
-> > kernel deubg options enabled.
+> btw., we should convert all those current:
 > 
-> maybe we should make a CONFIG_KERNEL_DEVELOPER option that SELECTs the
-> various options that really should be on.
+>  config ARCH_POPULATES_NODE_MAP
+>          def_bool y
 > 
-> If there is a chance of reasonable agreement on what those options are
-> I'll cook up a patch... (but I don't want to get bogged down in a 500
-> mail flamewar about CONFIG_FOO_BAR being right for this or not...)
+>  config AUDIT_ARCH
+>          bool
+>          default X86_64
+> 
+>  config ARCH_SUPPORTS_AOUT
+>          def_bool y
+> 
+> instances to select lines after config X86 / config X86_64.
+> 
+> KGDB just followed the current Kconfig style status quo.
 
-I would support such a CONFIG_ option. But in this case, it was plain
-oversight / poor engineering on my part. So, while it may have helped,
-doesn't make up for deficiencies on my end.
+Indeed. I just do not have time to do so. A day-time job that
+is not about kernel-hacking, three kids and a wife etc. consumes
+some decent amount of time and leaves only a few hours for linux.
+And I am a strange person that actually needs to sleep several
+hours each night (as my baby daughter permits me to).
 
-Thanks,
-Nish
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+I promote the "select HAVE_*" style on all new stuff and expect that
+a herd of janitors one day pick it up and convert most of the old-style
+stuff.
+And if you look around then you will see that for this merge window
+almost all new stuff used "select HAVE_" so we on the right track.
+
+	Sam
