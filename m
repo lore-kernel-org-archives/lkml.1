@@ -1,138 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbYBJGS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYBJGZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbYBJGS2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 01:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYBJGSR
+	id S1756229AbYBJGZe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 01:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYBJGZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 01:18:17 -0500
-Received: from keil-draco.com ([216.193.185.50]:50932 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbYBJGSQ (ORCPT
+	Sun, 10 Feb 2008 01:25:25 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:35428 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbYBJGZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 01:18:16 -0500
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Date: Sun, 10 Feb 2008 01:18:05 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: davids@webmaster.com, David Newall <davidn@davidnewall.com>,
-       Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <MDEHLPKNGKAHNMBLJOLKGEJHKDAC.davids@webmaster.com> <200802100007.50441.dhazelton@enter.net> <1202622229.7664.65.camel@violet>
-In-Reply-To: <1202622229.7664.65.camel@violet>
+	Sun, 10 Feb 2008 01:25:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZbNpotuuJDBgXyL972WWtM5xuLUR1n7I01XQUCAet4cD/rzX1v80UabLS351lZkEneES8ksb5DxZcQk5ZWdg7C6OkEqGmrXih/qABPJNel2XivfCw74VF6DNjnckbtI1LnThWXRXH/pO5tFul66KtcBwEwBxGwgwMvMvHRa97zk=
+Message-ID: <86802c440802092225u5a901ab2i66b952382a999fa@mail.gmail.com>
+Date: Sat, 9 Feb 2008 22:25:23 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
+Cc: "Tony Camuso" <tcamuso@redhat.com>, "Greg KH" <greg@kroah.com>,
+       "Grant Grundler" <grundler@parisc-linux.org>,
+       "Loic Prylli" <loic@myri.com>, "Adrian Bunk" <bunk@kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
+       "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       "Jeff Garzik" <jeff@garzik.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+       "Martin Mares" <mj@ucw.cz>
+In-Reply-To: <20080209124138.GA28967@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802100118.05875.dhazelton@enter.net>
+References: <20080115175641.GE18741@parisc-linux.org>
+	 <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com>
+	 <20080128223141.GA31101@parisc-linux.org>
+	 <20080128225334.GD4720@kroah.com>
+	 <20080129025615.GC20198@parisc-linux.org>
+	 <20080129030340.GE20198@parisc-linux.org>
+	 <86802c440802022330o771cf98btcf750c790668b6e9@mail.gmail.com>
+	 <47AB299D.4000500@redhat.com>
+	 <20080209124138.GA28967@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 February 2008 00:43:49 Marcel Holtmann wrote:
-> Hi Daniel,
->
-> > > > > It makes no difference if you
-> > > > > distribute the GPL library with it or not.
-> > > >
-> > > > If you do not distribute the GPL library, the library is simply being
-> > > > used in the intended, ordinary way. You do not need to agree to, nor
-> > > > can you violate, the GPL simply by using a work in its ordinary
-> > > > intended way.
-> > > >
-> > > > If the application contains insufficient copyrightable expression
-> > > > from the library to be considered a derivative work (and purely
-> > > > functional things do not count), then it cannot be a derivative work.
-> > > > The library is not being copied or distributed. So how can its
-> > > > copyright be infringed?
-> > >
-> > > go ahead and create an application that uses a GPL only library. Then
-> > > ask a lawyer if it is okay to distribute your application in binary
-> > > only form without making the source code available (according to the
-> > > GPL).
-> > >
-> > > http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html#IfLibraryIsGP
-> > >L
-> > >
-> > > http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html#LinkingWithGP
-> > >L
+On Feb 9, 2008 4:41 AM, Matthew Wilcox <matthew@wil.cx> wrote:
+> On Thu, Feb 07, 2008 at 10:54:05AM -0500, Tony Camuso wrote:
+> > Matthew,
 > >
-> > In the US, at least, the belief that "Linking", in *ANY* form, with a GPL
-> > library creates a derivative work, is fallacious.
+> > Perhaps I missed it, but did you address Yinghai's concerns?
 >
-> that is how FSF states it and it seems that most legal departments of
-> big companies (US and EU based) are not taking any risk on this. So it
-> seems that someone actually has to prove in court that these assumptions
-> for the GPL case are wrong.
-
-The FSF is making a claim that can be traced back to the beliefs of one 
-person - RMS - and that propagate their views. As I stated in the original, 
-this is not just my opinion, but that of two different lawyers I've spoken to 
-and also the stated belief of numerous people on LKML. 
-
-The fact is that the GPL only affects a "derivative work" in a viral manner. 
-Merely using a GPL'd libraries API is not enough to make a program 
-a "derivative work". 
-
-> > Were I to create an
-> > application that uses, say, GTK for the interface the protected
-> > expression is my "unique and creative" use of the GTK API for creating
-> > the specific interface and any other code I have written using the API. I
-> > hold sole license to the copyright on that code and am able to license
-> > said code under the specific license of my choice.
+> No, I was on holiday.
 >
-> Not even getting into this one since GTK+ is a LGPL based library. Get
-> your examples straight.
-
-And the LGPL was created because of the FSF propagated belief that using a 
-GPL'd library means your application is automatically a "derivative work" and 
-hence must be released under the GPL. So the LGPL was created with 
-the "automatic" 'linking' exemption. It is not necessary and never has been.
-
-This is why, even if the FSF claims what I've said above (that linking code 
-with the GPL doesn't propagate the GPL into the non-GPL code) most companies 
-won't risk it... Because the FSF has taken actions that are the exact 
-opposite of their words.
-
-> > Why? Because the pre-processor is what is including any GPL'd code in my
-> > application and expanding any macros. That is a purely mechanical process
-> > and hence the output is not able to be separately copyrighted - if it
-> > could be, then the copyright would be held by the *COMPILER*, and I am
-> > *NOT* bound by the license on that code. The same applies if GPL'd code
-> > is included in my application during the linking process. QED: The
-> > "Linking" argument used by most people is wholly fallacious in at least
-> > one major country - and if I'm not mistaken, the output from an automated
-> > process is similarly not considered as carrying a separate copyright in
-> > all nations that are signatories of or follow the Bern Convention.
+> > Yinghai Lu wrote:
+> > >On Jan 28, 2008 7:03 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> > >>
+> > >>-int pci_conf1_write(unsigned int seg, unsigned int bus,
+> > >>+static int pci_conf1_write(unsigned int seg, unsigned int bus,
+> > >>                           unsigned int devfn, int reg, int len, u32
+> > >>                           value)
+> > >
+> > >any reason to change pci_conf1_read/write to static?
 >
-> The GPL is a license. Nobody is talking about the copyright of your code
-> here. You always have the copyright on your code. The point is that you
-> have to license your code under GPL (when using a GPL library) and you
-> are distributing your code.
+> Yes -- it no longer needs to be called from outside this file.
+>
+> > >>+config ATA_RAM
+> > >>+       tristate "ATA RAM driver"
+> > >>+
+> > >
+> > >related?
+>
 
-Yes, It is "my" code and "my" copyright. However, by the absolutely *common* 
-belief that "linking to GPL libraries makes a program a derivative work" it 
-would mean that I no longer have the freedom to license my code under the 
-license of my choosing, because the *mechanical* process of linking has 
-caused the GPL's "viral" clause to spread to cover my code.
+looks good. it should get into -mm or x86/mm for some testing
 
-And you're absolutely wrong. It doesn't matter that the library is GPL'd at 
-all. My code *cannot*, under any circumstances, be affected by the GPL 
-license on the library. Because the libraries API *cannot* be copyrighted and 
-any GPL'd code which winds up in the final binary got there via a "mechanical 
-process" and doesn't affect my right to release the code under a license of 
-my choosing.
-
-Any other belief is fallacious. Claiming otherwise would mean that any program 
-that uses any library on a windows system makes an application a derivative 
-work of that library.
-
-DRH
-PS: I'm going to shut up again, because I've been party in my fill of these 
-copyright/derivative work discussions (on both sides) and have had the 
-problems with the "FSF Line" repeatedly pointed out to me.
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+YH
