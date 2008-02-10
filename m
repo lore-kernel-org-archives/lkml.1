@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYBJFIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbYBJFTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYBJFIu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 00:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYBJFIk
+	id S1753263AbYBJFTP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 00:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYBJFTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 00:08:40 -0500
-Received: from keil-draco.com ([216.193.185.50]:50700 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbYBJFIi (ORCPT
+	Sun, 10 Feb 2008 00:19:03 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60080 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbYBJFTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 00:08:38 -0500
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-Date: Sun, 10 Feb 2008 00:07:49 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: davids@webmaster.com, David Newall <davidn@davidnewall.com>,
-       Greg KH <greg@kroah.com>, Christer Weinigel <christer@weinigel.se>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <MDEHLPKNGKAHNMBLJOLKGEJHKDAC.davids@webmaster.com> <1202619017.7664.53.camel@violet>
-In-Reply-To: <1202619017.7664.53.camel@violet>
+	Sun, 10 Feb 2008 00:19:01 -0500
+Date: Sun, 10 Feb 2008 00:18:55 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v4
+Message-ID: <20080210051855.GA22064@infradead.org>
+References: <200801312012.43447.linux@rainbow-software.org> <200802092233.10239.linux@rainbow-software.org> <20080209134805.29cbc8ae@extreme> <200802100110.09301.linux@rainbow-software.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802100007.50441.dhazelton@enter.net>
+In-Reply-To: <200802100110.09301.linux@rainbow-software.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 February 2008 23:50:17 Marcel Holtmann wrote:
-<snip>
-> > > It makes no difference if you
-> > > distribute the GPL library with it or not.
+On Sun, Feb 10, 2008 at 01:10:07AM +0100, Ondrej Zary wrote:
+> > > +typedef enum { EL3_ISA, EL3_PNP, EL3_MCA, EL3_EISA } el3_cardtype;
+> > > +
 > >
-> > If you do not distribute the GPL library, the library is simply being
-> > used in the intended, ordinary way. You do not need to agree to, nor can
-> > you violate, the GPL simply by using a work in its ordinary intended way.
+> > No typedef please (see checkpatch)
+> 
+> Is there any standard way to solve this without a typedef? I added 
+> el3_dev_fill() function which fills that card type value according to a 
+> parameter passed to it. "int" could be used instead and "#define EL3_ISA 
+> 0", "#define EL3_PNP 1" - but I think that's ugly.
+
+enum el3_cardtype {
+	EL3_ISA,
+	EL3_PNP,
+	EL3_MCA,
+	EL3_EISA,
+};
+
+> > >  struct el3_private {
+> > >  	struct net_device_stats stats;
 > >
-> > If the application contains insufficient copyrightable expression from
-> > the library to be considered a derivative work (and purely functional
-> > things do not count), then it cannot be a derivative work. The library is
-> > not being copied or distributed. So how can its copyright be infringed?
->
-> go ahead and create an application that uses a GPL only library. Then
-> ask a lawyer if it is okay to distribute your application in binary only
-> form without making the source code available (according to the GPL).
->
-> http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html#IfLibraryIsGPL
->
-> http://www.gnu.org/licenses/old-licenses/gpl-2.0-faq.html#LinkingWithGPL
->
-> Regards
->
-> Marcel
+> > Use network device stats in net_device now
+> 
+> OK, looks like the driver will need some more patches.
 
-In the US, at least, the belief that "Linking", in *ANY* form, with a GPL 
-library creates a derivative work, is fallacious. Were I to create an 
-application that uses, say, GTK for the interface the protected expression is 
-my "unique and creative" use of the GTK API for creating the specific 
-interface and any other code I have written using the API. I hold sole 
-license to the copyright on that code and am able to license said code under 
-the specific license of my choice.
+While I agree with Stephens comment that this driver should be using
+the stats in net_device that's totally out of scope for this patch.
+As you're the defacto maintainer of this driver now it would be nice
+if you could submit another one for it.
 
-Why? Because the pre-processor is what is including any GPL'd code in my 
-application and expanding any macros. That is a purely mechanical process and 
-hence the output is not able to be separately copyrighted - if it could be, 
-then the copyright would be held by the *COMPILER*, and I am *NOT* bound by 
-the license on that code. The same applies if GPL'd code is included in my 
-application during the linking process. QED: The "Linking" argument used by 
-most people is wholly fallacious in at least one major country - and if I'm 
-not mistaken, the output from an automated process is similarly not 
-considered as carrying a separate copyright in all nations that are 
-signatories of or follow the Bern Convention.
+> > > -	struct net_device *next_dev;
+> > >  	spinlock_t lock;
+> > >  	/* skb send-queue */
+> > >  	int head, size;
+> > >  	struct sk_buff *queue[SKB_QUEUE_SIZE];
+> >
+> > What about sk_buff_head (linked list instead)?
+> 
+> I don't know anything about this, maybe in next patch.
 
-(And yes, this also applies to some GPL'd tools that RMS extended "GPL 
-Exemptions" to - such as "Bison". There is, generally, no need for such an 
-exemption, because  the process by which the GPL'd code is included in the 
-final binary is wholly mechanical.)
+Yes, separate patch please.
 
-DRH
-PS: The above information is a very condensed form of the result of several 
-past conversations on this list about copyright law and the GPL as well as my 
-own, private discussions with lawyers. I'm being lazy here and not searching 
-various archives of LKML to give pointers to the past discussions.
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
