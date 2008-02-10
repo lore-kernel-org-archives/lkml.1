@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYBJRCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbYBJRHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbYBJRCn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 12:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYBJRCh
+	id S1753387AbYBJRHt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 12:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYBJRHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 12:02:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34392 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbYBJRCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 12:02:36 -0500
-Date: Sun, 10 Feb 2008 18:02:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [3/6] kgdb: core
-Message-ID: <20080210170209.GE7088@elte.hu>
-References: <20080210071331.GC3851@elte.hu> <20080210073542.GB26666@infradead.org> <20080210074352.GA7188@elte.hu> <20080210075732.GA9349@infradead.org> <20080210080225.GC7188@elte.hu> <20080210082408.GA10479@infradead.org> <20080210085735.GA13466@elte.hu> <20080210091123.GA19912@infradead.org> <20080210092728.GA19252@elte.hu> <20080210093450.GA3754@infradead.org>
+	Sun, 10 Feb 2008 12:07:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56053 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbYBJRHk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 12:07:40 -0500
+Date: Sun, 10 Feb 2008 09:05:44 -0800
+From: Greg KH <greg@kroah.com>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: Bastian Blank <bastian@waldi.eu.org>, Niki Denev <ndenev@gmail.com>,
+       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, stable@kernel.org
+Subject: Re: [stable] [PATCH] kernel 2.6.24.1 still vulnerable to the
+	vmsplice local root exploit
+Message-ID: <20080210170544.GA25353@kroah.com>
+References: <2e77fc10802092204t7764ff12s65304f70500e2090@mail.gmail.com> <20080210063247.GQ8953@1wt.eu> <2e77fc10802092238k13efb111ifcd298daaf7b4aba@mail.gmail.com> <2e77fc10802100140q5c8adfb4k7db88d48cbd5f8b2@mail.gmail.com> <20080210122250.GA24048@wavehammer.waldi.eu.org> <2e77fc10802100439u18e89008j9181f3b445daa231@mail.gmail.com> <20080210124731.GA25396@wavehammer.waldi.eu.org> <6101e8c40802100502g6c3c2d01ufce1ce23c7c20c5a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080210093450.GA3754@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <6101e8c40802100502g6c3c2d01ufce1ce23c7c20c5a@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Sun, Feb 10, 2008 at 10:27:28AM +0100, Ingo Molnar wrote:
-> > > The one I noticed quickly is the __ASSEMBLY__ removal from 
-> > > asm-x86/kgdb.h. [...]
-> > 
-> > people might want to experiment with early debug code as well and 
-> > include asm-x86/kgdb.h in assembly files. So i kept that, it's 
-> > sensible.
+On Sun, Feb 10, 2008 at 02:02:27PM +0100, Oliver Pinter wrote:
+> thx it fixed for 2.6.22
 > 
-> But asm-x86/kgdb.h doesn't have anythign people invoking kgdb might 
-> need, it's just the arch interface to the kgdb core.  Nor does it 
-> compile even with the ifdef as it already contains a C enum.
+> >>>>>>>
+> 
+> commit f6e993b835393543bab2d917f9dea75218473edd
+> Author: Oliver Pinter <oliver.pntr@gmail.com>
+> Date:   Sun Feb 10 14:03:46 2008 +0100
+> 
+>     [PATCH] vm: splice local root exploit fix for 2.6.22.y
+> 
+>     Based on Bastian Blank's patch
+> 
+>     Fix for CVE_2008_0009 and CVE_2008-0010
+> 
+>     ----->8-----
+> 
+>     oliver@pancs:/tmp$ ./2617_26241_root_exploit
+>     -----------------------------------
+>      Linux vmsplice Local Root Exploit
+>       By qaaz
+>       -----------------------------------
+>       [+] mmap: 0x0 .. 0x1000
+>       [+] page: 0x0
+>       [+] page: 0x20
+>       [+] mmap: 0x4000 .. 0x5000
+>       [+] page: 0x4000
+>       [+] page: 0x4020
+>       [+] mmap: 0x1000 .. 0x2000
+>       [+] page: 0x1000
+>       [+] mmap: 0xb7f1a000 .. 0xb7f4c000
+>       [-] vmsplice: Bad address
+> 
+>     -----8<-----
+> 
+>     Signed-off-by: Oliver Pinter <oliver.pntr@gmail.com>
+> 
+> diff --git a/fs/splice.c b/fs/splice.c
+> index e263d3b..d8b106e 100644
+> --- a/fs/splice.c
+> +++ b/fs/splice.c
+> @@ -1182,6 +1182,12 @@ static int get_iovec_page_array(const struct
+> iovec __user *iov,
+>  		if (unlikely(!base))
+>  			break;
+> 
+> +		/* CVE-2008-0009, CVE-2008-0010 fix */
 
-good point - i fixed this. (by following your suggestion of removing the 
-_ASSEMBLY_)
+No, this is a different CVE, as it is a different problem from the
+original 09 and 10 report.
 
-	Ingo
+It has been given CVE-2008-0600 to address this issue (09 and 10 only
+affect .23 and .24 kernels, and have been fixed.)
+
+> +		if(!access_ok(VERIFY_READ, base, len)) {
+> +			error = -EFAULT;
+> +			break;
+> +		}
+
+Hm, perhaps we should just properly check the len field instead?  That's
+what is being overflowed here...
+
+thanks,
+
+greg k-h
