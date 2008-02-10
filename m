@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbYBJVby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYBJVcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbYBJVby (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:31:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYBJVbq
+	id S1756553AbYBJVcX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYBJVcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:31:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56210 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbYBJVbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:31:45 -0500
-Date: Sun, 10 Feb 2008 22:31:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [patch] kgdb light, v6
-Message-ID: <20080210213120.GD29507@elte.hu>
-References: <20080210071331.GC3851@elte.hu> <20080210093128.GA11350@infradead.org> <20080210171742.GF7088@elte.hu> <200802102043.58895.bzolnier@gmail.com>
+	Sun, 10 Feb 2008 16:32:08 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:59094 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbYBJVcH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 16:32:07 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 10 Feb 2008 13:32:01 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: [patch] avoid kmemcheck warning in epoll
+Message-ID: <Pine.LNX.4.64.0802101323140.27286@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802102043.58895.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Epoll calls rb_set_parent(n, n) to initialize the rb-tree node, but 
+rb_set_parent() accesses node's pointer in its code. This creates a 
+warning in kmemcheck (reported by Vegard Nossum) about an uninitialized 
+memory access. The warning is harmless since the following rb-tree node 
+insert is going to overwrite the node data. In any case I think it's 
+better to not have that happening at all, and fix it by properly 
+initializing the data.
 
-* Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> > no. These are not DocBook comments, if you look carefully at the 
-> > format [it's not a leading '/**' comment block]. But obviously 
-> > documenting this in the include file is very useful, because that's 
-> > where people look first, so i kept it. (the APIs will not deviate 
-> > across architectures)
-> 
-> comments and variable names in include files have a tendency for going 
-> out-of-sync in the long term so IMO having a DocBook to point people 
-> at would be a better solution (+ it would shrink <linux/kgdb.h> by 122 
-> lines)
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-yes, i very much agree in general, but this is a _SPECIAL CASE_, and i 
-already tried to point that out to Christoph but he's not the type of 
-guy who listens to others all that easily when it comes to his pet 
-peeves ;-)
 
-this is a special case because it's an _architecture facility_.
+- Davide
 
-read: right now we have 25 architectures, and this means that in a year 
-we'll have 25 arch/*/kernel/kgdb.c files. What will be more likely to 
-get out of sync, 25 full sets of DocBook entries of the same thing, 
-spread across 25 architectures - or that lone single 
-include/linux/kgdb.h file that is looked at by everyone? And what will 
-be easier to update if we extend any of the APIs?
 
-so the DocBook rules are fine, but in this SPECIAL CASE they cause the 
-possibly worst solution: total information anarchy!
+---
+ fs/eventpoll.c         |    2 +-
+ include/linux/rbtree.h |   12 ++++++++++++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-the correct approach is to put the _arch specific_ details into the 
-arch/*/kernel/kgdb.c files, and to keep the generic bits in 
-include/linux/kgdb.h. KGDB did exactly that and it's by far the cleanest 
-and most maintainable approach.
-
-If DocBook does not pick that up then it's a _DocBook problem_. I dont 
-mind adding some dummy weak aliases to kernel/kgdb.c for DocBook to pick 
-up, to help solve this DocBook problem - but to blame it on KGDB is way 
-off the mark. It used to be the crappiest piece of sh*t everyone would 
-laugh about when looking at (right before suffering permanent brain 
-damage), but now it's one of the cleanest and most CodingStyle conform 
-kernel subsystems :-)
-
-case in point:
-
-                             errors   lines of code   errors/KLOC
-  kernel/kgdb.c                   0            1839             0
-  fs/xfs/                      2102          106019          19.8
-
-right, XFS has more than 2 thousand bona fide CodingStyle violations! 
-
-But yeah, it has the luxory of upstream integration ... ;-)
-
-[ not that i want to pick on XFS - it's a very clean codebase in my 
-  opinion, considering its fundamental complexity. It's just that anyone 
-  who wants to find a style error in KGDB now has to search _hard_ ;-) ]
-
-	Ingo
+Index: linux-2.6.mod/fs/eventpoll.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventpoll.c	2008-02-10 12:36:20.000000000 -0800
++++ linux-2.6.mod/fs/eventpoll.c	2008-02-10 12:50:41.000000000 -0800
+@@ -260,7 +260,7 @@
+ /* Special initialization for the RB tree node to detect linkage */
+ static inline void ep_rb_initnode(struct rb_node *n)
+ {
+-	rb_set_parent(n, n);
++	rb_init_node(n, n);
+ }
+ 
+ /* Removes a node from the RB tree and marks it for a fast is-linked check */
+Index: linux-2.6.mod/include/linux/rbtree.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/rbtree.h	2008-02-10 12:36:13.000000000 -0800
++++ linux-2.6.mod/include/linux/rbtree.h	2008-02-10 12:51:57.000000000 -0800
+@@ -112,6 +112,18 @@
+ 	struct rb_node *rb_node;
+ };
+ 
++/**
++ * rb_init_node - Initializes the node internal data
++ *
++ * @node: Pointer to the RB-Tree node
++ * @parent: Pointer to the parent node, or NULL
++ *
++ */
++static inline void rb_init_node(struct rb_node *node, struct rb_node *parent)
++{
++	node->rb_parent_color = (unsigned long) parent;
++	node->rb_left = node->rb_right = NULL;
++}
+ 
+ #define rb_parent(r)   ((struct rb_node *)((r)->rb_parent_color & ~3))
+ #define rb_color(r)   ((r)->rb_parent_color & 1)
