@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYBJKGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYBJKG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbYBJKGU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 05:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbYBJKGD
+	id S1758719AbYBJKG4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 05:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYBJKGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 05:06:03 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:50102 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753405AbYBJKGB (ORCPT
+	Sun, 10 Feb 2008 05:06:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:48732 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755856AbYBJKGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 05:06:01 -0500
+	Sun, 10 Feb 2008 05:06:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MPekuahPuuv3kaf6SexHSIGuC9QWuVprIjW0ZC7e37F0ER5SLowlplzBWOlnZU6NLfWjWcVRpCNlMw1skmpsuzJWjDJAmV8pKiTN+b6ZVN/Ewsw/C4QVQGDFk3nJHWwOgty/kcLU/Rirq84VptIBaSHP/sstIev6f+dh3zZgekk=
-Message-ID: <8bd0f97a0802100206n7b79cd0es4d79409678880a34@mail.gmail.com>
-Date: Sun, 10 Feb 2008 05:06:00 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: schwidefsky@de.ibm.com
-Subject: Re: CONFIG_HIGHPTE vs. sub-page page tables.
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1202636468.21652.26.camel@localhost>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=pcfrsqPKm7Kqiue9Y8MzzdkB5BQG1fDNBMb8OkjnzsNgqmZDpJHvrd2bxBXi816uyzG0FlCJSwr90fLc414KxMzHdt8LJLr7cboIOmWZpnKOMkChXl+/UwQc00DeO/Ag9JOSV2zIjPe4b7DHGKlWBXXmzM+zPsfQPyZws5pzraQ=
+Date: Sun, 10 Feb 2008 11:06:08 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: netdev@vger.kernel.org, linux-driver@qlogic.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH resend] qla3xxx: convert byte order of constant instead of
+	variable
+Message-ID: <20080210100546.GA6737@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200802081902.m18J2nOm005840@hera.kernel.org>
-	 <20080208230433.GA8524@elte.hu> <20080208231506.GA13350@elte.hu>
-	 <1202551589.8936.1.camel@localhost> <20080209103728.GA29375@elte.hu>
-	 <1202554574.8936.15.camel@localhost>
-	 <8bd0f97a0802090956r2de999fap7f16e173858be240@mail.gmail.com>
-	 <1202635061.21652.8.camel@localhost>
-	 <8bd0f97a0802100125va445d5ci81122da279b80d5f@mail.gmail.com>
-	 <1202636468.21652.26.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 10, 2008 4:41 AM, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> On Sun, 2008-02-10 at 04:25 -0500, Mike Frysinger wrote:
-> > i guess my point was more: the pgtable_t typdef is new therefore it
-> > must be defined for every architecture.  your ability to directly
-> > cross-compile and/or test a subset is great, but posting a change that
-> > is know for a fact to break arches you didnt update seems like a bad
-> > idea.  even if you just included the obvious-but-not-compile-tested
-> > changes and included the linux-arch@vger alias instead would have been
-> > better than nothing
->
-> The patch was posted multiple times on linux-arch and it has been part
-> of -mm for 3 months. Plenty of time for the arch maintainers to notice.
-> And without the pte_pfn_t change it would compile on a nommu
-> architecture even without the typedef. That is why I didn't add the new
-> typedef to the nommu archs.
+convert byte order of constant instead of variable
+which can be done at compile time (vs run time)
 
-generally things are posted to linux-arch for the arch maintainers to
-review.  the person posting the changes does all the footwork to make
-sure no one is left behind since they're the ones proposing the
-change.  it isnt "hey, unless you do something, your arch is going to
-be broken, sorry".
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ drivers/net/qla3xxx.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-> Which turned out to be a mistake after the
-> pte_pfn_t change has been added but the problem is fixed with the patch
-> sent yesterday, isn't?
+diff --git a/drivers/net/qla3xxx.c b/drivers/net/qla3xxx.c
+index a6aeb9d..b7f7b22 100644
+--- a/drivers/net/qla3xxx.c
++++ b/drivers/net/qla3xxx.c
+@@ -2472,8 +2472,7 @@ static int ql_send_map(struct ql3_adapter *qdev,
+ 
+ 	if (seg_cnt == 1) {
+ 		/* Terminate the last segment. */
+-		oal_entry->len =
+-		    cpu_to_le32(le32_to_cpu(oal_entry->len) | OAL_LAST_ENTRY);
++		oal_entry->len |= cpu_to_le32(OAL_LAST_ENTRY);
+ 	} else {
+ 		oal = tx_cb->oal;
+ 		for (completed_segs=0; completed_segs<frag_cnt; completed_segs++,seg++) {
+@@ -2530,8 +2529,7 @@ static int ql_send_map(struct ql3_adapter *qdev,
+ 					  frag->size);
+ 		}
+ 		/* Terminate the last segment. */
+-		oal_entry->len =
+-		    cpu_to_le32(le32_to_cpu(oal_entry->len) | OAL_LAST_ENTRY);
++		oal_entry->len |= cpu_to_le32(OAL_LAST_ENTRY);
+ 	}
+ 
+ 	return NETDEV_TX_OK;
+-- 
+1.5.3.7
 
-yes, the patch you posted for the remaining arches should fix the
-arches left broken.
--mike
