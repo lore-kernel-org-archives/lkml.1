@@ -1,1007 +1,631 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbYBJOBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbYBJOGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753013AbYBJOBF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 09:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYBJOAq
+	id S1752053AbYBJOGK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 09:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYBJOF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 09:00:46 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:52056 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbYBJOAn (ORCPT
+	Sun, 10 Feb 2008 09:05:56 -0500
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:55321 "EHLO
+	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbYBJOFz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 09:00:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=v4dyo49ixAwO1xIPGbwQprLVdwz1FiYXMK/v3z4QKIIUC1HuEucbWFVSZCfZe4PSnqHqJHW9JJa6ctNL/UUV07Qs88Ae6Z+uEe+gyk6q37AmGEJFC5ENaCUnln8mJCALa/skaW/ys9PlPf4nKY4JabDOgQp3B5SaeMlPie02QeA=
-Date: Sun, 10 Feb 2008 17:00:31 +0300
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: 2.6.24-sha1: RIP  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-Message-ID: <20080210140031.GA1754@martell.zuzino.mipt.ru>
+	Sun, 10 Feb 2008 09:05:55 -0500
+Message-ID: <47AF04A7.9010409@freemail.hu>
+Date: Sun, 10 Feb 2008 15:05:27 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Richard Purdie <rpurdie@rpsys.net>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] leds: remove "checkpatch.pl" warnings
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This happened during LTP. FWIW, modprobe/rmmod trivial empty module
-together with cat /proc/*/wchan and cat /proc/modules were also running.
+Break the lines which were more than 80 characters into more
+lines; replace SPACEs with TABs; correct ident at switch-case;
+change character encoding from ISO-8859-2 to UTF-8.
 
-Box is E6400, much debugging is on, config below.
+The order of the functions in led-triggers.c changed in order
+the similar functions can still be together under titles
+"Used by LED Class", "LED Trigger Interface" and "Simple
+LED Tigger Interface" as was grouped before when exported
+with EXPORT_SYMBOL.
 
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -uprN c/drivers/leds/led-class.c d/drivers/leds/led-class.c
+--- c/drivers/leds/led-class.c	2008-02-10 12:30:35.000000000 +0100
++++ d/drivers/leds/led-class.c	2008-02-10 13:25:37.000000000 +0100
+@@ -24,7 +24,7 @@
 
-[ 4057.310000] BUG: unable to handle kernel paging request at ffff810101dbc008
-[ 4057.310000] IP: [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-[ 4057.310000] PGD 8063 PUD c063 PMD 153baa163 PTE 8000000101dbc160
-[ 4057.310000] Oops: 0000 [1] SMP DEBUG_PAGEALLOC
-[ 4057.310000] CPU 0 
-[ 4057.310000] Modules linked in: [last unloaded: foo]
-[ 4057.310000] Pid: 7035, comm: ftest03 Not tainted 2.6.24-25f666300625d894ebe04bac2b4b3aadb907c861 #2
-[ 4057.310000] RIP: 0010:[<ffffffff802596c8>]  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-[ 4057.310000] RSP: 0018:ffff810110329b20  EFLAGS: 00010246
-[ 4057.310000] RAX: 0000000000000000 RBX: 0000000000000800 RCX: 0000000000000000
-[ 4057.310000] RDX: 0000000000000000 RSI: 0000000000000800 RDI: ffff810110329ba8
-[ 4057.310000] RBP: 0000000000000800 R08: 0000000000000000 R09: ffff810101dbc000
-[ 4057.310000] R10: 0000000000000004 R11: 0000000000000000 R12: 0000000000026000
-[ 4057.310000] R13: ffff81010d765c98 R14: 0000000000001000 R15: 0000000000000000
-[ 4057.310000] FS:  00007fee589146d0(0000) GS:ffffffff80501000(0000) knlGS:0000000000000000
-[ 4057.310000] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[ 4057.310000] CR2: ffff810101dbc008 CR3: 00000001103da000 CR4: 00000000000006e0
-[ 4057.310000] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 4057.310000] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[ 4057.310000] Process ftest03 (pid: 7035, threadinfo ffff810110328000, task ffff810160b00000)
-[ 4057.310000] Stack:  ffffffff8025b413 ffff81010d765ab0 ffffffff804e6fd8 00000000001201d2
-[ 4057.310000]  ffff810110329db8 0000000000026000 ffff810110329d38 ffff81017b9fb500
-[ 4057.310000]  ffff81010d765c98 ffffffff804175e0 ffff81010d765ab0 0000000000000000
-[ 4057.310000] Call Trace:
-[ 4057.310000]  [<ffffffff8025b413>] ? generic_file_buffered_write+0x1e3/0x6f0
-[ 4057.310000]  [<ffffffff8022f4ae>] ? current_fs_time+0x1e/0x30
-[ 4057.310000]  [<ffffffff8025bbaf>] ? __generic_file_aio_write_nolock+0x28f/0x440
-[ 4057.310000]  [<ffffffff8025bdc3>] ? generic_file_aio_write+0x63/0xd0
-[ 4057.310000]  [<ffffffff802bfbc3>] ? ext3_file_write+0x23/0xc0
-[ 4057.310000]  [<ffffffff802bfba0>] ? ext3_file_write+0x0/0xc0
-[ 4057.310000]  [<ffffffff8027ebeb>] ? do_sync_readv_writev+0xcb/0x110
-[ 4057.310000]  [<ffffffff8023f2b0>] ? autoremove_wake_function+0x0/0x30
-[ 4057.310000]  [<ffffffff8024be8d>] ? debug_check_no_locks_freed+0x7d/0x130
-[ 4057.310000]  [<ffffffff8024bd8f>] ? trace_hardirqs_on+0xcf/0x150
-[ 4057.310000]  [<ffffffff8027c265>] ? __kmalloc+0x15/0xc0
-[ 4057.310000]  [<ffffffff8027ea4d>] ? rw_copy_check_uvector+0x9d/0x130
-[ 4057.310000]  [<ffffffff8027f330>] ? do_readv_writev+0xe0/0x170
-[ 4057.310000]  [<ffffffff803fb5e7>] ? mutex_lock_nested+0x1a7/0x280
-[ 4057.310000]  [<ffffffff8024bd8f>] ? trace_hardirqs_on+0xcf/0x150
-[ 4057.310000]  [<ffffffff803fb389>] ? __mutex_unlock_slowpath+0xc9/0x170
-[ 4057.310000]  [<ffffffff8024bd8f>] ? trace_hardirqs_on+0xcf/0x150
-[ 4057.310000]  [<ffffffff803fc6ba>] ? trace_hardirqs_on_thunk+0x35/0x3a
-[ 4057.310000]  [<ffffffff8027f7c3>] ? sys_writev+0x53/0x90
-[ 4057.310000]  [<ffffffff8020b39b>] ? system_call_after_swapgs+0x7b/0x80
-[ 4057.310000] 
-[ 4057.310000] 
-[ 4057.310000] Code: 48 01 77 10 48 29 77 18 c3 0f 0b eb fe 66 66 90 66 66 90 4c 8b 0f 48 8b 4f 10 49 89 f0 eb 07 66 66 66 90 49 29 c0 4d 85 c0 75 07 <49> 83 79 08 00 75 23 49 8b 51 08 48 89 d0 48 29 c8 49 39 c0 49 
-[ 4057.310000] RIP  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-[ 4057.310000]  RSP <ffff810110329b20>
-[ 4057.310000] CR2: ffff810101dbc008
-[ 4057.310000] Kernel panic - not syncing: Fatal exception
+ static struct class *leds_class;
 
+-static ssize_t led_brightness_show(struct device *dev,
++static ssize_t led_brightness_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+diff -uprN c/drivers/leds/led-core.c d/drivers/leds/led-core.c
+--- c/drivers/leds/led-core.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/led-core.c	2008-02-10 13:27:16.000000000 +0100
+@@ -19,7 +19,7 @@
+ #include "leds.h"
 
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.24-25f666300625d894ebe04bac2b4b3aadb907c861
-# Sun Feb 10 14:28:45 2008
-#
-CONFIG_64BIT=y
-# CONFIG_X86_32 is not set
-CONFIG_X86_64=y
-CONFIG_X86=y
-# CONFIG_GENERIC_LOCKBREAK is not set
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_FAST_CMPXCHG_LOCAL=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-# CONFIG_QUICKLIST is not set
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-# CONFIG_GENERIC_GPIO is not set
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-# CONFIG_RWSEM_XCHGADD_ALGORITHM is not set
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_ARCH_HAS_CPU_RELAX=y
-CONFIG_HAVE_SETUP_PER_CPU_AREA=y
-CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-CONFIG_ARCH_SUSPEND_POSSIBLE=y
-CONFIG_ZONE_DMA32=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_AUDIT_ARCH=y
-CONFIG_ARCH_SUPPORTS_AOUT=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_X86_SMP=y
-CONFIG_X86_64_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_TRAMPOLINE=y
-# CONFIG_KTIME_SCALAR is not set
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+ DECLARE_RWSEM(leds_list_lock);
+-LIST_HEAD(leds_list);
++EXPORT_SYMBOL_GPL(leds_list_lock);
 
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-# CONFIG_POSIX_MQUEUE is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_AUDIT is not set
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_LOG_BUF_SHIFT=15
-# CONFIG_CGROUPS is not set
-# CONFIG_FAIR_GROUP_SCHED is not set
-# CONFIG_SYSFS_DEPRECATED is not set
-# CONFIG_RELAY is not set
-# CONFIG_NAMESPACES is not set
-# CONFIG_BLK_DEV_INITRD is not set
-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-# CONFIG_SYSCTL_SYSCALL is not set
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-# CONFIG_COMPAT_BRK is not set
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-# CONFIG_EPOLL is not set
-# CONFIG_SIGNALFD is not set
-# CONFIG_TIMERFD is not set
-# CONFIG_EVENTFD is not set
-CONFIG_SHMEM=y
-# CONFIG_VM_EVENT_COUNTERS is not set
-# CONFIG_SLUB_DEBUG is not set
-# CONFIG_SLAB is not set
-CONFIG_SLUB=y
-# CONFIG_SLOB is not set
-# CONFIG_PROFILING is not set
-# CONFIG_MARKERS is not set
-CONFIG_HAVE_OPROFILE=y
-# CONFIG_KPROBES is not set
-CONFIG_HAVE_KPROBES=y
-# CONFIG_PROC_PAGE_MONITOR is not set
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-# CONFIG_MODULE_FORCE_UNLOAD is not set
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-CONFIG_KMOD=y
-CONFIG_STOP_MACHINE=y
-CONFIG_BLOCK=y
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_BLK_DEV_BSG is not set
++LIST_HEAD(leds_list);
+ EXPORT_SYMBOL_GPL(leds_list);
+-EXPORT_SYMBOL_GPL(leds_list_lock);
+diff -uprN c/drivers/leds/leds-clevo-mail.c d/drivers/leds/leds-clevo-mail.c
+--- c/drivers/leds/leds-clevo-mail.c	2008-02-10 13:36:55.000000000 +0100
++++ d/drivers/leds/leds-clevo-mail.c	2008-02-10 13:11:47.000000000 +0100
+@@ -14,7 +14,7 @@
+ #define CLEVO_MAIL_LED_BLINK_1HZ	0x008A
+ #define CLEVO_MAIL_LED_BLINK_0_5HZ	0x0083
 
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-# CONFIG_IOSCHED_AS is not set
-# CONFIG_IOSCHED_DEADLINE is not set
-CONFIG_IOSCHED_CFQ=y
-# CONFIG_DEFAULT_AS is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-CONFIG_DEFAULT_CFQ=y
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_CLASSIC_RCU=y
-# CONFIG_PREEMPT_RCU is not set
-CONFIG_FOO=m
+-MODULE_AUTHOR("Márton Németh <nm127@freemail.hu>");
++MODULE_AUTHOR("MÃ¡rton NÃ©meth <nm127@freemail.hu>");
+ MODULE_DESCRIPTION("Clevo mail LED driver");
+ MODULE_LICENSE("GPL");
 
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_SMP=y
-CONFIG_X86_PC=y
-# CONFIG_X86_ELAN is not set
-# CONFIG_X86_VOYAGER is not set
-# CONFIG_X86_NUMAQ is not set
-# CONFIG_X86_SUMMIT is not set
-# CONFIG_X86_BIGSMP is not set
-# CONFIG_X86_VISWS is not set
-# CONFIG_X86_GENERICARCH is not set
-# CONFIG_X86_ES7000 is not set
-# CONFIG_X86_RDC321X is not set
-# CONFIG_X86_VSMP is not set
-# CONFIG_PARAVIRT_GUEST is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-# CONFIG_MPENTIUMIII is not set
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_MPSC is not set
-CONFIG_MCORE2=y
-# CONFIG_GENERIC_CPU is not set
-CONFIG_X86_L1_CACHE_BYTES=64
-CONFIG_X86_INTERNODE_CACHE_BYTES=64
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=6
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=64
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_GART_IOMMU=y
-# CONFIG_CALGARY_IOMMU is not set
-CONFIG_IOMMU_HELPER=y
-CONFIG_SWIOTLB=y
-CONFIG_NR_CPUS=2
-# CONFIG_SCHED_SMT is not set
-# CONFIG_SCHED_MC is not set
-CONFIG_PREEMPT_NONE=y
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT is not set
-# CONFIG_RCU_TRACE is not set
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_INTEL=y
-# CONFIG_X86_MCE_AMD is not set
-# CONFIG_I8K is not set
-# CONFIG_MICROCODE is not set
-# CONFIG_X86_MSR is not set
-# CONFIG_X86_CPUID is not set
-# CONFIG_NUMA is not set
-CONFIG_ARCH_SPARSEMEM_DEFAULT=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_SELECT_MEMORY_MODEL=y
-# CONFIG_FLATMEM_MANUAL is not set
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-CONFIG_SPARSEMEM_MANUAL=y
-CONFIG_SPARSEMEM=y
-CONFIG_HAVE_MEMORY_PRESENT=y
-# CONFIG_SPARSEMEM_STATIC is not set
-CONFIG_SPARSEMEM_EXTREME=y
-CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
-CONFIG_SPARSEMEM_VMEMMAP=y
-# CONFIG_MEMORY_HOTPLUG is not set
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_RESOURCES_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-CONFIG_MTRR=y
-# CONFIG_EFI is not set
-# CONFIG_SECCOMP is not set
-# CONFIG_CC_STACKPROTECTOR is not set
-CONFIG_HZ_100=y
-# CONFIG_HZ_250 is not set
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=100
-CONFIG_SCHED_HRTICK=y
-# CONFIG_KEXEC is not set
-# CONFIG_CRASH_DUMP is not set
-CONFIG_PHYSICAL_START=0x200000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x200000
-# CONFIG_HOTPLUG_CPU is not set
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+@@ -103,8 +103,8 @@ static void clevo_mail_led_set(struct le
+ }
 
-#
-# Power management options
-#
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-# CONFIG_SUSPEND is not set
-# CONFIG_HIBERNATION is not set
-CONFIG_ACPI=y
-# CONFIG_ACPI_PROCFS is not set
-# CONFIG_ACPI_PROCFS_POWER is not set
-# CONFIG_ACPI_SYSFS_POWER is not set
-# CONFIG_ACPI_PROC_EVENT is not set
-# CONFIG_ACPI_AC is not set
-# CONFIG_ACPI_BATTERY is not set
-# CONFIG_ACPI_BUTTON is not set
-# CONFIG_ACPI_FAN is not set
-# CONFIG_ACPI_DOCK is not set
-# CONFIG_ACPI_PROCESSOR is not set
-# CONFIG_ACPI_WMI is not set
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_ACPI_TOSHIBA is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-# CONFIG_X86_PM_TIMER is not set
-# CONFIG_ACPI_CONTAINER is not set
-# CONFIG_ACPI_SBS is not set
+ static int clevo_mail_led_blink(struct led_classdev *led_cdev,
+-				unsigned long* delay_on,
+-				unsigned long* delay_off)
++				unsigned long *delay_on,
++				unsigned long *delay_off)
+ {
+ 	int status = -EINVAL;
 
-#
-# CPU Frequency scaling
-#
-# CONFIG_CPU_FREQ is not set
-# CONFIG_CPU_IDLE is not set
+diff -uprN c/drivers/leds/leds-cobalt-qube.c d/drivers/leds/leds-cobalt-qube.c
+--- c/drivers/leds/leds-cobalt-qube.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-cobalt-qube.c	2008-02-10 14:07:40.000000000 +0100
+@@ -18,7 +18,7 @@ static void __iomem *led_port;
+ static u8 led_value;
 
-#
-# Bus options (PCI etc.)
-#
-CONFIG_PCI=y
-CONFIG_PCI_DIRECT=y
-# CONFIG_PCI_MMCONFIG is not set
-CONFIG_PCI_DOMAINS=y
-# CONFIG_DMAR is not set
-# CONFIG_PCIEPORTBUS is not set
-CONFIG_ARCH_SUPPORTS_MSI=y
-CONFIG_PCI_MSI=y
-# CONFIG_PCI_LEGACY is not set
-# CONFIG_PCI_DEBUG is not set
-# CONFIG_HT_IRQ is not set
-CONFIG_ISA_DMA_API=y
-CONFIG_K8_NB=y
-# CONFIG_PCCARD is not set
-# CONFIG_HOTPLUG_PCI is not set
+ static void qube_front_led_set(struct led_classdev *led_cdev,
+-                               enum led_brightness brightness)
++			       enum led_brightness brightness)
+ {
+ 	if (brightness)
+ 		led_value = LED_FRONT_LEFT | LED_FRONT_RIGHT;
+diff -uprN c/drivers/leds/leds-cobalt-raq.c d/drivers/leds/leds-cobalt-raq.c
+--- c/drivers/leds/leds-cobalt-raq.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-cobalt-raq.c	2008-02-10 14:39:38.000000000 +0100
+@@ -15,7 +15,7 @@
+  *
+  *  You should have received a copy of the GNU General Public License
+  *  along with this program; if not, write to the Free Software
+- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  */
+ #include <linux/init.h>
+ #include <linux/io.h>
+@@ -33,7 +33,7 @@ static u8 led_value;
+ static DEFINE_SPINLOCK(led_value_lock);
 
-#
-# Executable file formats / Emulations
-#
-CONFIG_BINFMT_ELF=y
-# CONFIG_BINFMT_MISC is not set
-# CONFIG_IA32_EMULATION is not set
-# CONFIG_COMPAT_FOR_U64_ALIGNMENT is not set
+ static void raq_web_led_set(struct led_classdev *led_cdev,
+-                            enum led_brightness brightness)
++			    enum led_brightness brightness)
+ {
+ 	unsigned long flags;
 
-#
-# Networking
-#
-CONFIG_NET=y
+@@ -54,7 +54,7 @@ static struct led_classdev raq_web_led =
+ };
 
-#
-# Networking options
-#
-# CONFIG_PACKET is not set
-CONFIG_UNIX=y
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-# CONFIG_IP_MULTICAST is not set
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_BEET is not set
-# CONFIG_INET_LRO is not set
-# CONFIG_INET_DIAG is not set
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_NET_SCHED is not set
+ static void raq_power_off_led_set(struct led_classdev *led_cdev,
+-                                  enum led_brightness brightness)
++				  enum led_brightness brightness)
+ {
+ 	unsigned long flags;
 
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_CAN is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_AF_RXRPC is not set
+diff -uprN c/drivers/leds/leds-corgi.c d/drivers/leds/leds-corgi.c
+--- c/drivers/leds/leds-corgi.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-corgi.c	2008-02-10 14:37:08.000000000 +0100
+@@ -21,7 +21,8 @@
+ #include <asm/arch/pxa-regs.h>
+ #include <asm/hardware/scoop.h>
 
-#
-# Wireless
-#
-# CONFIG_CFG80211 is not set
-# CONFIG_WIRELESS_EXT is not set
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
+-static void corgiled_amber_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void corgiled_amber_set(struct led_classdev *led_cdev,
++			       enum led_brightness value)
+ {
+ 	if (value)
+ 		GPSR0 = GPIO_bit(CORGI_GPIO_LED_ORANGE);
+@@ -29,7 +30,8 @@ static void corgiled_amber_set(struct le
+ 		GPCR0 = GPIO_bit(CORGI_GPIO_LED_ORANGE);
+ }
 
-#
-# Device Drivers
-#
+-static void corgiled_green_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void corgiled_green_set(struct led_classdev *led_cdev,
++			       enum led_brightness value)
+ {
+ 	if (value)
+ 		set_scoop_gpio(&corgiscoop_device.dev, CORGI_SCP_LED_GREEN);
+@@ -53,7 +55,8 @@ static struct led_classdev corgi_green_l
+ static int corgiled_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ #ifdef CONFIG_LEDS_TRIGGERS
+-	if (corgi_amber_led.trigger && strcmp(corgi_amber_led.trigger->name, "sharpsl-charge"))
++	if (corgi_amber_led.trigger &&
++	    strcmp(corgi_amber_led.trigger->name, "sharpsl-charge"))
+ #endif
+ 		led_classdev_suspend(&corgi_amber_led);
+ 	led_classdev_suspend(&corgi_green_led);
+@@ -109,7 +112,7 @@ static int __init corgiled_init(void)
 
-#
-# Generic Driver Options
-#
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-# CONFIG_FW_LOADER is not set
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-# CONFIG_CONNECTOR is not set
-# CONFIG_MTD is not set
-# CONFIG_PARPORT is not set
-CONFIG_PNP=y
-# CONFIG_PNP_DEBUG is not set
+ static void __exit corgiled_exit(void)
+ {
+- 	platform_driver_unregister(&corgiled_driver);
++	platform_driver_unregister(&corgiled_driver);
+ }
 
-#
-# Protocols
-#
-CONFIG_PNPACPI=y
-# CONFIG_BLK_DEV is not set
-# CONFIG_MISC_DEVICES is not set
-CONFIG_HAVE_IDE=y
-# CONFIG_IDE is not set
+ module_init(corgiled_init);
+diff -uprN c/drivers/leds/leds.h d/drivers/leds/leds.h
+--- c/drivers/leds/leds.h	2008-02-10 12:30:02.000000000 +0100
++++ d/drivers/leds/leds.h	2008-02-10 14:11:18.000000000 +0100
+@@ -41,9 +41,9 @@ void led_trigger_set(struct led_classdev
+ 			struct led_trigger *trigger);
+ void led_trigger_remove(struct led_classdev *led_cdev);
+ #else
+-#define led_trigger_set_default(x) do {} while(0)
+-#define led_trigger_set(x, y) do {} while(0)
+-#define led_trigger_remove(x) do {} while(0)
++#define led_trigger_set_default(x) do {} while (0)
++#define led_trigger_set(x, y) do {} while (0)
++#define led_trigger_remove(x) do {} while (0)
+ #endif
 
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-# CONFIG_SCSI_TGT is not set
-# CONFIG_SCSI_NETLINK is not set
-# CONFIG_SCSI_PROC_FS is not set
+ ssize_t led_trigger_store(struct device *dev, struct device_attribute *attr,
+diff -uprN c/drivers/leds/leds-h1940.c d/drivers/leds/leds-h1940.c
+--- c/drivers/leds/leds-h1940.c	2007-09-30 08:24:43.000000000 +0200
++++ d/drivers/leds/leds-h1940.c	2008-02-10 14:35:46.000000000 +0100
+@@ -26,20 +26,20 @@
+ void h1940_greenled_set(struct led_classdev *led_dev, enum led_brightness value)
+ {
+ 	switch (value) {
+-		case LED_HALF:
+-			h1940_latch_control(0,H1940_LATCH_LED_FLASH);
+-			s3c2410_gpio_setpin(S3C2410_GPA7,1);
+-			break;
+-		case LED_FULL:
+-			h1940_latch_control(0,H1940_LATCH_LED_GREEN);
+-			s3c2410_gpio_setpin(S3C2410_GPA7,1);
+-			break;
+-		default:
+-		case LED_OFF:
+-			h1940_latch_control(H1940_LATCH_LED_FLASH,0);
+-			h1940_latch_control(H1940_LATCH_LED_GREEN,0);
+-			s3c2410_gpio_setpin(S3C2410_GPA7,0);
+-			break;
++	case LED_HALF:
++		h1940_latch_control(0, H1940_LATCH_LED_FLASH);
++		s3c2410_gpio_setpin(S3C2410_GPA7, 1);
++		break;
++	case LED_FULL:
++		h1940_latch_control(0, H1940_LATCH_LED_GREEN);
++		s3c2410_gpio_setpin(S3C2410_GPA7, 1);
++		break;
++	default:
++	case LED_OFF:
++		h1940_latch_control(H1940_LATCH_LED_FLASH, 0);
++		h1940_latch_control(H1940_LATCH_LED_GREEN, 0);
++		s3c2410_gpio_setpin(S3C2410_GPA7, 0);
++		break;
+ 	}
+ }
 
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=y
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-CONFIG_BLK_DEV_SR=y
-# CONFIG_BLK_DEV_SR_VENDOR is not set
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_CHR_DEV_SCH is not set
+@@ -55,20 +55,20 @@ static struct led_classdev h1940_greenle
+ void h1940_redled_set(struct led_classdev *led_dev, enum led_brightness value)
+ {
+ 	switch (value) {
+-		case LED_HALF:
+-			h1940_latch_control(0,H1940_LATCH_LED_FLASH);
+-			s3c2410_gpio_setpin(S3C2410_GPA1,1);
+-			break;
+-		case LED_FULL:
+-			h1940_latch_control(0,H1940_LATCH_LED_RED);
+-			s3c2410_gpio_setpin(S3C2410_GPA1,1);
+-			break;
+-		default:
+-		case LED_OFF:
+-			h1940_latch_control(H1940_LATCH_LED_FLASH,0);
+-			h1940_latch_control(H1940_LATCH_LED_RED,0);
+-			s3c2410_gpio_setpin(S3C2410_GPA1,0);
+-			break;
++	case LED_HALF:
++		h1940_latch_control(0, H1940_LATCH_LED_FLASH);
++		s3c2410_gpio_setpin(S3C2410_GPA1, 1);
++		break;
++	case LED_FULL:
++		h1940_latch_control(0, H1940_LATCH_LED_RED);
++		s3c2410_gpio_setpin(S3C2410_GPA1, 1);
++		break;
++	default:
++	case LED_OFF:
++		h1940_latch_control(H1940_LATCH_LED_FLASH, 0);
++		h1940_latch_control(H1940_LATCH_LED_RED, 0);
++		s3c2410_gpio_setpin(S3C2410_GPA1, 0);
++		break;
+ 	}
+ }
 
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-# CONFIG_SCSI_MULTI_LUN is not set
-# CONFIG_SCSI_CONSTANTS is not set
-# CONFIG_SCSI_LOGGING is not set
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
+@@ -86,11 +86,11 @@ void h1940_blueled_set(struct led_classd
+ {
+ 	if (value) {
+ 		/* flashing Blue */
+-		h1940_latch_control(0,H1940_LATCH_LED_FLASH);
+-		s3c2410_gpio_setpin(S3C2410_GPA3,1);
++		h1940_latch_control(0, H1940_LATCH_LED_FLASH);
++		s3c2410_gpio_setpin(S3C2410_GPA3, 1);
+ 	} else {
+-		h1940_latch_control(H1940_LATCH_LED_FLASH,0);
+-		s3c2410_gpio_setpin(S3C2410_GPA3,0);
++		h1940_latch_control(H1940_LATCH_LED_FLASH, 0);
++		s3c2410_gpio_setpin(S3C2410_GPA3, 0);
+ 	}
 
-#
-# SCSI Transports
-#
-# CONFIG_SCSI_SPI_ATTRS is not set
-# CONFIG_SCSI_FC_ATTRS is not set
-# CONFIG_SCSI_ISCSI_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-# CONFIG_SCSI_SRP_ATTRS is not set
-# CONFIG_SCSI_LOWLEVEL is not set
-CONFIG_ATA=y
-# CONFIG_ATA_NONSTANDARD is not set
-CONFIG_ATA_ACPI=y
-CONFIG_SATA_AHCI=y
-# CONFIG_SATA_SVW is not set
-CONFIG_ATA_PIIX=y
-# CONFIG_SATA_MV is not set
-# CONFIG_SATA_NV is not set
-# CONFIG_PDC_ADMA is not set
-# CONFIG_SATA_QSTOR is not set
-# CONFIG_SATA_PROMISE is not set
-# CONFIG_SATA_SX4 is not set
-# CONFIG_SATA_SIL is not set
-# CONFIG_SATA_SIL24 is not set
-# CONFIG_SATA_SIS is not set
-# CONFIG_SATA_ULI is not set
-# CONFIG_SATA_VIA is not set
-# CONFIG_SATA_VITESSE is not set
-# CONFIG_SATA_INIC162X is not set
-# CONFIG_PATA_ACPI is not set
-# CONFIG_PATA_ALI is not set
-# CONFIG_PATA_AMD is not set
-# CONFIG_PATA_ARTOP is not set
-# CONFIG_PATA_ATIIXP is not set
-# CONFIG_PATA_CMD640_PCI is not set
-# CONFIG_PATA_CMD64X is not set
-# CONFIG_PATA_CS5520 is not set
-# CONFIG_PATA_CS5530 is not set
-# CONFIG_PATA_CYPRESS is not set
-# CONFIG_PATA_EFAR is not set
-# CONFIG_ATA_GENERIC is not set
-# CONFIG_PATA_HPT366 is not set
-# CONFIG_PATA_HPT37X is not set
-# CONFIG_PATA_HPT3X2N is not set
-# CONFIG_PATA_HPT3X3 is not set
-# CONFIG_PATA_IT821X is not set
-# CONFIG_PATA_IT8213 is not set
-CONFIG_PATA_JMICRON=y
-# CONFIG_PATA_TRIFLEX is not set
-# CONFIG_PATA_MARVELL is not set
-# CONFIG_PATA_MPIIX is not set
-# CONFIG_PATA_OLDPIIX is not set
-# CONFIG_PATA_NETCELL is not set
-# CONFIG_PATA_NINJA32 is not set
-# CONFIG_PATA_NS87410 is not set
-# CONFIG_PATA_NS87415 is not set
-# CONFIG_PATA_OPTI is not set
-# CONFIG_PATA_OPTIDMA is not set
-# CONFIG_PATA_PDC_OLD is not set
-# CONFIG_PATA_RADISYS is not set
-# CONFIG_PATA_RZ1000 is not set
-# CONFIG_PATA_SC1200 is not set
-# CONFIG_PATA_SERVERWORKS is not set
-# CONFIG_PATA_PDC2027X is not set
-# CONFIG_PATA_SIL680 is not set
-# CONFIG_PATA_SIS is not set
-# CONFIG_PATA_VIA is not set
-# CONFIG_PATA_WINBOND is not set
-# CONFIG_PATA_PLATFORM is not set
-# CONFIG_MD is not set
-# CONFIG_FUSION is not set
+ }
+diff -uprN c/drivers/leds/leds-hp6xx.c d/drivers/leds/leds-hp6xx.c
+--- c/drivers/leds/leds-hp6xx.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-hp6xx.c	2008-02-10 14:34:13.000000000 +0100
+@@ -17,7 +17,8 @@
+ #include <asm/hd64461.h>
+ #include <asm/hp6xx.h>
 
-#
-# IEEE 1394 (FireWire) support
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=y
-# CONFIG_NETDEVICES_MULTIQUEUE is not set
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_TUN is not set
-# CONFIG_VETH is not set
-# CONFIG_NET_SB1000 is not set
-# CONFIG_ARCNET is not set
-# CONFIG_NET_ETHERNET is not set
-CONFIG_MII=y
-CONFIG_NETDEV_1000=y
-# CONFIG_ACENIC is not set
-# CONFIG_DL2K is not set
-# CONFIG_E1000 is not set
-# CONFIG_E1000E is not set
-# CONFIG_E1000E_ENABLED is not set
-# CONFIG_IP1000 is not set
-# CONFIG_IGB is not set
-# CONFIG_NS83820 is not set
-# CONFIG_HAMACHI is not set
-# CONFIG_YELLOWFIN is not set
-# CONFIG_R8169 is not set
-# CONFIG_SIS190 is not set
-# CONFIG_SKGE is not set
-# CONFIG_SKY2 is not set
-# CONFIG_SK98LIN is not set
-# CONFIG_VIA_VELOCITY is not set
-# CONFIG_TIGON3 is not set
-# CONFIG_BNX2 is not set
-# CONFIG_QLA3XXX is not set
-CONFIG_ATL1=y
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
+-static void hp6xxled_green_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void hp6xxled_green_set(struct led_classdev *led_cdev,
++			       enum led_brightness value)
+ {
+ 	u8 v8;
 
-#
-# Wireless LAN
-#
-# CONFIG_WLAN_PRE80211 is not set
-# CONFIG_WLAN_80211 is not set
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_FC is not set
-CONFIG_NETCONSOLE=y
-# CONFIG_NETCONSOLE_DYNAMIC is not set
-CONFIG_NETPOLL=y
-# CONFIG_NETPOLL_TRAP is not set
-CONFIG_NET_POLL_CONTROLLER=y
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
+@@ -28,7 +29,8 @@ static void hp6xxled_green_set(struct le
+ 		outb(v8 | PKDR_LED_GREEN, PKDR);
+ }
 
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-# CONFIG_INPUT_POLLDEV is not set
+-static void hp6xxled_red_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void hp6xxled_red_set(struct led_classdev *led_cdev,
++			     enum led_brightness value)
+ {
+ 	u16 v16;
 
-#
-# Userland interfaces
-#
-# CONFIG_INPUT_MOUSEDEV is not set
-# CONFIG_INPUT_JOYDEV is not set
-# CONFIG_INPUT_EVDEV is not set
-# CONFIG_INPUT_EVBUG is not set
+diff -uprN c/drivers/leds/leds-s3c24xx.c d/drivers/leds/leds-s3c24xx.c
+--- c/drivers/leds/leds-s3c24xx.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-s3c24xx.c	2008-02-10 14:33:40.000000000 +0100
+@@ -51,7 +51,7 @@ static void s3c24xx_led_set(struct led_c
 
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-# CONFIG_INPUT_MOUSE is not set
-# CONFIG_INPUT_JOYSTICK is not set
-# CONFIG_INPUT_TABLET is not set
-# CONFIG_INPUT_TOUCHSCREEN is not set
-# CONFIG_INPUT_MISC is not set
+ 	if (pd->flags & S3C24XX_LEDF_TRISTATE)
+ 		s3c2410_gpio_cfgpin(pd->gpio,
+-				    value ? S3C2410_GPIO_OUTPUT : S3C2410_GPIO_INPUT);
++			value ? S3C2410_GPIO_OUTPUT : S3C2410_GPIO_INPUT);
 
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-# CONFIG_SERIO_SERPORT is not set
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-# CONFIG_SERIO_RAW is not set
-# CONFIG_GAMEPORT is not set
+ }
 
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-# CONFIG_VT_HW_CONSOLE_BINDING is not set
-# CONFIG_SERIAL_NONSTANDARD is not set
-# CONFIG_NOZOMI is not set
+@@ -151,7 +151,7 @@ static int __init s3c24xx_led_init(void)
 
-#
-# Serial drivers
-#
-# CONFIG_SERIAL_8250 is not set
-CONFIG_FIX_EARLYCON_MEM=y
+ static void __exit s3c24xx_led_exit(void)
+ {
+- 	platform_driver_unregister(&s3c24xx_led_driver);
++	platform_driver_unregister(&s3c24xx_led_driver);
+ }
 
-#
-# Non-8250 serial port support
-#
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-# CONFIG_LEGACY_PTYS is not set
-# CONFIG_IPMI_HANDLER is not set
-# CONFIG_HW_RANDOM is not set
-# CONFIG_NVRAM is not set
-CONFIG_RTC=y
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-# CONFIG_RAW_DRIVER is not set
-# CONFIG_HPET is not set
-# CONFIG_HANGCHECK_TIMER is not set
-# CONFIG_TCG_TPM is not set
-# CONFIG_TELCLOCK is not set
-CONFIG_DEVPORT=y
-# CONFIG_I2C is not set
+ module_init(s3c24xx_led_init);
+diff -uprN c/drivers/leds/leds-spitz.c d/drivers/leds/leds-spitz.c
+--- c/drivers/leds/leds-spitz.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-spitz.c	2008-02-10 14:32:39.000000000 +0100
+@@ -21,7 +21,8 @@
+ #include <asm/arch/pxa-regs.h>
+ #include <asm/arch/spitz.h>
 
-#
-# SPI support
-#
-# CONFIG_SPI is not set
-# CONFIG_SPI_MASTER is not set
-# CONFIG_W1 is not set
-# CONFIG_POWER_SUPPLY is not set
-# CONFIG_HWMON is not set
-# CONFIG_THERMAL is not set
-# CONFIG_WATCHDOG is not set
+-static void spitzled_amber_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void spitzled_amber_set(struct led_classdev *led_cdev,
++			       enum led_brightness value)
+ {
+ 	if (value)
+ 		set_scoop_gpio(&spitzscoop_device.dev, SPITZ_SCP_LED_ORANGE);
+@@ -29,7 +30,8 @@ static void spitzled_amber_set(struct le
+ 		reset_scoop_gpio(&spitzscoop_device.dev, SPITZ_SCP_LED_ORANGE);
+ }
 
-#
-# Sonics Silicon Backplane
-#
-CONFIG_SSB_POSSIBLE=y
-# CONFIG_SSB is not set
+-static void spitzled_green_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void spitzled_green_set(struct led_classdev *led_cdev,
++			       enum led_brightness value)
+ {
+ 	if (value)
+ 		set_scoop_gpio(&spitzscoop_device.dev, SPITZ_SCP_LED_GREEN);
+@@ -53,7 +55,8 @@ static struct led_classdev spitz_green_l
+ static int spitzled_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ #ifdef CONFIG_LEDS_TRIGGERS
+-	if (spitz_amber_led.trigger && strcmp(spitz_amber_led.trigger->name, "sharpsl-charge"))
++	if (spitz_amber_led.trigger &&
++	    strcmp(spitz_amber_led.trigger->name, "sharpsl-charge"))
+ #endif
+ 		led_classdev_suspend(&spitz_amber_led);
+ 	led_classdev_suspend(&spitz_green_led);
+@@ -115,7 +118,7 @@ static int __init spitzled_init(void)
 
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_SM501 is not set
+ static void __exit spitzled_exit(void)
+ {
+- 	platform_driver_unregister(&spitzled_driver);
++	platform_driver_unregister(&spitzled_driver);
+ }
 
-#
-# Multimedia devices
-#
-# CONFIG_VIDEO_DEV is not set
-# CONFIG_DVB_CORE is not set
-# CONFIG_DAB is not set
+ module_init(spitzled_init);
+diff -uprN c/drivers/leds/leds-tosa.c d/drivers/leds/leds-tosa.c
+--- c/drivers/leds/leds-tosa.c	2008-02-09 08:02:16.000000000 +0100
++++ d/drivers/leds/leds-tosa.c	2008-02-10 14:30:58.000000000 +0100
+@@ -119,7 +119,7 @@ static int __init tosaled_init(void)
 
-#
-# Graphics support
-#
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-# CONFIG_AGP_INTEL is not set
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_VIA is not set
-# CONFIG_DRM is not set
-# CONFIG_VGASTATE is not set
-# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-# CONFIG_FB is not set
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+ static void __exit tosaled_exit(void)
+ {
+- 	platform_driver_unregister(&tosaled_driver);
++	platform_driver_unregister(&tosaled_driver);
+ }
 
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
+ module_init(tosaled_init);
+diff -uprN c/drivers/leds/led-triggers.c d/drivers/leds/led-triggers.c
+--- c/drivers/leds/led-triggers.c	2008-02-10 12:30:02.000000000 +0100
++++ d/drivers/leds/led-triggers.c	2008-02-10 14:30:15.000000000 +0100
+@@ -29,6 +29,8 @@
+ static DECLARE_RWSEM(triggers_list_lock);
+ static LIST_HEAD(trigger_list);
 
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-# CONFIG_VGACON_SOFT_SCROLLBACK is not set
-# CONFIG_VIDEO_SELECT is not set
-CONFIG_DUMMY_CONSOLE=y
++ /* Used by LED Class */
++
+ ssize_t led_trigger_store(struct device *dev, struct device_attribute *attr,
+ 		const char *buf, size_t count)
+ {
+@@ -64,7 +66,7 @@ ssize_t led_trigger_store(struct device
 
-#
-# Sound
-#
-# CONFIG_SOUND is not set
-# CONFIG_HID_SUPPORT is not set
-# CONFIG_USB_SUPPORT is not set
-# CONFIG_MMC is not set
-# CONFIG_MEMSTICK is not set
-# CONFIG_NEW_LEDS is not set
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-# CONFIG_RTC_CLASS is not set
-# CONFIG_DMADEVICES is not set
+ 	return -EINVAL;
+ }
+-
++EXPORT_SYMBOL_GPL(led_trigger_store);
 
-#
-# Userspace I/O
-#
-# CONFIG_UIO is not set
+ ssize_t led_trigger_show(struct device *dev, struct device_attribute *attr,
+ 		char *buf)
+@@ -94,24 +96,7 @@ ssize_t led_trigger_show(struct device *
+ 	len += sprintf(len+buf, "\n");
+ 	return len;
+ }
+-
+-void led_trigger_event(struct led_trigger *trigger,
+-			enum led_brightness brightness)
+-{
+-	struct list_head *entry;
+-
+-	if (!trigger)
+-		return;
+-
+-	read_lock(&trigger->leddev_list_lock);
+-	list_for_each(entry, &trigger->led_cdevs) {
+-		struct led_classdev *led_cdev;
+-
+-		led_cdev = list_entry(entry, struct led_classdev, trig_list);
+-		led_set_brightness(led_cdev, brightness);
+-	}
+-	read_unlock(&trigger->leddev_list_lock);
+-}
++EXPORT_SYMBOL_GPL(led_trigger_show);
 
-#
-# Firmware Drivers
-#
-# CONFIG_EDD is not set
-# CONFIG_DELL_RBU is not set
-# CONFIG_DCDBAS is not set
-# CONFIG_DMIID is not set
+ /* Caller must ensure led_cdev->trigger_lock held */
+ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
+@@ -122,7 +107,8 @@ void led_trigger_set(struct led_classdev
+ 	if (led_cdev->trigger) {
+ 		write_lock_irqsave(&led_cdev->trigger->leddev_list_lock, flags);
+ 		list_del(&led_cdev->trig_list);
+-		write_unlock_irqrestore(&led_cdev->trigger->leddev_list_lock, flags);
++		write_unlock_irqrestore(&led_cdev->trigger->leddev_list_lock,
++			flags);
+ 		if (led_cdev->trigger->deactivate)
+ 			led_cdev->trigger->deactivate(led_cdev);
+ 		led_set_brightness(led_cdev, LED_OFF);
+@@ -136,6 +122,7 @@ void led_trigger_set(struct led_classdev
+ 	}
+ 	led_cdev->trigger = trigger;
+ }
++EXPORT_SYMBOL_GPL(led_trigger_set);
 
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-# CONFIG_EXT2_FS_XATTR is not set
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=y
-# CONFIG_EXT3_FS_XATTR is not set
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=y
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-# CONFIG_FS_POSIX_ACL is not set
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_DNOTIFY is not set
-# CONFIG_INOTIFY is not set
-# CONFIG_QUOTA is not set
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_FUSE_FS is not set
+ void led_trigger_remove(struct led_classdev *led_cdev)
+ {
+@@ -143,6 +130,7 @@ void led_trigger_remove(struct led_class
+ 	led_trigger_set(led_cdev, NULL);
+ 	up_write(&led_cdev->trigger_lock);
+ }
++EXPORT_SYMBOL_GPL(led_trigger_remove);
 
-#
-# CD-ROM/DVD Filesystems
-#
-# CONFIG_ISO9660_FS is not set
-# CONFIG_UDF_FS is not set
+ void led_trigger_set_default(struct led_classdev *led_cdev)
+ {
+@@ -160,6 +148,9 @@ void led_trigger_set_default(struct led_
+ 	up_write(&led_cdev->trigger_lock);
+ 	up_read(&triggers_list_lock);
+ }
++EXPORT_SYMBOL_GPL(led_trigger_set_default);
++
++/* LED Trigger Interface */
 
-#
-# DOS/FAT/NT Filesystems
-#
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_NTFS_FS is not set
+ int led_trigger_register(struct led_trigger *trigger)
+ {
+@@ -186,26 +177,7 @@ int led_trigger_register(struct led_trig
 
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-# CONFIG_PROC_KCORE is not set
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-# CONFIG_TMPFS_POSIX_ACL is not set
-# CONFIG_HUGETLBFS is not set
-# CONFIG_HUGETLB_PAGE is not set
-# CONFIG_CONFIGFS_FS is not set
+ 	return 0;
+ }
+-
+-void led_trigger_register_simple(const char *name, struct led_trigger **tp)
+-{
+-	struct led_trigger *trigger;
+-	int err;
+-
+-	trigger = kzalloc(sizeof(struct led_trigger), GFP_KERNEL);
+-
+-	if (trigger) {
+-		trigger->name = name;
+-		err = led_trigger_register(trigger);
+-		if (err < 0)
+-			printk(KERN_WARNING "LED trigger %s failed to register"
+-				" (%d)\n", name, err);
+-	} else
+-		printk(KERN_WARNING "LED trigger %s failed to register"
+-			" (no memory)\n", name);
+-
+-	*tp = trigger;
+-}
++EXPORT_SYMBOL_GPL(led_trigger_register);
 
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_ROMFS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-# CONFIG_NETWORK_FILESYSTEMS is not set
+ void led_trigger_unregister(struct led_trigger *trigger)
+ {
+@@ -226,29 +198,57 @@ void led_trigger_unregister(struct led_t
+ 	}
+ 	up_read(&leds_list_lock);
+ }
++EXPORT_SYMBOL_GPL(led_trigger_unregister);
 
-#
-# Partition Types
-#
-# CONFIG_PARTITION_ADVANCED is not set
-CONFIG_MSDOS_PARTITION=y
-# CONFIG_NLS is not set
-# CONFIG_DLM is not set
+-void led_trigger_unregister_simple(struct led_trigger *trigger)
+-{
+-	if (trigger)
+-		led_trigger_unregister(trigger);
+-	kfree(trigger);
+-}
++/* Simple LED Tigger Interface */
++
++void led_trigger_event(struct led_trigger *trigger,
++			enum led_brightness brightness)
++{
++	struct list_head *entry;
++
++	if (!trigger)
++		return;
++
++	read_lock(&trigger->leddev_list_lock);
++	list_for_each(entry, &trigger->led_cdevs) {
++		struct led_classdev *led_cdev;
++
++		led_cdev = list_entry(entry, struct led_classdev, trig_list);
++		led_set_brightness(led_cdev, brightness);
++	}
++	read_unlock(&trigger->leddev_list_lock);
++}
++EXPORT_SYMBOL_GPL(led_trigger_event);
 
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_PRINTK_TIME=y
-# CONFIG_ENABLE_WARN_DEPRECATED is not set
-# CONFIG_ENABLE_MUST_CHECK is not set
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_DETECT_SOFTLOCKUP=y
-# CONFIG_SCHED_DEBUG is not set
-# CONFIG_SCHEDSTATS is not set
-# CONFIG_TIMER_STATS is not set
-# CONFIG_SLUB_STATS is not set
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-# CONFIG_LOCK_STAT is not set
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
-CONFIG_STACKTRACE=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-CONFIG_DEBUG_VM=y
-CONFIG_DEBUG_LIST=y
-CONFIG_DEBUG_SG=y
-# CONFIG_FRAME_POINTER is not set
-# CONFIG_BOOT_PRINTK_DELAY is not set
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_BACKTRACE_SELF_TEST is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_LATENCYTOP is not set
-# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
-# CONFIG_SAMPLES is not set
-# CONFIG_EARLY_PRINTK is not set
-# CONFIG_DEBUG_STACKOVERFLOW is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
-CONFIG_DEBUG_PAGEALLOC=y
-CONFIG_DEBUG_PER_CPU_MAPS=y
-CONFIG_DEBUG_RODATA=y
-CONFIG_DEBUG_RODATA_TEST=y
-# CONFIG_DEBUG_NX_TEST is not set
-CONFIG_X86_MPPARSE=y
-# CONFIG_IOMMU_DEBUG is not set
-CONFIG_IO_DELAY_TYPE_0X80=0
-CONFIG_IO_DELAY_TYPE_0XED=1
-CONFIG_IO_DELAY_TYPE_UDELAY=2
-CONFIG_IO_DELAY_TYPE_NONE=3
-CONFIG_IO_DELAY_0X80=y
-# CONFIG_IO_DELAY_0XED is not set
-# CONFIG_IO_DELAY_UDELAY is not set
-# CONFIG_IO_DELAY_NONE is not set
-CONFIG_DEFAULT_IO_DELAY_TYPE=0
-# CONFIG_CPA_DEBUG is not set
+-/* Used by LED Class */
+-EXPORT_SYMBOL_GPL(led_trigger_set);
+-EXPORT_SYMBOL_GPL(led_trigger_remove);
+-EXPORT_SYMBOL_GPL(led_trigger_set_default);
+-EXPORT_SYMBOL_GPL(led_trigger_show);
+-EXPORT_SYMBOL_GPL(led_trigger_store);
+-
+-/* LED Trigger Interface */
+-EXPORT_SYMBOL_GPL(led_trigger_register);
+-EXPORT_SYMBOL_GPL(led_trigger_unregister);
+-
+-/* Simple LED Tigger Interface */
++void led_trigger_register_simple(const char *name, struct led_trigger **tp)
++{
++	struct led_trigger *trigger;
++	int err;
++
++	trigger = kzalloc(sizeof(struct led_trigger), GFP_KERNEL);
++
++	if (trigger) {
++		trigger->name = name;
++		err = led_trigger_register(trigger);
++		if (err < 0)
++			printk(KERN_WARNING "LED trigger %s failed to register"
++				" (%d)\n", name, err);
++	} else
++		printk(KERN_WARNING "LED trigger %s failed to register"
++			" (no memory)\n", name);
++
++	*tp = trigger;
++}
+ EXPORT_SYMBOL_GPL(led_trigger_register_simple);
++
++void led_trigger_unregister_simple(struct led_trigger *trigger)
++{
++	if (trigger)
++		led_trigger_unregister(trigger);
++	kfree(trigger);
++}
+ EXPORT_SYMBOL_GPL(led_trigger_unregister_simple);
+-EXPORT_SYMBOL_GPL(led_trigger_event);
 
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-# CONFIG_CRYPTO is not set
-CONFIG_HAVE_KVM=y
-# CONFIG_VIRTUALIZATION is not set
+ MODULE_AUTHOR("Richard Purdie");
+ MODULE_LICENSE("GPL");
+diff -uprN c/drivers/leds/ledtrig-ide-disk.c d/drivers/leds/ledtrig-ide-disk.c
+--- c/drivers/leds/ledtrig-ide-disk.c	2007-09-30 08:24:43.000000000 +0200
++++ d/drivers/leds/ledtrig-ide-disk.c	2008-02-10 14:15:43.000000000 +0100
+@@ -38,7 +38,7 @@ static void ledtrig_ide_timerfunc(unsign
+ 	if (ide_lastactivity != ide_activity) {
+ 		ide_lastactivity = ide_activity;
+ 		led_trigger_event(ledtrig_ide, LED_FULL);
+-	    	mod_timer(&ledtrig_ide_timer, jiffies + msecs_to_jiffies(10));
++		mod_timer(&ledtrig_ide_timer, jiffies + msecs_to_jiffies(10));
+ 	} else {
+ 		led_trigger_event(ledtrig_ide, LED_OFF);
+ 	}
+diff -uprN c/drivers/leds/ledtrig-timer.c d/drivers/leds/ledtrig-timer.c
+--- c/drivers/leds/ledtrig-timer.c	2008-02-10 12:26:34.000000000 +0100
++++ d/drivers/leds/ledtrig-timer.c	2008-02-10 14:14:51.000000000 +0100
+@@ -64,7 +64,7 @@ static void led_timer_function(unsigned
+ 	mod_timer(&timer_data->timer, jiffies + msecs_to_jiffies(delay));
+ }
 
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-# CONFIG_CRC_CCITT is not set
-# CONFIG_CRC16 is not set
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=y
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
+-static ssize_t led_delay_on_show(struct device *dev,
++static ssize_t led_delay_on_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+@@ -75,7 +75,7 @@ static ssize_t led_delay_on_show(struct
+ 	return strlen(buf) + 1;
+ }
+
+-static ssize_t led_delay_on_store(struct device *dev,
++static ssize_t led_delay_on_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+@@ -99,7 +99,7 @@ static ssize_t led_delay_on_store(struct
+ 			/* try to activate hardware acceleration, if any */
+ 			if (!led_cdev->blink_set ||
+ 			    led_cdev->blink_set(led_cdev,
+-				&timer_data->delay_on, &timer_data->delay_off)) {
++			      &timer_data->delay_on, &timer_data->delay_off)) {
+ 				/* no hardware acceleration, blink via timer */
+ 				mod_timer(&timer_data->timer, jiffies + 1);
+ 			}
+@@ -110,7 +110,7 @@ static ssize_t led_delay_on_store(struct
+ 	return ret;
+ }
+
+-static ssize_t led_delay_off_show(struct device *dev,
++static ssize_t led_delay_off_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+@@ -121,7 +121,7 @@ static ssize_t led_delay_off_show(struct
+ 	return strlen(buf) + 1;
+ }
+
+-static ssize_t led_delay_off_store(struct device *dev,
++static ssize_t led_delay_off_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+@@ -145,7 +145,7 @@ static ssize_t led_delay_off_store(struc
+ 			/* try to activate hardware acceleration, if any */
+ 			if (!led_cdev->blink_set ||
+ 			    led_cdev->blink_set(led_cdev,
+-				&timer_data->delay_on, &timer_data->delay_off)) {
++			      &timer_data->delay_on, &timer_data->delay_off)) {
+ 				/* no hardware acceleration, blink via timer */
+ 				mod_timer(&timer_data->timer, jiffies + 1);
+ 			}
