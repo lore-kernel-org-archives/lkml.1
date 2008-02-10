@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbYBJMzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYBJNCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbYBJMzO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 07:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYBJMzA
+	id S1756805AbYBJNCL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 08:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYBJNB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 07:55:00 -0500
-Received: from mail02d.mail.t-online.hu ([84.2.42.7]:52351 "EHLO
-	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756097AbYBJMy7 (ORCPT
+	Sun, 10 Feb 2008 08:01:56 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:43151 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084AbYBJNBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 07:54:59 -0500
-Message-ID: <47AEF409.1030800@freemail.hu>
-Date: Sun, 10 Feb 2008 13:54:33 +0100
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Sun, 10 Feb 2008 08:01:55 -0500
+Date: Sun, 10 Feb 2008 14:01:50 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: preempt rcu bug on s390
+Message-ID: <20080210130150.GA9044@osiris.ibm.com>
+References: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com> <20080209140711.GA16205@linux.vnet.ibm.com> <20080209171451.GB8069@osiris.ibm.com> <20080209220226.GB16205@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Richard Purdie <rpurdie@rpsys.net>
-CC: Andrey Kamenov <akamenov@users.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] leds: add mail LED support for "Clevo D400P"
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080209220226.GB16205@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The leds-clevo-mail module also works with model "Clevo D400P",
-add this model to the white list.
+> > > > Using CONFIG_PREEMPT_RCU and CONFIG_NO_IDLE_HZ on s390 my system always
+> > > > gets stuck when running with more than one cpu.
+> > > > When booting with four cpus I get all four cpus caught withing cpu_idle
+> > > > and not advancing anymore. However there is the init process which is
+> > > > waitung for synchronize_rcu() to complete (lcrash output):
+> > > > 
+> > > > If I change the code so that timer ticks won't be disabled everything
+> > > > runs fine. So my guess is that rcu_needs_cpu() doesn't do the right
+> > > > thing for the rcu preemptible case.
+> > > > 
+> > > > Kernel version is git head of today.
+> > > > 
+> > > > Any ideas?
+> > > 
+> > > Does this tree have http://lkml.org/lkml/2008/1/29/208 applied?
+> > > 
+> > > If not, could you please check it out?
+> > 
+> > It's not applied, however it doesn't change anything. Also the patch
+> > is tied to the dynticks implementation which is differently from
+> > s390's nohz implementation.
+> > I had to add the patch below so it would make at least some sense.
+> > But it doesn't fix the problem.
+> 
+> OK, I was afraid of that.  ;-)
+> 
+> Does s390 start out in nohz mode?  The reason I ask is that it feels like
+> an off-by-one error for the dynticks_progress_counter.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Andrey Kamenov <akamenov@users.sourceforge.net>
----
-diff -uprN a/drivers/leds/Kconfig b/drivers/leds/Kconfig
---- a/drivers/leds/Kconfig	2008-02-09 08:02:16.000000000 +0100
-+++ b/drivers/leds/Kconfig	2008-02-10 13:47:31.000000000 +0100
-@@ -135,6 +135,7 @@ config LEDS_CLEVO_MAIL
+Actually I forgot to add a few ifdefs to make the code do something :)
+That just reveals that we have a conflict with the dynticks implementation
+and s390's nohz that shows up in what rcu_irq_enter/exit assume.
+I didn't patch s390 and common code so it will work, but I think the
+patch you mentionened will fix the problem I reported.
+So I guess we should either convert s390 to use the generic dynticks
+implementation or disable preemptible rcu on s390 until we converted
+our code.
 
- 	  This module can drive the mail LED for the following notebooks:
-
-+	  	Clevo D400P
- 	  	Clevo D410J
- 	  	Clevo D410V
- 	  	Clevo D400V/D470V (not tested, but might work)
-@@ -142,6 +143,9 @@ config LEDS_CLEVO_MAIL
- 	  	Clevo M5x0N (not tested, but might work)
- 	  	Positivo Mobile (Clevo M5x0V)
-
-+	  If your model is not listed here you can try the "nodetect"
-+	  module paramter.
-+
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called leds-clevo-mail.
-
-diff -uprN a/drivers/leds/leds-clevo-mail.c b/drivers/leds/leds-clevo-mail.c
---- a/drivers/leds/leds-clevo-mail.c	2008-02-09 08:02:16.000000000 +0100
-+++ b/drivers/leds/leds-clevo-mail.c	2008-02-10 13:07:51.000000000 +0100
-@@ -69,6 +69,16 @@ static struct dmi_system_id __initdata m
- 	},
- 	{
- 		.callback = clevo_mail_led_dmi_callback,
-+		.ident = "Clevo D400P",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "Clevo"),
-+			DMI_MATCH(DMI_BOARD_NAME, "D400P"),
-+			DMI_MATCH(DMI_BOARD_VERSION, "Rev.A"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "0106")
-+		}
-+	},
-+	{
-+		.callback = clevo_mail_led_dmi_callback,
- 		.ident = "Clevo D410V",
- 		.matches = {
- 			DMI_MATCH(DMI_BOARD_VENDOR, "Clevo, Co."),
+Thanks for helping debugging this!
