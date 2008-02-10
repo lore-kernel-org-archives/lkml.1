@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYBJULh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYBJUOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbYBJULh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 15:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYBJUL3
+	id S1755268AbYBJUOs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 15:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYBJUOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 15:11:29 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:38772 "EHLO mgw2.diku.dk"
+	Sun, 10 Feb 2008 15:14:40 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:54236 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbYBJUL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 15:11:28 -0500
-Date: Sun, 10 Feb 2008 21:11:24 +0100 (CET)
+	id S1753075AbYBJUOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 15:14:39 -0500
+Date: Sun, 10 Feb 2008 21:14:27 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: e1000-devel@lists.sourceforge.net, cramerj@intel.com,
-       john.ronciak@intel.com, jeffrey.t.kirsher@intel.com
+To: e1000-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/8] drivers/net/e1000: Use FIELD_SIZEOF
-Message-ID: <Pine.LNX.4.64.0802102110110.23906@ask.diku.dk>
+Subject: [PATCH 6/8] drivers/net/igb: Use FIELD_SIZEOF
+Message-ID: <Pine.LNX.4.64.0802102113480.23906@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -57,15 +56,15 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/net/e1000/e1000_ethtool.c b/drivers/net/e1000/e1000_ethtool.c
---- a/drivers/net/e1000/e1000_ethtool.c 2008-02-02 15:28:19.000000000 +0100
-+++ b/drivers/net/e1000/e1000_ethtool.c 2008-02-10 17:58:20.000000000 +0100
-@@ -50,7 +50,7 @@ struct e1000_stats {
+diff -u -p a/drivers/net/igb/igb_ethtool.c b/drivers/net/igb/igb_ethtool.c
+--- a/drivers/net/igb/igb_ethtool.c 2008-02-02 15:28:20.000000000 +0100
++++ b/drivers/net/igb/igb_ethtool.c 2008-02-10 18:06:35.000000000 +0100
+@@ -43,7 +43,7 @@ struct igb_stats {
  	int stat_offset;
  };
  
--#define E1000_STAT(m) sizeof(((struct e1000_adapter *)0)->m), \
-+#define E1000_STAT(m) FIELD_SIZEOF(struct e1000_adapter, m), \
- 		      offsetof(struct e1000_adapter, m)
- static const struct e1000_stats e1000_gstrings_stats[] = {
- 	{ "rx_packets", E1000_STAT(stats.gprc) },
+-#define IGB_STAT(m) sizeof(((struct igb_adapter *)0)->m), \
++#define IGB_STAT(m) FIELD_SIZEOF(struct igb_adapter, m), \
+ 		      offsetof(struct igb_adapter, m)
+ static const struct igb_stats igb_gstrings_stats[] = {
+ 	{ "rx_packets", IGB_STAT(stats.gprc) },
