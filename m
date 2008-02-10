@@ -1,181 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbYBJAKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbYBJANR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbYBJAKj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 19:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYBJAK3
+	id S1757634AbYBJANR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 19:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYBJANI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 19:10:29 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:35009 "EHLO www.gsystems.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756098AbYBJAK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 19:10:27 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v4
-Date: Sun, 10 Feb 2008 01:10:07 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <200801312012.43447.linux@rainbow-software.org> <200802092233.10239.linux@rainbow-software.org> <20080209134805.29cbc8ae@extreme>
-In-Reply-To: <20080209134805.29cbc8ae@extreme>
+	Sat, 9 Feb 2008 19:13:08 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36149 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756137AbYBJANH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 19:13:07 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+yg/ZvRcmyT+YlYcrPYLjZQ05PJlX0cppHAmHBHg
+	Ja4phJctV6aUse
+Date: Sun, 10 Feb 2008 01:13:08 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: David Brownell <david-b@pacbell.net>
+cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+Subject: Re: [PATCH] Define a NO_GPIO macro to compare against and to use as
+ an invalid GPIO
+In-Reply-To: <200802081543.42467.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.64.0802100053450.7517@axis700.grange>
+References: <Pine.LNX.4.64.0801311624370.8478@axis700.grange>
+ <200802081543.42467.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802100110.09301.linux@rainbow-software.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 February 2008 22:48:05 Stephen Hemminger wrote:
-> On Sat, 9 Feb 2008 22:33:07 +0100
->
-> Ondrej Zary <linux@rainbow-software.org> wrote:
-> > Hello,
-> > this patch converts 3c509 driver to isa_driver and pnp_driver. The result
-> > is that autoloading using udev and hibernation works with ISA PnP cards.
-> > It also adds hibernation support for non-PnP ISA cards.
-> >
-> > xcvr module parameter was removed as its value was not used.
-> >
-> > Tested using 3 ISA cards in various combinations of PnP and non-PnP
-> > modes. EISA and MCA only compile-tested.
-> >
-> > Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> >
-> > --- linux-2.6.24-orig/drivers/net/3c509.c	2008-01-27 19:48:19.000000000
-> > +0100 +++ linux-2.6.24-pentium/drivers/net/3c509.c	2008-02-07
-> > 17:58:45.000000000 +0100 @@ -54,25 +54,24 @@
-> >  		v1.19a 28Oct2002 Davud Ruggiero <jdr@farfalle.com>
-> >  			- Increase *read_eeprom udelay to workaround oops with 2 cards.
-> >  		v1.19b 08Nov2002 Marc Zyngier <maz@wild-wind.fr.eu.org>
-> > -		    - Introduce driver model for EISA cards.
-> > +			- Introduce driver model for EISA cards.
-> > +		v1.20  04Feb2008 Ondrej Zary <linux@rainbow-software.org>
-> > +			- convert to isa_driver and pnp_driver and some cleanups
-> >  */
->
-> Don't bother with comment, kernel uses git change log to figure out
-> who to blame.
->
-> >  #define DRV_NAME	"3c509"
-> > -#define DRV_VERSION	"1.19b"
-> > -#define DRV_RELDATE	"08Nov2002"
-> > +#define DRV_VERSION	"1.20"
-> > +#define DRV_RELDATE	"04Feb2008"
-> >
-> >  /* A few values that may be tweaked. */
-> >
-> >  /* Time in jiffies before concluding the transmitter is hung. */
-> >  #define TX_TIMEOUT  (400*HZ/1000)
-> > -/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
-> > -static int max_interrupt_work = 10;
-> >
-> >  #include <linux/module.h>
-> > -#ifdef CONFIG_MCA
-> >  #include <linux/mca.h>
-> > -#endif
-> > -#include <linux/isapnp.h>
-> > +#include <linux/isa.h>
-> > +#include <linux/pnp.h>
-> >  #include <linux/string.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/errno.h>
-> > @@ -97,10 +96,6 @@
-> >
-> >  static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " "
-> > DRV_RELDATE " becker@scyld.com\n";
-> >
-> > -#if defined(CONFIG_PM) && (defined(CONFIG_MCA) || defined(CONFIG_EISA))
-> > -#define EL3_SUSPEND
-> > -#endif
-> > -
-> >  #ifdef EL3_DEBUG
-> >  static int el3_debug = EL3_DEBUG;
-> >  #else
-> > @@ -111,6 +106,7 @@
-> >   * a global variable so that the mca/eisa probe routines can increment
-> >   * it */
-> >  static int el3_cards = 0;
-> > +#define EL3_MAX_CARDS 8
-> >
-> >  /* To minimize the size of the driver source I only define operating
-> >     constants if they are used several times.  You'll need the manual
-> > @@ -119,7 +115,7 @@
-> >  #define EL3_DATA 0x00
-> >  #define EL3_CMD 0x0e
-> >  #define EL3_STATUS 0x0e
-> > -#define	 EEPROM_READ 0x80
-> > +#define	EEPROM_READ 0x80
-> >
-> >  #define EL3_IO_EXTENT	16
-> >
-> > @@ -168,23 +164,31 @@
-> >   */
-> >  #define SKB_QUEUE_SIZE	64
-> >
-> > +typedef enum { EL3_ISA, EL3_PNP, EL3_MCA, EL3_EISA } el3_cardtype;
-> > +
->
-> No typedef please (see checkpatch)
+On Fri, 8 Feb 2008, David Brownell wrote:
 
-Is there any standard way to solve this without a typedef? I added 
-el3_dev_fill() function which fills that card type value according to a 
-parameter passed to it. "int" could be used instead and "#define EL3_ISA 
-0", "#define EL3_PNP 1" - but I think that's ugly.
+> On Thursday 31 January 2008, Guennadi Liakhovetski wrote:
+> > As discussed on i2c mailing list with David Brownell, and number
+> > outside of the 0...MAX_INT range is invalid as a GPIO number.
+> > Define a macro, similar to NO_IRQ, to be used as a deliberate
+> > invalid GPIO, rather than defining a is_valid_gpio() macro.
+> 
+> Actually I thought that what you needed was an is_valid_gpio();
+> your motivation was that you needed a predicate.
+> 
+> The problem I have with a #define for a single such invalid GPIO
+> number is that people will inevitably start to assume it's the
+> only such number.  In particular "if (gpio == NO_GPIO) ..."
+> is by definition incorrect.
+> 
+> So I'd really rather see a predicate like is_valid_gpio().
+> 
+> If you want to designate one value for use as an initializer,
+> then I'd rather see a simple
+> 
+> 	#define NO_GPIO	(-EINVAL)
+> 
+> without any option for arch-specific overrides ... along with a
+> comment that this is only *one* of the numerous values which
+> will fail is_valid_gpio().
 
->
-> >  struct el3_private {
-> >  	struct net_device_stats stats;
->
-> Use network device stats in net_device now
+I was thinking about irq numbers and trying to avoid as early as possible 
+their problem: namely that each and every platform has its own idea of 
+which irq numbers are valid and which are not, some use 0 as invalid irq, 
+some -1, some 256, etc. And when those platforms share drivers, problems 
+arise. And the simple and efficient NO_IRQ notion, that would fis those 
+problems nicely, cannot seem to establish itself.
 
-OK, looks like the driver will need some more patches.
+The disadvantages I see in your suggestions are:
 
-> > -	struct net_device *next_dev;
-> >  	spinlock_t lock;
-> >  	/* skb send-queue */
-> >  	int head, size;
-> >  	struct sk_buff *queue[SKB_QUEUE_SIZE];
->
-> What about sk_buff_head (linked list instead)?
+1. two accessors (is_valid_gpio() and NO_GPIO) instead of one
+2. have to include errno.h
+3. it doesn't seem very logical to me to define a gpio number in terms of 
+   an error code
+4. "confusing freedom" - NO_GPIO is the invalid gpio number, but, in fact, 
+   you can use just any negative number
 
-I don't know anything about this, maybe in next patch.
+Advantages of my proposal:
 
->
-> > -	enum {
-> > -		EL3_MCA,
-> > -		EL3_PNP,
-> > -		EL3_EISA,
-> > -	} type;						/* type of device */
-> > -	struct device *dev;
-> > +	el3_cardtype type;
-> >  };
-> > -static int id_port __initdata = 0x110;	/* Start with 0x110 to avoid new
-> > sound cards.*/ -static struct net_device *el3_root_dev;
-> > +static int id_port;
-> > +static int current_tag;
-> > +static struct net_device *el3_devs[EL3_MAX_CARDS];
->
-> I know is only ISA, but having a limit seems silly, can't the device just
-> use allocated space like other drivers.
+1. simplicity - only one macro, and "well-definedness" - use this and only 
+   this as invalid gpio number. The rest are either valid, or undefined.
+2. overridable by platforms - though I don't have any examples at hand, I 
+   can imagine, that some platforms would prefer some specific "natural" 
+   for them numbers.
 
-EL3_MAX_CARDS is also used as a parameter to isa_register_driver(). The irq[] 
-array (see below) is limited to 8 devices too. And finally, the card itself 
-can use one of 8 different IRQs (3,5,7,2/9,10,11,12,15). So I think that it's 
-not worth adding more code to support more cards.
-The original driver will do bad things with more than 8 cards too - read 
-beyond the end of irq[] array.
+But, this is not something I would spend too much energy arguing about, 
+and this is your code in the end:-) So, if you still disagree, I'll do it 
+the way you suggest. I might well be wrong too:-)
 
-> > +
-> > +/* Parameters that may be passed into the module. */
-> > +static int debug = -1;
-> > +static int irq[] = {-1, -1, -1, -1, -1, -1, -1, -1};
-> > +/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
-> > +static int max_interrupt_work = 10;
-> > +#ifdef CONFIG_PNP
-> > +static int nopnp;
-> > +#endif
-
--- 
-Ondrej Zary
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
