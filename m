@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbYBJHYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbYBJHYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759376AbYBJHYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYBJHUu
+	id S1759473AbYBJHYx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 02:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYBJHVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:20:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56853 "EHLO mx2.mail.elte.hu"
+	Sun, 10 Feb 2008 02:21:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56866 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758036AbYBJHUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:20:47 -0500
-Date: Sun, 10 Feb 2008 08:20:35 +0100
+	id S1758078AbYBJHUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 02:20:54 -0500
+Date: Sun, 10 Feb 2008 08:20:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Steven Rostedt <rostedt@goodmis.org>
-Subject: [10/19] ftrace: add basic support for gcc profiler instrumentation
-Message-ID: <20080210072035.GK4100@elte.hu>
+Subject: [11/19] ftrace: latency tracer infrastructure
+Message-ID: <20080210072040.GL4100@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,380 +32,1846 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+From: Steven Rostedt <srostedt@redhat.com>
 
-If CONFIG_FTRACE is selected and /proc/sys/kernel/ftrace_enabled is
-set to a non-zero value the ftrace routine will be called everytime
-we enter a kernel function that is not marked with the "notrace"
-attribute.
+This patch adds the latency tracer infrastructure. This patch
+does not add anything that will select and turn it on, but will
+be used by later patches.
 
-The ftrace routine will then call a registered function if a function
-happens to be registered.
+If it were to be compiled, it would add the following files
+to the debugfs:
 
-[ This code has been highly hacked by Steven Rostedt and Ingo Molnar,
-  so don't blame Arnaldo for all of this ;-) ]
+ The root tracing directory:
 
-Update:
-  It is now possible to register more than one ftrace function.
-  If only one ftrace function is registered, that will be the
-  function that ftrace calls directly. If more than one function
-  is registered, then ftrace will call a function that will loop
-  through the functions to call.
+  /debugfs/tracing/
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+This patch also adds the following files:
+
+  available_tracers
+     list of available tracers. Currently no tracers are
+     available. Looking into this file only shows
+     "none" which is used to unregister all tracers.
+
+  current_tracer
+     The trace that is currently active. Empty on start up.
+     To switch to a tracer simply echo one of the tracers that
+     are listed in available_tracers:
+
+   example: (used with later patches)
+
+      echo function > /debugfs/tracing/current_tracer
+
+     To disable the tracer:
+
+       echo disable > /debugfs/tracing/current_tracer
+
+  tracing_enabled
+     echoing "1" into this file starts the ftrace function tracing
+      (if sysctl kernel.ftrace_enabled=1)
+     echoing "0" turns it off.
+
+  latency_trace
+      This file is readonly and holds the result of the trace.
+
+  trace
+      This file outputs a easier to read version of the trace.
+
+  iter_ctrl
+      Controls the way the output of traces look.
+      So far there's two controls:
+        echoing in "symonly" will only show the kallsyms variables
+            without the addresses (if kallsyms was configured)
+        echoing in "verbose" will change the output to show
+            a lot more data, but not very easy to understand by
+            humans.
+        echoing in "nosymonly" turns off symonly.
+        echoing in "noverbose" turns off verbose.
+
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Makefile                   |    3 
- arch/x86/Kconfig           |    1 
- arch/x86/kernel/entry_32.S |   27 ++++++++
- arch/x86/kernel/entry_64.S |   37 ++++++++++++
- include/linux/ftrace.h     |   38 ++++++++++++
- kernel/Makefile            |    1 
- kernel/trace/Kconfig       |    5 +
- kernel/trace/Makefile      |    3 
- kernel/trace/ftrace.c      |  138 +++++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig.debug          |    2 
- 10 files changed, 255 insertions(+)
+ kernel/Makefile       |    1 
+ kernel/trace/Kconfig  |    5 
+ kernel/trace/Makefile |    2 
+ kernel/trace/trace.c  | 1547 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace.h  |  185 +++++
+ 5 files changed, 1740 insertions(+)
 
-Index: linux/Makefile
-===================================================================
---- linux.orig/Makefile
-+++ linux/Makefile
-@@ -509,6 +509,9 @@ endif
- 
- include $(srctree)/arch/$(SRCARCH)/Makefile
- 
-+ifdef CONFIG_FTRACE
-+KBUILD_CFLAGS	+= -pg
-+endif
- ifdef CONFIG_FRAME_POINTER
- KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
- else
-Index: linux/arch/x86/Kconfig
-===================================================================
---- linux.orig/arch/x86/Kconfig
-+++ linux/arch/x86/Kconfig
-@@ -20,6 +20,7 @@ config X86
- 	def_bool y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_FTRACE
- 
- config GENERIC_LOCKBREAK
- 	def_bool n
-Index: linux/arch/x86/kernel/entry_32.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_32.S
-+++ linux/arch/x86/kernel/entry_32.S
-@@ -75,6 +75,33 @@ DF_MASK		= 0x00000400 
- NT_MASK		= 0x00004000
- VM_MASK		= 0x00020000
- 
-+#ifdef CONFIG_FTRACE
-+ENTRY(mcount)
-+	cmpl $ftrace_stub, ftrace_trace_function
-+	jnz trace
-+
-+.globl ftrace_stub
-+ftrace_stub:
-+	ret
-+
-+	/* taken from glibc */
-+trace:
-+	pushl %eax
-+	pushl %ecx
-+	pushl %edx
-+	movl 0xc(%esp), %eax
-+	movl 0x4(%ebp), %edx
-+
-+	call   *ftrace_trace_function
-+
-+	popl %edx
-+	popl %ecx
-+	popl %eax
-+
-+	jmp ftrace_stub
-+END(mcount)
-+#endif
-+
- #ifdef CONFIG_PREEMPT
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
-Index: linux/arch/x86/kernel/entry_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S
-+++ linux/arch/x86/kernel/entry_64.S
-@@ -54,6 +54,43 @@
- 
- 	.code64
- 
-+#ifdef CONFIG_FTRACE
-+ENTRY(mcount)
-+	cmpq $ftrace_stub, ftrace_trace_function
-+	jnz trace
-+.globl ftrace_stub
-+ftrace_stub:
-+	retq
-+
-+trace:
-+	/* taken from glibc */
-+	subq $0x38, %rsp
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+
-+	movq 0x38(%rsp), %rdi
-+	movq 8(%rbp), %rsi
-+
-+	call   *ftrace_trace_function
-+
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $0x38, %rsp
-+
-+	jmp ftrace_stub
-+END(mcount)
-+#endif
-+
- #ifndef CONFIG_PREEMPT
- #define retint_kernel retint_restore_args
- #endif	
-Index: linux/include/linux/ftrace.h
-===================================================================
---- /dev/null
-+++ linux/include/linux/ftrace.h
-@@ -0,0 +1,38 @@
-+#ifndef _LINUX_FTRACE_H
-+#define _LINUX_FTRACE_H
-+
-+#ifdef CONFIG_FTRACE
-+
-+#include <linux/linkage.h>
-+
-+#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+#define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-+#define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-+
-+typedef void (*ftrace_func_t)(unsigned long ip, unsigned long parent_ip);
-+
-+struct ftrace_ops {
-+	ftrace_func_t	  func;
-+	struct ftrace_ops *next;
-+};
-+
-+/*
-+ * The ftrace_ops must be a static and should also
-+ * be read_mostly.  These functions do modify read_mostly variables
-+ * so use them sparely. Never free an ftrace_op or modify the
-+ * next pointer after it has been registered. Even after unregistering
-+ * it, the next pointer may still be used internally.
-+ */
-+int register_ftrace_function(struct ftrace_ops *ops);
-+int unregister_ftrace_function(struct ftrace_ops *ops);
-+void clear_ftrace_function(void);
-+
-+extern void ftrace_stub(unsigned long a0, unsigned long a1);
-+extern void mcount(void);
-+
-+#else /* !CONFIG_FTRACE */
-+# define register_ftrace_function(ops) do { } while (0)
-+# define unregister_ftrace_function(ops) do { } while (0)
-+# define clear_ftrace_function(ops) do { } while (0)
-+#endif /* CONFIG_FTRACE */
-+#endif /* _LINUX_FTRACE_H */
 Index: linux/kernel/Makefile
 ===================================================================
 --- linux.orig/kernel/Makefile
 +++ linux/kernel/Makefile
-@@ -68,6 +68,7 @@ obj-$(CONFIG_TASK_DELAY_ACCT) += delayac
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
+@@ -69,6 +69,7 @@ obj-$(CONFIG_TASKSTATS) += taskstats.o t
  obj-$(CONFIG_MARKERS) += marker.o
  obj-$(CONFIG_LATENCYTOP) += latencytop.o
-+obj-$(CONFIG_FTRACE) += trace/
+ obj-$(CONFIG_FTRACE) += trace/
++obj-$(CONFIG_TRACING) += trace/
  
  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
 Index: linux/kernel/trace/Kconfig
 ===================================================================
---- /dev/null
+--- linux.orig/kernel/trace/Kconfig
 +++ linux/kernel/trace/Kconfig
-@@ -0,0 +1,5 @@
-+#
-+# Architectures that offer an FTRACE implementation should select HAVE_FTRACE:
-+#
-+config HAVE_FTRACE
+@@ -3,3 +3,8 @@
+ #
+ config HAVE_FTRACE
+ 	bool
++
++config TRACING
 +	bool
++	select DEBUG_FS
++
 Index: linux/kernel/trace/Makefile
 ===================================================================
---- /dev/null
+--- linux.orig/kernel/trace/Makefile
 +++ linux/kernel/trace/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_FTRACE) += libftrace.o
+@@ -1,3 +1,5 @@
+ obj-$(CONFIG_FTRACE) += libftrace.o
+ 
++obj-$(CONFIG_TRACING) += trace.o
 +
-+libftrace-y := ftrace.o
-Index: linux/kernel/trace/ftrace.c
+ libftrace-y := ftrace.o
+Index: linux/kernel/trace/trace.c
 ===================================================================
 --- /dev/null
-+++ linux/kernel/trace/ftrace.c
-@@ -0,0 +1,138 @@
++++ linux/kernel/trace/trace.c
+@@ -0,0 +1,1547 @@
 +/*
-+ * Infrastructure for profiling code inserted by 'gcc -pg'.
++ * ring buffer based function tracer
 + *
 + * Copyright (C) 2007-2008 Steven Rostedt <srostedt@redhat.com>
-+ * Copyright (C) 2004-2008 Ingo Molnar <mingo@redhat.com>
++ * Copyright (C) 2008 Ingo Molnar <mingo@redhat.com>
 + *
-+ * Originally ported from the -rt patch by:
-+ *   Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
++ * Originally taken from the RT patch by:
++ *    Arnaldo Carvalho de Melo <acme@redhat.com>
 + *
-+ * Based on code in the latency_tracer, that is:
-+ *
++ * Based on code from the latency_tracer, that is:
 + *  Copyright (C) 2004-2006 Ingo Molnar
 + *  Copyright (C) 2004 William Lee Irwin III
 + */
-+
-+#include <linux/module.h>
++#include <linux/utsrelease.h>
++#include <linux/kallsyms.h>
++#include <linux/seq_file.h>
++#include <linux/debugfs.h>
++#include <linux/hardirq.h>
++#include <linux/linkage.h>
++#include <linux/uaccess.h>
 +#include <linux/ftrace.h>
++#include <linux/module.h>
++#include <linux/percpu.h>
++#include <linux/ctype.h>
++#include <linux/init.h>
++#include <linux/gfp.h>
++#include <linux/fs.h>
 +
-+static DEFINE_SPINLOCK(ftrace_func_lock);
-+static struct ftrace_ops ftrace_list_end __read_mostly =
++#include "trace.h"
++
++unsigned long __read_mostly	tracing_max_latency = (cycle_t)ULONG_MAX;
++unsigned long __read_mostly	tracing_thresh;
++
++static long notrace
++ns2usecs(cycle_t nsec)
 +{
-+	.func = ftrace_stub,
++	nsec += 500;
++	do_div(nsec, 1000);
++	return nsec;
++}
++
++static atomic_t			tracer_counter;
++static struct trace_array	global_trace;
++
++static DEFINE_PER_CPU(struct trace_array_cpu, global_trace_cpu);
++
++static struct trace_array	max_tr;
++
++static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
++
++static int			tracer_enabled;
++static unsigned long		trace_nr_entries = 4096UL;
++
++static struct tracer		*trace_types __read_mostly;
++static struct tracer		*current_trace __read_mostly;
++static int			max_tracer_type_len;
++
++static DEFINE_MUTEX(trace_types_lock);
++
++static int __init set_nr_entries(char *str)
++{
++	if (!str)
++		return 0;
++	trace_nr_entries = simple_strtoul(str, &str, 0);
++	return 1;
++}
++__setup("trace_entries=", set_nr_entries);
++
++enum trace_type {
++	__TRACE_FIRST_TYPE = 0,
++
++	TRACE_FN,
++	TRACE_CTX,
++
++	__TRACE_LAST_TYPE
 +};
 +
-+static struct ftrace_ops *ftrace_list __read_mostly = &ftrace_list_end;
-+ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
++enum trace_flag_type {
++	TRACE_FLAG_IRQS_OFF		= 0x01,
++	TRACE_FLAG_NEED_RESCHED		= 0x02,
++	TRACE_FLAG_HARDIRQ		= 0x04,
++	TRACE_FLAG_SOFTIRQ		= 0x08,
++};
 +
-+/* mcount is defined per arch in assembly */
-+EXPORT_SYMBOL_GPL(mcount);
++enum trace_iterator_flags {
++	TRACE_ITER_PRINT_PARENT		= 0x01,
++	TRACE_ITER_SYM_OFFSET		= 0x02,
++	TRACE_ITER_SYM_ADDR		= 0x04,
++	TRACE_ITER_VERBOSE		= 0x08,
++};
 +
-+notrace void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
++#define TRACE_ITER_SYM_MASK \
++	(TRACE_ITER_PRINT_PARENT|TRACE_ITER_SYM_OFFSET|TRACE_ITER_SYM_ADDR)
++
++/* These must match the bit postions above */
++static const char *trace_options[] = {
++	"print-parent",
++	"sym-offset",
++	"sym-addr",
++	"verbose",
++	NULL
++};
++
++static unsigned trace_flags;
++
++
++/*
++ * Copy the new maximum trace into the separate maximum-trace
++ * structure. (this way the maximum trace is permanently saved,
++ * for later retrieval via /debugfs/tracing/latency_trace)
++ */
++static void notrace
++__update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
 +{
-+	struct ftrace_ops *op = ftrace_list;
++	struct trace_array_cpu *data = tr->data[cpu];
 +
-+	/* in case someone actually ports this to alpha! */
-+	read_barrier_depends();
++	max_tr.cpu = cpu;
++	max_tr.time_start = data->preempt_timestamp;
 +
-+	while (op != &ftrace_list_end) {
-+		/* silly alpha */
-+		read_barrier_depends();
-+		op->func(ip, parent_ip);
-+		op = op->next;
-+	};
++	data = max_tr.data[cpu];
++	data->saved_latency = tracing_max_latency;
++
++	memcpy(data->comm, tsk->comm, TASK_COMM_LEN);
++	data->pid = tsk->pid;
++	data->uid = tsk->uid;
++	data->nice = tsk->static_prio - 20 - MAX_RT_PRIO;
++	data->policy = tsk->policy;
++	data->rt_priority = tsk->rt_priority;
++
++	/* record this tasks comm */
++	tracing_record_cmdline(current);
++}
++
++notrace void
++update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
++{
++	struct trace_array_cpu *data;
++	void *save_trace;
++	int i;
++
++	/* clear out all the previous traces */
++	for_each_possible_cpu(i) {
++		data = tr->data[i];
++		save_trace = max_tr.data[i]->trace;
++		memcpy(max_tr.data[i], data, sizeof(*data));
++		data->trace = save_trace;
++	}
++
++	__update_max_tr(tr, tsk, cpu);
 +}
 +
 +/**
-+ * register_ftrace_function - register a function for profiling
-+ * @ops - ops structure that holds the function for profiling.
-+ *
-+ * Register a function to be called by all functions in the
-+ * kernel.
-+ *
-+ * Note: @ops->func and all the functions it calls must be labeled
-+ *       with "notrace", otherwise it will go into a
-+ *       recursive loop.
++ * update_max_tr_single - only copy one trace over, and reset the rest
++ * @tr - tracer
++ * @tsk - task with the latency
++ * @cpu - the cpu of the buffer to copy.
 + */
-+int register_ftrace_function(struct ftrace_ops *ops)
++notrace void
++update_max_tr_single(struct trace_array *tr, struct task_struct *tsk, int cpu)
 +{
-+	unsigned long flags;
++	struct trace_array_cpu *data = tr->data[cpu];
++	void *save_trace;
++	int i;
 +
-+	spin_lock_irqsave(&ftrace_func_lock, flags);
-+	ops->next = ftrace_list;
-+	/*
-+	 * We are entering ops into the ftrace_list but another
-+	 * CPU might be walking that list. We need to make sure
-+	 * the ops->next pointer is valid before another CPU sees
-+	 * the ops pointer included into the ftrace_list.
-+	 */
-+	smp_wmb();
-+	ftrace_list = ops;
-+	/*
-+	 * For one func, simply call it directly.
-+	 * For more than one func, call the chain.
-+	 */
-+	if (ops->next == &ftrace_list_end)
-+		ftrace_trace_function = ops->func;
-+	else
-+		ftrace_trace_function = ftrace_list_func;
-+	spin_unlock_irqrestore(&ftrace_func_lock, flags);
++	for_each_possible_cpu(i)
++		tracing_reset(max_tr.data[i]);
 +
-+	return 0;
++	save_trace = max_tr.data[cpu]->trace;
++	memcpy(max_tr.data[cpu], data, sizeof(*data));
++	data->trace = save_trace;
++
++	__update_max_tr(tr, tsk, cpu);
 +}
 +
-+/**
-+ * unregister_ftrace_function - unresgister a function for profiling.
-+ * @ops - ops structure that holds the function to unregister
-+ *
-+ * Unregister a function that was added to be called by ftrace profiling.
-+ */
-+int unregister_ftrace_function(struct ftrace_ops *ops)
++int register_tracer(struct tracer *type)
 +{
-+	unsigned long flags;
-+	struct ftrace_ops **p;
++	struct tracer *t;
++	int len;
 +	int ret = 0;
 +
-+	spin_lock_irqsave(&ftrace_func_lock, flags);
++	if (!type->name) {
++		pr_info("Tracer must have a name\n");
++		return -1;
++	}
++
++	mutex_lock(&trace_types_lock);
++	for (t = trace_types; t; t = t->next) {
++		if (strcmp(type->name, t->name) == 0) {
++			/* already found */
++			pr_info("Trace %s already registered\n",
++				type->name);
++			ret = -1;
++			goto out;
++		}
++	}
++
++	type->next = trace_types;
++	trace_types = type;
++	len = strlen(type->name);
++	if (len > max_tracer_type_len)
++		max_tracer_type_len = len;
++ out:
++	mutex_unlock(&trace_types_lock);
++
++	return ret;
++}
++
++void unregister_tracer(struct tracer *type)
++{
++	struct tracer **t;
++	int len;
++
++	mutex_lock(&trace_types_lock);
++	for (t = &trace_types; *t; t = &(*t)->next) {
++		if (*t == type)
++			goto found;
++	}
++	pr_info("Trace %s not registered\n", type->name);
++	goto out;
++
++ found:
++	*t = (*t)->next;
++	if (strlen(type->name) != max_tracer_type_len)
++		goto out;
++
++	max_tracer_type_len = 0;
++	for (t = &trace_types; *t; t = &(*t)->next) {
++		len = strlen((*t)->name);
++		if (len > max_tracer_type_len)
++			max_tracer_type_len = len;
++	}
++ out:
++	mutex_unlock(&trace_types_lock);
++}
++
++void notrace tracing_reset(struct trace_array_cpu *data)
++{
++	data->trace_idx = 0;
++	atomic_set(&data->underrun, 0);
++}
++
++#ifdef CONFIG_FTRACE
++static void notrace
++function_trace_call(unsigned long ip, unsigned long parent_ip)
++{
++	struct trace_array *tr = &global_trace;
++	struct trace_array_cpu *data;
++	unsigned long flags;
++	long disabled;
++	int cpu;
++
++	if (unlikely(!tracer_enabled))
++		return;
++
++	raw_local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++	data = tr->data[cpu];
++	disabled = atomic_inc_return(&data->disabled);
++
++	if (likely(disabled == 1))
++		ftrace(tr, data, ip, parent_ip, flags);
++
++	atomic_dec(&data->disabled);
++	raw_local_irq_restore(flags);
++}
++
++static struct ftrace_ops trace_ops __read_mostly =
++{
++	.func = function_trace_call,
++};
++#endif
++
++notrace void tracing_start_function_trace(void)
++{
++	register_ftrace_function(&trace_ops);
++}
++
++notrace void tracing_stop_function_trace(void)
++{
++	unregister_ftrace_function(&trace_ops);
++}
++
++#define SAVED_CMDLINES 128
++static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
++static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
++static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
++static int cmdline_idx;
++static DEFINE_SPINLOCK(trace_cmdline_lock);
++atomic_t trace_record_cmdline_disabled;
++
++static void trace_init_cmdlines(void)
++{
++	memset(&map_pid_to_cmdline, -1, sizeof(map_pid_to_cmdline));
++	memset(&map_cmdline_to_pid, -1, sizeof(map_cmdline_to_pid));
++	cmdline_idx = 0;
++}
++
++notrace void trace_stop_cmdline_recording(void);
++
++static void notrace trace_save_cmdline(struct task_struct *tsk)
++{
++	unsigned map;
++	unsigned idx;
++
++	if (!tsk->pid || unlikely(tsk->pid > PID_MAX_DEFAULT))
++		return;
 +
 +	/*
-+	 * If we are the only function, then the ftrace pointer is
-+	 * pointing directly to that function.
++	 * It's not the end of the world if we don't get
++	 * the lock, but we also don't want to spin
++	 * nor do we want to disable interrupts,
++	 * so if we miss here, then better luck next time.
 +	 */
-+	if (ftrace_list == ops && ops->next == &ftrace_list_end) {
-+		ftrace_trace_function = ftrace_stub;
-+		ftrace_list = &ftrace_list_end;
-+		goto out;
++	if (!spin_trylock(&trace_cmdline_lock))
++		return;
++
++	idx = map_pid_to_cmdline[tsk->pid];
++	if (idx >= SAVED_CMDLINES) {
++		idx = (cmdline_idx + 1) % SAVED_CMDLINES;
++
++		map = map_cmdline_to_pid[idx];
++		if (map <= PID_MAX_DEFAULT)
++			map_pid_to_cmdline[map] = (unsigned)-1;
++
++		map_pid_to_cmdline[tsk->pid] = idx;
++
++		cmdline_idx = idx;
 +	}
 +
-+	for (p = &ftrace_list; *p != &ftrace_list_end; p = &(*p)->next)
-+		if (*p == ops)
-+			break;
++	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
 +
-+	if (*p != ops) {
-+		ret = -1;
++	spin_unlock(&trace_cmdline_lock);
++}
++
++static notrace char *trace_find_cmdline(int pid)
++{
++	char *cmdline = "<...>";
++	unsigned map;
++
++	if (!pid)
++		return "<idle>";
++
++	if (pid > PID_MAX_DEFAULT)
 +		goto out;
-+	}
 +
-+	*p = (*p)->next;
++	map = map_pid_to_cmdline[pid];
++	if (map >= SAVED_CMDLINES)
++		goto out;
 +
-+	/* If we only have one func left, then call that directly */
-+	if (ftrace_list->next == &ftrace_list_end)
-+		ftrace_trace_function = ftrace_list->func;
++	cmdline = saved_cmdlines[map];
 +
 + out:
-+	spin_unlock_irqrestore(&ftrace_func_lock, flags);
++	return cmdline;
++}
++
++notrace void tracing_record_cmdline(struct task_struct *tsk)
++{
++	if (atomic_read(&trace_record_cmdline_disabled))
++		return;
++
++	trace_save_cmdline(tsk);
++}
++
++static inline notrace struct trace_entry *
++tracing_get_trace_entry(struct trace_array *tr,
++			struct trace_array_cpu *data)
++{
++	unsigned long idx, idx_next;
++	struct trace_entry *entry;
++
++	idx = data->trace_idx;
++	idx_next = idx + 1;
++
++	if (unlikely(idx_next >= tr->entries)) {
++		atomic_inc(&data->underrun);
++		idx_next = 0;
++	}
++
++	data->trace_idx = idx_next;
++
++	if (unlikely(idx_next != 0 && atomic_read(&data->underrun)))
++		atomic_inc(&data->underrun);
++
++	entry = data->trace + idx * TRACE_ENTRY_SIZE;
++
++	return entry;
++}
++
++static inline notrace void
++tracing_generic_entry_update(struct trace_entry *entry,
++			     unsigned long flags)
++{
++	struct task_struct *tsk = current;
++	unsigned long pc;
++
++	pc = preempt_count();
++
++	entry->idx	= atomic_inc_return(&tracer_counter);
++	entry->preempt_count = pc & 0xff;
++	entry->pid	 = tsk->pid;
++	entry->t	 = now(raw_smp_processor_id());
++	entry->flags = (irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_OFF : 0) |
++		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
++		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
++		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
++}
++
++notrace void
++ftrace(struct trace_array *tr, struct trace_array_cpu *data,
++		       unsigned long ip, unsigned long parent_ip,
++		       unsigned long flags)
++{
++	struct trace_entry *entry;
++
++	entry = tracing_get_trace_entry(tr, data);
++	tracing_generic_entry_update(entry, flags);
++	entry->type	    = TRACE_FN;
++	entry->fn.ip	    = ip;
++	entry->fn.parent_ip = parent_ip;
++}
++
++notrace void
++tracing_sched_switch_trace(struct trace_array *tr,
++			   struct trace_array_cpu *data,
++			   struct task_struct *prev, struct task_struct *next,
++			   unsigned long flags)
++{
++	struct trace_entry *entry;
++
++	entry = tracing_get_trace_entry(tr, data);
++	tracing_generic_entry_update(entry, flags);
++	entry->type		= TRACE_CTX;
++	entry->ctx.prev_pid	= prev->pid;
++	entry->ctx.prev_prio	= prev->prio;
++	entry->ctx.prev_state	= prev->state;
++	entry->ctx.next_pid	= next->pid;
++	entry->ctx.next_prio	= next->prio;
++}
++
++enum trace_file_type {
++	TRACE_FILE_LAT_FMT	= 1,
++};
++
++static struct trace_entry *
++trace_entry_idx(struct trace_array *tr, unsigned long idx, int cpu)
++{
++	struct trace_entry *array = tr->data[cpu]->trace;
++	unsigned long underrun;
++
++	if (idx >= tr->entries)
++		return NULL;
++
++	underrun = atomic_read(&tr->data[cpu]->underrun);
++	if (underrun)
++		idx = ((underrun - 1) + idx) % tr->entries;
++	else if (idx >= tr->data[cpu]->trace_idx)
++		return NULL;
++
++	return &array[idx];
++}
++
++static struct notrace trace_entry *
++find_next_entry(struct trace_iterator *iter, int *ent_cpu)
++{
++	struct trace_array *tr = iter->tr;
++	struct trace_entry *ent, *next = NULL;
++	int next_cpu = -1;
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		if (!tr->data[cpu]->trace)
++			continue;
++		ent = trace_entry_idx(tr, iter->next_idx[cpu], cpu);
++		if (ent &&
++		    (!next || (long)(next->idx - ent->idx) > 0)) {
++			next = ent;
++			next_cpu = cpu;
++		}
++	}
++
++	if (ent_cpu)
++		*ent_cpu = next_cpu;
++
++	return next;
++}
++
++static void *find_next_entry_inc(struct trace_iterator *iter)
++{
++	struct trace_entry *next;
++	int next_cpu = -1;
++
++	next = find_next_entry(iter, &next_cpu);
++
++	if (next) {
++		iter->next_idx[next_cpu]++;
++		iter->idx++;
++	}
++	iter->ent = next;
++	iter->cpu = next_cpu;
++
++	return next ? iter : NULL;
++}
++
++static void notrace *
++s_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct trace_iterator *iter = m->private;
++	void *ent;
++	void *last_ent = iter->ent;
++	int i = (int)*pos;
++
++	(*pos)++;
++
++	/* can't go backwards */
++	if (iter->idx > i)
++		return NULL;
++
++	if (iter->idx < 0)
++		ent = find_next_entry_inc(iter);
++	else
++		ent = iter;
++
++	while (ent && iter->idx < i)
++		ent = find_next_entry_inc(iter);
++
++	iter->pos = *pos;
++
++	if (last_ent && !ent)
++		seq_puts(m, "\n\nvim:ft=help\n");
++
++	return ent;
++}
++
++static void *s_start(struct seq_file *m, loff_t *pos)
++{
++	struct trace_iterator *iter = m->private;
++	void *p = NULL;
++	loff_t l = 0;
++	int i;
++
++	mutex_lock(&trace_types_lock);
++
++	if (!current_trace || current_trace != iter->trace)
++		return NULL;
++
++	atomic_inc(&trace_record_cmdline_disabled);
++
++	/* let the tracer grab locks here if needed */
++	if (current_trace->start)
++		current_trace->start(iter);
++
++	if (*pos != iter->pos) {
++		iter->ent = NULL;
++		iter->cpu = 0;
++		iter->idx = -1;
++
++		for (i = 0; i < NR_CPUS; i++)
++			iter->next_idx[i] = 0;
++
++		for (p = iter; p && l < *pos; p = s_next(m, p, &l))
++			;
++
++	} else {
++		l = *pos;
++		p = s_next(m, p, &l);
++	}
++
++	return p;
++}
++
++static void s_stop(struct seq_file *m, void *p)
++{
++	struct trace_iterator *iter = m->private;
++
++	atomic_dec(&trace_record_cmdline_disabled);
++
++	/* let the tracer release locks here if needed */
++	if (current_trace && current_trace == iter->trace && iter->trace->stop)
++		iter->trace->stop(iter);
++
++	mutex_unlock(&trace_types_lock);
++}
++
++static void
++seq_print_sym_short(struct seq_file *m, const char *fmt, unsigned long address)
++{
++#ifdef CONFIG_KALLSYMS
++	char str[KSYM_SYMBOL_LEN];
++
++	kallsyms_lookup(address, NULL, NULL, NULL, str);
++
++	seq_printf(m, fmt, str);
++#endif
++}
++
++static void
++seq_print_sym_offset(struct seq_file *m, const char *fmt, unsigned long address)
++{
++#ifdef CONFIG_KALLSYMS
++	char str[KSYM_SYMBOL_LEN];
++
++	sprint_symbol(str, address);
++	seq_printf(m, fmt, str);
++#endif
++}
++
++#ifndef CONFIG_64BIT
++# define IP_FMT "%08lx"
++#else
++# define IP_FMT "%016lx"
++#endif
++
++static void notrace
++seq_print_ip_sym(struct seq_file *m, unsigned long ip, unsigned long sym_flags)
++{
++	if (!ip) {
++		seq_printf(m, "0");
++		return;
++	}
++
++	if (sym_flags & TRACE_ITER_SYM_OFFSET)
++		seq_print_sym_offset(m, "%s", ip);
++	else
++		seq_print_sym_short(m, "%s", ip);
++
++	if (sym_flags & TRACE_ITER_SYM_ADDR)
++		seq_printf(m, " <" IP_FMT ">", ip);
++}
++
++static void notrace print_lat_help_header(struct seq_file *m)
++{
++	seq_puts(m, "#                _------=> CPU#            \n");
++	seq_puts(m, "#               / _-----=> irqs-off        \n");
++	seq_puts(m, "#              | / _----=> need-resched    \n");
++	seq_puts(m, "#              || / _---=> hardirq/softirq \n");
++	seq_puts(m, "#              ||| / _--=> preempt-depth   \n");
++	seq_puts(m, "#              |||| /                      \n");
++	seq_puts(m, "#              |||||     delay             \n");
++	seq_puts(m, "#  cmd     pid ||||| time  |   caller      \n");
++	seq_puts(m, "#     \\   /    |||||   \\   |   /           \n");
++}
++
++static void notrace print_func_help_header(struct seq_file *m)
++{
++	seq_puts(m, "#           TASK-PID   CPU#    TIMESTAMP  FUNCTION\n");
++	seq_puts(m, "#              | |      |          |         |\n");
++}
++
++
++static void notrace
++print_trace_header(struct seq_file *m, struct trace_iterator *iter)
++{
++	unsigned long sym_flags = (trace_flags & TRACE_ITER_SYM_MASK);
++	struct trace_array *tr = iter->tr;
++	struct trace_array_cpu *data = tr->data[tr->cpu];
++	struct tracer *type = current_trace;
++	unsigned long underruns = 0;
++	unsigned long underrun;
++	unsigned long entries   = 0;
++	int cpu;
++	const char *name = "preemption";
++
++	if (type)
++		name = type->name;
++
++	for_each_possible_cpu(cpu) {
++		if (tr->data[cpu]->trace) {
++			underrun = atomic_read(&tr->data[cpu]->underrun);
++			if (underrun) {
++				underruns += underrun;
++				entries += tr->entries;
++			} else
++				entries += tr->data[cpu]->trace_idx;
++		}
++	}
++
++	seq_printf(m, "%s latency trace v1.1.5 on %s\n",
++		   name, UTS_RELEASE);
++	seq_puts(m, "-----------------------------------"
++		 "---------------------------------\n");
++	seq_printf(m, " latency: %lu us, #%lu/%lu, CPU#%d |"
++		   " (M:%s VP:%d, KP:%d, SP:%d HP:%d",
++		   data->saved_latency,
++		   entries,
++		   (entries + underruns),
++		   tr->cpu,
++#if defined(CONFIG_PREEMPT_NONE)
++		   "server",
++#elif defined(CONFIG_PREEMPT_VOLUNTARY)
++		   "desktop",
++#elif defined(CONFIG_PREEMPT_DESKTOP)
++		   "preempt",
++#else
++		   "unknown",
++#endif
++		   /* These are reserved for later use */
++		   0, 0, 0, 0);
++#ifdef CONFIG_SMP
++	seq_printf(m, " #P:%d)\n", num_online_cpus());
++#else
++	seq_puts(m, ")\n");
++#endif
++	seq_puts(m, "    -----------------\n");
++	seq_printf(m, "    | task: %.16s-%d "
++		   "(uid:%d nice:%ld policy:%ld rt_prio:%ld)\n",
++		   data->comm, data->pid, data->uid, data->nice,
++		   data->policy, data->rt_priority);
++	seq_puts(m, "    -----------------\n");
++
++	if (data->critical_start) {
++		seq_puts(m, " => started at: ");
++		seq_print_ip_sym(m, data->critical_start, sym_flags);
++		seq_puts(m, "\n => ended at:   ");
++		seq_print_ip_sym(m, data->critical_end, sym_flags);
++		seq_puts(m, "\n");
++	}
++
++	seq_puts(m, "\n");
++}
++
++unsigned long nsecs_to_usecs(unsigned long nsecs)
++{
++	return nsecs / 1000;
++}
++
++static void notrace
++lat_print_generic(struct seq_file *m, struct trace_entry *entry, int cpu)
++{
++	int hardirq, softirq;
++	char *comm;
++
++	comm = trace_find_cmdline(entry->pid);
++
++	seq_printf(m, "%8.8s-%-5d ", comm, entry->pid);
++	seq_printf(m, "%d", cpu);
++	seq_printf(m, "%c%c",
++		   (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
++		   ((entry->flags & TRACE_FLAG_NEED_RESCHED) ? 'N' : '.'));
++
++	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
++	softirq = entry->flags & TRACE_FLAG_SOFTIRQ;
++	if (hardirq && softirq)
++		seq_putc(m, 'H');
++	else {
++		if (hardirq)
++			seq_putc(m, 'h');
++		else {
++			if (softirq)
++				seq_putc(m, 's');
++			else
++				seq_putc(m, '.');
++		}
++	}
++
++	if (entry->preempt_count)
++		seq_printf(m, "%x", entry->preempt_count);
++	else
++		seq_puts(m, ".");
++}
++
++unsigned long preempt_mark_thresh = 100;
++
++static void notrace
++lat_print_timestamp(struct seq_file *m, unsigned long long abs_usecs,
++		    unsigned long rel_usecs)
++{
++	seq_printf(m, " %4lldus", abs_usecs);
++	if (rel_usecs > preempt_mark_thresh)
++		seq_puts(m, "!: ");
++	else if (rel_usecs > 1)
++		seq_puts(m, "+: ");
++	else
++		seq_puts(m, " : ");
++}
++
++static const char state_to_char[] = TASK_STATE_TO_CHAR_STR;
++
++static void notrace
++print_lat_fmt(struct seq_file *m, struct trace_iterator *iter,
++	      unsigned int trace_idx, int cpu)
++{
++	unsigned long sym_flags = (trace_flags & TRACE_ITER_SYM_MASK);
++	struct trace_entry *next_entry = find_next_entry(iter, NULL);
++	unsigned long verbose = (trace_flags & TRACE_ITER_VERBOSE);
++	struct trace_entry *entry = iter->ent;
++	unsigned long abs_usecs;
++	unsigned long rel_usecs;
++	char *comm;
++	int S;
++
++	if (!next_entry)
++		next_entry = entry;
++	rel_usecs = ns2usecs(next_entry->t - entry->t);
++	abs_usecs = ns2usecs(entry->t - iter->tr->time_start);
++
++	if (verbose) {
++		comm = trace_find_cmdline(entry->pid);
++		seq_printf(m, "%16s %5d %d %d %08x %08x [%08lx]"
++			   " %ld.%03ldms (+%ld.%03ldms): ",
++			   comm,
++			   entry->pid, cpu, entry->flags,
++			   entry->preempt_count, trace_idx,
++			   ns2usecs(entry->t),
++			   abs_usecs/1000,
++			   abs_usecs % 1000, rel_usecs/1000, rel_usecs % 1000);
++	} else {
++		lat_print_generic(m, entry, cpu);
++		lat_print_timestamp(m, abs_usecs, rel_usecs);
++	}
++	switch (entry->type) {
++	case TRACE_FN:
++		seq_print_ip_sym(m, entry->fn.ip, sym_flags);
++		seq_puts(m, " (");
++		seq_print_ip_sym(m, entry->fn.parent_ip, sym_flags);
++		seq_puts(m, ")\n");
++		break;
++	case TRACE_CTX:
++		S = entry->ctx.prev_state < sizeof(state_to_char) ?
++			state_to_char[entry->ctx.prev_state] : 'X';
++		comm = trace_find_cmdline(entry->ctx.next_pid);
++		seq_printf(m, " %d:%d:%c --> %d:%d %s\n",
++			   entry->ctx.prev_pid,
++			   entry->ctx.prev_prio,
++			   S,
++			   entry->ctx.next_pid,
++			   entry->ctx.next_prio,
++			   comm);
++		break;
++	}
++}
++
++static void notrace
++print_trace_fmt(struct seq_file *m, struct trace_iterator *iter)
++{
++	unsigned long sym_flags = (trace_flags & TRACE_ITER_SYM_MASK);
++	struct trace_entry *entry = iter->ent;
++	unsigned long usec_rem;
++	unsigned long long t;
++	unsigned long secs;
++	char *comm;
++	int S;
++
++	comm = trace_find_cmdline(iter->ent->pid);
++
++	t = ns2usecs(entry->t);
++	usec_rem = do_div(t, 1000000ULL);
++	secs = (unsigned long)t;
++
++	seq_printf(m, "%16s-%-5d ", comm, entry->pid);
++	seq_printf(m, "[%02d] ", iter->cpu);
++	seq_printf(m, "%5lu.%06lu: ", secs, usec_rem);
++
++	switch (entry->type) {
++	case TRACE_FN:
++		seq_print_ip_sym(m, entry->fn.ip, sym_flags);
++		if ((sym_flags & TRACE_ITER_PRINT_PARENT) &&
++						entry->fn.parent_ip) {
++			seq_printf(m, " <-");
++			seq_print_ip_sym(m, entry->fn.parent_ip, sym_flags);
++		}
++		break;
++	case TRACE_CTX:
++		S = entry->ctx.prev_state < sizeof(state_to_char) ?
++			state_to_char[entry->ctx.prev_state] : 'X';
++		seq_printf(m, " %d:%d:%c ==> %d:%d\n",
++			   entry->ctx.prev_pid,
++			   entry->ctx.prev_prio,
++			   S,
++			   entry->ctx.next_pid,
++			   entry->ctx.next_prio);
++		break;
++	}
++	seq_printf(m, "\n");
++}
++
++static int trace_empty(struct trace_iterator *iter)
++{
++	struct trace_array_cpu *data;
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		data = iter->tr->data[cpu];
++
++		if (data->trace &&
++		    (data->trace_idx ||
++		     atomic_read(&data->underrun)))
++			return 0;
++	}
++	return 1;
++}
++
++static int s_show(struct seq_file *m, void *v)
++{
++	struct trace_iterator *iter = v;
++
++	if (iter->ent == NULL) {
++		if (iter->tr) {
++			seq_printf(m, "# tracer: %s\n", iter->trace->name);
++			seq_puts(m, "#\n");
++		}
++		if (iter->iter_flags & TRACE_FILE_LAT_FMT) {
++			/* print nothing if the buffers are empty */
++			if (trace_empty(iter))
++				return 0;
++			print_trace_header(m, iter);
++			if (!(trace_flags & TRACE_ITER_VERBOSE))
++				print_lat_help_header(m);
++		} else {
++			if (!(trace_flags & TRACE_ITER_VERBOSE))
++				print_func_help_header(m);
++		}
++	} else {
++		if (iter->iter_flags & TRACE_FILE_LAT_FMT)
++			print_lat_fmt(m, iter, iter->idx, iter->cpu);
++		else
++			print_trace_fmt(m, iter);
++	}
 +
 +	return 0;
 +}
 +
-+/**
-+ * clear_ftrace_function - reset the ftrace function
-+ *
-+ * This NULLs the ftrace function and in essence stops
-+ * tracing.  There may be lag
-+ */
-+void clear_ftrace_function(void)
-+{
-+	ftrace_trace_function = ftrace_stub;
-+}
-Index: linux/lib/Kconfig.debug
-===================================================================
---- linux.orig/lib/Kconfig.debug
-+++ linux/lib/Kconfig.debug
-@@ -602,6 +602,8 @@ config LATENCYTOP
- 	  Enable this option if you want to use the LatencyTOP tool
- 	  to find out which userspace is blocking on what kernel operations.
- 
-+source kernel/trace/Kconfig
++static struct seq_operations tracer_seq_ops = {
++	.start = s_start,
++	.next = s_next,
++	.stop = s_stop,
++	.show = s_show,
++};
 +
- config PROVIDE_OHCI1394_DMA_INIT
- 	bool "Provide code for enabling DMA over FireWire early on boot"
- 	depends on PCI && X86
++static struct trace_iterator notrace *
++__tracing_open(struct inode *inode, struct file *file, int *ret)
++{
++	struct trace_iterator *iter;
++
++	iter = kzalloc(sizeof(*iter), GFP_KERNEL);
++	if (!iter) {
++		*ret = -ENOMEM;
++		goto out;
++	}
++
++	mutex_lock(&trace_types_lock);
++	if (current_trace && current_trace->print_max)
++		iter->tr = &max_tr;
++	else
++		iter->tr = inode->i_private;
++	iter->trace = current_trace;
++	iter->pos = -1;
++
++	/* TODO stop tracer */
++	*ret = seq_open(file, &tracer_seq_ops);
++	if (!*ret) {
++		struct seq_file *m = file->private_data;
++		m->private = iter;
++
++		/* stop the trace while dumping */
++		if (iter->tr->ctrl)
++			tracer_enabled = 0;
++
++		if (iter->trace && iter->trace->open)
++			iter->trace->open(iter);
++	} else {
++		kfree(iter);
++		iter = NULL;
++	}
++	mutex_unlock(&trace_types_lock);
++
++ out:
++	return iter;
++}
++
++int tracing_open_generic(struct inode *inode, struct file *filp)
++{
++	filp->private_data = inode->i_private;
++	return 0;
++}
++
++int tracing_release(struct inode *inode, struct file *file)
++{
++	struct seq_file *m = (struct seq_file *)file->private_data;
++	struct trace_iterator *iter = m->private;
++
++	mutex_lock(&trace_types_lock);
++	if (iter->trace && iter->trace->close)
++		iter->trace->close(iter);
++
++	/* reenable tracing if it was previously enabled */
++	if (iter->tr->ctrl)
++		tracer_enabled = 1;
++	mutex_unlock(&trace_types_lock);
++
++	seq_release(inode, file);
++	kfree(iter);
++	return 0;
++}
++
++static int tracing_open(struct inode *inode, struct file *file)
++{
++	int ret;
++
++	__tracing_open(inode, file, &ret);
++
++	return ret;
++}
++
++static int tracing_lt_open(struct inode *inode, struct file *file)
++{
++	struct trace_iterator *iter;
++	int ret;
++
++	iter = __tracing_open(inode, file, &ret);
++
++	if (!ret)
++		iter->iter_flags |= TRACE_FILE_LAT_FMT;
++
++	return ret;
++}
++
++
++static void notrace *
++t_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct tracer *t = m->private;
++
++	(*pos)++;
++
++	if (t)
++		t = t->next;
++
++	m->private = t;
++
++	return t;
++}
++
++static void *t_start(struct seq_file *m, loff_t *pos)
++{
++	struct tracer *t = m->private;
++	loff_t l = 0;
++
++	mutex_lock(&trace_types_lock);
++	for (; t && l < *pos; t = t_next(m, t, &l))
++		;
++
++	return t;
++}
++
++static void t_stop(struct seq_file *m, void *p)
++{
++	mutex_unlock(&trace_types_lock);
++}
++
++static int t_show(struct seq_file *m, void *v)
++{
++	struct tracer *t = v;
++
++	if (!t)
++		return 0;
++
++	seq_printf(m, "%s", t->name);
++	if (t->next)
++		seq_putc(m, ' ');
++	else
++		seq_putc(m, '\n');
++
++	return 0;
++}
++
++static struct seq_operations show_traces_seq_ops = {
++	.start = t_start,
++	.next = t_next,
++	.stop = t_stop,
++	.show = t_show,
++};
++
++static int show_traces_open(struct inode *inode, struct file *file)
++{
++	int ret;
++
++	ret = seq_open(file, &show_traces_seq_ops);
++	if (!ret) {
++		struct seq_file *m = file->private_data;
++		m->private = trace_types;
++	}
++
++	return ret;
++}
++
++static struct file_operations tracing_fops = {
++	.open = tracing_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = tracing_release,
++};
++
++static struct file_operations tracing_lt_fops = {
++	.open = tracing_lt_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = tracing_release,
++};
++
++static struct file_operations show_traces_fops = {
++	.open = show_traces_open,
++	.read = seq_read,
++	.release = seq_release,
++};
++
++static ssize_t
++tracing_iter_ctrl_read(struct file *filp, char __user *ubuf,
++		       size_t cnt, loff_t *ppos)
++{
++	char *buf;
++	int r = 0;
++	int len = 0;
++	int i;
++
++	/* calulate max size */
++	for (i = 0; trace_options[i]; i++) {
++		len += strlen(trace_options[i]);
++		len += 3; /* "no" and space */
++	}
++
++	/* +2 for \n and \0 */
++	buf = kmalloc(len + 2, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	for (i = 0; trace_options[i]; i++) {
++		if (trace_flags & (1 << i))
++			r += sprintf(buf + r, "%s ", trace_options[i]);
++		else
++			r += sprintf(buf + r, "no%s ", trace_options[i]);
++	}
++
++	r += sprintf(buf + r, "\n");
++	WARN_ON(r >= len + 2);
++
++	r = simple_read_from_buffer(ubuf, cnt, ppos,
++				    buf, r);
++
++	kfree(buf);
++
++	return r;
++}
++
++static ssize_t
++tracing_iter_ctrl_write(struct file *filp, const char __user *ubuf,
++			size_t cnt, loff_t *ppos)
++{
++	char buf[64];
++	char *cmp = buf;
++	int neg = 0;
++	int i;
++
++	if (cnt > 63)
++		cnt = 63;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	if (strncmp(buf, "no", 2) == 0) {
++		neg = 1;
++		cmp += 2;
++	}
++
++	for (i = 0; trace_options[i]; i++) {
++		int len = strlen(trace_options[i]);
++
++		if (strncmp(cmp, trace_options[i], len) == 0) {
++			if (neg)
++				trace_flags &= ~(1 << i);
++			else
++				trace_flags |= (1 << i);
++			break;
++		}
++	}
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static struct file_operations tracing_iter_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_iter_ctrl_read,
++	.write = tracing_iter_ctrl_write,
++};
++
++static ssize_t
++tracing_ctrl_read(struct file *filp, char __user *ubuf,
++		  size_t cnt, loff_t *ppos)
++{
++	struct trace_array *tr = filp->private_data;
++	char buf[64];
++	int r;
++
++	r = sprintf(buf, "%ld\n", tr->ctrl);
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t
++tracing_ctrl_write(struct file *filp, const char __user *ubuf,
++		   size_t cnt, loff_t *ppos)
++{
++	struct trace_array *tr = filp->private_data;
++	long val;
++	char buf[64];
++
++	if (cnt > 63)
++		cnt = 63;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	val = simple_strtoul(buf, NULL, 10);
++
++	val = !!val;
++
++	mutex_lock(&trace_types_lock);
++	if (tr->ctrl ^ val) {
++		if (val)
++			tracer_enabled = 1;
++		else
++			tracer_enabled = 0;
++
++		tr->ctrl = val;
++
++		if (current_trace && current_trace->ctrl_update)
++			current_trace->ctrl_update(tr);
++	}
++	mutex_unlock(&trace_types_lock);
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static ssize_t
++tracing_set_trace_read(struct file *filp, char __user *ubuf,
++		       size_t cnt, loff_t *ppos)
++{
++	char buf[max_tracer_type_len+2];
++	int r;
++
++	mutex_lock(&trace_types_lock);
++	if (current_trace)
++		r = sprintf(buf, "%s\n", current_trace->name);
++	else
++		r = sprintf(buf, "\n");
++	mutex_unlock(&trace_types_lock);
++
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t
++tracing_set_trace_write(struct file *filp, const char __user *ubuf,
++			size_t cnt, loff_t *ppos)
++{
++	struct trace_array *tr = &global_trace;
++	struct tracer *t;
++	char buf[max_tracer_type_len+1];
++	int i;
++
++	if (cnt > max_tracer_type_len)
++		cnt = max_tracer_type_len;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	/* strip ending whitespace. */
++	for (i = cnt - 1; i > 0 && isspace(buf[i]); i--)
++		buf[i] = 0;
++
++	mutex_lock(&trace_types_lock);
++	for (t = trace_types; t; t = t->next) {
++		if (strcmp(t->name, buf) == 0)
++			break;
++	}
++	if (!t || t == current_trace)
++		goto out;
++
++	if (current_trace && current_trace->reset)
++		current_trace->reset(tr);
++
++	current_trace = t;
++	if (t->init)
++		t->init(tr);
++
++ out:
++	mutex_unlock(&trace_types_lock);
++
++	filp->f_pos += cnt;
++
++	return cnt;
++}
++
++static ssize_t
++tracing_max_lat_read(struct file *filp, char __user *ubuf,
++		     size_t cnt, loff_t *ppos)
++{
++	unsigned long *ptr = filp->private_data;
++	char buf[64];
++	int r;
++
++	r = snprintf(buf, 64, "%ld\n",
++		     *ptr == (unsigned long)-1 ? -1 : nsecs_to_usecs(*ptr));
++	if (r > 64)
++		r = 64;
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static ssize_t
++tracing_max_lat_write(struct file *filp, const char __user *ubuf,
++		      size_t cnt, loff_t *ppos)
++{
++	long *ptr = filp->private_data;
++	long val;
++	char buf[64];
++
++	if (cnt > 63)
++		cnt = 63;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	val = simple_strtoul(buf, NULL, 10);
++
++	*ptr = val * 1000;
++
++	return cnt;
++}
++
++static struct file_operations tracing_max_lat_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_max_lat_read,
++	.write = tracing_max_lat_write,
++};
++
++static struct file_operations tracing_ctrl_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_ctrl_read,
++	.write = tracing_ctrl_write,
++};
++
++static struct file_operations set_tracer_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_set_trace_read,
++	.write = tracing_set_trace_write,
++};
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++
++static ssize_t
++tracing_read_long(struct file *filp, char __user *ubuf,
++		  size_t cnt, loff_t *ppos)
++{
++	unsigned long *p = filp->private_data;
++	char buf[64];
++	int r;
++
++	r = sprintf(buf, "%ld\n", *p);
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, r);
++}
++
++static struct file_operations tracing_read_long_fops = {
++	.open = tracing_open_generic,
++	.read = tracing_read_long,
++};
++#endif
++
++static struct dentry *d_tracer;
++
++struct dentry *tracing_init_dentry(void)
++{
++	static int once;
++
++	if (d_tracer)
++		return d_tracer;
++
++	d_tracer = debugfs_create_dir("tracing", NULL);
++
++	if (!d_tracer && !once) {
++		once = 1;
++		pr_warning("Could not create debugfs directory 'tracing'\n");
++		return NULL;
++	}
++
++	return d_tracer;
++}
++
++static __init void tracer_init_debugfs(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++
++	entry = debugfs_create_file("tracing_enabled", 0644, d_tracer,
++				    &global_trace, &tracing_ctrl_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'tracing_enabled' entry\n");
++
++	entry = debugfs_create_file("iter_ctrl", 0644, d_tracer,
++				    NULL, &tracing_iter_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'iter_ctrl' entry\n");
++
++	entry = debugfs_create_file("latency_trace", 0444, d_tracer,
++				    &global_trace, &tracing_lt_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'latency_trace' entry\n");
++
++	entry = debugfs_create_file("trace", 0444, d_tracer,
++				    &global_trace, &tracing_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace' entry\n");
++
++	entry = debugfs_create_file("available_tracers", 0444, d_tracer,
++				    &global_trace, &show_traces_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace' entry\n");
++
++	entry = debugfs_create_file("current_tracer", 0444, d_tracer,
++				    &global_trace, &set_tracer_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'trace' entry\n");
++
++	entry = debugfs_create_file("tracing_max_latency", 0644, d_tracer,
++				    &tracing_max_latency,
++				    &tracing_max_lat_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'tracing_max_latency' entry\n");
++
++	entry = debugfs_create_file("tracing_thresh", 0644, d_tracer,
++				    &tracing_thresh, &tracing_max_lat_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'tracing_threash' entry\n");
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++	entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
++				    &ftrace_update_tot_cnt,
++				    &tracing_read_long_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'dyn_ftrace_total_info' entry\n");
++#endif
++}
++
++/* dummy trace to disable tracing */
++static struct tracer no_tracer __read_mostly =
++{
++	.name = "none",
++};
++
++static inline notrace int page_order(const unsigned long size)
++{
++	const unsigned long nr_pages = DIV_ROUND_UP(size, PAGE_SIZE);
++	return ilog2(roundup_pow_of_two(nr_pages));
++}
++
++__init static int tracer_alloc_buffers(void)
++{
++	const int order = page_order(trace_nr_entries * TRACE_ENTRY_SIZE);
++	const unsigned long size = (1UL << order) << PAGE_SHIFT;
++	struct trace_entry *array;
++	int i;
++
++	for_each_possible_cpu(i) {
++		global_trace.data[i] = &per_cpu(global_trace_cpu, i);
++		max_tr.data[i] = &per_cpu(max_data, i);
++
++		array = (struct trace_entry *)
++			  __get_free_pages(GFP_KERNEL, order);
++		if (array == NULL) {
++			printk(KERN_ERR "tracer: failed to allocate"
++			       " %ld bytes for trace buffer!\n", size);
++			goto free_buffers;
++		}
++		global_trace.data[i]->trace = array;
++
++/* Only allocate if we are actually using the max trace */
++#ifdef CONFIG_TRACER_MAX_TRACE
++		array = (struct trace_entry *)
++			  __get_free_pages(GFP_KERNEL, order);
++		if (array == NULL) {
++			printk(KERN_ERR "wakeup tracer: failed to allocate"
++			       " %ld bytes for trace buffer!\n", size);
++			goto free_buffers;
++		}
++		max_tr.data[i]->trace = array;
++#endif
++	}
++
++	/*
++	 * Since we allocate by orders of pages, we may be able to
++	 * round up a bit.
++	 */
++	global_trace.entries = size / TRACE_ENTRY_SIZE;
++	max_tr.entries = global_trace.entries;
++
++	pr_info("tracer: %ld bytes allocated for %ld",
++		size, trace_nr_entries);
++	pr_info(" entries of %ld bytes\n", (long)TRACE_ENTRY_SIZE);
++	pr_info("   actual entries %ld\n", global_trace.entries);
++
++	tracer_init_debugfs();
++
++	trace_init_cmdlines();
++
++	register_tracer(&no_tracer);
++	current_trace = &no_tracer;
++
++	return 0;
++
++ free_buffers:
++	for (i-- ; i >= 0; i--) {
++		struct trace_array_cpu *data = global_trace.data[i];
++
++		if (data && data->trace) {
++			free_pages((unsigned long)data->trace, order);
++			data->trace = NULL;
++		}
++
++#ifdef CONFIG_TRACER_MAX_TRACE
++		data = max_tr.data[i];
++		if (data && data->trace) {
++			free_pages((unsigned long)data->trace, order);
++			data->trace = NULL;
++		}
++#endif
++	}
++	return -ENOMEM;
++}
++
++device_initcall(tracer_alloc_buffers);
+Index: linux/kernel/trace/trace.h
+===================================================================
+--- /dev/null
++++ linux/kernel/trace/trace.h
+@@ -0,0 +1,185 @@
++#ifndef _LINUX_KERNEL_TRACE_H
++#define _LINUX_KERNEL_TRACE_H
++
++#include <linux/fs.h>
++#include <asm/atomic.h>
++#include <linux/sched.h>
++#include <linux/clocksource.h>
++
++/*
++ * Function trace entry - function address and parent function addres:
++ */
++struct ftrace_entry {
++	unsigned long		ip;
++	unsigned long		parent_ip;
++};
++
++/*
++ * Context switch trace entry - which task (and prio) we switched from/to:
++ */
++struct ctx_switch_entry {
++	unsigned int		prev_pid;
++	unsigned char		prev_prio;
++	unsigned char		prev_state;
++	unsigned int		next_pid;
++	unsigned char		next_prio;
++};
++
++/*
++ * The trace entry - the most basic unit of tracing. This is what
++ * is printed in the end as a single line in the trace output, such as:
++ *
++ *     bash-15816 [01]   235.197585: idle_cpu <- irq_enter
++ */
++struct trace_entry {
++	char			type;
++	char			cpu;
++	char			flags;
++	char			preempt_count;
++	int			pid;
++	cycle_t			t;
++	unsigned long		idx;
++	union {
++		struct ftrace_entry		fn;
++		struct ctx_switch_entry		ctx;
++	};
++};
++
++#define TRACE_ENTRY_SIZE	sizeof(struct trace_entry)
++
++/*
++ * The CPU trace array - it consists of thousands of trace entries
++ * plus some other descriptor data: (for example which task started
++ * the trace, etc.)
++ */
++struct trace_array_cpu {
++	void			*trace;
++	unsigned long		trace_idx;
++	atomic_t		disabled;
++	atomic_t		underrun;
++	unsigned long		saved_latency;
++	unsigned long		critical_start;
++	unsigned long		critical_end;
++	unsigned long		critical_sequence;
++	unsigned long		nice;
++	unsigned long		policy;
++	unsigned long		rt_priority;
++	cycle_t			preempt_timestamp;
++	pid_t			pid;
++	uid_t			uid;
++	char			comm[TASK_COMM_LEN];
++};
++
++struct trace_iterator;
++
++/*
++ * The trace array - an array of per-CPU trace arrays. This is the
++ * highest level data structure that individual tracers deal with.
++ * They have on/off state as well:
++ */
++struct trace_array {
++	unsigned long		entries;
++	long			ctrl;
++	int			cpu;
++	cycle_t			time_start;
++	struct trace_array_cpu	*data[NR_CPUS];
++};
++
++/*
++ * A specific tracer, represented by methods that operate on a trace array:
++ */
++struct tracer {
++	const char		*name;
++	void			(*init)(struct trace_array *tr);
++	void			(*reset)(struct trace_array *tr);
++	void			(*open)(struct trace_iterator *iter);
++	void			(*close)(struct trace_iterator *iter);
++	void			(*start)(struct trace_iterator *iter);
++	void			(*stop)(struct trace_iterator *iter);
++	void			(*ctrl_update)(struct trace_array *tr);
++	struct tracer		*next;
++	int			print_max;
++};
++
++/*
++ * Trace iterator - used by printout routines who present trace
++ * results to users and which routines might sleep, etc:
++ */
++struct trace_iterator {
++	struct trace_array	*tr;
++	struct tracer		*trace;
++	struct trace_entry	*ent;
++	unsigned long		iter_flags;
++	loff_t			pos;
++	unsigned long		next_idx[NR_CPUS];
++	int			cpu;
++	int			idx;
++};
++
++void notrace tracing_reset(struct trace_array_cpu *data);
++int tracing_open_generic(struct inode *inode, struct file *filp);
++struct dentry *tracing_init_dentry(void);
++void ftrace(struct trace_array *tr,
++			    struct trace_array_cpu *data,
++			    unsigned long ip,
++			    unsigned long parent_ip,
++			    unsigned long flags);
++void tracing_sched_switch_trace(struct trace_array *tr,
++				struct trace_array_cpu *data,
++				struct task_struct *prev,
++				struct task_struct *next,
++				unsigned long flags);
++void tracing_record_cmdline(struct task_struct *tsk);
++
++void tracing_start_function_trace(void);
++void tracing_stop_function_trace(void);
++int register_tracer(struct tracer *type);
++void unregister_tracer(struct tracer *type);
++
++extern unsigned long nsecs_to_usecs(unsigned long nsecs);
++
++extern int tracing_sched_switch_enabled;
++extern unsigned long tracing_max_latency;
++extern unsigned long tracing_thresh;
++
++void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
++void update_max_tr_single(struct trace_array *tr,
++			  struct task_struct *tsk, int cpu);
++
++static inline notrace cycle_t now(int cpu)
++{
++	return cpu_clock(cpu);
++}
++
++#ifdef CONFIG_SCHED_TRACER
++extern void notrace
++wakeup_sched_switch(struct task_struct *prev, struct task_struct *next);
++#else
++static inline void
++wakeup_sched_switch(struct task_struct *prev, struct task_struct *next)
++{
++}
++#endif
++
++#ifdef CONFIG_CONTEXT_SWITCH_TRACER
++typedef void
++(*tracer_switch_func_t)(void *private,
++			struct task_struct *prev,
++			struct task_struct *next);
++
++struct tracer_switch_ops {
++	tracer_switch_func_t		func;
++	void				*private;
++	struct tracer_switch_ops	*next;
++};
++
++extern int register_tracer_switch(struct tracer_switch_ops *ops);
++extern int unregister_tracer_switch(struct tracer_switch_ops *ops);
++
++#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++extern unsigned long ftrace_update_tot_cnt;
++#endif
++
++#endif /* _LINUX_KERNEL_TRACE_H */
