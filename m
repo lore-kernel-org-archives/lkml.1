@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbYBJR7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbYBJSA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418AbYBJR7h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 12:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYBJR73
+	id S1754474AbYBJSA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 13:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYBJSAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 12:59:29 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33592 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751404AbYBJR72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 12:59:28 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18fBgkz9b8fErP/JDH5s2/u4h4OE7Tnwf2LBHGtES
-	AiddfbP5xijH5o
-Date: Sun, 10 Feb 2008 18:59:39 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
-To: David Brownell <david-b@pacbell.net>
-cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org
-Subject: Re: [PATCH] Define a NO_GPIO macro to compare against and to use as
- an invalid GPIO
-In-Reply-To: <200802091727.42628.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.64.0802101856460.4417@axis700.grange>
-References: <Pine.LNX.4.64.0801311624370.8478@axis700.grange>
- <200802081543.42467.david-b@pacbell.net> <Pine.LNX.4.64.0802100053450.7517@axis700.grange>
- <200802091727.42628.david-b@pacbell.net>
+	Sun, 10 Feb 2008 13:00:14 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:47152 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYBJSAM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 13:00:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=jGPFMsqHwr5F0zag2fTMmnz7OPcuV6/rwCDKIJlG3/f+lWwCG8n9TJ/c+RKQe9U9KpLn4o9MALaKDnwPFNOo7230PgsuyVY61IhX0ETCEkJx1BV8RYbfKjOr7/+Kxi0rHJPhfs4cGAQUdhk8HzhPc1uVzZCwsRTUEb+GaR1WSaw=
+Date: Sun, 10 Feb 2008 21:00:03 +0300
+To: Olaf Hering <olaf@aepfle.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: pci_proc_init: proc_dir_entry '00' already registered
+Message-ID: <20080210180003.GC1754@martell.zuzino.mipt.ru>
+References: <20080210100757.GA28322@aepfle.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080210100757.GA28322@aepfle.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David, you convinced me:-) I'll redo the patch. Just one comment:
-
-On Sat, 9 Feb 2008, David Brownell wrote:
-
-> On Saturday 09 February 2008, Guennadi Liakhovetski wrote:
+On Sun, Feb 10, 2008 at 11:07:57AM +0100, Olaf Hering wrote:
+> Current Linus tree gives this new warning during bootup:
 > 
-> > And when those platforms share drivers, problems  
-> > arise. And the simple and efficient NO_IRQ notion, that would fis those 
-> > problems nicely, cannot seem to establish itself.
-> 
-> Inertia is one of the problems there ... plus, the only
-> obvious advantage of "#define NO_IRQ 0" is that it makes
-> it easier to be lazy about initialization.
-> 
-> Plus, changing platforms to use that convention means they
-> mostly need to adopt an *unnatural* step of mapping from the
-> hardware IRQ numbers (which often start at zero, as they do
-> on one system I just ssh'd into) to some "logical" ID.
-> Even if you believe that's worthwhile, it's work; and it
-> could easily break something.
+> +proc_dir_entry '00' already registered
+> +Call Trace:
+> +[c00000007b0dfba0] [c00000000000e4b0] .show_stack+0x70/0x1bc (unreliable)
+> +[c00000007b0dfc50] [c0000000000f2714] .proc_register+0x130/0x210
+> +[c00000007b0dfd00] [c0000000000f299c] .proc_mkdir_mode+0x40/0x70
+> +[c00000007b0dfd80] [c000000000276ed8] .pci_proc_attach_device+0xac/0x144
+> +[c00000007b0dfe20] [c0000000005bdb3c] .pci_proc_init+0x74/0xac
+> +[c00000007b0dfea0] [c0000000005a27ac] .kernel_init+0x1d0/0x394
+> +[c00000007b0dff90] [c00000000001e258] .kernel_thread+0x4c/0x68
 
-NO_IRQ doesn't have to be 0. Platforms, where 0 is a valid number can use 
--1, or 256, or whatever they want:-)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Can you insert dump_stack() when '00' is registered, not just second
+time?
