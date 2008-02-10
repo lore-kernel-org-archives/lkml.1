@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYBJXRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYBJXYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbYBJXRp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 18:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbYBJXRQ
+	id S1756233AbYBJXYW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 18:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYBJXYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 18:17:16 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:22234 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756288AbYBJXRM (ORCPT
+	Sun, 10 Feb 2008 18:24:12 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50703 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYBJXYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 18:17:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QjOy8KjEbzfB33DK/3aeLXX4LmEti/K8nZR8BTFaPFbxq7CCNMnlb4DV3IHbeEhLYoCTwwGkGkpLv9ccxMx8b/c6S+EGxr+OAX142UOrRjldkGhe7olkaVYdgFfYGyntui76KJ8DoOBJ0lbbRZaNNXy++CYD3EBCcnx8eTuKLX0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ide: remove stale comment from ide-lib.c
-Date: Mon, 11 Feb 2008 00:24:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org
+	Sun, 10 Feb 2008 18:24:11 -0500
+Message-ID: <47AF8790.1040706@torque.net>
+Date: Sun, 10 Feb 2008 18:24:00 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi_error: Fix language abuse.
+References: <20080208153217.5fc42a50@core>	<47AD02C6.70402@torque.net> <20080209135020.6eca03ac@core>
+In-Reply-To: <20080209135020.6eca03ac@core>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802110024.27229.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+> On Fri, 08 Feb 2008 20:32:54 -0500
+> Douglas Gilbert <dougg@torque.net> wrote:
+> 
+>> Alan Cox wrote:
+>>> The word "illegal" has a precise dictionary meaning of "prohibited by
+>>> law". 
+>> Also "contrary to or forbidden by official rules, regulations, etc".
+> 
+> The OED I have here doesn't seem to think so, however if the words are
+> the ones used in the T10 documentation then I'm happy to drop the patch.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-lib.c |    9 ---------
- 1 file changed, 9 deletions(-)
+The OED (Oxford English dictionary) seems to be at odds
+with most other online dictionaries with respect to the
+word illegal. I find the following 'illegal' entry
+(at www.askoxford.com) daft:
+  "USAGE Both illegal and unlawful can mean 'contrary to
+   or forbidden by law', but unlawful has a broader meaning
+   'not permitted by rules': thus handball in soccer is
+   unlawful, but not illegal."
 
-Index: b/drivers/ide/ide-lib.c
-===================================================================
---- a/drivers/ide/ide-lib.c
-+++ b/drivers/ide/ide-lib.c
-@@ -21,15 +21,6 @@
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
--/*
-- *	IDE library routines. These are plug in code that most 
-- *	drivers can use but occasionally may be weird enough
-- *	to want to do their own thing with
-- *
-- *	Add common non I/O op stuff here. Make sure it has proper
-- *	kernel-doc function headers or your patch will be rejected
-- */
--
- static const char *udma_str[] =
- 	 { "UDMA/16", "UDMA/25",  "UDMA/33",  "UDMA/44",
- 	   "UDMA/66", "UDMA/100", "UDMA/133", "UDMA7" };
+So if we followed the OED's advice then SCSI's "illegal
+request" would become "unlawful request". I'm yet to
+see the word "unlawful" in any technical standard ...
+
+Doug Gilbert
+
+
+
