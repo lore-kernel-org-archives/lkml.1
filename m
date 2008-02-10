@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYBJWMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbYBJWQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756054AbYBJWMG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 17:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYBJWLm
+	id S1755313AbYBJWQh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 17:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYBJWQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 17:11:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:49841 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbYBJWLk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 17:11:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=RCddKsuYwU/rpE0NGvOr5LH1wtm3pGlT3E45z6dB2/0lGwbiaCqcDzHTZNRbD0klSd0qTyfwNEgeWqKg9v2OxBqOXnmgp4XkKLGK7ToB+q0zBmijN3bRQpWjyu+kvHxo58pf7Dq/I8Pc8hnsRNc5YXiZacmLBsf2+x10iU4oMR4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jan Kiszka <jan.kiszka@web.de>
-Subject: Re: [patch] kgdb light, v6
-Date: Sun, 10 Feb 2008 23:14:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Wessel <jason.wessel@windriver.com>
-References: <20080210071331.GC3851@elte.hu> <20080210210900.GA27162@elte.hu> <47AF707C.6050305@web.de>
-In-Reply-To: <47AF707C.6050305@web.de>
+	Sun, 10 Feb 2008 17:16:29 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46540 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752181AbYBJWQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 17:16:29 -0500
+Date: Mon, 11 Feb 2008 00:16:23 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       hpa@zytor.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: Why have __copy_from_user_ll_nocache* been exported?
+Message-ID: <20080210221623.GH2436@cs181133002.pp.htv.fi>
+References: <20080131201430.GA9375@cs181133002.pp.htv.fi> <20080131130529.b0e17815.akpm@linux-foundation.org> <20080202213628.GJ9375@cs181133002.pp.htv.fi> <20080204195831.GA21986@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200802102314.19500.bzolnier@gmail.com>
+In-Reply-To: <20080204195831.GA21986@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 February 2008, Jan Kiszka wrote:
-> Ingo Molnar wrote:
-> > * Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> >>> +static int init_kgdboc(void)
-> >> __init
-> > 
-> > done.
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> Uuh, careful. We need this for runtime reconfiguration.
+> > Sorry Andrew.
+> > 
+> > I misunderstood the patch flow.
+> > 
+> > And much more important, the tone of my email was not appropriate.
+> > 
+> > Due to unrelated reasons I was Thursday evening in a mood in which I 
+> > should not have left emails out of my postponed folder without 
+> > sleeping a night over them.
+> > 
+> > I hope you accept my apology.
+> 
+> i'd like to apologize to you too Adrian - i should have been (a lot) 
+> more patient as well - the merge window is not for the faint hearted i 
+> guess :-/
 
-it is used only for 'module_init(init_kgdboc);' in v6
+Apology accepted.
+
+> 	Ingo
+
+cu
+Adrian
+
+BTW: Your emails really brought me near to leaving kernel development.
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
