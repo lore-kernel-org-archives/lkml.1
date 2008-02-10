@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbYBJJ2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbYBJJbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756380AbYBJJ2M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 04:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYBJJ1x
+	id S1758014AbYBJJbm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 04:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYBJJbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 04:27:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57720 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbYBJJ1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 04:27:50 -0500
-Date: Sun, 10 Feb 2008 10:27:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
+	Sun, 10 Feb 2008 04:31:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40969 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbYBJJba (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 04:31:30 -0500
+Date: Sun, 10 Feb 2008 04:31:28 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
        Jason Wessel <jason.wessel@windriver.com>
 Subject: Re: [3/6] kgdb: core
-Message-ID: <20080210092728.GA19252@elte.hu>
-References: <20080210071331.GC3851@elte.hu> <20080210073542.GB26666@infradead.org> <20080210074352.GA7188@elte.hu> <20080210075732.GA9349@infradead.org> <20080210080225.GC7188@elte.hu> <20080210082408.GA10479@infradead.org> <20080210085735.GA13466@elte.hu> <20080210091123.GA19912@infradead.org>
+Message-ID: <20080210093128.GA11350@infradead.org>
+References: <20080210071331.GC3851@elte.hu> <20080210073542.GB26666@infradead.org> <20080210074352.GA7188@elte.hu> <20080210075732.GA9349@infradead.org> <20080210080225.GC7188@elte.hu> <20080210082132.GA9878@elte.hu> <20080210082624.GB10479@infradead.org> <20080210090817.GA15409@elte.hu> <20080210091757.GA17341@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080210091123.GA19912@infradead.org>
+In-Reply-To: <20080210091757.GA17341@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +#ifdef UART_CAP_UUE
+> +	if (up->capabilities & UART_CAP_UUE)
+> +#else
+> +	if (up->port.type == PORT_XSCALE)
+> +#endif
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+This looks very odd.  Can anyone explain what's going on here?
+Especially as UART_CAP_UUE is defined in drivers/serial/8250.h
+unconditionally.
 
-> > i dont think so. Which ones do you mean? I just reviewed them and 
-> > they are either already done, or moot (for kgdb complications that i 
-> > objected to and removed from this kgdb-x86 tree).
-> 
-> The one I noticed quickly is the __ASSEMBLY__ removal from 
-> asm-x86/kgdb.h. [...]
+> diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
+> new file mode 100644
+> index 0000000..5079d32
+> --- /dev/null
+> +++ b/drivers/serial/kgdboc.c
+> @@ -0,0 +1,164 @@
+> +/*
+> + * drivers/serial/kgdboc.c
 
-people might want to experiment with early debug code as well and 
-include asm-x86/kgdb.h in assembly files. So i kept that, it's sensible. 
+Didn't you say there was no file left with these?
 
-> [...]  I haven't looked at the serial bits because I don't think I'm 
-> qualified to comment on those, but I'm also not seeing any replies to 
-> any of his patches.  Especially the comments on the arch interface 
-> seem like something that should be acted upon to me.
+> diff --git a/include/asm-generic/kgdb.h b/include/asm-generic/kgdb.h
+> new file mode 100644
+> index 0000000..115972e
+> --- /dev/null
+> +++ b/include/asm-generic/kgdb.h
 
-yeah - i also noticed that the serial subsystem is marked "orphaned" in 
-the MAINTAINERS file:
+Didn't you agree to kill this file in one of the last mails?
 
- 8250/16?50 (AND CLONE UARTS) SERIAL DRIVER
- L:      linux-serial@vger.kernel.org
- W:      http://serial.sourceforge.net
- S:      Orphan
+> +#ifndef __ASSEMBLY__
+> +static inline void arch_kgdb_breakpoint(void)
+> +{
+> +	asm("   int $3");
+> +}
+> +# define BREAK_INSTR_SIZE	1
+> +# define CACHE_FLUSH_IS_SAFE	1
+> +#endif
 
-and compared to the raw-lowlevel-serial-driver hackery that KGDB used to 
-do this is a big step forward. Note that it's all dependent on 
-CONFIG_KGDB.
+this ifdef should go away.
 
-	Ingo
+> +#endif				/* _ASM_KGDB_H_ */
+> +#endif				/* __KERNEL__ */
+
+and the __KERNEL__ aswell as these files are in no way exported
+to userspace.
+
+> +/*
+> + *	kgdb_get_shadow_thread - Get the shadowed &task_struct of @threadid.
+> + *	@regs: The &struct pt_regs of the current thread.
+> + *	@threadid: The thread id of the shadowed process to get information on.
+> + *
+> + *	RETURN:
+> + *	This returns a pointer to the &struct task_struct of the shadowed
+> + *	thread, @threadid.
+> + */
+> +extern struct task_struct *kgdb_get_shadow_thread(struct pt_regs *regs,
+> +						  int threadid);
+
+So we have kerneldoc comments in both places now?  Didn't you say
+you converted these to something else?
+
+> +++ b/kernel/kgdb.c
+> @@ -0,0 +1,2019 @@
+> +/*
+> + * kernel/kgdb.c
+
+Another one.
+
