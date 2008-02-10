@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbYBJTzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYBJUB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbYBJTzq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 14:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYBJTze
+	id S1754592AbYBJUB3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 15:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYBJUBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 14:55:34 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34983 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbYBJTzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 14:55:33 -0500
-Date: Sun, 10 Feb 2008 20:55:40 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Faster way to run through building single modules
-Message-ID: <20080210195540.GE13733@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0802101950020.7915@fbirervta.pbzchgretzou.qr> <20080210192821.GB13733@uranus.ravnborg.org> <Pine.LNX.4.64.0802102035000.7915@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
+	Sun, 10 Feb 2008 15:01:21 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:1209 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbYBJUBU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 15:01:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bYf0IHTZx5VkLWxqaYJ9QkMugmAuEugf2JjA531RpHku7Ud4wak9tRabx2edsbFYhKWEbucY+GOC2nckeEWAI0npA7R3CpYzssicu5Z2NbIut5lYGzka4Hk7s3v0kll5nFvUKCNz4zRTQkQ+PrUbljBWijkHpCuyt7Uey3CGfus=
+Date: Sun, 10 Feb 2008 23:00:52 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] udf: fix udf_add_free_space
+Message-ID: <20080210200052.GA12569@cvg>
+References: <20080210192721.GA9979@joi>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802102035000.7915@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080210192721.GA9979@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 08:38:19PM +0100, Jan Engelhardt wrote:
-> 
-> On Feb 10 2008 20:28, Sam Ravnborg wrote:
-> >On Sun, Feb 10, 2008 at 07:51:29PM +0100, Jan Engelhardt wrote:
-> >> 
-> >> I was wondering whether there is a shortcut in kbuild I can take if I 
-> >> just want to rebuild one module. Currently, I have:
-> >> 
-> >> make net/bridge/netfilter/ebtables.ko
-> >
-> >Fool kbuild to think this is an external module using:
-> >make M=`pwd` net/bridge/netfilter/ebtables.ko
-> >
-> >That should do the trick.
-> 
-> How would I combine that with O=? Not quite doing the right thing yet.
+[Marcin Slusarz - Sun, Feb 10, 2008 at 08:27:33PM +0100]
+| in commit 742ba02a51c8d0bf5446b154531179760c1ed0a2
+| (udf: create common function for changing free space counter)
+| by accident I reversed safety condition which lead to
+| null pointer dereference in case of media error
+| and wrong counting of free space in normal situation
+| 
+| Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+| Cc: Jan Kara <jack@suse.cz>
+| ---
+|  fs/udf/balloc.c |    2 +-
+|  1 files changed, 1 insertions(+), 1 deletions(-)
+| 
+| diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
+| index a95fcfe..1b809bd 100644
+| --- a/fs/udf/balloc.c
+| +++ b/fs/udf/balloc.c
+| @@ -145,7 +145,7 @@ static bool udf_add_free_space(struct udf_sb_info *sbi,
+|  {
+|  	struct logicalVolIntegrityDesc *lvid;
+|  
+| -	if (sbi->s_lvid_bh)
+| +	if (sbi->s_lvid_bh == NULL)
+|  		return false;
+|  
+|  	lvid = (struct logicalVolIntegrityDesc *)sbi->s_lvid_bh->b_data;
+| -- 
 
-O=tells where to find the kernel output files.
-We do not have a possibility to do so for external
-modules - so they will alwys build in same dir as the source.
+Marcin, actually you've confused me - i always thought the second case
+is the explicit form of the first ;)
 
-Bad luck :-(
-
-	Sam
+		- Cyrill -
