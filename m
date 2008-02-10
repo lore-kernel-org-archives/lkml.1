@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYBJJyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbYBJJ5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbYBJJyh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 04:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYBJJy2
+	id S1757190AbYBJJ5U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 04:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYBJJ5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 04:54:28 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:56960 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbYBJJy1 (ORCPT
+	Sun, 10 Feb 2008 04:57:12 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:63088 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbYBJJ5L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 04:54:27 -0500
-Date: Sun, 10 Feb 2008 10:54:24 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] unifdef linux/vt.h
-Message-ID: <20080210095424.GA28283@aepfle.de>
-References: <20080125180215.GA30039@aepfle.de> <20080208173810.GA22895@aepfle.de> <20080208132941.994229f7.akpm@linux-foundation.org>
+	Sun, 10 Feb 2008 04:57:11 -0500
+Message-ID: <47AEC941.1070504@student.ltu.se>
+Date: Sun, 10 Feb 2008 10:52:01 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080208132941.994229f7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: caglar@pardus.org.tr
+CC: linux-kernel@vger.kernel.org, davem@davemloft.net,
+       torvalds@linux-foundation.org, hidave.darkstar@gmail.com,
+       marcel@holtmann.org
+Subject: Re: [PATCH] Silent compiler warning introduced by acea6852f32b8805e166d885ed7e9f0c7cd10d41
+ ([BLUETOOTH]: Move children of connection device to NULL before connection
+ down.)
+References: <200802100457.20143.caglar@pardus.org.tr>
+In-Reply-To: <200802100457.20143.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, Andrew Morton wrote:
+S.Çağlar Onur wrote:
+> Hi;
+>
+> Following patch silents
+>
+> net/bluetooth/hci_sysfs.c: In function `del_conn':
+> net/bluetooth/hci_sysfs.c:339: warning: suggest parentheses around assignment used as truth value
+>
+> compiler warning introduced by commit acea6852f32b8805e166d885ed7e9f0c7cd10d41 ([BLUETOOTH]: Move children of connection device to NULL before connection down.)
+>
+> Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+>
+>  net/bluetooth/hci_sysfs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/net/bluetooth/hci_sysfs.c b/net/bluetooth/hci_sysfs.c
+> index e13cf5e..d2d1e4f 100644
+> --- a/net/bluetooth/hci_sysfs.c
+> +++ b/net/bluetooth/hci_sysfs.c
+> @@ -336,7 +336,7 @@ static void del_conn(struct work_struct *work)
+>  	struct device *dev;
+>  	struct hci_conn *conn = container_of(work, struct hci_conn, work);
+>  
+> -	while (dev = device_find_child(&conn->dev, NULL, __match_tty)) {
+> +	while ((dev = device_find_child(&conn->dev, NULL, __match_tty)) != NULL) {
+>   
+Why do you need '!= NULL'?
 
-> On Fri, 8 Feb 2008 18:38:10 +0100
-> Olaf Hering <olaf@aepfle.de> wrote:
-> 
-> > On Fri, Jan 25, Olaf Hering wrote:
-> > 
-> > > remove the newly added __KERNEL__ block from linux/vt.h
-> > 
-> > Can you pick this up? The patch cant get any better.
-> 
-> spose so.  Coud you send a tested version against current mainline please?
-
-Its already fixed.
-
- commit 7998a731664ac4988b349e70669bac11e3b3a3ac
- Author: Robert P. J. Day <rpjday@crashcourse.ca>
- Date:   Mon Dec 31 14:58:38 2007 +0100
-
-    A few corrections to include/linux/Kbuild
-    
-    auxvec.h, i2c-dev.h and vt.h *should* be unifdef'ed i2o-dev.h does not need
-    unifdef'ing
-    
-    Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-    Cc: David Woodhouse <dwmw2@infradead.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
