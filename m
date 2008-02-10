@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYBJXKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYBJXND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbYBJXKA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 18:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYBJXJx
+	id S1756004AbYBJXND (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 18:13:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYBJXMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 18:09:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33012 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752059AbYBJXJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 18:09:52 -0500
-Date: Mon, 11 Feb 2008 00:09:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates
-Message-ID: <20080210230927.GA24812@elte.hu>
-References: <alpine.LFD.1.00.0802092246390.3145@apollo.tec.linutronix.de> <20080209172538.87994c61.randy.dunlap@oracle.com> <alpine.LFD.1.00.0802092344070.2896@woody.linux-foundation.org> <alpine.LFD.1.00.0802101003340.12988@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802101003340.12988@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 10 Feb 2008 18:12:54 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43382 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752105AbYBJXMx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 18:12:53 -0500
+Date: Sun, 10 Feb 2008 23:05:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Andrew Paprocki" <andrew@ishiboo.com>
+Cc: linux-kernel@vger.kernel.org, "Jorge Boncompte" <jorge@dti2.net>,
+       "Jean Delvare" <khali@linux-fr.org>, "Chris Gauthron" <chrisg@0-in.com>
+Subject: Re: I/O collisions w/ hwmon/it87.c and watchdog/it8712f_wdt.c?
+ (Super I/O chips in general..)
+Message-ID: <20080210230538.3f5743f6@core>
+In-Reply-To: <76366b180802101304j359e2873vd9dd974920bf6745@mail.gmail.com>
+References: <76366b180802101304j359e2873vd9dd974920bf6745@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Since these chips touch many different parts of traditionally separate
+> driver areas, how should the drivers be structured so that they can
+> all talk to the chip? Should the low level communications routines for
+> the chip live in a library which all the drivers could use? 
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Sun, 10 Feb 2008, Linus Torvalds wrote:
-> > On Sat, 9 Feb 2008, Randy Dunlap wrote:
-> > 
-> > So Thomas, don't do this. I don't like it. The same way I didn't like 
-> > seeing Ingo trying to mix in a kgdb pull into his x86 pull. Keep these 
-> > things separate - git is *really* good at having multiple branches with 
-> > different lines of development, use it that way (or send odd-ball misc 
-> > patches just as emails).
-> 
-> Please accept my apologies.
-> 
-> I went through the content, pointed out the other two non x86 patches 
-> and did not notice the vsprintf one. My bad.
-
-and i'd like to apologize for the misleading Subject line which said 
-"Subject: x86: ...". That i think made us miss the generic impact later 
-on (we remind ourselves about non-arch/x86 patches via Subject line 
-annotations and via looking at the diffstat before pull requests), and 
-the accidentally missing diffstat just removed the last-line defense 
-against such annotation mistakes.
-
-btw., i was -->.<--- this close to removing this patch from x86.git 
-altogether - because it had a bug (which already shows its 
-non-obviousness) and i didnt think this complication was worth it. When 
-that happened i took a really hard look at its correctness and 
-worthiness and narrowly decided to keep it - but enforced an unusually 
-long testing interval for this patch.
-
-	Ingo
+Probably yes. And that if possible should manage all the locking. Thats
+roughly how the majority of drivers do it. Some export the lock from base
+code and inline the accessors depending how complex it is.
