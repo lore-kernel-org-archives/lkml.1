@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYBJVNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYBJVOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYBJVNd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 16:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbYBJVNI
+	id S1757315AbYBJVOS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 16:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYBJVOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 16:13:08 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:49006 "EHLO mgw1.diku.dk"
+	Sun, 10 Feb 2008 16:14:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53038 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbYBJVNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 16:13:05 -0500
-Date: Sun, 10 Feb 2008 21:08:49 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: sfr@canb.auug.org.au, axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/8] drivers/block: Use FIELD_SIZEOF
-Message-ID: <Pine.LNX.4.64.0802102108000.23906@ask.diku.dk>
+	id S1751327AbYBJVOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 16:14:01 -0500
+Date: Sun, 10 Feb 2008 22:13:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ray Lee <ray-lk@madrabbit.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@zip.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [git pull] kgdb light, v5
+Message-ID: <20080210211347.GB29507@elte.hu>
+References: <20080210071304.GA3788@elte.hu> <20080210104709.GB10790@uranus.ravnborg.org> <20080210163603.GB28201@elte.hu> <2c0942db0802100930y5338e545k808d996f9a19bac@mail.gmail.com> <47AF483E.10905@web.de> <alpine.LFD.1.00.0802101134470.2896@woody.linux-foundation.org> <47AF5D21.6010400@web.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AF5D21.6010400@web.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-Robert P.J. Day proposed to use the macro FIELD_SIZEOF in replace of code
-that matches its definition.
+* Jan Kiszka <jan.kiszka@web.de> wrote:
 
-The modification was made using the following semantic patch
-(http://www.emn.fr/x-info/coccinelle/)
+> Maybe, maybe not. I followed the comment in the original code, saying 
+> that we need word-wise access for I/O memory poking. Can I assume 
+> across a all archs that __copy_to/from_user will not perform byte 
+> accesses if count is 2, 4, or 8? I would be glad if we can kill other 
+> couple of line.
 
-// <smpl>
-@haskernel@
-@@
+those architectures should extend mm/maccess.c accordingly. It's now the 
+collector point for "weird kernel-owned memory access functionality".
 
-#include <linux/kernel.h>
+> Ingo, if you are close to an editor, please pick those up? Here are 
+> some offline things cooking on my side...
 
-@depends on haskernel@
-type t;
-identifier f;
-@@
+yeah, fixed these in my tree.
 
-- (sizeof(((t*)0)->f))
-+ FIELD_SIZEOF(t, f)
-
-@depends on haskernel@
-type t;
-identifier f;
-@@
-
-- sizeof(((t*)0)->f)
-+ FIELD_SIZEOF(t, f)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/drivers/block/viodasd.c b/drivers/block/viodasd.c
---- a/drivers/block/viodasd.c 2008-02-02 15:28:17.000000000 +0100
-+++ b/drivers/block/viodasd.c 2008-02-10 17:42:42.000000000 +0100
-@@ -69,7 +69,7 @@ MODULE_LICENSE("GPL");
- enum {
- 	PARTITION_SHIFT = 3,
- 	MAX_DISKNO = HVMAXARCHITECTEDVIRTUALDISKS,
--	MAX_DISK_NAME = sizeof(((struct gendisk *)0)->disk_name)
-+	MAX_DISK_NAME = FIELD_SIZEOF(struct gendisk, disk_name)
- };
- 
- static DEFINE_SPINLOCK(viodasd_spinlock);
+	Ingo
