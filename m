@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbYBJGe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYBJGjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbYBJGe4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 01:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYBJGes
+	id S1756670AbYBJGjJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 01:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYBJGi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 01:34:48 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:41745 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752708AbYBJGeq (ORCPT
+	Sun, 10 Feb 2008 01:38:56 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:50579 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752827AbYBJGi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 01:34:46 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 update
-From: "Theodore Ts'o" <tytso@MIT.EDU>
-Phone: (781) 391-3464
-Message-Id: <E1JO5kV-0005WX-JJ@closure.thunk.org>
-Date: Sun, 10 Feb 2008 01:33:11 -0500
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Sun, 10 Feb 2008 01:38:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bgp2P6EpTBEI9Lst7Aj7DtaJh4hRbcD3K8kViCiJ8QySHFS+c+xzQFepqmLRjZzXICxbAnATQOLBULVXlS2bl44MBdCxIi/RAaZMuqd/GCdGe1mJWSdsQToxOij8Zwi65qwpVBspVOP11Hezmhru7LoDz0UYmvY6on+jnUsmmho=
+Message-ID: <2e77fc10802092238k13efb111ifcd298daaf7b4aba@mail.gmail.com>
+Date: Sun, 10 Feb 2008 08:38:55 +0200
+From: "Niki Denev" <ndenev@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: kernel 2.6.24.1 still vulnerable to the vmsplice local root exploit
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+In-Reply-To: <20080210063247.GQ8953@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2e77fc10802092204t7764ff12s65304f70500e2090@mail.gmail.com>
+	 <20080210063247.GQ8953@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Feb 10, 2008 8:32 AM, Willy Tarreau <w@1wt.eu> wrote:
+> On Sun, Feb 10, 2008 at 08:04:35AM +0200, Niki Denev wrote:
+> > Hi,
+> >
+> > As the subject says the 2.6.24.1 is still vulnerable to the vmsplice
+> > local root exploit.
+>
+> Yes indeed, that's quite bad. 2.6.24-git is still vulnerable too, and
+> also contains the fix :-(
+>
+> CC'd Jens as he worked on the fix.
+>
+> Willy
+>
+>
 
-Please pull from:
+I was unable to gain root on 2.6.24-git20
+but after several segfaults when executing the exploit continously
+the machine crashes.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
-
-These are mostly bug fixes that we've found since the last pull request.
-The one non-bugfix change is that I've added a sanity check to assure
-that production ext3 filesystems don't get mounted with ext4dev
-accidentally.  The need for this was discovered when Eric Sandeen
-started putting ext4 into Fedora's Rawhide release for initial testing.
-
-Thanks,
-
-						- Ted
-
-Aneesh Kumar K.V (5):
-      jbd2: Fix reference counting on the journal commit block's buffer head
-      JBD2: Use the incompat macro for testing the incompat feature.
-      ext4: Fix null bh pointer dereference in mballoc
-      ext4: Fix circular locking dependency with migrate and rm.
-      ext4: Don't panic in case of corrupt bitmap
-
-Dave Kleikamp (1):
-      JBD2:  Clear buffer_ordered flag for barried IO request on success
-
-Eric Sandeen (2):
-      allow in-inode EAs on ext4 root inode
-      ext4: allocate struct ext4_allocation_context from a kmem cache
-
-Jan Kara (2):
-      jbd: Remove useless loop when writing commit record
-      ext4: Fix Direct I/O locking
-
-Mingming Cao (1):
-      jbd2: Add error check to journal_wait_on_commit_record to avoid oops
-
-Theodore Tso (1):
-      ext4: Add new "development flag" to the ext4 filesystem
-
-Valerie Clement (1):
-      ext4: Don't set EXTENTS_FL flag for fast symlinks
-
- fs/ext4/inode.c         |  115 +++++++++++++++-----------------
- fs/ext4/mballoc.c       |  164 ++++++++++++++++++++++++++++++-----------------
- fs/ext4/migrate.c       |  123 +++++++++++++++++++++++------------
- fs/ext4/namei.c         |    1 +
- fs/ext4/super.c         |   11 +++
- fs/jbd/commit.c         |   14 ++--
- fs/jbd2/commit.c        |   10 ++-
- fs/jbd2/recovery.c      |    2 +-
- include/linux/ext4_fs.h |    7 ++
- 9 files changed, 270 insertions(+), 177 deletions(-)
-
+--Niki
