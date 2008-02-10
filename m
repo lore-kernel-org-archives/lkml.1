@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYBJJPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYBJJSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbYBJJPn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 04:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYBJJPa
+	id S1757640AbYBJJSL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 04:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYBJJRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 04:15:30 -0500
-Received: from www.tglx.de ([62.245.132.106]:39121 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751323AbYBJJP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 04:15:28 -0500
-Date: Sun, 10 Feb 2008 10:14:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates
-In-Reply-To: <alpine.LFD.1.00.0802092344070.2896@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802101003340.12988@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0802092246390.3145@apollo.tec.linutronix.de> <20080209172538.87994c61.randy.dunlap@oracle.com> <alpine.LFD.1.00.0802092344070.2896@woody.linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 10 Feb 2008 04:17:54 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:17177 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbYBJJRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 04:17:51 -0500
+Subject: Re: CONFIG_HIGHPTE vs. sub-page page tables.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0802090956r2de999fap7f16e173858be240@mail.gmail.com>
+References: <200802081902.m18J2nOm005840@hera.kernel.org>
+	 <20080208230433.GA8524@elte.hu> <20080208231506.GA13350@elte.hu>
+	 <1202551589.8936.1.camel@localhost> <20080209103728.GA29375@elte.hu>
+	 <1202554574.8936.15.camel@localhost>
+	 <8bd0f97a0802090956r2de999fap7f16e173858be240@mail.gmail.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 10 Feb 2008 10:17:40 +0100
+Message-Id: <1202635061.21652.8.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Feb 2008, Linus Torvalds wrote:
-> On Sat, 9 Feb 2008, Randy Dunlap wrote:
+On Sat, 2008-02-09 at 12:56 -0500, Mike Frysinger wrote:
+> On Feb 9, 2008 5:56 AM, Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> > On Sat, 2008-02-09 at 11:37 +0100, Ingo Molnar wrote:
+> > > i think the worst is over already and i'm reasonably sure that there are
+> > > no more bugs in it - this _is_ a 1:1 patch after all, so in theory the
+> > > worst side-effect should be build breakages due to include file
+> > > spaghetti. The window for this particular breakage was just 256 commits,
+> > > that's OK i think.
+> >
+> > Except for the breakage of all nommu architectures .. they need the
+> > pgtable_t as well due to the pte_fn_t type.
 > 
-> So Thomas, don't do this. I don't like it. The same way I didn't like 
-> seeing Ingo trying to mix in a kgdb pull into his x86 pull. Keep these 
-> things separate - git is *really* good at having multiple branches with 
-> different lines of development, use it that way (or send odd-ball misc 
-> patches just as emails).
+> so why wasnt this in the original patch ?  why do no-mmu arches have
+> to add the pgtable_t typedefs themselves ?
 
-Please accept my apologies. 
+I do cross-compiles for some architectures but not all. None of the
+nommu architectures are covered (I should change that). I actually did
+cross compile m68knommu for the first versions of the patch, that didn't
+went to well because of the standard m68k compiler. The pte_fn_t change
+has been added after the test compile for m68knommu. This is how is
+slipped through my fingers. The problem wasn't noticed either while the
+patch has been aging in Andrews -mm tree.
 
-I went through the content, pointed out the other two non x86 patches
-and did not notice the vsprintf one. My bad.
+-- 
+blue skies,
+  Martin.
 
-> PS. And no, maybe I don't always notice. I bet maintainers can slip things 
-> by me all the time without me waking up to it. The fact that it sometimes 
-> works doesn't mean that it's a good idea, though - it just means that if I 
-> catch it, my level of trust goes down. 
+"Reality continues to ruin my life." - Calvin.
 
-I know. And I have no intention to sneak stuff in that way.
 
-Conclusions:
-1) add diffstat to the pull request generator
-2) add alert about non x86 stuff to it and send it separate
-3) postpone pull requests to the morning hours, even if time is short
-
-Thanks,
-
-	tglx
