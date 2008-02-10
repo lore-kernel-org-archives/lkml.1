@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbYBJQny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbYBJQqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbYBJQny (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 11:43:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYBJQnp
+	id S1753013AbYBJQqn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 11:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYBJQqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 11:43:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36531 "EHLO mx2.mail.elte.hu"
+	Sun, 10 Feb 2008 11:46:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38313 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751419AbYBJQnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 11:43:45 -0500
-Date: Sun, 10 Feb 2008 17:43:27 +0100
+	id S1751599AbYBJQqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 11:46:34 -0500
+Date: Sun, 10 Feb 2008 17:46:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Marcin Slusarz <marcin.slusarz@gmail.com>
 Cc: linux-kernel@vger.kernel.org,
@@ -17,7 +17,7 @@ Cc: linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
        Jason Wessel <jason.wessel@windriver.com>
 Subject: Re: [3/6] kgdb: core
-Message-ID: <20080210164327.GA7088@elte.hu>
+Message-ID: <20080210164624.GB7088@elte.hu>
 References: <20080210071331.GC3851@elte.hu> <20080210124629.GA12200@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,45 +39,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-> > +		if (CACHE_FLUSH_IS_SAFE) {
-> > +			if (current->mm && addr < TASK_SIZE) {
-> > +				flush_cache_range(current->mm->mmap_cache,
-> > +						addr, addr + BREAK_INSTR_SIZE);
-> > +			} else {
-> > +				flush_icache_range(addr, addr +
-> > +						BREAK_INSTR_SIZE);
-> > +			}
-> > +		}
-> unneeded braces (here and in many other places)
+> if (hex_val < 0)
+> 	break;
+> *long_val = (*long_val << 4) | hex_val;
+> num++;
+> (*ptr)++;
 
-this is a small detail, but you are wrong. These braces around 
-multi-line statements are unneded _for the compiler_, but are very much 
-wanted by humans. You'll see akpm, me and others reject/fix patches on a 
-routine basis that make this cleanliness mistake. Please watch out for 
-this when writing patches ;-)
+agreed, fixed.
 
-> if ()
-> else if ()
-> else
-> 
-> will look better
-
-nope. I consciously avoid that construct because it's dangerous: it can 
-quite easily result in the wrong logic. Having _more_ braces than needed 
-by the compiler is a style error in only a single, special case.
-
-> > +	if (*(ptr++) != ',') {
-> > +		error_packet(remcom_out_buffer, -EINVAL);
-> > +		return;
-> > +	} else {
-> no else needed
-
-agreed - fixed.
-
-> if (!kgdb_hex2long()) {
-> 	error_packet();
-> 	return;
-> }
+> > +	remcom_out_buffer[0] = 'S';
+> > +	remcom_out_buffer[1] = hexchars[ks->signo >> 4];
+> > +	remcom_out_buffer[2] = hexchars[ks->signo % 16];
+> use pack_hex_byte or & 0xf
 
 fixed.
 
