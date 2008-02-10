@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbYBJPTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYBJPTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224AbYBJPTR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 10:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYBJPTH
+	id S1753575AbYBJPTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 10:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYBJPTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 10:19:07 -0500
-Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:4413 "EHLO
-	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYBJPTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 10:19:06 -0500
-Message-ID: <47AF15E7.70700@xs4all.nl>
-Date: Sun, 10 Feb 2008 16:19:03 +0100
-From: Bauke Jan Douma <bjdouma@xs4all.nl>
-Reply-To: Bauke Jan Douma <bjdouma@xs4all.nl>
-Organization: a training zoo
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 10 Feb 2008 10:19:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56819 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbYBJPTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 10:19:33 -0500
+Date: Sun, 10 Feb 2008 16:19:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [12/19] ftrace: function tracer
+Message-ID: <20080210151911.GA28201@elte.hu>
+References: <20080210072046.GM4100@elte.hu> <20080210095353.GA8451@kernel.sg>
 MIME-Version: 1.0
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com> <20080202123710.42df1aa0@weinigel.se> <20080202191930.GA19826@kroah.com> <47A5D895.20300@davidnewall.com>
-In-Reply-To: <47A5D895.20300@davidnewall.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080210095353.GA8451@kernel.sg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote on 03-02-08 16:07:
-> Greg KH wrote:
->> It comes down to the simple fact, if you wish to use Linux, abide by the
->> license it comes under.  To do otherwise is both disenginous and
->> illegal[1].
+
+* Eugene Teo <eugeneteo@kernel.sg> wrote:
+
+> kerndev: /sys/kernel/debug/tracing$ cat current_tracer 
+> ftrace
+> kerndev: /sys/kernel/debug/tracing$ cat tracing_enabled 
+> 1
+> kerndev: /sys/kernel/debug/tracing$ cat iter_ctrl 
+> noprint-parent nosym-offset nosym-addr noverbose 
+> kerndev: /sys/kernel/debug/tracing$ echo symonly > iter_ctrl 
+> kerndev: /sys/kernel/debug/tracing$ cat iter_ctrl 
+> noprint-parent nosym-offset nosym-addr noverbose 
 > 
-> I think you're being dishonest.  This isn't really about Linux and it
-> being licensed under GPL, is it?  Not if you're being 100% honest.  This
-> is really about Beejay's* kernel module; and you are attempting to force
->...
-> *The fictitious author of an imaginary driver.
+> How did you get the above output?
 
-Please keep me out of this.
+the logic is this: the iter_ctl flags are either "noprint-parent" or 
+"print-parent". You can toggle it by writing the opposite into that 
+file. The "symonly" was an older flag - we'll update documentation with 
+that.
 
-I did not write any driver, imaginary or otherwise.
-Nor am I fictitious.
-Truely yours,
+so for example to print out the symbol addresses in hexa too, do:
 
-bjd
+    echo sym-addr > iter_ctrl
 
+to turn that aspect of trace display off, do:
 
+    echo nosym-addr > iter_ctrl
+
+we'll gravitate the defaults to something that is OK to most people, but 
+certain purposes need more (or less) information, so the various toggles 
+are still quite useful. (Previously we kept all the toggles as separate 
+switches, but that was more confusing - now it's concentrated into a 
+single control.)
+
+	Ingo
