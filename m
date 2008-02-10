@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYBJNI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYBJNTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbYBJNI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 08:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbYBJNIU
+	id S1755990AbYBJNTV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 08:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYBJNTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 08:08:20 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:51594 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756136AbYBJNIT (ORCPT
+	Sun, 10 Feb 2008 08:19:09 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:13715 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbYBJNTH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 08:08:19 -0500
-Message-ID: <47AEF6FD.8080801@panasas.com>
-Date: Sun, 10 Feb 2008 15:07:09 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 10 Feb 2008 08:19:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tr6kwyxRWSVnfyD+z1pAXEz+ZN/CbOmQinzDFnIdVpUvLnR6np5/PJZl1/WcU8NJClL1+xy+TvmQltIVl7/+TP/aBZzC8YkBUK1AaYDZ/wfkxWBfE+ag1Mz6Cggnv3LWb4GHg7fAjyOR43Vw6aOmPjzdBZKdkxQHM1YFr26IaZw=
+Message-ID: <9a8748490802100519h5921ce61pd90d6bec604b5c87@mail.gmail.com>
+Date: Sun, 10 Feb 2008 14:19:06 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Marcin Slusarz" <marcin.slusarz@gmail.com>
+Subject: Re: [3/6] kgdb: core
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Jason Wessel" <jason.wessel@windriver.com>
+In-Reply-To: <20080210124629.GA12200@joi>
 MIME-Version: 1.0
-To: Adrian Bunk <adrian.bunk@movial.fi>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: scsi/arm/fas216.c compile error
-References: <20080209000413.GE6505@cs181133002.pp.htv.fi>
-In-Reply-To: <20080209000413.GE6505@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080210071331.GC3851@elte.hu> <20080210124629.GA12200@joi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 09 2008 at 2:04 +0200, Adrian Bunk <adrian.bunk@movial.fi> wrote:
-> Commit 30b0c37b27485a9cb897bfe3824f6f517b8c80d6 causes the following 
-> compile error:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      drivers/scsi/arm/fas216.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/arm/fas216.c: In function 'fas216_std_done':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/arm/fas216.c:2120: error: 'struct scsi_cmnd' has no member named 'request_bufflen'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/scsi/arm/fas216.c:2122: error: 'struct scsi_cmnd' has no member named 'use_sg'
-> make[4]: *** [drivers/scsi/arm/fas216.o] Error 1
-> 
-> <--  snip  -->
-> 
-> cu
-> Adrian
-> 
-It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
-  [SCSI] arm: convert to accessors and !use_sg cleanup
+On 10/02/2008, Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> On Sun, Feb 10, 2008 at 08:13:31AM +0100, Ingo Molnar wrote:
+...
+> > +
+> > +             if (CACHE_FLUSH_IS_SAFE) {
+> > +                     if (current->mm && addr < TASK_SIZE) {
+> > +                             flush_cache_range(current->mm->mmap_cache,
+> > +                                             addr, addr + BREAK_INSTR_SIZE);
+> > +                     } else {
+> > +                             flush_icache_range(addr, addr +
+> > +                                             BREAK_INSTR_SIZE);
+> > +                     }
+> > +             }
+> unneeded braces (here and in many other places)
+>
 
-Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
-to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
-we finally managed a Tested-by:.
+While they are not strictly needed, I for one would argue they should
+probably stay.
 
-I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
-schedule.
+if (foo)
+  bar();
 
-Boaz
+is not always safe in case bar() is a macro.
+
+if (foo) {
+  bar();
+}
+
+is always safe and is more robust when the code gets changed later
+since you don't accidentally end up with someone mistakenly turning it
+into
+
+if (foo)
+  bar();
+  baz();
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
