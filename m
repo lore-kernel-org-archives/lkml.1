@@ -1,45 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbYBJHVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758414AbYBJHVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbYBJHVa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbYBJHUR
+	id S1758414AbYBJHVo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 02:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757413AbYBJHUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:20:17 -0500
-Received: from verein.lst.de ([213.95.11.210]:34347 "EHLO verein.lst.de"
+	Sun, 10 Feb 2008 02:20:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56769 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756797AbYBJHUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:20:14 -0500
-Date: Sun, 10 Feb 2008 08:14:54 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: dsdt@gaugusch.at, len.brown@intel.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: acpi dsts loading and populate_rootfs
-Message-ID: <20080210071454.GA23428@lst.de>
-References: <20080210071226.GA23360@lst.de>
-Mime-Version: 1.0
+	id S1756925AbYBJHUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 02:20:15 -0500
+Date: Sun, 10 Feb 2008 08:20:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>, Steven Rostedt <rostedt@goodmis.org>
+Subject: [03/19] printk: dont wake up klogd with the rq locked
+Message-ID: <20080210072004.GD4100@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080210071226.GA23360@lst.de>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 08:12:26AM +0100, Christoph Hellwig wrote:
-> Folks, moving this call around hidden behing in completely unreviewed
-> acpi junk is not acceptable.
-> 
-> Either populate_rootfs _is_ safe to be called earlier and then we should
-> do it always or it's not.  Either way such a change should be posted
-> separately and reviewd on lkml.
-> 
-> Len, can you please revert "ACPI: basic initramfs DSDT override support"
-> aka commit 71fc47a9adf8ee89e5c96a47222915c5485ac437 until we've sorted
-> this out properly?  Thanks.
+From: Steven Rostedt <srostedt@redhat.com>
 
-And while we're at it the file reading thing in there is utter crap
-aswell.  You really should be using the firmware loader which works
-perfectly fine if you initramfs is set up for it.  So please folks,
-back to the drawing board, do it properly and send it out to lkml
-for review please.
+It is not wise to place a printk where the runqueue lock is held.
+
+I just spent two hours debugging why some of my code was locking up,
+to find that the lockup was caused by some debugging printk's that
+I had in the scheduler. The printk's were only in rare paths so
+they shouldn't be too much of a problem, but after I hit the printk
+the system locked up.
+
+Thinking that it was locking up on my code I went looking down the
+wrong path. I finally found (after examining an NMI dump) that
+the lockup happened because printk was trying to wakeup the klogd
+daemon, which caused a deadlock when the try_to_wakeup code tries
+to grab the runqueue lock.
+
+This patch adds a runqueue_is_locked interface in sched.c for other
+files to see if the current runqueue lock is held. This is used
+in printk to determine whether it is safe or not to wake up the klogd.
+
+And with this patch, my code ran fine ;-)
+
+[ mingo@elte.hu: we also want this to be able to printk something in
+                 case the scheduler crashes. ]
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/sched.h |    2 ++
+ kernel/printk.c       |   14 ++++++++++----
+ kernel/sched.c        |   18 ++++++++++++++++++
+ 3 files changed, 30 insertions(+), 4 deletions(-)
+
+Index: linux/include/linux/sched.h
+===================================================================
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -245,6 +245,8 @@ extern void sched_init_smp(void);
+ extern void init_idle(struct task_struct *idle, int cpu);
+ extern void init_idle_bootup_task(struct task_struct *idle);
+ 
++extern int runqueue_is_locked(void);
++
+ extern cpumask_t nohz_cpu_mask;
+ #if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ)
+ extern int select_nohz_load_balancer(int cpu);
+Index: linux/kernel/printk.c
+===================================================================
+--- linux.orig/kernel/printk.c
++++ linux/kernel/printk.c
+@@ -583,9 +583,11 @@ static int have_callable_console(void)
+  * @fmt: format string
+  *
+  * This is printk().  It can be called from any context.  We want it to work.
+- * Be aware of the fact that if oops_in_progress is not set, we might try to
+- * wake klogd up which could deadlock on runqueue lock if printk() is called
+- * from scheduler code.
++ *
++ * Note: if printk() is called with the runqueue lock held, it will not wake
++ * up the klogd. This is to avoid a deadlock from calling printk() in schedule
++ * with the runqueue lock held and having the wake_up grab the runqueue lock
++ * as well.
+  *
+  * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
+  * call the console drivers.  If we fail to get the semaphore we place the output
+@@ -994,7 +996,11 @@ void release_console_sem(void)
+ 	console_locked = 0;
+ 	up(&console_sem);
+ 	spin_unlock_irqrestore(&logbuf_lock, flags);
+-	if (wake_klogd)
++	/*
++	 * If we try to wake up klogd while printing with the runqueue lock
++	 * held, this will deadlock.
++	 */
++	if (wake_klogd && !runqueue_is_locked())
+ 		wake_up_klogd();
+ }
+ EXPORT_SYMBOL(release_console_sem);
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -621,6 +621,24 @@ unsigned long rt_needs_cpu(int cpu)
+ # define const_debug static const
+ #endif
+ 
++/**
++ * runqueue_is_locked
++ *
++ * Returns true if the current cpu runqueue is locked.
++ * This interface allows printk to be called with the runqueue lock
++ * held and know whether or not it is OK to wake up the klogd.
++ */
++int runqueue_is_locked(void)
++{
++	int cpu = get_cpu();
++	struct rq *rq = cpu_rq(cpu);
++	int ret;
++
++	ret = spin_is_locked(&rq->lock);
++	put_cpu();
++	return ret;
++}
++
+ /*
+  * Debugging: various feature bits
+  */
