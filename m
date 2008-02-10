@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYBJWWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYBJWXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbYBJWWl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 17:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYBJWWc
+	id S1752827AbYBJWXT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 17:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYBJWXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 17:22:32 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44193 "EHLO smtps.tip.net.au"
+	Sun, 10 Feb 2008 17:23:09 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:45963 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbYBJWWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 17:22:31 -0500
-Date: Mon, 11 Feb 2008 09:22:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Julia Lawall <julia@diku.dk>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/8] drivers/block: Use FIELD_SIZEOF
-Message-Id: <20080211092224.4181928b.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0802102108000.23906@ask.diku.dk>
-References: <Pine.LNX.4.64.0802102108000.23906@ask.diku.dk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Feb_2008_09_22_24_+1100_VqWY6yVHBSQ4eUZw"
+	id S1752197AbYBJWXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 17:23:08 -0500
+Date: Sun, 10 Feb 2008 17:23:04 -0500
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Tom Tucker <tom@opengridcomputing.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SUNPRC: Fix printk format warning
+Message-ID: <20080210222304.GA20829@fieldses.org>
+References: <aday79v0zgj.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aday79v0zgj.fsf@cisco.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Feb_2008_09_22_24_+1100_VqWY6yVHBSQ4eUZw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 08, 2008 at 04:02:04PM -0800, Roland Dreier wrote:
+> net/sunrpc/xprtrdma/svc_rdma_sendto.c:160: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'u64'
 
-On Sun, 10 Feb 2008 21:08:49 +0100 (CET) Julia Lawall <julia@diku.dk> wrote:
->
-> From: Julia Lawall <julia@diku.dk>
->=20
-> Robert P.J. Day proposed to use the macro FIELD_SIZEOF in replace of code
-> that matches its definition.
->=20
-> The modification was made using the following semantic patch
-> (http://www.emn.fr/x-info/coccinelle/)
->=20
-> // <smpl>
-> @haskernel@
-> @@
->=20
-> #include <linux/kernel.h>
->=20
-> @depends on haskernel@
-> type t;
-> identifier f;
-> @@
->=20
-> - (sizeof(((t*)0)->f))
-> + FIELD_SIZEOF(t, f)
->=20
-> @depends on haskernel@
-> type t;
-> identifier f;
-> @@
->=20
-> - sizeof(((t*)0)->f)
-> + FIELD_SIZEOF(t, f)
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+OK, thanks.  Applied (with the long line split).
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+--b.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__11_Feb_2008_09_22_24_+1100_VqWY6yVHBSQ4eUZw
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHr3kkTgG2atn1QN8RAsIIAJoC1YVTppVwPlh/POyn59J6fpQEQgCfb6gy
-20Lr+YFGUZNp/UemKhsA874=
-=DbZf
------END PGP SIGNATURE-----
-
---Signature=_Mon__11_Feb_2008_09_22_24_+1100_VqWY6yVHBSQ4eUZw--
+> 
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+> ---
+> diff --git a/net/sunrpc/xprtrdma/svc_rdma_sendto.c b/net/sunrpc/xprtrdma/svc_rdma_sendto.c
+> index 3e32194..4b913e7 100644
+> --- a/net/sunrpc/xprtrdma/svc_rdma_sendto.c
+> +++ b/net/sunrpc/xprtrdma/svc_rdma_sendto.c
+> @@ -159,7 +159,7 @@ static int send_write(struct svcxprt_rdma *xprt, struct svc_rqst *rqstp,
+>  	BUG_ON(sge_count >= 32);
+>  	dprintk("svcrdma: RDMA_WRITE rmr=%x, to=%llx, xdr_off=%d, "
+>  		"write_len=%d, xdr_sge=%p, sge_count=%d\n",
+> -		rmr, to, xdr_off, write_len, xdr_sge, sge_count);
+> +		rmr, (unsigned long long) to, xdr_off, write_len, xdr_sge, sge_count);
+>  
+>  	ctxt = svc_rdma_get_context(xprt);
+>  	ctxt->count = 0;
