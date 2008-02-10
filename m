@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbYBJN7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752259AbYBJOAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbYBJN7l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 08:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYBJN7W
+	id S1752259AbYBJOAr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 09:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbYBJOAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 08:59:22 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54135 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611AbYBJN7V (ORCPT
+	Sun, 10 Feb 2008 09:00:37 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:49089 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbYBJOAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 08:59:21 -0500
-Date: Sun, 10 Feb 2008 13:58:52 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Adrian Bunk <adrian.bunk@movial.fi>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: scsi/arm/fas216.c compile error
-Message-ID: <20080210135851.GB25703@flint.arm.linux.org.uk>
-References: <20080209000413.GE6505@cs181133002.pp.htv.fi> <47AEF6FD.8080801@panasas.com>
-Mime-Version: 1.0
+	Sun, 10 Feb 2008 09:00:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=TvkhDdzL0C9guoHkSuNa/Sx4LSFq+mOaoSnihZLQEajZ/clP+fhUVgIbg9ORdBUDyGBoQ5+jNO4D0Z8VHM6mLpu2IOsiDdx7z1oY8aY9s9Mfdz1eiKsMkElS6Oc9mlrRdYReDQdIIyOLFx4u3i5RfnyejUwwyIszWOmFlv843eU=
+Date: Sun, 10 Feb 2008 15:00:00 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [3/6] kgdb: core
+Message-ID: <20080210135955.GA12881@joi>
+References: <20080210071331.GC3851@elte.hu> <20080210124629.GA12200@joi> <9a8748490802100519h5921ce61pd90d6bec604b5c87@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47AEF6FD.8080801@panasas.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <9a8748490802100519h5921ce61pd90d6bec604b5c87@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 03:07:09PM +0200, Boaz Harrosh wrote:
-> It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
->   [SCSI] arm: convert to accessors and !use_sg cleanup
+On Sun, Feb 10, 2008 at 02:19:06PM +0100, Jesper Juhl wrote:
+> On 10/02/2008, Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> > On Sun, Feb 10, 2008 at 08:13:31AM +0100, Ingo Molnar wrote:
+> ...
+> > > +
+> > > +             if (CACHE_FLUSH_IS_SAFE) {
+> > > +                     if (current->mm && addr < TASK_SIZE) {
+> > > +                             flush_cache_range(current->mm->mmap_cache,
+> > > +                                             addr, addr + BREAK_INSTR_SIZE);
+> > > +                     } else {
+> > > +                             flush_icache_range(addr, addr +
+> > > +                                             BREAK_INSTR_SIZE);
+> > > +                     }
+> > > +             }
+> > unneeded braces (here and in many other places)
+> >
 > 
-> Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
-> to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
-> we finally managed a Tested-by:.
+> While they are not strictly needed, I for one would argue they should
+> probably stay.
 > 
-> I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
-> schedule.
+> if (foo)
+>   bar();
+> 
+> is not always safe in case bar() is a macro.
+then fix this broken macro and leave calling code alone
 
-Oh, I was ill for most of December, particularly at the time that you
-sent the patch, and by the time I recovered, it was buried in my mailbox.
+> is always safe and is more robust when the code gets changed later
+> since you don't accidentally end up with someone mistakenly turning it
+> into
+> 
+> if (foo)
+>   bar();
+>   baz();
+following coding style and reading code before submission will
+catch this kind of bugs
 
-Suggest you have some consideration for others who might not be able to
-do your beg and call at the immediate moment that you want it, and
-consider that their email management skills may not be as l33t as yours.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Marcin
