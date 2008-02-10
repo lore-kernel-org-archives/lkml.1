@@ -1,92 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbYBJP05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbYBJP2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbYBJP05 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 10:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYBJP0q
+	id S1753416AbYBJP2v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 10:28:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYBJP2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 10:26:46 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4993 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751705AbYBJP0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 10:26:42 -0500
-Date: Sun, 10 Feb 2008 15:26:26 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: jason.wessel@windriver.com
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Jan Kiszka <jan.kiszka@web.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH][7/8] kgdb: exclusive use kgdb8250 uart I/O driver
-Message-ID: <20080210152626.GA3993@ucw.cz>
-References: <1202564114-18587-1-git-send-email-jason.wessel@windriver.com> <1202564114-18587-2-git-send-email-jason.wessel@windriver.com> <1202564114-18587-3-git-send-email-jason.wessel@windriver.com> <1202564114-18587-4-git-send-email-jason.wessel@windriver.com> <1202564114-18587-5-git-send-email-jason.wessel@windriver.com> <1202564114-18587-6-git-send-email-jason.wessel@windriver.com> <1202564114-18587-7-git-send-email-jason.wessel@windriver.com> <1202564114-18587-8-git-send-email-jason.wessel@windriver.com>
+	Sun, 10 Feb 2008 10:28:43 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:36074 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751368AbYBJP2m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 10:28:42 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswMABinrkdMQWYq/2dsb2JhbACBWY9DlR2BdA
+Date: Sun, 10 Feb 2008 10:28:39 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org
+Subject: [PATCH] Cast cmpxchg and cmpxchg_local result for 386 and 486
+Message-ID: <20080210152839.GA15138@Krystal>
+References: <19f34abd0802090913w64773c44qb44a1d338cc10b4f@mail.gmail.com> <Pine.LNX.4.64.0802091620440.13328@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1202564114-18587-8-git-send-email-jason.wessel@windriver.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.64.0802091620440.13328@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:25:00 up 98 days, 20:30,  3 users,  load average: 1.13, 0.81,
+	0.96
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Vegard Nossum <vegard.nossum@gmail.com> :
+> Hi,
+>
+> I get these warnings when compiling mm/slub.c in linux-2.6.git:
+>
+> mm/slub.c: In function 'slab_alloc':
+> mm/slub.c:1637: warning: assignment makes pointer from integer without a cast
+> mm/slub.c:1637: warning: assignment makes pointer from integer without a cast
+> mm/slub.c: In function 'slab_free':
+> mm/slub.c:1796: warning: assignment makes pointer from integer without a cast
+> mm/slub.c:1796: warning: assignment makes pointer from integer without a cast
+>
+> The actual lines are calls to cmpxchg_local(). This is probably
+> because I'm compiling with M386. I'm guessing the source of the
+> warnings is in include/asm-x86/cmpxchg_32.h, lines 283 and 286. Config
+> attached.
 
-> This patch some small hooks into the normal serial core so that a uart
-> can be unregistered to be exclusively used for KGDB.  These changes
-> allow for registering and unregistering a port with a struct
-> uart_port. From that point on KGDB does raw accesses to the serial
-> IO ports it has taken over.
-> 
-> CC: linux-serial@vger.kernel.org
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  Documentation/DocBook/kgdb.tmpl |   44 ++++
->  drivers/serial/8250.c           |   30 +++
->  drivers/serial/8250_kgdb.c      |  489 +++++++++++++++++++++++++++++++++++++++
->  drivers/serial/Kconfig          |    2 +-
->  drivers/serial/Makefile         |    1 +
->  drivers/serial/serial_core.c    |   18 ++-
->  include/linux/serial_8250.h     |    2 +
->  lib/Kconfig.kgdb                |   21 ++
->  8 files changed, 603 insertions(+), 4 deletions(-)
->  create mode 100644 drivers/serial/8250_kgdb.c
-> 
-> diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
-> index c423411..111a2a0 100644
-> --- a/Documentation/DocBook/kgdb.tmpl
-> +++ b/Documentation/DocBook/kgdb.tmpl
-> @@ -92,6 +92,50 @@
->    <chapter id="BootingTheKernel">
->      <title>Booting the kernel</title>
->      <para>
-> +    The Kernel command line option <constant>kgdbwait</constant> makes kgdb
-> +    wait for gdb connection during booting of a kernel.  If the
-> +    <symbol>CONFIG_KGDB_8250</symbol> driver is used (or if applicable,
-> +    another serial driver) this breakpoint will happen very early on, before
-> +    console output.
-> +    </para>
+Christoph Lameter <clameter@sgi.com>
+Hmmm.. That cmpxchg local needs to be fixed? Mathieu?
 
-I believe we already have command line options listed in different
-file... and in readable format, too.
+Yes, a cast is needed in the 386 and 486 code because the type is a pointer. In
+every other integer case the original cmpxchg code (and the cmpxchg_local which
+has been copied from it) worked fine, but since we touch a pointer, the type
+needs to be casted in the cmpxchg_local and cmpxchg macros.
 
+The more recent code (586+) does not have this problem (the cast is already
+there).
 
-> --- /dev/null
-> +++ b/drivers/serial/8250_kgdb.c
-> @@ -0,0 +1,489 @@
-> +/*
-> + * 8250 serial I/O driver for KGDB.
-> + *
-> + * This is a merging of many different drivers, and all of the people have
-> + * had an impact in some form or another:
-> + *
-> + * 2004-2005 (c) MontaVista Software, Inc.
-> + * 2005-2006 (c) Wind River Systems, Inc.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Christoph Lameter <clameter@sgi.com>
+CC: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: akpm@linux-foundation.org
+---
+ include/asm-x86/cmpxchg_32.h |   32 ++++++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 12 deletions(-)
 
-Hmm, is it WindRiver or
-           WinDriver? :-)
-
-
+Index: linux-2.6-lttng/include/asm-x86/cmpxchg_32.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86/cmpxchg_32.h	2008-02-10 06:26:50.000000000 -0500
++++ linux-2.6-lttng/include/asm-x86/cmpxchg_32.h	2008-02-10 06:41:43.000000000 -0500
+@@ -269,22 +269,26 @@
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+ 	if (likely(boot_cpu_data.x86 > 3))				\
+-		__ret = __cmpxchg((ptr), (unsigned long)(o),		\
+-					(unsigned long)(n), sizeof(*(ptr))); \
++		__ret = (__typeof__(*(ptr)))__cmpxchg((ptr),		\
++				(unsigned long)(o), (unsigned long)(n),	\
++				sizeof(*(ptr)));			\
+ 	else								\
+-		__ret = cmpxchg_386((ptr), (unsigned long)(o),		\
+-					(unsigned long)(n), sizeof(*(ptr))); \
++		__ret = (__typeof__(*(ptr)))cmpxchg_386((ptr),		\
++				(unsigned long)(o), (unsigned long)(n),	\
++				sizeof(*(ptr)));			\
+ 	__ret;								\
+ })
+ #define cmpxchg_local(ptr, o, n)					\
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+ 	if (likely(boot_cpu_data.x86 > 3))				\
+-		__ret = __cmpxchg_local((ptr), (unsigned long)(o),	\
+-					(unsigned long)(n), sizeof(*(ptr))); \
++		__ret = (__typeof__(*(ptr)))__cmpxchg_local((ptr),	\
++				(unsigned long)(o), (unsigned long)(n),	\
++				sizeof(*(ptr)));			\
+ 	else								\
+-		__ret = cmpxchg_386((ptr), (unsigned long)(o),		\
+-					(unsigned long)(n), sizeof(*(ptr))); \
++		__ret = (__typeof__(*(ptr)))cmpxchg_386((ptr),		\
++				(unsigned long)(o), (unsigned long)(n),	\
++				sizeof(*(ptr)));			\
+ 	__ret;								\
+ })
+ #endif
+@@ -301,10 +305,12 @@
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+ 	if (likely(boot_cpu_data.x86 > 4))				\
+-		__ret = __cmpxchg64((ptr), (unsigned long long)(o),	\
++		__ret = __typeof__(*(ptr))__cmpxchg64((ptr),		\
++				(unsigned long long)(o),		\
+ 				(unsigned long long)(n));		\
+ 	else								\
+-		__ret = cmpxchg_486_u64((ptr), (unsigned long long)(o),	\
++		__ret = __typeof__(*(ptr))cmpxchg_486_u64((ptr),	\
++				(unsigned long long)(o),		\
+ 				(unsigned long long)(n));		\
+ 	__ret;								\
+ })
+@@ -312,10 +318,12 @@
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+ 	if (likely(boot_cpu_data.x86 > 4))				\
+-		__ret = __cmpxchg64_local((ptr), (unsigned long long)(o), \
++		__ret = __typeof__(*(ptr))__cmpxchg64_local((ptr),	\
++				(unsigned long long)(o),		\
+ 				(unsigned long long)(n));		\
+ 	else								\
+-		__ret = cmpxchg_486_u64((ptr), (unsigned long long)(o),	\
++		__ret = __typeof__(*(ptr))cmpxchg_486_u64((ptr),	\
++				(unsigned long long)(o),		\
+ 				(unsigned long long)(n));		\
+ 	__ret;								\
+ })
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
