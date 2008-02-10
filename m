@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYBJRqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYBJRs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbYBJRqV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 12:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYBJRqN
+	id S1754097AbYBJRs3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 12:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYBJRsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 12:46:13 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:12878 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbYBJRqM (ORCPT
+	Sun, 10 Feb 2008 12:48:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:46238 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbYBJRsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 12:46:12 -0500
+	Sun, 10 Feb 2008 12:48:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=NwkFat9VlF5RbDzDWos6G0f86a310kJREfTRvJ68cqfBMIi3+OguV2mHyMBp+uuezvdZNOlep2zIrTpaMLETXwBarE5jc7Z1Ki50vtDi1fn01I594Le1EGD+gl/Q/PXqve0nWxg/SSsh4hi4awDg+FiKDw68L3tWExjHT8jwOfI=
-Date: Sun, 10 Feb 2008 20:46:03 +0300
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: 2.6.24-sha1: RIP  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-Message-ID: <20080210174603.GB1754@martell.zuzino.mipt.ru>
-References: <20080210140031.GA1754@martell.zuzino.mipt.ru>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZTkgv78FgKQ/cAOI/0z25kKf1BrXSJ09UJjlYpR0IwN42iIs/L/h8WDzIf4P20HdDqvQhbdWFeeqa7q0N0DS7rNvcWTsvaYiPD/O3lV6XHemOMfFqW03Fb+j6bOrHrrWhn3rovLNf40vxENH3FMlugb78t/+XhiGu/0sQ9wgOKs=
+Message-ID: <6101e8c40802100948o5c5ece12h50fd2ff3ca73ce78@mail.gmail.com>
+Date: Sun, 10 Feb 2008 18:48:17 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [stable] [PATCH] kernel 2.6.24.1 still vulnerable to the vmsplice local root exploit
+Cc: "Bastian Blank" <bastian@waldi.eu.org>, "Niki Denev" <ndenev@gmail.com>,
+       "Willy Tarreau" <w@1wt.eu>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, stable@kernel.org
+In-Reply-To: <20080210170544.GA25353@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080210140031.GA1754@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+References: <2e77fc10802092204t7764ff12s65304f70500e2090@mail.gmail.com>
+	 <20080210063247.GQ8953@1wt.eu>
+	 <2e77fc10802092238k13efb111ifcd298daaf7b4aba@mail.gmail.com>
+	 <2e77fc10802100140q5c8adfb4k7db88d48cbd5f8b2@mail.gmail.com>
+	 <20080210122250.GA24048@wavehammer.waldi.eu.org>
+	 <2e77fc10802100439u18e89008j9181f3b445daa231@mail.gmail.com>
+	 <20080210124731.GA25396@wavehammer.waldi.eu.org>
+	 <6101e8c40802100502g6c3c2d01ufce1ce23c7c20c5a@mail.gmail.com>
+	 <20080210170544.GA25353@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 05:00:31PM +0300,  wrote:
-> This happened during LTP. FWIW, modprobe/rmmod trivial empty module
-> together with cat /proc/*/wchan and cat /proc/modules were also running.
-> 
-> Box is E6400, much debugging is on, config below.
-> 
-> 
-> [ 4057.310000] BUG: unable to handle kernel paging request at ffff810101dbc008
-> [ 4057.310000] IP: [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-> [ 4057.310000] PGD 8063 PUD c063 PMD 153baa163 PTE 8000000101dbc160
-> [ 4057.310000] Oops: 0000 [1] SMP DEBUG_PAGEALLOC
-> [ 4057.310000] CPU 0 
-> [ 4057.310000] Modules linked in: [last unloaded: foo]
-> [ 4057.310000] Pid: 7035, comm: ftest03 Not tainted 2.6.24-25f666300625d894ebe04bac2b4b3aadb907c861 #2
-> [ 4057.310000] RIP: 0010:[<ffffffff802596c8>]  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
+thanks the info
 
-Reproducible, BTW. As in, leave LTP for a while, go to sauna, return,
-watch the corpse.
+On 2/10/08, Greg KH <greg@kroah.com> wrote:
+> On Sun, Feb 10, 2008 at 02:02:27PM +0100, Oliver Pinter wrote:
+> > thx it fixed for 2.6.22
+> >
+> > >>>>>>>
+> >
+> > commit f6e993b835393543bab2d917f9dea75218473edd
+> > Author: Oliver Pinter <oliver.pntr@gmail.com>
+> > Date:   Sun Feb 10 14:03:46 2008 +0100
+> >
+> >     [PATCH] vm: splice local root exploit fix for 2.6.22.y
+> >
+> >     Based on Bastian Blank's patch
+> >
+> >     Fix for CVE_2008_0009 and CVE_2008-0010
+> >
+> >     ----->8-----
+> >
+> >     oliver@pancs:/tmp$ ./2617_26241_root_exploit
+> >     -----------------------------------
+> >      Linux vmsplice Local Root Exploit
+> >       By qaaz
+> >       -----------------------------------
+> >       [+] mmap: 0x0 .. 0x1000
+> >       [+] page: 0x0
+> >       [+] page: 0x20
+> >       [+] mmap: 0x4000 .. 0x5000
+> >       [+] page: 0x4000
+> >       [+] page: 0x4020
+> >       [+] mmap: 0x1000 .. 0x2000
+> >       [+] page: 0x1000
+> >       [+] mmap: 0xb7f1a000 .. 0xb7f4c000
+> >       [-] vmsplice: Bad address
+> >
+> >     -----8<-----
+> >
+> >     Signed-off-by: Oliver Pinter <oliver.pntr@gmail.com>
+> >
+> > diff --git a/fs/splice.c b/fs/splice.c
+> > index e263d3b..d8b106e 100644
+> > --- a/fs/splice.c
+> > +++ b/fs/splice.c
+> > @@ -1182,6 +1182,12 @@ static int get_iovec_page_array(const struct
+> > iovec __user *iov,
+> >  		if (unlikely(!base))
+> >  			break;
+> >
+> > +		/* CVE-2008-0009, CVE-2008-0010 fix */
+>
+> No, this is a different CVE, as it is a different problem from the
+> original 09 and 10 report.
+>
+> It has been given CVE-2008-0600 to address this issue (09 and 10 only
+> affect .23 and .24 kernels, and have been fixed.)
+>
+> > +		if(!access_ok(VERIFY_READ, base, len)) {
+> > +			error = -EFAULT;
+> > +			break;
+> > +		}
+>
+> Hm, perhaps we should just properly check the len field instead?  That's
+> what is being overflowed here...
+>
+> thanks,
+>
+> greg k-h
+>
+
+
+-- 
+Thanks,
+Oliver
