@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYBJHNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYBJHOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbYBJHNu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbYBJHNj
+	id S1756877AbYBJHOR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 02:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbYBJHNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:13:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39690 "EHLO mx3.mail.elte.hu"
+	Sun, 10 Feb 2008 02:13:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49423 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757211AbYBJHNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:13:37 -0500
-Date: Sun, 10 Feb 2008 08:13:21 +0100
+	id S1755352AbYBJHNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 02:13:44 -0500
+Date: Sun, 10 Feb 2008 08:13:26 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [1/6] pids: add pid_max prototype
-Message-ID: <20080210071321.GA3851@elte.hu>
+Subject: [2/6] uaccess: add probe_kernel_write()
+Message-ID: <20080210071326.GB3851@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,45 +35,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-add pid_max prototype - used by sysctl and will be used by kgdb as well.
+add probe_kernel_write() - copy & paste of the existing
+probe_kernel_access(), extended to writes.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/pid.h |    2 ++
- kernel/sysctl.c     |    2 +-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ include/linux/uaccess.h |   22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-Index: linux-kgdb.q/include/linux/pid.h
+Index: linux-kgdb.q/include/linux/uaccess.h
 ===================================================================
---- linux-kgdb.q.orig/include/linux/pid.h
-+++ linux-kgdb.q/include/linux/pid.h
-@@ -86,6 +86,8 @@ extern struct task_struct *FASTCALL(get_
+--- linux-kgdb.q.orig/include/linux/uaccess.h
++++ linux-kgdb.q/include/linux/uaccess.h
+@@ -84,4 +84,26 @@ static inline unsigned long __copy_from_
+ 		ret;					\
+ 	})
  
- extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
- 
-+extern int pid_max;
++/**
++ * probe_kernel_write(): safely attempt to write to a location
++ * @addr: address to write to - its type is type typeof(rdval)*
++ * @rdval: write to this variable
++ *
++ * Safely write to address @addr from variable @rdval.  If a kernel fault
++ * happens, handle that and return -EFAULT.
++ */
++#define probe_kernel_write(addr, rdval)			\
++	({						\
++		long ret;				\
++		mm_segment_t old_fs = get_fs();		\
++							\
++		set_fs(KERNEL_DS);			\
++		pagefault_disable();			\
++		ret = __put_user(rdval,			\
++	 (__force typeof(rdval) __user *)(addr));	\
++		pagefault_enable();			\
++		set_fs(old_fs);				\
++		ret;					\
++	})
 +
- /*
-  * attach_pid() and detach_pid() must be called with the tasklist_lock
-  * write-held.
-Index: linux-kgdb.q/kernel/sysctl.c
-===================================================================
---- linux-kgdb.q.orig/kernel/sysctl.c
-+++ linux-kgdb.q/kernel/sysctl.c
-@@ -32,6 +32,7 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/kobject.h>
-+#include <linux/pid.h>
- #include <linux/net.h>
- #include <linux/sysrq.h>
- #include <linux/highuid.h>
-@@ -71,7 +72,6 @@ extern int max_threads;
- extern int core_uses_pid;
- extern int suid_dumpable;
- extern char core_pattern[];
--extern int pid_max;
- extern int min_free_kbytes;
- extern int pid_max_min, pid_max_max;
- extern int sysctl_drop_caches;
+ #endif		/* __LINUX_UACCESS_H__ */
