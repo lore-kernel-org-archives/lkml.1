@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbYBJHfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYBJHgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbYBJHfw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYBJHfo
+	id S1758246AbYBJHgx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 02:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYBJHgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:35:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33710 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755355AbYBJHfn (ORCPT
+	Sun, 10 Feb 2008 02:36:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49957
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754227AbYBJHgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:35:43 -0500
-Date: Sun, 10 Feb 2008 02:35:43 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: [3/6] kgdb: core
-Message-ID: <20080210073542.GB26666@infradead.org>
-References: <20080210071331.GC3851@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080210071331.GC3851@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 10 Feb 2008 02:36:45 -0500
+Date: Sat, 09 Feb 2008 23:37:16 -0800 (PST)
+Message-Id: <20080209.233716.152271295.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@zip.com.au, tglx@linutronix.de, jason.wessel@windriver.com
+Subject: Re: [0/6] kgdb light
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080210071304.GA3788@elte.hu>
+References: <20080210071304.GA3788@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This still doesn't address a lot of the review comments from Jason's
-last posting.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 10 Feb 2008 08:13:04 +0100
 
+> this is the "kgdb light" tree that has been also posted at:
+> 
+>    http://lkml.org/lkml/2008/2/9/236
+> 
+> it is available at:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
+> 
+> See the shortlog below.
+
+Thanks for keeping this work alive.
+
+>  - removed the GTOD/clocksource hacks. If a user uses kdgb for extended
+>    periods of time then GTOD clocksources can get out of sync and we
+>    might fall back to other clocksources. That is the _right_ thing to 
+>    do for the kernel, hacking it around to avoid kernel messages was
+>    wrong.
+
+I suspect something will however need to be done with watchdogs
+and things of that nature which will get very confused if the
+kernel sits in a breakpoint for a period of time whilst the user
+looks at things from the kgdb prompt.
+
+Just a heads up...
