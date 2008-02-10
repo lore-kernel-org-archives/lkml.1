@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbYBJNxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbYBJN7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751763AbYBJNxo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 08:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYBJNxe
+	id S1751923AbYBJN7W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 08:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYBJN7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 08:53:34 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41523 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbYBJNxe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 08:53:34 -0500
-Date: Sun, 10 Feb 2008 13:52:49 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+	Sun, 10 Feb 2008 08:59:11 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:46695 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750796AbYBJN7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 08:59:09 -0500
+Date: Sun, 10 Feb 2008 15:59:05 +0200
+From: Adrian Bunk <bunk@kernel.org>
 To: Boaz Harrosh <bharrosh@panasas.com>
 Cc: Adrian Bunk <adrian.bunk@movial.fi>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
 Subject: Re: scsi/arm/fas216.c compile error
-Message-ID: <20080210135249.GA25703@flint.arm.linux.org.uk>
+Message-ID: <20080210135905.GB2436@cs181133002.pp.htv.fi>
 References: <20080209000413.GE6505@cs181133002.pp.htv.fi> <47AEF6FD.8080801@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 In-Reply-To: <47AEF6FD.8080801@panasas.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -50,21 +50,19 @@ On Sun, Feb 10, 2008 at 03:07:09PM +0200, Boaz Harrosh wrote:
 > > 
 > It's in mainline 84ac86ca8c6787f9efff28bc04b1b65fe0a5c310
 >   [SCSI] arm: convert to accessors and !use_sg cleanup
-> 
-> Thanks for checking. This patch was in scsi-pending tree since forever, And we were unable
-> to get a responsive maintainer to ACK on them. until the breakage cause went into mainline
-> we finally managed a Tested-by:.
-> 
-> I guess sometimes people are so busy, you need a bulldozer to shove 20 minutes into they're
-> schedule.
+>...
 
-Oh, just 20 minutes in your opinion?  Reality works at a different tick
-rate to your timing then.
+fas216.c != acornscsi.c
 
-However, if you're seeing a bulid error, it means that the *WRONG* patch
-went in.  No idea why I even bothered to test it if that's what happens.
+> Boaz
+
+cu
+Adrian
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
