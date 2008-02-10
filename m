@@ -1,137 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbYBJH6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYBJIAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbYBJH6r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 02:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbYBJH6k
+	id S1758746AbYBJIAH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 03:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758418AbYBJH7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 02:58:40 -0500
-Received: from 1wt.eu ([62.212.114.60]:1807 "EHLO 1wt.eu"
+	Sun, 10 Feb 2008 02:59:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38146 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754594AbYBJH6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 02:58:38 -0500
-Date: Sun, 10 Feb 2008 08:58:08 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Olof Johansson <olof@lixom.net>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived threads
-Message-ID: <20080210075808.GA13956@1wt.eu>
-References: <20080209000456.GA21021@lixom.net> <1202543920.9578.3.camel@homer.simson.net> <20080209080319.GO8953@1wt.eu> <1202554705.10287.12.camel@homer.simson.net> <20080209114009.GP8953@1wt.eu> <1202564259.4035.18.camel@homer.simson.net> <20080209161957.GA3364@1wt.eu> <20080210052941.GA4731@lixom.net> <20080210061558.GC22137@1wt.eu> <20080210070056.GA6401@lixom.net>
-Mime-Version: 1.0
+	id S1758407AbYBJH7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 02:59:42 -0500
+Date: Sun, 10 Feb 2008 08:59:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [3/6] kgdb: core
+Message-ID: <20080210075923.GB7188@elte.hu>
+References: <20080210071331.GC3851@elte.hu> <20080210073153.GA9805@uranus.ravnborg.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080210070056.GA6401@lixom.net>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080210073153.GA9805@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 01:00:56AM -0600, Olof Johansson wrote:
-> On Sun, Feb 10, 2008 at 07:15:58AM +0100, Willy Tarreau wrote:
-> > On Sat, Feb 09, 2008 at 11:29:41PM -0600, Olof Johansson wrote:
-> > > 40M:
-> > > 2.6.22		time 94315 ms
-> > > 2.6.23		time 107930 ms
-> > > 2.6.24		time 113291 ms
-> > > 2.6.24-git19	time 110360 ms
-> > > 
-> > > So with more work per thread, the differences become less but they're
-> > > still there. At the 40M loop, with 500 threads it's quite a bit of
-> > > runtime per thread.
-> > 
-> > No, it's really nothing. I had to push the loop to 1 billion to make the load
-> > noticeable. You don't have 500 threads, you have 2 threads and that load is
-> > repeated 500 times. And if we look at the numbers, let's take the worst one :
-> > > 40M:
-> > > 2.6.24                time 113291 ms
-> > 113291/500 = 227 microseconds/loop. This is still very low compared to the
-> > smallest timeslice you would have (1 ms at HZ=1000).
-> > 
-> > So your threads are still completing *before* the scheduler has to preempt
-> > them.
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> I see that only a very few of my comments posted yesterday got 
+> addressed. On purpose or did you miss them?
+
+no, they went into another thread :-)
+
+i've now read your mail and addressed the majority of them - see the 
+details below.
+
+i've trickled all these fixes back to keep a clean split, test-built and 
+test-booted the result, and updated the kgdb.git tree, which can be 
+pulled from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
+
+updated shortlog further below. I've re-tested kgdb on x86 and it still 
+works (as expected).
+
+> > +struct debuggerinfo_struct {
+> > +	void			*debuggerinfo;
+> > +	struct task_struct	*task;
+> > +} kgdb_info[NR_CPUS];
+> static?
+
+fixed.
+
+> > +
+> > +/* Is a host GDB connected to us? */
+> > +int				kgdb_connected;
+> > +EXPORT_SYMBOL_GPL(kgdb_connected);
+> Drop additional spaces.
+> Add kernel-doc comments explaining the usage.
+
+if you look at the resulting kernel/kgdb.c not the patch itself then 
+you'll see that this is consistent style that aligns this variable with 
+other fields. I agree that it looks ugly in isolation in the quote 
+above.
+
+> > +/* All the KGDB handlers are installed */
+> > +int				kgdb_io_module_registered;
+> static? drop spaces.
+
+static: fixed. Spaces: see above.
+
+> > +/* Guard for recursive entry */
+> > +static int			exception_level;
+> drop spaces. In more places below - but they are obvious.
+
+really, please look at the resulting kernel/kgdb.c file. It's visually 
+consistent.
+
+> > +struct kgdb_bkpt		kgdb_break[KGDB_MAX_BREAKPOINTS] = {
+> > +	[0 ... KGDB_MAX_BREAKPOINTS-1] = { .state = BP_UNDEFINED }
+> > +};
+> static?
+
+fixed.
+
+> > +
+> > +extern int pid_max;
 > 
-> Hmm? I get that to be 227ms per loop, which is way more than a full
-> timeslice. Running the program took in the range of 2 minutes, so it's
-> 110000 milliseconds, not microseconds.
+> extern must be moved to a .h file.
 
-Damn you're right! I don't know why I assumed that the reported time was
-in microseconds. Nevermind.
+i did that in my series.
 
-> > > It seems generally unfortunate that it takes longer for a new thread to
-> > > move over to the second cpu even when the first is busy with the original
-> > > thread. I can certainly see cases where this causes suboptimal overall
-> > > system behaviour.
-> > 
-> > In fact, I don't think it takes longer, I think it does not do it at their
-> > creation, but will do it immediately after the first slice is consumed. This
-> > would explain the important differences here. I don't know how we could ensure
-> > that the new thread is created on the second CPU from the start, though.
+> > +atomic_t			kgdb_setting_breakpoint;
+> static?
+
+fixed.
+
+> Many more variables are static candidates. I will not repeat it.
+
+i think i fixed all of them.
+
+> > +#ifdef __BIG_ENDIAN
+> > +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> > +		*buf++ = hexchars[tmp_s & 0xf];
+> > +#else
+> > +		*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+> > +		*buf++ = hexchars[tmp_s & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+> > +		*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+> > +#endif
+> small helper function?
+
+this is already part of a small helper function. (kgdb_mem2hex())
+
+> > +int kgdb_isremovedbreak(unsigned long addr)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < KGDB_MAX_BREAKPOINTS; i++) {
+> > +		if ((kgdb_break[i].state == BP_REMOVED) &&
+> > +					(kgdb_break[i].bpt_addr == addr))
+> > +			return 1;
+> > +	}
+> > +	return 0;
+> > +}
+> static?
+
+no, needed by architectures.
+
+> > +int remove_all_break(void)
+
+> static?
+
+no.
+
+> > +int kgdb_io_ready(int print_wait)
+
+> static?
+
+yes, fixed.
+
+> > +	bool "KGDB: kernel debugging with remote gdb"
+> > +	select KGDB_ARCH_HAS_SHADOW_INFO if X86_64
+> > +	select DEBUG_INFO
+> > +	select FRAME_POINTER
+> > +	depends on DEBUG_KERNEL && ADD_A_KGDB_ARCH
 > 
-> The math doesn't add up for me. Even if it rebalanced at the end of
-> the first slice (i.e. after 1ms), that would be a 1ms penalty per
-> iteration. With 500 threads that'd be a total penalty of 500ms.
+> Replace ADD_A_...
+> with
+> HAVE_KGDB
 
-yes you're right.
+fixed.
 
-> > I tried inserting a sched_yield() at the top of the busy loop (1M loops).
-> > By default, it did not change a thing. Then I simply set sched_compat_yield
-> > to 1, and the two threads then ran simultaneously with a stable low time
-> > (2700 ms instead of 10-12 seconds).
-> > 
-> > Doing so with 10k loops (initial test) shows times in the range 240-300 ms
-> > only instead of 2200-6500 ms.
-> 
-> Right, likely because the long-running cases got stuck at the busy loop
-> at the end, which would end up aborting quicker if the other thread got
-> scheduled for just a bit. It was a mistake to post that variant of the
-> testcase, it's not as relevant and doesn't mimic the original workload I
-> was trying to mimic as well as if the first loop was made larger.
+	Ingo
 
-agreed, but what's important is not to change the workload, but to see
-what changes induce a different behaviour.
+------------------>
+Ingo Molnar (3):
+      pids: add pid_max prototype
+      uaccess: add probe_kernel_write()
+      x86: kgdb support
 
-> > Ingo, would it be possible (and wise) to ensure that a new thread being
-> > created gets immediately rebalanced in order to emulate what is done here
-> > with sched_compat_yield=1 and sched_yield() in both threads just after the
-> > thread creation ? I don't expect any performance difference doing this,
-> > but maybe some shell scripts reliying on short-lived pipes would get faster
-> > on SMP.
-> 
-> There's always the tradeoff of losing cache warmth whenever a thread is
-> moved, so I'm not sure if it's a good idea to always migrate it at
-> creation time. It's not a simple problem, really.
+Jan Kiszka (1):
+      consoles: polling support, kgdboc
 
-yes I know. That should not prevent us from experimenting though. If
-thread-CPU affinity is too strong and causes the second CPU to be
-rarely used, there's something wrong waiting for a fix.
+Jason Wessel (2):
+      kgdb: core
+      kgdb: document parameters
 
-> > > I agree that the testcase is highly artificial. Unfortunately, it's
-> > > not uncommon to see these kind of weird testcases from customers tring
-> > > to evaluate new hardware. :( They tend to be pared-down versions of
-> > > whatever their real workload is (the real workload is doing things more
-> > > appropriately, but the smaller version is used for testing). I was lucky
-> > > enough to get source snippets to base a standalone reproduction case on
-> > > for this, normally we wouldn't even get copies of their binaries.
-> > 
-> > I'm well aware of that. What's important is to be able to explain what is
-> > causing the difference and why the test case does not represent anything
-> > related to performance. Maybe the code author wanted to get 500 parallel
-> > threads and got his code wrong ?
-> 
-> I believe it started out as a simple attempt to parallelize a workload
-> that sliced the problem too low, instead of slicing it in larger chunks
-> and have each thread do more work at a time. It did well on 2.6.22 with
-> almost a 2x speedup, but did worse than the single-treaded testcase on a
-> 2.6.24 kernel.
-> 
-> So yes, it can clearly be handled through explanations and education
-> and fixen the broken testcase, but I'm still not sure the new behaviour
-> is desired.
-
-While I could accept the first slice of the second thread being consumed 
-on the same CPU as the first one, it definitely must migrate quickly if
-both threads are competing for CPU.
-
-regards,
-willy
+ Documentation/kernel-parameters.txt |    5 +
+ arch/x86/Kconfig                    |    4 +
+ arch/x86/kernel/Makefile            |    1 +
+ arch/x86/kernel/kgdb.c              |  550 ++++++++++
+ drivers/char/tty_io.c               |   47 +
+ drivers/serial/8250.c               |   62 ++
+ drivers/serial/Kconfig              |    3 +
+ drivers/serial/Makefile             |    1 +
+ drivers/serial/kgdboc.c             |  164 +++
+ drivers/serial/serial_core.c        |   67 ++-
+ include/asm-generic/kgdb.h          |   93 ++
+ include/asm-x86/kgdb.h              |   87 ++
+ include/linux/kgdb.h                |  264 +++++
+ include/linux/pid.h                 |    2 +
+ include/linux/serial_core.h         |    4 +
+ include/linux/tty_driver.h          |   12 +
+ include/linux/uaccess.h             |   22 +
+ kernel/Makefile                     |    1 +
+ kernel/kgdb.c                       | 2020 +++++++++++++++++++++++++++++++++++
+ kernel/sysctl.c                     |    2 +-
+ lib/Kconfig.debug                   |    2 +
+ lib/Kconfig.kgdb                    |   37 +
+ 22 files changed, 3448 insertions(+), 2 deletions(-)
+ create mode 100644 arch/x86/kernel/kgdb.c
+ create mode 100644 drivers/serial/kgdboc.c
+ create mode 100644 include/asm-generic/kgdb.h
+ create mode 100644 include/asm-x86/kgdb.h
+ create mode 100644 include/linux/kgdb.h
+ create mode 100644 kernel/kgdb.c
+ create mode 100644 lib/Kconfig.kgdb
 
