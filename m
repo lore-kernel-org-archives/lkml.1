@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYBJRLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYBJRMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbYBJRLR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 12:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYBJRLI
+	id S1754019AbYBJRMJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 12:12:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYBJRL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 12:11:08 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:50442 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYBJRLH (ORCPT
+	Sun, 10 Feb 2008 12:11:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48574 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYBJRL5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 12:11:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=C0MKrWD7oFFkqQlnnSR1XDUuhZ/qvgD0tdnCcNPxA8jr5fGgdcqUktaLsYPrb0QtzkBuJ6BSKun4Fv8N58RyX3942W7M5JPZOuNjbs44D5dZidfArp14EOFE3/5g9vbCsIoZYpecA3s5qzijkpHvRKYZoKJvPDVjmb1+S/Uqhts=
-Message-ID: <84144f020802100911u7c1a3d3cm212c08d1bb3225d6@mail.gmail.com>
-Date: Sun, 10 Feb 2008 19:11:05 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [stable] [PATCH] kernel 2.6.24.1 still vulnerable to the vmsplice local root exploit
-Cc: "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Bastian Blank" <bastian@waldi.eu.org>, "Niki Denev" <ndenev@gmail.com>,
-       "Willy Tarreau" <w@1wt.eu>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, stable@kernel.org
-In-Reply-To: <20080210170544.GA25353@kroah.com>
+	Sun, 10 Feb 2008 12:11:57 -0500
+Date: Sun, 10 Feb 2008 09:10:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>, khali@linux-fr.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: panic about sysfs with adm1026
+Message-ID: <20080210171004.GB25353@kroah.com>
+References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <2e77fc10802092204t7764ff12s65304f70500e2090@mail.gmail.com>
-	 <20080210063247.GQ8953@1wt.eu>
-	 <2e77fc10802092238k13efb111ifcd298daaf7b4aba@mail.gmail.com>
-	 <2e77fc10802100140q5c8adfb4k7db88d48cbd5f8b2@mail.gmail.com>
-	 <20080210122250.GA24048@wavehammer.waldi.eu.org>
-	 <2e77fc10802100439u18e89008j9181f3b445daa231@mail.gmail.com>
-	 <20080210124731.GA25396@wavehammer.waldi.eu.org>
-	 <6101e8c40802100502g6c3c2d01ufce1ce23c7c20c5a@mail.gmail.com>
-	 <20080210170544.GA25353@kroah.com>
-X-Google-Sender-Auth: fd4a556b0b74ede6
+In-Reply-To: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 10, 2008 7:05 PM, Greg KH <greg@kroah.com> wrote:
-> No, this is a different CVE, as it is a different problem from the
-> original 09 and 10 report.
->
-> It has been given CVE-2008-0600 to address this issue (09 and 10 only
-> affect .23 and .24 kernels, and have been fixed.)
->
-> > +             if(!access_ok(VERIFY_READ, base, len)) {
-> > +                     error = -EFAULT;
-> > +                     break;
-> > +             }
->
-> Hm, perhaps we should just properly check the len field instead?  That's
-> what is being overflowed here...
+On Sat, Feb 09, 2008 at 11:55:43PM -0800, Yinghai Lu wrote:
+> Calling initcall 0xffffffff80c4b575: sm_adm1026_init+0x0/0xe()
+> i2c-adapter i2c-1: : Unrecognized stepping 0x45. Defaulting to ADM1026.
+> general protection fault: 0000 [1] SMP
+> CPU 0
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.24-smp-09379-g0cf975e-dirty #34
+> RIP: 0010:[<ffffffff802d79ad>]  [<ffffffff802d79ad>] sysfs_add_file+0x16/0x81
+> RSP: 0000:ffff81040503dd50  EFLAGS: 00010286
+> RAX: 0000000000000000 RBX: fffe002e002d002c RCX: 00000000000048d9
+> RDX: 0000000000000002 RSI: fffe002e002d002c RDI: ffff810202c4fb90
+> RBP: 0000000000000000 R08: ffff810202c4fb90 R09: 0000000000000000
+> R10: 0000000000000002 R11: 0000000000000002 R12: 00000000fffffff4
+> R13: ffff810202c4fb90 R14: 000000000000000c R15: ffff810202c4fb90
+> FS:  0000000000000000(0000) GS:ffffffff80bde000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00007fff94de3470 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 1, threadinfo ffff81040503c000, task ffff810205040000)
+> Stack:  ffff810202c4fb90 0000000000000000 0000000000000000 0000000000000001
+>  ffff810202c4e000 ffffffff80b87850 0000000000000000 ffff810202c4e118
+>  ffffffff808e0cc0 ffffffff802d933c ffff81040503dd55 ffff810202c17878
+> Call Trace:
+>  [<ffffffff802d933c>] sysfs_create_group+0xa2/0x106
+>  [<ffffffff8069fbc2>] adm1026_detect+0x4b3/0x522
+>  [<ffffffff8069f70f>] adm1026_detect+0x0/0x522
+>  [<ffffffff80698bff>] i2c_probe_address+0xb9/0xfc
+>  [<ffffffff806997db>] i2c_probe+0x162/0x175
+>  [<ffffffff8069f70f>] adm1026_detect+0x0/0x522
+>  [<ffffffff8069910f>] i2c_register_driver+0x9a/0xea
+>  [<ffffffff80c276d2>] kernel_init+0x15d/0x2c9
+>  [<ffffffff8021fc68>] child_rip+0xa/0x12
+>  [<ffffffff80c27575>] kernel_init+0x0/0x2c9
+>  [<ffffffff8021fc5e>] child_rip+0x0/0x12
+> 
+> 
+> Code: c0 84 c0 74 0c 41 58 48 89 df 5b 5d e9 2a 07 00 00 5e 5b 5d c3
+> 41 55 49 89 fd 41 54 41 bc f4 ff ff ff 55 53 48 89 f3 48 83 ec 28 <8b>
+> 76 10 48 8b 3b 66 81 e6 ff 0f 66 81 ce 00 80 0f b7 f6 e8 fd
+> RIP  [<ffffffff802d79ad>] sysfs_add_file+0x16/0x81
+>  RSP <ffff81040503dd50>
+> ---[ end trace b23a825db37d3043 ]---
 
-Sorry, I forgot to cc you on this one:
+Perhaps the adm1026 driver is not calling sysfs_create_group properly?
 
-http://lkml.org/lkml/2008/2/10/153
+Jean, any ideas?
 
-I don't see where the current code is checking that base is
-accessible. We just check that we can copy the struct iovecs, right?
+thanks,
 
-                        Pekka
+greg k-h
