@@ -1,59 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYBJAA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbYBJAKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbYBJAA7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Feb 2008 19:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYBJAAw
+	id S1757462AbYBJAKj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Feb 2008 19:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYBJAK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Feb 2008 19:00:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34139 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755999AbYBJAAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Feb 2008 19:00:51 -0500
-Date: Sat, 9 Feb 2008 16:00:40 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Query about set_pages_* API
-Message-ID: <20080209160040.088b99a6@laptopd505.fenrus.org>
-In-Reply-To: <47AE2BCC.3040605@lwfinger.net>
-References: <47AE2BCC.3040605@lwfinger.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Feb 2008 19:10:29 -0500
+Received: from ns.gsystems.sk ([62.176.172.50]:35009 "EHLO www.gsystems.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756098AbYBJAK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Feb 2008 19:10:27 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v4
+Date: Sun, 10 Feb 2008 01:10:07 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <200801312012.43447.linux@rainbow-software.org> <200802092233.10239.linux@rainbow-software.org> <20080209134805.29cbc8ae@extreme>
+In-Reply-To: <20080209134805.29cbc8ae@extreme>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200802100110.09301.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 09 Feb 2008 15:40:12 -0700
-Larry Finger <Larry.Finger@lwfinger.net> wrote:
+On Saturday 09 February 2008 22:48:05 Stephen Hemminger wrote:
+> On Sat, 9 Feb 2008 22:33:07 +0100
+>
+> Ondrej Zary <linux@rainbow-software.org> wrote:
+> > Hello,
+> > this patch converts 3c509 driver to isa_driver and pnp_driver. The result
+> > is that autoloading using udev and hibernation works with ISA PnP cards.
+> > It also adds hibernation support for non-PnP ISA cards.
+> >
+> > xcvr module parameter was removed as its value was not used.
+> >
+> > Tested using 3 ISA cards in various combinations of PnP and non-PnP
+> > modes. EISA and MCA only compile-tested.
+> >
+> > Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> >
+> > --- linux-2.6.24-orig/drivers/net/3c509.c	2008-01-27 19:48:19.000000000
+> > +0100 +++ linux-2.6.24-pentium/drivers/net/3c509.c	2008-02-07
+> > 17:58:45.000000000 +0100 @@ -54,25 +54,24 @@
+> >  		v1.19a 28Oct2002 Davud Ruggiero <jdr@farfalle.com>
+> >  			- Increase *read_eeprom udelay to workaround oops with 2 cards.
+> >  		v1.19b 08Nov2002 Marc Zyngier <maz@wild-wind.fr.eu.org>
+> > -		    - Introduce driver model for EISA cards.
+> > +			- Introduce driver model for EISA cards.
+> > +		v1.20  04Feb2008 Ondrej Zary <linux@rainbow-software.org>
+> > +			- convert to isa_driver and pnp_driver and some cleanups
+> >  */
+>
+> Don't bother with comment, kernel uses git change log to figure out
+> who to blame.
+>
+> >  #define DRV_NAME	"3c509"
+> > -#define DRV_VERSION	"1.19b"
+> > -#define DRV_RELDATE	"08Nov2002"
+> > +#define DRV_VERSION	"1.20"
+> > +#define DRV_RELDATE	"04Feb2008"
+> >
+> >  /* A few values that may be tweaked. */
+> >
+> >  /* Time in jiffies before concluding the transmitter is hung. */
+> >  #define TX_TIMEOUT  (400*HZ/1000)
+> > -/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
+> > -static int max_interrupt_work = 10;
+> >
+> >  #include <linux/module.h>
+> > -#ifdef CONFIG_MCA
+> >  #include <linux/mca.h>
+> > -#endif
+> > -#include <linux/isapnp.h>
+> > +#include <linux/isa.h>
+> > +#include <linux/pnp.h>
+> >  #include <linux/string.h>
+> >  #include <linux/interrupt.h>
+> >  #include <linux/errno.h>
+> > @@ -97,10 +96,6 @@
+> >
+> >  static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " "
+> > DRV_RELDATE " becker@scyld.com\n";
+> >
+> > -#if defined(CONFIG_PM) && (defined(CONFIG_MCA) || defined(CONFIG_EISA))
+> > -#define EL3_SUSPEND
+> > -#endif
+> > -
+> >  #ifdef EL3_DEBUG
+> >  static int el3_debug = EL3_DEBUG;
+> >  #else
+> > @@ -111,6 +106,7 @@
+> >   * a global variable so that the mca/eisa probe routines can increment
+> >   * it */
+> >  static int el3_cards = 0;
+> > +#define EL3_MAX_CARDS 8
+> >
+> >  /* To minimize the size of the driver source I only define operating
+> >     constants if they are used several times.  You'll need the manual
+> > @@ -119,7 +115,7 @@
+> >  #define EL3_DATA 0x00
+> >  #define EL3_CMD 0x0e
+> >  #define EL3_STATUS 0x0e
+> > -#define	 EEPROM_READ 0x80
+> > +#define	EEPROM_READ 0x80
+> >
+> >  #define EL3_IO_EXTENT	16
+> >
+> > @@ -168,23 +164,31 @@
+> >   */
+> >  #define SKB_QUEUE_SIZE	64
+> >
+> > +typedef enum { EL3_ISA, EL3_PNP, EL3_MCA, EL3_EISA } el3_cardtype;
+> > +
+>
+> No typedef please (see checkpatch)
 
-> Is the set_pages_* API that replaces change_page_attr described
-> somewhere? I have been unable to find it with Google.
-> 
-> I'm trying to modify the VirtualBox kernel module to work with
-> 2.6.24-git (and 2.6.25) on x86_64 architecture. The current code has
-> a value of the third argument of the call (prot) with 3 variants. All
-> variations have the following bits set: _PAGE_PRESENT, _PAGE_RW,
-> _PAGE_DIRTY, and _PAGE_ACCESSED. Number 2 adds _PAGE_NX to the above,
-> and number 3 adds _PAGE_GLOBAL to the bits in variation 1.
-> 
->  From the code in arch/x86/mm/pageattr.c, I figured I need to call
-> set_pages_wb() unconditionally, and set_pages_nx() if _PAGE_NX is
-> set. Will these calls be sufficient? I thought about calling
-> set_pages_rw(), but that entry is not exported.
-> 
+Is there any standard way to solve this without a typedef? I added 
+el3_dev_fill() function which fills that card type value according to a 
+parameter passed to it. "int" could be used instead and "#define EL3_ISA 
+0", "#define EL3_PNP 1" - but I think that's ugly.
 
-ok looking at the actual code.. it seems to only care about making a piece of memory executable 
-(and then clearing it before freeing), so all you need is set_memory_x() and set_memory_nx()
+>
+> >  struct el3_private {
+> >  	struct net_device_stats stats;
+>
+> Use network device stats in net_device now
 
+OK, looks like the driver will need some more patches.
 
+> > -	struct net_device *next_dev;
+> >  	spinlock_t lock;
+> >  	/* skb send-queue */
+> >  	int head, size;
+> >  	struct sk_buff *queue[SKB_QUEUE_SIZE];
+>
+> What about sk_buff_head (linked list instead)?
+
+I don't know anything about this, maybe in next patch.
+
+>
+> > -	enum {
+> > -		EL3_MCA,
+> > -		EL3_PNP,
+> > -		EL3_EISA,
+> > -	} type;						/* type of device */
+> > -	struct device *dev;
+> > +	el3_cardtype type;
+> >  };
+> > -static int id_port __initdata = 0x110;	/* Start with 0x110 to avoid new
+> > sound cards.*/ -static struct net_device *el3_root_dev;
+> > +static int id_port;
+> > +static int current_tag;
+> > +static struct net_device *el3_devs[EL3_MAX_CARDS];
+>
+> I know is only ISA, but having a limit seems silly, can't the device just
+> use allocated space like other drivers.
+
+EL3_MAX_CARDS is also used as a parameter to isa_register_driver(). The irq[] 
+array (see below) is limited to 8 devices too. And finally, the card itself 
+can use one of 8 different IRQs (3,5,7,2/9,10,11,12,15). So I think that it's 
+not worth adding more code to support more cards.
+The original driver will do bad things with more than 8 cards too - read 
+beyond the end of irq[] array.
+
+> > +
+> > +/* Parameters that may be passed into the module. */
+> > +static int debug = -1;
+> > +static int irq[] = {-1, -1, -1, -1, -1, -1, -1, -1};
+> > +/* Maximum events (Rx packets, etc.) to handle at each interrupt. */
+> > +static int max_interrupt_work = 10;
+> > +#ifdef CONFIG_PNP
+> > +static int nopnp;
+> > +#endif
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Ondrej Zary
