@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYBKWjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbYBKWkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYBKWjz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYBKWjr
+	id S1758938AbYBKWkZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 17:40:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYBKWkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:39:47 -0500
-Received: from waste.org ([66.93.16.53]:50309 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187AbYBKWjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:39:47 -0500
-Subject: Re: [PATCH] slob: fix linking for user mode linux
-From: Matt Mackall <mpm@selenic.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: jdike@addtoit.com, blaisorblade@yahoo.it, clameter@sgi.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0802120032160.27876@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0802120032160.27876@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 16:39:29 -0600
-Message-Id: <1202769569.12383.49.camel@cinder.waste.org>
+	Mon, 11 Feb 2008 17:40:03 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48965 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755138AbYBKWkA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 17:40:00 -0500
+Date: Mon, 11 Feb 2008 14:38:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       davej@redhat.com
+Subject: Re: [PATCH] make /dev/kmem a config option
+Message-Id: <20080211143804.76f9743f.akpm@linux-foundation.org>
+In-Reply-To: <20080210170509.36999240@laptopd505.fenrus.org>
+References: <20080210155534.17fc6e5e@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0802110111160.7915@fbirervta.pbzchgretzou.qr>
+	<20080210170509.36999240@laptopd505.fenrus.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 10 Feb 2008 17:05:09 -0800
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-On Tue, 2008-02-12 at 00:32 +0200, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> Subject: [PATCH] make /dev/kmem a config option
+> From: Arjan van de Ven <arjan@linux.intel.com>
 > 
-> UML has some header magic that expects a non-inline __kmalloc() function to be
-> available. Fixes the following link time errors:
+> This patch makes /dev/kmem a config option; /dev/kmem is VERY rarely
+> used, and when used, it's generally for no good (rootkits tend to be
+> the most common users). With this config option, users have the
+> choice to disable /dev/kmem, saving some size as well.
 > 
-> arch/um/drivers/built-in.o: In function `kmalloc':
-> /home/penberg/linux-2.6/arch/um/include/um_malloc.h:14: undefined reference to `__kmalloc'
-> /home/penberg/linux-2.6/arch/um/include/um_malloc.h:14: undefined reference to `__kmalloc'
-> /home/penberg/linux-2.6/arch/um/include/um_malloc.h:14: undefined reference to `__kmalloc'
-> /home/penberg/linux-2.6/arch/um/include/um_malloc.h:14: undefined reference to `__kmalloc'
-> /home/penberg/linux-2.6/arch/um/include/um_malloc.h:14: undefined reference to `__kmalloc'
-> arch/um/drivers/built-in.o:/home/penberg/linux-2.6/arch/um/include/um_malloc.h:14: more undefined references to `__kmalloc' follow
+> A patch to disable /dev/kmem has been in the Fedora and RHEL kernels for
+> 4+ years now without any known problems or legit users of /dev/kmem.
+> 
 
-Can someone explain why the magic is needed (and preferably capture it
-in a comment somewhere sensible)? I took a peek at this and have no idea
-what's going on. 
+I question the testedness of this.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> +config DEV_KMEM
+> ...
+> +#ifdef CONFIG_DEVKMEM
+>
 
