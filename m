@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYBKNz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYBKN5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYBKNz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 08:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYBKNzt
+	id S1755229AbYBKN5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 08:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYBKN5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 08:55:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50555 "EHLO mx2.mail.elte.hu"
+	Mon, 11 Feb 2008 08:57:09 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:35671 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752348AbYBKNzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 08:55:49 -0500
-Date: Mon, 11 Feb 2008 14:55:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: ying.huang@intel.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [6/8] Account overlapped mappings in end_pfn_map
-Message-ID: <20080211135535.GA14502@elte.hu>
-References: <200802111034.764275766@suse.de> <20080211093434.E30961B41CE@basil.firstfloor.org> <20080211130843.GC23733@elte.hu> <200802111427.16288.ak@suse.de>
+	id S1752464AbYBKN5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 08:57:08 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802111427.16288.ak@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Message-ID: <18352.21524.186194.426982@harpo.it.uu.se>
+Date: Mon, 11 Feb 2008 14:56:36 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Adrian Bunk <adrian.bunk@movial.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Riku Voipio <riku.voipio@movial.fi>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: futex local DoS on most architectures
+In-Reply-To: <20080211130700.GF27537@movial.fi>
+References: <20080211130700.GF27537@movial.fi>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk writes:
+ > The issue described in [1] is still present and unfixed (and even the 
+ > fix there wasn't complete since it didn't cover SMP).
+ > 
+ > Thanks to Riku Voipio for noting that it is still unfixed.
+ > 
+ > cu
+ > Adrian
+ > 
+ > [1] http://lkml.org/lkml/2007/8/1/474
 
-* Andi Kleen <ak@suse.de> wrote:
+I think calling it a local DoS may make people take it
+less seriously.
 
-> > your patch is also a bit unclean:
-> 
-> Ok patch with hungarized variables appended.
+The problem is not related to attacks or malice.
+It's NORMAL futex usage on the affected architectures
+that's broken and will throw the kernel into a loop.
 
-My comments have nothing to do with "hungarized variables". You used 
-clearly unclean and ambigious coding constructs like:
-
-+static unsigned long __meminit
- phys_pmd_update(pud_t *pud, unsigned long address, unsigned long end)
- {
-+       unsigned long r;
-        pmd_t *pmd = pmd_offset(pud, 0);
-        spin_lock(&init_mm.page_table_lock);
--       phys_pmd_init(pmd, address, end);
-+       r = phys_pmd_init(pmd, address, end);
-        spin_unlock(&init_mm.page_table_lock);
-        __flush_tlb_all();
-+       return r;
- }
-
-the "r" name is totally unintuitive and the reader of the code is given 
-absolutely no idea what happens here.
-
-The cleanliness rules about descriptive variable names are obvious, 
-necessary and well respected throughout the kernel, by all other kernel 
-contributors i know. For years you were allowed to merge such patches. 
-You should really (re-)learn and accept the rules that all other kernel 
-contributors have been following for years.
-
-	Ingo
+/Mikael
