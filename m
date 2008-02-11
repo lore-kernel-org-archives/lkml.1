@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYBKQkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbYBKQlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbYBKQkT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbYBKQkH
+	id S1758752AbYBKQlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYBKQlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:40:07 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4658 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbYBKQkG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:40:06 -0500
-Date: Mon, 11 Feb 2008 16:40:46 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in checkpatch (on pointers to typedefs?)
-Message-ID: <20080211164046.GI11671@shadowen.org>
-References: <20080210143240.GA13317@joi> <20080211102339.GD11671@shadowen.org> <47B0725C.30407@panasas.com>
-MIME-Version: 1.0
+	Mon, 11 Feb 2008 11:41:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34406 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750917AbYBKQlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:41:03 -0500
+Date: Mon, 11 Feb 2008 11:38:32 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Joe Perches <joe@perches.com>, mathieu.desnoyers@polymtl.ca,
+       akpm@linux-foundation.org, mingo@elte.hu, fche@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] make pr_debug() dynamic
+Message-ID: <20080211163832.GA10777@redhat.com>
+References: <20080207210320.GA14732@redhat.com> <1202424134.27394.42.camel@localhost> <20080208155204.GB13650@redhat.com> <Pine.LNX.4.64.0802092320380.6917@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47B0725C.30407@panasas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0802092320380.6917@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 06:05:48PM +0200, Benny Halevy wrote:
-> I saw this too with checkpatch.pl version 0.12
-> It seems like checkpatch.pl knows only about types derived
-> from @typeList by build_types.
+On Sat, Feb 09, 2008 at 11:21:58PM +0100, Jan Engelhardt wrote:
+> >> 
+> >> What's wrong with klogd -c 8 or equivalent?
+> >
+> >Setting the loglevel higher, will not make pr_debug() calls visible. The only
+> >way to make them visible right now, is by re-compiling the kernel.
 > 
-> Example below...
+> pr_debug() was IMHO meant to be a compile-time optimization
+> to throw out debug messages most people do not want.
 > 
-> Benny
-> 
-> $ cat <<EOF | scripts/checkpatch.pl -
-> Signed-off-by: john@smith.net
-> ---
-> diff a/f.c b/f.c
-> --- a/f.c
-> +++ b/f.c
-> @@ -1,0 +1,2 @@
-> +foo(int a, my_uint32 *);
-> +bar(int a, my_uint32_t *);
+> If you want to switch on/off debugging messages, use
+> printk(KERN_DEBUG) [with klogd -c something] and not pr_debug!
 
-But that isn't actually syntactically correct code is it?  You have types
-as parameters like a function declaration, but no return type.  So there
-is no hint to checkpatch that this is a function declaration and therefore
-the parameters are not expected to be types, nor are they checked as such.
+true, we could turn pr_debug() calls into printk(KERN_DEBUG) calls, but there
+is an overhead to all these extra printk functions calls. The way I have
+implemented pr_debug(), there is no function call at all, in the off case.
+To me pr_debug() is currently a compile option, b/c there is often a lot of
+overhead to having it on. Being able to turn pr_debug() calls off/on in a
+production environment, to get debugging data seems very valuable.
 
-The following diff is clean on the latest version of checkpatch:
+thanks,
 
-Signed-off-by: john@smith.net
----
-diff a/f.c b/f.c
---- a/f.c
-+++ b/f.c
-@@ -1,0 +1,2 @@
-+void foo(int a, my_uint32 *);
-+int bar(int a, my_uint32_t *);
-EOF
-
-Could you try out the version of checkpatch at the URL below on the real
-patch you are using to test, and let me know if it works.  There are
-a number of improvements to type tracking in the face of ifdef's and
-the like.  If it doesn't could I have the hunk which fails:
-
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-next
-
--apw
+-Jason
