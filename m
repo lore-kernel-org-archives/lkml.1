@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYBKIad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbYBKIf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394AbYBKIad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 03:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYBKIaZ
+	id S1752966AbYBKIf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 03:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYBKIfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 03:30:25 -0500
-Received: from www.tglx.de ([62.245.132.106]:54348 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945AbYBKIaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 03:30:24 -0500
-Date: Mon, 11 Feb 2008 09:30:05 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/5] Only do century BCD conversion when we know the
- RTC is BCD
-In-Reply-To: <20080209416.271135970@suse.de>
-Message-ID: <alpine.LFD.1.00.0802110924050.12988@apollo.tec.linutronix.de>
-References: <20080209416.271135970@suse.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 Feb 2008 03:35:06 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:53103 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbYBKIfD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 03:35:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=LeqyqJR5X6csOXAVmfM0xmDWh6xWcRAVOQNsOxmK33E4NnV0qnXNA3txFJp7gRiDYGCQsFJlQ/ZLGcx/9DGJHAoLBvvf81B4HnZjYtbWfQhdETcWpBp6QcvwQtteptjgnvC2EjnKT9uenyXnQ23S2PhfCnjo0BH1+QhaLmEbSQk=
+To: <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+Subject: [PATCH 0/4] ide: generic packet command representation
+Date: Mon, 11 Feb 2008 09:34:36 +0100
+Message-Id: <1202718880-1793-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email debian.1.5.3.7.1-dirty
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Feb 2008, Andi Kleen wrote:
+Hi Bart,
 
-> 
-> Minor logic fix. The century change was previously always BCD,
-> even when the CMOS data would report itself not being BCD.
+here's the ide_atapi_pc unification series. It all went pretty smoothly along
+the search & replace line. Using driver-specific members in ide_atapi_pc like
+idefloppy_callback and idetape_callback is kinda dumb but this approach seemed
+the fastest versus unnecessary callback function signature change that will
+touch stuff all over the place. Besides, ide-tape might be gone soon so that
+would alleviate the problem.
 
-I checked that whole rtc / BCD logic again. We always set RTC_ALWAYS_BCD:
+On a different note, i noticed ide-scsi might also need a cleanup similar to the
+other drivers. It is next on my TODO list in case you don't have anything with a
+higher prio.
 
-#ifndef RTC_PORT
-#define RTC_PORT(x)    (0x70 + (x))
-#define RTC_ALWAYS_BCD 1       /* RTC operates in BCD mode */
-#endif
 
-Nothing ever defines RTC_PORT and RTC_ALWAYS_BCD
+ drivers/ide/ide-floppy.c |  205 +++++++++++++++++--------------------
+ drivers/ide/ide-tape.c   |  251 +++++++++++++++++++++-------------------------
+ drivers/scsi/ide-scsi.c  |  133 +++++++++++-------------
+ include/linux/ide.h      |   47 +++++++++
+ 4 files changed, 316 insertions(+), 320 deletions(-)
 
-So we can get rid of that stuff completely.
-
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86/kernel/rtc.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux/arch/x86/kernel/rtc.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/rtc.c
-> +++ linux/arch/x86/kernel/rtc.c
-> @@ -130,10 +130,10 @@ unsigned long mach_get_cmos_time(void)
->  		BCD_TO_BIN(day);
->  		BCD_TO_BIN(mon);
->  		BCD_TO_BIN(year);
-> +		BCD_TO_BIN(century);
-
-This should probably go here:
-
-        if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-            acpi_gbl_FADT.century) {
---->
- 	}
-
-It does not matter much, because BCD_TO_BIN(0) is 0, but it makes a
-lot of sense.
-
+-- 
 Thanks,
-
-	tglx
+Boris.
