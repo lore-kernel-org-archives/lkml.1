@@ -1,105 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbYBKS3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYBKS32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759968AbYBKS3J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBKS24
+	id S1759172AbYBKS32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759938AbYBKS3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:28:56 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:57228 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbYBKS2y (ORCPT
+	Mon, 11 Feb 2008 13:29:06 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:13725 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756632AbYBKS3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:28:54 -0500
-Date: Mon, 11 Feb 2008 19:31:53 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>
-Message-ID: <20080211183153.GA19771@enneenne.com>
-References: <1202493644764-git-send-email-giometti@linux.it> <120249364418-git-send-email-giometti@linux.it> <20080209064531.GA29926@kroah.com> <20080211095346.GA28885@enneenne.com> <20080211152542.GD25505@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211152542.GD25505@kroah.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/8] LinuxPPS core support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Mon, 11 Feb 2008 13:29:04 -0500
+Date: Mon, 11 Feb 2008 10:26:49 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: ananth@in.ibm.com
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
+       sam@ravnborg.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 0/8] Create and populate toplevel tests/ for kernel
+ tests
+Message-Id: <20080211102649.2ab423ec.randy.dunlap@oracle.com>
+In-Reply-To: <20080211104452.GB7944@in.ibm.com>
+References: <20080211104452.GB7944@in.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 07:25:42AM -0800, Greg KH wrote:
-> On Mon, Feb 11, 2008 at 10:53:46AM +0100, Rodolfo Giometti wrote:
-> > On Fri, Feb 08, 2008 at 10:45:31PM -0800, Greg KH wrote:
-> > > 
-> > > As you are adding sysfs files, please also describe them in
-> > > Documentation/ABI/ in this same series of patches.
-> > 
-> > Ok. I'm going to add them under "testing".
-> > 
-> > > Why not use a default attribute group?
-> > > 
-> > > That way the files are created before the uevent is issued, and the
-> > > amount of code you have to write is much smaller.
-> > 
-> > What do you mean exactly? I don't understand what you wish. :'(
+On Mon, 11 Feb 2008 16:14:52 +0530 Ananth N Mavinakayanahalli wrote:
+
+> The following series of patches create and populate the toplevel tests/
+> directory. This will henceforth be the place where all in-kernel tests
+> live.
 > 
-> If you use a 'struct device' you can use a default attribute group for
-> that device to be created whenever it is added.
-> 
-> However you are not using the driver core that way, you are just calling
-> device_create(), which doesn't work that way.
-> 
-> But you can just use an attribute group instead, which still saves you a
-> lot of code, try using that instead (sysfs_create_group()).
-> 
-> Or go all the way and embed a 'struct device' in your structure, and
-> create a bus, then you can use the default attribute group, although
-> that might be a bit more work :)
+> All patches against 2.6.25-rc1 and are just code movement without any
+> change in functionality.
 
-I see but how can I manage the fact that files "assert" and "clear"
-are created according to pps->info.mode field content?
+Hi,
 
-See the code:
+As Linus wrote on a recent sh pull request:
 
-int pps_sysfs_create_source_entry(struct pps_device *pps)
-{
-        int ret;
+"Please use "git diff -M --stat --summary" to generate the diffstat: the -M 
+enables rename detection, and the summary enables a summary of new/deleted 
+or renamed files."
 
-        /* Create file "assert" and "clear" according to source capability */
-        if (pps->info.mode & PPS_CAPTUREASSERT) {
-                ret = device_create_file(pps->dev, &dev_attr_assert);
-                if (ret)
-                        dev_err(pps->dev, "unable to create \"assert\" "
-                                        "sysfs entry");
-        }
-
-        if (pps->info.mode & PPS_CAPTURECLEAR) {
-                ret = device_create_file(pps->dev, &dev_attr_clear);
-                if (ret)
-                        dev_err(pps->dev, "unable to create \"clear\" "
-                                        "sysfs entry");
-        }
-
-        ret = device_create_file(pps->dev, &dev_attr_mode);
-        if (ret)
-                dev_err(pps->dev, "unable to create \"mode\" sysfs entry");
-
-Do you think is better create these files anyway and in case report a
-NULL string?
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+---
+~Randy
