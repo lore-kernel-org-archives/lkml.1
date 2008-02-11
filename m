@@ -1,101 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbYBKXbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761137AbYBKXcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760907AbYBKXbn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 18:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbYBKXbY
+	id S1761137AbYBKXcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 18:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbYBKXbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 18:31:24 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:25426 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756676AbYBKXbX (ORCPT
+	Mon, 11 Feb 2008 18:31:51 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:30333 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756857AbYBKXbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 18:31:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=C4ZTsbJa6oxu8iYUBKlKvy7cuo9a7PIfveBbJeA14fX5nW+WRdER+NWBCK83e8XUAoCEnfn77Tm5cz5uAb1g6wtJLQSZHWC9P7ZzLzlUWiuG5uK8jv2qPSylq0eN0x2GROpTao6lPgf8PyaNQ7PcjjsfDYM3RdlHyZQ8PUUpAGw=
-Message-ID: <5a4c581d0802111531qf6fe2d0tf4878caefef958d3@mail.gmail.com>
-Date: Tue, 12 Feb 2008 00:31:21 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.24-git2: Oracle 11g VKTM process enters R state on startup and is unkillable [still broken in 2.6.25-rc1]
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <200802120012.35314.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 Feb 2008 18:31:49 -0500
+Date: Mon, 11 Feb 2008 15:27:16 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: mgross@linux.intel.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH]intel-iommu batched iotlb flushes
+Message-Id: <20080211152716.65f5a753.randy.dunlap@oracle.com>
+In-Reply-To: <20080211224105.GB24412@linux.intel.com>
+References: <20080211224105.GB24412@linux.intel.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5a4c581d0802110820l1fcbb1ffib874f268b4ab7eae@mail.gmail.com>
-	 <20080211204921.GA24806@elte.hu> <20080211221034.GA2587@elte.hu>
-	 <200802120012.35314.rjw@sisk.pl>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 12, 2008 12:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, 11 of February 2008, Ingo Molnar wrote:
-> >
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > > no, they were not lost, they just didnt pass QA here (they crashed on
-> > > a particularly hard to debug 8-way box i have) and Peter worked on
-> > > that queue of fixes up until today to get it really correct. Could you
-> > > check:
-> > >
-> > >    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
-> > >
-> > > combo patch below as well - whichever you prefer. The shortlog can be
-> > > found below as well - but i dont yet consider this pullable, i'd like
-> > > it to see pass a full night of randconfig tests on my test-systems.
-> >
-> > ok, we just found the reason for the 8-way crash, the delta fix from
-> > Peter is below if any of you have tried the previous combo patch.
-> > Updated sched.git as well, new HEAD is
-> > fec13e45305d69fd0bd23b30bd05a0a42cf341f8.
->
-> With the previous patch and this patch applied, the issue is not reproducible
-> here.
->
-> Thanks,
-> Rafael
+On Mon, 11 Feb 2008 14:41:05 -0800 mark gross wrote:
 
-The problem is fixed for me as well with the previous patch + the patch
- below, VKTM now enters S state and Oracle shuts down properly again.
+> The hole is the following scenarios: 
+> do many map_signal operations, do some unmap_signals, reuse a recently
+> unmapped page, <errant DMA hardware sneaks through and steps on reused
+> memory>
+> 
+> Or: you have rouge hardware using DMA's to look at pages: do many
 
-Thanks !
+  or rogue hardware?
 
-> > Index: linux-2.6/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/sched.c
-> > +++ linux-2.6/kernel/sched.c
-> > @@ -219,6 +219,10 @@ static void start_rt_bandwidth(struct rt
-> >       if (rt_b->rt_runtime == RUNTIME_INF)
-> >               return;
-> >
-> > +     if (hrtimer_active(&rt_b->rt_period_timer))
-> > +             return;
-> > +
-> > +     spin_lock(&rt_b->rt_runtime_lock);
-> >       for (;;) {
-> >               if (hrtimer_active(&rt_b->rt_period_timer))
-> >                       break;
-> > @@ -229,6 +233,7 @@ static void start_rt_bandwidth(struct rt
-> >                             rt_b->rt_period_timer.expires,
-> >                             HRTIMER_MODE_ABS);
-> >       }
-> > +     spin_unlock(&rt_b->rt_runtime_lock);
-> >  }
-> >
-> >  #ifdef CONFIG_RT_GROUP_SCHED
+> map_signal's, do many unmap_singles, reuse some unmapped pages : 
 
---alessandro
+  signal .................... single
 
- "We act as though comfort and luxury were the chief requirements
-   of life, when all that we need to make us really happy is
-   something to be enthusiastic about."
+> <rouge hardware looks at reused page>
 
-   (Charles Kingsley)
+   why rouge?
+
+> Note : these holes are very hard to get too, as the IOTLB is small and
+> only the PTE's still in the IOTLB can be accessed through this
+> mechanism.
+> 
+> Its recommended that strict is used when developing drivers that do DMA
+> operations to catch bugs early.  For production code where performance
+> is desired running with the batched IOTLB flushing is a good way to
+> go.
+> 
+> 
+> --mgross
+> 
+> 
+> Signed-off-by: <mgross@linux.intel.com>
+> 
+> 
+> 
+> Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.c
+> ===================================================================
+> --- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.c	2008-02-07 13:03:10.000000000 -0800
+> +++ linux-2.6.24-mm1/drivers/pci/intel-iommu.c	2008-02-11 10:38:49.000000000 -0800
+
+> @@ -50,11 +52,39 @@
+>  
+>  #define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
+>  
+> +
+> +static void flush_unmaps_timeout(unsigned long data);
+> +
+> +static struct timer_list unmap_timer =
+> +	TIMER_INITIALIZER(flush_unmaps_timeout, 0, 0);
+> +
+> +struct unmap_list {
+> +	struct list_head list;
+> +	struct dmar_domain *domain;
+> +	struct iova *iova;
+> +};
+> +
+> +static struct intel_iommu *g_iommus;
+> +/* bitmap for indexing intel_iommus */
+> +static unsigned long 	*g_iommus_to_flush;
+> +static int g_num_of_iommus;
+> +
+> +static DEFINE_SPINLOCK(async_umap_flush_lock);
+> +static LIST_HEAD(unmaps_to_do);
+> +
+> +static int timer_on;
+> +static long list_size;
+> +static int high_watermark;
+> +
+> +static struct dentry *intel_iommu_debug, *debug;
+> +
+> +
+>  static void domain_remove_dev_info(struct dmar_domain *domain);
+>  
+>  static int dmar_disabled;
+>  static int __initdata dmar_map_gfx = 1;
+>  static int dmar_forcedac;
+> +static int intel_iommu_strict;
+>  
+>  #define DUMMY_DEVICE_DOMAIN_INFO ((struct device_domain_info *)(-1))
+>  static DEFINE_SPINLOCK(device_domain_lock);
+> @@ -73,9 +103,13 @@
+>  			printk(KERN_INFO
+>  				"Intel-IOMMU: disable GFX device mapping\n");
+>  		} else if (!strncmp(str, "forcedac", 8)) {
+> -			printk (KERN_INFO
+> +			printk(KERN_INFO
+>  				"Intel-IOMMU: Forcing DAC for PCI devices\n");
+>  			dmar_forcedac = 1;
+> +		} else if (!strncmp(str, "strict", 8)) {
+> +			printk(KERN_INFO
+> +				"Intel-IOMMU: disable bached IOTLB flush\n");
+
+                                                      batched
+
+> +			intel_iommu_strict = 1;
+>  		}
+>  
+>  		str += strcspn(str, ",");
+
+> @@ -1672,7 +1702,29 @@
+>  	for_each_drhd_unit(drhd) {
+>  		if (drhd->ignored)
+>  			continue;
+> -		iommu = alloc_iommu(drhd);
+> +		g_num_of_iommus++;
+> +	}
+> +
+> +	nlongs = BITS_TO_LONGS(g_num_of_iommus);
+> +	g_iommus_to_flush = kzalloc(nlongs * sizeof(unsigned long), GFP_KERNEL);
+> +	if (!g_iommus_to_flush) {
+> +		printk(KERN_ERR "Allocating bitmap array failed\n");
+
+                identify:       "IOMMU:
+
+> +		return -ENOMEM;
+> +	}
+> +
+> +	g_iommus = kzalloc(g_num_of_iommus * sizeof(*iommu), GFP_KERNEL);
+> +	if (!g_iommus) {
+> +		kfree(g_iommus_to_flush);
+> +		ret = -ENOMEM;
+> +		goto error;
+> +	}
+> +
+> +	i = 0;
+> +	for_each_drhd_unit(drhd) {
+> +		if (drhd->ignored)
+> +			continue;
+> +		iommu = alloc_iommu(&g_iommus[i], drhd);
+> +		i++;
+>  		if (!iommu) {
+>  			ret = -ENOMEM;
+>  			goto error;
+
+> Index: linux-2.6.24-mm1/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux-2.6.24-mm1.orig/Documentation/kernel-parameters.txt	2008-02-11 13:44:23.000000000 -0800
+> +++ linux-2.6.24-mm1/Documentation/kernel-parameters.txt	2008-02-11 14:23:37.000000000 -0800
+> @@ -822,6 +822,10 @@
+>  			than 32 bit addressing. The default is to look
+>  			for translation below 32 bit and if not available
+>  			then look in the higher range.
+> +		strict [Default Off]
+> +			With this option on every umap_signle will
+
+                                         on, every unmap_si{ngle,gnal} ??
+
+> +			result in a hardware IOTLB flush opperation as
+> +			opposed to batching them for performance.
+>  
+>  	io_delay=	[X86-32,X86-64] I/O delay method
+>  		0x80
+
+
+---
+~Randy
