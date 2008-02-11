@@ -1,52 +1,818 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbYBKKtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbYBKKty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757804AbYBKKtk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 05:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbYBKKta
+	id S1757917AbYBKKty (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 05:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbYBKKth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 05:49:30 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:56166 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754052AbYBKKt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 05:49:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=O7JUeLKHH7rWA14ZA+L5hzzdNZRvEf6DJGLL12Erohnuw5BiHYEvmtkSVcvnwqH3cvjaOaiCH4oEZ6SadVeqiKuTAscLpyDzfFfC+hX70XH7O4O4Q3TktKGEurwfZ98x5G9ue8F++oi8rPZDg6+9LD/rHYSRLndgO68Z4Igj8Bo=
-Message-ID: <47B0282D.2050703@gmail.com>
-Date: Mon, 11 Feb 2008 19:49:17 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 11 Feb 2008 05:49:37 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41616 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756950AbYBKKte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 05:49:34 -0500
+Date: Mon, 11 Feb 2008 16:20:04 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
+       sam@ravnborg.org, Arjan van de Ven <arjan@linux.intel.com>,
+       ankita@in.ibm.com
+Subject: [PATCH 5/8] Move lkdtm to tests/
+Message-ID: <20080211105003.GG7944@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080211104452.GB7944@in.ibm.com>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@redhat.com, jeff@garzik.org
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze	system
-References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211102907.GC4646@homac.suse.de>
-In-Reply-To: <20080211102907.GC4646@homac.suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211104452.GB7944@in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-Holger Macht wrote:
->> In the above example, even the reset sequence itself can cause hang if
->> the hardware is implemented slightly differently.  The reason why
->> set_piomode() locks up but reset sequence doesn't is simple dumb luck.
-> 
-> Another thing, whether it's poor luck or not, it worked like this than at
-> least 2.6.22. And it was _heavily_ tested. The above commit broke it
-> between 2.6.24-rc1 and 2.6.24-rc2, which is at least a regression.
+Move the lkdtm infrastructure to tests/
 
-Yes, in a sense but the change is in the area where there's no defined
-behavior, so I don't think it's a good idea to revert the change here.
-Let's concentrate on finding the proper solution.
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Ankita Garg <ankita@in.ibm.com>
+---
+ drivers/misc/lkdtm.c  |  345 --------------------------------------------------
+ drivers/misc/Makefile |    1 
+ lib/Kconfig.debug     |   15 --
+ tests/Kconfig         |   15 ++
+ tests/Makefile        |    1 
+ tests/lkdtm.c         |  345 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 361 insertions(+), 361 deletions(-)
 
-Thanks.
-
--- 
-tejun
+Index: linux-2.6.25-rc1/drivers/misc/Makefile
+===================================================================
+--- linux-2.6.25-rc1.orig/drivers/misc/Makefile
++++ linux-2.6.25-rc1/drivers/misc/Makefile
+@@ -11,7 +11,6 @@ obj-$(CONFIG_ASUS_LAPTOP)     += asus-la
+ obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
+ obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
+ obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
+-obj-$(CONFIG_LKDTM)		+= lkdtm.o
+ obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
+ obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
+ obj-$(CONFIG_PHANTOM)		+= phantom.o
+Index: linux-2.6.25-rc1/drivers/misc/lkdtm.c
+===================================================================
+--- linux-2.6.25-rc1.orig/drivers/misc/lkdtm.c
++++ /dev/null
+@@ -1,345 +0,0 @@
+-/*
+- * Kprobe module for testing crash dumps
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- *
+- * Copyright (C) IBM Corporation, 2006
+- *
+- * Author: Ankita Garg <ankita@in.ibm.com>
+- *
+- * This module induces system failures at predefined crashpoints to
+- * evaluate the reliability of crash dumps obtained using different dumping
+- * solutions.
+- *
+- * It is adapted from the Linux Kernel Dump Test Tool by
+- * Fernando Luis Vazquez Cao <http://lkdtt.sourceforge.net>
+- *
+- * Usage :  insmod lkdtm.ko [recur_count={>0}] cpoint_name=<> cpoint_type=<>
+- *							[cpoint_count={>0}]
+- *
+- * recur_count : Recursion level for the stack overflow test. Default is 10.
+- *
+- * cpoint_name : Crash point where the kernel is to be crashed. It can be
+- *		 one of INT_HARDWARE_ENTRY, INT_HW_IRQ_EN, INT_TASKLET_ENTRY,
+- *		 FS_DEVRW, MEM_SWAPOUT, TIMERADD, SCSI_DISPATCH_CMD,
+- *		 IDE_CORE_CP
+- *
+- * cpoint_type : Indicates the action to be taken on hitting the crash point.
+- *		 It can be one of PANIC, BUG, EXCEPTION, LOOP, OVERFLOW
+- *
+- * cpoint_count : Indicates the number of times the crash point is to be hit
+- *		  to trigger an action. The default is 10.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/fs.h>
+-#include <linux/module.h>
+-#include <linux/buffer_head.h>
+-#include <linux/kprobes.h>
+-#include <linux/list.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/hrtimer.h>
+-#include <scsi/scsi_cmnd.h>
+-
+-#ifdef CONFIG_IDE
+-#include <linux/ide.h>
+-#endif
+-
+-#define NUM_CPOINTS 8
+-#define NUM_CPOINT_TYPES 5
+-#define DEFAULT_COUNT 10
+-#define REC_NUM_DEFAULT 10
+-
+-enum cname {
+-	INVALID,
+-	INT_HARDWARE_ENTRY,
+-	INT_HW_IRQ_EN,
+-	INT_TASKLET_ENTRY,
+-	FS_DEVRW,
+-	MEM_SWAPOUT,
+-	TIMERADD,
+-	SCSI_DISPATCH_CMD,
+-	IDE_CORE_CP
+-};
+-
+-enum ctype {
+-	NONE,
+-	PANIC,
+-	BUG,
+-	EXCEPTION,
+-	LOOP,
+-	OVERFLOW
+-};
+-
+-static char* cp_name[] = {
+-	"INT_HARDWARE_ENTRY",
+-	"INT_HW_IRQ_EN",
+-	"INT_TASKLET_ENTRY",
+-	"FS_DEVRW",
+-	"MEM_SWAPOUT",
+-	"TIMERADD",
+-	"SCSI_DISPATCH_CMD",
+-	"IDE_CORE_CP"
+-};
+-
+-static char* cp_type[] = {
+-	"PANIC",
+-	"BUG",
+-	"EXCEPTION",
+-	"LOOP",
+-	"OVERFLOW"
+-};
+-
+-static struct jprobe lkdtm;
+-
+-static int lkdtm_parse_commandline(void);
+-static void lkdtm_handler(void);
+-
+-static char* cpoint_name;
+-static char* cpoint_type;
+-static int cpoint_count = DEFAULT_COUNT;
+-static int recur_count = REC_NUM_DEFAULT;
+-
+-static enum cname cpoint = INVALID;
+-static enum ctype cptype = NONE;
+-static int count = DEFAULT_COUNT;
+-
+-module_param(recur_count, int, 0644);
+-MODULE_PARM_DESC(recur_count, " Recursion level for the stack overflow test, "\
+-				 "default is 10");
+-module_param(cpoint_name, charp, 0644);
+-MODULE_PARM_DESC(cpoint_name, " Crash Point, where kernel is to be crashed");
+-module_param(cpoint_type, charp, 0644);
+-MODULE_PARM_DESC(cpoint_type, " Crash Point Type, action to be taken on "\
+-				"hitting the crash point");
+-module_param(cpoint_count, int, 0644);
+-MODULE_PARM_DESC(cpoint_count, " Crash Point Count, number of times the "\
+-				"crash point is to be hit to trigger action");
+-
+-static unsigned int jp_do_irq(unsigned int irq)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static irqreturn_t jp_handle_irq_event(unsigned int irq,
+-				       struct irqaction *action)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static void jp_tasklet_action(struct softirq_action *a)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-}
+-
+-static void jp_ll_rw_block(int rw, int nr, struct buffer_head *bhs[])
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-}
+-
+-struct scan_control;
+-
+-static unsigned long jp_shrink_inactive_list(unsigned long max_scan,
+-					     struct zone *zone,
+-					     struct scan_control *sc)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static int jp_hrtimer_start(struct hrtimer *timer, ktime_t tim,
+-			    const enum hrtimer_mode mode)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-static int jp_scsi_dispatch_cmd(struct scsi_cmnd *cmd)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-
+-#ifdef CONFIG_IDE
+-int jp_generic_ide_ioctl(ide_drive_t *drive, struct file *file,
+-			struct block_device *bdev, unsigned int cmd,
+-			unsigned long arg)
+-{
+-	lkdtm_handler();
+-	jprobe_return();
+-	return 0;
+-}
+-#endif
+-
+-static int lkdtm_parse_commandline(void)
+-{
+-	int i;
+-
+-	if (cpoint_name == INVALID || cpoint_type == NONE ||
+-					cpoint_count < 1 || recur_count < 1)
+-		return -EINVAL;
+-
+-	for (i = 0; i < NUM_CPOINTS; ++i) {
+-		if (!strcmp(cpoint_name, cp_name[i])) {
+-			cpoint = i + 1;
+-			break;
+-		}
+-	}
+-
+-	for (i = 0; i < NUM_CPOINT_TYPES; ++i) {
+-		if (!strcmp(cpoint_type, cp_type[i])) {
+-			cptype = i + 1;
+-			break;
+-		}
+-	}
+-
+-	if (cpoint == INVALID || cptype == NONE)
+-                return -EINVAL;
+-
+-	count = cpoint_count;
+-
+-	return 0;
+-}
+-
+-static int recursive_loop(int a)
+-{
+-	char buf[1024];
+-
+-	memset(buf,0xFF,1024);
+-	recur_count--;
+-	if (!recur_count)
+-		return 0;
+-	else
+-        	return recursive_loop(a);
+-}
+-
+-void lkdtm_handler(void)
+-{
+-	printk(KERN_INFO "lkdtm : Crash point %s of type %s hit\n",
+-					 cpoint_name, cpoint_type);
+-	--count;
+-
+-	if (count == 0) {
+-		switch (cptype) {
+-		case NONE:
+-			break;
+-		case PANIC:
+-			printk(KERN_INFO "lkdtm : PANIC\n");
+-			panic("dumptest");
+-			break;
+-		case BUG:
+-			printk(KERN_INFO "lkdtm : BUG\n");
+-			BUG();
+-			break;
+-		case EXCEPTION:
+-			printk(KERN_INFO "lkdtm : EXCEPTION\n");
+-			*((int *) 0) = 0;
+-			break;
+-		case LOOP:
+-			printk(KERN_INFO "lkdtm : LOOP\n");
+-			for (;;);
+-			break;
+-		case OVERFLOW:
+-			printk(KERN_INFO "lkdtm : OVERFLOW\n");
+-			(void) recursive_loop(0);
+-			break;
+-		default:
+-			break;
+-		}
+-		count = cpoint_count;
+-	}
+-}
+-
+-static int __init lkdtm_module_init(void)
+-{
+-	int ret;
+-
+-	if (lkdtm_parse_commandline() == -EINVAL) {
+-		printk(KERN_INFO "lkdtm : Invalid command\n");
+-		return -EINVAL;
+-	}
+-
+-	switch (cpoint) {
+-	case INT_HARDWARE_ENTRY:
+-		lkdtm.kp.symbol_name = "__do_IRQ";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_do_irq;
+-		break;
+-	case INT_HW_IRQ_EN:
+-		lkdtm.kp.symbol_name = "handle_IRQ_event";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_handle_irq_event;
+-		break;
+-	case INT_TASKLET_ENTRY:
+-		lkdtm.kp.symbol_name = "tasklet_action";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_tasklet_action;
+-		break;
+-	case FS_DEVRW:
+-		lkdtm.kp.symbol_name = "ll_rw_block";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_ll_rw_block;
+-		break;
+-	case MEM_SWAPOUT:
+-		lkdtm.kp.symbol_name = "shrink_inactive_list";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_shrink_inactive_list;
+-		break;
+-	case TIMERADD:
+-		lkdtm.kp.symbol_name = "hrtimer_start";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_hrtimer_start;
+-		break;
+-	case SCSI_DISPATCH_CMD:
+-		lkdtm.kp.symbol_name = "scsi_dispatch_cmd";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_scsi_dispatch_cmd;
+-		break;
+-	case IDE_CORE_CP:
+-#ifdef CONFIG_IDE
+-		lkdtm.kp.symbol_name = "generic_ide_ioctl";
+-		lkdtm.entry = (kprobe_opcode_t*) jp_generic_ide_ioctl;
+-#else
+-		printk(KERN_INFO "lkdtm : Crash point not available\n");
+-#endif
+-		break;
+-	default:
+-		printk(KERN_INFO "lkdtm : Invalid Crash Point\n");
+-		break;
+-	}
+-
+-	if ((ret = register_jprobe(&lkdtm)) < 0) {
+-                printk(KERN_INFO "lkdtm : Couldn't register jprobe\n");
+-                return ret;
+-	}
+-
+-	printk(KERN_INFO "lkdtm : Crash point %s of type %s registered\n",
+-						cpoint_name, cpoint_type);
+-	return 0;
+-}
+-
+-static void __exit lkdtm_module_exit(void)
+-{
+-        unregister_jprobe(&lkdtm);
+-        printk(KERN_INFO "lkdtm : Crash point unregistered\n");
+-}
+-
+-module_init(lkdtm_module_init);
+-module_exit(lkdtm_module_exit);
+-
+-MODULE_LICENSE("GPL");
+Index: linux-2.6.25-rc1/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.25-rc1.orig/lib/Kconfig.debug
++++ linux-2.6.25-rc1/lib/Kconfig.debug
+@@ -490,21 +490,6 @@ config BACKTRACE_SELF_TEST
+ 
+ 	  Say N if you are unsure.
+ 
+-config LKDTM
+-	tristate "Linux Kernel Dump Test Tool Module"
+-	depends on DEBUG_KERNEL
+-	depends on KPROBES
+-	default n
+-	help
+-	This module enables testing of the different dumping mechanisms by
+-	inducing system failures at predefined crash points.
+-	If you don't need it: say N
+-	Choose M here to compile this code as a module. The module will be
+-	called lkdtm.
+-
+-	Documentation on how to use the module can be found in
+-	drivers/misc/lkdtm.c
+-
+ config FAULT_INJECTION
+ 	bool "Fault-injection framework"
+ 	depends on DEBUG_KERNEL
+Index: linux-2.6.25-rc1/tests/Kconfig
+===================================================================
+--- linux-2.6.25-rc1.orig/tests/Kconfig
++++ linux-2.6.25-rc1/tests/Kconfig
+@@ -37,4 +37,19 @@ config RT_MUTEX_TESTER
+ 	help
+ 	  This option enables a rt-mutex tester.
+ 
++config LKDTM
++	tristate "Linux Kernel Dump Test Tool Module"
++	depends on DEBUG_KERNEL
++	depends on KPROBES
++	default n
++	help
++	This module enables testing of the different dumping mechanisms by
++	inducing system failures at predefined crash points.
++	If you don't need it: say N
++	Choose M here to compile this code as a module. The module will be
++	called lkdtm.
++
++	Documentation on how to use the module can be found in
++	tests/lkdtm.c
++
+ endif # KERNEL_TESTS
+Index: linux-2.6.25-rc1/tests/Makefile
+===================================================================
+--- linux-2.6.25-rc1.orig/tests/Makefile
++++ linux-2.6.25-rc1/tests/Makefile
+@@ -5,3 +5,4 @@
+ obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
+ obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
+ obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
++obj-$(CONFIG_LKDTM) += lkdtm.o
+Index: linux-2.6.25-rc1/tests/lkdtm.c
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc1/tests/lkdtm.c
+@@ -0,0 +1,345 @@
++/*
++ * Kprobe module for testing crash dumps
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2006
++ *
++ * Author: Ankita Garg <ankita@in.ibm.com>
++ *
++ * This module induces system failures at predefined crashpoints to
++ * evaluate the reliability of crash dumps obtained using different dumping
++ * solutions.
++ *
++ * It is adapted from the Linux Kernel Dump Test Tool by
++ * Fernando Luis Vazquez Cao <http://lkdtt.sourceforge.net>
++ *
++ * Usage :  insmod lkdtm.ko [recur_count={>0}] cpoint_name=<> cpoint_type=<>
++ *							[cpoint_count={>0}]
++ *
++ * recur_count : Recursion level for the stack overflow test. Default is 10.
++ *
++ * cpoint_name : Crash point where the kernel is to be crashed. It can be
++ *		 one of INT_HARDWARE_ENTRY, INT_HW_IRQ_EN, INT_TASKLET_ENTRY,
++ *		 FS_DEVRW, MEM_SWAPOUT, TIMERADD, SCSI_DISPATCH_CMD,
++ *		 IDE_CORE_CP
++ *
++ * cpoint_type : Indicates the action to be taken on hitting the crash point.
++ *		 It can be one of PANIC, BUG, EXCEPTION, LOOP, OVERFLOW
++ *
++ * cpoint_count : Indicates the number of times the crash point is to be hit
++ *		  to trigger an action. The default is 10.
++ */
++
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/module.h>
++#include <linux/buffer_head.h>
++#include <linux/kprobes.h>
++#include <linux/list.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/hrtimer.h>
++#include <scsi/scsi_cmnd.h>
++
++#ifdef CONFIG_IDE
++#include <linux/ide.h>
++#endif
++
++#define NUM_CPOINTS 8
++#define NUM_CPOINT_TYPES 5
++#define DEFAULT_COUNT 10
++#define REC_NUM_DEFAULT 10
++
++enum cname {
++	INVALID,
++	INT_HARDWARE_ENTRY,
++	INT_HW_IRQ_EN,
++	INT_TASKLET_ENTRY,
++	FS_DEVRW,
++	MEM_SWAPOUT,
++	TIMERADD,
++	SCSI_DISPATCH_CMD,
++	IDE_CORE_CP
++};
++
++enum ctype {
++	NONE,
++	PANIC,
++	BUG,
++	EXCEPTION,
++	LOOP,
++	OVERFLOW
++};
++
++static char* cp_name[] = {
++	"INT_HARDWARE_ENTRY",
++	"INT_HW_IRQ_EN",
++	"INT_TASKLET_ENTRY",
++	"FS_DEVRW",
++	"MEM_SWAPOUT",
++	"TIMERADD",
++	"SCSI_DISPATCH_CMD",
++	"IDE_CORE_CP"
++};
++
++static char* cp_type[] = {
++	"PANIC",
++	"BUG",
++	"EXCEPTION",
++	"LOOP",
++	"OVERFLOW"
++};
++
++static struct jprobe lkdtm;
++
++static int lkdtm_parse_commandline(void);
++static void lkdtm_handler(void);
++
++static char* cpoint_name;
++static char* cpoint_type;
++static int cpoint_count = DEFAULT_COUNT;
++static int recur_count = REC_NUM_DEFAULT;
++
++static enum cname cpoint = INVALID;
++static enum ctype cptype = NONE;
++static int count = DEFAULT_COUNT;
++
++module_param(recur_count, int, 0644);
++MODULE_PARM_DESC(recur_count, " Recursion level for the stack overflow test, "\
++				 "default is 10");
++module_param(cpoint_name, charp, 0644);
++MODULE_PARM_DESC(cpoint_name, " Crash Point, where kernel is to be crashed");
++module_param(cpoint_type, charp, 0644);
++MODULE_PARM_DESC(cpoint_type, " Crash Point Type, action to be taken on "\
++				"hitting the crash point");
++module_param(cpoint_count, int, 0644);
++MODULE_PARM_DESC(cpoint_count, " Crash Point Count, number of times the "\
++				"crash point is to be hit to trigger action");
++
++static unsigned int jp_do_irq(unsigned int irq)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static irqreturn_t jp_handle_irq_event(unsigned int irq,
++				       struct irqaction *action)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static void jp_tasklet_action(struct softirq_action *a)
++{
++	lkdtm_handler();
++	jprobe_return();
++}
++
++static void jp_ll_rw_block(int rw, int nr, struct buffer_head *bhs[])
++{
++	lkdtm_handler();
++	jprobe_return();
++}
++
++struct scan_control;
++
++static unsigned long jp_shrink_inactive_list(unsigned long max_scan,
++					     struct zone *zone,
++					     struct scan_control *sc)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static int jp_hrtimer_start(struct hrtimer *timer, ktime_t tim,
++			    const enum hrtimer_mode mode)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++static int jp_scsi_dispatch_cmd(struct scsi_cmnd *cmd)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++
++#ifdef CONFIG_IDE
++int jp_generic_ide_ioctl(ide_drive_t *drive, struct file *file,
++			struct block_device *bdev, unsigned int cmd,
++			unsigned long arg)
++{
++	lkdtm_handler();
++	jprobe_return();
++	return 0;
++}
++#endif
++
++static int lkdtm_parse_commandline(void)
++{
++	int i;
++
++	if (cpoint_name == INVALID || cpoint_type == NONE ||
++					cpoint_count < 1 || recur_count < 1)
++		return -EINVAL;
++
++	for (i = 0; i < NUM_CPOINTS; ++i) {
++		if (!strcmp(cpoint_name, cp_name[i])) {
++			cpoint = i + 1;
++			break;
++		}
++	}
++
++	for (i = 0; i < NUM_CPOINT_TYPES; ++i) {
++		if (!strcmp(cpoint_type, cp_type[i])) {
++			cptype = i + 1;
++			break;
++		}
++	}
++
++	if (cpoint == INVALID || cptype == NONE)
++		return -EINVAL;
++
++	count = cpoint_count;
++
++	return 0;
++}
++
++static int recursive_loop(int a)
++{
++	char buf[1024];
++
++	memset(buf,0xFF,1024);
++	recur_count--;
++	if (!recur_count)
++		return 0;
++	else
++		return recursive_loop(a);
++}
++
++void lkdtm_handler(void)
++{
++	printk(KERN_INFO "lkdtm : Crash point %s of type %s hit\n",
++					 cpoint_name, cpoint_type);
++	--count;
++
++	if (count == 0) {
++		switch (cptype) {
++		case NONE:
++			break;
++		case PANIC:
++			printk(KERN_INFO "lkdtm : PANIC\n");
++			panic("dumptest");
++			break;
++		case BUG:
++			printk(KERN_INFO "lkdtm : BUG\n");
++			BUG();
++			break;
++		case EXCEPTION:
++			printk(KERN_INFO "lkdtm : EXCEPTION\n");
++			*((int *) 0) = 0;
++			break;
++		case LOOP:
++			printk(KERN_INFO "lkdtm : LOOP\n");
++			for (;;);
++			break;
++		case OVERFLOW:
++			printk(KERN_INFO "lkdtm : OVERFLOW\n");
++			(void) recursive_loop(0);
++			break;
++		default:
++			break;
++		}
++		count = cpoint_count;
++	}
++}
++
++static int __init lkdtm_module_init(void)
++{
++	int ret;
++
++	if (lkdtm_parse_commandline() == -EINVAL) {
++		printk(KERN_INFO "lkdtm : Invalid command\n");
++		return -EINVAL;
++	}
++
++	switch (cpoint) {
++	case INT_HARDWARE_ENTRY:
++		lkdtm.kp.symbol_name = "__do_IRQ";
++		lkdtm.entry = (kprobe_opcode_t*) jp_do_irq;
++		break;
++	case INT_HW_IRQ_EN:
++		lkdtm.kp.symbol_name = "handle_IRQ_event";
++		lkdtm.entry = (kprobe_opcode_t*) jp_handle_irq_event;
++		break;
++	case INT_TASKLET_ENTRY:
++		lkdtm.kp.symbol_name = "tasklet_action";
++		lkdtm.entry = (kprobe_opcode_t*) jp_tasklet_action;
++		break;
++	case FS_DEVRW:
++		lkdtm.kp.symbol_name = "ll_rw_block";
++		lkdtm.entry = (kprobe_opcode_t*) jp_ll_rw_block;
++		break;
++	case MEM_SWAPOUT:
++		lkdtm.kp.symbol_name = "shrink_inactive_list";
++		lkdtm.entry = (kprobe_opcode_t*) jp_shrink_inactive_list;
++		break;
++	case TIMERADD:
++		lkdtm.kp.symbol_name = "hrtimer_start";
++		lkdtm.entry = (kprobe_opcode_t*) jp_hrtimer_start;
++		break;
++	case SCSI_DISPATCH_CMD:
++		lkdtm.kp.symbol_name = "scsi_dispatch_cmd";
++		lkdtm.entry = (kprobe_opcode_t*) jp_scsi_dispatch_cmd;
++		break;
++	case IDE_CORE_CP:
++#ifdef CONFIG_IDE
++		lkdtm.kp.symbol_name = "generic_ide_ioctl";
++		lkdtm.entry = (kprobe_opcode_t*) jp_generic_ide_ioctl;
++#else
++		printk(KERN_INFO "lkdtm : Crash point not available\n");
++#endif
++		break;
++	default:
++		printk(KERN_INFO "lkdtm : Invalid Crash Point\n");
++		break;
++	}
++
++	if ((ret = register_jprobe(&lkdtm)) < 0) {
++		printk(KERN_INFO "lkdtm : Couldn't register jprobe\n");
++		return ret;
++	}
++
++	printk(KERN_INFO "lkdtm : Crash point %s of type %s registered\n",
++						cpoint_name, cpoint_type);
++	return 0;
++}
++
++static void __exit lkdtm_module_exit(void)
++{
++	unregister_jprobe(&lkdtm);
++	printk(KERN_INFO "lkdtm : Crash point unregistered\n");
++}
++
++module_init(lkdtm_module_init);
++module_exit(lkdtm_module_exit);
++
++MODULE_LICENSE("GPL");
