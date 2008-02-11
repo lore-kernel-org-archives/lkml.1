@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYBKQui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758982AbYBKQvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbYBKQui (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYBKQu2
+	id S1758982AbYBKQvT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbYBKQvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:50:28 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:41552 "EHLO e4.ny.us.ibm.com"
+	Mon, 11 Feb 2008 11:51:06 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54762 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046AbYBKQu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:50:27 -0500
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, linux-ppc <linuxppc-dev@ozlabs.org>,
-       Thomas Klein <osstklei@de.ibm.com>,
-       "Themann, Jan-Bernd" <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Christoph Raisch <RAISCH@de.ibm.com>
-In-Reply-To: <200802111724.12416.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 08:50:25 -0800
-Message-Id: <1202748625.8276.24.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1758381AbYBKQvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:51:04 -0500
+Date: Mon, 11 Feb 2008 18:50:55 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: allow 64bit setting in Kconfig
+Message-ID: <20080211165055.GA2959@cs181133002.pp.htv.fi>
+References: <20080128220944.GI8767@does.not.exist> <20080201152227.GB32085@elte.hu> <20080204204555.GC505@cs181133002.pp.htv.fi> <20080211163740.GA2446@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080211163740.GA2446@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-11 at 17:24 +0100, Jan-Bernd Themann wrote:
-> Drivers like eHEA need memory notifiers in order to 
-> update their internal DMA memory map when memory is added
-> to or removed from the system.
+On Mon, Feb 11, 2008 at 05:37:40PM +0100, Ingo Molnar wrote:
 > 
-> Patch for eHEA memory hotplug support that uses these functions:
-> http://www.spinics.net/lists/netdev/msg54484.html
+> * Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> > >     make ARCH=i386 randconfig
+> > > 
+> > > on a 64-bit box that has a 32-bit .config in its kernel directory.
+> > > 
+> > > The randconfig/allyesconfig/allnoconfig variants override whatever 
+> > > is in the current .config. Making the result depend on whatever is 
+> > > in the .config at the moment is fundamentally wrong.
+> > > 
+> > > "oldconfig" on the other hand has correct sensitivity to the 
+> > > existing .config - and that always worked correctly. So if you pop a 
+> > > 32-bit or a 64-bit .config into a kernel tree, that will be listened 
+> > > to, no matter whether you are on a 32-bit or on a 64-bit host.
+> > 
+> > Do you have ARCH=x86 set in your environment, the command line or 
+> > patched into your Makefile when this works for you?
+> 
+> nope, it happens with vanilla and no ARCH environment variable set that 
+> i know of. So you cannot see this behavior?
 
-How about you fix up the driver, first?  Then, this can go in.
+No.
 
--- Dave
+In my experience there is no way for me to enable 64BIT without somehow 
+manually fiddling with ARCH.
+
+No matter whether it's menuconfig or oldconfig or whatever else.
+
+> 	Ingo
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
