@@ -1,85 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYBKCxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYBKDL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYBKCxt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 21:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYBKCxk
+	id S1754255AbYBKDL2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 22:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYBKDLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 21:53:40 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:39802 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYBKCxj (ORCPT
+	Sun, 10 Feb 2008 22:11:18 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:13129 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819AbYBKDLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 21:53:39 -0500
-Date: Sun, 10 Feb 2008 20:53:33 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
-In-reply-to: <86802c440802101749h5af30b4dm1836f881a898652e@mail.gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Tony Camuso <tcamuso@redhat.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Message-id: <47AFB8AD.3010904@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080129025615.GC20198@parisc-linux.org>
- <86802c440802022330o771cf98btcf750c790668b6e9@mail.gmail.com>
- <47AB299D.4000500@redhat.com> <20080209124138.GA28967@parisc-linux.org>
- <86802c440802092225u5a901ab2i66b952382a999fa@mail.gmail.com>
- <20080210072116.GA12375@kroah.com> <20080210145122.GC5299@parisc-linux.org>
- <86802c440802101216t3b04c0b4y89a05ac9a04a0ac5@mail.gmail.com>
- <alpine.LFD.1.00.0802101222560.2896@woody.linux-foundation.org>
- <20080210204556.GG5299@parisc-linux.org>
- <86802c440802101749h5af30b4dm1836f881a898652e@mail.gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sun, 10 Feb 2008 22:11:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=LbcVv7v4OZcQTFUlE0dAZEGzLGmx5FNDnPRKev/aXIkRA4X4W13xMnzGFMGFvuFfvTPWkl+3SKCnF3IN9SU9BCKGJY+JhZEU5PRQDCzvkq1wkMX0OQMgCOjptya8qWft+QeOkH9KueoqZDYMkVI+h5F8fxoaQYCzffDb63rBmqQ=
+Message-ID: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
+Date: Sun, 10 Feb 2008 22:11:15 -0500
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] [WATCHDOG] it8712f_wdt support for 16-bit timeout values, WDIOC_GETSTATUS
+Cc: wim@iguana.be
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 576f5703aea9a3d3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Feb 10, 2008 12:45 PM, Matthew Wilcox <matthew@wil.cx> wrote:
->> On Sun, Feb 10, 2008 at 12:24:18PM -0800, Linus Torvalds wrote:
->>> On Sun, 10 Feb 2008, Yinghai Lu wrote:
->>>>> I suggest Ivan's patch be merged ASAP as it actually fixes bugs.
->>>>> This patch is just cleanup (and takes care of some future concerns).
->>>> your patch and Ivan's patch should be merged in one...
->>> I really don't care whether they get merges as one or separately, but I
->>> think it should be merged _now_ (-rc1 is already delayed), and I'd like to
->>> see the final versions of both. Does anybody have them in a final
->>> agreed-upon format (preferably with that oddness in quirk_intel_irqbalance
->>> also fixed?)
->> I just looked at fixing that -- the reason seems to be that we don't
->> actually have the struct pci_dev at that point.  I can fix it, but I
->> think it's actually buggy.  I want to look at some chipset docs to
->> confirm that though.
->>
->> I've attached the two patches that I believe are the ones we want.  We
->> can (and should) fix quirk_intel_irqbalance separately.
-> 
-> Andrew,
-> 
-> those two patch just got into linus 2.6.25-rc1.
-> 
-> I assume that you will drop
-> gregkh-pci-pci-make-pci-extended-config-space-a-driver-opt-in.patch in
-> -mm.
-> 
-> please check some updated patches in -mm that could be affected. hope
-> it could save you some time
-> 
-> x86-validate-against-acpi-motherboard-resources.patch
-> x86-clear-pci_mmcfg_virt-when-mmcfg-get-rejected.patch
-> x86-mmconf-enable-mcfg-early.patch
-> x86_64-check-msr-to-get-mmconfig-for-amd-family-10h-opteron-v3.patch
+This patch adds support for 16-bit watchdog timeout values which are
+available in chip revisions >= 0x08. Values <= 65535 are seconds precision,
+otherwise minutes precision is used up to a maximum value of 3932100. Added
+implementation for WDIOC_GETSTATUS which checks the WDT status bit in the
+WDT control register.
 
-I don't think any of these patches are affected. They all affect whether 
-to use MMCONFIG globally or not, regardless of whether not particular 
-accesses will use it.
+Signed-off-by: Andrew Paprocki <andrew@ishiboo.com>
+---
+  drivers/watchdog/it8712f_wdt.c |   82
+++++++++++++++++++++++++++++++++--------
+  1 files changed, 66 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/watchdog/it8712f_wdt.c b/drivers/watchdog/it8712f_wdt.c
+index 1b6d7d1..803c699 100644
+--- a/drivers/watchdog/it8712f_wdt.c
++++ b/drivers/watchdog/it8712f_wdt.c
+@@ -7,7 +7,8 @@
+   *
+   *	drivers/char/watchdog/scx200_wdt.c
+   *	drivers/hwmon/it87.c
+- *	IT8712F EC-LPC I/O Preliminary Specification 0.9.2.pdf
++ *	IT8712F EC-LPC I/O Preliminary Specification 0.8.2
++ *	IT8712F EC-LPC I/O Preliminary Specification 0.9.3
+   *
+   *	This program is free software; you can redistribute it and/or
+   *	modify it under the terms of the GNU General Public License as
+@@ -40,6 +41,7 @@ MODULE_DESCRIPTION("IT8712F Watchdog Driver");
+  MODULE_LICENSE("GPL");
+  MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+
++static int max_units = 255;
+  static int margin = 60;		/* in seconds */
+  module_param(margin, int, 0);
+  MODULE_PARM_DESC(margin, "Watchdog margin in seconds");
+@@ -51,6 +53,7 @@ MODULE_PARM_DESC(nowayout, "Disable watchdog shutdown
+on close");
+  static struct semaphore it8712f_wdt_sem;
+  static unsigned expect_close;
+  static spinlock_t io_lock;
++static unsigned char revision;
+
+  /* Dog Food address - We use the game port address */
+  static unsigned short address;
+@@ -108,6 +111,15 @@ superio_inw(int reg)
+  	return val;
+  }
+
++static void
++superio_outw(int val, int reg)
++{
++        outb(reg++, REG);
++        outb((val >> 8) & 0xff, VAL);
++        outb(reg, REG);
++        outb(val & 0xff, VAL);
++}
++
+  static inline void
+  superio_select(int ldn)
+  {
+@@ -143,15 +155,33 @@ static void
+  it8712f_wdt_update_margin(void)
+  {
+  	int config = WDT_OUT_KRST | WDT_OUT_PWROK;
++        int units = margin;
++
++        /* Switch to minutes precision if the configured margin
++         * value does not fit within the register width.
++         */
++        if (units <= max_units) {
++                config |= WDT_UNIT_SEC; /* else UNIT is MINUTES */
++                printk(KERN_INFO NAME ": timer margin %d seconds\n",
+units);
++        } else {
++                units /= 60;
++                printk(KERN_INFO NAME ": timer margin %d minutes\n",
+units);
++        }
++        superio_outb(config, WDT_CONFIG);
++
++        if (revision >= 0x08)
++                superio_outw(units, WDT_TIMEOUT);
++        else
++                superio_outb(units, WDT_TIMEOUT);
++}
+
+-	printk(KERN_INFO NAME ": timer margin %d seconds\n", margin);
+-
+-	/* The timeout register only has 8bits wide */
+-	if (margin < 256)
+-		config |= WDT_UNIT_SEC;	/* else UNIT are MINUTES */
+-	superio_outb(config, WDT_CONFIG);
+-
+-	superio_outb((margin > 255) ? (margin / 60) : margin, WDT_TIMEOUT);
++static int
++it8712f_wdt_get_status(void)
++{
++        if (superio_inb(WDT_CONTROL) & 0x01)
++                return WDIOF_CARDRESET;
++        else
++                return 0;
+  }
+
+  static void
+@@ -234,7 +264,7 @@ it8712f_wdt_ioctl(struct inode *inode, struct file
+*file,
+  		.firmware_version = 1,
+  		.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
+  	};
+-	int new_margin;
++	int value;
+
+  	switch (cmd) {
+  	default:
+@@ -244,17 +274,27 @@ it8712f_wdt_ioctl(struct inode *inode, struct file
+*file,
+  			return -EFAULT;
+  		return 0;
+  	case WDIOC_GETSTATUS:
++                superio_enter();
++                superio_select(LDN_GPIO);
++
++                value = it8712f_wdt_get_status();
++
++                superio_exit();
++
++		return put_user(value, p);
+  	case WDIOC_GETBOOTSTATUS:
+-		return put_user(0, p);
++                return put_user(0, p);
+  	case WDIOC_KEEPALIVE:
+  		it8712f_wdt_ping();
+  		return 0;
+  	case WDIOC_SETTIMEOUT:
+-		if (get_user(new_margin, p))
++		if (get_user(value, p))
+  			return -EFAULT;
+-		if (new_margin < 1)
++		if (value < 1)
+  			return -EINVAL;
+-		margin = new_margin;
++                if (value > (max_units * 60))
++                        return -EINVAL;
++		margin = value;
+  		superio_enter();
+  		superio_select(LDN_GPIO);
+
+@@ -262,6 +302,7 @@ it8712f_wdt_ioctl(struct inode *inode, struct file
+*file,
+
+  		superio_exit();
+  		it8712f_wdt_ping();
++                /* Fall through */
+  	case WDIOC_GETTIMEOUT:
+  		if (put_user(margin, p))
+  			return -EFAULT;
+@@ -336,9 +377,18 @@ it8712f_wdt_find(unsigned short *address)
+  	}
+
+  	err = 0;
+-	printk(KERN_DEBUG NAME ": Found IT%04xF chip revision %d - "
++        revision = superio_inb(DEVREV) & 0x0f;
++
++        /* Later revisions have 16-bit values per datasheet 0.9.1 */
++        if (revision >= 0x08)
++                max_units = 65535;
++
++        if (margin > (max_units * 60))
++                margin = (max_units * 60);
++
++	printk(KERN_INFO NAME ": Found IT%04xF chip revision %d - "
+  		"using DogFood address 0x%x\n",
+-		chip_type, superio_inb(DEVREV) & 0x0f, *address);
++		chip_type, revision, *address);
+
+  exit:
+  	superio_exit();
