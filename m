@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbYBKT1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbYBKT20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbYBKT1g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbYBKT11
+	id S1760132AbYBKT20 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:28:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbYBKT2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:27:27 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:8147 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756527AbYBKT10 (ORCPT
+	Mon, 11 Feb 2008 14:28:18 -0500
+Received: from phoenix.slamd64.com ([217.10.145.2]:59329 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755932AbYBKT2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:27:26 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=f1HNBQ9etzeItf325FDl1A0YAICG8CD0SvZt37vAPTkYln04B7J1p8AnFribipyGz
-	MdMOApl+RcR3HGw2ucO5Q==
-Date: Mon, 11 Feb 2008 11:25:42 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <ak@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-In-Reply-To: <200802111945.05917.ak@suse.de>
-Message-ID: <alpine.DEB.1.00.0802111122270.1671@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <200802111945.05917.ak@suse.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 11 Feb 2008 14:28:17 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0 (#2)
+Date: Mon, 11 Feb 2008 19:23:30 +0000
+User-Agent: KMail/1.9.7
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <200802080145.16774.lenb@kernel.org> <200802091142.18596.carlos@strangeworlds.co.uk> <20080211091743.GA16459@elte.hu>
+In-Reply-To: <20080211091743.GA16459@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802111923.31736.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 11 Feb 2008 19:23:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008, Andi Kleen wrote:
+On Monday 11 February 2008 09:17:43 Ingo Molnar wrote:
+> no, it does not help - see the attached .config and the crash.log.
 
-> > The mempolicy mode constants, MPOL_DEFAULT, MPOL_PREFERRED, MPOL_BIND,
-> > and MPOL_INTERLEAVE, are better declared as part of an enum for type
-> > checking.
-> 
-> What type checking? There is none in standard C for enums.
-> 
+Thanks Ingo - the cause of the crash is ACPI being disabled on your system for 
+some reason. I can reproduce your crash every time here with acpi=off.
 
-"Type checking" probably isn't the best description for it.  As I 
-mentioned in the changelog for the second patch in this series, a function 
-with a formal type of 'enum mempolicy_mode' indicates that the optional 
-mode flags have already been stripped off and the only possible values are 
-those of 'enum mempolicy_mode'.  The implementation will not need to use 
-mpol_mode() in conditionals or switch statements.  I think it's a clean 
-way of describing what is acting on modes and what is acting on flags.
+The two WMI based drivers (acer-wmi, tc1100-wmi) in the kernel both need a 
+simple patch each to fix this - patches to follow.
 
-Functions with a formal type of an 'int' contain both the mode and flags.
-
-		David
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
