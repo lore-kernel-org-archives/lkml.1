@@ -1,120 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759788AbYBKRUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbYBKRVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759788AbYBKRUg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:20:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758251AbYBKRU2
+	id S1759568AbYBKRVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbYBKRVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:20:28 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:49322 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752888AbYBKRU1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:20:27 -0500
-Subject: [-mm PATCH] register_memory/unregister_memory clean ups
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>, haveblue@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 09:23:18 -0800
-Message-Id: <1202750598.25604.3.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 12:21:38 -0500
+Received: from www.tglx.de ([62.245.132.106]:46792 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbYBKRVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 12:21:37 -0500
+Date: Mon, 11 Feb 2008 18:21:10 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/1] CPA: Flush the caches when setting pages not
+ present v2
+In-Reply-To: <20080211216.571751871@suse.de>
+Message-ID: <alpine.LFD.1.00.0802111803290.12988@apollo.tec.linutronix.de>
+References: <20080211216.571751871@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Mon, 11 Feb 2008, Andi Kleen wrote:
+> The AMD64 pci-gart code sets pages not present to prevent
+> cache coherency problems.  When doing this it is safer to flush the 
+> caches too so that there are no cache lines left over from when 
+> the pages were still mapped. 
+> 
+> So consider clearing of the present bit as a cache flush indicator.
+>
+> Note that debug pagealloc marks pages regularly not present either, but it won't
+> call this because it calls directly into a lower level function.
+> 
+> I have not actually seen failures from this, but it seems safer 
+> to do it this way.
+> 
+> v2: Force WBINVD in this case because CLFLUSH does not work for !P pages.
+>     Improve description slightly.
 
-While testing hotplug memory remove against -mm, I noticed
-that unregister_memory() is not cleaning up /sysfs entries
-correctly. It also de-references structures after destroying
-them (luckily in the code which never gets used). So, I cleaned
-up the code and fixed the extra reference issue.
+This is suboptimal though, as it will trigger a wbinvd() everytime
+when we hit a non present pte in a range, whether we did set the entry
+in question to not present or not.
 
-Could you please include it in -mm ?
+The gart code unmapping is a special case. This only happens during
+boot, so adding a wbinvd() to the gart code is solving this issue
+without imposing it on other use cases.
+
+Another solution for this would be to change the mapping to uncached
+before unmapping, so we could avoid the wbinvd() completely.
+
+index 65f6acb..bccdf14 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -749,6 +749,10 @@ void __init gart_iommu_init(void)
+ 	 */
+ 	set_memory_np((unsigned long)__va(iommu_bus_base),
+ 				iommu_size >> PAGE_SHIFT);
++	/*
++	 * Flush caches, so we do not have stale cachelines around:
++	 */
++	wbinvd();
+ 
+ 	/*
+ 	 * Try to workaround a bug (thanks to BenH)
 
 Thanks,
-Badari
-
-register_memory()/unregister_memory() never gets called with
-"root". unregister_memory() is accessing kobject_name of
-the object just freed up. Since no one uses the code,
-lets take the code out. And also, make register_memory() static.  
-
-Another bug fix - before calling unregister_memory()
-remove_memory_block() gets a ref on kobject. unregister_memory()
-need to drop that ref before calling sysdev_unregister().
-
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
----
- drivers/base/memory.c |   22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
-
-Index: linux-2.6.24/drivers/base/memory.c
-===================================================================
---- linux-2.6.24.orig/drivers/base/memory.c	2008-02-07 16:59:52.000000000 -0800
-+++ linux-2.6.24/drivers/base/memory.c	2008-02-08 15:54:45.000000000 -0800
-@@ -62,8 +62,8 @@ void unregister_memory_notifier(struct n
- /*
-  * register_memory - Setup a sysfs device for a memory block
-  */
--int register_memory(struct memory_block *memory, struct mem_section *section,
--		struct node *root)
-+static
-+int register_memory(struct memory_block *memory, struct mem_section *section)
- {
- 	int error;
+	tglx
  
-@@ -71,26 +71,18 @@ int register_memory(struct memory_block 
- 	memory->sysdev.id = __section_nr(section);
- 
- 	error = sysdev_register(&memory->sysdev);
--
--	if (root && !error)
--		error = sysfs_create_link(&root->sysdev.kobj,
--					  &memory->sysdev.kobj,
--					  kobject_name(&memory->sysdev.kobj));
--
- 	return error;
- }
- 
- static void
--unregister_memory(struct memory_block *memory, struct mem_section *section,
--		struct node *root)
-+unregister_memory(struct memory_block *memory, struct mem_section *section)
- {
- 	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
- 	BUG_ON(memory->sysdev.id != __section_nr(section));
- 
-+	/* drop the ref. we got in remove_memory_block() */
-+	kobject_put(&memory->sysdev.kobj);
- 	sysdev_unregister(&memory->sysdev);
--	if (root)
--		sysfs_remove_link(&root->sysdev.kobj,
--				  kobject_name(&memory->sysdev.kobj));
- }
- 
- /*
-@@ -361,7 +353,7 @@ static int add_memory_block(unsigned lon
- 	mutex_init(&mem->state_mutex);
- 	mem->phys_device = phys_device;
- 
--	ret = register_memory(mem, section, NULL);
-+	ret = register_memory(mem, section);
- 	if (!ret)
- 		ret = mem_create_simple_file(mem, phys_index);
- 	if (!ret)
-@@ -415,7 +407,7 @@ int remove_memory_block(unsigned long no
- 	mem_remove_simple_file(mem, state);
- 	mem_remove_simple_file(mem, phys_device);
- 	mem_remove_simple_file(mem, removable);
--	unregister_memory(mem, section, NULL);
-+	unregister_memory(mem, section);
- 
- 	return 0;
- }
-
-
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  arch/x86/mm/pageattr.c |   13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+> 
+> Index: linux/arch/x86/mm/pageattr.c
+> ===================================================================
+> --- linux.orig/arch/x86/mm/pageattr.c
+> +++ linux/arch/x86/mm/pageattr.c
+> @@ -122,6 +122,14 @@ static void cpa_flush_range(unsigned lon
+>  		 */
+>  		if (pte && (pte_val(*pte) & _PAGE_PRESENT))
+>  			clflush_cache_range((void *) addr, PAGE_SIZE);
+> +		else {
+> +			/*
+> +			 * Make sure there are no left overs of pages
+> +			 * set non present in the cache.
+> +			 */
+> +			cpa_flush_all(cache);
+> +			return;
+> +		}
+>  	}
+>  }
+>  
+> @@ -670,9 +678,16 @@ static int __change_page_attr_set_clr(st
+>  	return 0;
+>  }
+>  
+> -static inline int cache_attr(pgprot_t attr)
+> +static inline int cache_attr(pgprot_t set, pgprot_t clr)
+>  {
+> -	return pgprot_val(attr) &
+> +	/*
+> +	 * Clearing pages is usually done for cache cohereny reasons
+> +	 * (except for pagealloc debug, but that doesn't call this anyways)
+> +	 * It's safer to flush the caches in this case too.
+> +	 */
+> +	if (pgprot_val(clr) & _PAGE_PRESENT)
+> +		return 1;
+> +	return pgprot_val(set) &
+>  		(_PAGE_PAT | _PAGE_PAT_LARGE | _PAGE_PWT | _PAGE_PCD);
+>  }
+>  
+> @@ -709,7 +724,7 @@ static int change_page_attr_set_clr(unsi
+>  	 * No need to flush, when we did not set any of the caching
+>  	 * attributes:
+>  	 */
+> -	cache = cache_attr(mask_set);
+> +	cache = cache_attr(mask_set, mask_clr);
+>  
+>  	/*
+>  	 * On success we use clflush, when the CPU supports it to
+> 
