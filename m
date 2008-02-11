@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYBKKNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYBKKNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbYBKKNf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 05:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYBKKN1
+	id S1755108AbYBKKNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 05:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbYBKKNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 05:13:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40731 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbYBKKN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 05:13:26 -0500
-Date: Mon, 11 Feb 2008 11:13:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Eugene Teo <eugeneteo@kernel.sg>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] ftrace: remove unused tracing_sched_switch_enabled
-Message-ID: <20080211101313.GB32181@elte.hu>
-References: <20080210072050.GN4100@elte.hu> <20080210154923.GA15451@kernel.sg> <20080210155505.GA16205@kernel.sg>
+	Mon, 11 Feb 2008 05:13:38 -0500
+Received: from smtp-out4.libero.it ([212.52.84.46]:45537 "EHLO
+	smtp-out4.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752955AbYBKKNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 05:13:37 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAFGur0eXSEbx/2dsb2JhbAAIpyI
+From: sacarde <sacarde@tiscali.it>
+Reply-To: sacarde@tiscali.it
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: List: linux-hotplug - how to debug udev
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080210155505.GA16205@kernel.sg>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1675]
+Date: Mon, 11 Feb 2008 11:12:03 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200802111112.04031.sacarde@tiscali.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+   I have a problem with udev rule, and I try to debug udev variables
+this is the question:
 
-* Eugene Teo <eugeneteo@kernel.sg> wrote:
+how can I view udev variables value ?
 
-> <quote sender="Eugene Teo">
-> > tracing_sched_switch_enabled isn't used anywhere.
-> > 
-> > Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
-> 
-> Sorry, I forgot to remove the variable declaration. Here's a resend:
-> 
-> tracing_sched_switch_enabled isn't used anywhere.
+for examples:
 
-thanks, applied.
+what is value of:
 
-	Ingo
+BUS
+ SYSFS{idProduct}
+ SYSFS{idVendor}
+
+when I insert my stick-usb wireless ?
+
+
+
+thank you 
+
+
+
+sacarde@tiscali.it
