@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbYBKQar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbYBKQbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbYBKQar (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYBKQaj
+	id S1758618AbYBKQbN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbYBKQaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:30:39 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:26553 "EHLO
-	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755562AbYBKQah (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:30:37 -0500
-X-Trace: 681778005/mk-filter-3.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAGQGsEdRAVlC/2dsb2JhbACBWacj
-Message-ID: <23228.85.118.17.158.1202747372.squirrel@newgolddream.dyndns.info>
-In-Reply-To: <20080211112433.ZZRA012@mailhub.coreip.homeip.net>
-References: <1202684222.6237.9.camel@localhost.localdomain>
-    <200802101922.29214.vapier@gentoo.org>
-    <15561.85.118.17.158.1202739603.squirrel@newgolddream.dyndns.info>
-    <200802111119.23841.vapier@gentoo.org>
-    <20080211112433.ZZRA012@mailhub.coreip.homeip.net>
-Date: Mon, 11 Feb 2008 16:29:32 -0000 (UTC)
-Subject: Re: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
-From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Mike Frysinger" <vapier@gentoo.org>,
-       "Paul Mundt" <lethal@users.sourceforge.net>,
-       "linux-sh" <linux-sh@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.10a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Mon, 11 Feb 2008 11:30:55 -0500
+Received: from waste.org ([66.93.16.53]:42578 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755513AbYBKQaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:30:52 -0500
+Subject: Re: [PATCH] [RESENDING] netconsole: register cmdline netconsole
+	configs to configfs
+From: Matt Mackall <mpm@selenic.com>
+To: Joonwoo Park <joonwpark81@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, satyam@infradead.org
+In-Reply-To: <12027209202884-git-send-email-joonwpark81@gmail.com>
+References: <12027209122955-git-send-email-joonwpark81@gmail.com>
+	 <12027209163465-git-send-email-joonwpark81@gmail.com>
+	 <12027209202884-git-send-email-joonwpark81@gmail.com>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 10:30:13 -0600
+Message-Id: <1202747413.28085.1.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, February 11, 2008 4:25 pm, Dmitry Torokhov wrote:
-> On Mon, Feb 11, 2008 at 11:19:22AM -0500, Mike Frysinger wrote:
->> On Monday 11 February 2008, Adrian McMenamin wrote:
->> > On Mon, February 11, 2008 12:22 am, Mike Frysinger wrote:
->> > > no remove function ?  looks like the probe() forces a connect, but
->> > > there's no remove() to force a disconnect ...
->> >
->> > Removing these devices (or any other plugged directly into the maple
->> > ports) is a quick way to destroy your Dreamcast: hence they were never
->> > implemented I guess. But there is no convincing reason for the
->> software
->> > not doing so, I suppose. I can just put in comments about it.
->>
->> and not allow the driver to be built as a module until the comments
->> become
->> code ...
->> -mike
->
-> Normally drivers can be unbound from devices via sysfs even if they are
-> built-in, not modules.
->
->
-I meant comments about not being so silly as to start plugging maple
-devices in and out of the ports on the DC. I understand the point about
-the code and will rework appropriately.
 
-All I wanted to do is take somebody's old code and get it to work on 2.6.
-But nothing is that simple :-/
+On Mon, 2008-02-11 at 18:08 +0900, Joonwoo Park wrote:
+> This patch intorduces cmdline netconsole configs to register to
+> configfs
+> with dynamic netconsole. Satyam Sharma who designed shiny dynamic
+> reconfiguration for netconsole, mentioned about this issue already.
+> (http://lkml.org/lkml/2007/7/29/360)
+> But I think, without separately managing of two kind of netconsole
+> target
+> objects, it's possible by using config_group instead of
+> config_item in the netconsole_target and default_groups feature of
+> configfs.
+> 
+> Patch was tested with configuration creation/destruction by kernel and
+> module.
+> And it makes possible to enable/disable, modify and review netconsole
+> target configs from cmdline.
+
+I'm afraid I'm going to have to leave review of this to someone who is
+clueful about configfs. But it seems reasonable.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
