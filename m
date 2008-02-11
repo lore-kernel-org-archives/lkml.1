@@ -1,99 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbYBKLt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYBKLvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755766AbYBKLt5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbYBKLto
+	id S1755330AbYBKLvT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYBKLvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:49:44 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:28686 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753926AbYBKLtf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:49:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GVzssv6hkqbckP/RQR7xPXMk1O1JX6A40I9W43wrNvcpydxSedgRaFm65uN0Ssu8m7RVQAf6/lWPHJQKGHHRwrHkzVMaPsWyIhLNA3fm1yUaiKSsN51/tj9r3onp+2LswI+suAhvwxxcmaLZuFE11Pg6SevhcrwECxitbBHR0xk=
-Message-ID: <3d1754a30802110349n684ed0b5ja47f12213e65c2ff@mail.gmail.com>
-Date: Mon, 11 Feb 2008 17:19:34 +0530
-From: "vignesh babu bm" <vigneshbabu@gmail.com>
-To: "rohit h" <hrohit85@gmail.com>
-Subject: Re: [LINUX-KERNEL] C++ in linux kernel
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Joonwoo Park" <joonwpark81@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <90d987c0802110337i42082a7ew905a096028fe347b@mail.gmail.com>
+	Mon, 11 Feb 2008 06:51:09 -0500
+Received: from smtp1-g19.free.fr ([212.27.42.27]:47837 "EHLO smtp1-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752060AbYBKLvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:51:08 -0500
+From: Duncan Sands <baldrick.bulk@free.fr>
+To: Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
+Date: Mon, 11 Feb 2008 12:51:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
+Cc: linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <47A9DD30.5040604@openvz.org> <200802102130.45196.baldrick.bulk@free.fr> <47B02FF3.80309@openvz.org>
+In-Reply-To: <47B02FF3.80309@openvz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
-	 <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
-	 <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
-	 <90d987c0802110337i42082a7ew905a096028fe347b@mail.gmail.com>
+Message-Id: <200802111251.03898.baldrick.bulk@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://www.vmware.com/download/server/open_source.html
+On Monday 11 February 2008 12:22:27 Pavel Emelyanov wrote:
+> Duncan Sands wrote:
+> > Hi Pavel,
+> > 
+> >> Oh, I see. You're right - this race is possible... I'll fix that up
+> >> if this patch works.
+> > 
+> > it seems to work fine.  Thanks again for doing this!
+> 
+> Oh, thanks for testing. What should I do next to get this into
+> mainline? Send it to Andrew with you in Cc, or you have you own
+> tree for merging?
 
-On Feb 11, 2008 5:07 PM, rohit h <hrohit85@gmail.com> wrote:
->
-> On Feb 8, 2008 9:24 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> >
-> > On Feb 9 2008 00:14, Joonwoo Park wrote:
-> > >2008/2/8, rohit h <hrohit85@gmail.com>:
-> > >> Hi,
-> > >>  I am a kernel newbie.
-> > >>  I tried to insmod a C++ module containing classes, inheritance.
-> > >>  I am getting 'unresolved symbol' error when I use the 'new' keyword.
-> > >>  What could the problem be?
-> > >>
-> > >>  What kind of runtime support is needed ( arm linux kernel)? Is a
-> > >> patch available for it?
-> > >>
-> > >Please take a look at click modular router which is using c++ as a
-> > >linux kernel module.
-> > >http://www.read.cs.ucla.edu/click/
-> > >The lib/glue.cc provides custom operator new.
-> >
-> > Uh, let's not make the world worse :)
-> > Just call malloc from C++, and carefully select what C++ features
-> > you are going to use. The VMware source for example does it right.
-> >
->
-> From the links given, I dig that following C++ features need runtime support:
->   a. Pure virtual functions
->   b. Global objects  : Needs compiler dependent changes
->   c. new & delete : Can use kmalloc / kfree instead
->   d. Run time type info
->   e. Exceptions
-> I guess features d & e need considerable effort.
-> Apart from these, am I free to use other C++ features?
-> Where could I see the VMWare sources?
->
->
->
-> > Compiling the kernel module with g++ is not a simple work, you may
-> > need big patch for kernel itself.
->
-> I don't want to compile entire kernel.
-> I only want to compile my module with g++ and insmod it.
-> Any hint on how to write the Makefile.
->
-> Thanks in advance,
-> Rohit
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Please fix the race (see previous emails) and send it to Andew with Cc.
 
+Thanks,
 
-
--- 
-----------------------------------------------
-"Why is it that every time I'm with you, makes me believe in magic?"
+Duncan.
