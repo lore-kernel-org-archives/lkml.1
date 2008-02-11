@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYBKNLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYBKNQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbYBKNLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 08:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYBKNLm
+	id S1753996AbYBKNQU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 08:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYBKNQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 08:11:42 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:43582 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467AbYBKNLk (ORCPT
+	Mon, 11 Feb 2008 08:16:11 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:27214 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbYBKNQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 08:11:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=XhiuaYHuH6+wspHiJtyXoyz54eiAeMGb6nMGPfZx4k3rAMBOy782tpnaBMDuwGrUt+Me+YYZupehkIyjsu1M7cuhAX7s7atSqVFuh0l62Rg7OWpfWI0BPD5yV5qx4WKaNHlWhPfJQHuYiewdfTnWZhyLTQy90u7Zm8X19V+MGx0=
-Message-ID: <47B04984.1020401@gmail.com>
-Date: Mon, 11 Feb 2008 22:11:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@redhat.com, jeff@garzik.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze	system
-References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211100446.GA4646@homac.suse.de> <47B02E96.4050900@gmail.com> <20080211112802.GA4528@homac.suse.de>
-In-Reply-To: <20080211112802.GA4528@homac.suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 08:16:11 -0500
+From: Andi Kleen <ak@suse.de>
+Message-Id: <20080211216.571751871@suse.de>
+To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/1] CPA: Flush the caches when setting pages not present v2
+Date: Mon, 11 Feb 2008 14:16:07 +0100 (CET)
+X-OriginalArrivalTime: 11 Feb 2008 13:09:46.0515 (UTC) FILETIME=[5FF6DE30:01C86CAF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Holger Macht wrote:
->> It should be called via ata_acpi_{ap|dev}_notify() callbacks installed
->> via acpi_install_notify_handler().  Can you add dump_stack() in the
->> function and verify that it actually is being called?  It could be that
->> the method is called too late or libata takes too long to actually
->> unplug the device.  Hmmm... It seems what ata_acpi_handle_hotplug() does
->> isn't enough for undock.  It probably should request detaching the
->> device instead of just notifying hotplug event.  Anyways, please lemme
->> know whether and when the function is called.
-> 
-> I already checked, it's never called AFAICS. And I couldn't find a place
-> where it should be installed, otherwise, I would have sent a patch. The
-> dock driver already calls the notify methods on devices in the dock
-> station before doing the real undock.
 
-ata_acpi_associate() calls acpi_install_notify_handler() for each
-device.  Isn't that enough?
+The AMD64 pci-gart code sets pages not present to prevent
+cache coherency problems.  When doing this it is safer to flush the 
+caches too so that there are no cache lines left over from when 
+the pages were still mapped. 
 
-> immediate_undock=1:
->  User presses undock button on the dock station, dock driver calls ACPI
->  undock method immediately.
-> 
-> immediate_undock=0:
->  User presses undock button on the dock station, dock driver throws uevent
->  and waits for userland to undock the system via sysfs.
-> 
-> immediate_undock is currently set to 1 by default.
+So consider clearing of the present bit as a cache flush indicator.
 
-Thanks for the explanation.
+Note that debug pagealloc marks pages regularly not present either, but it won't
+call this because it calls directly into a lower level function.
 
--- 
-tejun
+I have not actually seen failures from this, but it seems safer 
+to do it this way.
+
+v2: Force WBINVD in this case because CLFLUSH does not work for !P pages.
+    Improve description slightly.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ arch/x86/mm/pageattr.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+Index: linux/arch/x86/mm/pageattr.c
+===================================================================
+--- linux.orig/arch/x86/mm/pageattr.c
++++ linux/arch/x86/mm/pageattr.c
+@@ -122,6 +122,14 @@ static void cpa_flush_range(unsigned lon
+ 		 */
+ 		if (pte && (pte_val(*pte) & _PAGE_PRESENT))
+ 			clflush_cache_range((void *) addr, PAGE_SIZE);
++		else {
++			/*
++			 * Make sure there are no left overs of pages
++			 * set non present in the cache.
++			 */
++			cpa_flush_all(cache);
++			return;
++		}
+ 	}
+ }
+ 
+@@ -670,9 +678,16 @@ static int __change_page_attr_set_clr(st
+ 	return 0;
+ }
+ 
+-static inline int cache_attr(pgprot_t attr)
++static inline int cache_attr(pgprot_t set, pgprot_t clr)
+ {
+-	return pgprot_val(attr) &
++	/*
++	 * Clearing pages is usually done for cache cohereny reasons
++	 * (except for pagealloc debug, but that doesn't call this anyways)
++	 * It's safer to flush the caches in this case too.
++	 */
++	if (pgprot_val(clr) & _PAGE_PRESENT)
++		return 1;
++	return pgprot_val(set) &
+ 		(_PAGE_PAT | _PAGE_PAT_LARGE | _PAGE_PWT | _PAGE_PCD);
+ }
+ 
+@@ -709,7 +724,7 @@ static int change_page_attr_set_clr(unsi
+ 	 * No need to flush, when we did not set any of the caching
+ 	 * attributes:
+ 	 */
+-	cache = cache_attr(mask_set);
++	cache = cache_attr(mask_set, mask_clr);
+ 
+ 	/*
+ 	 * On success we use clflush, when the CPU supports it to
