@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYBKMie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYBKMji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYBKMie (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 07:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYBKMiX
+	id S1756232AbYBKMji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 07:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYBKMj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 07:38:23 -0500
-Received: from yergi.telenet-ops.be ([195.130.132.36]:40035 "EHLO
-	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbYBKMiW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 07:38:22 -0500
-Date: Mon, 11 Feb 2008 13:36:58 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, Vivek Goyal <vgoyal@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Horms <horms@verge.net.au>
-Subject: Re: why kexec insists on syncing with recent kernels?
-In-Reply-To: <47AC8F34.3020705@wpkg.org>
-Message-ID: <Pine.LNX.4.64.0802111335000.31167@anakin>
-References: <47AB120A.1000600@wpkg.org> <20080207163752.GD11969@redhat.com>
- <47AB38E2.9050509@wpkg.org> <20080208160408.GB18782@redhat.com>
- <20080208090407.4ab240f1.randy.dunlap@oracle.com> <47AC8F34.3020705@wpkg.org>
+	Mon, 11 Feb 2008 07:39:29 -0500
+Received: from styx.suse.cz ([82.119.242.94]:45964 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752154AbYBKMj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 07:39:29 -0500
+Date: Mon, 11 Feb 2008 13:39:27 +0100
+From: Jan Kara <jack@suse.cz>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] quota: Turn quotas off when remounting read-only
+Message-ID: <20080211123927.GF9622@duck.suse.cz>
+References: <20080207143721.GH6140@duck.suse.cz> <20080207103655.14ce8512.akpm@linux-foundation.org> <47AB5B9F.8090302@msgid.tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-662959786-1202733418=:31167"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AB5B9F.8090302@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463808512-662959786-1202733418=:31167
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 8 Feb 2008, Tomasz Chmielewski wrote:
-> Randy Dunlap schrieb:
-> 
-> (...)
-> 
-> > > Even if you did -f, it must have shutdown the network. I think somehow
-> > > in latest kernels there is some dependency on network and that's why
-> > > not shutting down network in this case is helping you.
+On Thu 07-02-08 22:27:27, Michael Tokarev wrote:
+> Andrew Morton wrote:
+> > On Thu, 7 Feb 2008 15:37:21 +0100 Jan Kara <jack@suse.cz> wrote:
 > > 
-> > I'm seeing NFS mounts take forever to unmount (at shutdown/reboot).
-> > (forever => 1 hour ... or never completes)
-> > 
-> > Is this similar to the problem that the OP is asking about?
+> >> Turn off quotas before filesystem is remounted read only. Otherwise quota will
+> >> try to write to read-only filesystem which does no good... We could also just
+> >> refuse to remount ro when quota is enabled but turning quota off is consistent
+> >> with what we do on umount.
 > 
-> Is it a diskless station?
+> [a nice one-liner snipped]
 > 
-> Even in not, just make sure you don't shut the network down before NFS is
-> actually unmounted...?
+> > Cool.  And this is applicable to 2.6.23, 2.6.22 and even earlier, isn't it?
+> 
+> Provided the amount of time this issue exists, I don't think it's worth
+> to push it to -stable.  It's an oooooooold, issue, which happens quite
+> rarely, and no one bothered to report it so far...  But it's not my
+> call... ;)
+> 
+> But...  I'm thinking about this scenario:
+> 
+>  # mount /data
+>  # quotaon /data
+>  (some maintenance stuff to be planned)
+>  # mount -o remount,ro /data
+>  (do backup etc)
+>  # mount -r remount,rw /data
+> 
+> at this point, it's expected that quota on /data is enabled.
+> After this patch, it's not anymore...
+  Yes, it previously accidentally worked this way (for an year or so,
+before that we refused to remount read-only). Hmm, but maybe we could
+somehow tweak quotas to be turned on when remounting read-write again.
+We have all the information we need at the time of remounting read-only
+so we could store it and use it later when remounting read-write. I'll have
+a look into that.
 
-JFYI, on PS3, kexec works fine with NFS root.
+> I think it's more usual scenario than mine (umount instead of
+> remount-rw).  And this change will break it.  So I'm not sure
+> what really to do here.  Probably refusing remount-ro if quota
+> is on is better...  it's annoying for sure, but at least it's
+> explicit, and avoids the handg too.
+  On the other hand when you umount the filesystem, quotas are
+automatically turned off and when you mount it again, they are not enabled.
+So the behavior as I've changed it is consistent as well... But probably
+what I wrote above is the safest solution.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----1463808512-662959786-1202733418=:31167--
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
