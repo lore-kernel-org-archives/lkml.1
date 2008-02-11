@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYBKKew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYBKKgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbYBKKew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 05:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYBKKep
+	id S1756072AbYBKKgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 05:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYBKKgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 05:34:45 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:44835 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbYBKKeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 05:34:44 -0500
-Date: Mon, 11 Feb 2008 13:34:05 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <mszeredi@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmap_region: cleanup, remove unneeded file != NULL check
-Message-ID: <20080211103405.GB162@tv-sign.ru>
-References: <20080203180122.GA5819@tv-sign.ru> <Pine.LNX.4.64.0802062013210.32204@blonde.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802062013210.32204@blonde.site>
-User-Agent: Mutt/1.5.11
+	Mon, 11 Feb 2008 05:36:42 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:50150 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752119AbYBKKgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 05:36:41 -0500
+Date: Mon, 11 Feb 2008 11:36:39 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de
+Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
+In-Reply-To: <1202495464.6722.13.camel@odie.local>
+Message-ID: <Pine.LNX.4.64.0802111134310.8544@vixen.sonytel.be>
+References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
+ <alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
+ <20080208120623.3ad74e3a.pj@sgi.com> <1202495464.6722.13.camel@odie.local>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-491899868-1202726199=:8544"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for delay,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On 02/06, Hugh Dickins wrote:
->
-> On Sun, 3 Feb 2008, Oleg Nesterov wrote:
-> 
-> > mmap_region() checks "file != NULL" when we know "file && vma_merge() == T".
-> > Also, swap these if/else branches, imho make the code a bit more readable.
+---584349381-491899868-1202726199=:8544
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 8 Feb 2008, Simon Holm Th鴊ersen wrote:
+> fre, 08 02 2008 kl. 12:06 -0600, skrev Paul Jackson:
+> > Linus wrote:
+> > > Please, when mentioning hex numbers, also do the one-liner shortlog.
+> > > ...
+> > > without _requiring_ people to be git users to get the gist of the 
+> > > matter, ok?
 > > 
-> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> > 
+> > Thanks for sticking up for us git-challenged contributors.
+> > 
+> > Can anyone point me at instructions providing the shortest
+> > path for getting from one of those git hex numbers to the
+> > log or change it represents, for non-git users?
 > 
-> Acked-with-a-but-by: Hugh Dickins <hugh@veritas.com>
+> Use gitweb [1], Linus' tree is here [2]. Just search for the hex.
 > 
-> But my but is this: you can go one step further, it's silly to be
-> repeating the "if (correct_wcount) atomic_inc..." in both the if
-> and the else clauses.
+> [1] http://git.kernel.org/
+> [2]
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=summary
 
-Ah. Shame on me. Of course, I noticed these 2 correct_wcount's, but
-didn't realize we can safely use "inode" after fput(). Not only the
-caller should have a reference, vma_merge() requires that vm_file == file,
-so fput(file) can't destroy the last reference.
+As the IDs are supposed to be unique, it doesn't matter where you look it up,
+as long as the tree has that commit ;-)
 
-> For several minutes I thought that must indicate we already had a
-> bug there.  Eventually I realized not: we need deny_write_access()
-> above to test and deny atomically, then once we've merged or linked
-> the vma it's securely denying in the vma itself: so before returning
-> we need to undo our temporary denial.  A brief comment might be
-> worthwhile, perhaps something like
-> 
-> 	/* Once vma denies write, undo our temporary denial count */
-> 	if (correct_wcount)
-> 		atomic_inc(&inode->i_writecount);
+BTW, time for Google to start handling git IDs?
 
-Thanks Hugh, I'll redo this cleanup.
+With kind regards,
 
-Oleg.
+Geert Uytterhoeven
+Software Architect
 
+Sony Network and Software Technology Center Europe
+The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 路 B-1840 Londerzeel 路 Belgium
+VAT BE 0413.825.160 路 RPR Brussels
+Fortis Bank Zaventem 路 Swift GEBABEBB08A 路 IBAN BE39001382358619
+---584349381-491899868-1202726199=:8544--
