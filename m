@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYBKCVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYBKCYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYBKCVS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 21:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYBKCVJ
+	id S1754029AbYBKCYY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 21:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYBKCYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 21:21:09 -0500
-Received: from lixom.net ([66.141.50.11]:47857 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751476AbYBKCVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 21:21:08 -0500
-Date: Sun, 10 Feb 2008 20:22:57 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       jackm@dev.mellanox.co.il
-Subject: [PATCH] mlx4: fix build break
-Message-ID: <20080211022257.GA26656@lixom.net>
-References: <adafxw36ntm.fsf@cisco.com>
+	Sun, 10 Feb 2008 21:24:15 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:14672 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbYBKCYO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 21:24:14 -0500
+Message-ID: <47AFB18F.1020006@hp.com>
+Date: Sun, 10 Feb 2008 21:23:11 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adafxw36ntm.fsf@cisco.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Julia Lawall <julia@diku.dk>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
+       sri@us.ibm.com
+Subject: Re: [Lksctp-developers] [PATCH 8/8] : Use FIELD_SIZEOF
+References: <Pine.LNX.4.64.0802102115100.23906@ask.diku.dk> <20080210211258.GE1754@martell.zuzino.mipt.ru>
+In-Reply-To: <20080210211258.GE1754@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 03:16:53PM -0800, Roland Dreier wrote:
+Alexey Dobriyan wrote:
+> On Sun, Feb 10, 2008 at 09:16:04PM +0100, Julia Lawall wrote:
+>> --- a/include/net/sctp/sctp.h
+>> +++ b/include/net/sctp/sctp.h
+>> @@ -618,7 +618,7 @@ static inline int param_type2af(__be16 t
+>>  static inline int sctp_sanity_check(void)
+>>  {
+>>  	SCTP_ASSERT(sizeof(struct sctp_ulpevent) <=
+>> -		    sizeof(((struct sk_buff *)0)->cb),
+>> +		    FIELD_SIZEOF(struct sk_buff, cb),
+>>  		    "SCTP: ulpevent does not fit in skb!\n", return 0);
+>>  
+>>  	return 1;
+> 
+> Same here. Use BUILD_BUG_ON instead.
 
->       mlx4_core: For 64-bit systems, vmap() kernel queue buffers
+Ack. BUILD_BUG_ON is definitely appropriate here, especially considering
+that SCTP_ASSERT compiles to nothing with debugging turned off.
 
-Hi,
+-vlad
 
-The above patch caused this to pop up on powerpc allyesconfig, looks
-like a missing include file:
+> 
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Microsoft
+> Defy all challenges. Microsoft(R) Visual Studio 2008.
+> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+> _______________________________________________
+> Lksctp-developers mailing list
+> Lksctp-developers@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/lksctp-developers
+> 
 
-drivers/net/mlx4/alloc.c: In function 'mlx4_buf_alloc':
-drivers/net/mlx4/alloc.c:162: error: implicit declaration of function 'vmap'
-drivers/net/mlx4/alloc.c:162: error: 'VM_MAP' undeclared (first use in this function)
-drivers/net/mlx4/alloc.c:162: error: (Each undeclared identifier is reported only once
-drivers/net/mlx4/alloc.c:162: error: for each function it appears in.)
-drivers/net/mlx4/alloc.c:162: warning: assignment makes pointer from integer without a cast
-drivers/net/mlx4/alloc.c: In function 'mlx4_buf_free':
-drivers/net/mlx4/alloc.c:187: error: implicit declaration of function 'vunmap'
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-
-diff --git a/drivers/net/mlx4/alloc.c b/drivers/net/mlx4/alloc.c
-index 521dc03..75ef9d0 100644
---- a/drivers/net/mlx4/alloc.c
-+++ b/drivers/net/mlx4/alloc.c
-@@ -34,6 +34,7 @@
- #include <linux/slab.h>
- #include <linux/bitmap.h>
- #include <linux/dma-mapping.h>
-+#include <linux/vmalloc.h>
- 
- #include "mlx4.h"
- 
