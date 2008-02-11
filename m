@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbYBKSxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYBKS4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759518AbYBKSxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYBKSxh
+	id S1757902AbYBKS4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYBKS42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:53:37 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37433 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbYBKSxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:53:36 -0500
-Date: Mon, 11 Feb 2008 19:53:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Abel Bernabeu <abelbg@m2grp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch] Elf loader crash while zero-filling .bss
-Message-ID: <20080211185344.GA25510@uranus.ravnborg.org>
-References: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 11 Feb 2008 13:56:28 -0500
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:46534 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbYBKS41 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 13:56:27 -0500
+Message-ID: <47B09A4A.3030907@tiscali.nl>
+Date: Mon, 11 Feb 2008 19:56:10 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: John David Anglin <dave@hiauly1.hia.nrc.ca>
+CC: James.Bottomley@HansenPartnership.com, kyle@parisc-linux.org,
+       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH?][arch/parisc/kernel/pci-dma.c]      pcxl_dma_ops.alloc_noncoherent
+References: <200802111708.m1BH8q3p008073@hiauly1.hia.nrc.ca>
+In-Reply-To: <200802111708.m1BH8q3p008073@hiauly1.hia.nrc.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 07:27:35PM +0100, Abel Bernabeu wrote:
-> I've finally found a solution for the crash in load_binary_elf I
-> reported last week:
+John David Anglin wrote:
+>> James Bottomley wrote:
+>>> On Mon, 2008-02-11 at 17:23 +0100, Roel Kluin wrote:
+>>>> duplicate pa11_dma_alloc_consistent; more appropriate appears
+>>>> pa11_dma_alloc_noncoherent here. 
+>>>>
+>>>> Not tested, please confirm that this fix is correct
+>>> No, it looks completely incorrect to me.  What makes you think a pcxl
+>>> box has a problem with coherency?
+>> Ok, please ignore the patch then. It just appeared suspicious to me
+>> that the function did exist, but the names assigned were different.
 > 
-> http://lkml.org/lkml/2008/1/30/171
-> 
-> The attached patch solves my problem, but please test it yourself...
-> 
-> set_brk(start, end) allocs just page aligned regions (by "colapsing"
-> both extremes to the start of the page in which they lay)... That
-> means than even if both pointers are not equal there are still some
-> chances that set_brk has allocated no space at all because
-> ELF_PAGEALIGN(elf_bss) != ELF_PAGEALIGN(elf_brk).
+> How about a comment?
 
-What architecture was this?
-Most architectures align .bss properly but it seems arm does not
-and I guess this is needed.
+Based on James Bottomley's explanation maybe a comment like this?
+---
+Explain why dma_alloc_noncoherent is only used for boxes PA7200 and below
 
-As .bss was empty? in your case you did not trigger
-any alignmnet by linker due to largest member in section => boom.
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/parisc/kernel/pci-dma.c b/arch/parisc/kernel/pci-dma.c
+index 9448d4e..fc3325a 100644
+--- a/arch/parisc/kernel/pci-dma.c
++++ b/arch/parisc/kernel/pci-dma.c
+@@ -567,6 +567,10 @@ static void *fail_alloc_consistent(struct device *dev, size_t size,
+ 	return NULL;
+ }
+ 
++/*
++ * dma_alloc_noncoherent is a fallback for boxes PA7200 and below which
++ * cannot allocate coherent memory.
++ */
+ static void *pa11_dma_alloc_noncoherent(struct device *dev, size_t size,
+ 					  dma_addr_t *dma_handle, gfp_t flag)
+ {
+@@ -586,6 +590,10 @@ static void pa11_dma_free_noncoherent(struct device *dev, size_t size,
+ 	return;
+ }
+ 
++/*
++ * PCXL allocates coherent memory even for dma_alloc_noncoherent() due to the
++ * uncached trick for coherent memory.
++ */
+ struct hppa_dma_ops pcx_dma_ops = {
+ 	.dma_supported =	pa11_dma_supported,
+ 	.alloc_consistent =	fail_alloc_consistent,
 
-I do think your patch paper over the real bug.
-
-	Sam
