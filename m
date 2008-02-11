@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYBKQGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbYBKQHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbYBKQGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYBKQGL
+	id S1758389AbYBKQHX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbYBKQHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:06:11 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:38415 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754736AbYBKQGJ (ORCPT
+	Mon, 11 Feb 2008 11:07:05 -0500
+Received: from yue.linux-ipv6.org ([203.178.140.15]:45090 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755055AbYBKQHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:06:09 -0500
-Message-ID: <47B0725C.30407@panasas.com>
-Date: Mon, 11 Feb 2008 18:05:48 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-Organization: Panasas, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in checkpatch (on pointers to typedefs?)
-References: <20080210143240.GA13317@joi> <20080211102339.GD11671@shadowen.org>
-In-Reply-To: <20080211102339.GD11671@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 Feb 2008 11:07:03 -0500
+Date: Tue, 12 Feb 2008 03:07:41 +1100 (EST)
+Message-Id: <20080212.030741.132208013.yoshfuji@linux-ipv6.org>
+To: ggriffin.kernel@gmail.com
+Cc: dada1@cosmosbay.com, johnpol@2ka.mipt.ru, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <47abeba8.20588c0a.7013.ffff80d3@mx.google.com>
+References: <47abe7b1.20588c0a.7013.75b7@mx.google.com>
+	<47abeba8.20588c0a.7013.ffff80d3@mx.google.com>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I saw this too with checkpatch.pl version 0.12
-It seems like checkpatch.pl knows only about types derived
-from @typeList by build_types.
+In article <47abeba8.20588c0a.7013.ffff80d3@mx.google.com> (at Thu,  7 Feb 2008 21:49:26 -0800), Glenn Griffin <ggriffin.kernel@gmail.com> says:
 
-Example below...
-
-Benny
-
-$ cat <<EOF | scripts/checkpatch.pl -
-Signed-off-by: john@smith.net
----
-diff a/f.c b/f.c
---- a/f.c
-+++ b/f.c
-@@ -1,0 +1,2 @@
-+foo(int a, my_uint32 *);
-+bar(int a, my_uint32_t *);
-EOF
-ERROR: need consistent spacing around '*' (ctx:WxB)
-#7: FILE: f.c:1:
-+foo(int a, my_uint32 *);
-                      ^
-
-total: 1 errors, 0 warnings, 2 lines checked
-
-On Feb. 11, 2008, 12:23 +0200, Andy Whitcroft <apw@shadowen.org> wrote:
-> On Sun, Feb 10, 2008 at 03:33:02PM +0100, Marcin Slusarz wrote:
->> Hi
->>
->> Checkpatch in current mainline outputs following errors:
->>
->> $ ./scripts/checkpatch.pl -q --file ./fs/udf/misc.c
->> ERROR: need consistent spacing around '*' (ctx:WxV)
->> #205: FILE: fs/udf/misc.c:205:
->> +       tag *tag_p;
->>             ^
->>
->> $ ./scripts/checkpatch.pl -q --file ./fs/udf/unicode.c
->> ERROR: need consistent spacing around '*' (ctx:WxV)
->> #48: FILE: fs/udf/unicode.c:48:
->> +int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
->>                                                ^
->> (...)
->>
->> I think the code is ok.
+> Updated to incorporate Eric's suggestion of using a per cpu buffer
+> rather than allocating on the stack.  Just a two line change, but will
+> resend in it's entirety.
 > 
-> Yep the code is clearly correct.  Can I have the whole patch fragment
-> you got these against so I can figure out why we are unable to detect
-> these two as types, I would expect us to have done so.  Also what
-> version of checkpatch is this?  There is a version string at the top.
-> 
-> -apw
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Signed-off-by: Glenn Griffin <ggriffin.kernel@gmail.com>
 
+Applied in my linux-2.6-dev tree.  Thanks.
+
+--yoshfuji
