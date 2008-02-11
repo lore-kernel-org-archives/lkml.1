@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbYBKPgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbYBKPhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbYBKPgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYBKPgF
+	id S1757691AbYBKPhZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYBKPhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:36:05 -0500
-Received: from vena.lwn.net ([206.168.112.25]:54692 "EHLO vena.lwn.net"
+	Mon, 11 Feb 2008 10:37:12 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33765 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757986AbYBKPgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:36:03 -0500
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH 0/8][for -mm] mem_notify v6
-Cc: "Marcelo Tosatti" <marcelo@kvack.org>,
-       "Daniel Spang" <daniel.spang@gmail.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-fsdevel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
-       "Jon Masters" <jonathan@jonmasters.org>, "Zan Lynx" <zlynx@acm.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Sun, 10 Feb 2008 00:19:58 +0900."
-             <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com> 
-Date: Mon, 11 Feb 2008 08:36:02 -0700
-Message-ID: <32072.1202744162@vena.lwn.net>
+	id S1754110AbYBKPhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 10:37:10 -0500
+Message-ID: <47B06B9B.1000801@garzik.org>
+Date: Mon, 11 Feb 2008 10:36:59 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Manfred Spraul <manfred@colorfullife.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       Tom Herbert <therbert@google.com>
+Subject: Re: [PATCH] forcedeth: seperate handler for msix and normal int.
+References: <200712291415.47835.yinghai.lu@sun.com>
+In-Reply-To: <200712291415.47835.yinghai.lu@sun.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> the Linux Today article is very nice description. (great works by Jake Edge)
-> http://www.linuxworld.com/news/2008/020508-kernel.html
+Yinghai Lu wrote:
+> [PATCH] forcedeth: seperate handler for msix and normal int.
+> 
+> so we don't need to keep checking np->msi_flags to see if NV_MSI_X_ENABLED is set in
+> handler
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Just for future reference...the above-mentioned article is from LWN,
-syndicated onto LinuxWorld.  It has, so far as I know, never been near
-Linux Today.
+Two comments:
 
-Glad you liked it, though :)
+* can you regenerate this on top of 2.6.25-rc1?
 
-Thanks,
+* take a look at the 'fe' branch of 
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
 
-jon
+and see what you think about the work in there.  We need to get cleanups 
+like that (and more) upstream.  It also intersects with Tom @ Google's 
+"Reduce locking in TX path" patch.
+
+	Jeff
+
+
+
