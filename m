@@ -1,48 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbYBKHBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYBKHCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbYBKHBG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 02:01:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYBKHAx
+	id S1756147AbYBKHCk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 02:02:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYBKHCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 02:00:53 -0500
-Received: from stinky.trash.net ([213.144.137.162]:55707 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbYBKHAw (ORCPT
+	Mon, 11 Feb 2008 02:02:32 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:47566 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbYBKHCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 02:00:52 -0500
-Message-ID: <47AFF28A.9090808@trash.net>
-Date: Mon, 11 Feb 2008 08:00:26 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Mon, 11 Feb 2008 02:02:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jYwv96KZZdKPKQvt68R9F+0N5pPa+3ANFoQHtYTEgCGZreRU8/yuC/AP0G6XeeBkNsYVK1s9yw+oiqcWn04kte8ZK8yTVb1PI5Ny8/FQDTMO5ct9SH9jY9WOwl/X0S9850IhHVPi27TKY9mC5usByIN4ifH+Nd5FiBty6bTxn1M=
+Message-ID: <2c0942db0802102302s33d09923h98b4acb1a03dc815@mail.gmail.com>
+Date: Sun, 10 Feb 2008 23:02:29 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: Linux 2.6.25-rc1 , syntax error near unexpected token `;'
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802101645230.4708@filesrv1.baby-dragons.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jengelh@computergmbh.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: Netfilter fixes to 2.6.24-git
-References: <Pine.LNX.4.64.0802102146590.7915@fbirervta.pbzchgretzou.qr> <20080210.212754.55064006.davem@davemloft.net>
-In-Reply-To: <20080210.212754.55064006.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0802101645230.4708@filesrv1.baby-dragons.com>
+X-Google-Sender-Auth: 093130049f84c994
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jan Engelhardt <jengelh@computergmbh.de>
-> Date: Sun, 10 Feb 2008 22:02:35 +0100 (CET)
-> 
->> I have been unable to reach the netfilter and net maintainers the past 
->> week regarding inclusion of patches, but most importantly a group of 
->> fixes at [0]-[3]. I am kind of at a loss here but to turn up the volume 
->> and write to more people on how to proceed.
-> 
-> You just need to be patient and wait for Patrick to get to your
-> patches, it's as simple as that :-)
-> 
-> Patrick is normally very responsive, so whatever it is it has to be a
-> temporary issue.
+On Feb 10, 2008 5:47 PM, Mr. James W. Laferriere
+<babydr@baby-dragons.com> wrote:
+>         Hello All ,  grabbed using git just moments ago .
+>
+> make V=1 KBUILD_VERBOSE=1 INSTALL_PATH=/boot clean all install modules_install
+>
+> ...snip...
+> make -f scripts/Makefile.clean obj=sound/usb/usx2y
+> make -f scripts/Makefile.clean obj=usr
+>    rm -rf .tmp_versions
+>    rm -f arch/x86/boot/fdimage arch/x86/boot/image.iso arch/x86/boot/mtools.conf
+> vmlinux System.map .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
+> rm -f include/config/kernel.release
+> echo 2.6.25-rc1 > include/config/kernel.release
+> set -e; ; mkdir -p include/linux/;      (echo \#define LINUX_VERSION_CODE
+> 132633; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))';)
+> < /usr/src/linux-2.6.25-rc1-git/Makefile > include/linux/version.h.tmp; if [ -r
+> include/linux/version.h ] && cmp -s include/linux/version.h
+> include/linux/version.h.tmp; then rm -f include/linux/version.h.tmp; else ; mv
+> -f include/linux/version.h.tmp include/linux/version.h; fi
+> /bin/sh: -c: line 0: syntax error near unexpected token `;'
+> /bin/sh: -c: line 0: `set -e; ; mkdir -p include/linux/;        (echo \#define
+> LINUX_VERSION_CODE 132633; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) +
+> ((b) << 8) + (c))';) < /usr/src/linux-2.6.25-rc1-git/Makefile >
+> include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s
+> include/linux/version.h include/linux/version.h.tmp; then rm -f
+> include/linux/version.h.tmp; else ; mv -f include/linux/version.h.tmp
+> include/linux/version.h; fi'
+> make: *** [include/linux/version.h] Error 2
+>
+>
+> # scripts/ver_linux
+> If some fields are empty or look unusual you may have an old version.
+> Compare to the current minimal requirements in Documentation/Changes.
+>
+> Linux filesrv2 2.6.23-rc9 #1 SMP Wed Oct 3 02:12:33 UTC 2007 i686 pentium4 i386 GNU/Linux
+>
+> Gnu C                  3.4.6
+> Gnu make               3.81
+> binutils               2.15.92.0.2
+> util-linux             2.12r
+> mount                  2.12r
+> module-init-tools      3.2.2
+> e2fsprogs              1.38
+> jfsutils               1.1.11
+> reiserfsprogs          3.6.19
+> xfsprogs               2.8.10
+> pcmciautils            014
+> pcmcia-cs              3.2.8
+> quota-tools            3.13.
+> PPP                    2.4.4
+> Linux C Library        2.3.6
+> Dynamic linker (ldd)   2.3.6
+> Linux C++ Library      6.0.3
+> Procps                 3.2.7
+> Net-tools              1.60
+> Kbd                    1.12
+> oprofile               0.9.1
+> Sh-utils               5.97
+> udev                   097
+> Modules Loaded
+>
+> --
 
-
-Indeed, I'm currently ill and not really up for much working,
-but this will hopefully get better soon.
+Please send your .config as well so someone can try to reproduce this.
+And have you done a make mrproper first before trying to compile?
