@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbYBKFXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbYBKF1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751383AbYBKFXD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 00:23:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYBKFWu
+	id S1753329AbYBKF1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 00:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbYBKF1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 00:22:50 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51533 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751829AbYBKFWt (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 00:22:49 -0500
-Date: Mon, 11 Feb 2008 16:22:11 +1100
-From: David Chinner <dgc@sgi.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Alan.Brunelle@hp.com, arjan@linux.intel.com, dgc@sgi.com
-Subject: Re: IO queuing and complete affinity with threads (was Re: [PATCH 0/8] IO queuing and complete affinity)
-Message-ID: <20080211052211.GS155407@sgi.com>
-References: <1202375945-29525-1-git-send-email-jens.axboe@oracle.com> <20080207182544.GM15220@kernel.dk> <20080208073859.GE9730@wotan.suse.de> <20080208074747.GY15220@kernel.dk> <20080208075324.GG9730@wotan.suse.de> <20080208075954.GA15220@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 11 Feb 2008 00:27:09 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:40658 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750906AbYBKF1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 00:27:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=xa6DEf5fZt2GxXBZZvgp7NOEvJwydTqkmZJw8uXHHgevAV3xOG97Ys6hCijMzb6L3IP1ylwvbCZjEK6iA41gS3jS3BsuupR2wAYpxrH5SLXwU7NEUNmlrXz/aNdrk6Ge7wirDb0tvnfRrp69/IY0LIQc2YJK7VBvUksTKBTQptc=  ;
+X-YMail-OSG: MoR721gVM1kMpKPucuUOX_kHOfMR9BYTsQsRJUNNClm_onaSBubDSBxoiDTOwPMmq2fHtmmg3kMFjjTPaq3FRmE6jxqVifuMqzfgJTClEql.Wb.v_6E-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: Oops report for the week upto Feb 10th 2008
+Date: Mon, 11 Feb 2008 16:26:51 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <47AF9867.6050902@linux.intel.com>
+In-Reply-To: <47AF9867.6050902@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080208075954.GA15220@kernel.dk>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802111626.51241.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 08, 2008 at 08:59:55AM +0100, Jens Axboe wrote:
-> > > > At least they reported it to be the most efficient scheme in their
-> > > > testing, and Dave thought that migrating completions out to submitters
-> > > > might be a bottleneck in some cases.
-> > > 
-> > > More so than migrating submitters to completers? The advantage of only
-> > > movign submitters is that you get rid of the completion locking. Apart
-> > > from that, the cost should be the same, especially for the thread based
-> > > solution.
-> > 
-> > Not specifically for the block layer, but higher layers like xfs.
-> 
-> True, but that's parallel to the initial statement - that migrating
-> completers is most costly than migrating submitters. So I'd like Dave to
-> expand on why he thinks that migrating completers it more costly than
-> submitters, APART from the locking associated with adding the request to
-> a remote CPU list.
+On Monday 11 February 2008 11:35, Arjan van de Ven wrote:
+> The http://www.kerneloops.org website collects kernel oops and
+> warning reports from various mailing lists and bugzillas as well as
+> with a client users can install to auto-submit oopses.
+> Below is a top 10 list of the oopses/backtraces collected in the last 7
+> days. (Reports prior to 2.6.23 have been omitted in collecting the top 10)
+>
+> This week, a total of 323 oopses and warnings have been reported,
+> compared to 110 reports in the previous week.
+>
+> (This sharp increase is due to Fedora 9 alpha shipping the oops data
+> collection client in the default install, giving us much wider coverage
+> in the issues that actual users hit; many thanks to the Fedora project
+> for this)
+>
+> With the 2.6.25-rc1 release out, this will be the last report that includes
+> 2.6.23; future reports will only include issues from 2.6.24 and later.
+>
+>
+> Rank 1: set_dentry_child_flags
+> 	WARN_ON at fs/inotify.c:172 set_dentry_child_flags
+> 	Reported 93 times (116 total reports)
+> 	This is a user triggered WARN_ON in inotify. Sadly inotify seems to be
+> unmaintained. More info:
+> http://www.kerneloops.org/search.php?search=set_dentry_child_flags
 
-What I think Nick is referring to is the comments I made that at a
-higher layer (e.g. filesystems) migrating completions to the
-submitter CPU may be exactly the wrong thing to do. I don't recall
-making any comments on migrating submitters - I think others have
-already commented on that so I'll ignore that for the moment and
-try to explain why completion on submitter CPU /may/ be bad.
+I was never able to trigger this or get anyone to reliably trigger it with
+a debug patch in. Which is why it has taken so long to fix. It looks like
+kde4 is triggering this big rash of new reports.
 
-For example, in the case of XFS it is fine for data I/O but it is
-wrong for transaction I/O completion. We want to direct all
-transaction completions to as few CPUs as possible (one, ideally) so
-that all the completion processing happens on the same CPU, rather
-than bouncing global cachelines and locks between all the CPUs
-taking completion interrupts.
+Anyway, I have fixed a race or two and removed that warning code (which was
+also a little racy). So I think that should be OK.
 
-In more detail, the XFS transaction subsystem is asynchronous.
-We submit the transaction I/O on the CPU that creates the
-transaction so the I/O can come from any CPU in the system.  If we
-then farm the completion processing out to the submission CPU, that
-will push it all over the machine and guarantee that we bounce all
-of the XFS transaction log structures and locks all over the machine
-on completion as well as submission (right now it's lots of
-submission CPUs, few completion CPUs).
 
-An example how bad this can get - this patch:
+> Rank 9: mark_buffer_dirty
+> 	WARN_ON at fs/buffer.c:1169
+> 	This indicates that a non-uptodate buffer is marked dirty.
+> 	This can lead to data corruption!
+> 	Reported 5 times (12 total reports) - Only seen since 2.6.24-rc6
+> 	Usually happens during umount()
+> 	More info: http://www.kerneloops.org/search.php?search=mark_buffer_dirty
 
-http://oss.sgi.com/archives/xfs/2007-11/msg00217.html
-
-which prevents simultaneous access to the items tracked in the log
-during transaction reservation. Having several hundred CPUs trying
-to hit this list at once is really bad for performance - the test
-app on the 2048p machine that saw this problem went from ~5500s
-runtime down to 9s with the above patch.
-
-I use this example because the transaction I/O completion touches
-exactly the same list, locks and structures but is limited in
-distribution (and therefore contention) by the number of
-simultaneous I/O completion CPUs. Doing completion on the submitter
-CPU will cause much wider distribution of completion processing and
-introduce exactly the same issues as the transaction reservation
-side had.
-
-As it goes, with large, multi-device volumes (e.g. big stripe) we
-already see issues with simultaneous completion processing (e.g. the
-8p machine mentioned in the above link), so I'd really like to avoid
-making these problems worse....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+That's interesting.
