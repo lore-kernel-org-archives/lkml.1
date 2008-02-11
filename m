@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYBKWku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbYBKWlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYBKWku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758990AbYBKWk0
+	id S1760141AbYBKWlI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 17:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYBKWk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:40:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36944 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754843AbYBKWkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:40:24 -0500
-Date: Mon, 11 Feb 2008 23:38:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, matthew@wil.cx, arjan@infradead.org,
-       hancockr@shaw.ca, torvalds@linux-foundation.org, greg@kroah.com,
-       tcamuso@redhat.com, grundler@parisc-linux.org, loic@myri.com,
-       bunk@kernel.org, benh@kernel.crashing.org, ink@jurassic.park.msu.ru,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, mj@ucw.cz
-Subject: Re: [PATCH] Change pci_raw_ops to pci_raw_read/write
-Message-ID: <20080211223825.GB9576@elte.hu>
-References: <47AB299D.4000500@redhat.com> <20080209124138.GA28967@parisc-linux.org> <86802c440802092225u5a901ab2i66b952382a999fa@mail.gmail.com> <20080210072116.GA12375@kroah.com> <20080210145122.GC5299@parisc-linux.org> <86802c440802101216t3b04c0b4y89a05ac9a04a0ac5@mail.gmail.com> <alpine.LFD.1.00.0802101222560.2896@woody.linux-foundation.org> <20080210204556.GG5299@parisc-linux.org> <86802c440802101749h5af30b4dm1836f881a898652e@mail.gmail.com> <20080211141006.0aadac6c.akpm@linux-foundation.org>
+	Mon, 11 Feb 2008 17:40:29 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:23461 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758289AbYBKWkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 17:40:25 -0500
+To: general@lists.openfabrics.org
+Cc: Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       avi@qumranet.com, linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Demand paging for memory regions (was Re: MMU Notifiers V6)
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
+	<20080208234302.GH26564@sgi.com>
+	<20080208155641.2258ad2c.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
+	<adaprv70yyt.fsf@cisco.com>
+	<Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
+	<adalk5v0yi6.fsf@cisco.com>
+	<Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
+	<20080209012446.GB7051@v2.random>
+	<Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
+	<20080209015659.GC7051@v2.random>
+	<Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
+	<20080209075556.63062452@bree.surriel.com>
+	<Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 11 Feb 2008 14:40:12 -0800
+In-Reply-To: <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Sat, 9 Feb 2008 13:46:34 -0800 (PST)")
+Message-ID: <ada3arzxgkz.fsf_-_@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211141006.0aadac6c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 11 Feb 2008 22:40:12.0771 (UTC) FILETIME=[10671330:01C86CFF]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Adding general@lists.openfabrics.org to get the IB/RDMA people involved]
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+This thread has patches that add support for notifying drivers when a
+process's memory map changes.  The hope is that this is useful for
+letting RDMA devices handle registered memory without pinning the
+underlying pages, by updating the RDMA device's translation tables
+whenever the host kernel's tables change.
 
-> > please check some updated patches in -mm that could be affected. 
-> > hope it could save you some time
-> > 
-> > x86-validate-against-acpi-motherboard-resources.patch
-> > x86-clear-pci_mmcfg_virt-when-mmcfg-get-rejected.patch
-> > x86-mmconf-enable-mcfg-early.patch
-> > x86_64-check-msr-to-get-mmconfig-for-amd-family-10h-opteron-v3.patch
-> 
-> I have unhappy feelings here - the patches seem to be churning a bit 
-> and when I last sent them to Greg and Ingo they received no apparent 
-> response.
+Is anyone interested in working on using this for drivers/infiniband?
+I am interested in participating, but I don't think I have enough time
+to do this by myself.
 
-i actually carried them for a while and 
-validate-against-acpi-motherboard-resources.patch got a fair bit of test 
-time with positive results. So it has a clear ACK from me.
+Also, at least naively it seems that this is only useful for hardware
+that has support for this type of demand paging, and can handle
+not-present pages, generating interrupts for page faults, etc.  I know
+that Mellanox HCAs should have this support; are there any other
+devices that can do this?
 
-It's something that looks appealing:
+The beginning of this thread is at <http://lkml.org/lkml/2008/2/8/458>.
 
-| This path adds validation of the MMCONFIG table against the ACPI 
-| reserved motherboard resources. If the MMCONFIG table is found to be 
-| reserved in ACPI, we don't bother checking the E820 table.  The PCI 
-| Express firmware spec apparently tells BIOS developers that 
-| reservation in ACPI is required and E820 reservation is optional, so 
-| checking against ACPI first makes sense.  Many BIOSes don't reserve 
-| the MMCONFIG region in E820 even though it is perfectly functional, 
-| the existing check needlessly disables MMCONFIG in these cases.
-
-anything that isolates Linux from BIOS messups should be music to our 
-ears.
-
-i also think the mmconf-enable stuff for Barcelona stuff from Yinghai, 
-albeit not particularly pretty, is probably good too for similar 
-reasons. It makes the kernel boot with noacpi which is a good sign IMO. 
-
-I have testsystems that simply do not boot with ACPI turned off - and i 
-have a testsystem that locks up hard if it takes an NMI in certain ACPI 
-AML sequences ... Just Because.
-
-So i'd ACK them just on general principle - earlier versions of the 
-patches were carried in x86.git and caused no particular problems.
-
-but ... then we got complaints from you that stuff collides and that 
-such patches should be carried in your or Greg's tree, so we dropped 
-them. And there was another 100 KLOC of x86 code to worry about ;-)
-
-So i'd suggest to send those patches upstream, they are system enablers 
-and they are at fundamental enough places to be apparent if they cause 
-any breakage i think.
-
-	Ingo
+ - R.
