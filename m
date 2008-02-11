@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbYBKOFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYBKOP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbYBKOFa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 09:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYBKOFS
+	id S1754387AbYBKOP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 09:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYBKOPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 09:05:18 -0500
-Received: from mx1.suse.de ([195.135.220.2]:45843 "EHLO mx1.suse.de"
+	Mon, 11 Feb 2008 09:15:15 -0500
+Received: from mivlgu.ru ([195.20.195.134]:40813 "EHLO mail.mivlgu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbYBKOFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 09:05:15 -0500
-Date: Mon, 11 Feb 2008 15:06:03 +0100
-From: Holger Macht <hmacht@suse.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, alan@redhat.com,
-       jeff@garzik.org, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze
-	system
-Message-ID: <20080211140603.GA4576@homac.suse.de>
-Mail-Followup-To: Tejun Heo <htejun@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	alan@redhat.com, jeff@garzik.org,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211100446.GA4646@homac.suse.de> <47B02E96.4050900@gmail.com> <20080211112802.GA4528@homac.suse.de> <47B04984.1020401@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B04984.1020401@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1752732AbYBKOPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 09:15:14 -0500
+X-Greylist: delayed 1660 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 09:15:13 EST
+Date: Mon, 11 Feb 2008 16:47:19 +0300
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: Christoph Hellwig <hch@lst.de>, dsdt@gaugusch.at, len.brown@intel.com,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       trenn@suse.de
+Subject: Re: acpi dsts loading and populate_rootfs
+Message-Id: <20080211164719.d42c618e.vsu@altlinux.ru>
+In-Reply-To: <47AEE6D1.4070402@tremplin-utc.net>
+References: <20080210071226.GA23360@lst.de>
+	<20080210071454.GA23428@lst.de>
+	<47AEE6D1.4070402@tremplin-utc.net>
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.12.1; i586-alt-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 11. Feb - 22:11:32, Tejun Heo wrote:
-> Holger Macht wrote:
-> >> It should be called via ata_acpi_{ap|dev}_notify() callbacks installed
-> >> via acpi_install_notify_handler().  Can you add dump_stack() in the
-> >> function and verify that it actually is being called?  It could be that
-> >> the method is called too late or libata takes too long to actually
-> >> unplug the device.  Hmmm... It seems what ata_acpi_handle_hotplug() does
-> >> isn't enough for undock.  It probably should request detaching the
-> >> device instead of just notifying hotplug event.  Anyways, please lemme
-> >> know whether and when the function is called.
-> > 
-> > I already checked, it's never called AFAICS. And I couldn't find a place
-> > where it should be installed, otherwise, I would have sent a patch. The
-> > dock driver already calls the notify methods on devices in the dock
-> > station before doing the real undock.
-> 
-> ata_acpi_associate() calls acpi_install_notify_handler() for each
-> device.  Isn't that enough?
+--Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-It should be. I tried once more and noticed that
-ata_acpi_handle_hotplug(...) is called when the cdrom is about to be
-removed via the bay driver (just removing the device, not the whole dock
-station). Actually there is a connection between the bay and the dock
-driver, and one of them should notice that the cdrom/bay device is
-dependent on the dock, but I don't know what's going wrong here. Kristen
-(CC) should definitely know more about this interaction...
+On Sun, 10 Feb 2008 12:58:09 +0100 Eric Piel wrote:
 
-On a related note, shouldn't ata_acpi_handle_hotplug delete the device
-like what is done when doing
+> (adding some CC's)
+> Christoph Hellwig wrote:
+> > On Sun, Feb 10, 2008 at 08:12:26AM +0100, Christoph Hellwig wrote:
+> >> Folks, moving this call around hidden behing in completely unreviewed
+> >> acpi junk is not acceptable.
+> >>
+> >> Either populate_rootfs _is_ safe to be called earlier and then we should
+> >> do it always or it's not.  Either way such a change should be posted
+> >> separately and reviewd on lkml.
+> Hi,
+>
+> I agree with you, the order of the initialization should not be changed
+> by some config options. Either it works, or it doesn't! So the question
+> now is : "is fine to move populate_rootfs() earlier?"
+>
+> Some data points:
+> * It used to be called earlier. It was moved to be called later about a
+> year ago by Linus (8d610dd52dd1da696e199e4b4545f33a2a5de5c6) with this log:
+> >     Make sure we populate the initroot filesystem late enough
+> >
+> >     We should not initialize rootfs before all the core initializers have
+> >     run.  So do it as a separate stage just before starting the regular
+> >     driver initializers.
+> So there must be some good reasons to keep it late enough...
+>
+> * This patch is used in SuSE, and it seems noone has ever had a problem
+> with the initramfs early init.
+>
+> I guess the problem that Linus solved by moving populate_rootfs()
+> happens only rarely or on only few configurations. Linus, do you
+> remember what kind of problem it was? How can I reproduce it?
 
-  echo 1 > /sys/devices/.../block/sr0/device/delete
+AFAIR the problem was that the kernel was trying to exec /sbin/hotplug
+before some kernel subsystems (e.g., pipe support) were completely
+initialized, which caused oopses during boot.
 
-?
+Initramfs images generated by distro tools usually do not contain
+/sbin/hotplug, and therefore avoid the problem.  (The kernel might
+also call /sbin/modprobe by itself, but it either does not do it
+during early boot, or /sbin/modprobe does not use kernel features
+which had not been initialized yet).
 
-Regards,
-	Holger
+> One different solution that I implemented [1] was to have an
+> "early_populate_rootfs()" before the acpi_early_init(), leaving
+> populate_rootfs() at the normal place. If the early version fails, it's
+> ok: we can't override the DSDT, but the later version will work as usual
+> anyway. This solution also seems to work quite often (it's used in
+> Ubuntu, Mandriva and PCLinuxOS)
+
+This would not solve the problem, because /sbin/hotplug (if present in
+the initramfs image) will exist too early.
+
+> Would that seem an acceptable solution? Or what other way exists?
+
+Disabling call_usermodehelper() until all core initializers had
+completed would fix the problem too; will such change be acceptable?
+
+--Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQFHsFHqW82GfkQfsqIRAuXIAJ4zjemlESZqTwnmAw7dE+srvClK9ACfVVCE
+4I1j78a/93MJKWYbH+ZGs8Y=
+=Hgdm
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox--
