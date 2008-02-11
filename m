@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYBKSK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYBKSKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbYBKSK2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYBKSKU
+	id S1758729AbYBKSKq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757798AbYBKSKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:10:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34897 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbYBKSKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:10:19 -0500
-Message-ID: <47B08F6B.2020502@redhat.com>
-Date: Mon, 11 Feb 2008 13:09:47 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Mon, 11 Feb 2008 13:10:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:27760 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbYBKSKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 13:10:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ucuEeMI9dW24dj7r/E7P5XTplhQjHI5eVK0REltHMLXsPC21f7p+j8SbznOmYno/d1pExWLiBdChnyjvHwqxfXCY1cUd4+ixe6hZ33jiZwrVgTCabfq5Vi6P2GO18msSKWP3Er7C2v6e5TBnqIcnvrPZ/QGOtrRJzTfct+oA0nc=
+Date: Mon, 11 Feb 2008 19:09:55 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: bug in checkpatch (on pointers to typedefs?)
+Message-ID: <20080211180950.GA6136@joi>
+References: <20080210143240.GA13317@joi> <20080211102339.GD11671@shadowen.org>
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/9] firewire: fw-sbp2: fix I/O errors during reconnect
-References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <tkrat.8110272bacc3f714@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.8110272bacc3f714@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211102339.GD11671@shadowen.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> While fw-sbp2 takes the necessary time to reconnect to a logical unit
-> after bus reset, the SCSI core keeps sending new commands.  They are all
-> immediately completed with host busy status, and application clients or
-> filesystems will break quickly.  The SCSI device might even be taken
-> offline:  http://bugzilla.kernel.org/show_bug.cgi?id=9734
+On Mon, Feb 11, 2008 at 10:23:39AM +0000, Andy Whitcroft wrote:
+> On Sun, Feb 10, 2008 at 03:33:02PM +0100, Marcin Slusarz wrote:
+> > Hi
+> > 
+> > Checkpatch in current mainline outputs following errors:
+> > 
+> > $ ./scripts/checkpatch.pl -q --file ./fs/udf/misc.c
+> > ERROR: need consistent spacing around '*' (ctx:WxV)
+> > #205: FILE: fs/udf/misc.c:205:
+> > +       tag *tag_p;
+> >             ^
+> > 
+> > $ ./scripts/checkpatch.pl -q --file ./fs/udf/unicode.c
+> > ERROR: need consistent spacing around '*' (ctx:WxV)
+> > #48: FILE: fs/udf/unicode.c:48:
+> > +int udf_build_ustr(struct ustr *dest, dstring *ptr, int size)
+> >                                                ^
+> > (...)
+> > 
+> > I think the code is ok.
 > 
-> The only remedy seems to be to block the SCSI device until reconnect.
-> Alas the SCSI core has no useful API to block only one logical unit i.e.
-> the scsi_device, therefore we block the entire Scsi_Host.  This
-> currently corresponds to an SBP-2 target.  In case of targets with
-> multiple logical units, we need to satisfy the dependencies between
-> logical units by carefully tracking the blocking state of the target and
-> its units.  We block all logical units of a target as soon as one of
-> them needs to be blocked, and keep them blocked until all of them are
-> ready to be unblocked.
-> 
-> Furthermore, as the history of the old sbp2 driver has shown, the
-> scsi_block_requests() API is a minefield with high potential of
-> deadlocks.  We therefore take extra measures to keep logical units
-> unblocked during __scsi_add_device() and during shutdown.
-> 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Yep the code is clearly correct.  Can I have the whole patch fragment
+> you got these against so I can figure out why we are unable to detect
+> these two as types, I would expect us to have done so.  Also what
+> version of checkpatch is this?  There is a version string at the top.
+It's current Linus git tree (both checkpatch and "testcase").
 
-> +/*
-> + * Blocks lu->tgt if all of the following conditions are met:
-> + *   - Login, INQUIRY, and high-level SCSI setup of all logical units of the
-> + *     target have been successfully finished (indicated by dont_block == 0).
-> + *   - The lu->generation is stale.  sbp2_reconnect will unblock lu later.
-> + */
-> +static void sbp2_conditionally_block(struct sbp2_logical_unit *lu)
-> +{
-> +	struct fw_card *card = fw_device(lu->tgt->unit->device.parent)->card;
-> +
-> +	if (!atomic_read(&lu->tgt->dont_block) &&
-> +	    lu->generation != card->generation &&
-> +	    atomic_cmpxchg(&lu->blocked, 0, 1) == 0) {
-
-Just to be absolutely sure, we don't need any barriers here to ensure we 
-get the right generations, do we?
-
-Also, this isn't expected to let I/O survive a disk being unplugged 
-briefly, then plugged back in, is it? (I recall that being discussed, 
-but I think it was as a 'would be nice to do in the future' thing).
-
--- 
-Jarod Wilson
-jwilson@redhat.com
-
+Marcin
