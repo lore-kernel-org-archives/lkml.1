@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbYBKT75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760460AbYBKUEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbYBKT75 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:59:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbYBKT7k
+	id S1760460AbYBKUEr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 15:04:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbYBKUEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:59:40 -0500
-Received: from phoenix.slamd64.com ([217.10.145.2]:33606 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761390AbYBKT7i (ORCPT
+	Mon, 11 Feb 2008 15:04:39 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:3333 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756229AbYBKUEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:59:38 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 2/2]  tc1100-wmi - Fail gracefully if ACPI is disabled
-Date: Mon, 11 Feb 2008 19:55:45 +0000
-User-Agent: KMail/1.9.7
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <200802080145.16774.lenb@kernel.org> <20080211091743.GA16459@elte.hu> <200802111923.31736.carlos@strangeworlds.co.uk>
-In-Reply-To: <200802111923.31736.carlos@strangeworlds.co.uk>
+	Mon, 11 Feb 2008 15:04:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=iIhi+61s8b7Ofx7PsljShfyj2XqNDfWNCQ7Cqti6kgRL+BmH8+x2sSCn8+w1h3od/
+	+LcWApHrts4OkyXu1w1Og==
+Date: Mon, 11 Feb 2008 12:02:28 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
+In-Reply-To: <Pine.LNX.4.64.0802111146590.25590@schroedinger.engr.sgi.com>
+Message-ID: <alpine.DEB.1.00.0802111156420.17652@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <Pine.LNX.4.64.0802111131270.24563@schroedinger.engr.sgi.com> <alpine.DEB.1.00.0802111135090.1671@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0802111146590.25590@schroedinger.engr.sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802111955.46199.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 11 Feb 2008 19:55:51 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tc1100-wmi - Fail gracefully if ACPI is disabled
+On Mon, 11 Feb 2008, Christoph Lameter wrote:
 
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+> Then you could follow through with the enum mempolicy thing 
+> throughtout. Why not use enum mempolicy in struct mempolicy?
+> 
 
-WMI drivers, like their ACPI counterparts, should also check if ACPI is
-disabled or not, and bail out if so, otherwise we cause a crash.
+Mempolicy flags, as I implemented them in patch 2 in this series, are not 
+integer constants that are enumerated starting at 0.  They are individual 
+bits that are shifted a pre-defined length and intersected with the 
+enumerated mode.  This allows both the mode and the flags to be stored in 
+the same object.
 
-Spotted by Ingo Molnar.
+Just because enum mempolicy_mode is the equivalent of passing an int in C 
+is irrelevant; its semantics are that the value is coming from enum 
+mempolicy_mode.  That includes _only_ the mode itself:
 
-Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Len Brown <lenb@kernel.org>
----
+	enum mempolicy_mode {
+		MPOL_DEFAULT,
+		MPOL_BIND,
+		MPOL_PREFERRED,
+		MPOL_INTERLEAVE,
+		MPOL_MAX,
+	};
 
- drivers/misc/tc1100-wmi.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+And changing the policy member of struct mempolicy to 'enum 
+mempolicy_mode' instead of 'unsigned short' would increase its size.  Not 
+that it matters, since in the third patch I add a whole nodemask_t, but 
+it's simply unnecessary.  Right now we have the capacity to store 256 
+individual mempolicy modes (we currently use four) and eight mempolicy 
+flags with unsigned short.
 
-
-diff --git a/drivers/misc/tc1100-wmi.c b/drivers/misc/tc1100-wmi.c
-index f25e4c9..cb8f79f 100644
---- a/drivers/misc/tc1100-wmi.c
-+++ b/drivers/misc/tc1100-wmi.c
-@@ -263,6 +263,9 @@ static int __init tc1100_init(void)
- {
- 	int result = 0;
- 
-+	if (acpi_disabled)
-+		return -ENODEV;
-+
- 	if (!wmi_has_guid(GUID))
- 		return -ENODEV;
- 
+		David
