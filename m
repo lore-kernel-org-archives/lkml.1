@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbYBKW62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbYBKXB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbYBKW62 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760418AbYBKW6S
+	id S1759498AbYBKXB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 18:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYBKXBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:58:18 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:41019 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756560AbYBKW6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:58:16 -0500
-Date: Mon, 11 Feb 2008 23:58:11 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.25-rc1 regression - suspend to ram
-Message-ID: <20080211225811.GB4343@ics.muni.cz>
+	Mon, 11 Feb 2008 18:01:49 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51672 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbYBKXBt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 18:01:49 -0500
+Message-ID: <47B0D363.1020302@zytor.com>
+Date: Mon, 11 Feb 2008 14:59:47 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 11 Feb 2008 23:58:13 +0100 (CET)
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com
+Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some processors
+References: <200802082347.25364.michael-lists@free-electrons.com> <20080208231130.GA10511@elte.hu> <200802112342.23493.michael-lists@free-electrons.com>
+In-Reply-To: <200802112342.23493.michael-lists@free-electrons.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Michael Opdenacker wrote:
+> 
+> Also note that for the sake of convenience and consistency
+> between 32 and 64 bit, I move the declaration of force_mwait
+> from kernel/cpu/amd.c to kernel/setup_32.c 
+> (force_mwait is already defined in kernel/setup_64.c).
+> 
 
-2.6.25-rc1 takes really long time till it suspends (about 30-40secs, used to
-be about 5 secs at all) and it is resuming about few minutes.  While resuming,
-capslock toggles the capslock led but with few secs delay.
+NAK NAK NAK NAK NAK NAK NAK
 
-2.6.24-git15 was OK. 2.6.24 is OK.
+This is the totally wrong thing to do.  The CPU initialization stuff 
+should move *into* the CPU directory (unification based on the 
+cleaned-up 32-bit code, not on the 64-bit code which is based on a fork 
+of the pre-cleanup 32-bit code.)
 
-I have Lenovo ThinkPad T61.
-
--- 
-Luká¹ Hejtmánek
+	-hpa
