@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYBKLdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYBKLh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYBKLdY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYBKLdQ
+	id S1754591AbYBKLh7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBKLhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:33:16 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:27221 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbYBKLdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:33:15 -0500
-Date: Mon, 11 Feb 2008 14:30:37 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org, arjan@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] proc: print more information when removing non-empty directories
-Message-ID: <20080211113037.GC6110@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 11 Feb 2008 06:37:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:13376 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbYBKLhu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:37:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pq9C+n0acqvNJgw+cAACjLvB0J6Y2MSqyRTBC1dUPVyNbFUEdJqotLjdZr8L+r7aBPMSPqz8xfRQMdKimiAAKslnOaTodPf0Bf5OHKLjXmQe6w7RfpAh9UCqIWike2UIPOWnQgEJzy71cammzlPar4d/trVchFBtmYBq+8lD0T0=
+Message-ID: <90d987c0802110337i42082a7ew905a096028fe347b@mail.gmail.com>
+Date: Mon, 11 Feb 2008 17:07:49 +0530
+From: "rohit h" <hrohit85@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [LINUX-KERNEL] C++ in linux kernel
+Cc: "Joonwoo Park" <joonwpark81@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
+	 <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
+	 <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This usually saves one recompile to insert similar printk like below. :)
+On Feb 8, 2008 9:24 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> On Feb 9 2008 00:14, Joonwoo Park wrote:
+> >2008/2/8, rohit h <hrohit85@gmail.com>:
+> >> Hi,
+> >>  I am a kernel newbie.
+> >>  I tried to insmod a C++ module containing classes, inheritance.
+> >>  I am getting 'unresolved symbol' error when I use the 'new' keyword.
+> >>  What could the problem be?
+> >>
+> >>  What kind of runtime support is needed ( arm linux kernel)? Is a
+> >> patch available for it?
+> >>
+> >Please take a look at click modular router which is using c++ as a
+> >linux kernel module.
+> >http://www.read.cs.ucla.edu/click/
+> >The lib/glue.cc provides custom operator new.
+>
+> Uh, let's not make the world worse :)
+> Just call malloc from C++, and carefully select what C++ features
+> you are going to use. The VMware source for example does it right.
+>
 
-Sample nastygram:
-
-remove_proc_entry: removing non-empty directory '/proc/foo', leaking at least 'bar'
-------------[ cut here ]------------
-WARNING: at fs/proc/generic.c:776 remove_proc_entry+0x18a/0x200()
-Modules linked in: foo(-) container fan battery dock sbs ac sbshc backlight ipv6 loop af_packet amd_rng sr_mod i2c_amd8111 i2c_amd756 cdrom i2c_core button thermal processor
-Pid: 3034, comm: rmmod Tainted: G   M     2.6.25-rc1 #5
-
-Call Trace:
- [<ffffffff80231974>] warn_on_slowpath+0x64/0x90
- [<ffffffff80232a6e>] printk+0x4e/0x60
- [<ffffffff802d6c8a>] remove_proc_entry+0x18a/0x200
- [<ffffffff8045cd88>] mutex_lock_nested+0x1c8/0x2d0
- [<ffffffff8025f0f0>] __try_stop_module+0x0/0x40
- [<ffffffff8025effd>] sys_delete_module+0x14d/0x200
- [<ffffffff8045df3d>] lockdep_sys_exit_thunk+0x35/0x67
- [<ffffffff8031c307>] __up_read+0x27/0xa0
- [<ffffffff8045decc>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b6ab>] system_call_after_swapgs+0x7b/0x80
-
----[ end trace 10ef850597e89c54 ]---
+>From the links given, I dig that following C++ features need runtime support:
+   a. Pure virtual functions
+   b. Global objects  : Needs compiler dependent changes
+   c. new & delete : Can use kmalloc / kfree instead
+   d. Run time type info
+   e. Exceptions
+I guess features d & e need considerable effort.
+Apart from these, am I free to use other C++ features?
+Where could I see the VMWare sources?
 
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+> Compiling the kernel module with g++ is not a simple work, you may
+> need big patch for kernel itself.
 
- fs/proc/generic.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+I don't want to compile entire kernel.
+I only want to compile my module with g++ and insmod it.
+Any hint on how to write the Makefile.
 
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -769,7 +769,12 @@ continue_removing:
- 		if (S_ISDIR(de->mode))
- 			parent->nlink--;
- 		de->nlink = 0;
--		WARN_ON(de->subdir);
-+		if (de->subdir) {
-+			printk(KERN_WARNING "%s: removing non-empty directory "
-+			       "'%s/%s', leaking at least '%s'\n", __func__,
-+			       de->parent->name, de->name, de->subdir->name);
-+			WARN_ON(1);
-+		}
- 		if (atomic_dec_and_test(&de->count))
- 			free_proc_entry(de);
- 		break;
-
+Thanks in advance,
+Rohit
