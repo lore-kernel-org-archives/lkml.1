@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760537AbYBKTgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbYBKThb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760537AbYBKTgx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:36:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbYBKTgo
+	id S1760773AbYBKThb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759170AbYBKThM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:36:44 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:1548 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757883AbYBKTgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:36:43 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=H1rwMCXiCS07SOD/Qaxuli9QBIT4/AV+oIT3awxiujbC2iMGotfTfpC37ImLevT3m
-	CnKjCGsNUxTpp7gai6ESQ==
-Date: Mon, 11 Feb 2008 11:34:03 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/4] mempolicy: support optional mode flags
-In-Reply-To: <1202747811.5014.37.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0802111127080.1671@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com> <1202747811.5014.37.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 11 Feb 2008 14:37:12 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:33448 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756114AbYBKThK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:37:10 -0500
+Message-ID: <47B0A3E1.1010306@sgi.com>
+Date: Mon, 11 Feb 2008 11:37:05 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh@veritas.com>
+CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] percpu: fix DEBUG_PREEMPT per_cpu checking
+References: <Pine.LNX.4.64.0802081818580.6273@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0802081818580.6273@blonde.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008, Lee Schermerhorn wrote:
+Thanks Hugh for catching this.  I've added it to my test code base
+and it works fine for x86_64...
 
-> These patches look good--well, interesting, anyway.  I'm "off on
-> assignment" this week, so I won't get to review in detail, merge and
-> test them until next...   
+Reviewed-by: Mike Travis <travis@sgi.com>
+
+Hugh Dickins wrote:
+> Recent percpu changes have broken CONFIG_DEBUG_PREEMPT's per_cpu checking
+> on several architectures.  On s390, sparc64 and x86 it's been weakened to
+> not checking at all; whereas on powerpc64 it's become too strict, issuing
+> warnings from __raw_get_cpu_var in io_schedule and init_timer for example.
 > 
-
-If, by "interesting", you mean that they give the most power to the user 
-in setting up their mempolicies than they have ever had before, then I 
-agree.
-
-> This helper functions introduced by this patch are similar in nature
-> [but go further] to one I introduced in the reference counting cleanup
-> RFC [http://marc.info/?l=linux-mm&m=119697614520515&w=4] I posted a
-> while back.  I've been holding these cleanup patches until Andrew starts
-> accepting this sort of thing again.  I have my series based atop Mel
-> Gorman's [added to cc] "two zonelist" series, as it depends on removing
-> the custom zonelist from the mempolicy.
+> Fix this by weakening powerpc's __my_cpu_offset to use the non-checking
+> local_paca instead of get_paca (which itself contains such a check);
+> and strengthening the generic my_cpu_offset to go the old slow way via
+> smp_processor_id when CONFIG_DEBUG_PREEMPT (debug_smp_processor_id is
+> where all the knowledge of what's correct when lives).
 > 
-
-If my helper functions are similar to yours then basing either of our 
-patchsets on top of the other should not be difficult.
-
-> We need to sort out with Andrew, Mel, Paul, ... the order in which these
-> interdependent changes go in.  Given such an order, I'm willing to merge
-> them all up, test them, and post them [after running checkpatch, of
-> course].
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> ia64 would be in the first group too, but does not support DEBUG_PREEMPT?
 > 
-
-Thanks for volunteering to test the changes.  I don't know how many 
-patchsets are currently outstanding that touch mempolicies.  So far we 
-have mine and the refcounting cleanup of yours that you mentioned.
-
-I think the best way of dealing with it would be for the author of 
-whatever patchset is merged second to rebase off the current -mm just like 
-I based this entire patchset on your V3 contextualize_policy() patch from 
-a couple days ago.
-
-> One other thing:  In the recent mempolicy patch to "silently restrict
-> nodemask], I mentioned the issue with regards to whether and when to
-> "contextualize" tmpfs/hugetlbfs policies--if/when we fold
-> mpol_check_policy() into mpol_new(), as you suggested.  Once we can
-> agree on the desired semantics, I had been thinking that an additional
-> mode flag could be added to policies obtained from the superblock, and
-> passed via mpol_shared_policy_init() [which calls mpol_new()] could be
-> used for this purpose.  Your change here seems to lay the foundation for
-> implementing that.
+>  include/asm-generic/percpu.h |    2 ++
+>  include/asm-powerpc/percpu.h |    2 +-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
 > 
+> --- 2.6.24-git18/include/asm-generic/percpu.h	2008-02-08 11:31:30.000000000 +0000
+> +++ linux/include/asm-generic/percpu.h	2008-02-08 12:27:08.000000000 +0000
+> @@ -32,6 +32,8 @@ extern unsigned long __per_cpu_offset[NR
+>   */
+>  #ifndef __my_cpu_offset
+>  #define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
+> +#endif
+> +#ifdef CONFIG_DEBUG_PREEMPT
+>  #define my_cpu_offset per_cpu_offset(smp_processor_id())
+>  #else
+>  #define my_cpu_offset __my_cpu_offset
+> --- 2.6.24-git18/include/asm-powerpc/percpu.h	2008-02-08 11:31:31.000000000 +0000
+> +++ linux/include/asm-powerpc/percpu.h	2008-02-08 12:29:17.000000000 +0000
+> @@ -13,7 +13,7 @@
+>  #include <asm/paca.h>
+>  
+>  #define __per_cpu_offset(cpu) (paca[cpu].data_offset)
+> -#define __my_cpu_offset get_paca()->data_offset
+> +#define __my_cpu_offset local_paca->data_offset
+>  #define per_cpu_offset(x) (__per_cpu_offset(x))
+>  
+>  #endif /* CONFIG_SMP */
 
-My patchset already supports contextualized tmpfs mempolicies with a 
-template for how to specify them (see patch 4 in this series for the 
-documentation update).  For example, mpol=interleave:1-3 is the equivalent 
-of MPOL_INTERLEAVE over nodes 1-3 while mpol=interleave=static:1-3 is the
-equivalent of MPOL_INTERLEAVE | MPOL_F_STATIC_NODES.
-
-		David
