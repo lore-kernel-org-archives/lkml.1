@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbYBKT20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbYBKT2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760132AbYBKT20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbYBKT2S
+	id S1760320AbYBKT2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYBKT2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:28:18 -0500
-Received: from phoenix.slamd64.com ([217.10.145.2]:59329 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755932AbYBKT2R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:28:17 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.25-rc0 (#2)
-Date: Mon, 11 Feb 2008 19:23:30 +0000
-User-Agent: KMail/1.9.7
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <200802080145.16774.lenb@kernel.org> <200802091142.18596.carlos@strangeworlds.co.uk> <20080211091743.GA16459@elte.hu>
-In-Reply-To: <20080211091743.GA16459@elte.hu>
+	Mon, 11 Feb 2008 14:28:44 -0500
+Received: from styx.suse.cz ([82.119.242.94]:39925 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758338AbYBKT2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:28:43 -0500
+Date: Mon, 11 Feb 2008 20:28:42 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Abel Bernabeu <abelbg@m2grp.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [Patch] Elf loader crash while zero-filling .bss
+In-Reply-To: <15577be70802111111x36f61433p321e5b8175a13d08@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802112026470.30955@jikos.suse.cz>
+References: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com> 
+ <15577be70802111032l6ea6d2fagba2da4462c739d66@mail.gmail.com> 
+ <Pine.LNX.4.64.0802111944220.7699@twin.jikos.cz>
+ <15577be70802111111x36f61433p321e5b8175a13d08@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802111923.31736.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 11 Feb 2008 19:23:40 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 February 2008 09:17:43 Ingo Molnar wrote:
-> no, it does not help - see the attached .config and the crash.log.
+On Mon, 11 Feb 2008, Abel Bernabeu wrote:
 
-Thanks Ingo - the cause of the crash is ACPI being disabled on your system for 
-some reason. I can reproduce your crash every time here with acpi=off.
+> In such a way that set_brk(0x0, 0x100) does not alloc any space at all. 
+> There are just more ways to get no memory allocation than 
+> set_brk(elf_bss, elf_bss) (the equalness condition i've changed).
+> Sorry, the correct description for the patch may be:
+> set_brk(start, end) allocs just page aligned regions (by "colapsing"
+> both extremes to the END of the page in which they lay)... That means
+> than even if both pointers are not equal there are still some chances
+> that set_brk has allocated no space at all because because
+> ELF_PAGEALIGN(elf_bss) == ELF_PAGEALIGN(elf_brk)
 
-The two WMI based drivers (acer-wmi, tc1100-wmi) in the kernel both need a 
-simple patch each to fix this - patches to follow.
+Now, the question is whether it is valid for ELF binary to not have the 
+end of .bss section (if present at all) not page-aligned.
 
--Carlos
 -- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+Jiri Kosina
+SUSE Labs
