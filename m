@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYBKOEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbYBKOFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbYBKOEn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 09:04:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYBKOEf
+	id S1755880AbYBKOFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 09:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYBKOFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 09:04:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42826 "EHLO mx2.mail.elte.hu"
+	Mon, 11 Feb 2008 09:05:18 -0500
+Received: from mx1.suse.de ([195.135.220.2]:45843 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbYBKOEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 09:04:34 -0500
-Date: Mon, 11 Feb 2008 15:04:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/8] CPA: Remove inline from static_protections
-Message-ID: <20080211140419.GA16255@elte.hu>
-References: <200802111050.372086035@suse.de> <20080211095017.6708F1B41CE@basil.firstfloor.org>
+	id S1752620AbYBKOFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 09:05:15 -0500
+Date: Mon, 11 Feb 2008 15:06:03 +0100
+From: Holger Macht <hmacht@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, alan@redhat.com,
+       jeff@garzik.org, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze
+	system
+Message-ID: <20080211140603.GA4576@homac.suse.de>
+Mail-Followup-To: Tejun Heo <htejun@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	alan@redhat.com, jeff@garzik.org,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211100446.GA4646@homac.suse.de> <47B02E96.4050900@gmail.com> <20080211112802.GA4528@homac.suse.de> <47B04984.1020401@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080211095017.6708F1B41CE@basil.firstfloor.org>
+In-Reply-To: <47B04984.1020401@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2351]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon 11. Feb - 22:11:32, Tejun Heo wrote:
+> Holger Macht wrote:
+> >> It should be called via ata_acpi_{ap|dev}_notify() callbacks installed
+> >> via acpi_install_notify_handler().  Can you add dump_stack() in the
+> >> function and verify that it actually is being called?  It could be that
+> >> the method is called too late or libata takes too long to actually
+> >> unplug the device.  Hmmm... It seems what ata_acpi_handle_hotplug() does
+> >> isn't enough for undock.  It probably should request detaching the
+> >> device instead of just notifying hotplug event.  Anyways, please lemme
+> >> know whether and when the function is called.
+> > 
+> > I already checked, it's never called AFAICS. And I couldn't find a place
+> > where it should be installed, otherwise, I would have sent a patch. The
+> > dock driver already calls the notify methods on devices in the dock
+> > station before doing the real undock.
+> 
+> ata_acpi_associate() calls acpi_install_notify_handler() for each
+> device.  Isn't that enough?
 
-* Andi Kleen <ak@suse.de> wrote:
+It should be. I tried once more and noticed that
+ata_acpi_handle_hotplug(...) is called when the cdrom is about to be
+removed via the bay driver (just removing the device, not the whole dock
+station). Actually there is a connection between the bay and the dock
+driver, and one of them should notice that the cdrom/bay device is
+dependent on the dock, but I don't know what's going wrong here. Kristen
+(CC) should definitely know more about this interaction...
 
-> The function is huge and called three times, so don't inline it.
+On a related note, shouldn't ata_acpi_handle_hotplug delete the device
+like what is done when doing
 
-thanks, applied. As most inlines it started out small ;-)
+  echo 1 > /sys/devices/.../block/sr0/device/delete
 
-	Ingo
+?
+
+Regards,
+	Holger
