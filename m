@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYBKLh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbYBKLtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbYBKLh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBKLhv
+	id S1754113AbYBKLtg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYBKLtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:37:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:13376 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYBKLhu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:37:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pq9C+n0acqvNJgw+cAACjLvB0J6Y2MSqyRTBC1dUPVyNbFUEdJqotLjdZr8L+r7aBPMSPqz8xfRQMdKimiAAKslnOaTodPf0Bf5OHKLjXmQe6w7RfpAh9UCqIWike2UIPOWnQgEJzy71cammzlPar4d/trVchFBtmYBq+8lD0T0=
-Message-ID: <90d987c0802110337i42082a7ew905a096028fe347b@mail.gmail.com>
-Date: Mon, 11 Feb 2008 17:07:49 +0530
-From: "rohit h" <hrohit85@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [LINUX-KERNEL] C++ in linux kernel
-Cc: "Joonwoo Park" <joonwpark81@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
+	Mon, 11 Feb 2008 06:49:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49731 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbYBKLtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:49:25 -0500
+Date: Mon, 11 Feb 2008 12:49:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] [3/8] CPA: Test the correct mapping alias on x86-64
+Message-ID: <20080211114911.GB2498@elte.hu>
+References: <200802111034.764275766@suse.de> <20080211093431.D673D1B41CE@basil.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <90d987c0802072121v378da809l7b2690980566cd9@mail.gmail.com>
-	 <b25c3fa70802080714m6236614i6b991dbb5d4aa20f@mail.gmail.com>
-	 <Pine.LNX.4.64.0802081653560.26116@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20080211093431.D673D1B41CE@basil.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 8, 2008 9:24 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Feb 9 2008 00:14, Joonwoo Park wrote:
-> >2008/2/8, rohit h <hrohit85@gmail.com>:
-> >> Hi,
-> >>  I am a kernel newbie.
-> >>  I tried to insmod a C++ module containing classes, inheritance.
-> >>  I am getting 'unresolved symbol' error when I use the 'new' keyword.
-> >>  What could the problem be?
-> >>
-> >>  What kind of runtime support is needed ( arm linux kernel)? Is a
-> >> patch available for it?
-> >>
-> >Please take a look at click modular router which is using c++ as a
-> >linux kernel module.
-> >http://www.read.cs.ucla.edu/click/
-> >The lib/glue.cc provides custom operator new.
->
-> Uh, let's not make the world worse :)
-> Just call malloc from C++, and carefully select what C++ features
-> you are going to use. The VMware source for example does it right.
->
 
->From the links given, I dig that following C++ features need runtime support:
-   a. Pure virtual functions
-   b. Global objects  : Needs compiler dependent changes
-   c. new & delete : Can use kmalloc / kfree instead
-   d. Run time type info
-   e. Exceptions
-I guess features d & e need considerable effort.
-Apart from these, am I free to use other C++ features?
-Where could I see the VMWare sources?
+* Andi Kleen <ak@suse.de> wrote:
 
+> static_protections previously would test against the x86-64 kernel 
+> mapping twice. First against the unchanged symbol directly from the 
+> linker (which always points into the kernel mapping) and then again it 
+> would manually relocate the address into the kernel mapping and test 
+> again.
+> 
+> This patch reverses the second test instead to test against the direct 
+> mapping (low) aliases virtual addresses which was probably intended in 
+> the first place.
+> 
+> Simply use __pa and __va for that.
 
-> Compiling the kernel module with g++ is not a simple work, you may
-> need big patch for kernel itself.
+thanks, applied.
 
-I don't want to compile entire kernel.
-I only want to compile my module with g++ and insmod it.
-Any hint on how to write the Makefile.
+( the practical implications of this are low because we do not utilize 
+  the low direct aliases for execution. It needs to be fixed 
+  nevertheless (will be needed for PAT later on anyway) and your cleanup 
+  and #ifdef reduction is nice to have as well. )
 
-Thanks in advance,
-Rohit
+	Ingo
