@@ -1,112 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbYBKS2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbYBKS3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759691AbYBKS2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbYBKS1y
+	id S1759968AbYBKS3J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBKS24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:27:54 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36567 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759428AbYBKS1x (ORCPT
+	Mon, 11 Feb 2008 13:28:56 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:57228 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbYBKS2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:27:53 -0500
-Date: Mon, 11 Feb 2008 20:03:17 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Prevent IDE boot ops on NUMA system in mainline
-Message-ID: <20080211190317.GA21824@one.firstfloor.org>
-References: <20080211003520.GA32082@basil.nowhere.org> <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org>
-Mime-Version: 1.0
+	Mon, 11 Feb 2008 13:28:54 -0500
+Date: Mon, 11 Feb 2008 19:31:53 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>
+Message-ID: <20080211183153.GA19771@enneenne.com>
+References: <1202493644764-git-send-email-giometti@linux.it> <120249364418-git-send-email-giometti@linux.it> <20080209064531.GA29926@kroah.com> <20080211095346.GA28885@enneenne.com> <20080211152542.GD25505@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080211152542.GD25505@kroah.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/8] LinuxPPS core support.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 09:33:14AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 11 Feb 2008, Andi Kleen wrote:
+On Mon, Feb 11, 2008 at 07:25:42AM -0800, Greg KH wrote:
+> On Mon, Feb 11, 2008 at 10:53:46AM +0100, Rodolfo Giometti wrote:
+> > On Fri, Feb 08, 2008 at 10:45:31PM -0800, Greg KH wrote:
+> > > 
+> > > As you are adding sysfs files, please also describe them in
+> > > Documentation/ABI/ in this same series of patches.
 > > 
-> > Without this patch a Opteron test system here oopses at boot with currentg git. 
+> > Ok. I'm going to add them under "testing".
 > > 
-> > Calling to_pci_dev() on a NULL pointer gives a negative value so the following NULL 
-> > pointer check never triggers and then an illegal address is referenced. Check the 
-> > unadjusted original device pointer for NULL instead.
+> > > Why not use a default attribute group?
+> > > 
+> > > That way the files are created before the uevent is issued, and the
+> > > amount of code you have to write is much smaller.
 > > 
-> > Signed-off-by: Andi Kleen <ak@suse.de>
-> > 
-> > Index: linux/include/linux/ide.h
-> > ===================================================================
-> > --- linux.orig/include/linux/ide.h
-> > +++ linux/include/linux/ide.h
-> > @@ -1294,7 +1294,7 @@ static inline void ide_dump_identify(u8 
-> >  static inline int hwif_to_node(ide_hwif_t *hwif)
-> >  {
-> >  	struct pci_dev *dev = to_pci_dev(hwif->dev);
-> > -	return dev ? pcibus_to_node(dev->bus) : -1;
-> > +	return hwif->dev ? pcibus_to_node(dev->bus) : -1;
-> >  }
+> > What do you mean exactly? I don't understand what you wish. :'(
 > 
-> Ok, I applied this, but it causes a *lot* of noise about "unused variable 
-> 'dev'" because pcibus_to_node() is defined to be -1 when you don't do any 
-> strange NUMA thing (so that "dev->bus" usage thing is never even seen by 
-> the compiler.
+> If you use a 'struct device' you can use a default attribute group for
+> that device to be created whenever it is added.
 > 
-> So we should probably make pcibus_to_node() be an inline function for that 
-> case, or just make that thing be
+> However you are not using the driver core that way, you are just calling
+> device_create(), which doesn't work that way.
 > 
-> 	return hwif->dev ?
-> 		pcibus_to_node(to_pci_dev(hwif->dev)->bus)
-> 	       :
-> 		-1;
+> But you can just use an attribute group instead, which still saves you a
+> lot of code, try using that instead (sysfs_create_group()).
 > 
-> or something. Because now things are really noisy.
+> Or go all the way and embed a 'struct device' in your structure, and
+> create a bus, then you can use the default attribute group, although
+> that might be a bit more work :)
 
-Yes sorry; I only checked NUMA builds before sending it off. 
-The easiest way is probably just the traditional (void) cast
-I fixed most of the topology macros while I was at it.
+I see but how can I manage the fact that files "assert" and "clear"
+are created according to pps->info.mode field content?
 
--Andi
+See the code:
 
----
+int pps_sysfs_create_source_entry(struct pps_device *pps)
+{
+        int ret;
 
-Make topology fallback macros reference their arguments.
+        /* Create file "assert" and "clear" according to source capability */
+        if (pps->info.mode & PPS_CAPTUREASSERT) {
+                ret = device_create_file(pps->dev, &dev_attr_assert);
+                if (ret)
+                        dev_err(pps->dev, "unable to create \"assert\" "
+                                        "sysfs entry");
+        }
 
-This avoids warnings with unreferenced variables in the !NUMA case.
+        if (pps->info.mode & PPS_CAPTURECLEAR) {
+                ret = device_create_file(pps->dev, &dev_attr_clear);
+                if (ret)
+                        dev_err(pps->dev, "unable to create \"clear\" "
+                                        "sysfs entry");
+        }
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+        ret = device_create_file(pps->dev, &dev_attr_mode);
+        if (ret)
+                dev_err(pps->dev, "unable to create \"mode\" sysfs entry");
 
-Index: linux/include/asm-generic/topology.h
-===================================================================
---- linux.orig/include/asm-generic/topology.h
-+++ linux/include/asm-generic/topology.h
-@@ -30,19 +30,19 @@
- /* Other architectures wishing to use this simple topology API should fill
-    in the below functions as appropriate in their own <asm/topology.h> file. */
- #ifndef cpu_to_node
--#define cpu_to_node(cpu)	(0)
-+#define cpu_to_node(cpu)	((void)(cpu),0)
- #endif
- #ifndef parent_node
--#define parent_node(node)	(0)
-+#define parent_node(node)	((void)(node),0)
- #endif
- #ifndef node_to_cpumask
--#define node_to_cpumask(node)	(cpu_online_map)
-+#define node_to_cpumask(node)	((void)node, cpu_online_map)
- #endif
- #ifndef node_to_first_cpu
--#define node_to_first_cpu(node)	(0)
-+#define node_to_first_cpu(node)	((void)(node),0)
- #endif
- #ifndef pcibus_to_node
--#define pcibus_to_node(node)	(-1)
-+#define pcibus_to_node(bus)	((void)(bus), -1)
- #endif
- 
- #ifndef pcibus_to_cpumask
+Do you think is better create these files anyway and in case report a
+NULL string?
+
+Thanks,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
