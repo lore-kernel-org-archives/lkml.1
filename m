@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYBKPew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYBKPgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbYBKPew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbYBKPe3
+	id S1757939AbYBKPgA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYBKPfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:34:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43380 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754518AbYBKPe0 (ORCPT
+	Mon, 11 Feb 2008 10:35:52 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45918 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbYBKPfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:34:26 -0500
-Date: Mon, 11 Feb 2008 07:25:42 -0800
-From: Greg KH <greg@kroah.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/8] LinuxPPS core support.
-Message-ID: <20080211152542.GD25505@kroah.com>
-References: <1202493644764-git-send-email-giometti@linux.it> <120249364418-git-send-email-giometti@linux.it> <20080209064531.GA29926@kroah.com> <20080211095346.GA28885@enneenne.com>
-MIME-Version: 1.0
+	Mon, 11 Feb 2008 10:35:51 -0500
+Date: Mon, 11 Feb 2008 17:11:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: kgdb in git-x86#mm review
+Message-ID: <20080211161114.GA19537@one.firstfloor.org>
+References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080211095346.GA28885@enneenne.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <y0mhcgf4ig1.fsf@ton.toronto.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 10:53:46AM +0100, Rodolfo Giometti wrote:
-> On Fri, Feb 08, 2008 at 10:45:31PM -0800, Greg KH wrote:
-> > 
-> > As you are adding sysfs files, please also describe them in
-> > Documentation/ABI/ in this same series of patches.
+On Mon, Feb 11, 2008 at 10:32:46AM -0500, Frank Ch. Eigler wrote:
+> Andi Kleen <andi@firstfloor.org> writes:
 > 
-> Ok. I'm going to add them under "testing".
+> > [...]  The kgdb code in git-x86#mm is right now is totally broken of
+> > course because the CFI annotations in assembler code are gone now,
+> > but they are needed for gdb use.  [...]
 > 
-> > Why not use a default attribute group?
-> > 
-> > That way the files are created before the uevent is issued, and the
-> > amount of code you have to write is much smaller.
-> 
-> What do you mean exactly? I don't understand what you wish. :'(
+> This loss of CFI data is unfortunate for other potential consumers
+> too, such as systemtap, which intends to supplement its current stack
+> backtracing heuristics with CFI data.
 
-If you use a 'struct device' you can use a default attribute group for
-that device to be created whenever it is added.
+They seem to have reverted these patches now, so that problem 
+is gone.
 
-However you are not using the driver core that way, you are just calling
-device_create(), which doesn't work that way.
+Yes there are a couple of other consumers of CFI too, like crash
+or the out of tree (but not dead) in kernel unwinder.
 
-But you can just use an attribute group instead, which still saves you a
-lot of code, try using that instead (sysfs_create_group()).
-
-Or go all the way and embed a 'struct device' in your structure, and
-create a bus, then you can use the default attribute group, although
-that might be a bit more work :)
-
-thanks,
-
-greg k-h
+-Andi
