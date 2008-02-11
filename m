@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYBKQcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbYBKQf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbYBKQcf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbYBKQc1
+	id S1757687AbYBKQf1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbYBKQfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:32:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54579 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756379AbYBKQc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:32:26 -0500
-Date: Mon, 11 Feb 2008 17:31:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+	Mon, 11 Feb 2008 11:35:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34806 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754925AbYBKQfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:35:15 -0500
+Date: Mon, 11 Feb 2008 18:10:39 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>
-Subject: Re: [17/19] ftrace: dynamic enabling/disabling of function calls
-Message-ID: <20080211163138.GA2272@elte.hu>
-References: <20080210072109.GR4100@elte.hu> <47B06B4E.1010704@redhat.com>
-MIME-Version: 1.0
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] kgdb-light -v8, (was: Re: kgdb in git-x86#mm review)
+Message-ID: <20080211171039.GA20446@one.firstfloor.org>
+References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47B06B4E.1010704@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080211162141.GA31434@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> after a quick glance i'm happy to conclude that all but one of Andi's 
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+At least the weird in_interrupt_stack() code seems to be still
+in there.
 
-> > Because we do this via stop_machine, we don't have to worry about 
-> > another CPU executing a ftrace call as we modify it. But we do need 
-> > to worry about NMI's so all functions that might be called via nmi 
-> > must be annotated with notrace_nmi. When this code is configured in, 
-> > the NMI code will not call notrace.
-> 
-> I'd like to suggest that you can use djprobe-like solution here to 
-> eliminate stop_machine. The djprobe makes a bypass over that call 
-> instruction by using a kprobe, and after replacing the call 
-> instruction, you can safely remove the bypass. [...]
+I also still see a lot of open coded hex manipulation.
 
-i think the stop_machine() method for code patching is pretty elegant in 
-that it reuses an otherwise rarely used but critical facility. We want 
-it to be fast and easy, and our current ftrace testing shows that it is. 
-So unless there are strong reasons to do otherwise, it would be nice to 
-keep that approach :-)
+The synchronization code looks as bad as it was before.
 
-	Ingo
+The getthread magic pids are also still in there. What is that
+good for?  
+
+The notifiers are also still run with interrupts enabled,
+so could in theory be preempted (only in some very exotic cases though)
+
+The cpu hotplug races are still there I think
+
+I have not rechecked everything else.
+
+-Andi
+
