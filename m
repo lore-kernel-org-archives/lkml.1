@@ -1,163 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbYBKQrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbYBKQrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbYBKQrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbYBKQrO
+	id S1759364AbYBKQrw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbYBKQr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:47:14 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57799 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757105AbYBKQrL (ORCPT
+	Mon, 11 Feb 2008 11:47:29 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:36207 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759241AbYBKQr1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:47:11 -0500
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, linux-ppc <linuxppc-dev@ozlabs.org>,
-       Thomas Klein <osstklei@de.ibm.com>,
-       "Themann, Jan-Bernd" <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Christoph Raisch <RAISCH@de.ibm.com>, Thomas Klein <tklein@de.ibm.com>,
-       apw <apw@uk.ibm.com>, Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <200802111724.12416.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
+	Mon, 11 Feb 2008 11:47:27 -0500
+Subject: Re: [PATCH 2.6.24-mm1]  Mempolicy:  silently restrict nodemask to
+	allowed nodes V3
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
+       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm <linux-mm@kvack.org>, Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <alpine.LFD.1.00.0802092340400.2896@woody.linux-foundation.org>
+References: <20080205163406.270B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1202499913.5346.60.camel@localhost>
+	 <20080210141154.25E7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080210054953.GA10371@kroah.com>
+	 <alpine.LFD.1.00.0802092340400.2896@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 11 Feb 2008 08:47:09 -0800
-Message-Id: <1202748429.8276.21.camel@nimitz.home.sr71.net>
+Organization: HP/OSLO
+Date: Mon, 11 Feb 2008 11:47:39 -0500
+Message-Id: <1202748459.5014.50.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-11 at 17:24 +0100, Jan-Bernd Themann wrote:
->  the eHEA patch belongs to a patchset that is usually
->  added by Jeff Garzik once this dependency (EXPORTS)
->  is resolved.
-
-I know that's already in mainline but, man, that code is nasty.  It has
-stuff indented 7 levels or so and is virtually impossible to read.
-
-This:
-
-> int ehea_create_busmap(void)
-> {
->         u64 vaddr = EHEA_BUSMAP_START;
->         unsigned long high_section_index = 0;
->         int i;
+On Sat, 2008-02-09 at 23:42 -0800, Linus Torvalds wrote:
 > 
->         /*
->          * Sections are not in ascending order -> Loop over all sections and
->          * find the highest PFN to compute the required map size.
->         */
->         ehea_bmap.valid_sections = 0;
+> On Sat, 9 Feb 2008, Greg KH wrote:
+> > 
+> > Once the patch goes into Linus's tree, feel free to send it to the
+> > stable@kernel.org address so that we can include it in the 2.6.24.x
+> > tree.
 > 
->         for (i = 0; i < NR_MEM_SECTIONS; i++)
->                 if (valid_section_nr(i))
->                         high_section_index = i;
+> I've been ignoring the patches because they say "PATCH 2.6.24-mm1", and so 
+> I simply don't know whether it's supposed to go into *my* kernel or just 
+> -mm.
+> 
+> There's also been several versions and discussions, so I'd really like to 
+> have somebody send me a final patch with all the acks etc.. One that is 
+> clearly for me, not for -mm.
+> 
 
-is also completely bogus for arch-independent code.  If someone ever
-wants to do ppc without sparsemem (or redoes internal sparsemem
-interfaces), this code will break.  
+Kosaki-san:  You've tested V3 on '.24.  Do you want to repost the patch
+refreshed against .24, adding your "Tested-by:"  [and "Signed-off-by:",
+as the folding of the contextualization into mpol_check_policy() is
+based on your code--apologies for not adding it myself]?  I'm tied up
+with something else for most of this week and won't get to it until
+Friday, earliest.
 
-Also, keeping your own mapping of all of memory is really nasty.  With
-SPARSEMEM_EXTREME/VMEMMAP you can have extremely sparse physical memory,
-and this:
+Regards,
+Lee
 
->         ehea_bmap.entries = high_section_index + 1;
->         ehea_bmap.vaddr = vmalloc(ehea_bmap.entries * sizeof(*ehea_bmap.vaddr));
-
-could theoretically consume all of memory if the sections are very sparse.
-
-Could you please try to explain what the heck this driver is doing?
-We'll try to fix up the generic interfaces so that you can deal with
-things in a more generic fashion, but it can't stay this way.
-
-Also, just ripping down and completely re-doing the entire mass of cards
-every time a 16MB area of memory is added or removed seems like an
-awfully big sledgehammer to me.  I would *HATE* to see anybody else
-using this driver as an example to work off of?  Can't you just keep
-track of which areas the driver is actually *USING* and only worry about
-changing mappings if that intersects with an area having hotplug done on
-it?
-
-Can you please give it some CodingStyle love and make it so that it
-doesn't indent so much?  Something like this:
-
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index c051c7e..72c5652 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2638,38 +2638,40 @@ static void ehea_rereg_mrs(struct work_struct *work)
- 	down(&dlpar_mem_lock);
- 	ehea_info("LPAR memory enlarged - re-initializing driver");
- 
--	list_for_each_entry(adapter, &adapter_list, list)
--		if (adapter->active_ports) {
--			/* Shutdown all ports */
--			for (i = 0; i < EHEA_MAX_PORTS; i++) {
--				struct ehea_port *port = adapter->port[i];
--
--				if (port) {
--					struct net_device *dev = port->netdev;
--
--					if (dev->flags & IFF_UP) {
--						down(&port->port_lock);
--						netif_stop_queue(dev);
--						ret = ehea_stop_qps(dev);
--						if (ret) {
--							up(&port->port_lock);
--							goto out;
--						}
--						port_napi_disable(port);
--						up(&port->port_lock);
--					}
--				}
--			}
--
--			/* Unregister old memory region */
--			ret = ehea_rem_mr(&adapter->mr);
-+	list_for_each_entry(adapter, &adapter_list, list) {
-+		if (!adapter->active_ports)
-+			continue;
-+		/* Shutdown all ports */
-+		for (i = 0; i < EHEA_MAX_PORTS; i++) {
-+			struct ehea_port *port = adapter->port[i];
-+			struct net_device *dev;
-+			if (!port)
-+				continue;
-+
-+			dev = port->netdev;
-+			if (!(dev->flags & IFF_UP))
-+				continue;
-+
-+			down(&port->port_lock);
-+			netif_stop_queue(dev);
-+			ret = ehea_stop_qps(dev);
- 			if (ret) {
--				ehea_error("unregister MR failed - driver"
--					   " inoperable!");
-+				up(&port->port_lock);
- 				goto out;
- 			}
-+			port_napi_disable(port);
-+			up(&port->port_lock);
- 		}
- 
-+		/* Unregister old memory region */
-+		ret = ehea_rem_mr(&adapter->mr);
-+		if (ret) {
-+			ehea_error("unregister MR failed - driver"
-+				   " inoperable!");
-+			goto out;
-+		}
-+	}
-+
- 	ehea_destroy_busmap();
- 	ret = ehea_create_busmap();
- 	if (ret) {
-
-
--- Dave
+P.S., As Andrew pointed out, I forgot to run checkpatch and the patch
+does include a violation thereof.
 
