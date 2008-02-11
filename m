@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYBKKSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYBKKU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbYBKKSn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 05:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYBKKSd
+	id S1754715AbYBKKU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 05:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYBKKUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 05:18:33 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:17809 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751932AbYBKKSc (ORCPT
+	Mon, 11 Feb 2008 05:20:50 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:12623 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbYBKKUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 05:18:32 -0500
-Message-ID: <47B01FF4.1030104@panasas.com>
-Date: Mon, 11 Feb 2008 12:14:12 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 11 Feb 2008 05:20:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XKe++Aa4VD2Vdfpfvi27KMWVY/JUZ3cHZrU1FicDPLe9bqPrv227egL8+A5pvo85STemC6BqUHALOgrJrBxms+bLdjvC6A2yorO0bwJtbu0d1KykZC23YqCRTOhBuu2qhmYkJ88f0OBK8hSRIS/GtEh32LCxGG6llUMAk2h2ttc=
+Message-ID: <2f11576a0802110220g459d7390je05bfec161e6768e@mail.gmail.com>
+Date: Mon, 11 Feb 2008 19:20:47 +0900
+From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
+To: "Eugene Teo" <eugeneteo@kernel.sg>
+Subject: Re: [PATCH] proc: extend /proc/<pid>/fdinfo/<fd>
+Cc: linux-kernel@vger.kernel.org, "Miklos Szeredi" <mszeredi@suse.cz>
+In-Reply-To: <20080209120157.GA3035@kernel.sg>
 MIME-Version: 1.0
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: scsi/arm/fas216.c compile error
-References: <20080209000413.GE6505@cs181133002.pp.htv.fi> <47AEF6FD.8080801@panasas.com> <20080210135851.GB25703@flint.arm.linux.org.uk> <1202653224.3136.20.camel@localhost.localdomain> <20080210220200.GA26654@flint.arm.linux.org.uk> <1202683456.3136.77.camel@localhost.localdomain> <47B019CD.3060502@panasas.com> <20080211100249.GA10520@flint.arm.linux.org.uk>
-In-Reply-To: <20080211100249.GA10520@flint.arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Feb 2008 10:14:14.0846 (UTC) FILETIME=[DA99B5E0:01C86C96]
+Content-Disposition: inline
+References: <20080209120157.GA3035@kernel.sg>
+X-Google-Sender-Auth: 53f458c12d0aa0ea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11 2008 at 12:02 +0200, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> On Mon, Feb 11, 2008 at 11:47:57AM +0200, Boaz Harrosh wrote:
->> On Mon, Feb 11 2008 at 0:44 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
->> Andrew this patch was in -mm for two month or so. I was under the impression
->> that you have an arm cross compiler that tries to build every -mm kernel.
->> Is it possible that for some reason this portion did not get compiled?
->> Is there a place that one can inspect the output of -mm compilations, Specially
->> for cross compiled ARCHs?
-> 
-> Having a patch sit in -mm for ARM doesn't mean a lot since there's no
-> guarantee that it'll get built, and that is because the ARM architecture
-> is very diverse; it's not possible to build a single kernel to support
-> everything.
-> 
-> So, when akpm builds a kernel for ARM, it's normally centered around one
-> particular ARM defconfig (maybe with allyconfig or allmodconfig afterwards)
-> but even that won't build all ARM specific code.
-> 
-> This is why we now have kautobuild - http://armlinux.simtec.co.uk/kautobuild/
-> That's the only way we can get decent compilation coverage.
-> 
-> That system isn't publically accessible (it's not even accessible to me)
-> and it only builds the mainline kernels.  Adding -mm to it might be
-> possible, but as I understand the situation, even though it uses things
-> like ccache, it can take about 10 or so hours to complete a set of builds.
-> 
-Thanks Russell. That explains it.
+Hi Eugene
 
-I wish they would include an -mm kernel once in a while. like 2-3 every kernel
-cycle. It is much nicer to find the problems before they are already in mainline.
-I would certainly sleep better. You have my vote.
+In general, I think this patch isn't wrong idea.
+but it shuld be brush up more, may be.
 
-Boaz
+> kerndev: ~/code/kernel# cat /proc/`pgrep pickup`/fdinfo/6
+> mode:   0622
 
- 
+I think this is inode attribute, but not fd attribute.
+
+> dev:    253,0
+> ino:    21463057
+
+may be useful, agreed with you :)
+
+> uid:    89
+> gid:    89
+> rdev:   0,0
+> pos:    0
+> flags:  04002 FD_CLOEXEC # if close-on-exec flag is set
+
+agreed with Miklos's opinion.
+
+> path:   /var/spool/postfix/public/pickup
+
+may be, we shold think namespace..
+
+> You can also use this to find out more information about locked open files:
+
+is your requirement only fd -> ino pick up?
