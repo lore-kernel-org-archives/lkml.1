@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbYBKRYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbYBKRZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbYBKRYu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbYBKRYn
+	id S1759938AbYBKRZH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:25:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759545AbYBKRYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:24:43 -0500
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:61110 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753774AbYBKRYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:24:42 -0500
-Date: Mon, 11 Feb 2008 18:24:40 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Parag Warudkar <parag.warudkar@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] dmi: Prevent linked list corruption (resent)
-Message-ID: <20080211182440.071c47d9@hyperion.delvare>
-In-Reply-To: <20080211182235.14a5a641@hyperion.delvare>
-References: <20080211182235.14a5a641@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 12:24:54 -0500
+Received: from lixom.net ([66.141.50.11]:45417 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758010AbYBKRYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 12:24:53 -0500
+Date: Mon, 11 Feb 2008 11:26:48 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived
+	threads
+Message-ID: <20080211172648.GA7962@lixom.net>
+References: <1202543920.9578.3.camel@homer.simson.net> <20080209080319.GO8953@1wt.eu> <1202554705.10287.12.camel@homer.simson.net> <20080209114009.GP8953@1wt.eu> <1202564259.4035.18.camel@homer.simson.net> <20080209161957.GA3364@1wt.eu> <20080210052941.GA4731@lixom.net> <20080210061558.GC22137@1wt.eu> <20080210070056.GA6401@lixom.net> <1202717755.21339.65.camel@homer.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202717755.21339.65.camel@homer.simson.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Once more without forgetting the last "quilt refresh", sorry.]
+On Mon, Feb 11, 2008 at 09:15:55AM +0100, Mike Galbraith wrote:
+> Piddling around with your testcase, it still looks to me like things
+> improved considerably in latest greatest git.  Hopefully that means
+> happiness is in the pipe for the real workload... synthetic load is
+> definitely happier here as burst is shortened.
 
-Adding the same item to a given linked list more than once is guaranteed
-to break and corrupt the list. This is however what we do in dmi_scan
-since commit 79da4721117fcf188b4b007b775738a530f574da.
+The real workload doesn't see much of an improvement. The changes I did
+when tinkering yesterday seem like they're better at modelling just
+what's going on with that one.
 
-Given that there is absolutely no interest in saving empty OEM
-strings anyway, I propose the simple and efficient fix below: we
-discard the empty OEM strings altogether.
+I've added the new testcase I'm using for the numbers I posted last
+night at http://lixom.net/~olof/threadtest/new/, including numbers for
+the various kernels. I also included the binaries I built. (with "gcc
+-DLOOPS=<size> testcase.c -lpthread").
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/firmware/dmi_scan.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+I tried graphing the numbers as well, it looks like for larger workloads
+that 2.6.22 has a fixed benefit over newer kernels. I.e. it seems quicker
+at rebalancing, but once things balance out they're obviously doing ok
+independent of kernel version.
 
---- linux-2.6.25-rc1.orig/drivers/firmware/dmi_scan.c	2008-02-11 16:15:10.000000000 +0100
-+++ linux-2.6.25-rc1/drivers/firmware/dmi_scan.c	2008-02-11 18:04:18.000000000 +0100
-@@ -217,10 +217,6 @@ static void __init dmi_save_devices(cons
- 	}
- }
- 
--static struct dmi_device empty_oem_string_dev = {
--	.name = dmi_empty_string,
--};
--
- static void __init dmi_save_oem_strings_devices(const struct dmi_header *dm)
- {
- 	int i, count = *(u8 *)(dm + 1);
-@@ -229,10 +225,8 @@ static void __init dmi_save_oem_strings_
- 	for (i = 1; i <= count; i++) {
- 		char *devname = dmi_string(dm, i);
- 
--		if (!strcmp(devname, dmi_empty_string)) {
--			list_add(&empty_oem_string_dev.list, &dmi_devices);
-+		if (devname == dmi_empty_string)
- 			continue;
--		}
- 
- 		dev = dmi_alloc(sizeof(*dev));
- 		if (!dev) {
+Graph at http://lixom.net/olof/threadtest/new/schedgraph.pdf. I couldn't
+figure out how to make the X axis linear, so it obviously looks odd with
+the current powers-of-two at the end instead of linear, but the
+differences can still be seen clearly.
 
--- 
-Jean Delvare
+
+-Olof
+
