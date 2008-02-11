@@ -1,101 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYBKHCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYBKHRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbYBKHCk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 02:02:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYBKHCc
+	id S1756056AbYBKHRz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 02:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYBKHRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 02:02:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:47566 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbYBKHCb (ORCPT
+	Mon, 11 Feb 2008 02:17:44 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58801 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbYBKHRm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 02:02:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=jYwv96KZZdKPKQvt68R9F+0N5pPa+3ANFoQHtYTEgCGZreRU8/yuC/AP0G6XeeBkNsYVK1s9yw+oiqcWn04kte8ZK8yTVb1PI5Ny8/FQDTMO5ct9SH9jY9WOwl/X0S9850IhHVPi27TKY9mC5usByIN4ifH+Nd5FiBty6bTxn1M=
-Message-ID: <2c0942db0802102302s33d09923h98b4acb1a03dc815@mail.gmail.com>
-Date: Sun, 10 Feb 2008 23:02:29 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: Linux 2.6.25-rc1 , syntax error near unexpected token `;'
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802101645230.4708@filesrv1.baby-dragons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0802101645230.4708@filesrv1.baby-dragons.com>
-X-Google-Sender-Auth: 093130049f84c994
+	Mon, 11 Feb 2008 02:17:42 -0500
+Date: Sun, 10 Feb 2008 23:25:25 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [SCSI] ses: fix memory leaks
+In-reply-to: <1202704118.3136.79.camel@localhost.localdomain>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       kristen.c.accardi@intel.com
+Message-id: <200802102325.26538.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+References: <200802090413.53275.yinghai.lu@sun.com>
+ <200802091515.48076.yinghai.lu@sun.com>
+ <1202704118.3136.79.camel@localhost.localdomain>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 10, 2008 5:47 PM, Mr. James W. Laferriere
-<babydr@baby-dragons.com> wrote:
->         Hello All ,  grabbed using git just moments ago .
->
-> make V=1 KBUILD_VERBOSE=1 INSTALL_PATH=/boot clean all install modules_install
->
-> ...snip...
-> make -f scripts/Makefile.clean obj=sound/usb/usx2y
-> make -f scripts/Makefile.clean obj=usr
->    rm -rf .tmp_versions
->    rm -f arch/x86/boot/fdimage arch/x86/boot/image.iso arch/x86/boot/mtools.conf
-> vmlinux System.map .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
-> rm -f include/config/kernel.release
-> echo 2.6.25-rc1 > include/config/kernel.release
-> set -e; ; mkdir -p include/linux/;      (echo \#define LINUX_VERSION_CODE
-> 132633; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))';)
-> < /usr/src/linux-2.6.25-rc1-git/Makefile > include/linux/version.h.tmp; if [ -r
-> include/linux/version.h ] && cmp -s include/linux/version.h
-> include/linux/version.h.tmp; then rm -f include/linux/version.h.tmp; else ; mv
-> -f include/linux/version.h.tmp include/linux/version.h; fi
-> /bin/sh: -c: line 0: syntax error near unexpected token `;'
-> /bin/sh: -c: line 0: `set -e; ; mkdir -p include/linux/;        (echo \#define
-> LINUX_VERSION_CODE 132633; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) +
-> ((b) << 8) + (c))';) < /usr/src/linux-2.6.25-rc1-git/Makefile >
-> include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s
-> include/linux/version.h include/linux/version.h.tmp; then rm -f
-> include/linux/version.h.tmp; else ; mv -f include/linux/version.h.tmp
-> include/linux/version.h; fi'
-> make: *** [include/linux/version.h] Error 2
->
->
-> # scripts/ver_linux
-> If some fields are empty or look unusual you may have an old version.
-> Compare to the current minimal requirements in Documentation/Changes.
->
-> Linux filesrv2 2.6.23-rc9 #1 SMP Wed Oct 3 02:12:33 UTC 2007 i686 pentium4 i386 GNU/Linux
->
-> Gnu C                  3.4.6
-> Gnu make               3.81
-> binutils               2.15.92.0.2
-> util-linux             2.12r
-> mount                  2.12r
-> module-init-tools      3.2.2
-> e2fsprogs              1.38
-> jfsutils               1.1.11
-> reiserfsprogs          3.6.19
-> xfsprogs               2.8.10
-> pcmciautils            014
-> pcmcia-cs              3.2.8
-> quota-tools            3.13.
-> PPP                    2.4.4
-> Linux C Library        2.3.6
-> Dynamic linker (ldd)   2.3.6
-> Linux C++ Library      6.0.3
-> Procps                 3.2.7
-> Net-tools              1.60
-> Kbd                    1.12
-> oprofile               0.9.1
-> Sh-utils               5.97
-> udev                   097
-> Modules Loaded
->
-> --
+please check it...
 
-Please send your .config as well so someone can try to reproduce this.
-And have you done a make mrproper first before trying to compile?
+---
+
+From: Yinghai Lu <yinghai.lu@sun.com>
+
+[SCSI] ses: fix memory leaks
+
+fix leaking with scomp leaking when failing. Also free page10 on
+driver removal  and remove one extra space.
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+
+ drivers/scsi/ses.c |   23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/drivers/scsi/ses.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/ses.c
++++ linux-2.6/drivers/scsi/ses.c
+@@ -416,11 +416,11 @@ static int ses_intf_add(struct class_dev
+ 	int i, j, types, len, components = 0;
+ 	int err = -ENOMEM;
+ 	struct enclosure_device *edev;
+-	struct ses_component *scomp;
++	struct ses_component *scomp = NULL;
+ 
+ 	if (!scsi_device_enclosure(sdev)) {
+ 		/* not an enclosure, but might be in one */
+-		edev = 	enclosure_find(&sdev->host->shost_gendev);
++		edev = enclosure_find(&sdev->host->shost_gendev);
+ 		if (edev) {
+ 			ses_match_to_enclosure(edev, sdev);
+ 			class_device_put(&edev->cdev);
+@@ -456,9 +456,6 @@ static int ses_intf_add(struct class_dev
+ 	if (!buf)
+ 		goto err_free;
+ 
+-	ses_dev->page1 = buf;
+-	ses_dev->page1_len = len;
+-
+ 	result = ses_recv_diag(sdev, 1, buf, len);
+ 	if (result)
+ 		goto recv_failed;
+@@ -473,6 +470,9 @@ static int ses_intf_add(struct class_dev
+ 		    type_ptr[0] == ENCLOSURE_COMPONENT_ARRAY_DEVICE)
+ 			components += type_ptr[1];
+ 	}
++	ses_dev->page1 = buf;
++	ses_dev->page1_len = len;
++	buf = NULL;
+ 
+ 	result = ses_recv_diag(sdev, 2, hdr_buf, INIT_ALLOC_SIZE);
+ 	if (result)
+@@ -489,6 +489,7 @@ static int ses_intf_add(struct class_dev
+ 		goto recv_failed;
+ 	ses_dev->page2 = buf;
+ 	ses_dev->page2_len = len;
++	buf = NULL;
+ 
+ 	/* The additional information page --- allows us
+ 	 * to match up the devices */
+@@ -506,11 +507,12 @@ static int ses_intf_add(struct class_dev
+ 		goto recv_failed;
+ 	ses_dev->page10 = buf;
+ 	ses_dev->page10_len = len;
++	buf = NULL;
+ 
+  no_page10:
+-	scomp = kmalloc(sizeof(struct ses_component) * components, GFP_KERNEL);
++	scomp = kzalloc(sizeof(struct ses_component) * components, GFP_KERNEL);
+ 	if (!scomp)
+-		goto  err_free;
++		goto err_free;
+ 
+ 	edev = enclosure_register(cdev->dev, sdev->sdev_gendev.bus_id,
+ 				  components, &ses_enclosure_callbacks);
+@@ -521,10 +523,9 @@ static int ses_intf_add(struct class_dev
+ 
+ 	edev->scratch = ses_dev;
+ 	for (i = 0; i < components; i++)
+-		edev->component[i].scratch = scomp++;
++		edev->component[i].scratch = scomp + i;
+ 
+ 	/* Page 7 for the descriptors is optional */
+-	buf = NULL;
+ 	result = ses_recv_diag(sdev, 7, hdr_buf, INIT_ALLOC_SIZE);
+ 	if (result)
+ 		goto simple_populate;
+@@ -532,6 +533,8 @@ static int ses_intf_add(struct class_dev
+ 	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
+ 	/* add 1 for trailing '\0' we'll use */
+ 	buf = kzalloc(len + 1, GFP_KERNEL);
++	if (!buf)
++		goto simple_polulate;
+ 	result = ses_recv_diag(sdev, 7, buf, len);
+ 	if (result) {
+  simple_populate:
+@@ -598,6 +601,7 @@ static int ses_intf_add(struct class_dev
+ 	err = -ENODEV;
+  err_free:
+ 	kfree(buf);
++	kfree(scomp);
+ 	kfree(ses_dev->page10);
+ 	kfree(ses_dev->page2);
+ 	kfree(ses_dev->page1);
+@@ -630,6 +634,7 @@ static void ses_intf_remove(struct class
+ 	ses_dev = edev->scratch;
+ 	edev->scratch = NULL;
+ 
++	kfree(ses_dev->page10);
+ 	kfree(ses_dev->page1);
+ 	kfree(ses_dev->page2);
+ 	kfree(ses_dev);
