@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYBKSck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbYBKShB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759584AbYBKSck (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYBKScV
+	id S1757028AbYBKShB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbYBKSgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:32:21 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:10510 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbYBKScU (ORCPT
+	Mon, 11 Feb 2008 13:36:53 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50882 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbYBKSgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:32:20 -0500
-Date: Mon, 11 Feb 2008 10:30:11 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: ananth@in.ibm.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
-       sam@ravnborg.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 0/8] Create and populate toplevel tests/ for kernel
- tests
-Message-Id: <20080211103011.e5e6ed23.randy.dunlap@oracle.com>
-In-Reply-To: <20080211102649.2ab423ec.randy.dunlap@oracle.com>
-References: <20080211104452.GB7944@in.ibm.com>
-	<20080211102649.2ab423ec.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 11 Feb 2008 13:36:51 -0500
+Date: Mon, 11 Feb 2008 18:36:15 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/8] ide: add struct ide_port_info instances to legacy host drivers
+Message-ID: <20080211183615.GA29891@flint.arm.linux.org.uk>
+References: <20080106170220.6861.4814.sendpatchset@localhost.localdomain> <20080106170310.6861.14522.sendpatchset@localhost.localdomain> <479E3AEA.5090600@ru.mvista.com> <200802020035.30918.bzolnier@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802020035.30918.bzolnier@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 10:26:49 -0800 Randy Dunlap wrote:
-
-> On Mon, 11 Feb 2008 16:14:52 +0530 Ananth N Mavinakayanahalli wrote:
-> 
-> > The following series of patches create and populate the toplevel tests/
-> > directory. This will henceforth be the place where all in-kernel tests
-> > live.
+On Sat, Feb 02, 2008 at 12:35:30AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > Index: b/drivers/ide/arm/icside.c
+> > > ===================================================================
+> > > --- a/drivers/ide/arm/icside.c
+> > > +++ b/drivers/ide/arm/icside.c
+> > > @@ -459,11 +456,19 @@ icside_register_v5(struct icside_state *
+> > >  
+> > >  	idx[0] = hwif->index;
+> > >  
+> > > -	ide_device_add(idx);
+> > > +	ide_device_add(idx, NULL);
+> > >  
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +static const struct ide_port_info icside_v6_port_info __initdata = {
+> > > +	.host_flags		= IDE_HFLAG_SERIALIZE |
+> > > +				  IDE_HFLAG_NO_DMA | /* no SFF-style DMA */
+> > > +				  IDE_HFLAG_NO_AUTOTUNE,
+> > > +	.mwdma_mask		= ATA_MWDMA2,
+> > > +	.swdma_mask		= ATA_SWDMA2,
+> > > +};
+> > > +
 > > 
-> > All patches against 2.6.25-rc1 and are just code movement without any
-> > change in functionality.
+> >     Interesting... this driver's support for SWDMA0 is broken since the cycle 
+> > should be 960 ns long, not 480, and SWDMA2 is underclocked using the same 
+> > cycle as SWDMA1, 480 ns...
 > 
-> Hi,
-> 
-> As Linus wrote on a recent sh pull request:
-> 
-> "Please use "git diff -M --stat --summary" to generate the diffstat: the -M 
-> enables rename detection, and the summary enables a summary of new/deleted 
-> or renamed files."
+> Added Russell to Cc:.
 
-Argh, you probably didn't use git, so please ignore my comment.
+Underclocking the DMA is not a problem - if you look at the timing
+diagrams and associated tables in the ATA specifications, you'll
+find that they specify the *minimum* cycle timings.
 
----
-~Randy
+However, you're correct that SWDMA0 is not able to be supported.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
