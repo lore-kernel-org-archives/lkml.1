@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbYBKCMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYBKCSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbYBKCMu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 21:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYBKCMl
+	id S1753409AbYBKCSL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 21:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYBKCR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 21:12:41 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:10841 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751299AbYBKCMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 21:12:40 -0500
-Subject: Re: [RFC PATCH v2] x86: explicit call to mmiotrace in
-	do_page_fault()
-From: Pavel Roskin <proski@gnu.org>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jan Beulich <jbeulich@novell.com>,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20080210200521.6278d39f@daedalus.pq.iki.fi>
-References: <1201660453.8837.13.camel@brick>
-	 <20080130200827.322c4f7d@daedalus.pq.iki.fi>
-	 <20080131150746.GB11996@elte.hu>
-	 <20080131180253.6c007852@daedalus.pq.iki.fi>
-	 <20080131081507.5edcde10@laptopd505.fenrus.org>
-	 <20080203085522.2b63e15b@daedalus.pq.iki.fi>
-	 <20080203070321.GA8293@elte.hu>
-	 <20080205222807.7b35ef2b@daedalus.pq.iki.fi>
-	 <20080205223958.2cab8ce3@daedalus.pq.iki.fi>
-	 <20080207125327.GB27234@elte.hu> <20080207125622.GA7111@infradead.org>
-	 <20080209195255.584d4157@daedalus.pq.iki.fi>
-	 <1202582370.16505.6.camel@lappy>
-	 <20080210200521.6278d39f@daedalus.pq.iki.fi>
-Content-Type: text/plain
-Date: Sun, 10 Feb 2008 21:12:38 -0500
-Message-Id: <1202695958.24474.22.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Feb 2008 21:17:57 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:63117 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751361AbYBKCRz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 21:17:55 -0500
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: 2.6.25-rc1-ext4-1 patchset released
+From: "Theodore Ts'o" <tytso@MIT.EDU>
+Phone: (781) 391-3464
+Message-Id: <E1JOODC-0007ws-Vb@closure.thunk.org>
+Date: Sun, 10 Feb 2008 21:16:02 -0500
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-02-10 at 20:05 +0200, Pekka Paalanen wrote:
 
-> Sorry Jan and Pavel, I forgot to CC you in the first go of this
-> patch. If this makes it into mainline, I don't think it will be left
-> there for many kernel versions. I plan to make kmmio.h as the API towards
-> modules in the future, and the page fault callback will "disappear".
-> I think madwifi could use just fine the kmmio.h functions, if it
-> works basically just like mmiotrace.
+This is a new ext4 patchset which is synchronized with the 2.6.25-rc1
+release.  No new patches were added, just patches removed because they
+have been accepted upstream.
 
-In fact, the tracing version of MadWifi has a directory called mmiotrace
-with the files lifted from nouveau.  I guess if will just stay in sync
-with the upstream.
+At this point, I do not anticipate any more patches to ext4 that will
+change the on-disk format.  The focus is on the optimization patches
+(i.e., delayed allocation support) fine-tuning performance, and fixing
+any bugs which turn up as more people use ext4.
 
-Many thanks for pushing it into the kernel.
+As a git tree:
 
--- 
-Regards,
-Pavel Roskin
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.25-rc1-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.25-rc1-ext4-1
+
+As a patchset:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.25-rc1-ext4-1
+
+                                                - Ted
+
+Akira Fujita (4):
+      ext4: online defrad header file changes
+      ext4: online defrag-- Allocate new contiguous blocks with mballoc
+      ext4: online defrag -- Move the file data to the new blocks
+      Free space fragmentation functions
+
+Alex Tomas (2):
+      vfs: add basic delayed allocation support
+      ext4: Add basic delayed allocation support
+
+Andi Kleen (2):
+      Remove incorrect BKL comments in ext4
+      Convert ext4 to use unlocked_ioctl v2
+
+Aneesh Kumar K.V (3):
+      ext4: undo the stable boundary patch changes
+      ext4: Enable delalloc and mballoc by default.
+      ext4: Show delalloc options
+
+Mingming Cao (3):
+      jbd: blocks reservation fix for large block support
+      jbd2: blocks reservation fix for large block support
+      ext4: remove read-inode from defrag code,replace with ext4_iget()
+
+Theodore Ts'o (2):
+      ext4: Stable/Unstable boundary
+      ext4: New inode allocation for FLEX_BG meta-data groups.
+
+ fs/buffer.c                     |    3 +-
+ fs/ext4/Makefile                |    2 +-
+ fs/ext4/balloc.c                |   28 +-
+ fs/ext4/defrag.c                | 2206 +++++++++++++++++++++++++++++++++++++++
+ fs/ext4/dir.c                   |    4 +-
+ fs/ext4/extents.c               |   65 +-
+ fs/ext4/file.c                  |    2 +-
+ fs/ext4/ialloc.c                |   96 ++
+ fs/ext4/inode.c                 |  166 +++-
+ fs/ext4/ioctl.c                 |   25 +-
+ fs/ext4/mballoc.c               |    7 +
+ fs/ext4/super.c                 |   78 ++-
+ fs/jbd/journal.c                |    7 +-
+ fs/jbd2/journal.c               |    7 +-
+ fs/mpage.c                      |  406 +++++++
+ include/linux/ext4_fs.h         |  100 ++-
+ include/linux/ext4_fs_extents.h |   22 +
+ include/linux/ext4_fs_sb.h      |    3 +
+ include/linux/mpage.h           |    2 +
+ 19 files changed, 3183 insertions(+), 46 deletions(-)
