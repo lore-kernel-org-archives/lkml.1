@@ -1,76 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbYBKOft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYBKOjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756319AbYBKOft (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 09:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbYBKOfR
+	id S1754672AbYBKOjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 09:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYBKOjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 09:35:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58251 "EHLO mx1.redhat.com"
+	Mon, 11 Feb 2008 09:39:11 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54159 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754710AbYBKOfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 09:35:08 -0500
-Date: Mon, 11 Feb 2008 22:31:14 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
-Cc: linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
-Subject: Re: [PATCH] proc: extend /proc/<pid>/fdinfo/<fd>
-Message-ID: <20080211143114.GB3695@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
-References: <20080209120157.GA3035@kernel.sg> <2f11576a0802110220g459d7390je05bfec161e6768e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752653AbYBKOjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 09:39:10 -0500
+Date: Mon, 11 Feb 2008 15:39:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
+Message-ID: <20080211143917.GA21447@uranus.ravnborg.org>
+References: <20080207133805.13f092ff@dilbert.local> <20080207130222.GA8587@flint.arm.linux.org.uk> <20080207141236.00940d09@dilbert.local> <20080211092547.09bca061@dilbert.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <2f11576a0802110220g459d7390je05bfec161e6768e@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080211092547.09bca061@dilbert.local>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Motohiro-san,
-
-<quote sender="KOSAKI Motohiro">
-> In general, I think this patch isn't wrong idea.
-> but it shuld be brush up more, may be.
-
-Thanks.
-
-> > kerndev: ~/code/kernel# cat /proc/`pgrep pickup`/fdinfo/6
-> > mode:   0622
+On Mon, Feb 11, 2008 at 09:25:47AM +0100, Hans-Jürgen Koch wrote:
+> Am Thu, 7 Feb 2008 14:12:36 +0100
+> schrieb Hans-Jürgen Koch <hjk@linutronix.de>:
 > 
-> I think this is inode attribute, but not fd attribute.
+> AFAICT, this patch was neither rejected nor applied. It generated a
+> long thread about changing the whole ARM Kconfig system. I feel not
+> qualified to do that, but I still want UIO available on ARM ;-)
+> What can I do to help?
 
-Yes, it is an inode attribute.
+I think we can just do like this. That will bring in a few device
+drives that does not make much sense on arm but does it matter?
 
-> > dev:    253,0
-> > ino:    21463057
-> 
-> may be useful, agreed with you :)
+And we are then in sync with the rest of the archs.
 
-Thanks.
+	Sam
 
-> > uid:    89
-> > gid:    89
-> > rdev:   0,0
-> > pos:    0
-> > flags:  04002 FD_CLOEXEC # if close-on-exec flag is set
-> 
-> agreed with Miklos's opinion.
-> 
-> > path:   /var/spool/postfix/public/pickup
-> 
-> may be, we shold think namespace..
-
-Besides readlink, this info can be gathered by running:
-ls -laF /proc/<pid>/fd/<fd>
-
-So, I agree with Miklo's opinion that we can omit this in the output.
-
-> > You can also use this to find out more information about locked open files:
-> 
-> is your requirement only fd -> ino pick up?
-
-Not only this, but it is useful to know quickly if the open file descriptor
-has a close-on-exec flag set.
-
-Thanks,
-Eugene
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 9619c43..64629dd 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1087,91 +1087,7 @@ endmenu
+ 
+ source "net/Kconfig"
+ 
+-menu "Device Drivers"
+-
+-source "drivers/base/Kconfig"
+-
+-source "drivers/connector/Kconfig"
+-
+-if ALIGNMENT_TRAP || !CPU_CP15_MMU
+-source "drivers/mtd/Kconfig"
+-endif
+-
+-source "drivers/parport/Kconfig"
+-
+-source "drivers/pnp/Kconfig"
+-
+-source "drivers/block/Kconfig"
+-
+-# misc before ide - BLK_DEV_SGIIOC4 depends on SGI_IOC4
+-
+-source "drivers/misc/Kconfig"
+-
+-source "drivers/ide/Kconfig"
+-
+-source "drivers/scsi/Kconfig"
+-
+-source "drivers/ata/Kconfig"
+-
+-source "drivers/md/Kconfig"
+-
+-source "drivers/message/fusion/Kconfig"
+-
+-source "drivers/ieee1394/Kconfig"
+-
+-source "drivers/message/i2o/Kconfig"
+-
+-source "drivers/net/Kconfig"
+-
+-source "drivers/isdn/Kconfig"
+-
+-# input before char - char/joystick depends on it. As does USB.
+-
+-source "drivers/input/Kconfig"
+-
+-source "drivers/char/Kconfig"
+-
+-source "drivers/i2c/Kconfig"
+-
+-source "drivers/spi/Kconfig"
+-
+-source "drivers/gpio/Kconfig"
+-
+-source "drivers/w1/Kconfig"
+-
+-source "drivers/power/Kconfig"
+-
+-source "drivers/hwmon/Kconfig"
+-
+-source "drivers/watchdog/Kconfig"
+-
+-source "drivers/ssb/Kconfig"
+-
+-#source "drivers/l3/Kconfig"
+-
+-source "drivers/mfd/Kconfig"
+-
+-source "drivers/media/Kconfig"
+-
+-source "drivers/video/Kconfig"
+-
+-source "sound/Kconfig"
+-
+-source "drivers/hid/Kconfig"
+-
+-source "drivers/usb/Kconfig"
+-
+-source "drivers/mmc/Kconfig"
+-
+-source "drivers/leds/Kconfig"
+-
+-source "drivers/rtc/Kconfig"
+-
+-source "drivers/dma/Kconfig"
+-
+-source "drivers/dca/Kconfig"
+-
+-endmenu
++source "drivers/Kconfig"
+ 
+ source "fs/Kconfig"
+ 
