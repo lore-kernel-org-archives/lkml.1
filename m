@@ -1,49 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYBKFjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYBKFwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754536AbYBKFjm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 00:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYBKFje
+	id S1752721AbYBKFwe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 00:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbYBKFwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 00:39:34 -0500
-Received: from mga06.intel.com ([134.134.136.21]:61217 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751153AbYBKFje (ORCPT
+	Mon, 11 Feb 2008 00:52:23 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:48172 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbYBKFwW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 00:39:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,332,1199692800"; 
-   d="scan'208";a="257364775"
-Message-ID: <47AFDF57.9070203@linux.intel.com>
-Date: Sun, 10 Feb 2008 21:38:31 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Oops report for the week upto Feb 10th 2008
-References: <47AF9867.6050902@linux.intel.com> <20080211053113.GA1736@martell.zuzino.mipt.ru>
-In-Reply-To: <20080211053113.GA1736@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 Feb 2008 00:52:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=oo3qV8lTAmYVdSvJoMwb15xrAhlIV/1e3XeiUvhru2fjtxEIyMqkotPxiq2jGQj9ink17v2/EjnwRuVcVVWrY3Gd5D6LSH9bFi0Hip1fEn+m1g0cZHPLGxJIg7PwFuScZWWp2c3udHcirnpx36g/ZDQ0zJhDKeNaUN0mt6B5GPk=
+Subject: Re: [2.6.25-rc1 regression] Suspend to RAM (bisected)
+From: Calvin Walton <calvin.walton@gmail.com>
+To: "Carlos R. Mafra" <crmafra@gmail.com>
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com
+In-Reply-To: <47AFDC4D.4070400@gmail.com>
+References: <47AFDC4D.4070400@gmail.com>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 00:47:44 -0500
+Message-Id: <1202708864.5206.0.camel@zem>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Sun, Feb 10, 2008 at 04:35:51PM -0800, Arjan van de Ven wrote:
->> Rank 3: remove_proc_entry
->> 	WARN_ON at fs/proc/generic.c:736
->> 	Reported 20 times (38 total reports)
->> 	This WARN_ON is there if code tries to remove a non-empty /proc 
->> 	directory.
->> 	Most reports are tainted, pointing at a bug in a binary module.
->> 	Without the WARN_ON improvements from 2.6.25-rc1 it'll be hard to 
->> 	figure out which module is guilty.
+On Mon, 2008-02-11 at 03:25 -0200, Carlos R. Mafra wrote: 
+> Hi,
 > 
-> Easy, I'll submit patch RSN.
+> I want to report that suspend to RAM stopped working on my Sony Vaio 
+> VGN-FZ240E in 2.6.25-rc1 and that I could bisect the problem down
+> to:
+> 
+> commit bc71bec91f9875ef825d12104acf3bf4ca215fa4
+> Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
+> Date:   Thu Jan 31 17:35:04 2008 -0800
+> 
+>     ACPI: enable MWAIT for C1 idle
 
-to fix it or to print modules?
-(the later is already done in 2.6.25-rc1, just not in 2.6.24 yet)
+I normally hate to throw in a 'me-too', but I'm also seeing a
+suspend-to-ram regression on my Thinkpad R61i that I've managed to
+bisect down to the same patch series.
+
+You beat me emailing the issue to the list by a few minutes :)
+
+> The problem with suspend to RAM is that right after typing (from inside X)
+> 'echo mem > /sys/power/state' the screen becomes black and the laptop 
+> freezes. I have to use SysRq+b to reboot.
+
+My symptoms in this case are slightly different - the suspend appears to
+work correctly, and is fast. However, when I resume, the screen lights
+up quickly, but the system hangs for nearly a minute with the suspend
+light still on solid before it actually resumes. No delay is visible in
+dmesg; this apparently happens before the "return to C".
+
+> I tried to revert the above commit (bc71bec) on top of 2.6.25-rc1, but
+> the compilation fails. It turns out that I have to revert also 9a0b8415 and
+> 9b12e18c to be able to compile without errors. 
+> 
+> After reverting the 3 commits mentioned above, the resulting 2.6.25-rc1 kernel
+> can suspend to RAM again (and I must say that it is better that 2.6.24, because
+> now it resumes directly into X and I don't need to use Crtl-Alt-F1 and Alt-F7 to
+> go back to X as I used to do before).
+
+I just tried reverting the above-mentioned 3 commits, doing so fixes the
+delay. 
+
+> The laptop is a Core 2 Duo T7250 2.0 GHz, running Mandriva 2008.0 in 64-bit mode, with the
+> following graphics card:
+> VGA compatible controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 0c) (prog-if 00 [VGA])
+
+Rather similar system - I have a core 2 duo 1.5 running x86_64 gentoo,
+and a GM965 chip (using uvesafb)
+
+> 
+> If there is anything else I can do to help please let me know.
+> 
+> Carlos R. Mafra
+
+-- 
+Calvin Walton <calvin.walton@gmail.com>
+
 
