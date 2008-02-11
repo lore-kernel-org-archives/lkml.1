@@ -1,73 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbYBKT6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761003AbYBKT6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbYBKT6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760266AbYBKT6W
+	id S1761003AbYBKT6q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbYBKT6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:58:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60035 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755593AbYBKT6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:58:23 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:57237 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760173AbYBKT6V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 11 Feb 2008 14:58:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.24-git2: Oracle 11g VKTM process enters R state on startup and is unkillable [still broken in 2.6.25-rc1]
-Date: Mon, 11 Feb 2008 20:56:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alessandro Suardi <alessandro.suardi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <5a4c581d0802110820l1fcbb1ffib874f268b4ab7eae@mail.gmail.com> <200802112009.31018.rjw@sisk.pl> <alpine.LFD.1.00.0802111131310.2920@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802111131310.2920@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Mon, 11 Feb 2008 08:46:27 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Kiszka <jan.kiszka@web.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@zip.com.au>, Thomas Gleixner <tglx@linutronix.de>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [2/6] uaccess: add probe_kernel_write()
+Message-Id: <20080211084627.d67b4347.randy.dunlap@oracle.com>
+In-Reply-To: <20080210200540.GA24677@elte.hu>
+References: <20080210071326.GB3851@elte.hu>
+	<47AF483E.2060202@web.de>
+	<alpine.LFD.1.00.0802101102300.2896@woody.linux-foundation.org>
+	<20080210200540.GA24677@elte.hu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802112056.17839.rjw@sisk.pl>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 11 of February 2008, Linus Torvalds wrote:
-> 
-> On Mon, 11 Feb 2008, Rafael J. Wysocki wrote:
-> 
-> > On Monday, 11 of February 2008, Alessandro Suardi wrote:
-> > > >
-> > > > 2.6.24-git1 is okay
-> > > > 2.6.24-git2 is bad
-> 
-> Ok, that's git ID's
-> 
-> 	b47711bfbcd4eb77ca61ef0162487b20e023ae55 2.6.24-git1
-> 	9b73e76f3cf63379dcf45fcd4f112f5812418d0a 2.6.24-git2
-> 
-> so if you get a git tree, you can do
-> 
-> 	gitk b47711b..9b73e76
-> 
-> to see what happened in there. 
-> 
-> However, the obvious candidates are the scheduler or the ocfs2 merge, and 
-> the latter is only relevant in case you use ocfs2, of course. 
-> 
-> The rest of it tends to be the DVB and SCSI updates.
-> 
-> But it would be great if you could do a bisect and verify. Just do
-> 
-> 	git bisect start
-> 	git bisect good b47711bfbcd4eb77ca61ef0162487b20e023ae55
-> 	git bisect bad 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
-> 
-> and off you go..
+On Sun, 10 Feb 2008 21:05:40 +0100 Ingo Molnar wrote:
 
-Well, I've already bisected that down to commit
-6f505b16425a51270058e4a93441fe64de3dd435 "sched: rt group scheduling" and
-provided a simple test case.  Moreover, there are patches from Peter that fix
-the problem, but they are lost somewhere in the way from him to you (please see
-http://lkml.org/lkml/2008/2/5/535 and http://lkml.org/lkml/2008/2/6/320).
+> Subject: uaccess: add probe_kernel_write()
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> add probe_kernel_read() and probe_kernel_write().
+> 
+> Uninlined and restricted to kernel range memory only, as suggested
+> by Linus.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/uaccess.h |   22 ++++++++++++++++++++++
+>  mm/Makefile             |    2 +-
+>  mm/maccess.c            |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 69 insertions(+), 1 deletion(-)
+> 
+> Index: linux-kgdb.q/include/linux/uaccess.h
+> ===================================================================
+> --- linux-kgdb.q.orig/include/linux/uaccess.h
+> +++ linux-kgdb.q/include/linux/uaccess.h
+> @@ -84,4 +84,26 @@ static inline unsigned long __copy_from_
+>  		ret;					\
+>  	})
+>  
+> +/*
+> + * probe_kernel_read(): safely attempt to read from a location
 
-Thanks,
-Rafael
+Please insert a hyphen/dash/'-' between function name and its
+short description on the line above and on other similar lines.
+
+Documentation/kernel-doc-nano-HOWTO.txt .
+
+> + * @dst: pointer to the buffer that shall take the data
+> + * @src: address to read from
+> + * @size: size of the data chunk
+> + *
+> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
+> + * happens, handle that and return -EFAULT.
+> + */
+> +extern long probe_kernel_read(void *dst, void *src, size_t size);
+> +
+> +/*
+> + * probe_kernel_write(): safely attempt to write to a location
+> + * @dst: address to write to
+> + * @src: pointer to the data that shall be written
+> + * @size: size of the data chunk
+> + *
+> + * Safely write to address @dst from the buffer at @src.  If a kernel fault
+> + * happens, handle that and return -EFAULT.
+> + */
+> +extern long probe_kernel_write(void *dst, void *src, size_t size);
+> +
+>  #endif		/* __LINUX_UACCESS_H__ */
+
+> Index: linux-kgdb.q/mm/maccess.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-kgdb.q/mm/maccess.c
+> @@ -0,0 +1,46 @@
+> +/*
+> + * Access kernel memory without faulting.
+> + */
+> +#include <linux/uaccess.h>
+> +#include <linux/mm.h>
+> +
+> +/**
+> + * probe_kernel_read(): safely attempt to read from a location
+> + * @dst: pointer to the buffer that shall take the data
+> + * @src: address to read from
+> + * @size: size of the data chunk
+> + *
+> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
+> + * happens, handle that and return -EFAULT.
+> + */
+> +long probe_kernel_read(void *dst, void *src, size_t size)
+> +{
+> +	long ret;
+> +
+> +	pagefault_disable();
+> +	ret = __copy_from_user_inatomic(dst,
+> +			(__force const void __user *)src, size);
+> +	pagefault_enable();
+> +
+> +	return ret ? -EFAULT : 0;
+> +}
+> +
+> +/**
+> + * probe_kernel_write(): safely attempt to write to a location
+> + * @dst: address to write to
+> + * @src: pointer to the data that shall be written
+> + * @size: size of the data chunk
+> + *
+> + * Safely write to address @dst from the buffer at @src.  If a kernel fault
+> + * happens, handle that and return -EFAULT.
+> + */
+> +long probe_kernel_write(void *dst, void *src, size_t size)
+> +{
+> +	long ret;
+> +
+> +	pagefault_disable();
+> +	ret = __copy_to_user_inatomic((__force void __user *)dst, src, size);
+> +	pagefault_enable();
+> +
+> +	return ret ? -EFAULT : 0;
+> +}
+
+---
+~Randy
