@@ -1,51 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbYBKJfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYBKJfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbYBKJfB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 04:35:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYBKJee
+	id S1753991AbYBKJfa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 04:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYBKJef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 04:34:34 -0500
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:37305 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYBKJed (ORCPT
+	Mon, 11 Feb 2008 04:34:35 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:16582 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYBKJed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 11 Feb 2008 04:34:33 -0500
 From: Andi Kleen <ak@suse.de>
-References: <200802111034.764275766@suse.de>
-In-Reply-To: <200802111034.764275766@suse.de>
+Message-Id: <200802111034.764275766@suse.de>
 To: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/8] CPA: Fix gbpages support in try_preserve_lage_page
-Message-Id: <20080211093429.CD9D31B41CE@basil.firstfloor.org>
-Date: Mon, 11 Feb 2008 10:34:29 +0100 (CET)
-X-OriginalArrivalTime: 11 Feb 2008 09:28:08.0990 (UTC) FILETIME=[6A0593E0:01C86C90]
+Subject: [PATCH] [0/8] Various kernel mapping bug fixes
+Date: Mon, 11 Feb 2008 10:34:28 +0100 (CET)
+X-OriginalArrivalTime: 11 Feb 2008 09:28:08.0318 (UTC) FILETIME=[699F09E0:01C86C90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Use correct page sizes and masks for GB pages in try_preserve_large_page()
+Relative to git-x86#mm 05afd57b4438d4650d93e6f54f465b0cdd2d9ea8) 
 
-This prevents a boot hang on a GB capable system with CONFIG_DIRECT_GBPAGES
-enabled.
+The first bug fix is the most important one -- it fixes a boot hang
+on gbpages systems -- the rest is for random issues I found while looking 
+at the code. Several are related to EFI (see caveats in the descriptions), 
+which looks very broken currently without these patches, but definitely 
+needs more testing.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- arch/x86/mm/pageattr.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/arch/x86/mm/pageattr.c
-===================================================================
---- linux.orig/arch/x86/mm/pageattr.c
-+++ linux/arch/x86/mm/pageattr.c
-@@ -278,8 +278,8 @@ try_preserve_large_page(pte_t *kpte, uns
- 		break;
- #ifdef CONFIG_X86_64
- 	case PG_LEVEL_1G:
--		psize = PMD_PAGE_SIZE;
--		pmask = PMD_PAGE_MASK;
-+		psize = PUD_PAGE_SIZE;
-+		pmask = PUD_PAGE_MASK;
- 		break;
- #endif
- 	default:
+-Andi
