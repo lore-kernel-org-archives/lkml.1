@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYBKPiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYBKPjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbYBKPiz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYBKPiq
+	id S1758069AbYBKPjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbYBKPi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:38:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52838 "EHLO mx1.redhat.com"
+	Mon, 11 Feb 2008 10:38:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52844 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620AbYBKPim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:38:42 -0500
-Message-ID: <47B06B4E.1010704@redhat.com>
-Date: Mon, 11 Feb 2008 10:35:42 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1757518AbYBKPi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 10:38:56 -0500
+Message-ID: <47B06BBD.4050306@redhat.com>
+Date: Mon, 11 Feb 2008 10:37:33 -0500
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@zip.com.au>
-Subject: Re: [17/19] ftrace: dynamic enabling/disabling of function calls
-References: <20080210072109.GR4100@elte.hu>
-In-Reply-To: <20080210072109.GR4100@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: preempt rcu bug on s390
+References: <20080209113435.GA6915@osiris.boeblingen.de.ibm.com> <20080209140711.GA16205@linux.vnet.ibm.com> <20080209171451.GB8069@osiris.ibm.com> <20080209220226.GB16205@linux.vnet.ibm.com> <20080210130150.GA9044@osiris.ibm.com>
+In-Reply-To: <20080210130150.GA9044@osiris.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo and Steven,
+Heiko Carstens wrote:
 
-Ingo Molnar wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
+>> Does s390 start out in nohz mode?  The reason I ask is that it feels like
+>> an off-by-one error for the dynticks_progress_counter.
 > 
-> This patch adds a feature to dynamically replace the ftrace code
-> with the jmps to allow a kernel with ftrace configured to run
-> as fast as it can without it configured.
+> Actually I forgot to add a few ifdefs to make the code do something :)
+> That just reveals that we have a conflict with the dynticks implementation
+> and s390's nohz that shows up in what rcu_irq_enter/exit assume.
+> I didn't patch s390 and common code so it will work, but I think the
+> patch you mentionened will fix the problem I reported.
+> So I guess we should either convert s390 to use the generic dynticks
+> implementation or disable preemptible rcu on s390 until we converted
+> our code.
 > 
-> The way this works, is on bootup, a ftrace function is registered
-> to record the instruction pointer of all places that call the
-> function.
-> 
-> Later, a kthread is awoken once a second that performs a stop_machine,
-> and replaces all the code that was called with a jmp over the call
-> to ftrace. It only replaces what was found the previous time.
-> 
-> e.g.
-> 
->   call ftrace  /* 5 bytes */
-> 
-> is replaced with
-> 
->   jmp 3f  /* jmp is 2 bytes and we jump 3 forward */
-> 3:
-> 
-> When we want to enable ftrace for function tracing, the IP recording
-> is removed, and stop_machine is called again to replace all the locations
-> of that were recorded back to the call of ftrace.  When it is disabled,
-> we replace the code back to the jmp.
-> 
-> Allocation is done by the kthread. If the ftrace recording function is
-> called, and we don't have any record slots available, then we simply
-> skip that call. Once a second a new page (if needed) is allocated for
-> recording new ftrace function calls.  A large batch is allocated at
-> boot up to get most of the calls there.
-> 
-> Because we do this via stop_machine, we don't have to worry about another
-> CPU executing a ftrace call as we modify it. But we do need to worry
-> about NMI's so all functions that might be called via nmi must be
-> annotated with notrace_nmi. When this code is configured in, the NMI code
-> will not call notrace.
+> Thanks for helping debugging this!
 
-I'd like to suggest that you can use djprobe-like solution here to eliminate
-stop_machine.
-The djprobe makes a bypass over that call instruction by using a kprobe,
-and after replacing the call instruction, you can safely remove the bypass.
-Here is an ols paper about djprobe.
-http://www.kernel.org/doc/ols/2007/ols2007v1-pages-189-200.pdf
+Heiko, thanks for reporting this.
 
-Thank you,
+This patch still didn't make it into -rc1, and it really should. Because 
+without this patch, PREEMPT_RCU and NO_HZ together is broken, on all boxes.
 
--- 
-Masami Hiramatsu
+The patch is in Ingo's sched-devel git tree, as 
+9460545f81ea48b07dbb20456a8ede776d8ebc1b (last I checked) and titled:
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+     rcu: add support for dynamic ticks and preempt rcu
 
-e-mail: mhiramat@redhat.com
 
+-- Steve
