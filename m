@@ -1,177 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbYBKW0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbYBKW3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbYBKW0f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757618AbYBKW0S
+	id S1757178AbYBKW3O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 17:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYBKW27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:26:18 -0500
-Received: from lixom.net ([66.141.50.11]:57456 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754638AbYBKW0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:26:17 -0500
-Date: Mon, 11 Feb 2008 16:28:13 -0600
-From: Olof Johansson <olof@lixom.net>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH] Execute tasklets in the same order they were queued
-Message-ID: <20080211222813.GA14316@lixom.net>
+	Mon, 11 Feb 2008 17:28:59 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:52031 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753814AbYBKW26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 17:28:58 -0500
+Date: Mon, 11 Feb 2008 14:28:55 -0800
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Adam Litke <agl@us.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: 2.6.24-git20 -- BUG: sleeping function called from invalid
+	context at include/asm/uaccess_32.h:449
+Message-ID: <20080211222855.GA9138@us.ibm.com>
+References: <a44ae5cd0802091103s4c24c70fyc747d9c4ab9a9897@mail.gmail.com> <20080209162643.fd3822f1.akpm@linux-foundation.org> <20080210212528.GA17442@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080210212528.GA17442@us.ibm.com>
+X-Operating-System: Linux 2.6.24-7-generic (i686)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed this when looking at an openswan issue. Openswan (ab?)uses
-the tasklet API to defer processing of packets in some situations,
-with one packet per tasklet_action(). I started noticing sequences of
-reverse-ordered sequence numbers coming over the wire, since new tasklets
-are always queued at the head of the list but processed sequentially.
+On 10.02.2008 [13:25:28 -0800], Nishanth Aravamudan wrote:
+> On 09.02.2008 [16:26:43 -0800], Andrew Morton wrote:
+> > On Sat, 9 Feb 2008 14:03:28 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+> > 
+> > > Command run:
+> > >      find /proc | xargs tail
+> > > 
+> > > [ 2710.028219] BUG: sleeping function called from invalid context at
+> > > include/asm/uaccess_32.h:449
+> > > [ 2710.028229] in_atomic():1, irqs_disabled():0
+> > > [ 2710.028232] 1 lock held by head/9380:
+> > > [ 2710.028234]  #0:  (hugetlb_lock){--..}, at: [<c016734f>]
+> > > hugetlb_overcommit_handler+0x16/0x3e
+> > > [ 2710.028248] Pid: 9380, comm: head Not tainted 2.6.24-git20 #5
+> > > [ 2710.028260]  [<c0118749>] __might_sleep+0xc2/0xc9
+> > > [ 2710.028267]  [<c021cb39>] copy_to_user+0x32/0x49
+> > > [ 2710.028277]  [<c0123f6a>] do_proc_doulongvec_minmax+0x1df/0x27f
+> > > [ 2710.028289]  [<c012403c>] proc_doulongvec_minmax+0x15/0x17
+> > > [ 2710.028295]  [<c0167363>] hugetlb_overcommit_handler+0x2a/0x3e
+> > > [ 2710.028303]  [<c01a1462>] proc_sys_read+0x5e/0x7b
+> > > [ 2710.028311]  [<c01a1404>] ? proc_sys_read+0x0/0x7b
+> > > [ 2710.028317]  [<c0170d7a>] vfs_read+0x8a/0x106
+> > > [ 2710.028325]  [<c017116f>] sys_read+0x3b/0x60
+> > > [ 2710.028331]  [<c0103e32>] sysenter_past_esp+0x5f/0xa5
+> > 
+> > Ugh, how did I let that one through?
+> 
+> Don't blame yourself, blame me.
+> 
+> > Guys, how often mut it be said?
+> 
+> Hopefully this is often enough.
+> 
+> > PLEASE always test all code with all kernel deubg options enabled.
+> 
+> Yep, 100% my error. Am testing a fix now, will post soon.
 
-Convert it to instead append new entries to the tail of the list. As an
-extra bonus, the splicing code in takeover_tasklets() no longer has to
-iterate over the list.
+While I'm not removing the brown paper bag from my head, I was unable to
+reproduce the BUG on my 2-way x86_64 at home. I then noticed Miles'
+system is x86_32. After wrangling with our testing grid, I got a 32-bit
+system booting 2.6.24-git22. Didn't reproduce there either, with
+CONFIG_DEBUG_SPINLOCK_SLEEP=y. What am I doing wrong? I think the
+following is the right fix, but have not see the original BUG to know
+for sure. I did the `find /proc | xargs tail`, but shouldn't I hit the
+BUG just simply `cat`'ing or `echo`ing into the file?
 
+Miles, could you test the following?
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Thanks,
+Nish
 
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 5b3aea5..228c9c9 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -355,7 +355,8 @@ void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)
- /* Tasklets */
- struct tasklet_head
+hugetlb: fix overcommit locking
+
+proc_doulongvec_minmax() calls copy_to_user()/copy_from_user(), so we
+can't hold hugetlb_lock over the call. Use a dummy variable to store the
+sysctl result, like in hugetlb_sysctl_handler(), then grab the lock to
+update nr_overcommit_huge_pages.
+
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 7ca198b..addca4c 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -33,8 +33,8 @@ int hugetlb_reserve_pages(struct inode *inode, long from, long to);
+ void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed);
+ 
+ extern unsigned long max_huge_pages;
++extern unsigned long sysctl_overcommit_huge_pages;
+ extern unsigned long hugepages_treat_as_movable;
+-extern unsigned long nr_overcommit_huge_pages;
+ extern const unsigned long hugetlb_zero, hugetlb_infinity;
+ extern int sysctl_hugetlb_shm_group;
+ 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index d41ef6b..2024632 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -978,8 +978,8 @@ static struct ctl_table vm_table[] = {
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "nr_overcommit_hugepages",
+-		.data		= &nr_overcommit_huge_pages,
+-		.maxlen		= sizeof(nr_overcommit_huge_pages),
++		.data		= &sysctl_overcommit_huge_pages,
++		.maxlen		= sizeof(sysctl_overcommit_huge_pages),
+ 		.mode		= 0644,
+ 		.proc_handler	= &hugetlb_overcommit_handler,
+ 	},
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index d9a3803..cb1b3a7 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -24,14 +24,15 @@
+ const unsigned long hugetlb_zero = 0, hugetlb_infinity = ~0UL;
+ static unsigned long nr_huge_pages, free_huge_pages, resv_huge_pages;
+ static unsigned long surplus_huge_pages;
++static unsigned long nr_overcommit_huge_pages;
+ unsigned long max_huge_pages;
++unsigned long sysctl_overcommit_huge_pages;
+ static struct list_head hugepage_freelists[MAX_NUMNODES];
+ static unsigned int nr_huge_pages_node[MAX_NUMNODES];
+ static unsigned int free_huge_pages_node[MAX_NUMNODES];
+ static unsigned int surplus_huge_pages_node[MAX_NUMNODES];
+ static gfp_t htlb_alloc_mask = GFP_HIGHUSER;
+ unsigned long hugepages_treat_as_movable;
+-unsigned long nr_overcommit_huge_pages;
+ static int hugetlb_next_nid;
+ 
+ /*
+@@ -609,8 +610,9 @@ int hugetlb_overcommit_handler(struct ctl_table *table, int write,
+ 			struct file *file, void __user *buffer,
+ 			size_t *length, loff_t *ppos)
  {
--	struct tasklet_struct *list;
-+	struct tasklet_struct *head;
-+	struct tasklet_struct **tail;
- };
- 
- /* Some compilers disobey section attribute on statics when not
-@@ -368,8 +369,9 @@ void __tasklet_schedule(struct tasklet_struct *t)
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
--	t->next = __get_cpu_var(tasklet_vec).list;
--	__get_cpu_var(tasklet_vec).list = t;
-+	t->next = NULL;
-+	*__get_cpu_var(tasklet_vec).tail = t;
-+	__get_cpu_var(tasklet_vec).tail = &(t->next);
- 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
- 	local_irq_restore(flags);
+-	spin_lock(&hugetlb_lock);
+ 	proc_doulongvec_minmax(table, write, file, buffer, length, ppos);
++	spin_lock(&hugetlb_lock);
++	nr_overcommit_huge_pages = sysctl_overcommit_huge_pages;
+ 	spin_unlock(&hugetlb_lock);
+ 	return 0;
  }
-@@ -381,8 +383,9 @@ void __tasklet_hi_schedule(struct tasklet_struct *t)
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
--	t->next = __get_cpu_var(tasklet_hi_vec).list;
--	__get_cpu_var(tasklet_hi_vec).list = t;
-+	t->next = NULL;
-+	*__get_cpu_var(tasklet_hi_vec).tail = t;
-+	__get_cpu_var(tasklet_hi_vec).tail = &(t->next);
- 	raise_softirq_irqoff(HI_SOFTIRQ);
- 	local_irq_restore(flags);
- }
-@@ -394,8 +397,9 @@ static void tasklet_action(struct softirq_action *a)
- 	struct tasklet_struct *list;
- 
- 	local_irq_disable();
--	list = __get_cpu_var(tasklet_vec).list;
--	__get_cpu_var(tasklet_vec).list = NULL;
-+	list = __get_cpu_var(tasklet_vec).head;
-+	__get_cpu_var(tasklet_vec).head = NULL;
-+	__get_cpu_var(tasklet_vec).tail = &__get_cpu_var(tasklet_vec).head;
- 	local_irq_enable();
- 
- 	while (list) {
-@@ -415,8 +419,9 @@ static void tasklet_action(struct softirq_action *a)
- 		}
- 
- 		local_irq_disable();
--		t->next = __get_cpu_var(tasklet_vec).list;
--		__get_cpu_var(tasklet_vec).list = t;
-+		t->next = NULL;
-+		*__get_cpu_var(tasklet_vec).tail = t;
-+		__get_cpu_var(tasklet_vec).tail = &(t->next);
- 		__raise_softirq_irqoff(TASKLET_SOFTIRQ);
- 		local_irq_enable();
- 	}
-@@ -427,8 +432,9 @@ static void tasklet_hi_action(struct softirq_action *a)
- 	struct tasklet_struct *list;
- 
- 	local_irq_disable();
--	list = __get_cpu_var(tasklet_hi_vec).list;
--	__get_cpu_var(tasklet_hi_vec).list = NULL;
-+	list = __get_cpu_var(tasklet_hi_vec).head;
-+	__get_cpu_var(tasklet_hi_vec).head = NULL;
-+	__get_cpu_var(tasklet_hi_vec).tail = &__get_cpu_var(tasklet_hi_vec).head;
- 	local_irq_enable();
- 
- 	while (list) {
-@@ -448,8 +454,9 @@ static void tasklet_hi_action(struct softirq_action *a)
- 		}
- 
- 		local_irq_disable();
--		t->next = __get_cpu_var(tasklet_hi_vec).list;
--		__get_cpu_var(tasklet_hi_vec).list = t;
-+		t->next = NULL;
-+		*__get_cpu_var(tasklet_hi_vec).tail = t;
-+		__get_cpu_var(tasklet_hi_vec).tail = &(t->next);
- 		__raise_softirq_irqoff(HI_SOFTIRQ);
- 		local_irq_enable();
- 	}
-@@ -486,6 +493,15 @@ EXPORT_SYMBOL(tasklet_kill);
- 
- void __init softirq_init(void)
- {
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		per_cpu(tasklet_vec, cpu).tail =
-+			&per_cpu(tasklet_vec, cpu).head;
-+		per_cpu(tasklet_hi_vec, cpu).tail =
-+			&per_cpu(tasklet_hi_vec, cpu).head;
-+	}
-+
- 	open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
- 	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
- }
-@@ -554,9 +570,12 @@ void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu)
- 		return;
- 
- 	/* CPU is dead, so no lock needed. */
--	for (i = &per_cpu(tasklet_vec, cpu).list; *i; i = &(*i)->next) {
-+	for (i = &per_cpu(tasklet_vec, cpu).head; *i; i = &(*i)->next) {
- 		if (*i == t) {
- 			*i = t->next;
-+			/* If this was the tail element, move the tail ptr */
-+			if (*i == NULL)
-+				per_cpu(tasklet_vec, cpu).tail = i;
- 			return;
- 		}
- 	}
-@@ -571,14 +590,16 @@ static void takeover_tasklets(unsigned int cpu)
- 	local_irq_disable();
- 
- 	/* Find end, append list for that CPU. */
--	for (i = &__get_cpu_var(tasklet_vec).list; *i; i = &(*i)->next);
--	*i = per_cpu(tasklet_vec, cpu).list;
--	per_cpu(tasklet_vec, cpu).list = NULL;
-+	*__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).head;
-+	__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).tail;
-+	per_cpu(tasklet_vec, cpu).head = NULL;
-+	per_cpu(tasklet_vec, cpu).next = &per_cpu(tasklet_vec, cpu).head;
- 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
- 
--	for (i = &__get_cpu_var(tasklet_hi_vec).list; *i; i = &(*i)->next);
--	*i = per_cpu(tasklet_hi_vec, cpu).list;
--	per_cpu(tasklet_hi_vec, cpu).list = NULL;
-+	*__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).head;
-+	__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).tail;
-+	per_cpu(tasklet_hi_vec, cpu).head = NULL;
-+	per_cpu(tasklet_hi_vec, cpu).next = &per_cpu(tasklet_hi_vec, cpu).head;
- 	raise_softirq_irqoff(HI_SOFTIRQ);
- 
- 	local_irq_enable();
