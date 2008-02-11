@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYBKSC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbYBKSEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758681AbYBKSC7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYBKSCw
+	id S1758843AbYBKSEy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYBKSEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:02:52 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:41841 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751602AbYBKSCv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:02:51 -0500
-Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, haveblue@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20080211175425.GA28300@kroah.com>
-References: <1202750598.25604.3.camel@dyn9047017100.beaverton.ibm.com>
-	 <20080211175425.GA28300@kroah.com>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 10:05:36 -0800
-Message-Id: <1202753136.25604.7.camel@dyn9047017100.beaverton.ibm.com>
+	Mon, 11 Feb 2008 13:04:46 -0500
+Received: from smtp1.cc.lut.fi ([157.24.2.30]:37928 "EHLO smtp1.cc.lut.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbYBKSEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 13:04:45 -0500
+Date: Mon, 11 Feb 2008 20:04:41 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Roskin <proski@gnu.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jan Beulich <jbeulich@novell.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC PATCH v2] x86: explicit call to mmiotrace in
+ do_page_fault()
+Message-ID: <20080211200441.04816f8c@daedalus.pq.iki.fi>
+In-Reply-To: <1202695958.24474.22.camel@dv>
+References: <1201660453.8837.13.camel@brick>
+	<20080130200827.322c4f7d@daedalus.pq.iki.fi>
+	<20080131150746.GB11996@elte.hu>
+	<20080131180253.6c007852@daedalus.pq.iki.fi>
+	<20080131081507.5edcde10@laptopd505.fenrus.org>
+	<20080203085522.2b63e15b@daedalus.pq.iki.fi>
+	<20080203070321.GA8293@elte.hu>
+	<20080205222807.7b35ef2b@daedalus.pq.iki.fi>
+	<20080205223958.2cab8ce3@daedalus.pq.iki.fi>
+	<20080207125327.GB27234@elte.hu>
+	<20080207125622.GA7111@infradead.org>
+	<20080209195255.584d4157@daedalus.pq.iki.fi>
+	<1202582370.16505.6.camel@lappy>
+	<20080210200521.6278d39f@daedalus.pq.iki.fi>
+	<1202695958.24474.22.camel@dv>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-11 at 09:54 -0800, Greg KH wrote:
-> On Mon, Feb 11, 2008 at 09:23:18AM -0800, Badari Pulavarty wrote:
-> > Hi Andrew,
-> > 
-> > While testing hotplug memory remove against -mm, I noticed
-> > that unregister_memory() is not cleaning up /sysfs entries
-> > correctly. It also de-references structures after destroying
-> > them (luckily in the code which never gets used). So, I cleaned
-> > up the code and fixed the extra reference issue.
-> > 
-> > Could you please include it in -mm ?
-> 
-> Want me to add this to my tree and send it in my next update for the
-> driver core to Linus?
-> 
-> I'll be glad to do that.
-> 
-> thanks,
-> 
-> greg k-h
+Hello,
 
-Please do. Only reason I wanted to push through -mm is, I didn't
-test this with mainline (since I have patches in -mm for hotplug 
-memory remove).
+it seems 2.6.25-rc1 is out and mmiotrace did not make it. Thank you all
+for your feedback.
 
-Thanks,
-Badari
+Ingo, you can throw away all my patches. I will start from scratch and
+come back when I have made mmiotrace built-in-able and got rid of the
+page fault hook. It should make a nicer patch set as a whole.
 
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
