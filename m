@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbYBKUdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbYBKUgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758864AbYBKUdo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 15:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYBKUdh
+	id S1757905AbYBKUgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 15:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYBKUgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 15:33:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48575 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751919AbYBKUdg (ORCPT
+	Mon, 11 Feb 2008 15:36:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37237 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbYBKUgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 15:33:36 -0500
-Date: Mon, 11 Feb 2008 12:24:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia.Derbey@bull.net
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
-       cmm@us.ibm.com, Nadia.Derbey@bull.net
-Subject: Re: [PATCH 7/8] Do not recompute msgmni anymore if explicitely set
- by user
-Message-Id: <20080211122408.5008902f.akpm@linux-foundation.org>
-In-Reply-To: <20080211141816.094061000@bull.net>
-References: <20080211141646.948191000@bull.net>
-	<20080211141816.094061000@bull.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Feb 2008 15:36:08 -0500
+Message-ID: <47B0B1AB.3020203@zytor.com>
+Date: Mon, 11 Feb 2008 12:35:55 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Abel Bernabeu <abelbg@m2grp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Patch] Elf loader crash while zero-filling .bss
+References: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com>  <15577be70802111032l6ea6d2fagba2da4462c739d66@mail.gmail.com>  <Pine.LNX.4.64.0802111944220.7699@twin.jikos.cz> <15577be70802111111x36f61433p321e5b8175a13d08@mail.gmail.com> <Pine.LNX.4.64.0802112026470.30955@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0802112026470.30955@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 15:16:53 +0100
-Nadia.Derbey@bull.net wrote:
-
-> [PATCH 07/08]
+Jiri Kosina wrote:
+> On Mon, 11 Feb 2008, Abel Bernabeu wrote:
 > 
-> This patch makes msgmni not recomputed anymore upon ipc namespace creation /
-> removal or memory add/remove, as soon as it has been set from userland.
+>> In such a way that set_brk(0x0, 0x100) does not alloc any space at all. 
+>> There are just more ways to get no memory allocation than 
+>> set_brk(elf_bss, elf_bss) (the equalness condition i've changed).
+>> Sorry, the correct description for the patch may be:
+>> set_brk(start, end) allocs just page aligned regions (by "colapsing"
+>> both extremes to the END of the page in which they lay)... That means
+>> than even if both pointers are not equal there are still some chances
+>> that set_brk has allocated no space at all because because
+>> ELF_PAGEALIGN(elf_bss) == ELF_PAGEALIGN(elf_brk)
 > 
-> As soon as msgmni is explicitely set via procfs or sysctl(), the associated
-> callback routine is unregistered from the ipc namespace notifier chain.
+> Now, the question is whether it is valid for ELF binary to not have the 
+> end of .bss section (if present at all) not page-aligned.
 > 
 
-The patch series looks pretty good.
+Why wouldn't it be?  It would, however, be valid to the kernel to round 
+it up to the next boundary.
 
-> ===================================================================
-> --- linux-2.6.24-mm1.orig/ipc/ipc_sysctl.c	2008-02-08 16:07:15.000000000 +0100
-> +++ linux-2.6.24-mm1/ipc/ipc_sysctl.c	2008-02-08 16:08:32.000000000 +0100
-> @@ -35,6 +35,24 @@ static int proc_ipc_dointvec(ctl_table *
->  	return proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
->  }
->  
-> +static int proc_ipc_callback_dointvec(ctl_table *table, int write,
-> +	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-> +{
-> +	size_t lenp_bef = *lenp;
-> +	int rc;
-> +
-> +	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
-> +
-> +	if (write && !rc && lenp_bef == *lenp)
-> +		/*
-> +		 * Tunable has successfully been changed from userland:
-> +		 * disable its automatic recomputing.
-> +		 */
-> +		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-> +
-> +	return rc;
-> +}
-
-If you haven't done so, could you please check that it all builds cleanly
-with CONFIG_PROCFS=n, and that all code which isn't needed if procfs is
-disabled is not present in the final binary?
-
-
+	-hpa
