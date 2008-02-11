@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYBKLT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYBKLWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYBKLT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYBKLTv
+	id S1754184AbYBKLWg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYBKLW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:19:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:52866 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbYBKLTu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:19:50 -0500
-Date: Mon, 11 Feb 2008 12:19:53 +0100
-From: Domenico Andreoli <cavokz@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: parisc - error: 'VMALLOC_START' undeclared...
-Message-ID: <20080211111953.GA18652@ska.dandreoli.com>
-Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
+	Mon, 11 Feb 2008 06:22:26 -0500
+Received: from sacred.ru ([62.205.161.221]:52258 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbYBKLWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:22:25 -0500
+Message-ID: <47B02FF3.80309@openvz.org>
+Date: Mon, 11 Feb 2008 14:22:27 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Duncan Sands <baldrick.bulk@free.fr>
+CC: linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
+References: <47A9DD30.5040604@openvz.org> <200802071057.41201.baldrick.bulk@free.fr> <47AAD886.2000606@openvz.org> <200802102130.45196.baldrick.bulk@free.fr>
+In-Reply-To: <200802102130.45196.baldrick.bulk@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 11 Feb 2008 14:22:15 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Duncan Sands wrote:
+> Hi Pavel,
+> 
+>> Oh, I see. You're right - this race is possible... I'll fix that up
+>> if this patch works.
+> 
+> it seems to work fine.  Thanks again for doing this!
 
-in building 2.6.25-rc1:
+Oh, thanks for testing. What should I do next to get this into
+mainline? Send it to Andrew with you in Cc, or you have you own
+tree for merging?
 
-  CC      arch/parisc/kernel/asm-offsets.s
-In file included from include/asm/pgtable.h:13,
-                 from arch/parisc/kernel/asm-offsets.c:36:
-include/linux/mm.h: In function 'is_vmalloc_addr':
-include/linux/mm.h:243: error: 'VMALLOC_START' undeclared (first use in this function)
-include/linux/mm.h:243: error: (Each undeclared identifier is reported only once
-include/linux/mm.h:243: error: for each function it appears in.)
-include/linux/mm.h:243: error: 'VMALLOC_END' undeclared (first use in this function)
-make[1]: *** [arch/parisc/kernel/asm-offsets.s] Error 1
-make: *** [prepare0] Error 2
+> Best wishes,
+> 
+> Duncan.
+> 
 
-bisected to commit 9e2779fa281cfda13ac060753d674bbcaa23367e. it looks
-like is_vmalloc_addr() did not arrive down to the parisc stuff.
-
-cheers,
-Domenico
-
------[ Domenico Andreoli, aka cavok
- --[ http://www.dandreoli.com/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
+Thanks,
+Pavel
