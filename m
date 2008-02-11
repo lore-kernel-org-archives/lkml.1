@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbYBKHpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbYBKHqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbYBKHpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 02:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYBKHpm
+	id S1757071AbYBKHqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 02:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYBKHpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 02:45:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60516 "EHLO
+	Mon, 11 Feb 2008 02:45:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60518 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752869AbYBKHpl (ORCPT
+	with ESMTP id S1753242AbYBKHpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 02:45:41 -0500
-Date: Sun, 10 Feb 2008 23:43:13 -0800
+	Mon, 11 Feb 2008 02:45:42 -0500
+Date: Sun, 10 Feb 2008 23:43:46 -0800
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.22.18
-Message-ID: <20080211074313.GA23195@kroah.com>
+Subject: Re: Linux 2.6.22.18
+Message-ID: <20080211074346.GB23195@kroah.com>
+References: <20080211074313.GA23195@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080211074313.GA23195@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.22.18
-kernel.
-
-It fixes one thing, CVE-2008-0600.
-
-All users of the 2.6.22 series, with untrusted local users are strongly
-encouraged to upgrade.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.22.17 and 2.6.22.18
-
-The updated 2.6.22.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=summary
-
-thanks,
-
-greg k-h
-
---------
-
- Makefile    |    2 +-
- fs/splice.c |    3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-Summary of changes from v2.6.22.17 to v2.6.22.18
-================================================
-
-Bastian Blank (1):
-      splice: fix user pointer access in get_iovec_page_array() (CVE-2008-0600)
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.22.18
-
+diff --git a/Makefile b/Makefile
+index 6a949eb..99c5e87 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 22
+-EXTRAVERSION = .17
++EXTRAVERSION = .18
+ NAME = Holy Dancing Manatees, Batman!
+ 
+ # *DOCUMENTATION*
+diff --git a/fs/splice.c b/fs/splice.c
+index e263d3b..dbbe267 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -1182,6 +1182,9 @@ static int get_iovec_page_array(const struct iovec __user *iov,
+ 		if (unlikely(!base))
+ 			break;
+ 
++		if (!access_ok(VERIFY_READ, base, len))
++			break;
++
+ 		/*
+ 		 * Get this base offset and number of pages, then map
+ 		 * in the user pages.
