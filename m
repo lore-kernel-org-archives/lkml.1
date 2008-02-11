@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbYBKKpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYBKKph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbYBKKpI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 05:45:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYBKKoz
+	id S1754263AbYBKKph (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 05:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYBKKpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 05:44:55 -0500
-Received: from namei.org ([69.55.235.186]:49907 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753039AbYBKKox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 05:44:53 -0500
-Date: Mon, 11 Feb 2008 21:43:47 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: David Howells <dhowells@redhat.com>
-cc: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 06/37] Security: Separate task security context from
- task_struct
-In-Reply-To: <20080208165229.15902.75572.stgit@warthog.procyon.org.uk>
-Message-ID: <Xine.LNX.4.64.0802112142370.27028@us.intercode.com.au>
-References: <20080208165156.15902.62457.stgit@warthog.procyon.org.uk>
- <20080208165229.15902.75572.stgit@warthog.procyon.org.uk>
+	Mon, 11 Feb 2008 05:45:18 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54988 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753926AbYBKKpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 05:45:16 -0500
+Date: Mon, 11 Feb 2008 16:15:46 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
+       sam@ravnborg.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH 1/8] Create tests/ directory 
+Message-ID: <20080211104546.GC7944@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080211104452.GB7944@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211104452.GB7944@in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008, David Howells wrote:
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-> Separate the task security context from task_struct.  At this point, the
-> security data is temporarily embedded in the task_struct with two pointers
-> pointing to it.
-> 
-> Alpha needs further alteration as it refers to UID & GID in entry.S via asm
-> offsets.
-> 
-> Sparc needs further alteration as it refers to UID & GID in sclow.S via asm
-> offsets.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Create a toplevel tests/ directory to house in-kernel subsystem specific
+tests.
 
-Reviewed-by: James Morris <jmorris@namei.org>
+Thanks to Sam Ravnborg for the Makefile corrections.
 
-(SELinux stuff mostly).
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ Makefile          |    1 +
+ lib/Kconfig.debug |    2 ++
+ tests/Kconfig     |   10 ++++++++++
+ tests/Makefile    |    3 +++
+ 4 files changed, 16 insertions(+)
 
--- 
-James Morris
-<jmorris@namei.org>
+Index: linux-2.6.25-rc1/Makefile
+===================================================================
+--- linux-2.6.25-rc1.orig/Makefile
++++ linux-2.6.25-rc1/Makefile
+@@ -603,6 +603,7 @@ export mod_strip_cmd
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+ core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++core-$(CONFIG_KERNEL_TESTS) += tests/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+Index: linux-2.6.25-rc1/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.25-rc1.orig/lib/Kconfig.debug
++++ linux-2.6.25-rc1/lib/Kconfig.debug
+@@ -618,3 +618,5 @@ config PROVIDE_OHCI1394_DMA_INIT
+ 	  See Documentation/debugging-via-ohci1394.txt for more information.
+ 
+ source "samples/Kconfig"
++
++source "tests/Kconfig"
+Index: linux-2.6.25-rc1/tests/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc1/tests/Kconfig
+@@ -0,0 +1,10 @@
++# tests/Kconfig
++
++menuconfig KERNEL_TESTS
++	bool "Kernel subsystem tests"
++	help
++	  You can build kernel subsystem specific tests.
++
++if KERNEL_TESTS
++
++endif # KERNEL_TESTS
+Index: linux-2.6.25-rc1/tests/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6.25-rc1/tests/Makefile
+@@ -0,0 +1,3 @@
++#
++# Makefile for kernel subsystem specific tests
++#
