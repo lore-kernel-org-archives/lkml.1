@@ -1,86 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYBKK2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbYBKK3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbYBKK2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 05:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYBKK2U
+	id S1756530AbYBKK3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 05:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYBKK3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 05:28:20 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36055 "EHLO mx2.suse.de"
+	Mon, 11 Feb 2008 05:29:09 -0500
+Received: from mga02.intel.com ([134.134.136.20]:23225 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbYBKK2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 05:28:18 -0500
-Date: Mon, 11 Feb 2008 11:29:07 +0100
-From: Holger Macht <hmacht@suse.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, alan@redhat.com,
-       jeff@garzik.org
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze
-	system
-Message-ID: <20080211102907.GC4646@homac.suse.de>
-Mail-Followup-To: Tejun Heo <htejun@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	alan@redhat.com, jeff@garzik.org
-References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com>
+	id S1752262AbYBKK3H convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 05:29:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,332,1199692800"; 
+   d="scan'208";a="337992109"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47AFB4DB.1000204@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [Bug-fix]:2.6.25-rc0 Generic thermal management [Patch 1/2]: validating input parameters
+Date: Mon, 11 Feb 2008 15:57:06 +0530
+Message-ID: <05B550FD4BD2014E841D83547B62600802A3A1B0@bgsmsx411.gar.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Bug-fix]:2.6.25-rc0 Generic thermal management [Patch 1/2]: validating input parameters
+Thread-Index: AchsmKbHt+VZtT27T6Ofr6gj7EV/Ig==
+From: "Thomas, Sujith" <sujith.thomas@intel.com>
+To: "Len Brown" <lenb@kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.linux-foundation.org>,
+       "Zhang, Rui" <rui.zhang@intel.com>
+X-OriginalArrivalTime: 11 Feb 2008 10:27:18.0683 (UTC) FILETIME=[ADCDBEB0:01C86C98]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 11. Feb - 11:37:15, Tejun Heo wrote:
-> Hello,
-> 
-> Holger Macht wrote:
-> > Calling ap->ops->set_piomode(ap, dev) on a device/controller which got
-> > already removed, locks the system hard. Reproducibly on an X60 attached to
-> > a dock station containing a cdrom device with doing
-> > 
-> >   $ echo 1 > /sys/devices/platform/dock.0/undock && echo 123 > /dev/sr0
-> > 
-> > This calls ata_eh_reset(...) which in turn tries to force PIO mode 0. But
-> > the device is already gone.
-> > 
-> > Bisecting revealed the following commit as culprit:
-> > 
-> >   commit cdeab1140799f09c5f728a5ff85e0bdfa5679cd2
-> >   Author: Tejun Heo <htejun@gmail.com>
-> >   Date:   Mon Oct 29 16:41:09 2007 +0900
-> >   
-> >       libata: relocate forcing PIO0 on reset
-> >       
-> >       Forcing PIO0 on reset was done inside ata_bus_softreset(), which is a
-> >       bit out of place as it should be applied to all resets - hard, soft
-> >       and implementation which don't use ata_bus_softreset().  Relocate it
-> >       such that...
-> >       
-> >       * For new EH, it's done in ata_eh_reset() before calling prereset.
-> >       
-> >       * For old EH, it's done before calling ap->ops->phy_reset() in
-> >         ata_bus_probe().
-> >       
-> >       This makes PIO0 forced after all resets.  Another difference is that
-> >       reset itself is done after PIO0 is forced.
-> >       
-> >       Signed-off-by: Tejun Heo <htejun@gmail.com>
-> >       Acked-by: Alan Cox <alan@redhat.com>
-> >       Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> > 
-> > 
-> > ATTENTION! The following patch solves the problem on my system, but please
-> > be aware that I don't really know what I'm doing because I don't have the
-> > big picture. There's surely a better way to check if the device/controller
-> > is still functional than calling ata_link_{online,offline}.
-> 
-> In the above example, even the reset sequence itself can cause hang if
-> the hardware is implemented slightly differently.  The reason why
-> set_piomode() locks up but reset sequence doesn't is simple dumb luck.
+From: Thomas Sujith <sujith.thomas@intel.com>
 
-Another thing, whether it's poor luck or not, it worked like this than at
-least 2.6.22. And it was _heavily_ tested. The above commit broke it
-between 2.6.24-rc1 and 2.6.24-rc2, which is at least a regression.
+Added sanity checks for interface functions in thermal with
+other modules such as fan, processor, video etc..
 
-Regards,
-	Holger
+Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
+---
+drivers/thermal/thermal.c |   69
++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 44 insertions(+), 25 deletions(-)
+
+Index: linux-2.6.24-rc3/drivers/thermal/thermal.c
+===================================================================
+--- linux-2.6.24-rc3.orig/drivers/thermal/thermal.c
++++ linux-2.6.24-rc3/drivers/thermal/thermal.c
+@@ -301,13 +301,27 @@ int thermal_zone_bind_cooling_device(str
+ {
+ 	struct thermal_cooling_device_instance *dev;
+ 	struct thermal_cooling_device_instance *pos;
++	struct thermal_zone_device *pos1;
++	struct thermal_cooling_device *pos2;
+ 	int result;
+ 
++	if (!tz || !cdev)
++		return -EINVAL;
++
+ 	if (trip >= tz->trips ||
+ 	    (trip < 0 && trip != THERMAL_TRIPS_NONE))
+ 		return -EINVAL;
+ 
+-	if (!tz || !cdev)
++	list_for_each_entry(pos1, &thermal_tz_list, node) {
++		if (pos1 == tz)
++			break;
++	}
++	list_for_each_entry(pos2, &thermal_cdev_list, node) {
++		if (pos2 == cdev)
++			break;
++	}
++
++	if (tz != pos1 || cdev != pos2)
+ 		return -EINVAL;
+ 
+ 	dev =
+@@ -373,6 +387,9 @@ int thermal_zone_unbind_cooling_device(s
+ {
+ 	struct thermal_cooling_device_instance *pos, *next;
+ 
++	if (!tz || !cdev)
++		return -EINVAL;
++
+ 	mutex_lock(&tz->lock);
+ 	list_for_each_entry_safe(pos, next, &tz->cooling_devices, node)
+{
+ 		if (pos->tz == tz && pos->trip == trip
+@@ -427,21 +444,24 @@ struct thermal_cooling_device *thermal_c
+ 	struct thermal_zone_device *pos;
+ 	int result;
+ 
++	if (!type)
++		return ERR_PTR(-EINVAL);
++
+ 	if (strlen(type) >= THERMAL_NAME_LENGTH)
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 
+ 	if (!ops || !ops->get_max_state || !ops->get_cur_state ||
+ 		!ops->set_cur_state)
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 
+ 	cdev = kzalloc(sizeof(struct thermal_cooling_device),
+GFP_KERNEL);
+ 	if (!cdev)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	result = get_idr(&thermal_cdev_idr, &thermal_idr_lock,
+&cdev->id);
+ 	if (result) {
+ 		kfree(cdev);
+-		return NULL;
++		return ERR_PTR(result);
+ 	}
+ 
+ 	strcpy(cdev->type, type);
+@@ -453,16 +473,14 @@ struct thermal_cooling_device *thermal_c
+ 	if (result) {
+ 		release_idr(&thermal_cdev_idr, &thermal_idr_lock,
+cdev->id);
+ 		kfree(cdev);
+-		return NULL;
++		return 	ERR_PTR(result);
+ 	}
+ 
+ 	/* sys I/F */
+-	if (type) {
+-		result = device_create_file(&cdev->device,
+-					    &dev_attr_cdev_type);
+-		if (result)
+-			goto unregister;
+-	}
++	result = device_create_file(&cdev->device,
++				    &dev_attr_cdev_type);
++	if (result)
++		goto unregister;
+ 
+ 	result = device_create_file(&cdev->device, &dev_attr_max_state);
+ 	if (result)
+@@ -490,7 +508,7 @@ struct thermal_cooling_device *thermal_c
+       unregister:
+ 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
+ 	device_unregister(&cdev->device);
+-	return NULL;
++	return ERR_PTR(result);
+ }
+ EXPORT_SYMBOL(thermal_cooling_device_register);
+ 
+@@ -559,18 +577,21 @@ struct thermal_zone_device *thermal_zone
+ 	int result;
+ 	int count;
+ 
++	if (!type)
++		return ERR_PTR(-EINVAL);
++
+ 	if (strlen(type) >= THERMAL_NAME_LENGTH)
+-		return NULL;
++		return  ERR_PTR(-EINVAL);
+ 
+ 	if (trips > THERMAL_MAX_TRIPS || trips < 0)
+-		return NULL;
++		return  ERR_PTR(-EINVAL);
+ 
+ 	if (!ops || !ops->get_temp)
+-		return NULL;
++		return  ERR_PTR(-EINVAL);
+ 
+ 	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
+ 	if (!tz)
+-		return NULL;
++		return  ERR_PTR(-ENOMEM);
+ 
+ 	INIT_LIST_HEAD(&tz->cooling_devices);
+ 	idr_init(&tz->idr);
+@@ -578,7 +599,7 @@ struct thermal_zone_device *thermal_zone
+ 	result = get_idr(&thermal_tz_idr, &thermal_idr_lock, &tz->id);
+ 	if (result) {
+ 		kfree(tz);
+-		return NULL;
++		return  ERR_PTR(result);
+ 	}
+ 
+ 	strcpy(tz->type, type);
+@@ -591,15 +612,13 @@ struct thermal_zone_device *thermal_zone
+ 	if (result) {
+ 		release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+ 		kfree(tz);
+-		return NULL;
++		return  ERR_PTR(result);
+ 	}
+ 
+ 	/* sys I/F */
+-	if (type) {
+-		result = device_create_file(&tz->device,
+&dev_attr_type);
+-		if (result)
+-			goto unregister;
+-	}
++	result = device_create_file(&tz->device, &dev_attr_type);
++	if (result)
++		goto unregister;
+ 
+ 	result = device_create_file(&tz->device, &dev_attr_temp);
+ 	if (result)
+@@ -633,7 +652,7 @@ struct thermal_zone_device *thermal_zone
+       unregister:
+ 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+ 	device_unregister(&tz->device);
+-	return NULL;
++	return ERR_PTR(result);
+ }
+ EXPORT_SYMBOL(thermal_zone_device_register);
+
