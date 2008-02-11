@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbYBKXUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYBKXWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760733AbYBKXUm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 18:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759252AbYBKXUa
+	id S1759597AbYBKXWZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 18:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYBKXWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 18:20:30 -0500
-Received: from mga02.intel.com ([134.134.136.20]:26052 "EHLO mga02.intel.com"
+	Mon, 11 Feb 2008 18:22:15 -0500
+Received: from mga02.intel.com ([134.134.136.20]:18631 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752324AbYBKXU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 18:20:29 -0500
+	id S1752471AbYBKXWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 18:22:14 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,335,1199692800"; 
-   d="scan'208";a="338348097"
-Date: Mon, 11 Feb 2008 15:20:27 -0800
+   d="scan'208";a="338348773"
+Date: Mon, 11 Feb 2008 15:22:13 -0800
 From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: "Carlos R. Mafra" <crmafra@gmail.com>,
-       Calvin Walton <calvin.walton@gmail.com>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       rjw@sisk.pl
-Subject: Re: [2.6.25-rc1 regression] Suspend to RAM (bisected)
-Message-ID: <20080211232027.GA8206@linux-os.sc.intel.com>
-References: <47AFDC4D.4070400@gmail.com> <1202708864.5206.0.camel@zem> <924EFEDD5F540B4284297C4DC59F3DEE8608D3@orsmsx423.amr.corp.intel.com> <47B0A3E0.4050908@gmail.com> <20080211200650.GA8287@linux-os.sc.intel.com>
+To: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, venkatesh.pallipadi@intel.com
+Subject: Re: 2.6.25-rc1 regression - suspend to ram
+Message-ID: <20080211232213.GB8206@linux-os.sc.intel.com>
+References: <20080211225811.GB4343@ics.muni.cz> <200802120010.55021.Rafal.Wysocki@fuw.edu.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080211200650.GA8287@linux-os.sc.intel.com>
+In-Reply-To: <200802120010.55021.Rafal.Wysocki@fuw.edu.pl>
 User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 12:06:50PM -0800, Venki Pallipadi wrote:
-> On Mon, Feb 11, 2008 at 05:37:04PM -0200, Carlos R. Mafra wrote:
-> > Pallipadi, Venkatesh wrote:
-> > > 
-> > > Can you send me the output of acpidump and full dmesg to me. Looks like
-> > > it is a platform issue due to which we cannot use C1 mwait idle during
-> > > suspend resume, something similar to issue we had with using C2/C3 state
-> > > during idle.
+On Tue, Feb 12, 2008 at 12:10:54AM +0100, R. J. Wysocki wrote:
+> On Monday, 11 of February 2008, Lukas Hejtmanek wrote:
+> > Hello,
+> 
+> Hi,
+>  
+> > 2.6.25-rc1 takes really long time till it suspends (about 30-40secs, used to
+> > be about 5 secs at all) and it is resuming about few minutes.  While resuming,
+> > capslock toggles the capslock led but with few secs delay.
 > > 
-> > Full dmesg and acpidump outputs are attached.
+> > 2.6.24-git15 was OK. 2.6.24 is OK.
+> > 
+> > I have Lenovo ThinkPad T61.
 > 
-> Above acpidump doesnt have all info, as it is loading some SSDT at run time.
-> Can you get the output of
-> 
-> # acpidump --addr 0x7F6D8709 --length 0x000004B7
-> # acpidump --addr 0x7F6D8BC0 --length 0x00000092
+> If you have CONFIG_CPU_IDLE set, please try to boot with idle=poll and see if
+> that helps.
 > 
 
-Thanks for sending the dumps Carlos.
-
-The patch below (on top of rc1) should fix the problem. Can you please
-check it.
+Just sent this patch to fix a regression in acpi processor_idle.c on another
+thread. Can you try the patch below and check whether that helps.
 
 Thanks,
 Venki
