@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbYBKTtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbYBKTuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760594AbYBKTtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760261AbYBKTtA
+	id S1760680AbYBKTuT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbYBKTuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:49:00 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:47361 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760203AbYBKTs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:48:59 -0500
-Date: Mon, 11 Feb 2008 11:48:59 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-In-Reply-To: <alpine.DEB.1.00.0802111135090.1671@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0802111146590.25590@schroedinger.engr.sgi.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0802111131270.24563@schroedinger.engr.sgi.com>
- <alpine.DEB.1.00.0802111135090.1671@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 Feb 2008 14:50:05 -0500
+Received: from mga02.intel.com ([134.134.136.20]:61055 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756511AbYBKTuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:50:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,334,1199692800"; 
+   d="scan'208";a="338243024"
+Date: Mon, 11 Feb 2008 11:47:12 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, tglx@linutronix.de,
+       mingo@elte.hu, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com
+Subject: Re: [PATCH] [7/8] CPA: Don't flush caches on CPUs that support self-snoop
+Message-ID: <20080211194712.GA21118@linux-os.sc.intel.com>
+References: <200802111050.372086035@suse.de> <200802111627.23751.ak@suse.de> <20080211173606.GB21564@linux-os.sc.intel.com> <200802111858.46200.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802111858.46200.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008, David Rientjes wrote:
-
-> > The second paragraphs seems to indicate that such an approach does not 
-> > work since we also use MPOL_xx constants to set flags in the memory 
-> > policies?
+On Mon, Feb 11, 2008 at 06:58:46PM +0100, Andi Kleen wrote:
+> On Monday 11 February 2008 18:36:06 Siddha, Suresh B wrote:
+> > On Mon, Feb 11, 2008 at 04:27:23PM +0100, Andi Kleen wrote:
+> > > 
+> > > > > That is exactly the situation in pageattr.c. You're saying the manual
+> > > > > is wrong here?
+> > > > 
+> > > > I'm saying that we are not following step 2 (marking the pages not present) 
+> > > 
+> > > Yes that's true. It's one of the design problems of the intent API that makes
+> > > fixing this hard unfortunately.
 > > 
+> > BTW, making pages not present is required only while changing the attribute
+> > from WB to WC or WC to WB. I think this step is for avoiding attribute aliasing
+> > for speculative accesses. For UC, we don't have speculative accesses and such we
+> > probably don't need it.
 > 
-> Not sure I'm understanding your question, sorry.
+> Ok that would imply that my patch is ok for all current in tree users at least
+> (none of them ever set WC currently, only UC). It might not be safe for
+> the out of tree WC users though.
 > 
-> Mempolicy modes have always been int constants because it doesn't make 
-> sense to combine them.  Putting them into 'enum mempolicy_mode' leaves 
-> that unchanged.
+> So it should be ok to apply according to standard policy :)
 
-> Mempolicy flags can be combined (even though my patchset only currently 
-> implements one, it's easy to implement others).  So they definitely cannot 
-> be enum constants.
+There is atleast one issue though. For an I/O device which is not capable of
+snooping the caches, if the driver model assumes that ioremap_nocache() will flush
+the cpu caches(before initiating DMA), then the lack of cache flush in cpa() might
+cause some breakages.
 
-> Regardless, storing the policy (mode | flags) in struct mempolicy as a 
-> 'short' doesn't help since a negative policy doesn't mean anything.  In 
-> preparation for allowing the upper MPOL_FLAG_SHIFT bits to be used to 
-> store the flags of this member, I converted it to 'unsigned short'.  This 
-> is because the API with userspace is through 'int', which is implicitly 
-> signed, and we don't want to sign-extend the upper bit if it's ever used 
-> to hold a mempolicy flag.
+If there are any such usages, we should fix the driver models with a new API.
 
-Then you could follow through with the enum mempolicy thing 
-throughtout. Why not use enum mempolicy in struct mempolicy?
+> 
+> > So WC support through PAT should take care of it.
+> 
+> You mean the PAT patch should do something about it? Yes probably, but what?
 
+marking the pages not present etc..
 
+> > > (intent API assumes that the caller doesn't fully own the page to change, and
+> > > if you can't control it 100% it is not possible to unmap it temporarily) 
+> > 
+> > True. Perhaps for WC chages we can assume the ownership?
+> 
+> Not assuming owner ship was the main reason why the intent change was originally
+> submitted. I personally never quite understood the rationale for that,
+> but the submitter and the maintainers apparently thought it a valuable
+> thing to have, otherwise the patch would not have been written and included. 
+> 
+> You'll need to ask them if that has changed now.
+> 
+> At least if that requirement was dropped it would be possible to remove
+> quite a lot of code from pageattr.c
+
+I don't think we can drop that requirement for UC atleast. For WC, probably yes.
+
+thanks,
+suresh
