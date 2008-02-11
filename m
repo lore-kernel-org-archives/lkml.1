@@ -1,77 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYBKQTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbYBKQU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYBKQTe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbYBKQT0
+	id S1758520AbYBKQU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYBKQUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:19:26 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:39297 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753935AbYBKQTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:19:25 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
-Date: Mon, 11 Feb 2008 11:19:22 -0500
-User-Agent: KMail/1.9.7
-Cc: dtor@insightbb.com, "Paul Mundt" <lethal@users.sourceforge.net>,
-       "linux-sh" <linux-sh@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <1202684222.6237.9.camel@localhost.localdomain> <200802101922.29214.vapier@gentoo.org> <15561.85.118.17.158.1202739603.squirrel@newgolddream.dyndns.info>
-In-Reply-To: <15561.85.118.17.158.1202739603.squirrel@newgolddream.dyndns.info>
+	Mon, 11 Feb 2008 11:20:18 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:12790 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754473AbYBKQUQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:20:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=DjzcdcQSGTtBD6C56yYTOh1oLbCN4efQ2nhXY5UK/jZ2q4uz0x/FTSyHqbTWCKIuRF/g8b4IuziurEOaTMaW176yFav9EfyA4TV83h3fJWs/K8a0QLnR7vwlNTcze1lT4GBUDS830CNyEHDyZ7oC9ngs7yjnfbgQnVg3Zk+mV+c=
+Message-ID: <5a4c581d0802110820l1fcbb1ffib874f268b4ab7eae@mail.gmail.com>
+Date: Mon, 11 Feb 2008 17:20:13 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-git2: Oracle 11g VKTM process enters R state on startup and is unkillable [still broken in 2.6.25-rc1]
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5009716.3X8OWOap2R";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802111119.23841.vapier@gentoo.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5009716.3X8OWOap2R
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Monday 11 February 2008, Adrian McMenamin wrote:
-> On Mon, February 11, 2008 12:22 am, Mike Frysinger wrote:
-> > no remove function ?  looks like the probe() forces a connect, but
-> > there's no remove() to force a disconnect ...
+On Feb 9, 2008 6:10 PM, Alessandro Suardi <alessandro.suardi@gmail.com> wrote:
+> I finally had a bit of time to try out different kernel versions to find
+>  out where this began... and it's in 2.6.24-git2.
 >
-> Removing these devices (or any other plugged directly into the maple
-> ports) is a quick way to destroy your Dreamcast: hence they were never
-> implemented I guess. But there is no convincing reason for the software
-> not doing so, I suppose. I can just put in comments about it.
+> What happens: Oracle 11g starts up and forks a number of so
+>  called background processes. Starting in  2.6.24-git2 the VKTM
+>  process never fully completes its initialization but gets in R state,
+>  never accumulating CPU, and can't be straced/gdb'd/killed.
+>
+> Sysrq-T reports for VKTM looks like this
+>
+> Feb  9 16:10:46 sandman kernel:  =======================
+> Feb  9 16:10:46 sandman kernel: oracle        R running   2684  2258      1
+> Feb  9 16:10:46 sandman kernel:        f591dfb0 00200086 f6bbc3c4
+> f6863cc0 c010547a 00000000 b794f62c b7b70600
+> Feb  9 16:10:46 sandman kernel:        b79453dc f591d000 c0103caa
+> b794f62c b7943708 b79453e4 b7b70600 b79453dc
+> Feb  9 16:10:46 sandman kernel:        bfb0dd5c b79500b0 0000007b
+> 0000007b c0320000 ffffffff 0e072d7a 00000073
+> Feb  9 16:10:46 sandman kernel: Call Trace:
+> Feb  9 16:10:46 sandman kernel:  [<c010547a>] ? do_IRQ+0xac/0xc1
+> Feb  9 16:10:46 sandman kernel:  [<c0103caa>] work_resched+0x5/0x16
+> Feb  9 16:10:46 sandman kernel:  [<c0320000>] ? pci_setup+0xb3/0x104
+> Feb  9 16:10:46 sandman kernel:  =======================
+>
+>
+> 2.6.24-git1 is okay
+> 2.6.24-git2 is bad
+> ...
+> 2.6.24-git20 is bad
+>
+> Only differences in kernel .config between -git1 and -git2 are
+>
+> [asuardi@sandman src]$ diff .config-2.6.24-git[12]
+> 3,4c3,4
+> < # Linux kernel version: 2.6.24-git1
+> < # Sat Jan 26 01:04:43 2008
+> ---
+> > # Linux kernel version: 2.6.24-git2
+> > # Sat Jan 26 12:10:15 2008
+> 121a122,123
+> > CONFIG_CLASSIC_RCU=y
+> > # CONFIG_PREEMPT_RCU is not set
+> 187a190
+> > # CONFIG_RCU_TRACE is not set
+> 230a234
+> > # CONFIG_SCHED_HRTICK is not set
+> 755a760
+> > # CONFIG_PATA_NINJA32 is not set
+> 1807a1813
+> > # CONFIG_LATENCYTOP is not set
+>
+> Symptom is similar to what Rafael reported here
+>
+>   http://www.ussg.iu.edu/hypermail/linux/kernel/0801.3/4114.html
+>
+>  and similarly VKTM attempts to run at elevated priority as normal
+>  user process (Oracle kernel binary is not setuid root).
+>
+>
+> Peter Zijlstra's patches mentioned in the above thread, at
+>
+>  http://programming.kicks-ass.net/kernel-patches/sched-rt-group ,
+>
+>  do not appear to be in -git20 yet.
+>
+>
+> I'm available for further testing. Thanks, ciao,
 
-and not allow the driver to be built as a module until the comments become=
-=20
-code ...
-=2Dmike
+Only to add that 2.6.25-rc1 is still broken.
 
---nextPart5009716.3X8OWOap2R
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+--alessandro
 
-iQIVAwUAR7B1i0FjO5/oN/WBAQLYOxAArM49XymmM75twU8GipLDQtGuiZ+0WFdM
-ixM5yJ++MpyoxW2lS1I7a1C08CDDWrAaLu9jkQiQSf5HnnUBfif8l8Yo0wSFC3wg
-8xZyOe3ZoOInID5eI3FakCoOj9jB2l2EbbQK7OtfI9x/BtVxnCG4ZjttNgG7AbwW
-6hPaV1dkEbWClN26U4NLI96c0FH3udM6APMNvc/he1cFe2wJSy1Bb35rKiQIIjqo
-yc4fDuwFpwUH/B7tniGbAbE+aJmIqi0qUkspVbWmkom+284wVTMrnn/6/7NSbplL
-811sdDKW0kPllFbUlnVjItVNHdKxJiBFBSlBtx49kGXDBsWS06m2dg5RtQ1x8IEC
-hnJKD8R0z2F4Flvb6r4HPYF7of+A6fNVXkJlGwKFUHsYfB9sl9DyDzaT5zRVNdmE
-DhRptIBWgoQ2ztwghTAAvz+vv3Vf1mk3DcjjWQ7d+Vm/ywalj3yDJUbt4V14d6SY
-qCBQZkmqfG3L08VaKsqHzIfAmhOGu0adt/V3Crdwoto4S4L5FiSEOqPYCgwkkcF4
-fMrF8gzp0WBwB3Jczr8fZCffKYNrCNpjPJnrFjO8noko9lNeSfqLZKPqu1euQvDp
-w6mhsetfUoXuJ8eCTNuYz8EQvmXgNgJ4noXaeMJ6BGkchhYZxNIT8uceAepkl71Z
-zv1o+cMtn+s=
-=mcbu
------END PGP SIGNATURE-----
+ "We act as though comfort and luxury were the chief requirements
+   of life, when all that we need to make us really happy is
+   something to be enthusiastic about."
 
---nextPart5009716.3X8OWOap2R--
+   (Charles Kingsley)
