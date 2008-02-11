@@ -1,92 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbYBKQrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbYBKQrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759189AbYBKQrU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYBKQrF
+	id S1759287AbYBKQrg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbYBKQrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:47:05 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37502 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbYBKQrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:47:03 -0500
-Date: Mon, 11 Feb 2008 17:47:09 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Frysinger <vapier@gentoo.org>
-Subject: [PATCH] kbuild: fix make V=1
-Message-ID: <20080211164709.GA22359@uranus.ravnborg.org>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080211133137.GB20959@uranus.ravnborg.org>
+	Mon, 11 Feb 2008 11:47:14 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57799 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757105AbYBKQrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:47:11 -0500
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, linux-ppc <linuxppc-dev@ozlabs.org>,
+       Thomas Klein <osstklei@de.ibm.com>,
+       "Themann, Jan-Bernd" <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Christoph Raisch <RAISCH@de.ibm.com>, Thomas Klein <tklein@de.ibm.com>,
+       apw <apw@uk.ibm.com>, Badari Pulavarty <pbadari@us.ibm.com>
+In-Reply-To: <200802111724.12416.ossthema@de.ibm.com>
+References: <200802111724.12416.ossthema@de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 08:47:09 -0800
+Message-Id: <1202748429.8276.21.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211133137.GB20959@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 02:31:37PM +0100, Sam Ravnborg wrote:
-> Hi Linus.
+On Mon, 2008-02-11 at 17:24 +0100, Jan-Bernd Themann wrote:
+>  the eHEA patch belongs to a patchset that is usually
+>  added by Jeff Garzik once this dependency (EXPORTS)
+>  is resolved.
+
+I know that's already in mainline but, man, that code is nasty.  It has
+stuff indented 7 levels or so and is virtually impossible to read.
+
+This:
+
+> int ehea_create_busmap(void)
+> {
+>         u64 vaddr = EHEA_BUSMAP_START;
+>         unsigned long high_section_index = 0;
+>         int i;
 > 
-> A kbuild bug sneaked in. Please pull from:
+>         /*
+>          * Sections are not in ascending order -> Loop over all sections and
+>          * find the highest PFN to compute the required map size.
+>         */
+>         ehea_bmap.valid_sections = 0;
 > 
-> 	ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-> 
-> to fix the following bug.
-> 
-> 	Sam
+>         for (i = 0; i < NR_MEM_SECTIONS; i++)
+>                 if (valid_section_nr(i))
+>                         high_section_index = i;
 
-Mike spotted another missing thing from his initial
-patch so I folded it into the fix and pushed out
-a new kbuild.git tree.
+is also completely bogus for arch-independent code.  If someone ever
+wants to do ppc without sparsemem (or redoes internal sparsemem
+interfaces), this code will break.  
 
-See updated patch below.
+Also, keeping your own mapping of all of memory is really nasty.  With
+SPARSEMEM_EXTREME/VMEMMAP you can have extremely sparse physical memory,
+and this:
 
-	Sam
+>         ehea_bmap.entries = high_section_index + 1;
+>         ehea_bmap.vaddr = vmalloc(ehea_bmap.entries * sizeof(*ehea_bmap.vaddr));
 
->From 49af821e4b1c07e756cbc2e389eba9d885912602 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 11 Feb 2008 14:26:26 +0100
-Subject: [PATCH] kbuild: fix make V=1
+could theoretically consume all of memory if the sections are very sparse.
 
-When make -s support were added to filechk to
-combination created with make V=1 were not
-covered.
-Fix it by explicitly cover this case too.
+Could you please try to explain what the heck this driver is doing?
+We'll try to fix up the generic interfaces so that you can deal with
+things in a more generic fashion, but it can't stay this way.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mike Frysinger <vapier@gentoo.org>
----
- scripts/Kbuild.include |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-diff --git a/init/Makefile b/init/Makefile
-index c5f157c..4a243df 100644
---- a/init/Makefile
-+++ b/init/Makefile
-@@ -27,6 +27,7 @@ $(obj)/version.o: include/linux/compile.h
- # mkcompile_h will make sure to only update the
- # actual file if its content has changed.
+Also, just ripping down and completely re-doing the entire mass of cards
+every time a 16MB area of memory is added or removed seems like an
+awfully big sledgehammer to me.  I would *HATE* to see anybody else
+using this driver as an example to work off of?  Can't you just keep
+track of which areas the driver is actually *USING* and only worry about
+changing mappings if that intersects with an area having hotplug done on
+it?
+
+Can you please give it some CodingStyle love and make it so that it
+doesn't indent so much?  Something like this:
+
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index c051c7e..72c5652 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2638,38 +2638,40 @@ static void ehea_rereg_mrs(struct work_struct *work)
+ 	down(&dlpar_mem_lock);
+ 	ehea_info("LPAR memory enlarged - re-initializing driver");
  
-+       chk_compile.h = :
-  quiet_chk_compile.h = echo '  CHK     $@'
- silent_chk_compile.h = :
- include/linux/compile.h: FORCE
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index da3559e..d64e6ba 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -39,10 +39,13 @@ escsq = $(subst $(squote),'\$(squote)',$1)
- # - If they are equal no change, and no timestamp update
- # - stdin is piped in from the first prerequisite ($<) so one has
- #   to specify a valid file as first prerequisite (often the kbuild file)
-+       chk_filechk = :
-  quiet_chk_filechk = echo '  CHK     $@'
- silent_chk_filechk = :
-+       upd_filechk = :
-  quiet_upd_filechk = echo '  UPD     $@'
- silent_upd_filechk = :
+-	list_for_each_entry(adapter, &adapter_list, list)
+-		if (adapter->active_ports) {
+-			/* Shutdown all ports */
+-			for (i = 0; i < EHEA_MAX_PORTS; i++) {
+-				struct ehea_port *port = adapter->port[i];
+-
+-				if (port) {
+-					struct net_device *dev = port->netdev;
+-
+-					if (dev->flags & IFF_UP) {
+-						down(&port->port_lock);
+-						netif_stop_queue(dev);
+-						ret = ehea_stop_qps(dev);
+-						if (ret) {
+-							up(&port->port_lock);
+-							goto out;
+-						}
+-						port_napi_disable(port);
+-						up(&port->port_lock);
+-					}
+-				}
+-			}
+-
+-			/* Unregister old memory region */
+-			ret = ehea_rem_mr(&adapter->mr);
++	list_for_each_entry(adapter, &adapter_list, list) {
++		if (!adapter->active_ports)
++			continue;
++		/* Shutdown all ports */
++		for (i = 0; i < EHEA_MAX_PORTS; i++) {
++			struct ehea_port *port = adapter->port[i];
++			struct net_device *dev;
++			if (!port)
++				continue;
 +
- define filechk
- 	$(Q)set -e;				\
- 	$($(quiet)chk_filechk);			\
++			dev = port->netdev;
++			if (!(dev->flags & IFF_UP))
++				continue;
++
++			down(&port->port_lock);
++			netif_stop_queue(dev);
++			ret = ehea_stop_qps(dev);
+ 			if (ret) {
+-				ehea_error("unregister MR failed - driver"
+-					   " inoperable!");
++				up(&port->port_lock);
+ 				goto out;
+ 			}
++			port_napi_disable(port);
++			up(&port->port_lock);
+ 		}
+ 
++		/* Unregister old memory region */
++		ret = ehea_rem_mr(&adapter->mr);
++		if (ret) {
++			ehea_error("unregister MR failed - driver"
++				   " inoperable!");
++			goto out;
++		}
++	}
++
+ 	ehea_destroy_busmap();
+ 	ret = ehea_create_busmap();
+ 	if (ret) {
+
+
+-- Dave
+
