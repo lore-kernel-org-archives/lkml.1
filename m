@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYBKQRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYBKQTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbYBKQRy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbYBKQRr
+	id S1758241AbYBKQTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbYBKQT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:17:47 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:39089 "EHLO smtp.gentoo.org"
+	Mon, 11 Feb 2008 11:19:26 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:39297 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755113AbYBKQRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:17:46 -0500
+	id S1753935AbYBKQTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:19:25 -0500
 From: Mike Frysinger <vapier@gentoo.org>
 Organization: wh0rd.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Linux 2.6.25-rc1
-Date: Mon, 11 Feb 2008 11:17:41 -0500
+To: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
+Subject: Re: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
+Date: Mon, 11 Feb 2008 11:19:22 -0500
 User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080211133137.GB20959@uranus.ravnborg.org>
-In-Reply-To: <20080211133137.GB20959@uranus.ravnborg.org>
+Cc: dtor@insightbb.com, "Paul Mundt" <lethal@users.sourceforge.net>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <1202684222.6237.9.camel@localhost.localdomain> <200802101922.29214.vapier@gentoo.org> <15561.85.118.17.158.1202739603.squirrel@newgolddream.dyndns.info>
+In-Reply-To: <15561.85.118.17.158.1202739603.squirrel@newgolddream.dyndns.info>
 MIME-Version: 1.0
 Content-Type: multipart/signed;
-  boundary="nextPart1324979.hF6DGWrZPB";
+  boundary="nextPart5009716.3X8OWOap2R";
   protocol="application/pgp-signature";
   micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802111117.42450.vapier@gentoo.org>
+Message-Id: <200802111119.23841.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1324979.hF6DGWrZPB
+--nextPart5009716.3X8OWOap2R
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-On Monday 11 February 2008, Sam Ravnborg wrote:
-> From 49af821e4b1c07e756cbc2e389eba9d885912602 Mon Sep 17 00:00:00 2001
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Mon, 11 Feb 2008 14:26:26 +0100
-> Subject: [PATCH] kbuild: fix make V=3D1
+On Monday 11 February 2008, Adrian McMenamin wrote:
+> On Mon, February 11, 2008 12:22 am, Mike Frysinger wrote:
+> > no remove function ?  looks like the probe() forces a connect, but
+> > there's no remove() to force a disconnect ...
 >
-> When make -s support were added to filechk to
-> combination created with make V=3D1 were not
-> covered.
-> Fix it by explicitly cover this case too.
->
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Mike Frysinger <vapier@gentoo.org>
+> Removing these devices (or any other plugged directly into the maple
+> ports) is a quick way to destroy your Dreamcast: hence they were never
+> implemented I guess. But there is no convincing reason for the software
+> not doing so, I suppose. I can just put in comments about it.
 
-erp, i wondered if there was another case i was missing ... you'll also nee=
-d=20
-the attached fixed ...
-=2D--
-When make -s support was added to compile.h, it broke make V=3D1.
+and not allow the driver to be built as a module until the comments become=
+=20
+code ...
+=2Dmike
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-=2D--
-diff --git a/init/Makefile b/init/Makefile
-index c5f157c..781f102 100644
-=2D-- a/init/Makefile
-+++ b/init/Makefile
-@@ -26,7 +26,7 @@ $(obj)/version.o: include/linux/compile.h
- # so we regenerate it always.
- # mkcompile_h will make sure to only update the
- # actual file if its content has changed.
-=2D
-+       chk_compile.h =3D :
-  quiet_chk_compile.h =3D echo '  CHK     $@'
- silent_chk_compile.h =3D :
- include/linux/compile.h: FORCE
-
---nextPart1324979.hF6DGWrZPB
+--nextPart5009716.3X8OWOap2R
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.7 (GNU/Linux)
 
-iQIVAwUAR7B1JkFjO5/oN/WBAQIccg//ZMy3cQ21UjkXVvn+7+vDARmjvwjSiUn1
-RKtu0JfHFC4ZMaT1OSnfxJSp9DWaYtk536auXvgTiBlxtHlNkR9rL9XKuJbu4p3A
-LYOx/asarckf620Ec2US7yfTgBWw0eGXAF/akMnvilYY52fuvkqZGFBHQ/0iBYm6
-61dYzM/Y5eNT4X1MWaSrpzQKcyPQvNfW1AvY1M41u3R0cPNNFQLfJZXNWFDDULX6
-No6rlhXOjOZtigP5NBMcZDXT2FPUd1z0DFawaUjmH6xZm6tp9oAbh34LHO+L5PGS
-prmTtnr+ASK6dRX9Lr6fuXLNw8AQN1j9a0iq0jwDoQE3Hi1j6qgNP+/1FhzD3ynH
-YOFMtSzBHmjkOsuTiL4cgd/FoPwf4BSQfahA/HAIdzHqT6+plXMe0krSP213n+Yl
-HHQqWbM+2bemRSf36k0wvW1DtY/3Pu0GI8hFPn55vIIJVhBpue2lu/TJeUreHzr3
-OKn20W/IfqZvaOAu8ozKPbzJuo6JAKd3x1pTcaLM3g1fnY1nNDVEgs6Obe5L49g8
-to56Uzu2aPXuvW1BJ65Tfrk8vFb1Tqr3HSOItNK241Jb9hROsjtSaWZXqqg6iBCy
-Ksmy7Jn0ep0c4YynkmcMiJeyWvQDajVdi5gpEf72puY0snGj5kvOz7b1VPZfNU/l
-jRJ8hVx3ZaM=
-=kolC
+iQIVAwUAR7B1i0FjO5/oN/WBAQLYOxAArM49XymmM75twU8GipLDQtGuiZ+0WFdM
+ixM5yJ++MpyoxW2lS1I7a1C08CDDWrAaLu9jkQiQSf5HnnUBfif8l8Yo0wSFC3wg
+8xZyOe3ZoOInID5eI3FakCoOj9jB2l2EbbQK7OtfI9x/BtVxnCG4ZjttNgG7AbwW
+6hPaV1dkEbWClN26U4NLI96c0FH3udM6APMNvc/he1cFe2wJSy1Bb35rKiQIIjqo
+yc4fDuwFpwUH/B7tniGbAbE+aJmIqi0qUkspVbWmkom+284wVTMrnn/6/7NSbplL
+811sdDKW0kPllFbUlnVjItVNHdKxJiBFBSlBtx49kGXDBsWS06m2dg5RtQ1x8IEC
+hnJKD8R0z2F4Flvb6r4HPYF7of+A6fNVXkJlGwKFUHsYfB9sl9DyDzaT5zRVNdmE
+DhRptIBWgoQ2ztwghTAAvz+vv3Vf1mk3DcjjWQ7d+Vm/ywalj3yDJUbt4V14d6SY
+qCBQZkmqfG3L08VaKsqHzIfAmhOGu0adt/V3Crdwoto4S4L5FiSEOqPYCgwkkcF4
+fMrF8gzp0WBwB3Jczr8fZCffKYNrCNpjPJnrFjO8noko9lNeSfqLZKPqu1euQvDp
+w6mhsetfUoXuJ8eCTNuYz8EQvmXgNgJ4noXaeMJ6BGkchhYZxNIT8uceAepkl71Z
+zv1o+cMtn+s=
+=mcbu
 -----END PGP SIGNATURE-----
 
---nextPart1324979.hF6DGWrZPB--
+--nextPart5009716.3X8OWOap2R--
