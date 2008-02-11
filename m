@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbYBKTbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbYBKTc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760936AbYBKTbz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758453AbYBKTbp
+	id S1761001AbYBKTc3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758895AbYBKTcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:31:45 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:55311 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758389AbYBKTbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:31:44 -0500
-Message-ID: <47B0A29C.6000508@pobox.com>
-Date: Mon, 11 Feb 2008 14:31:40 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 11 Feb 2008 14:32:17 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:60160 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758230AbYBKTcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:32:16 -0500
+Date: Mon, 11 Feb 2008 11:32:16 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Rientjes <rientjes@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
+In-Reply-To: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0802111131270.24563@schroedinger.engr.sgi.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Byron Bradley <byron.bbradley@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, saeed@marvell.com,
-       mlord@pobox.com
-Subject: Re: [PATCH] sata_mv: platform driver allocs dma without create
-References: <alpine.DEB.1.00.0802102117150.9668@git.byronbradley.co.uk>
-In-Reply-To: <alpine.DEB.1.00.0802102117150.9668@git.byronbradley.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Byron Bradley wrote:
-> When the sata_mv driver is used as a platform driver,
-> mv_create_dma_pools() is never called so it fails when trying
-> to alloc in mv_pool_start().
-> 
-> Signed-off-by: Byron Bradley <byron.bbradley@gmail.com>
-> Acked-by: Mark Lord <mlord@pobox.com>
-> ---
-> 
-> Mark, based on the comment from Andrew Morton on the "sata_mv: fix loop
-> with last port" patch I have changed your Signed-off-by to an Acked-by.
-> Hopefully thats correct.
+On Mon, 11 Feb 2008, David Rientjes wrote:
 
-applied
+> The mempolicy mode constants, MPOL_DEFAULT, MPOL_PREFERRED, MPOL_BIND,
+> and MPOL_INTERLEAVE, are better declared as part of an enum for type
+> checking.
+> 
+> The policy member of struct mempolicy is also converted from type short
+> to type unsigned short.  A negative policy does not have any legitimate
+> meaning, so it is possible to change its type in preparation for adding
+> optional mode flags later.
 
+The second paragraphs seems to indicate that such an approach does not 
+work since we also use MPOL_xx constants to set flags in the memory 
+policies?
 
