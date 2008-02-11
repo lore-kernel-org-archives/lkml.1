@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYBKMBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYBKMGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbYBKMBY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 07:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYBKMBP
+	id S1755093AbYBKMGb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 07:06:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYBKMGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 07:01:15 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57003 "EHLO smtp.mba.ocn.ne.jp"
+	Mon, 11 Feb 2008 07:06:23 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:34939 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752315AbYBKMBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 07:01:14 -0500
-Date: Mon, 11 Feb 2008 21:01:28 +0900 (JST)
-Message-Id: <20080211.210128.108308594.anemo@mba.ocn.ne.jp>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/8] ide: add struct ide_port_info instances to legacy
- host drivers
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <200802110016.08078.bzolnier@gmail.com>
-References: <20080211.010729.115910395.anemo@mba.ocn.ne.jp>
-	<200802101804.49154.bzolnier@gmail.com>
-	<200802110016.08078.bzolnier@gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1752601AbYBKMGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 07:06:23 -0500
+Date: Mon, 11 Feb 2008 14:06:15 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: parisc - error: 'VMALLOC_START' undeclared...
+Message-ID: <20080211120615.GB7119@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080211111953.GA18652@ska.dandreoli.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080211111953.GA18652@ska.dandreoli.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 00:16:07 +0100, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > It is too late for -git but not too late for 2.6.25-rc1. ;-)
-> > 
-> > Could you make a patch please?
+On Mon, Feb 11, 2008 at 12:19:53PM +0100, Domenico Andreoli wrote:
+> Hi,
 > 
-> I went ahead and made a patch (sorry, I needed it for git pull request :).
+> in building 2.6.25-rc1:
 > 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: ide_init_port() bugfix
+>   CC      arch/parisc/kernel/asm-offsets.s
+> In file included from include/asm/pgtable.h:13,
+>                  from arch/parisc/kernel/asm-offsets.c:36:
+> include/linux/mm.h: In function 'is_vmalloc_addr':
+> include/linux/mm.h:243: error: 'VMALLOC_START' undeclared (first use in this function)
+> include/linux/mm.h:243: error: (Each undeclared identifier is reported only once
+> include/linux/mm.h:243: error: for each function it appears in.)
+> include/linux/mm.h:243: error: 'VMALLOC_END' undeclared (first use in this function)
+> make[1]: *** [arch/parisc/kernel/asm-offsets.s] Error 1
+> make: *** [prepare0] Error 2
+> 
+> bisected to commit 9e2779fa281cfda13ac060753d674bbcaa23367e. it looks
+> like is_vmalloc_addr() did not arrive down to the parisc stuff.
 
-Thanks!  Looks sane for me :)
+Kyle, you said you had a patch for this issue.
 
----
-Atsushi Nemoto
+> cheers,
+> Domenico
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
