@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbYBKWlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYBKWld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760141AbYBKWlI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYBKWk3
+	id S1756663AbYBKWld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 17:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYBKWlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:40:29 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:23461 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758289AbYBKWkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:40:25 -0500
-To: general@lists.openfabrics.org
-Cc: Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
-       izike@qumranet.com, steiner@sgi.com, linux-kernel@vger.kernel.org,
-       avi@qumranet.com, linux-mm@kvack.org, daniel.blueman@quadrics.com,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Demand paging for memory regions (was Re: MMU Notifiers V6)
-X-Message-Flag: Warning: May contain useful information
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
-	<20080208234302.GH26564@sgi.com>
-	<20080208155641.2258ad2c.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
-	<adaprv70yyt.fsf@cisco.com>
-	<Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
-	<adalk5v0yi6.fsf@cisco.com>
-	<Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
-	<20080209012446.GB7051@v2.random>
-	<Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
-	<20080209015659.GC7051@v2.random>
-	<Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
-	<20080209075556.63062452@bree.surriel.com>
-	<Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 11 Feb 2008 14:40:12 -0800
-In-Reply-To: <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Sat, 9 Feb 2008 13:46:34 -0800 (PST)")
-Message-ID: <ada3arzxgkz.fsf_-_@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Mon, 11 Feb 2008 17:41:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37264 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758736AbYBKWlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 17:41:17 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Feb 2008 22:40:12.0771 (UTC) FILETIME=[10671330:01C86CFF]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Subject: [PATCH 2.6.25] x86: vdso_install fix
+X-Fcc: ~/Mail/linus
+X-Shopping-List: (1) Lightweight detrimental ingredients
+   (2) Braille L'eggs
+   (3) Solar-frightened clasps
+   (4) Impious Garden Weasels
+   (5) Satanic agnostic admonition imports
+Message-Id: <20080211223851.AF7B1270191@magilla.localdomain>
+Date: Mon, 11 Feb 2008 14:38:51 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding general@lists.openfabrics.org to get the IB/RDMA people involved]
 
-This thread has patches that add support for notifying drivers when a
-process's memory map changes.  The hope is that this is useful for
-letting RDMA devices handle registered memory without pinning the
-underlying pages, by updating the RDMA device's translation tables
-whenever the host kernel's tables change.
+The makefile magic for installing the 32-bit vdso images on disk
+had a little error.  Only one line of change would fix that bug.
+This does a little more to reduce the error-prone duplication of
+this bit of makefile variable magic.
 
-Is anyone interested in working on using this for drivers/infiniband?
-I am interested in participating, but I don't think I have enough time
-to do this by myself.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/vdso/Makefile |   22 ++++++++++++----------
+ 1 files changed, 12 insertions(+), 10 deletions(-)
 
-Also, at least naively it seems that this is only useful for hardware
-that has support for this type of demand paging, and can handle
-not-present pages, generating interrupts for page faults, etc.  I know
-that Mellanox HCAs should have this support; are there any other
-devices that can do this?
-
-The beginning of this thread is at <http://lkml.org/lkml/2008/2/8/458>.
-
- - R.
+diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
+index d28dda5..f385a4b 100644
+--- a/arch/x86/vdso/Makefile
++++ b/arch/x86/vdso/Makefile
+@@ -7,7 +7,7 @@ VDSO32-$(CONFIG_X86_32)		:= y
+ VDSO32-$(CONFIG_COMPAT)		:= y
+ 
+ vdso-install-$(VDSO64-y)	+= vdso.so
+-vdso-install-$(VDSO32-y)	+= $(vdso32-y:=.so)
++vdso-install-$(VDSO32-y)	+= $(vdso32-images)
+ 
+ 
+ # files to link into the vdso
+@@ -63,6 +63,8 @@ vdso32.so-$(CONFIG_X86_32)	+= int80
+ vdso32.so-$(CONFIG_COMPAT)	+= syscall
+ vdso32.so-$(VDSO32-y)		+= sysenter
+ 
++vdso32-images			= $(vdso32.so-y:%=vdso32-%.so)
++
+ CPPFLAGS_vdso32.lds = $(CPPFLAGS_vdso.lds)
+ VDSO_LDFLAGS_vdso32.lds = -m elf_i386 -Wl,-soname=linux-gate.so.1
+ 
+@@ -71,21 +73,21 @@ VDSO_LDFLAGS_vdso32.lds = -m elf_i386 -Wl,-soname=linux-gate.so.1
+ override obj-dirs = $(dir $(obj)) $(obj)/vdso32/
+ 
+ targets += vdso32/vdso32.lds
+-targets += $(vdso32.so-y:%=vdso32-%.so.dbg) $(vdso32.so-y:%=vdso32-%.so)
++targets += $(vdso32-images) $(vdso32-images:=.dbg)
+ targets += vdso32/note.o $(vdso32.so-y:%=vdso32/%.o)
+ 
+-extra-y	+= $(vdso32.so-y:%=vdso32-%.so)
++extra-y	+= $(vdso32-images)
+ 
+-$(obj)/vdso32.o: $(vdso32.so-y:%=$(obj)/vdso32-%.so)
++$(obj)/vdso32.o: $(vdso32-images:%=$(obj)/%)
+ 
+ KBUILD_AFLAGS_32 := $(filter-out -m64,$(KBUILD_AFLAGS))
+-$(vdso32.so-y:%=$(obj)/vdso32-%.so.dbg): KBUILD_AFLAGS = $(KBUILD_AFLAGS_32)
+-$(vdso32.so-y:%=$(obj)/vdso32-%.so.dbg): asflags-$(CONFIG_X86_64) += -m32
++$(vdso32-images:%=$(obj)/%.dbg): KBUILD_AFLAGS = $(KBUILD_AFLAGS_32)
++$(vdso32-images:%=$(obj)/%.dbg): asflags-$(CONFIG_X86_64) += -m32
+ 
+-$(vdso32.so-y:%=$(obj)/vdso32-%.so.dbg): $(obj)/vdso32-%.so.dbg: FORCE \
+-					 $(obj)/vdso32/vdso32.lds \
+-					 $(obj)/vdso32/note.o \
+-					 $(obj)/vdso32/%.o
++$(vdso32-images:%=$(obj)/%.dbg): $(obj)/vdso32-%.so.dbg: FORCE \
++				 $(obj)/vdso32/vdso32.lds \
++				 $(obj)/vdso32/note.o \
++				 $(obj)/vdso32/%.o
+ 	$(call if_changed,vdso)
+ 
+ # Make vdso32-*-syms.lds from each image, and then make sure they match.
