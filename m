@@ -1,129 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYBKM2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYBKM1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYBKM2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 07:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbYBKM2N
+	id S1754555AbYBKM1l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 07:27:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYBKM1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 07:28:13 -0500
-Received: from sacred.ru ([62.205.161.221]:33855 "EHLO sacred.ru"
+	Mon, 11 Feb 2008 07:27:23 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40220 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756945AbYBKM2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 07:28:12 -0500
-Message-ID: <47B03EE1.8060806@openvz.org>
-Date: Mon, 11 Feb 2008 15:26:09 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1753523AbYBKM1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 07:27:21 -0500
+Date: Mon, 11 Feb 2008 13:27:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: ying.huang@intel.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/8] CPA: Fix set_memory_x for ioremap
+Message-ID: <20080211122705.GA23733@elte.hu>
+References: <200802111034.764275766@suse.de> <20080211093432.DA4331B41CE@basil.firstfloor.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Duncan Sands <baldrick.bulk@free.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: [PATCH] Usbatm: convert heavy init dances to kthread API
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 11 Feb 2008 15:25:59 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211093432.DA4331B41CE@basil.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an attempt to kill two birds with one stone.
 
-First, we kill one more user of kernel_thread, which is scheduled
-for removal. Second - we kill one of the last users of kill_proc -
-the function which is also to be removed, because it uses a pid_t
-which is not safe now.
+* Andi Kleen <ak@suse.de> wrote:
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Tested-by: Duncan Sands <baldrick.bulk@free.fr>
+> EFI currently calls set_memory_x() on potentially ioremapped 
+> addresses.
+> 
+> This is problematic for several reasons:
+> 
+> - The cpa code internally calls __pa on it which does not work for 
+> remapped addresses and will give some random result.
 
----
+Wrong. We do call __pa() on vmalloc ranges (which is a known 
+uncleanliness that we intend to fix), but contrary to your claim the 
+result is not "random result". On 64-bit it's guaranteed to have a value 
+above ~66 TB on 64-bit and hence fails all the filters later on so it 
+has zero practical relevance at the moment. On 32-bit we transform it 
+down to somewhere around 1GB - where we check it against the BIOS range 
+filters - which again cannot trigger. But I do agree that it's unclean 
+and needs fixing up.
 
-diff --git a/drivers/usb/atm/usbatm.c b/drivers/usb/atm/usbatm.c
-index e717f5b..0722872 100644
---- a/drivers/usb/atm/usbatm.c
-+++ b/drivers/usb/atm/usbatm.c
-@@ -80,6 +80,7 @@
- #include <linux/stat.h>
- #include <linux/timer.h>
- #include <linux/wait.h>
-+#include <linux/kthread.h>
- 
- #ifdef VERBOSE_DEBUG
- static int usbatm_print_packet(const unsigned char *data, int len);
-@@ -1014,10 +1015,7 @@ static int usbatm_do_heavy_init(void *arg)
- 	struct usbatm_data *instance = arg;
- 	int ret;
- 
--	daemonize(instance->driver->driver_name);
- 	allow_signal(SIGTERM);
--	instance->thread_pid = current->pid;
--
- 	complete(&instance->thread_started);
- 
- 	ret = instance->driver->heavy_init(instance, instance->usb_intf);
-@@ -1026,7 +1024,7 @@ static int usbatm_do_heavy_init(void *arg)
- 		ret = usbatm_atm_init(instance);
- 
- 	mutex_lock(&instance->serialize);
--	instance->thread_pid = -1;
-+	instance->thread = NULL;
- 	mutex_unlock(&instance->serialize);
- 
- 	complete_and_exit(&instance->thread_exited, ret);
-@@ -1034,13 +1032,18 @@ static int usbatm_do_heavy_init(void *arg)
- 
- static int usbatm_heavy_init(struct usbatm_data *instance)
- {
--	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_FS | CLONE_FILES);
--
--	if (ret < 0) {
--		usb_err(instance, "%s: failed to create kernel_thread (%d)!\n", __func__, ret);
--		return ret;
-+	struct task_struct *t;
-+
-+	t = kthread_create(usbatm_do_heavy_init, instance,
-+			instance->driver->driver_name);
-+	if (IS_ERR(t)) {
-+		usb_err(instance, "%s: failed to create kernel_thread (%ld)!\n",
-+				__func__, PTR_ERR(t));
-+		return PTR_ERR(t);
- 	}
- 
-+	instance->thread = t;
-+	wake_up_process(t);
- 	wait_for_completion(&instance->thread_started);
- 
- 	return 0;
-@@ -1124,7 +1127,7 @@ int usbatm_usb_probe(struct usb_interface *intf, const struct usb_device_id *id,
- 	kref_init(&instance->refcount);		/* dropped in usbatm_usb_disconnect */
- 	mutex_init(&instance->serialize);
- 
--	instance->thread_pid = -1;
-+	instance->thread = NULL;
- 	init_completion(&instance->thread_started);
- 	init_completion(&instance->thread_exited);
- 
-@@ -1287,8 +1290,8 @@ void usbatm_usb_disconnect(struct usb_interface *intf)
- 
- 	mutex_lock(&instance->serialize);
- 	instance->disconnected = 1;
--	if (instance->thread_pid >= 0)
--		kill_proc(instance->thread_pid, SIGTERM, 1);
-+	if (instance->thread != NULL)
-+		send_sig(SIGTERM, instance->thread, 1);
- 	mutex_unlock(&instance->serialize);
- 
- 	wait_for_completion(&instance->thread_exited);
-diff --git a/drivers/usb/atm/usbatm.h b/drivers/usb/atm/usbatm.h
-index ff8551e..d23aca9 100644
---- a/drivers/usb/atm/usbatm.h
-+++ b/drivers/usb/atm/usbatm.h
-@@ -176,7 +176,7 @@ struct usbatm_data {
- 	int disconnected;
- 
- 	/* heavy init */
--	int thread_pid;
-+	struct task_struct *thread;
- 	struct completion thread_started;
- 	struct completion thread_exited;
- 
+Detailed analysis on 64-bit: we call __pa() here:
+
+static int change_page_attr_addr(struct cpa_data *cpa)
+...
+        unsigned long phys_addr = __pa(address);
+
+which for vmalloc area virtual addresses will indeed yield some really 
+high (and invalid) physical address. That address will never trigger 
+this check:
+
+        if (within(address, HIGH_MAP_START, HIGH_MAP_END))
+                address = (unsigned long) __va(phys_addr);
+
+or this check:
+
+        if (within(phys_addr, 0, KERNEL_TEXT_SIZE)) {
+
+so we'll never actuall _use_ that phys_addr.
+
+> - cpa will try to change all potential aliases (like the kernel 
+> mapping on x86-64), but that is not needed for NX because the caller 
+> does only needs its specific virtual address executable. There is no 
+> requirement in the x86 architecture for nx bits to be coherent between 
+> mapping aliases. Also with the previous problem of __pa returning a 
+> wrong address it would likely try to change some random other page if 
+> you're unlucky and the random result would match the kernel text 
+> range.
+
+wrong. That "random other page" is guaranteed to be above 66 TB 
+physical.
+
+Anyway, i agree that it's ugly and unintuitive and it's on our clean-up 
+list. But your patch is not a good cleanup because it just hides the 
+underlying weakness.
+
+	Ingo
