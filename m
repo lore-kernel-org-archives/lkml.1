@@ -1,187 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYBKBF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751747AbYBKBMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbYBKBF4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 20:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbYBKBFr
+	id S1751747AbYBKBMh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 20:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbYBKBM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 20:05:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34816 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755449AbYBKBFq (ORCPT
+	Sun, 10 Feb 2008 20:12:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41518
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755969AbYBKBMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 20:05:46 -0500
-Date: Sun, 10 Feb 2008 17:05:09 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       davej@redhat.com
-Subject: Re: [PATCH] make /dev/kmem a config option
-Message-ID: <20080210170509.36999240@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0802110111160.7915@fbirervta.pbzchgretzou.qr>
-References: <20080210155534.17fc6e5e@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0802110111160.7915@fbirervta.pbzchgretzou.qr>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Sun, 10 Feb 2008 20:12:25 -0500
+Date: Sun, 10 Feb 2008 17:12:57 -0800 (PST)
+Message-Id: <20080210.171257.233096646.davem@davemloft.net>
+To: chris.mason@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       btrfs-devel@oss.oracle.com
+Subject: Re: [ANNOUNCE] Btrfs v0.12 released
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200802061200.14690.chris.mason@oracle.com>
+References: <200802061200.14690.chris.mason@oracle.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 01:13:09 +0100 (CET)
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
+From: Chris Mason <chris.mason@oracle.com>
+Date: Wed, 6 Feb 2008 12:00:13 -0500
 
-> 
-> On Feb 10 2008 15:55, Arjan van de Ven wrote:
-> >+#ifdef CONFIG_DEVKMEM
-> > /*
-> >  * This function reads the *virtual* memory as seen by the kernel.
-> >  */
-> >@@ -585,6 +588,11 @@ static ssize_t write_kmem(struct file * file,
-> >const char __user * buf,
-> >  	*ppos = p;
-> >  	return virtr + wrote;
-> > }
-> >+#else
-> >+#define read_kmem NULL
-> >+#define write_kmem NULL
-> >+#define mmap_kmem NULL
-> >+#endif
-> 
-> Is the #else case needed? All kmem_fops uses seem #ifdef'ed out
-> anyway, except kmem_fops itself. In other words,
-> 
-> +#ifdef CONFIG_DEVKMEM
->  static const struct file_operations kmem_fops = {
->  ...
->  }
-> +#endif
-> 
-> and do away with the three defines. No? :)
+> So, here's v0.12.
 
-yup you're right; updated patch below
+I couldn't even make a filesystem on sparc64 without the following
+patch.
 
----
+The first problem is that these SETGET macros lose typing information,
+and therefore can't see the 'packed' attribute and therefore take
+unaligned access SIGBUS signals on sparc64 when trying to derefernce
+the member.
 
-Subject: [PATCH] make /dev/kmem a config option
-From: Arjan van de Ven <arjan@linux.intel.com>
+The next problem is a similar issue in btrfs_name_hash().  This gets
+passed things like &key.offset which is a member of a packed
+structure, losing this packed'ness information btrfs_name_hash()
+performs a potentially unaligned memory access, again resulting in a
+SIGBUS.
 
-This patch makes /dev/kmem a config option; /dev/kmem is VERY rarely
-used, and when used, it's generally for no good (rootkits tend to be
-the most common users). With this config option, users have the
-choice to disable /dev/kmem, saving some size as well.
+This function never returns an error, so the simplest fix was to
+return the hash value which avoids all of the issues.  In attempting
+other schemes to fix this, I found it very difficult to give gcc
+a packed attribute for that "u64 *" argument other than to create
+some new pseudo structure which would have been ugly.
 
-A patch to disable /dev/kmem has been in the Fedora and RHEL kernels for
-4+ years now without any known problems or legit users of /dev/kmem.
+Similar code lives in the btrfs kernel code too, I'll try to get a
+partition at least mounted and working minimally and if successful
+I'll send you patches for that too.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/char/Kconfig |    8 ++++++++
- drivers/char/mem.c   |   10 ++++++++++
- 2 files changed, 18 insertions(+)
-
-Index: linux.trees.git/drivers/char/Kconfig
-===================================================================
---- linux.trees.git.orig/drivers/char/Kconfig
-+++ linux.trees.git/drivers/char/Kconfig
-@@ -80,6 +80,14 @@ config VT_HW_CONSOLE_BINDING
- 	 information. For framebuffer console users, please refer to
- 	 <file:Documentation/fb/fbcon.txt>.
- 
-+config DEV_KMEM
-+	bool "/dev/kmem virtual device support"
-+	help
-+	  Say Y here if you want to support the /dev/kmem device. The
-+	  /dev/kmem device is rarely used, but can be used for certain
-+	  kind of kernel debugging operations.
-+	  When in doubt, say "N".
-+
- config SERIAL_NONSTANDARD
- 	bool "Non-standard serial port support"
- 	depends on HAS_IOMEM
-Index: linux.trees.git/drivers/char/mem.c
-===================================================================
---- linux.trees.git.orig/drivers/char/mem.c
-+++ linux.trees.git/drivers/char/mem.c
-@@ -295,6 +295,7 @@ static int mmap_mem(struct file * file, 
- 	return 0;
+diff -up --recursive --new-file vanilla/btrfs-progs-0.12/ctree.h btrfs-progs-0.12/ctree.h
+--- vanilla/btrfs-progs-0.12/ctree.h	2008-02-06 08:37:45.000000000 -0800
++++ btrfs-progs-0.12/ctree.h	2008-02-10 16:53:24.000000000 -0800
+@@ -451,18 +451,16 @@ static inline void btrfs_set_##name(stru
+ static inline u##bits btrfs_##name(struct extent_buffer *eb,		\
+ 				   type *s)				\
+ {									\
+-	unsigned long offset = (unsigned long)s +			\
+-				offsetof(type, member);			\
+-	__le##bits *tmp = (__le##bits *)(eb->data + offset);		\
+-	return le##bits##_to_cpu(*tmp);					\
++	unsigned long offset = (unsigned long)s;			\
++	type *p = (type *) (eb->data + offset);				\
++	return le##bits##_to_cpu(p->member);				\
+ }									\
+ static inline void btrfs_set_##name(struct extent_buffer *eb,		\
+ 				    type *s, u##bits val)		\
+ {									\
+-	unsigned long offset = (unsigned long)s +			\
+-				offsetof(type, member);			\
+-	__le##bits *tmp = (__le##bits *)(eb->data + offset);		\
+-	*tmp = cpu_to_le##bits(val);					\
++	unsigned long offset = (unsigned long)s;			\
++	type *p = (type *) (eb->data + offset);				\
++	p->member = cpu_to_le##bits(val);				\
  }
  
-+#ifdef CONFIG_DEVKMEM
- static int mmap_kmem(struct file * file, struct vm_area_struct * vma)
+ #define BTRFS_SETGET_STACK_FUNCS(name, type, member, bits)		\
+diff -up --recursive --new-file vanilla/btrfs-progs-0.12/dir-item.c btrfs-progs-0.12/dir-item.c
+--- vanilla/btrfs-progs-0.12/dir-item.c	2008-02-06 08:37:45.000000000 -0800
++++ btrfs-progs-0.12/dir-item.c	2008-02-10 17:03:34.000000000 -0800
+@@ -71,8 +71,7 @@ int btrfs_insert_xattr_item(struct btrfs
+ 
+ 	key.objectid = dir;
+ 	btrfs_set_key_type(&key, BTRFS_XATTR_ITEM_KEY);
+-	ret = btrfs_name_hash(name, name_len, &key.offset);
+-	BUG_ON(ret);
++	key.offset = btrfs_name_hash(name, name_len);
+ 	path = btrfs_alloc_path();
+ 	if (!path)
+ 		return -ENOMEM;
+@@ -122,8 +121,7 @@ int btrfs_insert_dir_item(struct btrfs_t
+ 
+ 	key.objectid = dir;
+ 	btrfs_set_key_type(&key, BTRFS_DIR_ITEM_KEY);
+-	ret = btrfs_name_hash(name, name_len, &key.offset);
+-	BUG_ON(ret);
++	key.offset = btrfs_name_hash(name, name_len);
+ 	path = btrfs_alloc_path();
+ 	data_size = sizeof(*dir_item) + name_len;
+ 	dir_item = insert_with_overflow(trans, root, path, &key, data_size,
+@@ -196,8 +194,7 @@ struct btrfs_dir_item *btrfs_lookup_dir_
+ 	key.objectid = dir;
+ 	btrfs_set_key_type(&key, BTRFS_DIR_ITEM_KEY);
+ 
+-	ret = btrfs_name_hash(name, name_len, &key.offset);
+-	BUG_ON(ret);
++	key.offset = btrfs_name_hash(name, name_len);
+ 
+ 	ret = btrfs_search_slot(trans, root, &key, path, ins_len, cow);
+ 	if (ret < 0)
+@@ -258,8 +255,7 @@ struct btrfs_dir_item *btrfs_lookup_xatt
+ 
+ 	key.objectid = dir;
+ 	btrfs_set_key_type(&key, BTRFS_XATTR_ITEM_KEY);
+-	ret = btrfs_name_hash(name, name_len, &key.offset);
+-	BUG_ON(ret);
++	key.offset = btrfs_name_hash(name, name_len);
+ 	ret = btrfs_search_slot(trans, root, &key, path, ins_len, cow);
+ 	if (ret < 0)
+ 		return ERR_PTR(ret);
+diff -up --recursive --new-file vanilla/btrfs-progs-0.12/dir-test.c btrfs-progs-0.12/dir-test.c
+--- vanilla/btrfs-progs-0.12/dir-test.c	2008-02-06 08:37:45.000000000 -0800
++++ btrfs-progs-0.12/dir-test.c	2008-02-10 17:03:49.000000000 -0800
+@@ -129,8 +129,8 @@ error:
+ 				    struct btrfs_dir_item);
+ 		found = (char *)(di + 1);
+ 		found_len = btrfs_dir_name_len(di);
+-		btrfs_name_hash(buf, strlen(buf), &myhash);
+-		btrfs_name_hash(found, found_len, &foundhash);
++		myhash = btrfs_name_hash(buf, strlen(buf));
++		foundhash = btrfs_name_hash(found, found_len);
+ 		if (myhash != foundhash)
+ 			goto fatal_release;
+ 		btrfs_release_path(root, &path);
+diff -up --recursive --new-file vanilla/btrfs-progs-0.12/hash.c btrfs-progs-0.12/hash.c
+--- vanilla/btrfs-progs-0.12/hash.c	2008-02-06 08:37:45.000000000 -0800
++++ btrfs-progs-0.12/hash.c	2008-02-10 17:02:36.000000000 -0800
+@@ -75,12 +75,13 @@ static void str2hashbuf(const char *msg,
+ 		*buf++ = pad;
+ }
+ 
+-int btrfs_name_hash(const char *name, int len, u64 *hash_result)
++u64 btrfs_name_hash(const char *name, int len)
  {
- 	unsigned long pfn;
-@@ -315,6 +316,7 @@ static int mmap_kmem(struct file * file,
- 	vma->vm_pgoff = pfn;
- 	return mmap_mem(file, vma);
+ 	__u32	hash;
+ 	__u32	minor_hash = 0;
+ 	const char	*p;
+ 	__u32		in[8], buf[2];
++	u64		hash_result;
+ 
+ 	/* Initialize the default seed for the hash checksum functions */
+ 	buf[0] = 0x67452301;
+@@ -97,8 +98,8 @@ int btrfs_name_hash(const char *name, in
+ 	}
+ 	hash = buf[0];
+ 	minor_hash = buf[1];
+-	*hash_result = buf[0];
+-	*hash_result <<= 32;
+-	*hash_result |= buf[1];
+-	return 0;
++	hash_result = buf[0];
++	hash_result <<= 32;
++	hash_result |= buf[1];
++	return hash_result;
  }
-+#endif
+diff -up --recursive --new-file vanilla/btrfs-progs-0.12/hash.h btrfs-progs-0.12/hash.h
+--- vanilla/btrfs-progs-0.12/hash.h	2008-02-06 08:37:45.000000000 -0800
++++ btrfs-progs-0.12/hash.h	2008-02-10 17:02:21.000000000 -0800
+@@ -18,5 +18,5 @@
  
- #ifdef CONFIG_CRASH_DUMP
- /*
-@@ -353,6 +355,7 @@ static ssize_t read_oldmem(struct file *
- extern long vread(char *buf, char *addr, unsigned long count);
- extern long vwrite(char *buf, char *addr, unsigned long count);
- 
-+#ifdef CONFIG_DEVKMEM
- /*
-  * This function reads the *virtual* memory as seen by the kernel.
-  */
-@@ -557,6 +560,7 @@ static ssize_t write_kmem(struct file * 
-  	*ppos = p;
-  	return virtr + wrote;
- }
-+#endif
- 
- #ifdef CONFIG_DEVPORT
- static ssize_t read_port(struct file * file, char __user * buf,
-@@ -734,6 +738,7 @@ static const struct file_operations mem_
- 	.get_unmapped_area = get_unmapped_area_mem,
- };
- 
-+#ifdef CONFIG_DEVKMEM
- static const struct file_operations kmem_fops = {
- 	.llseek		= memory_lseek,
- 	.read		= read_kmem,
-@@ -742,6 +747,7 @@ static const struct file_operations kmem
- 	.open		= open_kmem,
- 	.get_unmapped_area = get_unmapped_area_mem,
- };
-+#endif
- 
- static const struct file_operations null_fops = {
- 	.llseek		= null_lseek,
-@@ -820,11 +826,13 @@ static int memory_open(struct inode * in
- 			filp->f_mapping->backing_dev_info =
- 				&directly_mappable_cdev_bdi;
- 			break;
-+#ifdef CONFIG_DEVKMEM
- 		case 2:
- 			filp->f_op = &kmem_fops;
- 			filp->f_mapping->backing_dev_info =
- 				&directly_mappable_cdev_bdi;
- 			break;
-+#endif
- 		case 3:
- 			filp->f_op = &null_fops;
- 			break;
-@@ -873,7 +881,9 @@ static const struct {
- 	const struct file_operations	*fops;
- } devlist[] = { /* list of minor devices */
- 	{1, "mem",     S_IRUSR | S_IWUSR | S_IRGRP, &mem_fops},
-+#ifdef CONFIG_DEVKMEM
- 	{2, "kmem",    S_IRUSR | S_IWUSR | S_IRGRP, &kmem_fops},
-+#endif
- 	{3, "null",    S_IRUGO | S_IWUGO,           &null_fops},
- #ifdef CONFIG_DEVPORT
- 	{4, "port",    S_IRUSR | S_IWUSR | S_IRGRP, &port_fops},
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+ #ifndef __HASH__
+ #define __HASH__
+-int btrfs_name_hash(const char *name, int len, u64 *hash_result);
++u64 btrfs_name_hash(const char *name, int len);
+ #endif
+diff -up --recursive --new-file vanilla/btrfs-progs-0.12/hasher.c btrfs-progs-0.12/hasher.c
+--- vanilla/btrfs-progs-0.12/hasher.c	2008-02-06 08:37:45.000000000 -0800
++++ btrfs-progs-0.12/hasher.c	2008-02-10 17:04:04.000000000 -0800
+@@ -35,8 +35,7 @@ int main() {
+ 			continue;
+ 		if (line[strlen(line)-1] == '\n')
+ 			line[strlen(line)-1] = '\0';
+-		ret = btrfs_name_hash(line, strlen(line), &result);
+-		BUG_ON(ret);
++		result = btrfs_name_hash(line, strlen(line));
+ 		printf("hash returns %llu\n", (unsigned long long)result);
+ 	}
+ 	return 0;
