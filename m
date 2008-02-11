@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYBKOP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYBKOQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbYBKOP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 09:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYBKOPP
+	id S1755228AbYBKOQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 09:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYBKOQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 09:15:15 -0500
-Received: from mivlgu.ru ([195.20.195.134]:40813 "EHLO mail.mivlgu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752732AbYBKOPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 09:15:14 -0500
-X-Greylist: delayed 1660 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 09:15:13 EST
-Date: Mon, 11 Feb 2008 16:47:19 +0300
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: Eric Piel <eric.piel@tremplin-utc.net>
-Cc: Christoph Hellwig <hch@lst.de>, dsdt@gaugusch.at, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       trenn@suse.de
-Subject: Re: acpi dsts loading and populate_rootfs
-Message-Id: <20080211164719.d42c618e.vsu@altlinux.ru>
-In-Reply-To: <47AEE6D1.4070402@tremplin-utc.net>
-References: <20080210071226.GA23360@lst.de>
-	<20080210071454.GA23428@lst.de>
-	<47AEE6D1.4070402@tremplin-utc.net>
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.12.1; i586-alt-linux-gnu)
+	Mon, 11 Feb 2008 09:16:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36376 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752956AbYBKOQu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 09:16:50 -0500
+Subject: Re: [PATCH] [6/8] Account overlapped mappings in end_pfn_map
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, ying.huang@intel.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802111427.16288.ak@suse.de>
+References: <200802111034.764275766@suse.de>
+	 <20080211093434.E30961B41CE@basil.firstfloor.org>
+	 <20080211130843.GC23733@elte.hu>  <200802111427.16288.ak@suse.de>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 15:16:31 +0100
+Message-Id: <1202739391.6247.13.camel@lappy>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox"
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Sun, 10 Feb 2008 12:58:09 +0100 Eric Piel wrote:
+On Mon, 2008-02-11 at 14:27 +0100, Andi Kleen wrote:
 
-> (adding some CC's)
-> Christoph Hellwig wrote:
-> > On Sun, Feb 10, 2008 at 08:12:26AM +0100, Christoph Hellwig wrote:
-> >> Folks, moving this call around hidden behing in completely unreviewed
-> >> acpi junk is not acceptable.
-> >>
-> >> Either populate_rootfs _is_ safe to be called earlier and then we should
-> >> do it always or it's not.  Either way such a change should be posted
-> >> separately and reviewd on lkml.
-> Hi,
->
-> I agree with you, the order of the initialization should not be changed
-> by some config options. Either it works, or it doesn't! So the question
-> now is : "is fine to move populate_rootfs() earlier?"
->
-> Some data points:
-> * It used to be called earlier. It was moved to be called later about a
-> year ago by Linus (8d610dd52dd1da696e199e4b4545f33a2a5de5c6) with this log:
-> >     Make sure we populate the initroot filesystem late enough
-> >
-> >     We should not initialize rootfs before all the core initializers have
-> >     run.  So do it as a separate stage just before starting the regular
-> >     driver initializers.
-> So there must be some good reasons to keep it late enough...
->
-> * This patch is used in SuSE, and it seems noone has ever had a problem
-> with the initramfs early init.
->
-> I guess the problem that Linus solved by moving populate_rootfs()
-> happens only rarely or on only few configurations. Linus, do you
-> remember what kind of problem it was? How can I reproduce it?
+> Ok patch with hungarized variables appended.
 
-AFAIR the problem was that the kernel was trying to exec /sbin/hotplug
-before some kernel subsystems (e.g., pipe support) were completely
-initialized, which caused oopses during boot.
+> -static void __meminit
+> +static unsigned long __meminit
+>  phys_pmd_update(pud_t *pud, unsigned long address, unsigned long end)
+>  {
+> +	unsigned long true_end;
+>  	pmd_t *pmd = pmd_offset(pud, 0);
+>  	spin_lock(&init_mm.page_table_lock);
+> -	phys_pmd_init(pmd, address, end);
+> +	true_end = phys_pmd_init(pmd, address, end);
+>  	spin_unlock(&init_mm.page_table_lock);
+>  	__flush_tlb_all();
+> +	return true_end;
+>  }
 
-Initramfs images generated by distro tools usually do not contain
-/sbin/hotplug, and therefore avoid the problem.  (The kernel might
-also call /sbin/modprobe by itself, but it either does not do it
-during early boot, or /sbin/modprobe does not use kernel features
-which had not been initialized yet).
+Just for the record, Hungarian notation would have it like:
 
-> One different solution that I implemented [1] was to have an
-> "early_populate_rootfs()" before the acpi_early_init(), leaving
-> populate_rootfs() at the normal place. If the early version fails, it's
-> ok: we can't override the DSDT, but the later version will work as usual
-> anyway. This solution also seems to work quite often (it's used in
-> Ubuntu, Mandriva and PCLinuxOS)
+  ulTrueEnd
 
-This would not solve the problem, because /sbin/hotplug (if present in
-the initramfs image) will exist too early.
+http://en.wikipedia.org/wiki/Hungarian_notation
 
-> Would that seem an acceptable solution? Or what other way exists?
+And the kernel doesn't do that, to wit (from Documentation/CodingStyle):
 
-Disabling call_usermodehelper() until all core initializers had
-completed would fix the problem too; will such change be acceptable?
+ Linus Torvalds (against systems Hungarian): Encoding the type of a
+function into the name (so-called Hungarian notation) is brain damaged -
+the compiler knows the types anyway and can check those, and it only
+confuses the programmer.
 
---Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
 
-iD8DBQFHsFHqW82GfkQfsqIRAuXIAJ4zjemlESZqTwnmAw7dE+srvClK9ACfVVCE
-4I1j78a/93MJKWYbH+ZGs8Y=
-=Hgdm
------END PGP SIGNATURE-----
-
---Signature=_Mon__11_Feb_2008_16_47_19_+0300_7sBudkJzhJO6s6ox--
