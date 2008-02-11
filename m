@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760321AbYBKRgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760164AbYBKRh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760321AbYBKRgd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760171AbYBKRgJ
+	id S1760164AbYBKRh7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYBKRhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:36:09 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34958 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758838AbYBKRgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:36:07 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] [1/1] CPA: Flush the caches when setting pages not present v2
-Date: Mon, 11 Feb 2008 18:36:03 +0100
-User-Agent: KMail/1.9.6
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-References: <20080211216.571751871@suse.de> <alpine.LFD.1.00.0802111803290.12988@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0802111803290.12988@apollo.tec.linutronix.de>
+	Mon, 11 Feb 2008 12:37:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57330 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758656AbYBKRhs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 12:37:48 -0500
+Date: Mon, 11 Feb 2008 09:37:18 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Prevent IDE boot ops on NUMA system in mainline
+In-Reply-To: <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0802110936231.2920@woody.linux-foundation.org>
+References: <20080211003520.GA32082@basil.nowhere.org> <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802111836.03195.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> This is suboptimal though, as it will trigger a wbinvd() everytime
-> when we hit a non present pte in a range, whether we did set the entry
-> in question to not present or not.
 
-Do you think that's common? I considered this while writing the code,
-but figured it was just a oddball case not worth caring about.
-
-DEBUG_PAGEALLOC does not call this normally anyways and people
-should not call this for unallocated mappings anyways. 
-
-> The gart code unmapping is a special case. This only happens during
-> boot, so adding a wbinvd() to the gart code is solving this issue
-> without imposing it on other use cases.
+On Mon, 11 Feb 2008, Linus Torvalds wrote:
 > 
-> Another solution for this would be to change the mapping to uncached
-> before unmapping, so we could avoid the wbinvd() completely.
+> So we should probably make pcibus_to_node() be an inline function for that 
+> case
 
-That will work for pci-gart, but not for some future users of set_memory_np()
-I plan to submit (they run potentially with multiple CPUs online and doing callbacks
-there would be quite ugly). So I would prefer  if you kept some variant of my original patch.
+Or, we could just do the ugliest patch ever, namely
 
--Andi
+	-#define pcibus_to_node(node)   (-1)
+	+#define pcibus_to_node(node)   ((int)(long)(node),-1)
 
+Wow. It's so ugly it's almost wraps around and comes out the other sides 
+and looks pretty.
+
+		Linus
