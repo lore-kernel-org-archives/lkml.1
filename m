@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYBKLAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYBKLBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbYBKLAw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757743AbYBKLAj
+	id S1757883AbYBKLBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYBKLBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:00:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53800 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757618AbYBKLAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:00:37 -0500
-Date: Mon, 11 Feb 2008 12:00:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/8] CPA: Flush the caches when setting pages not
-	present
-Message-ID: <20080211110025.GA15373@elte.hu>
-References: <200802111034.764275766@suse.de> <20080211093430.D198A1B41CE@basil.firstfloor.org>
+	Mon, 11 Feb 2008 06:01:42 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:20959 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754188AbYBKLBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:01:41 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/8] CPA: Fix gbpages support in try_preserve_lage_page
+References: <200802111034.764275766@suse.de>
+	<20080211093429.CD9D31B41CE@basil.firstfloor.org>
+	<alpine.LFD.1.00.0802111043340.12988@apollo.tec.linutronix.de>
+	<20080211101208.GA32181@elte.hu>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 11 Feb 2008 12:01:39 +0100
+In-Reply-To: <20080211101208.GA32181@elte.hu>
+Message-ID: <87ir0viwoc.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211093430.D198A1B41CE@basil.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 11 Feb 2008 10:55:17.0923 (UTC) FILETIME=[96B56F30:01C86C9C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
+> 
+> btw., v2.6.25-rc1 is not affected by this. Gbpages support is a "still 
+> cooking" feature only available in x86.git#mm, destined for .26, and 
+> even there it's default disabled and only available on Barcelona class 
+> hardware. (Some of these bits are upstream already to make maintenance 
+> easier, but they are inactive code.)
 
-* Andi Kleen <ak@suse.de> wrote:
+This means it will be tested for ~6 months. Don't you think that's a little
+excessive for such a simple patch? 
 
-> e.g. the AMD64 pci-gart code sets pages not present to prevent 
-> potential cache coherency problems.  When doing this it is probably 
-> safer to flush the caches too. So consider clearing of the present bit 
-> as a cache flush indicator.
+% git show 6dc6ffff706db6c70a98253e7dc7011e4343df6c | diffstat 
+ init_64.c |   29 ++++++++++++++++++++++++-----
+ 1 files changed, 24 insertions(+), 5 deletions(-)
 
-uhm, but why? "Probably safer" is not the right kind of technical 
-argument ;-)
+One option would be also to merge it to .25 and mark the
+CONFIG option EXPERIMENTAL.
 
-The PCI-GART quirk which we use on some systems unmaps pages _not_ 
-because of coherency problems (any cache coherency problems would be 
-triggerable before we unmap them anyway), but due to _page aliasing_ 
-problems: these pages might be in our general e820 map so we must 
-disable them.
-
-( in any case, the CPA code does not deal with cache attribute coherency 
-  - that is topic of the upcoming PAT feature. We still largely rely on 
-  MTRRs to get cache coherency right. )
-
-furthermore, your patch does not even do what you claim it does, because
-it is an elaborate NOP on most modern CPUs:
-
-> +static inline int cache_attr(pgprot_t set, pgprot_t clr)
->  {
-> -	return pgprot_val(attr) &
-> +	/*
-> +	 * Clearing pages is usually done for cache cohereny reasons
-> +	 * (except for pagealloc debug, but that doesn't call this anyways)
-> +	 * It's safer to flush the caches in this case too.
-> +	 */
-> +	if (pgprot_val(clr) & _PAGE_PRESENT)
-> +		return 1;
-
-as clflush does not work on not present pages...
-
-	Ingo
+-Andi
