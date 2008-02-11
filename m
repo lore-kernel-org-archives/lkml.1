@@ -1,109 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbYBKTwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbYBKT6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760855AbYBKTwT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbYBKTwJ
+	id S1759927AbYBKT6M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:58:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbYBKT56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:52:09 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:25641 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758587AbYBKTwH (ORCPT
+	Mon, 11 Feb 2008 14:57:58 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:2891 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755351AbYBKT55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:52:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=kVFxYuaSJWRlo7x0ehEWfXG1TPzhddMWoq2oNm2szsSyMnnFutzhcNm9HRv5eH3xuMMqDax38LVUzdFDnLRMieMWmXwzRCEGZeCleLCSGm+nLo8BRk3vfS/hfkUrU7bibPuM2HbRlwCtBLJa/BE4aGeDNbyS02h/6acwedjWcR4=
-Date: Tue, 12 Feb 2008 03:52:22 +0800
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, a.p.zijlstra@chello.nl
-Subject: [PATCH 1/1] Taint kernel after WARN_ON(condition)
-Message-ID: <20080211195222.GA5809@gandalf.middleearth>
+	Mon, 11 Feb 2008 14:57:57 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=tER+j/jLPw3wUDMj8Jh32EYw+wUHei+3bNYbuGzzEEgPOg21p81NXWcv596wEevf6
+	FEDKXq6pKYctJeB2vrtng==
+Date: Mon, 11 Feb 2008 11:56:24 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
+In-Reply-To: <2f11576a0802111025w4f8d6765w119f9e9c1cddd85e@mail.gmail.com>
+Message-ID: <alpine.DEB.1.00.0802111155310.17652@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
+ <2f11576a0802111025w4f8d6765w119f9e9c1cddd85e@mail.gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Nur Hussein <nurhussein@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch will taint the kernel with a new flag, 'W', whenever a
-warning is issued with WARN_ON(condition). Whenever a warning occurs, it
-is helpful to record this within the kernel state as a taint. When a BUG
-happens, it'd be useful to know if it was also preceded by a WARN.
+On Tue, 12 Feb 2008, KOSAKI Motohiro wrote:
 
-This patch applies to Linus's git tree.
+> > @@ -218,21 +167,27 @@ static struct mempolicy *mpol_new(enum mempolicy_mode mode,
+> >                 return ERR_PTR(-ENOMEM);
+> >         flags &= MPOL_MODE_FLAGS;
+> >         atomic_set(&policy->refcnt, 1);
+> > +       cpuset_update_task_memory_state();
+> > +       nodes_and(cpuset_context_nmask, *nodes, cpuset_current_mems_allowed);
+> >         switch (mode) {
+> >         case MPOL_INTERLEAVE:
+> > -               policy->v.nodes = *nodes;
+> > +               if (nodes_empty(*nodes))
+> > +                       return ERR_PTR(-EINVAL);
+> 
+> need kmem_cache_free(policy_cache, policy) before return?
+> 
 
-Signed-off-by: Nur Hussein (nurhussein@gmail.com)
+Very good catch!
+
+
+
+mempolicy: fix policy memory leak in mpol_new()
+
+If mpol_new() cannot setup a new mempolicy because of an invalid argument
+provided by the user, avoid leaking the mempolicy that has been dynamically
+allocated.
+
+Reported by KOSAKI Motohiro.
+
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
+ mm/mempolicy.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
-index 2632328..0633e96 100644
---- a/include/asm-generic/bug.h
-+++ b/include/asm-generic/bug.h
-@@ -42,8 +42,10 @@ extern void warn_on_slowpath(const char *file, const int line);
- #ifndef WARN_ON
- #define WARN_ON(condition) ({						\
- 	int __ret_warn_on = !!(condition);				\
--	if (unlikely(__ret_warn_on))					\
-+	if (unlikely(__ret_warn_on)) {					\
- 		__WARN();						\
-+		add_taint(TAINT_WARN);					\
-+	}								\
- 	unlikely(__ret_warn_on);					\
- })
- #endif
-@@ -60,6 +62,8 @@ extern void warn_on_slowpath(const char *file, const int line);
- #ifndef HAVE_ARCH_WARN_ON
- #define WARN_ON(condition) ({						\
- 	int __ret_warn_on = !!(condition);				\
-+	if (unlikely(__ret_warn_on)) 					\
-+		add_taint(TAINT_WARN);					\
- 	unlikely(__ret_warn_on);					\
- })
- #endif
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2df44e7..d90c1a4 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -255,6 +255,7 @@ extern enum system_states {
- #define TAINT_USER			(1<<6)
- #define TAINT_DIE			(1<<7)
- #define TAINT_OVERRIDDEN_ACPI_TABLE	(1<<8)
-+#define TAINT_WARN			(1<<9)
- 
- extern void dump_stack(void) __cold;
- 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 24af9f8..e113a85 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -153,6 +153,8 @@ EXPORT_SYMBOL(panic);
-  *  'M' - System experienced a machine check exception.
-  *  'B' - System has hit bad_page.
-  *  'U' - Userspace-defined naughtiness.
-+ *  'A' - ACPI table overridden.
-+ *  'W' - Taint on warning.
-  *
-  *	The string is overwritten by the next call to print_taint().
-  */
-@@ -161,7 +163,7 @@ const char *print_tainted(void)
- {
- 	static char buf[20];
- 	if (tainted) {
--		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c",
-+		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c",
- 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
- 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
- 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
-@@ -170,7 +172,8 @@ const char *print_tainted(void)
- 			tainted & TAINT_BAD_PAGE ? 'B' : ' ',
- 			tainted & TAINT_USER ? 'U' : ' ',
- 			tainted & TAINT_DIE ? 'D' : ' ',
--			tainted & TAINT_OVERRIDDEN_ACPI_TABLE ? 'A' : ' ');
-+			tainted & TAINT_OVERRIDDEN_ACPI_TABLE ? 'A' : ' ',
-+			tainted & TAINT_WARN ? 'W' : ' ');
- 	}
- 	else
- 		snprintf(buf, sizeof(buf), "Not tainted");
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -171,13 +171,11 @@ static struct mempolicy *mpol_new(enum mempolicy_mode mode,
+ 	nodes_and(cpuset_context_nmask, *nodes, cpuset_current_mems_allowed);
+ 	switch (mode) {
+ 	case MPOL_INTERLEAVE:
+-		if (nodes_empty(*nodes))
+-			return ERR_PTR(-EINVAL);
+-		policy->v.nodes = cpuset_context_nmask;
+-		if (nodes_weight(policy->v.nodes) == 0) {
++		if (nodes_empty(*nodes) || nodes_empty(cpuset_context_nmask)) {
+ 			kmem_cache_free(policy_cache, policy);
+ 			return ERR_PTR(-EINVAL);
+ 		}
++		policy->v.nodes = cpuset_context_nmask;
+ 		break;
+ 	case MPOL_PREFERRED:
+ 		policy->v.preferred_node = first_node(cpuset_context_nmask);
+@@ -185,8 +183,10 @@ static struct mempolicy *mpol_new(enum mempolicy_mode mode,
+ 			policy->v.preferred_node = -1;
+ 		break;
+ 	case MPOL_BIND:
+-		if (nodes_empty(*nodes))
++		if (nodes_empty(*nodes)) {
++			kmem_cache_free(policy_cache, policy);
+ 			return ERR_PTR(-EINVAL);
++		}
+ 		policy->v.zonelist = bind_zonelist(&cpuset_context_nmask);
+ 		if (IS_ERR(policy->v.zonelist)) {
+ 			void *error_code = policy->v.zonelist;
