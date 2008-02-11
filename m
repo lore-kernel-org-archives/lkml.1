@@ -1,191 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761137AbYBKXcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYBKXc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761137AbYBKXcB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 18:32:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbYBKXbv
+	id S1760803AbYBKXc7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 18:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbYBKXcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 18:31:51 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:30333 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756857AbYBKXbt (ORCPT
+	Mon, 11 Feb 2008 18:32:51 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:54750 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755295AbYBKXcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 18:31:49 -0500
-Date: Mon, 11 Feb 2008 15:27:16 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: mgross@linux.intel.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH]intel-iommu batched iotlb flushes
-Message-Id: <20080211152716.65f5a753.randy.dunlap@oracle.com>
-In-Reply-To: <20080211224105.GB24412@linux.intel.com>
-References: <20080211224105.GB24412@linux.intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 11 Feb 2008 18:32:50 -0500
+Date: Mon, 11 Feb 2008 18:32:24 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       blaisorblade@yahoo.it, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slob: fix linking for user mode linux
+Message-ID: <20080211233224.GA11432@c2.user-mode-linux.org>
+References: <Pine.LNX.4.64.0802120032160.27876@sbz-30.cs.Helsinki.FI> <1202769569.12383.49.camel@cinder.waste.org> <Pine.LNX.4.64.0802111443130.28253@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802111443130.28253@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 14:41:05 -0800 mark gross wrote:
+On Mon, Feb 11, 2008 at 02:44:21PM -0800, Christoph Lameter wrote:
+> UML defined its own external __kmalloc and things. Isnt there some other 
+> way to fix it? I guess including slab.h is not possible here?
 
-> The hole is the following scenarios: 
-> do many map_signal operations, do some unmap_signals, reuse a recently
-> unmapped page, <errant DMA hardware sneaks through and steps on reused
-> memory>
-> 
-> Or: you have rouge hardware using DMA's to look at pages: do many
+This is definitely dubious code on my part and I wouldn't support
+Pekka's patch unless you're going to uninline __kmalloc for some
+other reason.
 
-  or rogue hardware?
+The reason for this is that part of UML is userspace code, and thus
+can't use kernel headers.  However, they do need some kernel
+interfaces in some form.  That form has traditionally been little
+wrappers in the kernel side of UML which just call the kernel
+interface.
 
-> map_signal's, do many unmap_singles, reuse some unmapped pages : 
+In this case, there used to be um_kmalloc, which just called kmalloc.
+I've been trying to get rid of these stupid little helpers for a
+while, and this is what I ended up with for kmalloc.
 
-  signal .................... single
+It would be an annoyance to reintroduce um_kmalloc, but that might be
+the best thing to do here.
 
-> <rouge hardware looks at reused page>
+				Jeff
 
-   why rouge?
-
-> Note : these holes are very hard to get too, as the IOTLB is small and
-> only the PTE's still in the IOTLB can be accessed through this
-> mechanism.
-> 
-> Its recommended that strict is used when developing drivers that do DMA
-> operations to catch bugs early.  For production code where performance
-> is desired running with the batched IOTLB flushing is a good way to
-> go.
-> 
-> 
-> --mgross
-> 
-> 
-> Signed-off-by: <mgross@linux.intel.com>
-> 
-> 
-> 
-> Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.c
-> ===================================================================
-> --- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.c	2008-02-07 13:03:10.000000000 -0800
-> +++ linux-2.6.24-mm1/drivers/pci/intel-iommu.c	2008-02-11 10:38:49.000000000 -0800
-
-> @@ -50,11 +52,39 @@
->  
->  #define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
->  
-> +
-> +static void flush_unmaps_timeout(unsigned long data);
-> +
-> +static struct timer_list unmap_timer =
-> +	TIMER_INITIALIZER(flush_unmaps_timeout, 0, 0);
-> +
-> +struct unmap_list {
-> +	struct list_head list;
-> +	struct dmar_domain *domain;
-> +	struct iova *iova;
-> +};
-> +
-> +static struct intel_iommu *g_iommus;
-> +/* bitmap for indexing intel_iommus */
-> +static unsigned long 	*g_iommus_to_flush;
-> +static int g_num_of_iommus;
-> +
-> +static DEFINE_SPINLOCK(async_umap_flush_lock);
-> +static LIST_HEAD(unmaps_to_do);
-> +
-> +static int timer_on;
-> +static long list_size;
-> +static int high_watermark;
-> +
-> +static struct dentry *intel_iommu_debug, *debug;
-> +
-> +
->  static void domain_remove_dev_info(struct dmar_domain *domain);
->  
->  static int dmar_disabled;
->  static int __initdata dmar_map_gfx = 1;
->  static int dmar_forcedac;
-> +static int intel_iommu_strict;
->  
->  #define DUMMY_DEVICE_DOMAIN_INFO ((struct device_domain_info *)(-1))
->  static DEFINE_SPINLOCK(device_domain_lock);
-> @@ -73,9 +103,13 @@
->  			printk(KERN_INFO
->  				"Intel-IOMMU: disable GFX device mapping\n");
->  		} else if (!strncmp(str, "forcedac", 8)) {
-> -			printk (KERN_INFO
-> +			printk(KERN_INFO
->  				"Intel-IOMMU: Forcing DAC for PCI devices\n");
->  			dmar_forcedac = 1;
-> +		} else if (!strncmp(str, "strict", 8)) {
-> +			printk(KERN_INFO
-> +				"Intel-IOMMU: disable bached IOTLB flush\n");
-
-                                                      batched
-
-> +			intel_iommu_strict = 1;
->  		}
->  
->  		str += strcspn(str, ",");
-
-> @@ -1672,7 +1702,29 @@
->  	for_each_drhd_unit(drhd) {
->  		if (drhd->ignored)
->  			continue;
-> -		iommu = alloc_iommu(drhd);
-> +		g_num_of_iommus++;
-> +	}
-> +
-> +	nlongs = BITS_TO_LONGS(g_num_of_iommus);
-> +	g_iommus_to_flush = kzalloc(nlongs * sizeof(unsigned long), GFP_KERNEL);
-> +	if (!g_iommus_to_flush) {
-> +		printk(KERN_ERR "Allocating bitmap array failed\n");
-
-                identify:       "IOMMU:
-
-> +		return -ENOMEM;
-> +	}
-> +
-> +	g_iommus = kzalloc(g_num_of_iommus * sizeof(*iommu), GFP_KERNEL);
-> +	if (!g_iommus) {
-> +		kfree(g_iommus_to_flush);
-> +		ret = -ENOMEM;
-> +		goto error;
-> +	}
-> +
-> +	i = 0;
-> +	for_each_drhd_unit(drhd) {
-> +		if (drhd->ignored)
-> +			continue;
-> +		iommu = alloc_iommu(&g_iommus[i], drhd);
-> +		i++;
->  		if (!iommu) {
->  			ret = -ENOMEM;
->  			goto error;
-
-> Index: linux-2.6.24-mm1/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- linux-2.6.24-mm1.orig/Documentation/kernel-parameters.txt	2008-02-11 13:44:23.000000000 -0800
-> +++ linux-2.6.24-mm1/Documentation/kernel-parameters.txt	2008-02-11 14:23:37.000000000 -0800
-> @@ -822,6 +822,10 @@
->  			than 32 bit addressing. The default is to look
->  			for translation below 32 bit and if not available
->  			then look in the higher range.
-> +		strict [Default Off]
-> +			With this option on every umap_signle will
-
-                                         on, every unmap_si{ngle,gnal} ??
-
-> +			result in a hardware IOTLB flush opperation as
-> +			opposed to batching them for performance.
->  
->  	io_delay=	[X86-32,X86-64] I/O delay method
->  		0x80
-
-
----
-~Randy
+-- 
+Work email - jdike at linux dot intel dot com
