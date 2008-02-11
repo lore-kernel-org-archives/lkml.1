@@ -1,237 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757837AbYBKOWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbYBKOWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757837AbYBKOWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 09:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbYBKOTq
+	id S1757947AbYBKOWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 09:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYBKOU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 09:19:46 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33190 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755990AbYBKOTo (ORCPT
+	Mon, 11 Feb 2008 09:20:26 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:30694 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754229AbYBKOUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 09:19:44 -0500
-Message-Id: <20080211141816.520049000@bull.net>
-References: <20080211141646.948191000@bull.net>
-User-Agent: quilt/0.45-1
-Date: Mon, 11 Feb 2008 15:16:54 +0100
-From: Nadia.Derbey@bull.net
-To: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
-       akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, containers@lists.linux-foundation.org,
-       matthltc@us.ibm.com, cmm@us.ibm.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH 8/8] Re-enable msgmni automatic recomputing msgmni if set to negative
-Content-Disposition: inline; filename=ipc_register_callback_on_negative_msgmni.patch
+	Mon, 11 Feb 2008 09:20:23 -0500
+X-Trace: 661835653/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAOfnr0dRAVlC/2dsb2JhbACBWaYp
+Message-ID: <15561.85.118.17.158.1202739603.squirrel@newgolddream.dyndns.info>
+In-Reply-To: <200802101922.29214.vapier@gentoo.org>
+References: <1202684222.6237.9.camel@localhost.localdomain>
+    <200802101922.29214.vapier@gentoo.org>
+Date: Mon, 11 Feb 2008 14:20:03 -0000 (UTC)
+Subject: Re: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
+From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
+To: "Mike Frysinger" <vapier@gentoo.org>
+Cc: dtor@insightbb.com, "Paul Mundt" <lethal@users.sourceforge.net>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.10a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 08/08]
+On Mon, February 11, 2008 12:22 am, Mike Frysinger wrote:
+>
+> no remove function ?  looks like the probe() forces a connect, but there's
+> no
+> remove() to force a disconnect ...
 
-This patch is the enhancement as asked for by Yasunori: if msgmni is set to
-a negative value, register it back into the ipcns notifier chain.
 
-A new interface has been added to the notification mechanism:
-notifier_chain_cond_register() registers a notifier block only if not already
-registered. With that new interface we avoid taking care of the states changes
-in procfs.
+Removing these devices (or any other plugged directly into the maple
+ports) is a quick way to destroy your Dreamcast: hence they were never
+implemented I guess. But there is no convincing reason for the software
+not doing so, I suppose. I can just put in comments about it.
 
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- include/linux/ipc_namespace.h |    1 
- include/linux/notifier.h      |    4 +++
- ipc/ipc_sysctl.c              |   45 ++++++++++++++++++++++++++++++++----------
- ipc/ipcns_notifier.c          |    9 ++++++++
- kernel/notifier.c             |   38 +++++++++++++++++++++++++++++++++++
- 5 files changed, 87 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.24-mm1/ipc/ipc_sysctl.c
-===================================================================
---- linux-2.6.24-mm1.orig/ipc/ipc_sysctl.c	2008-02-08 16:08:32.000000000 +0100
-+++ linux-2.6.24-mm1/ipc/ipc_sysctl.c	2008-02-11 14:32:09.000000000 +0100
-@@ -15,6 +15,8 @@
- #include <linux/sysctl.h>
- #include <linux/uaccess.h>
- #include <linux/ipc_namespace.h>
-+#include <linux/msg.h>
-+#include "util.h"
- 
- static void *get_ipc(ctl_table *table)
- {
-@@ -24,6 +26,27 @@ static void *get_ipc(ctl_table *table)
- 	return which;
- }
- 
-+/*
-+ * Routine that is called when a tunable has successfully been changed by
-+ * hand and it has a callback routine registered on the ipc namespace notifier
-+ * chain: we don't want such tunables to be recomputed anymore upon memory
-+ * add/remove or ipc namespace creation/removal.
-+ * They can come back to a recomputable state by being set to a <0 value.
-+ */
-+static void tunable_set_callback(int val)
-+{
-+	if (val >= 0)
-+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-+	else {
-+		/*
-+		 * Re-enable automatic recomputing only if not already
-+		 * enabled.
-+		 */
-+		recompute_msgmni(current->nsproxy->ipc_ns);
-+		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
-+	}
-+}
-+
- #ifdef CONFIG_PROC_FS
- static int proc_ipc_dointvec(ctl_table *table, int write, struct file *filp,
- 	void __user *buffer, size_t *lenp, loff_t *ppos)
-@@ -38,17 +61,17 @@ static int proc_ipc_dointvec(ctl_table *
- static int proc_ipc_callback_dointvec(ctl_table *table, int write,
- 	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
- {
-+	struct ctl_table ipc_table;
- 	size_t lenp_bef = *lenp;
- 	int rc;
- 
--	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
-+	memcpy(&ipc_table, table, sizeof(ipc_table));
-+	ipc_table.data = get_ipc(table);
-+
-+	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
- 
- 	if (write && !rc && lenp_bef == *lenp)
--		/*
--		 * Tunable has successfully been changed from userland:
--		 * disable its automatic recomputing.
--		 */
--		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-+		tunable_set_callback(*((int *)(ipc_table.data)));
- 
- 	return rc;
- }
-@@ -119,12 +142,14 @@ static int sysctl_ipc_registered_data(ct
- 	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
- 		newlen);
- 
--	if (newval && newlen && rc > 0)
-+	if (newval && newlen && rc > 0) {
- 		/*
--		 * Tunable has successfully been changed from userland:
--		 * disable its automatic recomputing.
-+		 * Tunable has successfully been changed from userland
- 		 */
--		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-+		int *data = get_ipc(table);
-+
-+		tunable_set_callback(*data);
-+	}
- 
- 	return rc;
- }
-Index: linux-2.6.24-mm1/kernel/notifier.c
-===================================================================
---- linux-2.6.24-mm1.orig/kernel/notifier.c	2008-02-07 13:40:46.000000000 +0100
-+++ linux-2.6.24-mm1/kernel/notifier.c	2008-02-11 14:54:34.000000000 +0100
-@@ -31,6 +31,21 @@ static int notifier_chain_register(struc
- 	return 0;
- }
- 
-+static int notifier_chain_cond_register(struct notifier_block **nl,
-+		struct notifier_block *n)
-+{
-+	while ((*nl) != NULL) {
-+		if ((*nl) == n)
-+			return 0;
-+		if (n->priority > (*nl)->priority)
-+			break;
-+		nl = &((*nl)->next);
-+	}
-+	n->next = *nl;
-+	rcu_assign_pointer(*nl, n);
-+	return 0;
-+}
-+
- static int notifier_chain_unregister(struct notifier_block **nl,
- 		struct notifier_block *n)
- {
-@@ -205,6 +220,29 @@ int blocking_notifier_chain_register(str
- EXPORT_SYMBOL_GPL(blocking_notifier_chain_register);
- 
- /**
-+ *	blocking_notifier_chain_cond_register - Cond add notifier to a blocking notifier chain
-+ *	@nh: Pointer to head of the blocking notifier chain
-+ *	@n: New entry in notifier chain
-+ *
-+ *	Adds a notifier to a blocking notifier chain, only if not already
-+ *	present in the chain.
-+ *	Must be called in process context.
-+ *
-+ *	Currently always returns zero.
-+ */
-+int blocking_notifier_chain_cond_register(struct blocking_notifier_head *nh,
-+		struct notifier_block *n)
-+{
-+	int ret;
-+
-+	down_write(&nh->rwsem);
-+	ret = notifier_chain_cond_register(&nh->head, n);
-+	up_write(&nh->rwsem);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(blocking_notifier_chain_cond_register);
-+
-+/**
-  *	blocking_notifier_chain_unregister - Remove notifier from a blocking notifier chain
-  *	@nh: Pointer to head of the blocking notifier chain
-  *	@n: Entry to remove from notifier chain
-Index: linux-2.6.24-mm1/include/linux/notifier.h
-===================================================================
---- linux-2.6.24-mm1.orig/include/linux/notifier.h	2008-02-07 13:40:35.000000000 +0100
-+++ linux-2.6.24-mm1/include/linux/notifier.h	2008-02-11 14:55:06.000000000 +0100
-@@ -121,6 +121,10 @@ extern int raw_notifier_chain_register(s
- extern int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
- 		struct notifier_block *nb);
- 
-+extern int blocking_notifier_chain_cond_register(
-+		struct blocking_notifier_head *nh,
-+		struct notifier_block *nb);
-+
- extern int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
- 		struct notifier_block *nb);
- extern int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
-Index: linux-2.6.24-mm1/include/linux/ipc_namespace.h
-===================================================================
---- linux-2.6.24-mm1.orig/include/linux/ipc_namespace.h	2008-02-08 14:35:08.000000000 +0100
-+++ linux-2.6.24-mm1/include/linux/ipc_namespace.h	2008-02-11 11:19:31.000000000 +0100
-@@ -52,6 +52,7 @@ extern atomic_t nr_ipc_ns;
- #define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
- 
- extern int register_ipcns_notifier(struct ipc_namespace *);
-+extern int cond_register_ipcns_notifier(struct ipc_namespace *);
- extern int unregister_ipcns_notifier(struct ipc_namespace *);
- extern int ipcns_notify(unsigned long);
- 
-Index: linux-2.6.24-mm1/ipc/ipcns_notifier.c
-===================================================================
---- linux-2.6.24-mm1.orig/ipc/ipcns_notifier.c	2008-02-08 14:36:05.000000000 +0100
-+++ linux-2.6.24-mm1/ipc/ipcns_notifier.c	2008-02-11 12:24:39.000000000 +0100
-@@ -61,6 +61,15 @@ int register_ipcns_notifier(struct ipc_n
- 	return blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
- }
- 
-+int cond_register_ipcns_notifier(struct ipc_namespace *ns)
-+{
-+	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
-+	ns->ipcns_nb.notifier_call = ipcns_callback;
-+	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
-+	return blocking_notifier_chain_cond_register(&ipcns_chain,
-+							&ns->ipcns_nb);
-+}
-+
- int unregister_ipcns_notifier(struct ipc_namespace *ns)
- {
- 	return blocking_notifier_chain_unregister(&ipcns_chain,
-
---
