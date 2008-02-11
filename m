@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYBKUo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYBKUpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYBKUo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 15:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYBKUoT
+	id S1757848AbYBKUpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 15:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYBKUpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 15:44:19 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53720 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751168AbYBKUoS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 15:44:18 -0500
-Date: Mon, 11 Feb 2008 12:27:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia.Derbey@bull.net
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
-       cmm@us.ibm.com, Nadia.Derbey@bull.net
-Subject: Re: [PATCH 8/8] Re-enable msgmni automatic recomputing msgmni if
- set to negative
-Message-Id: <20080211122748.64e7bc36.akpm@linux-foundation.org>
-In-Reply-To: <20080211141816.520049000@bull.net>
-References: <20080211141646.948191000@bull.net>
-	<20080211141816.520049000@bull.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 15:45:47 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:44788 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751961AbYBKUpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 15:45:46 -0500
+Date: Mon, 11 Feb 2008 12:45:45 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Rientjes <rientjes@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
+In-Reply-To: <alpine.DEB.1.00.0802111156420.17652@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0802111244140.26158@schroedinger.engr.sgi.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0802111131270.24563@schroedinger.engr.sgi.com>
+ <alpine.DEB.1.00.0802111135090.1671@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0802111146590.25590@schroedinger.engr.sgi.com>
+ <alpine.DEB.1.00.0802111156420.17652@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 15:16:54 +0100
-Nadia.Derbey@bull.net wrote:
+On Mon, 11 Feb 2008, David Rientjes wrote:
 
-> [PATCH 08/08]
+> On Mon, 11 Feb 2008, Christoph Lameter wrote:
 > 
-> This patch is the enhancement as asked for by Yasunori: if msgmni is set to
-> a negative value, register it back into the ipcns notifier chain.
+> > Then you could follow through with the enum mempolicy thing 
+> > throughtout. Why not use enum mempolicy in struct mempolicy?
+> > 
 > 
-> A new interface has been added to the notification mechanism:
-> notifier_chain_cond_register() registers a notifier block only if not already
-> registered. With that new interface we avoid taking care of the states changes
-> in procfs.
-> 
-> ...
->
->  static int proc_ipc_callback_dointvec(ctl_table *table, int write,
->  	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
->  {
-> +	struct ctl_table ipc_table;
->  	size_t lenp_bef = *lenp;
->  	int rc;
->  
-> -	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
-> +	memcpy(&ipc_table, table, sizeof(ipc_table));
-> +	ipc_table.data = get_ipc(table);
-> +
-> +	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
->  
->  	if (write && !rc && lenp_bef == *lenp)
-> -		/*
-> -		 * Tunable has successfully been changed from userland:
-> -		 * disable its automatic recomputing.
-> -		 */
-> -		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-> +		tunable_set_callback(*((int *)(ipc_table.data)));
->  
->  	return rc;
->  }
-> @@ -119,12 +142,14 @@ static int sysctl_ipc_registered_data(ct
->  	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
->  		newlen);
->  
-> -	if (newval && newlen && rc > 0)
-> +	if (newval && newlen && rc > 0) {
->  		/*
-> -		 * Tunable has successfully been changed from userland:
-> -		 * disable its automatic recomputing.
-> +		 * Tunable has successfully been changed from userland
->  		 */
-> -		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
-> +		int *data = get_ipc(table);
-> +
-> +		tunable_set_callback(*data);
-> +	}
->  
->  	return rc;
->  }
+> Mempolicy flags, as I implemented them in patch 2 in this series, are not 
+> integer constants that are enumerated starting at 0.  They are individual 
+> bits that are shifted a pre-defined length and intersected with the 
+> enumerated mode.  This allows both the mode and the flags to be stored in 
+> the same object.
 
-hm, what's happening here?  We take a local copy of the caller's ctl_table
-and then pass that into proc_dointvec().  Is that as hacky as it seems??
-
-
+Ok. Now are you are making the same point that I did before. Lets leave 
+enum out if we need to do these tricks with the upper bits.
