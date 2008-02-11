@@ -1,151 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYBKHRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYBKHaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYBKHRz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 02:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYBKHRo
+	id S1756052AbYBKHaJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 02:30:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYBKH34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 02:17:44 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58801 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbYBKHRm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 02:17:42 -0500
-Date: Sun, 10 Feb 2008 23:25:25 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [SCSI] ses: fix memory leaks
-In-reply-to: <1202704118.3136.79.camel@localhost.localdomain>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       kristen.c.accardi@intel.com
-Message-id: <200802102325.26538.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-References: <200802090413.53275.yinghai.lu@sun.com>
- <200802091515.48076.yinghai.lu@sun.com>
- <1202704118.3136.79.camel@localhost.localdomain>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Mon, 11 Feb 2008 02:29:56 -0500
+Received: from phunq.net ([64.81.85.152]:41192 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752498AbYBKH3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 02:29:55 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH] vmsplice exploit fix (was: splice: fix user pointer access in get_iovec_page_array)
+Date: Sun, 10 Feb 2008 23:29:50 -0800
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       bastian@waldi.eu.org, ndenev@gmail.com, oliver.pntr@gmail.com
+References: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0802101644510.12440@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_ul/rHi8A5e3efRK"
+Message-Id: <200802102329.50843.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please check it...
+--Boundary-00=_ul/rHi8A5e3efRK
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Kudos to all involved in the rapid response.  But.
+
+Information on patching this vulnerability is not available front and 
+center in many of the places you would expect: kernel.org front page, 
+debian.org front page, covered on planet.debian.org but without a 
+pointer to the patch, and so on.  So this post provides a subject line 
+for Google to find, and for good measure mentions the word 
+vulnerability.
+
+Also,
+
+   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=464953
+
+I think many users would first go to kernel.org on a day like today, as 
+I did.  Nothing to see there.  We could do a way better job of getting 
+the word out.
+
+Patch attached as posted above by Pekka.  For the mortals among us:
+
+   cd linux-2.6.recent && patch <fix.vmsplice.exploit.patch -p1
+
+Regards,
+
+Daniel
+
+--Boundary-00=_ul/rHi8A5e3efRK
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="fix.vmsplice.exploit.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="fix.vmsplice.exploit.patch"
+
+Cc: <stable@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
+Bastian, can I have your Signed-off-by for this, please? Oliver, Niki, can 
+you please confirm this closes the hole?
 
-From: Yinghai Lu <yinghai.lu@sun.com>
+ fs/splice.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-[SCSI] ses: fix memory leaks
-
-fix leaking with scomp leaking when failing. Also free page10 on
-driver removal  and remove one extra space.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
----
-
- drivers/scsi/ses.c |   23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/drivers/scsi/ses.c
+Index: linux-2.6/fs/splice.c
 ===================================================================
---- linux-2.6.orig/drivers/scsi/ses.c
-+++ linux-2.6/drivers/scsi/ses.c
-@@ -416,11 +416,11 @@ static int ses_intf_add(struct class_dev
- 	int i, j, types, len, components = 0;
- 	int err = -ENOMEM;
- 	struct enclosure_device *edev;
--	struct ses_component *scomp;
-+	struct ses_component *scomp = NULL;
+--- linux-2.6.orig/fs/splice.c
++++ linux-2.6/fs/splice.c
+@@ -1237,6 +1237,9 @@ static int get_iovec_page_array(const st
+ 		if (unlikely(!base))
+ 			break;
  
- 	if (!scsi_device_enclosure(sdev)) {
- 		/* not an enclosure, but might be in one */
--		edev = 	enclosure_find(&sdev->host->shost_gendev);
-+		edev = enclosure_find(&sdev->host->shost_gendev);
- 		if (edev) {
- 			ses_match_to_enclosure(edev, sdev);
- 			class_device_put(&edev->cdev);
-@@ -456,9 +456,6 @@ static int ses_intf_add(struct class_dev
- 	if (!buf)
- 		goto err_free;
- 
--	ses_dev->page1 = buf;
--	ses_dev->page1_len = len;
--
- 	result = ses_recv_diag(sdev, 1, buf, len);
- 	if (result)
- 		goto recv_failed;
-@@ -473,6 +470,9 @@ static int ses_intf_add(struct class_dev
- 		    type_ptr[0] == ENCLOSURE_COMPONENT_ARRAY_DEVICE)
- 			components += type_ptr[1];
- 	}
-+	ses_dev->page1 = buf;
-+	ses_dev->page1_len = len;
-+	buf = NULL;
- 
- 	result = ses_recv_diag(sdev, 2, hdr_buf, INIT_ALLOC_SIZE);
- 	if (result)
-@@ -489,6 +489,7 @@ static int ses_intf_add(struct class_dev
- 		goto recv_failed;
- 	ses_dev->page2 = buf;
- 	ses_dev->page2_len = len;
-+	buf = NULL;
- 
- 	/* The additional information page --- allows us
- 	 * to match up the devices */
-@@ -506,11 +507,12 @@ static int ses_intf_add(struct class_dev
- 		goto recv_failed;
- 	ses_dev->page10 = buf;
- 	ses_dev->page10_len = len;
-+	buf = NULL;
- 
-  no_page10:
--	scomp = kmalloc(sizeof(struct ses_component) * components, GFP_KERNEL);
-+	scomp = kzalloc(sizeof(struct ses_component) * components, GFP_KERNEL);
- 	if (!scomp)
--		goto  err_free;
-+		goto err_free;
- 
- 	edev = enclosure_register(cdev->dev, sdev->sdev_gendev.bus_id,
- 				  components, &ses_enclosure_callbacks);
-@@ -521,10 +523,9 @@ static int ses_intf_add(struct class_dev
- 
- 	edev->scratch = ses_dev;
- 	for (i = 0; i < components; i++)
--		edev->component[i].scratch = scomp++;
-+		edev->component[i].scratch = scomp + i;
- 
- 	/* Page 7 for the descriptors is optional */
--	buf = NULL;
- 	result = ses_recv_diag(sdev, 7, hdr_buf, INIT_ALLOC_SIZE);
- 	if (result)
- 		goto simple_populate;
-@@ -532,6 +533,8 @@ static int ses_intf_add(struct class_dev
- 	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
- 	/* add 1 for trailing '\0' we'll use */
- 	buf = kzalloc(len + 1, GFP_KERNEL);
-+	if (!buf)
-+		goto simple_polulate;
- 	result = ses_recv_diag(sdev, 7, buf, len);
- 	if (result) {
-  simple_populate:
-@@ -598,6 +601,7 @@ static int ses_intf_add(struct class_dev
- 	err = -ENODEV;
-  err_free:
- 	kfree(buf);
-+	kfree(scomp);
- 	kfree(ses_dev->page10);
- 	kfree(ses_dev->page2);
- 	kfree(ses_dev->page1);
-@@ -630,6 +634,7 @@ static void ses_intf_remove(struct class
- 	ses_dev = edev->scratch;
- 	edev->scratch = NULL;
- 
-+	kfree(ses_dev->page10);
- 	kfree(ses_dev->page1);
- 	kfree(ses_dev->page2);
- 	kfree(ses_dev);
++		if (unlikely(!access_ok(VERIFY_READ, base, len)))
++			break;
++
+ 		/*
+ 		 * Get this base offset and number of pages, then map
+ 		 * in the user pages.
+
+
+--Boundary-00=_ul/rHi8A5e3efRK--
