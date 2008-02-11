@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbYBKLca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYBKLdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbYBKLca (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYBKLcQ
+	id S1755229AbYBKLdY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYBKLdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:32:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50882 "EHLO mx1.redhat.com"
+	Mon, 11 Feb 2008 06:33:16 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:27221 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417AbYBKLcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:32:15 -0500
-Date: Mon, 11 Feb 2008 06:32:06 -0500
-From: Alan Cox <alan@redhat.com>
-To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@redhat.com, jeff@garzik.org
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze system
-Message-ID: <20080211113206.GD28762@devserv.devel.redhat.com>
-References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211102907.GC4646@homac.suse.de>
+	id S1751120AbYBKLdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:33:15 -0500
+Date: Mon, 11 Feb 2008 14:30:37 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org, arjan@linux.intel.com
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH] proc: print more information when removing non-empty directories
+Message-ID: <20080211113037.GC6110@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080211102907.GC4646@homac.suse.de>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 11:29:07AM +0100, Holger Macht wrote:
-> > In the above example, even the reset sequence itself can cause hang if
-> > the hardware is implemented slightly differently.  The reason why
-> > set_piomode() locks up but reset sequence doesn't is simple dumb luck.
-> 
-> Another thing, whether it's poor luck or not, it worked like this than at
-> least 2.6.22. And it was _heavily_ tested. The above commit broke it
-> between 2.6.24-rc1 and 2.6.24-rc2, which is at least a regression.
+This usually saves one recompile to insert similar printk like below. :)
 
-Not neccessarily. It may just be timing chance on your box.
+Sample nastygram:
 
-I agree however we should be doing the reset after the PIO0 switch if it
-turns out that the precise order of the two events matters.
+remove_proc_entry: removing non-empty directory '/proc/foo', leaking at least 'bar'
+------------[ cut here ]------------
+WARNING: at fs/proc/generic.c:776 remove_proc_entry+0x18a/0x200()
+Modules linked in: foo(-) container fan battery dock sbs ac sbshc backlight ipv6 loop af_packet amd_rng sr_mod i2c_amd8111 i2c_amd756 cdrom i2c_core button thermal processor
+Pid: 3034, comm: rmmod Tainted: G   M     2.6.25-rc1 #5
 
-Alan
+Call Trace:
+ [<ffffffff80231974>] warn_on_slowpath+0x64/0x90
+ [<ffffffff80232a6e>] printk+0x4e/0x60
+ [<ffffffff802d6c8a>] remove_proc_entry+0x18a/0x200
+ [<ffffffff8045cd88>] mutex_lock_nested+0x1c8/0x2d0
+ [<ffffffff8025f0f0>] __try_stop_module+0x0/0x40
+ [<ffffffff8025effd>] sys_delete_module+0x14d/0x200
+ [<ffffffff8045df3d>] lockdep_sys_exit_thunk+0x35/0x67
+ [<ffffffff8031c307>] __up_read+0x27/0xa0
+ [<ffffffff8045decc>] trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff8020b6ab>] system_call_after_swapgs+0x7b/0x80
+
+---[ end trace 10ef850597e89c54 ]---
+
+
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
+
+ fs/proc/generic.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -769,7 +769,12 @@ continue_removing:
+ 		if (S_ISDIR(de->mode))
+ 			parent->nlink--;
+ 		de->nlink = 0;
+-		WARN_ON(de->subdir);
++		if (de->subdir) {
++			printk(KERN_WARNING "%s: removing non-empty directory "
++			       "'%s/%s', leaking at least '%s'\n", __func__,
++			       de->parent->name, de->name, de->subdir->name);
++			WARN_ON(1);
++		}
+ 		if (atomic_dec_and_test(&de->count))
+ 			free_proc_entry(de);
+ 		break;
 
