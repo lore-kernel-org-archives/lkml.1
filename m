@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbYBKR2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbYBKRao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759908AbYBKR2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbYBKR2j
+	id S1759766AbYBKRao (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:30:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757586AbYBKRag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:28:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44759 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753870AbYBKR2i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:28:38 -0500
-Date: Mon, 11 Feb 2008 09:18:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Grant Grundler <grundler@parisc-linux.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: raw_pci_read in quirk_intel_irqbalance
-In-Reply-To: <20080211161550.GL5299@parisc-linux.org>
-Message-ID: <alpine.LFD.1.00.0802110917460.2920@woody.linux-foundation.org>
-References: <20080209124138.GA28967@parisc-linux.org> <86802c440802092225u5a901ab2i66b952382a999fa@mail.gmail.com> <20080210072116.GA12375@kroah.com> <20080210145122.GC5299@parisc-linux.org> <86802c440802101216t3b04c0b4y89a05ac9a04a0ac5@mail.gmail.com>
- <alpine.LFD.1.00.0802101222560.2896@woody.linux-foundation.org> <20080210204556.GG5299@parisc-linux.org> <20080210230204.GH5299@parisc-linux.org> <20080211050415.GJ5299@parisc-linux.org> <20080211074954.GA11388@colo.lackof.org>
- <20080211161550.GL5299@parisc-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 11 Feb 2008 12:30:36 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:57149 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755157AbYBKRag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 12:30:36 -0500
+Date: Mon, 11 Feb 2008 19:30:26 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: allow 64bit setting in Kconfig
+Message-ID: <20080211173026.GB2959@cs181133002.pp.htv.fi>
+References: <20080128220944.GI8767@does.not.exist> <20080201152227.GB32085@elte.hu> <20080204204555.GC505@cs181133002.pp.htv.fi> <20080211163740.GA2446@elte.hu> <20080211165055.GA2959@cs181133002.pp.htv.fi> <20080211171321.GA22584@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080211171321.GA22584@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 11 Feb 2008, Matthew Wilcox wrote:
+On Mon, Feb 11, 2008 at 06:13:21PM +0100, Sam Ravnborg wrote:
+> > In my experience there is no way for me to enable 64BIT without somehow 
+> > manually fiddling with ARCH.
+> > 
+> > No matter whether it's menuconfig or oldconfig or whatever else.
 > 
-> I'm told that these URLs are not guaranteed to be stable.  And
-> remembering the pain we had when HP decided to relocate all of their
-> documents, I'm really not inclined to embed a link to a URL in the
-> source code.
+> >From the patch description when ARCH=x86 were introduced:
+> 
+>     # make {allno,allyes,allmod,rand}config [ARCH=...]
+>     option \ host arch      | 32bit         | 64bit
+>     =====================================================
+>     ./.                     | 32bit         | 64bit
+>     ARCH=x86                | 32bit         | 32bit
+>     ARCH=i386               | 32bit         | 32bit
+>     ARCH=x86_64             | 64bit         | 64bit
+> 
+>     The general rule are that ARCH= and native architecture
+>     takes precedence over the configuration.
+>     So make ARCH=i386 [whatever] will always build a 32-bit
+>     kernel no matter what the configuration says.
+>     The configuration will be updated to 32-bit if it was
+>     configured to 64-bit and the other way around.
+> 
+>     This behaviour is consistent with previous behaviour so
+>     no suprises here.
+> 
+>     make ARCH=x86 will per default result in a 32-bit kernel
+>     but as the only ARCH= value x86 allow the user to select
+>     between 32-bit and 64-bit using menuconfig.
+> 
+> So what you see is what was then discussed and considered
+> optimal functionality.
 
-I put it in the commit message, but it wasn't on page 34 when I checked (I 
-changed it to 69), and I added the naem for the datasheet so that if/when 
-it moves, maybe google can help.
+What you describe differs vastly from what Ingo considers optimal and 
+describes as seeing on his computer. Why does oldconfig preserve the 
+32/64bit for him?
 
-		Linus
+And the fact that kconfig does not let you choose the 32/64bit unless 
+you explicitely set ARCH=x86 is for users simply confusing.
+
+> We shall keep in mind the main target here is to keep
+> peoples systems running as usual when they shift to
+> the unified {32 bit / 64 bit} x86 arch.
+> 
+> If you want anything changed then do this with respect to
+> the intended behaviour as documented above and keep the
+> setup used by our less kernel skilled testers in mind.
+> 
+> And you do not belong to the "less kernel skilled"
+> testers base.
+
+Your table talks about {allno,allyes,allmod,rand}config, and this is 
+definitely not stuff "less kernel skilled testers" should be using.
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
