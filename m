@@ -1,101 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbYBKAWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYBKAXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbYBKAWm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 19:22:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYBKAWb
+	id S1754865AbYBKAXV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 19:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbYBKAXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 19:22:31 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:36306 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754201AbYBKAWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 19:22:30 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
-Date: Sun, 10 Feb 2008 19:22:28 -0500
-User-Agent: KMail/1.9.7
-Cc: dtor@insightbb.com, Paul Mundt <lethal@users.sourceforge.net>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1202684222.6237.9.camel@localhost.localdomain>
-In-Reply-To: <1202684222.6237.9.camel@localhost.localdomain>
+	Sun, 10 Feb 2008 19:23:07 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:43062 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756718AbYBKAXF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Feb 2008 19:23:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=U4YA6zfp0SmQpNLQN3DsPJ6ozgyP6QCs3fpVvxkVSebOUT5mZTz8ZhtGv5S520pUaZNpEVEydTi5SV6FvWVoNRtYlkoNnr7GdL0DNkJBISnQy4URzzfjCmVv7+pCgFf1dBn8Am3ub2WhW0jNnpPeaaevoveZ80tJh7GQWeDuhg0=  ;
+X-YMail-OSG: 16Tpp2QVM1nrhBiXSm0.i8LUQ8f45qzEWxkpWN4cM5cp8Y9xadt1saA7Med7fj5mvEIjuYNT4Q--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.25-rc1 1/3] gpiolib: better rmmod infrastructure
+Date: Sun, 10 Feb 2008 16:22:10 -0800
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2103449.OKDcMVanvp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Disposition: inline
+Message-Id: <200802101622.10937.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802101922.29214.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2103449.OKDcMVanvp
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
-On Sunday 10 February 2008, Adrian McMenamin wrote:
-> +static int dc_pad_connect(struct maple_device *mdev)
-> +{
-> + ...
-> +		if (data&(1<<i) && abs_bit[i] >=3D 0)
+As long as one or more GPIOs on a gpio chip are used its driver should not 
+be unloaded.  The existing mechanism (gpiochip_remove failure) doesn't
+address that, since rmmod can no longer be made to fail by having the
+cleanup code report errors.  Module usecounts are the solution.
 
-could use a few spaces in that first expression
+Assuming standard "initialize struct to zero" policies, this change won't
+affect SOC platform drivers.  However, drivers for external chips (on I2C
+and SPI busses) should be updated if they can be built as modules.
 
-> +/* allow the controller to be used */
-> +static int probe_maple_controller(struct device *dev)
-> +{
-> +	struct maple_device *mdev =3D to_maple_dev(dev);
-> +	struct maple_driver *mdrv =3D to_maple_driver(dev->driver);
-> +	int error;
-> +
-> +	error =3D dc_pad_connect(mdev);
-> +	if (error)
-> +		return error;
-> +
-> +	mdev->driver =3D mdrv;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct maple_driver dc_pad_driver =3D {
-> +	.function =3D	MAPLE_FUNC_CONTROLLER,
-> +	.connect =3D	dc_pad_connect,
-> +	.disconnect =3D	dc_pad_disconnect,
-> +	.drv =3D {
-> +		.name =3D "Dreamcast_controller",
-> +		.probe =3D probe_maple_controller,
-> +	},
-> +};
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+[ gpio_ensure_requested() needs to update module usecounts too ]
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/gpio/gpiolib.c     |   15 ++++++++++++---
+ include/asm-generic/gpio.h |    2 ++
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-no remove function ?  looks like the probe() forces a connect, but there's =
-no=20
-remove() to force a disconnect ...
-=2Dmike
-
---nextPart2103449.OKDcMVanvp
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iQIVAwUAR6+VRUFjO5/oN/WBAQLOeg//Tarw44Hdf34CQrXXsR7vzJMA66OM0ogY
-avICwv0wKr83ApHy8RcE7w82YjXz7iAnrdsB+PstbrusjYIHbN2HMoaF4jFOE66K
-A2RlgqxnKUvTMopzmap3YaK9PSdZ3esEVAoc5FOAUrrqjccLfDO7JLQfKRc5/zs5
-acCpYjs2PvsU09kNH9kUuxGJ2R7MkWbeU9jZNf3lFAtyoLTZKsJsixcMH5cEuCYE
-9sFG/arsxkTrj+GgrSVqe17NIF/3kLv5NW/EvH63fBB8HnCgeU7jLyXfWDwJvgz/
-CvwCEUqmYNK2Vdv1/z5PlbrOSdagCHhYRA63Gdm2wRc8rA1atbHrzBm+n3GI5yvw
-GVoAonFjkUTlxNhOoU744Kf4sRWVcgnDz/vXwCYg2NDZBdvWdpnv8iw9SlSinMTN
-j85kL0rZ6skDHWtCXTw4EmLMvDh9VFFwOpG2D47ig9/MPHZvogDKnPyIIbdJ5JIr
-KM06ck7bioLnYs8TWVtKZVG3BqtCOHkBt2jN7iDXOhJIDWfiPZ321FPBJGLNdVBF
-/IzAc2McKOMnwD2S8vX+RSjEfUbiTYTDyqNghM/X4Ez5ABOsUdV+GQtGAibBS4OO
-IkqNTIGCow6gU8pxN/pOvjTvza+bA3+KjQBf6kVTMKfu4dg0u66CGRKWX/dxDMhj
-4WKygzW+Or0=
-=7wSH
------END PGP SIGNATURE-----
-
---nextPart2103449.OKDcMVanvp--
+--- g26.orig/drivers/gpio/gpiolib.c	2008-02-10 16:06:30.000000000 -0800
++++ g26/drivers/gpio/gpiolib.c	2008-02-10 16:18:35.000000000 -0800
+@@ -68,6 +68,9 @@ static void gpio_ensure_requested(struct
+ 	if (test_and_set_bit(FLAG_REQUESTED, &desc->flags) == 0) {
+ 		pr_warning("GPIO-%d autorequested\n", (int)(desc - gpio_desc));
+ 		desc_set_label(desc, "[auto]");
++		if (!try_module_get(desc->chip->owner))
++			pr_err("GPIO-%d: module can't be gotten \n",
++					(int)(desc - gpio_desc));
+ 	}
+ }
+ 
+@@ -177,6 +180,9 @@ int gpio_request(unsigned gpio, const ch
+ 	if (desc->chip == NULL)
+ 		goto done;
+ 
++	if (!try_module_get(desc->chip->owner))
++		goto done;
++
+ 	/* NOTE:  gpio_request() can be called in early boot,
+ 	 * before IRQs are enabled.
+ 	 */
+@@ -184,8 +190,10 @@ int gpio_request(unsigned gpio, const ch
+ 	if (test_and_set_bit(FLAG_REQUESTED, &desc->flags) == 0) {
+ 		desc_set_label(desc, label ? : "?");
+ 		status = 0;
+-	} else
++	} else {
+ 		status = -EBUSY;
++		module_put(desc->chip->owner);
++	}
+ 
+ done:
+ 	if (status)
+@@ -209,9 +217,10 @@ void gpio_free(unsigned gpio)
+ 	spin_lock_irqsave(&gpio_lock, flags);
+ 
+ 	desc = &gpio_desc[gpio];
+-	if (desc->chip && test_and_clear_bit(FLAG_REQUESTED, &desc->flags))
++	if (desc->chip && test_and_clear_bit(FLAG_REQUESTED, &desc->flags)) {
+ 		desc_set_label(desc, NULL);
+-	else
++		module_put(desc->chip->owner);
++	} else
+ 		WARN_ON(extra_checks);
+ 
+ 	spin_unlock_irqrestore(&gpio_lock, flags);
+--- g26.orig/include/asm-generic/gpio.h	2008-02-10 16:06:30.000000000 -0800
++++ g26/include/asm-generic/gpio.h	2008-02-10 16:18:30.000000000 -0800
+@@ -17,6 +17,7 @@
+ #endif
+ 
+ struct seq_file;
++struct module;
+ 
+ /**
+  * struct gpio_chip - abstract a GPIO controller
+@@ -48,6 +49,7 @@ struct seq_file;
+  */
+ struct gpio_chip {
+ 	char			*label;
++	struct module		*owner;
+ 
+ 	int			(*direction_input)(struct gpio_chip *chip,
+ 						unsigned offset);
