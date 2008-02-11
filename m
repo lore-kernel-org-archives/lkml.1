@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbYBKL7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYBKMBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbYBKL7T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYBKL6n
+	id S1755245AbYBKMBY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 07:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYBKMBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:58:43 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55164 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752520AbYBKL6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:58:35 -0500
-Date: Mon, 11 Feb 2008 11:50:50 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, htejun@gmail.com,
-       alan@redhat.com, jeff@garzik.org
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze
- system
-Message-ID: <20080211115050.77feb1af@core>
-In-Reply-To: <47AFB4DB.1000204@gmail.com>
-References: <20080210195556.GA5261@homac>
-	<47AFB4DB.1000204@gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 11 Feb 2008 07:01:15 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:57003 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752315AbYBKMBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 07:01:14 -0500
+Date: Mon, 11 Feb 2008 21:01:28 +0900 (JST)
+Message-Id: <20080211.210128.108308594.anemo@mba.ocn.ne.jp>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/8] ide: add struct ide_port_info instances to legacy
+ host drivers
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <200802110016.08078.bzolnier@gmail.com>
+References: <20080211.010729.115910395.anemo@mba.ocn.ne.jp>
+	<200802101804.49154.bzolnier@gmail.com>
+	<200802110016.08078.bzolnier@gmail.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In the above example, even the reset sequence itself can cause hang if
-> the hardware is implemented slightly differently.  The reason why
-> set_piomode() locks up but reset sequence doesn't is simple dumb luck.
-> I think the proper fix is to tell libata to detach the cdrom before
-> undocking.
+On Mon, 11 Feb 2008 00:16:07 +0100, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> > It is too late for -git but not too late for 2.6.25-rc1. ;-)
+> > 
+> > Could you make a patch please?
+> 
+> I went ahead and made a patch (sorry, I needed it for git pull request :).
+> 
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: ide_init_port() bugfix
 
-Just a thought but which ICH variant is this. For the older ones we have
-to turn IORDY off in software before an eject and they cannot fully
-support hot unplug
+Thanks!  Looks sane for me :)
 
-Alan
-
+---
+Atsushi Nemoto
