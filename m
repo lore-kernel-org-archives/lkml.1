@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756313AbYBKPFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbYBKPNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756313AbYBKPFy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbYBKPFl
+	id S1755080AbYBKPNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYBKPNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:05:41 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:38504 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbYBKPFk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:05:40 -0500
-Message-ID: <47B0643F.3090100@tiscali.nl>
-Date: Mon, 11 Feb 2008 16:05:35 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 11 Feb 2008 10:13:06 -0500
+Received: from ns2.suse.de ([195.135.220.15]:38243 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753413AbYBKPNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 10:13:05 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] [7/8] CPA: Don't flush caches on CPUs that support self-snoop
+Date: Mon, 11 Feb 2008 16:12:56 +0100
+User-Agent: KMail/1.9.6
+Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+References: <200802111050.372086035@suse.de> <20080211095022.7B8C31B41CE@basil.firstfloor.org> <20080211070430.099fbded@laptopd505.fenrus.org>
+In-Reply-To: <20080211070430.099fbded@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: ambx1@neo.rr.com, len.brown@intel.com
-CC: linux-acpi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH][drivers/pnp/pnpacpi/core.c] __initdata is not an identifier
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802111612.56662.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sparse complains at drivers/pnp/pnpacpi/core.c:39 with the error:
-Trying to use reserved word '__attribute__' as identifier
-Expected ) in function declarator, got ".init.data"
+On Monday 11 February 2008 16:04:30 Arjan van de Ven wrote:
+> On Mon, 11 Feb 2008 10:50:22 +0100 (CET)
+> Andi Kleen <ak@suse.de> wrote:
+> 
+> > 
+> > [2.6.25 candidate I believe]
+> > 
+> > The specification of SS in the public manuals is a little unclear,
+> > but I got confirmation from Intel that SS implies that there is no
+> > cache flush needed on caching attribute changes.
+> 
+> I'm hearing slightly different information, but am still chasing this one.
 
-and at drivers/pnp/pnpacpi/core.c:49:38 with the error: 
-undefined identifier 'excluded_id_list'
+10.12.8 in the ia32 manual volume 3a says:
 
-With the patch below these sparse complaints do not occur
----
-__initdata is not an identifier
+"
+When remapping a page that was previously mapped as a cacheable memory type to
+a WC page, an operating system can avoid this type of aliasing by doing the
+following:
+...
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-index 662b4c2..c283a9a 100644
---- a/drivers/pnp/pnpacpi/core.c
-+++ b/drivers/pnp/pnpacpi/core.c
-@@ -36,7 +36,7 @@ static int num = 0;
-  * have irqs (PIC, Timer) because we call acpi_register_gsi.
-  * Finally, only devices that have a CRS method need to be in this list.
-  */
--static struct __initdata acpi_device_id excluded_id_list[] = {
-+static struct acpi_device_id excluded_id_list[] __initdata = {
- 	{"PNP0C09", 0},		/* EC */
- 	{"PNP0C0F", 0},		/* Link device */
- 	{"PNP0000", 0},		/* PIC */
+3. Create a new mapping to the same physical address with a new memory type, for
+   instance, WC.
+4. Flush the caches on all processors that may have used the mapping previously.
+   Note on processors that support self-snooping, CPUID feature flag bit 27, this
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   step is unnecessary.
+   ^^^^^^^^^^^^^^^^^^^^
+"
+
+That is exactly the situation in pageattr.c. You're saying the manual is wrong
+here?
+
+> It might be better to delay this one to .26 ;-(
+> (I would very much like to avoid the cache flush but... it really HAS to be safe)
+
+Unless there are known errata (i'm not aware of any) it is safe according to the manual.
+
+-Andi
+
+ 
