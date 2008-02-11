@@ -1,176 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYBKQOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbYBKQQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbYBKQOV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYBKQOE
+	id S1757705AbYBKQQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:16:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbYBKQPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:14:04 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:44904 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755344AbYBKQN7 (ORCPT
+	Mon, 11 Feb 2008 11:15:54 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:56571 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754938AbYBKQPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:13:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=q73gPeG38g/urngiB3fU14SsZjJPFbAzlVaIMRbo6hUaf3v4UrSOvYoG/7apFb/28SBlbVtHguOOy0XTj7Vxo6ap1QDmOK4BNPuplnDM1rXMjDfqqV6tzvUB5AXJ4f2NeiCDNeNwP3tZBYZnpnubDoY3jirYVHkHbV/arcyPgZs=
-Date: Mon, 11 Feb 2008 11:13:55 -0500
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@users.sourceforge.net>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] SH/Dreamcast - joystick (Control pad)
-Message-ID: <20080211110202.ZZRA012@mailhub.coreip.homeip.net>
-References: <1202684222.6237.9.camel@localhost.localdomain>
+	Mon, 11 Feb 2008 11:15:53 -0500
+Date: Mon, 11 Feb 2008 09:15:50 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>,
+       Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
+Subject: Re: raw_pci_read in quirk_intel_irqbalance
+Message-ID: <20080211161550.GL5299@parisc-linux.org>
+References: <20080209124138.GA28967@parisc-linux.org> <86802c440802092225u5a901ab2i66b952382a999fa@mail.gmail.com> <20080210072116.GA12375@kroah.com> <20080210145122.GC5299@parisc-linux.org> <86802c440802101216t3b04c0b4y89a05ac9a04a0ac5@mail.gmail.com> <alpine.LFD.1.00.0802101222560.2896@woody.linux-foundation.org> <20080210204556.GG5299@parisc-linux.org> <20080210230204.GH5299@parisc-linux.org> <20080211050415.GJ5299@parisc-linux.org> <20080211074954.GA11388@colo.lackof.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1202684222.6237.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080211074954.GA11388@colo.lackof.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+On Mon, Feb 11, 2008 at 12:49:54AM -0700, Grant Grundler wrote:
+> Can you also add a comment which points at the Intel documentation?
+> 
+> http://download.intel.com/design/chipsets/datashts/30300702.pdf
+> Page 34 documents 0xf4 register.
 
-On Sun, Feb 10, 2008 at 10:57:01PM +0000, Adrian McMenamin wrote:
-> +
-> +static int dc_pad_open(struct input_dev *dev)
-> +{
-> +	struct dc_pad *pad = dev->private;
-> +	pad->open++;
-> +	return 0;
-> +}
-> +
-> +static void dc_pad_close(struct input_dev *dev)
-> +{
-> +	struct dc_pad *pad = dev->private;
-> +	pad->open--;
-> +}
+I'm told that these URLs are not guaranteed to be stable.  And
+remembering the pain we had when HP decided to relocate all of their
+documents, I'm really not inclined to embed a link to a URL in the
+source code.
 
-What is the point of the above 2 functions?
+> And I just doubled checked that the 0xf4 register value is restored later
+> in the quirk (obvious when you look at the code but not from the patch).
 
-> +
-> +static int dc_pad_connect(struct maple_device *mdev)
-> +{
-> +	int i, error;
-> +	unsigned long data = be32_to_cpu(mdev->devinfo.function_data[0]);
-> +	struct dc_pad *pad;
-> +	struct input_dev *dev;
-> +
-> +	const short btn_bit[32] = {
-> +		BTN_C, BTN_B, BTN_A, BTN_START, -1, -1, -1, -1,
-> +		BTN_Z, BTN_Y, BTN_X, BTN_SELECT, -1, -1, -1, -1,
-> +		-1, -1, -1, -1, -1, -1, -1, -1,
-> +		-1, -1, -1, -1, -1, -1, -1, -1,
-> +	};
-> +
-> +	const short abs_bit[32] = {
-> +		-1, -1, -1, -1, ABS_HAT0Y, ABS_HAT0Y, ABS_HAT0X, ABS_HAT0X,
-> +		-1, -1, -1, -1, ABS_HAT1Y, ABS_HAT1Y, ABS_HAT1X, ABS_HAT1X,
-> +		ABS_GAS, ABS_BRAKE, ABS_X, ABS_Y, ABS_RX, ABS_RY, -1, -1,
-> +		-1, -1, -1, -1, -1, -1, -1, -1,
-> +	};
-> +
-> +	pad = kzalloc(sizeof(struct dc_pad), GFP_KERNEL);
-> +	if (!pad)
-> +		return -ENOMEM;
-> +
-> +	dev = input_allocate_device();
-> +	if (!dev) {
-> +		kfree(pad);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	pad->dev = dev;
-> +
-> +	mdev->private_data = pad;
-> +
-> +	for (i = 0; i < 32; i++)
-> +		if (data & (1<<i) && btn_bit[i] >= 0)
-> +			pad->dev->keybit[BTN_JOYSTICK/32] |= BIT(btn_bit[i]);
-> +
-> +	if (pad->dev->keybit[BTN_JOYSTICK/32])
-> +		pad->dev->evbit[0] |= BIT(EV_KEY);
-> +
-> +	for (i = 0; i < 32; i++)
-> +		if (data&(1<<i) && abs_bit[i] >= 0)
-> +			pad->dev->absbit[0] |= BIT(abs_bit[i]);
-> +
-> +	if (pad->dev->absbit[0])
-> +		pad->dev->evbit[0] |= BIT(EV_ABS);
-> +
-> +	for (i = ABS_X; i <= ABS_BRAKE; i++) {
-> +		pad->dev->absmax[i] = 255;
-> +		pad->dev->absmin[i] = 0;
-> +		pad->dev->absfuzz[i] = 0;
-> +		pad->dev->absflat[i] = 0;
-> +	}
-> +
-> +	for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++) {
-> +		pad->dev->absmax[i] = 1;
-> +		pad->dev->absmin[i] = -1;
-> +		pad->dev->absfuzz[i] = 0;
-> +		pad->dev->absflat[i] = 0;
-> +	}
-> +
-> +	pad->dev->private = pad;
+Yep, I checked that too ;-)
 
-input_set_drvdata().. Oh, wait, you are doing it below...
+> Acked-by: Grant Grundler <grundler@parisc-linux.org>
 
-> +	pad->dev->open = dc_pad_open;
-> +	pad->dev->close = dc_pad_close;
-> +	pad->dev->event = NULL;
-
-input_dev is zeroes upon initialization, no need to set unused methods
-to NULL. Also please consider using a temp for input_dev, it should
-reduce generated code a bit.
-
-> +	pad->dev->dev.parent = &mdev->dev;
-> +	pad->dev->name = mdev->product_name;
-> +	pad->dev->id.bustype = BUS_HOST;
-> +	input_set_capability(pad->dev, EV_ABS, MSC_SCAN);
-
-I did not see the driver reporting MSC_SCAN events. Also, MSC_SCAN is
-usually reprted as EV_MSC, not EV_ABS.
-
-> +	input_set_drvdata(dev, pad);
-> +
-> +	error = input_register_device(pad->dev);
-> +	if (error) {
-> +		input_free_device(pad->dev);
-> +		kfree(pad);
-> +		return -ENODEV;
-
-		return error;
-
-There is no reason to "hide" real error reported by input_register_device.
-
-> +	}
-> +
-> +	maple_getcond_callback(mdev, dc_pad_callback, HZ/50,
-> +		MAPLE_FUNC_CONTROLLER);
-
-Hmm, this could probably go into dc_pad_open so we dont poll hardware
-if there are no users.
-
-> +
-> +	return 0;
-> +}
-> +
-> +static void dc_pad_disconnect(struct maple_device *mdev)
-> +{
-> +	struct dc_pad *pad = mdev->private_data;
-> +
-
-Don't you need to stop polling callback? Either here ot in dc_pad_stop,
-depending on where maple_getcond_callback() is.
-
-> +	input_unregister_device(pad->dev);
-> +	kfree(pad);
-> +}
-> +
+Thanks.
 
 -- 
-Dmitry
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
