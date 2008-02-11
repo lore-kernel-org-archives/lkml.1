@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYBKLQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYBKLT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbYBKLQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYBKLQr
+	id S1754610AbYBKLT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYBKLTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:16:47 -0500
-Received: from wx-out-0506.google.com ([66.249.82.233]:46693 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbYBKLQq (ORCPT
+	Mon, 11 Feb 2008 06:19:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:52866 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbYBKLTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:16:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=WfxAuETSzOhvvDXSXfjqiXCeSmGToZt5AYshaX4DXKRYidsKy0cFMuEgAO8g9Ud/tk3w7nQ5Dhwvp6aYE4PqjdWcfgydqVa7yUeDDydWEGtNGicPZN4sm6x01bFpzQlT24NvYNAQn+CwpcFkmi2/KQ2rZlRwqfDS0hILJyEEiFc=
-Message-ID: <47B02E96.4050900@gmail.com>
-Date: Mon, 11 Feb 2008 20:16:38 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 11 Feb 2008 06:19:50 -0500
+Date: Mon, 11 Feb 2008 12:19:53 +0100
+From: Domenico Andreoli <cavokz@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: parisc - error: 'VMALLOC_START' undeclared...
+Message-ID: <20080211111953.GA18652@ska.dandreoli.com>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@redhat.com, jeff@garzik.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze	system
-References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211100446.GA4646@homac.suse.de>
-In-Reply-To: <20080211100446.GA4646@homac.suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
 
-Holger Macht wrote:
->> In the above example, even the reset sequence itself can cause hang if
->> the hardware is implemented slightly differently.  The reason why
->> set_piomode() locks up but reset sequence doesn't is simple dumb luck.
->> I think the proper fix is to tell libata to detach the cdrom before
->> undocking.
-> 
-> Wouldn't the proper fix be to call ata_acpi_handle_hotplug _somewhere_?
-> (which is currently called nowhere AFAICS)
+in building 2.6.25-rc1:
 
-It should be called via ata_acpi_{ap|dev}_notify() callbacks installed
-via acpi_install_notify_handler().  Can you add dump_stack() in the
-function and verify that it actually is being called?  It could be that
-the method is called too late or libata takes too long to actually
-unplug the device.  Hmmm... It seems what ata_acpi_handle_hotplug() does
-isn't enough for undock.  It probably should request detaching the
-device instead of just notifying hotplug event.  Anyways, please lemme
-know whether and when the function is called.
+  CC      arch/parisc/kernel/asm-offsets.s
+In file included from include/asm/pgtable.h:13,
+                 from arch/parisc/kernel/asm-offsets.c:36:
+include/linux/mm.h: In function 'is_vmalloc_addr':
+include/linux/mm.h:243: error: 'VMALLOC_START' undeclared (first use in this function)
+include/linux/mm.h:243: error: (Each undeclared identifier is reported only once
+include/linux/mm.h:243: error: for each function it appears in.)
+include/linux/mm.h:243: error: 'VMALLOC_END' undeclared (first use in this function)
+make[1]: *** [arch/parisc/kernel/asm-offsets.s] Error 1
+make: *** [prepare0] Error 2
 
-> Anyway, kernel hackers keep telling me that the kernel should just do the
-> right thing. Shouldn't userspace never be able to freeze the system?
+bisected to commit 9e2779fa281cfda13ac060753d674bbcaa23367e. it looks
+like is_vmalloc_addr() did not arrive down to the parisc stuff.
 
-Yeah, I think most things should be done automatically but it's true
-that somethings are a bit awkward to handle in kernel.  Also, if you're
-root, you can almost always crash the machine from userland.
+cheers,
+Domenico
 
-> It's completely ok for me to handle this from userspace, if that's the
-> position of the libata developers.
-
-Let's see whether we can fix the ACPI handler first.
-
-> In this case, we should change the dock driver to default to
-> immediate_undock=false, because otherwise it's far too risky to freeze the
-> system.
-
-I'm not too familiar with how docks work.  Can you please explain
-briefly what immediate_undock is?
-
-Thanks.
-
--- 
-tejun
+-----[ Domenico Andreoli, aka cavok
+ --[ http://www.dandreoli.com/gpgkey.asc
+   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
