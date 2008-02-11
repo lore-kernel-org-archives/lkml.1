@@ -1,506 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbYBKWnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbYBKWnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbYBKWnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbYBKWm6
+	id S1760872AbYBKWnc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 17:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760224AbYBKWnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:42:58 -0500
-Received: from mail.free-electrons.com ([88.191.46.45]:2502 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760006AbYBKWm4 (ORCPT
+	Mon, 11 Feb 2008 17:43:01 -0500
+Received: from mga07.intel.com ([143.182.124.22]:29776 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760033AbYBKWm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:42:56 -0500
-From: Michael Opdenacker <michael-lists@free-electrons.com>
-Organization: Free Electrons
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for some processors
-Date: Mon, 11 Feb 2008 23:42:23 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       Linux-tiny@selenic.com
-References: <200802082347.25364.michael-lists@free-electrons.com> <20080208231130.GA10511@elte.hu>
-In-Reply-To: <20080208231130.GA10511@elte.hu>
+	Mon, 11 Feb 2008 17:42:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,335,1199692800"; 
+   d="scan'208";a="377803425"
+Date: Mon, 11 Feb 2008 14:41:05 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH]intel-iommu batched iotlb flushes
+Message-ID: <20080211224105.GB24412@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802112342.23493.michael-lists@free-electrons.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 February 2008, Ingo Molnar wrote:
-> ditto - hide this into cpu.h.
+The intel-iommu hardware requires a polling operation to flush IOTLB
+PTE's after an unmap operation.  Through some TSC instrumentation of a
+netperf UDP stream with small packets test case it was seen that the
+flush operations where sucking up to 16% of the CPU time doing
+iommu_flush_iotlb's
 
-I did hide all the ifdefs into cpu.h as you suggested. See the new patch below.
-> 
-> >  static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
-> >  {
-> > +#ifdef CONFIG_CPU_SUP_AMD
-> >  	if (force_mwait)
-> >  		return 1;
-> > +#endif
-> 
-> same - use cpu.h to define force_mwait to 0 if !CPU_SUP_AMD.
+The following patch batches the IOTLB flushes removing most of the
+overhead in flushing the IOTLB's.  It works by building a list of to be
+released IOVA's that is iterated over when a timer goes off or when a
+high water mark is reached.
 
-I didn't manage to, as force_mwait is also assigned in the same code.
-I worked around the problem by declaring force_mwait elsewhere
-(see my explanations in the patch comment)
+The wrinkle this has is that the memory protection and page fault
+warnings from errant DMA operations is somewhat reduced, hence a kernel
+parameter is added to revert back to the "strict" page flush / unmap
+behavior. 
 
----
+The hole is the following scenarios: 
+do many map_signal operations, do some unmap_signals, reuse a recently
+unmapped page, <errant DMA hardware sneaks through and steps on reused
+memory>
 
-[PATCH] x86 (Linux Tiny): configure out support for some processors
+Or: you have rouge hardware using DMA's to look at pages: do many
+map_signal's, do many unmap_singles, reuse some unmapped pages : 
+<rouge hardware looks at reused page>
 
-This patch against x86/mm tries to revive an original patch
-from Matt Mackall which didn't get merged at that time. It makes
-it possible to disable support code for some processors. This can
-be useful to support only the exact processor type used
-in a given system.
+Note : these holes are very hard to get too, as the IOTLB is small and
+only the PTE's still in the IOTLB can be accessed through this
+mechanism.
 
-This patch allows to save up to 12K of text and data.
+Its recommended that strict is used when developing drivers that do DMA
+operations to catch bugs early.  For production code where performance
+is desired running with the batched IOTLB flushing is a good way to
+go.
 
-This time, I tried to use as few ifdefs as possible,
-and move them away to include files.
 
-Note that I had to modify include/asm-x86/bugs.h to declare
-ppro_with_ram_bug() as an inline function. I hope there's
-no harm.
+--mgross
 
-Also note that for the sake of convenience and consistency
-between 32 and 64 bit, I move the declaration of force_mwait
-from kernel/cpu/amd.c to kernel/setup_32.c 
-(force_mwait is already defined in kernel/setup_64.c).
 
-Thanks for your reviews! Michael.
+Signed-off-by: <mgross@linux.intel.com>
 
-Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
----
- arch/x86/Kconfig.cpu            |   56 +++++++++++++++++
- arch/x86/kernel/cpu/Makefile    |   28 +++++-----
- arch/x86/kernel/cpu/amd.c       |    6 +-
- arch/x86/kernel/cpu/centaur.c   |    2 +-
- arch/x86/kernel/cpu/cpu.h       |  124 +++++++++++++++++++++++++++++++++++----
- arch/x86/kernel/cpu/cyrix.c     |    4 +-
- arch/x86/kernel/cpu/intel.c     |    6 +-
- arch/x86/kernel/cpu/nexgen.c    |    2 +-
- arch/x86/kernel/cpu/transmeta.c |    2 +-
- arch/x86/kernel/cpu/umc.c       |    2 +-
- arch/x86/kernel/setup_32.c      |    2 +
- arch/x86/mm/init_32.c           |    2 +
- include/asm-x86/bugs.h          |    2 +-
- 13 files changed, 199 insertions(+), 39 deletions(-)
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index e09a6b7..4fcd0fb 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -396,3 +396,59 @@ config X86_MINIMUM_CPU_FAMILY
- config X86_DEBUGCTLMSR
- 	def_bool y
- 	depends on !(M586MMX || M586TSC || M586 || M486 || M386)
-+
-+menuconfig PROCESSOR_SELECT
-+	depends on EMBEDDED && X86_32
-+	bool "Supported processor vendors"
-+	default n
-+	help
-+	  This lets you choose what x86 vendor support code your kernel
-+	  will include.
-+
-+config CPU_SUP_INTEL
-+	bool "Support Intel processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for Intel processors
-+
-+config CPU_SUP_CYRIX
-+	bool "Support Cyrix processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for Cyrix processors
-+
-+config CPU_SUP_NSC
-+	bool "Support NSC processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for NSC processors
-+
-+config CPU_SUP_AMD
-+	bool "Support AMD processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for AMD processors
-+
-+config CPU_SUP_CENTAUR
-+	bool "Support Centaur processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for Centaur processors
-+
-+config CPU_SUP_TRANSMETA
-+	bool "Support Transmeta processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for Transmeta processors
-+
-+config CPU_SUP_NEXGEN
-+	bool "Support NexGen processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for NexGen processors
-+
-+config CPU_SUP_UMC
-+	bool "Support UMC processors" if PROCESSOR_SELECT
-+	default y
-+	help
-+	  This enables extended support for UMC processors
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index a0c4d7c..a01cb67 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -2,20 +2,20 @@
- # Makefile for x86-compatible CPU details and quirks
- #
+
+Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.c
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.c	2008-02-07 13:03:10.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/intel-iommu.c	2008-02-11 10:38:49.000000000 -0800
+@@ -21,6 +21,7 @@
  
--obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
--obj-y			+= feature_names.o
-+obj-y				:= intel_cacheinfo.o addon_cpuid_features.o
-+obj-y				+= feature_names.o
+ #include <linux/init.h>
+ #include <linux/bitmap.h>
++#include <linux/debugfs.h>
+ #include <linux/slab.h>
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+@@ -30,6 +31,7 @@
+ #include <linux/dmar.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/mempool.h>
++#include <linux/timer.h>
+ #include "iova.h"
+ #include "intel-iommu.h"
+ #include <asm/proto.h> /* force_iommu in this header in x86-64*/
+@@ -50,11 +52,39 @@
  
--obj-$(CONFIG_X86_32)	+= common.o proc.o bugs.o
--obj-$(CONFIG_X86_32)	+= amd.o
--obj-$(CONFIG_X86_32)	+= cyrix.o
--obj-$(CONFIG_X86_32)	+= centaur.o
--obj-$(CONFIG_X86_32)	+= transmeta.o
--obj-$(CONFIG_X86_32)	+= intel.o
--obj-$(CONFIG_X86_32)	+= nexgen.o
--obj-$(CONFIG_X86_32)	+= umc.o
-+obj-$(CONFIG_X86_32)		+= common.o proc.o bugs.o
-+obj-$(CONFIG_CPU_SUP_AMD)	+= amd.o
-+obj-$(CONFIG_CPU_SUP_CYRIX)	+= cyrix.o
-+obj-$(CONFIG_CPU_SUP_CENTAUR)	+= centaur.o
-+obj-$(CONFIG_CPU_SUP_TRANSMETA)	+= transmeta.o
-+obj-$(CONFIG_CPU_SUP_INTEL)	+= intel.o
-+obj-$(CONFIG_CPU_SUP_NEXGEN)	+= nexgen.o
-+obj-$(CONFIG_CPU_SUP_UMC)	+= umc.o
+ #define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
  
--obj-$(CONFIG_X86_MCE)	+= mcheck/
--obj-$(CONFIG_MTRR)	+= mtrr/
--obj-$(CONFIG_CPU_FREQ)	+= cpufreq/
-+obj-$(CONFIG_X86_MCE)		+= mcheck/
-+obj-$(CONFIG_MTRR)		+= mtrr/
-+obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
++
++static void flush_unmaps_timeout(unsigned long data);
++
++static struct timer_list unmap_timer =
++	TIMER_INITIALIZER(flush_unmaps_timeout, 0, 0);
++
++struct unmap_list {
++	struct list_head list;
++	struct dmar_domain *domain;
++	struct iova *iova;
++};
++
++static struct intel_iommu *g_iommus;
++/* bitmap for indexing intel_iommus */
++static unsigned long 	*g_iommus_to_flush;
++static int g_num_of_iommus;
++
++static DEFINE_SPINLOCK(async_umap_flush_lock);
++static LIST_HEAD(unmaps_to_do);
++
++static int timer_on;
++static long list_size;
++static int high_watermark;
++
++static struct dentry *intel_iommu_debug, *debug;
++
++
+ static void domain_remove_dev_info(struct dmar_domain *domain);
  
--obj-$(CONFIG_X86_LOCAL_APIC) += perfctr-watchdog.o
-+obj-$(CONFIG_X86_LOCAL_APIC)	+= perfctr-watchdog.o
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 693e353..8baeae9 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -61,9 +61,7 @@ static __cpuinit int amd_apic_timer_broken(void)
+ static int dmar_disabled;
+ static int __initdata dmar_map_gfx = 1;
+ static int dmar_forcedac;
++static int intel_iommu_strict;
+ 
+ #define DUMMY_DEVICE_DOMAIN_INFO ((struct device_domain_info *)(-1))
+ static DEFINE_SPINLOCK(device_domain_lock);
+@@ -73,9 +103,13 @@
+ 			printk(KERN_INFO
+ 				"Intel-IOMMU: disable GFX device mapping\n");
+ 		} else if (!strncmp(str, "forcedac", 8)) {
+-			printk (KERN_INFO
++			printk(KERN_INFO
+ 				"Intel-IOMMU: Forcing DAC for PCI devices\n");
+ 			dmar_forcedac = 1;
++		} else if (!strncmp(str, "strict", 8)) {
++			printk(KERN_INFO
++				"Intel-IOMMU: disable bached IOTLB flush\n");
++			intel_iommu_strict = 1;
+ 		}
+ 
+ 		str += strcspn(str, ",");
+@@ -965,17 +999,13 @@
+ 		set_bit(0, iommu->domain_ids);
+ 	return 0;
  }
- #endif
- 
--int force_mwait __cpuinitdata;
 -
--void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
-+void __cpuinit __early_init_amd(struct cpuinfo_x86 *c)
+-static struct intel_iommu *alloc_iommu(struct dmar_drhd_unit *drhd)
++static struct intel_iommu *alloc_iommu(struct intel_iommu *iommu,
++					struct dmar_drhd_unit *drhd)
  {
- 	if (cpuid_eax(0x80000000) >= 0x80000007) {
- 		c->x86_power = cpuid_edx(0x80000007);
-@@ -340,7 +338,7 @@ static struct cpu_dev amd_cpu_dev __cpuinitdata = {
- 	.c_size_cache	= amd_size_cache,
- };
+-	struct intel_iommu *iommu;
+ 	int ret;
+ 	int map_size;
+ 	u32 ver;
  
--int __init amd_init_cpu(void)
-+int __init __amd_init_cpu(void)
- {
- 	cpu_devs[X86_VENDOR_AMD] = &amd_cpu_dev;
+-	iommu = kzalloc(sizeof(*iommu), GFP_KERNEL);
+-	if (!iommu)
+-		return NULL;
+ 	iommu->reg = ioremap(drhd->reg_base_addr, PAGE_SIZE_4K);
+ 	if (!iommu->reg) {
+ 		printk(KERN_ERR "IOMMU: can't map the region\n");
+@@ -1396,7 +1426,7 @@
+ 	int index;
+ 
+ 	while (dev) {
+-		for (index = 0; index < cnt; index ++)
++		for (index = 0; index < cnt; index++)
+ 			if (dev == devices[index])
+ 				return 1;
+ 
+@@ -1661,7 +1691,7 @@
+ 	struct dmar_rmrr_unit *rmrr;
+ 	struct pci_dev *pdev;
+ 	struct intel_iommu *iommu;
+-	int ret, unit = 0;
++	int nlongs, i, ret, unit = 0;
+ 
+ 	/*
+ 	 * for each drhd
+@@ -1672,7 +1702,29 @@
+ 	for_each_drhd_unit(drhd) {
+ 		if (drhd->ignored)
+ 			continue;
+-		iommu = alloc_iommu(drhd);
++		g_num_of_iommus++;
++	}
++
++	nlongs = BITS_TO_LONGS(g_num_of_iommus);
++	g_iommus_to_flush = kzalloc(nlongs * sizeof(unsigned long), GFP_KERNEL);
++	if (!g_iommus_to_flush) {
++		printk(KERN_ERR "Allocating bitmap array failed\n");
++		return -ENOMEM;
++	}
++
++	g_iommus = kzalloc(g_num_of_iommus * sizeof(*iommu), GFP_KERNEL);
++	if (!g_iommus) {
++		kfree(g_iommus_to_flush);
++		ret = -ENOMEM;
++		goto error;
++	}
++
++	i = 0;
++	for_each_drhd_unit(drhd) {
++		if (drhd->ignored)
++			continue;
++		iommu = alloc_iommu(&g_iommus[i], drhd);
++		i++;
+ 		if (!iommu) {
+ 			ret = -ENOMEM;
+ 			goto error;
+@@ -1705,7 +1757,6 @@
+ 	 * endfor
+ 	 */
+ 	for_each_rmrr_units(rmrr) {
+-		int i;
+ 		for (i = 0; i < rmrr->devices_cnt; i++) {
+ 			pdev = rmrr->devices[i];
+ 			/* some BIOS lists non-exist devices in DMAR table */
+@@ -1909,6 +1960,54 @@
  	return 0;
-diff --git a/arch/x86/kernel/cpu/centaur.c b/arch/x86/kernel/cpu/centaur.c
-index 9681fa1..c20f44b 100644
---- a/arch/x86/kernel/cpu/centaur.c
-+++ b/arch/x86/kernel/cpu/centaur.c
-@@ -464,7 +464,7 @@ static struct cpu_dev centaur_cpu_dev __cpuinitdata = {
- 	.c_size_cache	= centaur_size_cache,
- };
+ }
  
--int __init centaur_init_cpu(void)
-+int __init __centaur_init_cpu(void)
++static void flush_unmaps(void)
++{
++	struct iova *node, *n;
++	unsigned long flags;
++	int i;
++
++	spin_lock_irqsave(&async_umap_flush_lock, flags);
++	timer_on = 0;
++
++	/*just flush them all*/
++	for (i = 0; i < g_num_of_iommus; i++) {
++		if (test_and_clear_bit(i, g_iommus_to_flush))
++			iommu_flush_iotlb_global(&g_iommus[i], 0);
++	}
++
++	list_for_each_entry_safe(node, n, &unmaps_to_do, list) {
++		/* free iova */
++		list_del(&node->list);
++		__free_iova(&((struct dmar_domain *)node->dmar)->iovad, node);
++
++	}
++	list_size = 0;
++	spin_unlock_irqrestore(&async_umap_flush_lock, flags);
++}
++
++static void flush_unmaps_timeout(unsigned long data)
++{
++	flush_unmaps();
++}
++
++static void add_unmap(struct dmar_domain *dom, struct iova *iova)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&async_umap_flush_lock, flags);
++	iova->dmar = dom;
++	list_add(&iova->list, &unmaps_to_do);
++	set_bit((dom->iommu - g_iommus), g_iommus_to_flush);
++
++	if (!timer_on) {
++		unmap_timer.expires = jiffies + msecs_to_jiffies(10);
++		mod_timer(&unmap_timer, unmap_timer.expires);
++		timer_on = 1;
++	}
++	list_size++;
++	spin_unlock_irqrestore(&async_umap_flush_lock, flags);
++}
++
+ static void intel_unmap_single(struct device *dev, dma_addr_t dev_addr,
+ 	size_t size, int dir)
  {
- 	cpu_devs[X86_VENDOR_CENTAUR] = &centaur_cpu_dev;
- 	return 0;
-diff --git a/arch/x86/kernel/cpu/cpu.h b/arch/x86/kernel/cpu/cpu.h
-index e0b38c3..3e54edc 100644
---- a/arch/x86/kernel/cpu/cpu.h
-+++ b/arch/x86/kernel/cpu/cpu.h
-@@ -24,15 +24,117 @@ extern struct cpu_dev * cpu_devs [X86_VENDOR_NUM];
- extern int get_model_name(struct cpuinfo_x86 *c);
- extern void display_cacheinfo(struct cpuinfo_x86 *c);
- 
--extern void early_init_intel(struct cpuinfo_x86 *c);
--extern void early_init_amd(struct cpuinfo_x86 *c);
+@@ -1936,13 +2035,21 @@
+ 	dma_pte_clear_range(domain, start_addr, start_addr + size);
+ 	/* free page tables */
+ 	dma_pte_free_pagetable(domain, start_addr, start_addr + size);
 -
- /* Specific CPU type init functions */
--int intel_cpu_init(void);
--int amd_init_cpu(void);
--int cyrix_init_cpu(void);
--int nsc_init_cpu(void);
--int centaur_init_cpu(void);
--int transmeta_init_cpu(void);
--int nexgen_init_cpu(void);
--int umc_init_cpu(void);
-+
-+#ifdef CONFIG_CPU_SUP_INTEL
-+int __cpuinit __ppro_with_ram_bug(void);
-+static inline int __cpuinit ppro_with_ram_bug(void)
-+{
-+	return __ppro_with_ram_bug();
-+}
-+
-+void __cpuinit __early_init_intel(struct cpuinfo_x86 *c);
-+static inline void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
-+{
-+	__early_init_intel(c);
-+}
-+
-+int __intel_cpu_init(void);
-+static inline int intel_cpu_init(void)
-+{
-+	return __intel_cpu_init();
-+}
-+#else
-+static inline int __cpuinit ppro_with_ram_bug(void)
-+{
-+	return 0;
-+}
-+
-+static inline void __cpuinit early_init_intel(struct cpuinfo_x86 *c) {}
-+
-+static inline int intel_cpu_init(void)
-+{
-+	return 0;
-+}
-+#endif
-+
-+#ifdef CONFIG_CPU_SUP_AMD
-+int __amd_init_cpu(void);
-+static inline int amd_init_cpu(void)
-+{
-+	return __amd_init_cpu();
-+}
-+
-+void __cpuinit __early_init_amd(struct cpuinfo_x86 *c);
-+static inline void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
-+{
-+	__early_init_amd(c);
-+}
-+#else
-+static inline int amd_init_cpu(void)
-+{
-+	return 0;
-+}
-+
-+static inline void __cpuinit early_init_amd(struct cpuinfo_x86 *c) {}
-+#endif
-+
-+int __cyrix_init_cpu(void);
-+static inline int cyrix_init_cpu(void)
-+{
-+#ifdef CONFIG_CPU_SUP_CYRIX
-+	return __cyrix_init_cpu();
-+#else
-+	return 0;
-+#endif
-+}
-+
-+int __nsc_init_cpu(void);
-+static inline int nsc_init_cpu(void)
-+{
-+#ifdef CONFIG_CPU_SUP_NSC
-+	return __nsc_init_cpu();
-+#else
-+	return 0;
-+#endif
-+}
-+
-+int __centaur_init_cpu(void);
-+static inline int centaur_init_cpu(void)
-+{
-+#ifdef CONFIG_CPU_SUP_CENTAUR
-+	return __centaur_init_cpu();
-+#else
-+	return 0;
-+#endif
-+}
-+
-+int __transmeta_init_cpu(void);
-+static inline int transmeta_init_cpu(void)
-+{
-+#ifdef CONFIG_CPU_SUP_TRANSMETA
-+	return __transmeta_init_cpu();
-+#else
-+	return 0;
-+#endif
-+}
-+
-+int __nexgen_init_cpu(void);
-+static inline int nexgen_init_cpu(void)
-+{
-+#ifdef CONFIG_CPU_SUP_NEXGEN
-+	return __nexgen_init_cpu();
-+#else
-+	return 0;
-+#endif
-+}
-+
-+int __umc_init_cpu(void);
-+static inline int umc_init_cpu(void)
-+{
-+#ifdef CONFIG_CPU_SUP_UMC
-+	return __umc_init_cpu();
-+#else
-+	return 0;
-+#endif
-+}
-diff --git a/arch/x86/kernel/cpu/cyrix.c b/arch/x86/kernel/cpu/cyrix.c
-index 7139b02..038aa60 100644
---- a/arch/x86/kernel/cpu/cyrix.c
-+++ b/arch/x86/kernel/cpu/cyrix.c
-@@ -439,7 +439,7 @@ static struct cpu_dev cyrix_cpu_dev __cpuinitdata = {
- 	.c_identify	= cyrix_identify,
+-	if (iommu_flush_iotlb_psi(domain->iommu, domain->id, start_addr,
+-			size >> PAGE_SHIFT_4K, 0))
+-		iommu_flush_write_buffer(domain->iommu);
+-
+-	/* free iova */
+-	__free_iova(&domain->iovad, iova);
++	if (intel_iommu_strict) {
++		if (iommu_flush_iotlb_psi(domain->iommu,
++			domain->id, start_addr, size >> PAGE_SHIFT_4K, 0))
++			iommu_flush_write_buffer(domain->iommu);
++		/* free iova */
++		__free_iova(&domain->iovad, iova);
++	} else {
++		add_unmap(domain, iova);
++		/*
++		 * queue up the release of the unmap to save the 1/6th of the
++		 * cpu used up by the iotlb flush operation...
++		 */
++		if (list_size > high_watermark)
++			flush_unmaps();
++	}
+ }
+ 
+ static void * intel_alloc_coherent(struct device *hwdev, size_t size,
+@@ -2266,6 +2373,10 @@
+ 	if (dmar_table_init())
+ 		return 	-ENODEV;
+ 
++	high_watermark = 250;
++	intel_iommu_debug = debugfs_create_dir("intel_iommu", NULL);
++	debug = debugfs_create_u32("high_watermark", S_IWUGO | S_IRUGO,
++					intel_iommu_debug, &high_watermark);
+ 	iommu_init_mempool();
+ 	dmar_init_reserved_ranges();
+ 
+@@ -2281,6 +2392,7 @@
+ 	printk(KERN_INFO
+ 	"PCI-DMA: Intel(R) Virtualization Technology for Directed I/O\n");
+ 
++	init_timer(&unmap_timer);
+ 	force_iommu = 1;
+ 	dma_ops = &intel_dma_ops;
+ 	return 0;
+Index: linux-2.6.24-mm1/drivers/pci/iova.h
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/iova.h	2008-02-07 13:03:10.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/iova.h	2008-02-07 13:06:28.000000000 -0800
+@@ -23,6 +23,8 @@
+ 	struct rb_node	node;
+ 	unsigned long	pfn_hi; /* IOMMU dish out addr hi */
+ 	unsigned long	pfn_lo; /* IOMMU dish out addr lo */
++	struct list_head list;
++	void *dmar;
  };
  
--int __init cyrix_init_cpu(void)
-+int __init __cyrix_init_cpu(void)
- {
- 	cpu_devs[X86_VENDOR_CYRIX] = &cyrix_cpu_dev;
- 	return 0;
-@@ -451,7 +451,7 @@ static struct cpu_dev nsc_cpu_dev __cpuinitdata = {
- 	.c_init		= init_nsc,
- };
+ /* holds all the iova translations for a domain */
+Index: linux-2.6.24-mm1/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.24-mm1.orig/Documentation/kernel-parameters.txt	2008-02-11 13:44:23.000000000 -0800
++++ linux-2.6.24-mm1/Documentation/kernel-parameters.txt	2008-02-11 14:23:37.000000000 -0800
+@@ -822,6 +822,10 @@
+ 			than 32 bit addressing. The default is to look
+ 			for translation below 32 bit and if not available
+ 			then look in the higher range.
++		strict [Default Off]
++			With this option on every umap_signle will
++			result in a hardware IOTLB flush opperation as
++			opposed to batching them for performance.
  
--int __init nsc_init_cpu(void)
-+int __init __nsc_init_cpu(void)
- {
- 	cpu_devs[X86_VENDOR_NSC] = &nsc_cpu_dev;
- 	return 0;
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index fae31ce..7eaac8e 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -30,7 +30,7 @@
- struct movsl_mask movsl_mask __read_mostly;
- #endif
- 
--void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
-+void __cpuinit __early_init_intel(struct cpuinfo_x86 *c)
- {
- 	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
- 	if (c->x86 == 15 && c->x86_cache_alignment == 64)
-@@ -46,7 +46,7 @@ void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
-  *	This is called before we do cpu ident work
-  */
-  
--int __cpuinit ppro_with_ram_bug(void)
-+int __cpuinit __ppro_with_ram_bug(void)
- {
- 	/* Uses data from early_cpu_detect now */
- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
-@@ -294,7 +294,7 @@ static struct cpu_dev intel_cpu_dev __cpuinitdata = {
- 	.c_size_cache	= intel_size_cache,
- };
- 
--__init int intel_cpu_init(void)
-+__init int __intel_cpu_init(void)
- {
- 	cpu_devs[X86_VENDOR_INTEL] = &intel_cpu_dev;
- 	return 0;
-diff --git a/arch/x86/kernel/cpu/nexgen.c b/arch/x86/kernel/cpu/nexgen.c
-index 961fbe1..c607e80 100644
---- a/arch/x86/kernel/cpu/nexgen.c
-+++ b/arch/x86/kernel/cpu/nexgen.c
-@@ -53,7 +53,7 @@ static struct cpu_dev nexgen_cpu_dev __cpuinitdata = {
- 	.c_identify	= nexgen_identify,
- };
- 
--int __init nexgen_init_cpu(void)
-+int __init __nexgen_init_cpu(void)
- {
- 	cpu_devs[X86_VENDOR_NEXGEN] = &nexgen_cpu_dev;
- 	return 0;
-diff --git a/arch/x86/kernel/cpu/transmeta.c b/arch/x86/kernel/cpu/transmeta.c
-index 200fb3f..5538853 100644
---- a/arch/x86/kernel/cpu/transmeta.c
-+++ b/arch/x86/kernel/cpu/transmeta.c
-@@ -109,7 +109,7 @@ static struct cpu_dev transmeta_cpu_dev __cpuinitdata = {
- 	.c_identify	= transmeta_identify,
- };
- 
--int __init transmeta_init_cpu(void)
-+int __init __transmeta_init_cpu(void)
- {
- 	cpu_devs[X86_VENDOR_TRANSMETA] = &transmeta_cpu_dev;
- 	return 0;
-diff --git a/arch/x86/kernel/cpu/umc.c b/arch/x86/kernel/cpu/umc.c
-index a7a4e75..c8ef9f6 100644
---- a/arch/x86/kernel/cpu/umc.c
-+++ b/arch/x86/kernel/cpu/umc.c
-@@ -19,7 +19,7 @@ static struct cpu_dev umc_cpu_dev __cpuinitdata = {
- 	},
- };
- 
--int __init umc_init_cpu(void)
-+int __init __umc_init_cpu(void)
- {
- 	cpu_devs[X86_VENDOR_UMC] = &umc_cpu_dev;
- 	return 0;
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 691ab4c..395bfb4 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -65,6 +65,8 @@
- #include <bios_ebda.h>
- #include <asm/cacheflush.h>
- 
-+int force_mwait __cpuinitdata;
-+
- /* This value is set up by the early boot code to point to the value
-    immediately after the boot time page tables.  It contains a *physical*
-    address, and must not be in the .bss segment! */
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 347a8cd..1179648 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -48,6 +48,8 @@
- #include <asm/paravirt.h>
- #include <asm/setup.h>
- 
-+#include "../kernel/cpu/cpu.h"
-+
- unsigned int __VMALLOC_RESERVE = 128 << 20;
- 
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
-diff --git a/include/asm-x86/bugs.h b/include/asm-x86/bugs.h
-index 021cbdd..a876041 100644
---- a/include/asm-x86/bugs.h
-+++ b/include/asm-x86/bugs.h
-@@ -2,6 +2,6 @@
- #define _ASM_X86_BUGS_H
- 
- extern void check_bugs(void);
--int ppro_with_ram_bug(void);
-+inline int ppro_with_ram_bug(void);
- 
- #endif /* _ASM_X86_BUGS_H */
--- 
-1.5.2.5
-
--- 
-Michael Opdenacker, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
+ 	io_delay=	[X86-32,X86-64] I/O delay method
+ 		0x80
