@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYBKPgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbYBKPgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbYBKPgA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:36:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYBKPfw
+	id S1758061AbYBKPgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYBKPgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:35:52 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45918 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbYBKPfv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:35:51 -0500
-Date: Mon, 11 Feb 2008 17:11:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: kgdb in git-x86#mm review
-Message-ID: <20080211161114.GA19537@one.firstfloor.org>
-References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <y0mhcgf4ig1.fsf@ton.toronto.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 11 Feb 2008 10:36:05 -0500
+Received: from vena.lwn.net ([206.168.112.25]:54692 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757986AbYBKPgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 10:36:03 -0500
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH 0/8][for -mm] mem_notify v6
+Cc: "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Daniel Spang" <daniel.spang@gmail.com>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-fsdevel@vger.kernel.org,
+       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
+       "Jon Masters" <jonathan@jonmasters.org>, "Zan Lynx" <zlynx@acm.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Sun, 10 Feb 2008 00:19:58 +0900."
+             <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com> 
+Date: Mon, 11 Feb 2008 08:36:02 -0700
+Message-ID: <32072.1202744162@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 10:32:46AM -0500, Frank Ch. Eigler wrote:
-> Andi Kleen <andi@firstfloor.org> writes:
-> 
-> > [...]  The kgdb code in git-x86#mm is right now is totally broken of
-> > course because the CFI annotations in assembler code are gone now,
-> > but they are needed for gdb use.  [...]
-> 
-> This loss of CFI data is unfortunate for other potential consumers
-> too, such as systemtap, which intends to supplement its current stack
-> backtracing heuristics with CFI data.
+> the Linux Today article is very nice description. (great works by Jake Edge)
+> http://www.linuxworld.com/news/2008/020508-kernel.html
 
-They seem to have reverted these patches now, so that problem 
-is gone.
+Just for future reference...the above-mentioned article is from LWN,
+syndicated onto LinuxWorld.  It has, so far as I know, never been near
+Linux Today.
 
-Yes there are a couple of other consumers of CFI too, like crash
-or the out of tree (but not dead) in kernel unwinder.
+Glad you liked it, though :)
 
--Andi
+Thanks,
+
+jon
