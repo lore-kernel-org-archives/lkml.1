@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbYBKV3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbYBKVeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbYBKV3v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 16:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYBKV3n
+	id S1756951AbYBKVeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 16:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYBKVeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 16:29:43 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:49098 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753420AbYBKV3m (ORCPT
+	Mon, 11 Feb 2008 16:34:10 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:50765 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbYBKVeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 16:29:42 -0500
-Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, greg@kroah.com, haveblue@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20080211114818.74c9dcc7.akpm@linux-foundation.org>
-References: <1202750598.25604.3.camel@dyn9047017100.beaverton.ibm.com>
-	 <20080211114818.74c9dcc7.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 13:32:32 -0800
-Message-Id: <1202765553.25604.12.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 16:34:08 -0500
+Date: Mon, 11 Feb 2008 22:34:06 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Michael Schmitz <schmitz@debian.org>, linux-ide@vger.kernel.org,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ide: Add missing base addresses for falconide and macide
+Message-ID: <Pine.LNX.4.64.0802112232060.7963@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-11 at 11:48 -0800, Andrew Morton wrote:
-> On Mon, 11 Feb 2008 09:23:18 -0800
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> > Hi Andrew,
-> > 
-> > While testing hotplug memory remove against -mm, I noticed
-> > that unregister_memory() is not cleaning up /sysfs entries
-> > correctly. It also de-references structures after destroying
-> > them (luckily in the code which never gets used). So, I cleaned
-> > up the code and fixed the extra reference issue.
-> > 
-> > Could you please include it in -mm ?
-> > 
-> > Thanks,
-> > Badari
-> > 
-> > register_memory()/unregister_memory() never gets called with
-> > "root". unregister_memory() is accessing kobject_name of
-> > the object just freed up. Since no one uses the code,
-> > lets take the code out. And also, make register_memory() static.  
-> > 
-> > Another bug fix - before calling unregister_memory()
-> > remove_memory_block() gets a ref on kobject. unregister_memory()
-> > need to drop that ref before calling sysdev_unregister().
-> > 
-> 
-> I'd say this:
-> 
-> > Subject: [-mm PATCH] register_memory/unregister_memory clean ups
-> 
-> is rather tame.  These are more than cleanups!  These sound like
-> machine-crashing bugs.  Do they crash machines?  How come nobody noticed
-> it?
-> 
+commit 29dd59755a849cc6475faa6a75f3b804e23a6fc2 ("ide: remove ide_setup_ports")
+forgot to take into account the base addresses for the CONTROL registers for
+falconide and macide, as pointed out by Michael Schmitz.
 
-No they don't crash machine - mainly because, they never get called
-with "root" argument (where we have the bug). They were never tested
-before, since we don't have memory remove work yet. All it does
-is, it leave /sysfs directory laying around and causing next
-memory add failure. 
+Falconide was tested on Aranym.
 
-Thanks,
-Badari
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Schmitz <schmitz@debian.org>
+---
+ drivers/ide/legacy/falconide.c |    2 +-
+ drivers/ide/legacy/macide.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+--- a/drivers/ide/legacy/falconide.c
++++ b/drivers/ide/legacy/falconide.c
+@@ -54,7 +54,7 @@ static void __init falconide_setup_ports
+ 	for (i = 1; i < 8; i++)
+ 		hw->io_ports[i] = ATA_HD_BASE + 1 + i * 4;
+ 
+-	hw->io_ports[IDE_CONTROL_OFFSET] = ATA_HD_CONTROL;
++	hw->io_ports[IDE_CONTROL_OFFSET] = ATA_HD_BASE + ATA_HD_CONTROL;
+ 
+ 	hw->irq = IRQ_MFP_IDE;
+ 	hw->ack_intr = NULL;
+--- a/drivers/ide/legacy/macide.c
++++ b/drivers/ide/legacy/macide.c
+@@ -74,7 +74,7 @@ static void __init macide_setup_ports(hw
+ 	for (i = 0; i < 8; i++)
+ 		hw->io_ports[i] = base + i * 4;
+ 
+-	hw->io_ports[IDE_CONTROL_OFFSET] = IDE_CONTROL;
++	hw->io_ports[IDE_CONTROL_OFFSET] = base + IDE_CONTROL;
+ 
+ 	hw->irq = irq;
+ 	hw->ack_intr = ack_intr;
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
